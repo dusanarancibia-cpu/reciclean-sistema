@@ -11,9 +11,28 @@
 <meta name="apple-mobile-web-app-title" content="Reciclean">
 <link rel="apple-touch-icon" href="/icon-192.svg">
 <script>
-if(!localStorage.getItem('rf_session')){
-  document.documentElement.style.visibility='hidden';
-}
+(function(){
+  var s = localStorage.getItem('rf_session');
+  if(!s){
+    document.addEventListener('DOMContentLoaded', function(){
+      document.body.style.maxWidth='none';
+      document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1A7A3C 0%,#0D4A22 100%);font-family:system-ui,sans-serif;padding:20px;">'
+        + '<div style="background:#fff;border-radius:20px;padding:32px 28px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.3);">'
+        + '<div style="text-align:center;margin-bottom:24px;"><div style="font-size:32px;">&#9851;</div>'
+        + '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#999;text-transform:uppercase;">Reciclean + Farex</div>'
+        + '<div style="font-size:20px;font-weight:700;margin-top:4px;color:#1A1A14;">Asistente Comercial</div></div>'
+        + '<div id="login-error" style="display:none;background:#FDECEA;border:1px solid #F5C6C0;color:#C0392B;padding:8px 12px;border-radius:10px;font-size:12px;margin-bottom:12px;text-align:center;"></div>'
+        + '<div style="font-size:12px;color:#666;margin-bottom:6px;font-weight:600;">Numero de WhatsApp</div>'
+        + '<input id="login-tel" type="tel" placeholder="+56 9 1234 5678" style="width:100%;padding:14px;border:1.5px solid #ddd;border-radius:12px;font-size:16px;margin-bottom:12px;outline:none;text-align:center;letter-spacing:1px;box-sizing:border-box;" />'
+        + '<div style="font-size:12px;color:#666;margin-bottom:6px;font-weight:600;">PIN de acceso</div>'
+        + '<input id="login-pin" type="password" inputmode="numeric" maxlength="6" placeholder="****" style="width:100%;padding:14px;border:1.5px solid #ddd;border-radius:12px;font-size:24px;margin-bottom:18px;outline:none;text-align:center;letter-spacing:8px;box-sizing:border-box;" />'
+        + '<button id="login-btn" onclick="window._doPhoneLogin()" style="width:100%;padding:14px;background:#1A7A3C;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">Ingresar</button>'
+        + '<div style="text-align:center;margin-top:14px;font-size:11px;color:#aaa;">Solo numeros autorizados</div>'
+        + '</div></div>';
+      document.getElementById('login-pin').addEventListener('keydown', function(e){ if(e.key==='Enter') window._doPhoneLogin(); });
+    });
+  }
+})();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>

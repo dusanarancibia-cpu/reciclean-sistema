@@ -68,6 +68,23 @@ async function handlePhoneLogin() {
 
 window._logout = logout;
 
+// ── Global phone login (called from inline form) ──
+window._doPhoneLogin = async function() {
+  const btn = document.getElementById('login-btn');
+  const errDiv = document.getElementById('login-error');
+  const tel = document.getElementById('login-tel').value;
+  const pin = document.getElementById('login-pin').value;
+  if (!tel || !pin) { errDiv.textContent = 'Ingresa tu numero y PIN'; errDiv.style.display = 'block'; return; }
+  btn.textContent = 'Verificando...'; btn.disabled = true;
+  const result = await loginTelefono(tel, pin);
+  if (result.ok) {
+    window.location.reload();
+  } else {
+    errDiv.textContent = result.error; errDiv.style.display = 'block';
+    btn.textContent = 'Ingresar'; btn.disabled = false;
+  }
+};
+
 // ── Load precios activos desde Supabase ──
 async function loadPreciosFromSupabase() {
   try {
@@ -214,13 +231,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     navigator.serviceWorker.register('/sw.js').catch(e => console.log('SW:', e));
   }
 
-  // Check login
+  // Check login — inline script handles login form if no session
   const session = getSession();
   if (!session) {
-    showLoginGate();
+    console.log('🔒 Sin sesión — login activo');
     return;
   }
   console.log(`👤 Sesión: ${session.nombre}`);
-  document.documentElement.style.visibility = 'visible';
   initSupabaseData();
 });

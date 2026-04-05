@@ -67,6 +67,23 @@ async function handleLogin() {
 
 window._logout = logout;
 
+// ── Global login function (called from inline login form) ──
+window._doLogin = async function() {
+  const btn = document.getElementById('login-btn');
+  const errDiv = document.getElementById('login-error');
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-pass').value;
+  if (!email || !pass) { errDiv.textContent = 'Completa ambos campos'; errDiv.style.display = 'block'; return; }
+  btn.textContent = 'Verificando...'; btn.disabled = true;
+  const result = await loginEmail(email, pass);
+  if (result.ok) {
+    window.location.reload(); // Reload to init panel with session
+  } else {
+    errDiv.textContent = result.error; errDiv.style.display = 'block';
+    btn.textContent = 'Ingresar'; btn.disabled = false;
+  }
+};
+
 // ── Override API status ──
 function setSupabaseStatus(ok) {
   window.apiOnline = ok;
@@ -300,14 +317,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     navigator.serviceWorker.register('/sw.js').catch(e => console.log('SW:', e));
   }
 
-  // Check login
+  // Check login — if no session, the inline script already shows login form
   const session = getSession();
   if (!session) {
-    showLoginGate();
+    console.log('🔒 Sin sesión — login activo');
     return;
   }
   console.log(`👤 Sesión activa: ${session.nombre} (${session.rol})`);
-  document.documentElement.style.visibility = 'visible';
 
   const connected = await testConnection();
 
