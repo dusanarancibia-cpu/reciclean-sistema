@@ -9,6 +9,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="/icon-192.svg">
+<script>
+// Bloquear contenido hasta verificar login
+if(!localStorage.getItem('rf_session')){
+  document.documentElement.style.visibility='hidden';
+}
+</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap');
 :root{

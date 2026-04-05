@@ -30,7 +30,8 @@ function showLoginGate() {
     </div>
   `;
 
-  // Hide app content
+  // Show login, hide app content
+  document.documentElement.style.visibility = 'visible';
   document.querySelectorAll('header, .container, .app-content, main').forEach(el => { el.style.display = 'none'; });
   document.body.prepend(overlay);
   document.body.style.maxWidth = 'none';
@@ -220,5 +221,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     return;
   }
   console.log(`👤 Sesión: ${session.nombre}`);
+  document.documentElement.style.visibility = 'visible';
   initSupabaseData();
 });

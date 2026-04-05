@@ -30,7 +30,8 @@ function showLoginGate() {
   `;
   document.body.prepend(overlay);
 
-  // Hide all panels
+  // Hide all panels and show login
+  document.documentElement.style.visibility = 'visible';
   document.querySelectorAll('.nav, .panel, .scroll').forEach(el => { el.style.display = 'none'; });
 
   // Login handler
@@ -306,6 +307,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     return;
   }
   console.log(`👤 Sesión activa: ${session.nombre} (${session.rol})`);
+  document.documentElement.style.visibility = 'visible';
 
   const connected = await testConnection();
 
