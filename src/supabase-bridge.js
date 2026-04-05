@@ -3,10 +3,68 @@
  * Se inyecta al final del HTML y sobrescribe las funciones de API/storage
  */
 import { supabase } from './lib/supabase.js';
+import { getSession, loginEmail, logout } from './lib/auth.js';
 
 // Exponer globalmente para que el panel pueda usarlo
 window._supabase = supabase;
 window._supabaseReady = false;
+
+// ── LOGIN GATE ──
+function showLoginGate() {
+  const overlay = document.createElement('div');
+  overlay.id = 'login-gate';
+  overlay.innerHTML = `
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1A1A14;font-family:'Syne',system-ui,sans-serif;">
+      <div style="background:#fff;border-radius:16px;padding:40px;width:90%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#9C9484;text-transform:uppercase;">Reciclean · Farex</div>
+          <div style="font-size:22px;font-weight:700;margin-top:6px;color:#1A1A14;">Admin Panel</div>
+        </div>
+        <div id="login-error" style="display:none;background:#FDECEA;border:1px solid #F5C6C0;color:#C0392B;padding:8px 12px;border-radius:8px;font-size:12px;margin-bottom:12px;text-align:center;"></div>
+        <input id="login-email" type="email" placeholder="Email corporativo" style="width:100%;padding:12px 14px;border:1.5px solid #D6D1C4;border-radius:8px;font-size:14px;margin-bottom:10px;font-family:inherit;outline:none;" />
+        <input id="login-pass" type="password" placeholder="Contraseña" style="width:100%;padding:12px 14px;border:1.5px solid #D6D1C4;border-radius:8px;font-size:14px;margin-bottom:16px;font-family:inherit;outline:none;" />
+        <button id="login-btn" style="width:100%;padding:12px;background:#1A1A14;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Ingresar</button>
+        <div style="text-align:center;margin-top:16px;font-size:11px;color:#9C9484;">Acceso solo para usuarios autorizados</div>
+      </div>
+    </div>
+  `;
+  document.body.prepend(overlay);
+
+  // Hide all panels
+  document.querySelectorAll('.nav, .panel, .scroll').forEach(el => { el.style.display = 'none'; });
+
+  // Login handler
+  document.getElementById('login-btn').addEventListener('click', handleLogin);
+  document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+}
+
+async function handleLogin() {
+  const btn = document.getElementById('login-btn');
+  const errDiv = document.getElementById('login-error');
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-pass').value;
+
+  if (!email || !pass) { errDiv.textContent = 'Completa ambos campos'; errDiv.style.display = 'block'; return; }
+
+  btn.textContent = 'Verificando...';
+  btn.disabled = true;
+
+  const result = await loginEmail(email, pass);
+
+  if (result.ok) {
+    document.getElementById('login-gate').remove();
+    document.querySelectorAll('.nav, .panel, .scroll').forEach(el => { el.style.display = ''; });
+    // Re-trigger panel init
+    document.querySelector('.panel')?.classList.add('active');
+  } else {
+    errDiv.textContent = result.error;
+    errDiv.style.display = 'block';
+    btn.textContent = 'Ingresar';
+    btn.disabled = false;
+  }
+}
+
+window._logout = logout;
 
 // ── Override API status ──
 function setSupabaseStatus(ok) {
@@ -235,6 +293,20 @@ window._sb = {
 // ── Auto-init on load ──
 window.addEventListener('DOMContentLoaded', async () => {
   console.log('🔌 Supabase Bridge cargando...');
+
+  // Register Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(e => console.log('SW:', e));
+  }
+
+  // Check login
+  const session = getSession();
+  if (!session) {
+    showLoginGate();
+    return;
+  }
+  console.log(`👤 Sesión activa: ${session.nombre} (${session.rol})`);
+
   const connected = await testConnection();
 
   if (connected) {
