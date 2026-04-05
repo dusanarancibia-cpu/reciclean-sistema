@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login · Reciclean-Farex</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1A1A14">
+<script>
+if(localStorage.getItem('rf_session')){
+  window.location.href = '/';
+}
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1A1A14;font-family:system-ui,-apple-system,sans-serif;}
+.card{background:#fff;border-radius:16px;padding:40px;width:90%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.brand{font-size:11px;font-weight:700;letter-spacing:2px;color:#9C9484;text-transform:uppercase;text-align:center;}
+.title{font-size:22px;font-weight:700;margin-top:6px;color:#1A1A14;text-align:center;margin-bottom:24px;}
+.error{display:none;background:#FDECEA;border:1px solid #F5C6C0;color:#C0392B;padding:8px 12px;border-radius:8px;font-size:12px;margin-bottom:12px;text-align:center;}
+input{width:100%;padding:12px 14px;border:1.5px solid #D6D1C4;border-radius:8px;font-size:14px;margin-bottom:10px;outline:none;font-family:inherit;}
+input:focus{border-color:#92650A;}
+.btn{width:100%;padding:12px;background:#1A1A14;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn:hover{background:#333;}
+.btn:disabled{opacity:.5;cursor:wait;}
+.foot{text-align:center;margin-top:16px;font-size:11px;color:#9C9484;}
+.tabs{display:flex;margin-bottom:20px;border:1.5px solid #D6D1C4;border-radius:8px;overflow:hidden;}
+.tab{flex:1;padding:10px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;background:#f5f5f5;color:#666;border:none;font-family:inherit;}
+.tab.active{background:#1A1A14;color:#fff;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">Reciclean · Farex</div>
+  <div class="title">Sistema Comercial</div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('email')">Email + Clave</button>
+    <button class="tab" onclick="switchTab('phone')">WhatsApp + PIN</button>
+  </div>
+
+  <div id="login-error" class="error"></div>
+
+  <!-- Email login -->
+  <div id="tab-email">
+    <input id="login-email" type="email" placeholder="Email corporativo" />
+    <input id="login-pass" type="password" placeholder="Contrasena" />
+  </div>
+
+  <!-- Phone login -->
+  <div id="tab-phone" style="display:none;">
+    <input id="login-tel" type="tel" placeholder="+56 9 1234 5678" style="text-align:center;letter-spacing:1px;" />
+    <input id="login-pin" type="password" inputmode="numeric" maxlength="6" placeholder="PIN" style="text-align:center;letter-spacing:4px;font-size:18px;" />
+  </div>
+
+  <button class="btn" id="login-btn" onclick="doLogin()">Ingresar</button>
+  <div class="foot">Acceso solo para usuarios autorizados</div>
+</div>
+
+<script type="module">
+import { supabase } from '/src/lib/supabase.js';
+
+let currentTab = 'email';
+
+window.switchTab = function(tab) {
+  currentTab = tab;
+  document.getElementById('tab-email').style.display = tab === 'email' ? 'block' : 'none';
+  document.getElementById('tab-phone').style.display = tab === 'phone' ? 'block' : 'none';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab:${tab === 'email' ? 'first' : 'last'}-child`).classList.add('active');
+  document.getElementById('login-error').style.display = 'none';
+};
+
+window.doLogin = async function() {
+  const btn = document.getElementById('login-btn');
+  const errDiv = document.getElementById('login-error');
+  btn.textContent = 'Verificando...'; btn.disabled = true;
+  errDiv.style.display = 'none';
+
+  try {
+    if (currentTab === 'email') {
+      const email = document.getElementById('login-email').value.toLowerCase().trim();
+      const pass = document.getElementById('login-pass').value;
+      if (!email || !pass) throw new Error('Completa ambos campos');
+
+      const { data, error } = await supabase
+        .from('usuarios_autorizados')
+        .select('*')
+        .eq('email', email)
+        .eq('activo', true)
+        .eq('acceso_panel', true)
+        .single();
+      if (error || !data) throw new Error('Email no autorizado');
+      if (data.pin !== pass) throw new Error('Contrasena incorrecta');
+
+      localStorage.setItem('rf_session', JSON.stringify({
+        id: data.id, nombre: data.nombre, email: data.email,
+        rol: data.rol, tipo: 'email', timestamp: Date.now()
+      }));
+    } else {
+      let tel = document.getElementById('login-tel').value.replace(/\s/g,'').replace(/[^0-9+]/g,'');
+      const pin = document.getElementById('login-pin').value;
+      if (!tel || !pin) throw new Error('Ingresa tu numero y PIN');
+      if (tel.startsWith('9') && tel.length === 9) tel = '+56' + tel;
+      if (tel.startsWith('56') && !tel.startsWith('+')) tel = '+' + tel;
+
+      const { data, error } = await supabase
+        .from('usuarios_autorizados')
+        .select('*')
+        .eq('telefono', tel)
+        .eq('activo', true)
+        .eq('acceso_asistente', true)
+        .single();
+      if (error || !data) throw new Error('Numero no autorizado');
+      if (data.pin !== pin) throw new Error('PIN incorrecto');
+
+      localStorage.setItem('rf_session', JSON.stringify({
+        id: data.id, nombre: data.nombre, telefono: data.telefono,
+        rol: data.rol, tipo: 'telefono', timestamp: Date.now()
+      }));
+    }
+
+    // Redirect based on role
+    const session = JSON.parse(localStorage.getItem('rf_session'));
+    if (session.tipo === 'telefono' && session.rol !== 'admin') {
+      window.location.href = '/asistente.html';
+    } else {
+      window.location.href = '/';
+    }
+  } catch (e) {
+    errDiv.textContent = e.message;
+    errDiv.style.display = 'block';
+    btn.textContent = 'Ingresar'; btn.disabled = false;
+  }
+};
+
+// Enter key support
+document.addEventListener('keydown', e => { if (e.key === 'Enter') window.doLogin(); });
+</script>
+</body>
+</html>

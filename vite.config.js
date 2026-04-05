@@ -6,7 +6,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: 'index.html',
-        asistente: 'asistente.html'
+        asistente: 'asistente.html',
+        login: 'login.html'
       }
     }
   }
