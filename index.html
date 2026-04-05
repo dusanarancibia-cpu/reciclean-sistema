@@ -10,11 +10,16 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="/icon-192.svg">
 <script>
-if(!localStorage.getItem('rf_session')){
-  window.stop();window.location.replace('/login.html');/*document.open();
-  document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Login · Reciclean-Farex</title></head><body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1A1A14;font-family:system-ui,sans-serif;"><div style="background:#fff;border-radius:16px;padding:40px;width:90%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);"><div style="text-align:center;margin-bottom:24px;"><div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#9C9484;text-transform:uppercase;">Reciclean + Farex</div><div style="font-size:22px;font-weight:700;margin-top:6px;color:#1A1A14;">Admin Panel</div></div><div id="login-error" style="display:none;background:#FDECEA;border:1px solid #F5C6C0;color:#C0392B;padding:8px 12px;border-radius:8px;font-size:12px;margin-bottom:12px;text-align:center;"></div><input id="login-email" type="email" placeholder="Email corporativo" style="width:100%;padding:12px 14px;border:1.5px solid #D6D1C4;border-radius:8px;font-size:14px;margin-bottom:10px;outline:none;box-sizing:border-box;"/><input id="login-pass" type="password" placeholder="Contrasena" style="width:100%;padding:12px 14px;border:1.5px solid #D6D1C4;border-radius:8px;font-size:14px;margin-bottom:16px;outline:none;box-sizing:border-box;"/><button id="login-btn" style="width:100%;padding:12px;background:#1A1A14;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Ingresar</button><div style="text-align:center;margin-top:16px;font-size:11px;color:#9C9484;">Acceso solo para usuarios autorizados</div></div><script type="module" src="/src/supabase-bridge.js"><\/script></body></html>');
-  document.close();*/
-}
+(function(){
+  var s = localStorage.getItem('rf_session');
+  if(s){
+    try{var p=JSON.parse(s);if(Date.now()-p.timestamp>24*60*60*1000){localStorage.removeItem('rf_session');s=null;}}catch(e){s=null;}
+  }
+  if(!s){
+    document.documentElement.style.cssText='display:none!important';
+    window.location.replace('/login.html');
+  }
+})();
 </script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap');
@@ -441,6 +446,7 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
       </div>
     </div>
     <div class="api-dot" id="api-dot" title="Estado API"></div>
+    <button onclick="localStorage.removeItem('rf_session');window.location.replace('/login.html')" style="background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.4);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:inherit;" title="Cerrar sesión">Salir</button>
   </div>
 </nav>
 

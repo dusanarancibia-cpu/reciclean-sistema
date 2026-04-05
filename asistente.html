@@ -11,10 +11,16 @@
 <meta name="apple-mobile-web-app-title" content="Reciclean">
 <link rel="apple-touch-icon" href="/icon-192.svg">
 <script>
-if(!localStorage.getItem('rf_session')){
-  window.stop();
-  window.location.replace('/login.html');
-}
+(function(){
+  var s = localStorage.getItem('rf_session');
+  if(s){
+    try{var p=JSON.parse(s);if(Date.now()-p.timestamp>24*60*60*1000){localStorage.removeItem('rf_session');s=null;}}catch(e){s=null;}
+  }
+  if(!s){
+    document.documentElement.style.cssText='display:none!important';
+    window.location.replace('/login.html');
+  }
+})();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
@@ -119,9 +125,12 @@ select.neg-input option{background:#1A2D3E;color:#fff}
       <div style="font-size:9px;color:#4FC3F7;margin-top:2px;font-weight:700;letter-spacing:1px">v23 · PRECIOS v9 · 4 SUCURSALES · <span id="suc-mat-count">75 MATERIALES</span></div>
       <div id="suc-indicator" onclick="document.getElementById('neg-form').classList.add('open'); document.getElementById('neg-arrow').textContent='▼'; document.getElementById('neg-suc').focus();" style="margin-top:4px;font-size:11px;font-weight:800;color:#69F0AE;letter-spacing:.5px;cursor:pointer;text-decoration:underline dotted">📍 <span id="suc-indicator-name">Sin sucursal seleccionada</span></div>
     </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+    <button onclick="localStorage.removeItem('rf_session');window.location.replace('/login.html')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.6);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;">Salir</button>
     <div class="mc-box" id="mc-total-wrap" style="display:none">
       <div class="mc-label">MC TOTAL</div>
       <div class="mc-val" id="mc-total-val">$0</div>
+    </div>
 
 
 
