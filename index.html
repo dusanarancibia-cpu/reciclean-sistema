@@ -3597,15 +3597,10 @@ async function procesarBatch(input){
           const exp = mats.find(m=>normName(m.nombre)===expanded);
           if(exp){ matId=exp.id; }
         }
-        // 3. Match parcial: nombre del material empieza con el texto del TXT
+        // 3. Match parcial ESTRICTO: solo si el nombre tiene 6+ chars y coincide exacto al inicio
         if(!matId){
-          const partial = mats.filter(m=>normName(m.nombre).startsWith(qn) && qn.length>=4);
+          const partial = mats.filter(m=>normName(m.nombre)===qn.substring(0,normName(m.nombre).length) && qn.length>=6 && normName(m.nombre).length>=6);
           if(partial.length===1) matId=partial[0].id;
-        }
-        // 4. Match inverso: texto del TXT empieza con nombre del material
-        if(!matId){
-          const inv = mats.filter(m=>qn.startsWith(normName(m.nombre)) && normName(m.nombre).length>=4);
-          if(inv.length===1) matId=inv[0].id;
         }
         if(!matId){ sinMapeo.push(item.nombre+': $'+item.precio_clp_kg); return; }
         const m=mats.find(x=>x.id===matId);
@@ -3984,15 +3979,10 @@ function mostrarResultadoIA(items, fuente){
       const exp = mats.find(m=>normName(m.nombre)===expanded);
       if(exp) matId=exp.id;
     }
-    // 3. Match parcial
+    // 3. Match parcial ESTRICTO
     if(!matId){
-      const partial = mats.filter(m=>normName(m.nombre).startsWith(qn) && qn.length>=4);
+      const partial = mats.filter(m=>normName(m.nombre)===qn.substring(0,normName(m.nombre).length) && qn.length>=6 && normName(m.nombre).length>=6);
       if(partial.length===1) matId=partial[0].id;
-    }
-    // 4. Match inverso
-    if(!matId){
-      const inv = mats.filter(m=>qn.startsWith(normName(m.nombre)) && normName(m.nombre).length>=4);
-      if(inv.length===1) matId=inv[0].id;
     }
     if(matId){matNom=MATS_LOCAL.find(x=>x.id===matId)?.nombre||null;}
     return{...item, empresa:item.empresa||fuente||'—', matId, matNom};
