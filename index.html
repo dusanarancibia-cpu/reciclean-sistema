@@ -3311,55 +3311,65 @@ function generarPDFDespachoSuc(suc){
   var clientes=[...clientesSet];
   var sucShort=suc.replace('Puerto Montt','P.Montt');
 
-  // Generar HTML visual
+  // Generar HTML visual — mismo formato que panel de despacho
   var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Despacho '+sucShort+'</title><style>';
-  html+='*{box-sizing:border-box;margin:0;padding:0;}body{font-family:system-ui,-apple-system,sans-serif;padding:20px;background:#fff;}';
+  html+='*{box-sizing:border-box;margin:0;padding:0;}body{font-family:system-ui,-apple-system,sans-serif;padding:16px;background:#fff;}';
   html+='@media print{@page{size:A4 landscape;margin:8mm;}body{padding:0;}}';
-  html+='table{border-collapse:collapse;width:100%;}th,td{padding:4px 8px;text-align:left;font-size:10px;border-bottom:1px solid #eee;}';
-  html+='th{background:#f5f5f5;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#666;border-bottom:2px solid #ddd;}';
   html+='.tag{color:#fff;font-size:7px;font-weight:700;padding:1px 4px;border-radius:2px;display:inline-block;min-width:24px;text-align:center;}';
-  html+='.price{font-family:monospace;font-weight:700;text-align:right;}';
-  html+='.cat-row{background:#f8f8f8;font-weight:700;font-size:9px;color:#666;letter-spacing:.5px;}';
+  html+='.legend{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:10px;}';
+  html+='.legend span{font-size:7px;font-weight:700;padding:2px 5px;border-radius:3px;color:#fff;letter-spacing:.5px;}';
+  html+='.cards{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;}';
+  html+='.card{border:1px solid #ddd;border-radius:8px;overflow:hidden;min-width:180px;flex:1;max-width:320px;}';
+  html+='.card-head{background:#F5F0E0;padding:5px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #ddd;}';
+  html+='.card-head .name{font-size:11px;font-weight:800;color:#92650A;}';
+  html+='.card-head .count{font-size:8px;color:#999;background:#fff;padding:1px 5px;border-radius:3px;}';
+  html+='.mat-row{display:flex;align-items:center;padding:3px 8px;border-bottom:1px solid #f0f0f0;font-size:10px;}';
+  html+='.mat-row:last-child{border-bottom:none;}';
+  html+='.mat-name{flex:1;color:#333;margin-left:6px;}';
+  html+='.mat-price{font-family:monospace;font-size:10px;color:#1A7A3C;font-weight:700;}';
   html+='</style></head><body>';
 
   // Header
-  html+='<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;padding-bottom:8px;border-bottom:3px solid #1A7A3C;">';
+  html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:3px solid #1A7A3C;">';
   html+='<div>';
-  html+='<div style="font-size:20px;font-weight:800;color:#1A1A14;">DESPACHO '+sucShort.toUpperCase()+'</div>';
-  html+='<div style="font-size:11px;color:#666;margin-top:2px;">Reciclean + Farex &middot; '+fecha+' '+hora+'</div>';
+  html+='<div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:1px;">Ficha de Despacho</div>';
+  html+='<div style="font-size:20px;font-weight:800;color:#1A1A14;">'+sucShort.toUpperCase()+'</div>';
+  html+='<div style="font-size:10px;color:#666;margin-top:2px;">Reciclean + Farex &middot; '+fecha+' '+hora+'</div>';
   html+='</div>';
   html+='<div style="text-align:right;">';
-  html+='<div style="font-size:22px;font-weight:800;color:#1A7A3C;">'+items.length+'</div>';
-  html+='<div style="font-size:9px;color:#999;">materiales</div>';
+  html+='<div style="font-size:11px;color:#666;">'+items.length+' materiales &rarr; '+clientes.length+' cliente'+(clientes.length>1?'s':'')+'</div>';
   html+='</div></div>';
 
-  // Tabla por cliente
+  // Leyenda de categorías
+  html+='<div class="legend">';
+  CAT_ORDER.forEach(function(cat){
+    var c=CAT_COLORS_PDF[cat]||'#666';
+    var s=CAT_SHORT_PDF[cat]||cat.substring(0,3);
+    html+='<span style="background:'+c+';">'+s+'</span>';
+  });
+  html+='</div>';
+
+  // Cards por cliente — mismo formato que el panel
+  html+='<div class="cards">';
   clientes.forEach(function(cli){
     var matsCli=items.filter(function(i){return i.cliente===cli;});
-    html+='<div style="margin-bottom:14px;">';
-    html+='<div style="background:#92650A;color:#fff;padding:6px 12px;border-radius:6px 6px 0 0;font-size:12px;font-weight:700;display:flex;justify-content:space-between;">';
-    html+='<span>&#9654; '+cli+'</span><span style="font-weight:400;font-size:10px;">'+matsCli.length+' materiales</span></div>';
-    html+='<table>';
-    html+='<tr><th style="width:30px;"></th><th>Material</th><th style="text-align:right;">Precio $/kg</th></tr>';
-    var prevCat='';
+    html+='<div class="card">';
+    html+='<div class="card-head"><span class="name">'+cli+'</span><span class="count">'+matsCli.length+' mat.</span></div>';
     matsCli.forEach(function(it){
       var catCol=CAT_COLORS_PDF[it.cat]||'#666';
       var catTag=CAT_SHORT_PDF[it.cat]||'';
-      if(it.cat!==prevCat){
-        prevCat=it.cat;
-        html+='<tr class="cat-row"><td colspan="3" style="padding:3px 8px;">'+it.cat+'</td></tr>';
-      }
-      html+='<tr>';
-      html+='<td><span class="tag" style="background:'+catCol+';">'+catTag+'</span></td>';
-      html+='<td style="font-weight:600;">'+it.material+'</td>';
-      html+='<td class="price" style="color:#1A7A3C;font-size:12px;">$'+it.precioCompra.toLocaleString('es-CL')+'</td>';
-      html+='</tr>';
+      html+='<div class="mat-row">';
+      html+='<span class="tag" style="background:'+catCol+';">'+catTag+'</span>';
+      html+='<span class="mat-name">'+it.material+'</span>';
+      html+='<span class="mat-price">$'+it.precioCompra.toLocaleString('es-CL')+'</span>';
+      html+='</div>';
     });
-    html+='</table></div>';
+    html+='</div>';
   });
+  html+='</div>';
 
   // Footer
-  html+='<div style="margin-top:10px;padding-top:6px;border-top:1px solid #ddd;font-size:8px;color:#aaa;display:flex;justify-content:space-between;">';
+  html+='<div style="margin-top:12px;padding-top:6px;border-top:1px solid #ddd;font-size:8px;color:#aaa;display:flex;justify-content:space-between;">';
   html+='<span>Generado por Sistema Reciclean-Farex</span>';
   html+='<span>Precios sujetos a cambios seg&uacute;n mercado</span>';
   html+='</div>';
