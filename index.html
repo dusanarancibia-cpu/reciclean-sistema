@@ -1206,9 +1206,11 @@ function calc(m, factor=1, suc=null) {
   var neto = compra - flete;
   // v85: permitir negativos (cobro por recibir)
   var maxR = neto*(1-margen)*(m.iva?1-iva:1)*factor;
-  var pmax = Math.floor(maxR/10)*10;
-  var plista = Math.floor(pmax*(1-mcSpread)/10)*10;
-  var pejec = Math.floor((plista+pmax)/2/10)*10;
+  // Redondeo adaptativo: $5 para precios bajos (<$50), $10 para el resto
+  var rd = Math.abs(maxR) < 50 ? 5 : 10;
+  var pmax = Math.floor(maxR/rd)*rd;
+  var plista = Math.floor(pmax*(1-mcSpread)/rd)*rd;
+  var pejec = Math.floor((plista+pmax)/2/rd)*rd;
   var sinMargen = compra>0 && pmax<=0;
   // Override manual de P.Lista
   if(suc && PRECIO_OVERRIDE[m.id] && PRECIO_OVERRIDE[m.id][suc]!==undefined){
