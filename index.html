@@ -3340,22 +3340,19 @@ function generarPDFDespachoSuc(suc){
     html+='<div style="background:#92650A;color:#fff;padding:6px 12px;border-radius:6px 6px 0 0;font-size:12px;font-weight:700;display:flex;justify-content:space-between;">';
     html+='<span>&#9654; '+cli+'</span><span style="font-weight:400;font-size:10px;">'+matsCli.length+' materiales</span></div>';
     html+='<table>';
-    html+='<tr><th style="width:30px;"></th><th>Material</th><th style="text-align:right;">Compra</th><th style="text-align:right;">P.Lista</th><th style="text-align:right;">P.Ejec</th><th style="text-align:right;">P.Max</th></tr>';
+    html+='<tr><th style="width:30px;"></th><th>Material</th><th style="text-align:right;">Precio $/kg</th></tr>';
     var prevCat='';
     matsCli.forEach(function(it){
       var catCol=CAT_COLORS_PDF[it.cat]||'#666';
       var catTag=CAT_SHORT_PDF[it.cat]||'';
       if(it.cat!==prevCat){
         prevCat=it.cat;
-        html+='<tr class="cat-row"><td colspan="6" style="padding:3px 8px;">'+it.cat+'</td></tr>';
+        html+='<tr class="cat-row"><td colspan="3" style="padding:3px 8px;">'+it.cat+'</td></tr>';
       }
       html+='<tr>';
       html+='<td><span class="tag" style="background:'+catCol+';">'+catTag+'</span></td>';
       html+='<td style="font-weight:600;">'+it.material+'</td>';
-      html+='<td class="price" style="color:#666;">$'+it.precioCompra.toLocaleString('es-CL')+'</td>';
-      html+='<td class="price" style="color:#1A7A3C;">$'+it.precioLista.toLocaleString('es-CL')+'</td>';
-      html+='<td class="price" style="color:#92650A;">$'+it.precioEjec.toLocaleString('es-CL')+'</td>';
-      html+='<td class="price" style="color:#2980B9;">$'+it.precioMax.toLocaleString('es-CL')+'</td>';
+      html+='<td class="price" style="color:#1A7A3C;font-size:12px;">$'+it.precioCompra.toLocaleString('es-CL')+'</td>';
       html+='</tr>';
     });
     html+='</table></div>';
