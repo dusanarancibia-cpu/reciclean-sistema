@@ -33,7 +33,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F2F5;min-height:1
 @keyframes pulse-green{0%,100%{background:#1B5E20;}50%{background:#2E7D32;}}
 
 /* ── TOP NOTICE ── */
-.top-notice{background:#1B5E20;color:#fff;text-align:center;padding:8px 12px;font-size:11px;font-weight:600;letter-spacing:.5px;}
+.top-notice{background:#0D1B2A;color:#4A6278;text-align:center;padding:4px 12px;font-size:10px;font-weight:500;letter-spacing:.3px;border-bottom:1px solid #1A2B3A;}
 
 /* ── TOPBAR ── */
 .topbar{background:#0D1B2A;padding:14px 16px 0;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.4)}
@@ -383,21 +383,6 @@ function applyRoleRestrictions(rol) {
     }
   }
 
-  // Indicador de rol en topbar (solo si no es ejecutivo normal)
-  if(rol === 'visor') {
-    const bar = document.createElement('div');
-    bar.style.cssText = 'background:#1A2B3A;color:#4FC3F7;text-align:center;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid #2C3E50;';
-    bar.textContent = '👁 MODO VISOR — Consulta de precios';
-    const topbar = document.querySelector('.topbar');
-    if(topbar) topbar.insertAdjacentElement('afterend', bar);
-  }
-  if(rol === 'admin') {
-    const bar = document.createElement('div');
-    bar.style.cssText = 'background:#1A2B3A;color:#FFD54F;text-align:center;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid #2C3E50;';
-    bar.textContent = '⚙ MODO ADMIN';
-    const topbar = document.querySelector('.topbar');
-    if(topbar) topbar.insertAdjacentElement('afterend', bar);
-  }
 }
 
 // ══════════════════════════════════════════════════
@@ -545,18 +530,12 @@ function buildCard(mat){
   const sc=sem?{verde:{e:'🟢'},amarillo:{e:'🟡'},rojo:{e:'🔴'}}[sem]:null;
   const ejBorder=ej>mat.precioMaximo?'#c62828':ej>0&&ej<=hab?'#2e7d32':'#ddd';
   const puedeCotz = ROL_PUEDE_COTIZAR(_rolActual);
-  const veCompra  = ROL_VE_COMPRA(_rolActual);
-
-  // Banda de precios — admin/editor ven precio compra extra
-  const compraRow = veCompra && mat.precioCompra > 0
-    ? '<div style="background:'+c.bg+';padding:5px 14px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:9px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Precio Compra (interno)</span><span style="font-size:12px;font-weight:800;color:#FFD54F">'+fmt(mat.precioCompra)+'</span></div>'
-    : '';
 
   const priceBand = sinPrecios(mat)
     ? '<div style="background:'+c.lt+';padding:10px 14px;font-size:11px;font-weight:700;color:#E65100">⚠️ Sin precios activos</div>'
     : '<div class="price-band" style="background:'+c.lt+'">'
       +'<div class="price-cell" style="border-right:1px solid '+c.bg+'18"><div class="price-label" style="color:'+c.bg+'">Precio Lista</div><div class="price-val" style="color:'+c.bg+'">'+fmt(mat.precioLista)+'</div><div style="font-size:9px;color:#666">mínimo</div></div>'
-      +'<div class="price-cell" style="border-right:1px solid '+c.bg+'18"><div class="price-label" style="color:'+c.bg+'">Habilitado</div><div class="price-val" style="color:'+c.bg+'" id="hab-val-'+mat.id+'">'+fmt(hab)+'</div><div style="font-size:9px;color:#666" id="hab-sub-'+mat.id+'">'+(sc?sc.e:'—')+'</div></div>'
+      +'<div class="price-cell" style="border-right:1px solid '+c.bg+'18;background:'+(sc?c.bg+'15':'transparent')+'"><div class="price-label" style="color:'+c.bg+'">Habilitado</div><div class="price-val" style="color:'+c.bg+'" id="hab-val-'+mat.id+'">'+fmt(hab)+'</div><div style="font-size:9px;color:#666" id="hab-sub-'+mat.id+'">'+(sc?sc.e:'—')+'</div></div>'
       +'<div class="price-cell"><div class="price-label" style="color:'+c.bg+'">Precio Máximo</div><div class="price-val" style="color:'+c.bg+'">'+fmt(mat.precioMaximo)+'</div><div style="font-size:9px;color:#666">techo</div></div>'
       +'</div>';
 
@@ -570,7 +549,7 @@ function buildCard(mat){
 
   return '<div class="card">'
     +'<div class="card-header" style="background:'+c.bg+'"><div><div class="cat-label" style="color:'+c.ac+'">'+mat.categoria+'</div><div class="mat-name">'+mat.material+'</div></div><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">'+(mat.farex?'<span style="font-size:9px;padding:2px 7px;border-radius:20px;font-weight:700;color:#fff;background:#1565C0">FAREX</span>':'')+(mat.reciclean?'<span style="font-size:9px;padding:2px 7px;border-radius:20px;font-weight:700;color:#fff;background:#2E7D32">RECICLEAN</span>':'')+'</div></div>'
-    +compraRow+priceBand+inputsSection+metaRow+resultsSection
+    +priceBand+inputsSection+metaRow+resultsSection
     +'</div>';
 }
 
