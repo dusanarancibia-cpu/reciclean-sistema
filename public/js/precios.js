@@ -705,7 +705,7 @@ async function publicarVersion(){
     setTimeout(()=> generarFichaDespacho(), 500);
     // v84: auto-alimentar Tab E y generar Asistente Comercial
     renderPublico();
-    setTimeout(function(){ generarAsistente(); }, 1000);
+    setTimeout(function(){ generarAsistente(true); }, 1000);
 
   }catch(err){
     console.error('Error en publicarVersion:', err);

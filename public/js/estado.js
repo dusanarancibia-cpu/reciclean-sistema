@@ -204,15 +204,17 @@ function importBackup(){
 // ═══════════════════════════════════════════════════════════
 // GENERAR ASISTENTE COMERCIAL
 // ═══════════════════════════════════════════════════════════
-async function generarAsistente(){
-  // ETAPA 5: Bloquear si hay cambios sin publicar
-  const cr = detectarCambiosReales();
-  const nCambios = Object.keys(cr).length;
-  const nManual = Object.keys(cambios).length;
-  if(nCambios > 0 || nManual > 0){
-    toast('⚠ Publica los cambios pendientes antes de generar el Asistente','warn');
-    goTab('precios', document.querySelector('.nav-tab[onclick*=precios]'));
-    return;
+async function generarAsistente(forzar){
+  // Bloquear si hay cambios sin publicar (salvo si viene de publicarVersion)
+  if(!forzar){
+    const cr = detectarCambiosReales();
+    const nCambios = Object.keys(cr).length;
+    const nManual = Object.keys(cambios).length;
+    if(nCambios > 0 || nManual > 0){
+      toast('⚠ Publica los cambios pendientes antes de generar el Asistente','warn');
+      goTab('precios', document.querySelector('.nav-tab[onclick*=precios]'));
+      return;
+    }
   }
   // Build MATERIALES_DATA por sucursal con precios actuales
   // Usa calc() global (utils.js) que aplica PRECIO_OVERRIDE y getPrecioCompra por sucursal
