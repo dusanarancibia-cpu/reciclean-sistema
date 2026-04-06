@@ -506,25 +506,74 @@ function copiarFichaWA(key){
   navigator.clipboard.writeText(msg).then(function(){toast('Mensaje copiado al portapapeles','ok');});
 }
 function descargarFichaPDF(){
-  var content=document.querySelector('#ficha-modal > div > div:last-child');
-  if(!content) return;
   var fecha=new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'});
   var hora=new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+  var CAT_BADGE={"FIERROS Y LATAS":"FE","LATA CHATARRA":"LATA","COBRES":"CU","BRONCES":"BR","ALUMINIOS":"AL","ACEROS INOXIDABLES":"INOX","CARTÓN Y PAPEL":"PAPEL","VIDRIO":"VID","PLÁSTICOS — PET":"PET","PLÁSTICOS — FILM Y POLIETILENOS":"FILM","PLÁSTICOS — RÍGIDOS":"RIG","PLÁSTICOS — SOPLADOS":"SOPL"};
+  var CAT_COLOR={"FE":"#37474F","LATA":"#546E7A","CU":"#BF360C","BR":"#E65100","AL":"#1565C0","INOX":"#6A1B9A","PAPEL":"#2E7D32","VID":"#00838F","PET":"#AD1457","FILM":"#5E35B1","RIG":"#283593","SOPL":"#0277BD"};
+  function bg(cat){var b=CAT_BADGE[cat]||cat.slice(0,4).toUpperCase();var c=CAT_COLOR[b]||'#555';return '<span style="display:inline-block;background:'+c+';color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;min-width:30px;text-align:center;letter-spacing:.5px;font-family:monospace;-webkit-print-color-adjust:exact;print-color-adjust:exact;">'+b+'</span>';}
+
+  // Recopilar datos
+  var fichas={};var clientesSet={};
+  SUCS.forEach(function(suc){
+    fichas[suc]=[];clientesSet[suc]=new Set();
+    mats.forEach(function(m){
+      var sel=PRECIO_SELECCIONADO[m.id]&&PRECIO_SELECCIONADO[m.id][suc];
+      if(sel&&sel.precio>0){fichas[suc].push({material:m.nombre,cliente:sel.cliente,precio:sel.precio,cat:m.cat});clientesSet[suc].add(sel.cliente);}
+    });
+    fichas[suc].sort(function(a,b){var ca=CAT_ORDER.indexOf(a.cat),cb=CAT_ORDER.indexOf(b.cat);return ca-cb||a.material.localeCompare(b.material,'es');});
+  });
+
+  // Build badges row
+  var allB=["FE","LATA","CU","BR","AL","INOX","PAPEL","VID","PET","FILM","RIG","SOPL"];
+  var badgesRow=allB.map(function(b){return '<span style="display:inline-block;background:'+CAT_COLOR[b]+';color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;font-family:monospace;-webkit-print-color-adjust:exact;print-color-adjust:exact;">'+b+'</span>';}).join(' ');
+
+  var html='';
+  SUCS.forEach(function(suc){
+    var items=fichas[suc];if(!items.length)return;
+    var clientes=[...clientesSet[suc]];
+    var dest=DESTINATARIOS_DESPACHO[suc]||{};
+    var sucLabel=suc==='Puerto Montt'?'P.MONTT':suc.toUpperCase();
+
+    // Sucursal header
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin:20px 0 10px;border-bottom:1px solid #ddd;padding-bottom:6px;">';
+    html+='<div><span style="font-size:13px;font-weight:800;color:#1A7A3C;letter-spacing:.5px;">'+sucLabel+'</span> <span style="font-size:11px;color:#888;margin-left:8px;">'+items.length+' materiales &rarr; '+clientes.length+' clientes</span></div>';
+    html+='<div class="no-print" style="display:flex;gap:6px;"><button onclick="navigator.clipboard.writeText(window._fichaMessages[\''+suc+'\']);alert(\'Copiado\')" style="font-size:10px;padding:3px 10px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;">Copiar WA</button>';
+    if(dest.tel) html+='<a href="https://wa.me/'+dest.tel.replace(/[^0-9]/g,'')+'" target="_blank" style="font-size:10px;padding:3px 10px;border:1px solid #1A7A3C;border-radius:4px;background:#fff;color:#1A7A3C;text-decoration:none;font-weight:600;">'+dest.nombre.split(' ')[0]+'</a>';
+    html+='</div></div>';
+
+    // Cards grid — 3 columns max
+    html+='<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;">';
+    clientes.forEach(function(cli){
+      var mc=items.filter(function(i){return i.cliente===cli;});
+      html+='<div style="min-width:200px;max-width:300px;flex:1;margin-bottom:8px;">';
+      // Client header
+      html+='<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;"><span style="font-size:13px;font-weight:900;color:#1A1A14;letter-spacing:.5px;text-transform:uppercase;">'+cli+'</span><span style="font-size:10px;color:#888;">'+mc.length+' mat.</span></div>';
+      // Material rows
+      mc.forEach(function(it){
+        html+='<div style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:11px;">';
+        html+=bg(it.cat);
+        html+='<span style="flex:1;color:#333;">'+it.material+'</span>';
+        html+='<span style="font-family:monospace;font-size:10px;font-weight:700;color:#333;white-space:nowrap;">$'+it.precio.toLocaleString('es-CL')+'</span>';
+        html+='</div>';
+      });
+      html+='</div>';
+    });
+    html+='</div>';
+  });
+
   var w=window.open('','_blank');
   w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ficha de Despacho '+fecha+'</title><style>'
-    +'@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Roboto+Mono:wght@400;500;700&display=swap");'
     +'*{box-sizing:border-box;margin:0;padding:0;}'
-    +'body{font-family:"Syne",sans-serif;padding:24px;color:#1A1A14;}'
-    +'h1{font-size:18px;font-weight:800;margin-bottom:2px;}'
-    +'.sub{font-size:11px;color:#888;margin-bottom:16px;}'
-    +'.note{font-size:10px;color:#999;text-align:right;margin-bottom:12px;}'
-    +'@media print{body{padding:12px;} .no-print{display:none!important;}}'
+    +'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:28px 32px;color:#1A1A14;font-size:12px;}'
+    +'@media print{body{padding:16px 20px;} .no-print{display:none!important;} @page{margin:12mm 10mm;}}'
     +'</style></head><body>'
-    +'<h1>FICHA DE DESPACHO</h1>'
-    +'<div class="sub">Reciclean + Farex &middot; '+fecha+' '+hora+'</div>'
-    +'<div class="note">Basado en precios seleccionados</div>'
-    +content.innerHTML
-    +'<script>setTimeout(function(){window.print();},400);<\/script>'
+    +'<div style="font-size:22px;font-weight:900;letter-spacing:1px;margin-bottom:2px;">FICHA DE DESPACHO</div>'
+    +'<div style="font-size:11px;color:#888;margin-bottom:14px;">Reciclean + Farex &middot; '+fecha+' '+hora+'</div>'
+    +'<div style="text-align:right;font-size:10px;color:#999;margin-bottom:8px;">Basado en precios seleccionados</div>'
+    +'<div style="margin-bottom:14px;">'+badgesRow+'</div>'
+    +html
+    +'<script>window._fichaMessages='+JSON.stringify(window._fichaMessages||{})+';<\/script>'
+    +'<script>setTimeout(function(){window.print();},500);<\/script>'
     +'</body></html>');
   w.document.close();
 }
