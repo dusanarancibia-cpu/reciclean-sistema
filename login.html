@@ -136,6 +136,12 @@ window.doLogin = async function() {
 
 // Enter key support
 document.addEventListener('keydown', e => { if (e.key === 'Enter') window.doLogin(); });
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>

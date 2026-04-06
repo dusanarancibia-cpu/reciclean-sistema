@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Procedimiento — Publicar Precios</title>
+<style>
+@media print { @page { size: A4; margin: 15mm; } body { padding: 0; } .no-print { display: none; } }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; max-width: 800px; margin: 0 auto; color: #1A1A14; line-height: 1.5; }
+h1 { font-size: 22px; color: #1A7A3C; margin-bottom: 4px; }
+h2 { font-size: 16px; color: #1A1A14; margin: 20px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1A7A3C; }
+.subtitle { font-size: 12px; color: #666; margin-bottom: 20px; }
+.step { display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start; }
+.num { background: #1A7A3C; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.step-text { font-size: 13px; flex: 1; }
+.step-text strong { color: #1A7A3C; }
+.box { background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; padding: 12px 16px; margin: 8px 0 12px; font-size: 12px; }
+.box code { background: #e8e8e8; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 11px; }
+.warn { background: #FDF5E4; border-color: #F0D890; color: #92650A; }
+.ok { background: #E8F5ED; border-color: #B8DFC7; color: #1A7A3C; }
+.logo { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.logo svg { width: 48px; height: 48px; }
+.footer { margin-top: 30px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
+.print-btn { background: #1A7A3C; color: #fff; border: none; padding: 8px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">Imprimir / Guardar PDF</button>
+
+<div class="logo">
+  <svg viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+    <rect width="192" height="192" rx="32" fill="#ffffff" stroke="#ddd" stroke-width="2"/>
+    <path d="M 45 110 Q 55 135 78 148" fill="none" stroke="#E8E020" stroke-width="26" stroke-linecap="round"/>
+    <path d="M 78 148 Q 100 100 152 38" fill="none" stroke="#1A9A3C" stroke-width="26" stroke-linecap="round"/>
+  </svg>
+  <div>
+    <h1>Publicar Precios</h1>
+    <div class="subtitle">Grupo Reciclean + Farex — Procedimiento para actualizar precios</div>
+  </div>
+</div>
+
+<div class="box ok">
+<strong>Resumen del flujo:</strong> Panel Admin (cargar precios) &rarr; Publicar Version &rarr; Supabase (base de datos) &rarr; Asistente Comercial (celulares del equipo)
+</div>
+
+<h2>1. Abrir el Panel Admin</h2>
+
+<div class="step"><div class="num">1</div><div class="step-text">Abre <strong>Google Chrome</strong> en el computador</div></div>
+<div class="step"><div class="num">2</div><div class="step-text">Escribe en la barra: <code>reciclean-sistema.vercel.app</code></div></div>
+<div class="step"><div class="num">3</div><div class="step-text">Ingresa con email <strong>gerencia@gestionrepchile.cl</strong> y clave <strong>2026</strong></div></div>
+
+<h2>2. Cargar precios de clientes (Tab A)</h2>
+
+<div class="step"><div class="num">1</div><div class="step-text">Ve a la pestana <strong>"Fuentes de Precio"</strong> (Tab A)</div></div>
+<div class="step"><div class="num">2</div><div class="step-text">Sube los archivos de precios de los clientes compradores (HUAL, RESIMEX, FPC, ADASME, POLPLAST, etc.)</div></div>
+<div class="step"><div class="num">3</div><div class="step-text">El sistema procesa automaticamente los archivos y llena la tabla de precios por material</div></div>
+
+<div class="box warn">Si un material no aparece en la lista, verifica que el nombre coincida con los alias registrados en el sistema.</div>
+
+<h2>3. Seleccionar precios por sucursal (Tab B)</h2>
+
+<div class="step"><div class="num">1</div><div class="step-text">Ve a la pestana <strong>"Precios Clientes / Alias"</strong> (Tab B)</div></div>
+<div class="step"><div class="num">2</div><div class="step-text">Revisa los precios propuestos para cada material y sucursal</div></div>
+<div class="step"><div class="num">3</div><div class="step-text">Selecciona que precio de cliente usar por cada combinacion material/sucursal</div></div>
+<div class="step"><div class="num">4</div><div class="step-text">Ajusta overrides manuales si es necesario (columna "Override")</div></div>
+
+<h2>4. Configurar margenes y fletes (Tab C)</h2>
+
+<div class="step"><div class="num">1</div><div class="step-text">Ve a la pestana <strong>"Lista de Precios"</strong> (Tab C)</div></div>
+<div class="step"><div class="num">2</div><div class="step-text">Revisa los margenes (%), fletes ($) e IVA por material</div></div>
+<div class="step"><div class="num">3</div><div class="step-text">El sistema calcula automaticamente: <strong>Precio Lista</strong>, <strong>Precio Ejecutivo</strong> y <strong>Precio Maximo</strong></div></div>
+<div class="step"><div class="num">4</div><div class="step-text">Verifica que los precios calculados sean coherentes antes de continuar</div></div>
+
+<h2>5. Guardar borrador</h2>
+
+<div class="step"><div class="num">1</div><div class="step-text">Haz clic en el boton <strong>GRABAR</strong> (arriba a la derecha)</div></div>
+
+<div class="box">Esto guarda el estado actual en tu navegador (IndexedDB + localStorage). No publica nada aun — puedes seguir editando.</div>
+
+<h2>6. Publicar version</h2>
+
+<div class="step"><div class="num">1</div><div class="step-text">Cuando estes conforme con los precios, haz clic en <strong>"Publicar Version"</strong></div></div>
+<div class="step"><div class="num">2</div><div class="step-text">El sistema automaticamente:</div></div>
+
+<div class="box ok">
+&bull; Desactiva la version anterior en Supabase<br>
+&bull; Crea una nueva version activa con fecha y hora<br>
+&bull; Inserta todos los precios nuevos (materiales x sucursales)<br>
+&bull; El Asistente Comercial muestra los precios nuevos <strong>inmediatamente</strong>
+</div>
+
+<h2>7. Verificar en el Asistente</h2>
+
+<div class="step"><div class="num">1</div><div class="step-text">Abre el <strong>Asistente Comercial</strong> en tu celular</div></div>
+<div class="step"><div class="num">2</div><div class="step-text">Si estaba abierto, aparecera un banner verde: <strong>"Precios actualizados"</strong></div></div>
+<div class="step"><div class="num">3</div><div class="step-text">Toca <strong>"Actualizar"</strong> para recargar los precios</div></div>
+<div class="step"><div class="num">4</div><div class="step-text">Verifica que los precios coincidan con lo que publicaste</div></div>
+
+<div class="box warn">
+<strong>Importante:</strong> Solo Gerencia puede publicar precios. El equipo comercial solo ve los precios en el Asistente — no puede modificarlos.
+</div>
+
+<div class="footer">
+  <span>Grupo Reciclean + Farex — Abril 2026</span>
+  <span>Documento interno — No distribuir externamente</span>
+</div>
+
+</body>
+</html>
