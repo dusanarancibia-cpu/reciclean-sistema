@@ -28,6 +28,7 @@ function goTab(id, btn) {
   if(id==='precios')   renderPrecios();
   if(id==='historial') renderHistorial();
   if(id==='publico')   renderPublico();
+  if(id==='usuarios')  renderUsuarios();
 }
 
 

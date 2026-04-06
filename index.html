@@ -399,6 +399,9 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
     <button class="nav-tab" onclick="goTab('publico',this)">
       <span class="ltr">E</span> Tablas
     </button>
+    <button class="nav-tab" onclick="goTab('usuarios',this)">
+      <span class="ltr">F</span> Usuarios
+    </button>
   </div>
   <div class="nav-right">
     <select class="nav-suc" id="nav-suc" onchange="onSucChange()">
@@ -1020,6 +1023,87 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
 </div>
 </div>
 
+<!-- ── TAB F · USUARIOS ── -->
+<div class="panel" id="panel-usuarios">
+  <div class="scroll">
+    <div class="ph">
+      <div>
+        <div class="ph-title">Usuarios Autorizados</div>
+        <div class="ph-sub">Gestión de accesos al sistema</div>
+      </div>
+      <div class="ph-actions">
+        <button class="btn p" onclick="abrirModalUsuario()">+ Nuevo Usuario</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tw" style="overflow-x:auto">
+        <table class="t" id="usr-table">
+          <thead><tr>
+            <th>Nombre</th><th>Teléfono</th><th>Email</th>
+            <th>PIN</th><th>Rol</th><th>Panel</th>
+            <th>Asistente</th><th>Activo</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="usr-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL · USUARIO ── -->
+<div id="usr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:600;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:var(--r3);width:min(500px,100%);max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.25);">
+    <div style="background:#1A1A14;padding:14px 20px;border-radius:var(--r3) var(--r3) 0 0;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:14px;font-weight:700;color:#fff;" id="usr-modal-title">Nuevo Usuario</div>
+      <button onclick="cerrarModalUsuario()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">&times;</button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+      <input type="hidden" id="usr-edit-id">
+      <div>
+        <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;">Nombre</label>
+        <input class="ctrl" id="usr-nombre" placeholder="Nombre completo" style="width:100%;margin-top:4px;">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;">Teléfono WhatsApp</label>
+          <input class="ctrl" id="usr-telefono" placeholder="+56912345678" type="tel" style="width:100%;margin-top:4px;">
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;">PIN</label>
+          <input class="ctrl" id="usr-pin" placeholder="1234" maxlength="8" style="width:100%;margin-top:4px;">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;">Email</label>
+        <input class="ctrl" id="usr-email" placeholder="correo@empresa.cl" type="email" style="width:100%;margin-top:4px;">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        <div>
+          <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;">Rol</label>
+          <select class="ctrl" id="usr-rol" style="width:100%;margin-top:4px;">
+            <option value="ejecutivo">Ejecutivo</option>
+            <option value="visor">Visor</option>
+            <option value="editor">Editor</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:14px;">
+          <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;">Panel</label>
+          <input type="checkbox" id="usr-acceso-panel">
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:14px;">
+          <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;">Asistente</label>
+          <input type="checkbox" id="usr-acceso-asistente" checked>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+        <button class="btn" onclick="cerrarModalUsuario()">Cancelar</button>
+        <button class="btn p" onclick="guardarUsuario()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 
@@ -1036,6 +1120,7 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
 <script src="js/ia.js"></script>
 <script src="js/historial.js"></script>
 <script src="js/correccion.js"></script>
+<script src="js/usuarios.js"></script>
 <script src="js/estado.js"></script>
 
 <!-- ════════════════════════════════════════════════════════
