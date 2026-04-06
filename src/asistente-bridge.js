@@ -220,7 +220,39 @@ async function initSupabaseData() {
   // Reemplazar cloudStorage con Supabase
   window.cloudStorage = supabaseCloudStorage;
   console.log('☁️ Cloud storage conectado a Supabase');
+
+  // Suscribirse a cambios de precios en tiempo real
+  supabase.channel('precios-updates')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'precios_version' }, payload => {
+      console.log('🔔 Nueva versión de precios detectada:', payload.new);
+      // Mostrar banner de actualización
+      showPriceUpdateBanner(payload.new.label || 'nueva versión');
+    })
+    .subscribe();
 }
+
+function showPriceUpdateBanner(label) {
+  // Remover banner anterior si existe
+  var old = document.getElementById('price-update-banner');
+  if (old) old.remove();
+
+  var banner = document.createElement('div');
+  banner.id = 'price-update-banner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1A7A3C,#27AE60);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(0,0,0,.3);font-family:system-ui,sans-serif;animation:slideDown .3s ease;';
+  banner.innerHTML = '<div style="display:flex;align-items:center;gap:10px;">'
+    + '<div style="font-size:20px;">🔔</div>'
+    + '<div><div style="font-weight:700;font-size:13px;">Precios actualizados</div>'
+    + '<div style="font-size:11px;opacity:.8;">Versión ' + label + ' — toca para recargar</div></div></div>'
+    + '<button onclick="location.reload()" style="background:#fff;color:#1A7A3C;border:none;padding:6px 14px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;">Actualizar</button>';
+  document.body.prepend(banner);
+
+  // Vibrar si el dispositivo lo soporta
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+  // Auto-ocultar después de 30 segundos
+  setTimeout(function() {
+    if (banner.parentNode) banner.style.opacity = '0.7';
+  }, 30000);
 
 // ── Auto-init ──
 window.addEventListener('DOMContentLoaded', async () => {
