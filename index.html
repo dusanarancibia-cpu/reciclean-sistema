@@ -2771,8 +2771,8 @@ function renderPrecios(){
       if(cr[m.id]){var fs=Object.values(cr[m.id].sucs)[0];if(fs)mainDir=fs.delta>0?'up':fs.delta<0?'dn':'';}
       var rowBg='';var rowBrd='';
       if(isChg){rowBg=mainDir==='up'?'background:rgba(26,122,60,.04);':'background:rgba(192,57,43,.04);';rowBrd=mainDir==='up'?'border-left:3px solid var(--green);':'border-left:3px solid var(--red);';}
-      if(estado===true){rowBg='background:rgba(26,122,60,.08);';rowBrd='border-left:3px solid var(--green);';}
-      if(estado===false){rowBg='background:rgba(192,57,43,.08);';rowBrd='border-left:3px solid var(--red);';}
+      if(estado===true){rowBg='background:rgba(26,122,60,.13);';rowBrd='border-left:5px solid #1A7A3C;'}
+      if(estado===false){rowBg='background:rgba(192,57,43,.10);';rowBrd='border-left:5px solid #C0392B;'}
 
       html+='<tr style="'+rowBg+rowBrd+'">';
       html+='<td><span style="font-family:monospace;font-size:8px;color:var(--text4);">'+m.id+'</span></td>';
@@ -3440,19 +3440,19 @@ async function publicarVersion(){
     const m = mats.find(x=>x.id===matId);
     if(!m) return;
     // Consolidar el mejor precio de compra desde PRECIO_SELECCIONADO
-    // Para cada sucursal, si hay selección, actualizar m.compra con el más alto
     let mejorCompra = m.compra;
     SUCS.forEach(suc=>{
       const ps = PRECIO_SELECCIONADO[matId]?.[suc];
       if(ps?.precio && ps.precio > mejorCompra) mejorCompra = ps.precio;
     });
-    if(mejorCompra !== m.compra){
-      m.compra = mejorCompra;
-      if(!cambios[matId]) cambios[matId]={};
-      cambios[matId].compra = mejorCompra;
+    if(mejorCompra !== m.compra) m.compra = mejorCompra;
+    // Siempre marcar como cambio publicable si estaba en cr (diferencia vs MATS_LOCAL)
+    if(cr[matId]){
+      if(!cambios[matId]) cambios[matId] = {};
+      cambios[matId].compra = m.compra;
     }
   });
-  
+
   // Revertir cambios rechazados
   Object.keys(cr).filter(id=>_aprobaciones[parseInt(id)]===false).forEach(id=>{
     const matId = parseInt(id);
@@ -3462,10 +3462,10 @@ async function publicarVersion(){
     if(idx>=0) mats[idx] = {...orig};
     delete cambios[matId];
   });
-  
+
   const n = Object.keys(cambios).length;
   if(!n){
-    toast('Sin cambios que publicar después de filtrar','warn');
+    toast('⚠ Sin cambios detectados vs. versión publicada','warn');
     return;
   }
 
@@ -3531,7 +3531,8 @@ async function publicarVersion(){
     }catch(e){}
 
     document.getElementById('ver-label').textContent=label;
-    document.getElementById('ver-sub').textContent= savedOk?'Guardado localmente — sincronizando Supabase...':'Solo localStorage';
+    document.getElementById('ver-sub').textContent='✓ Publicado — listo para GRABAR';
+    document.getElementById('ver-sub').style.cssText='color:#1A7A3C;font-weight:700;font-size:11px;';
     // El toast de "servidor no disponible" se omite — Supabase es el servidor real ahora
     cambios={};
     _aprobaciones={};
