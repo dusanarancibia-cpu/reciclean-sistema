@@ -3553,6 +3553,8 @@ async function publicarVersion(){
       ? `✓ Versión "${label}" publicada en BD`
       : `✓ Versión "${label}" guardada localmente (${items.length} materiales)`,'ok');
 
+    // Sincronizar con Supabase para que el Asistente vea los precios
+    if(window._publicarASupabase) window._publicarASupabase();
     // Auto-generar ficha de despacho al publicar
     setTimeout(()=> generarFichaDespacho(), 500);
     // v84: auto-alimentar Tab E y generar Asistente Comercial

@@ -84,6 +84,68 @@ window._doLogin = async function() {
   }
 };
 
+// ── Publicar precios a Supabase (se llama después de GRABAR) ──
+window._publicarASupabase = async function() {
+  if (!window._supabaseReady) { console.warn('Supabase no listo'); return; }
+  try {
+    const fecha = new Date().toISOString();
+    const label = new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'});
+
+    // 1. Desactivar versiones anteriores
+    await supabase.from('precios_version').update({ es_activa: false }).eq('es_activa', true);
+
+    // 2. Crear nueva versión
+    const { data: ver, error: verErr } = await supabase
+      .from('precios_version')
+      .insert({ fecha, label, descripcion: 'Publicado desde Panel Admin', es_activa: true })
+      .select('id')
+      .single();
+    if (verErr) throw verErr;
+
+    // 3. Insertar precios por material x sucursal
+    const SUCS_IDS = { 'Cerrillos': 1, 'Maipú': 2, 'Talca': 3, 'Puerto Montt': 4 };
+    const rows = [];
+    window.mats.forEach(m => {
+      Object.entries(SUCS_IDS).forEach(([suc, sucId]) => {
+        const f = (window.SUC_FACTOR && window.SUC_FACTOR[suc]) || 1;
+        const cv = window.calc(m, f, suc);
+        rows.push({
+          version_id: ver.id,
+          material_id: m.id,
+          sucursal_id: sucId,
+          precio_compra: cv.compra || 0,
+          precio_lista: cv.lista || 0,
+          precio_ejecutivo: cv.ejec || 0,
+          precio_maximo: cv.max || 0,
+          flete_aplicado: cv.flete || 0,
+          margen_aplicado: cv.margen || 0,
+          iva_aplicado: m.iva || false
+        });
+      });
+    });
+
+    // Insertar en bloques de 100
+    for (let i = 0; i < rows.length; i += 100) {
+      const chunk = rows.slice(i, i + 100);
+      const { error } = await supabase.from('precios').insert(chunk);
+      if (error) throw error;
+    }
+
+    // 4. Guardar CLIENTES_PRECIOS en Supabase
+    if (window.CLIENTES_PRECIOS && Object.keys(window.CLIENTES_PRECIOS).length > 0) {
+      for (const [clienteName, precios] of Object.entries(window.CLIENTES_PRECIOS)) {
+        await savePreciosClienteToSupabase(clienteName, precios);
+      }
+    }
+
+    console.log(`✅ Publicado en Supabase: versión ${ver.id}, ${rows.length} precios`);
+    if (typeof window.toast === 'function') window.toast('✅ Precios sincronizados con Supabase — Asistente actualizado', 'ok');
+  } catch (e) {
+    console.error('Error publicando a Supabase:', e);
+    if (typeof window.toast === 'function') window.toast('⚠ Error sincronizando con Supabase: ' + e.message, 'warn');
+  }
+};
+
 // ── Override API status ──
 function setSupabaseStatus(ok) {
   window.apiOnline = ok;
