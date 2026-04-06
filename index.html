@@ -3531,9 +3531,8 @@ async function publicarVersion(){
     }catch(e){}
 
     document.getElementById('ver-label').textContent=label;
-    document.getElementById('ver-sub').textContent=
-      res?.ok?'Guardado en servidor + local': savedOk?'Guardado local (servidor no disponible)':'Solo localStorage';
-    if(!res?.ok) toast('Servidor no disponible. Cambios guardados localmente.','warn');
+    document.getElementById('ver-sub').textContent= savedOk?'Guardado localmente — sincronizando Supabase...':'Solo localStorage';
+    // El toast de "servidor no disponible" se omite — Supabase es el servidor real ahora
     cambios={};
     _aprobaciones={};
 

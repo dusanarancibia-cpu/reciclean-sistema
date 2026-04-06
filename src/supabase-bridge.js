@@ -139,7 +139,10 @@ window._publicarASupabase = async function() {
     }
 
     console.log(`✅ Publicado en Supabase: versión ${ver.id}, ${rows.length} precios`);
-    if (typeof window.toast === 'function') window.toast('✅ Precios sincronizados con Supabase — Asistente actualizado', 'ok');
+    // Actualizar texto de estado en el panel
+    const verSub = document.getElementById('ver-sub');
+    if (verSub) verSub.textContent = '✓ Sincronizado con Supabase';
+    if (typeof window.toast === 'function') window.toast('✅ Precios publicados — Asistente actualizado en tiempo real', 'ok');
   } catch (e) {
     console.error('Error publicando a Supabase:', e);
     if (typeof window.toast === 'function') window.toast('⚠ Error sincronizando con Supabase: ' + e.message, 'warn');
