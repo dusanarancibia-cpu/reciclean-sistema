@@ -215,36 +215,20 @@ async function generarAsistente(){
     return;
   }
   // Build MATERIALES_DATA por sucursal con precios actuales
+  // Usa calc() global (utils.js) que aplica PRECIO_OVERRIDE y getPrecioCompra por sucursal
   const SUCS_LIST = ['Cerrillos','Maipú','Talca','Puerto Montt'];
-  const SF = {Cerrillos:1, Maipú:1, Talca:0.88, 'Puerto Montt':0.82};
   const fecha  = new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'});
   const tag    = new Date().toISOString().slice(0,10).replace(/-/g,'').slice(2);
 
-  function calcSuc(m, f, suc){
-    if(!m.compra) return {lista:0,ejec:0,max:0,flete:0,margen:0};
-    var si  = Math.max(0, SUCS.indexOf(suc));
-    var spread = parseFloat(document.getElementById('cfg-spread-'+si)?.value||15)/100;
-    var iva    = parseFloat(document.getElementById('cfg-iva-'+si)?.value||19)/100;
-    var fl = (FLETE_POR_SUC[m.id]&&FLETE_POR_SUC[m.id][suc]!==undefined)?FLETE_POR_SUC[m.id][suc]:(m.flete||0);
-    var mg = (MARGEN_POR_SUC[m.id]&&MARGEN_POR_SUC[m.id][suc]!==undefined)?MARGEN_POR_SUC[m.id][suc]:m.margen;
-    var mc = (MC_EJEC_POR_SUC[m.id]&&MC_EJEC_POR_SUC[m.id][suc]!==undefined)?MC_EJEC_POR_SUC[m.id][suc]:spread;
-    var neto = m.compra - fl;
-    var maxR = neto*(1-mg)*(m.iva?1-iva:1)*f;
-    var pmax = Math.floor(maxR/10)*10;
-    var plista = Math.floor(pmax*(1-mc)/10)*10;
-    var pejec = Math.floor((plista+pmax)/2/10)*10;
-    return {lista:plista,ejec:pejec,max:pmax,flete:fl,margen:mg};
-  }
-
   const DATA = {};
   SUCS_LIST.forEach(suc=>{
-    const f = SF[suc]||1;
+    const f = SUC_FACTOR[suc]||1;
     DATA[suc] = mats.map(m=>{
-      const c = calcSuc(m, f, suc);
+      const c = calc(m, f, suc);
       return {
         id:m.id, categoria:m.cat, material:m.nombre,
         reciclean:!!m.reciclean, farex:!!m.farex,
-        precioCompra:m.compra, precioLista:c.lista,
+        precioCompra:c.compra, precioLista:c.lista,
         precioEjecutivo:c.ejec, precioMaximo:c.max,
         metaKgTotal:m.meta||0, metaCategoriaTotal:0,
         ivaTret:!!m.iva, flete:c.flete, margen:c.margen
@@ -1083,6 +1067,150 @@ async function diagLimpiarTodo(){
   toast('✓ '+cleaned+' problemas limpiados','ok');
 }
 
+
+// ═══════════════════════════════════════════════════════════
+// VERIFICAR PRECIOS — Panel vs Asistente (Supabase snapshot)
+// ═══════════════════════════════════════════════════════════
+async function verificarPrecios(){
+  if(!_supabase){
+    toast('⚠ Supabase no disponible — verifica conexión','err');
+    return;
+  }
+  const btn = document.getElementById('btn-verificar');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Verificando...'; }
+  try {
+    const { data: rows, error } = await _supabase
+      .from('asistente_snapshot')
+      .select('datos,version_label,actualizado_en')
+      .eq('id', 1)
+      .single();
+    if(error || !rows){
+      toast('⚠ Sin snapshot en Supabase — publica una versión primero','warn');
+      return;
+    }
+    const snap = rows.datos;
+    const snapLabel = rows.version_label || '?';
+    const snapFecha = rows.actualizado_en
+      ? new Date(rows.actualizado_en).toLocaleString('es-CL') : '?';
+
+    // Calcular precios actuales del panel usando calc() (incluye PRECIO_OVERRIDE)
+    const SUCS_LIST = ['Cerrillos','Maipú','Talca','Puerto Montt'];
+    const panelData = {};
+    SUCS_LIST.forEach(suc=>{
+      const f = SUC_FACTOR[suc]||1;
+      panelData[suc] = mats.map(m=>{
+        const c = calc(m, f, suc);
+        return { id:m.id, nombre:m.nombre, categoria:m.cat,
+          precioLista:c.lista, precioEjecutivo:c.ejec, precioMaximo:c.max };
+      });
+    });
+
+    // Comparar panel vs snapshot
+    const diffs = [];
+    SUCS_LIST.forEach(suc=>{
+      const panelMats = panelData[suc] || [];
+      const snapMats  = snap[suc] || [];
+      const snapById  = {};
+      snapMats.forEach(m=>{ snapById[m.id] = m; });
+      panelMats.forEach(pm=>{
+        const sm = snapById[pm.id];
+        if(!sm) return;
+        if(pm.precioLista===0 && (!sm.precioLista || sm.precioLista===0)) return;
+        if(pm.precioLista!==sm.precioLista || pm.precioEjecutivo!==sm.precioEjecutivo || pm.precioMaximo!==sm.precioMaximo){
+          diffs.push({ suc, id:pm.id, nombre:pm.nombre, categoria:pm.categoria,
+            panel:{ lista:pm.precioLista, ejec:pm.precioEjecutivo, max:pm.precioMaximo },
+            snap: { lista:sm.precioLista,  ejec:sm.precioEjecutivo,  max:sm.precioMaximo }
+          });
+        }
+      });
+    });
+    _mostrarResultadoVerificacion(diffs, snapLabel, snapFecha);
+  } catch(err){
+    console.error('verificarPrecios:', err);
+    toast('⚠ Error al verificar: '+err.message,'err');
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='🔍 Verificar vs Asistente'; }
+  }
+}
+
+function _mostrarResultadoVerificacion(diffs, snapLabel, snapFecha){
+  const existing = document.getElementById('modal-verificar');
+  if(existing) existing.remove();
+  const nDiff = diffs.length;
+  const ok = nDiff === 0;
+
+  // Agrupar por sucursal
+  const bySuc = {};
+  diffs.forEach(d=>{ if(!bySuc[d.suc]) bySuc[d.suc]=[]; bySuc[d.suc].push(d); });
+
+  const bannerBg     = ok ? '#E8F5ED' : '#FDF5E4';
+  const bannerBorder = ok ? '#B8DFC7' : '#F0D890';
+  const bannerColor  = ok ? '#1A7A3C' : '#92650A';
+  const bannerMsg    = ok
+    ? 'Panel y Asistente están sincronizados'
+    : `${nDiff} precio${nDiff>1?'s difieren':' difiere'} entre Panel y Asistente`;
+
+  let body = `<div style="background:${bannerBg};border:1.5px solid ${bannerBorder};border-radius:8px;padding:12px 16px;margin-bottom:16px;">
+    <div style="font-size:14px;font-weight:700;color:${bannerColor};">${ok?'✓':'⚠'} ${bannerMsg}</div>
+    <div style="font-size:11px;color:#777;margin-top:4px;">Snapshot publicado: v${snapLabel} · ${snapFecha}</div>
+  </div>`;
+
+  if(ok){
+    body += '<div style="text-align:center;padding:24px 20px;color:var(--text3);font-size:13px;">Los precios del panel coinciden exactamente con los que ve el Asistente.</div>';
+  } else {
+    Object.keys(bySuc).forEach(suc=>{
+      const rows = bySuc[suc];
+      body += `<div style="margin-bottom:16px;">
+        <div style="font-family:'Roboto Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">${suc} · ${rows.length} diferencia${rows.length>1?'s':''}</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px;">
+          <thead><tr style="background:var(--bg3);">
+            <th style="text-align:left;padding:5px 8px;font-weight:600;color:var(--text3);font-size:9px;">MATERIAL</th>
+            <th style="text-align:right;padding:5px 6px;font-weight:600;color:var(--amber);font-size:9px;">PANEL Lista</th>
+            <th style="text-align:right;padding:5px 6px;font-weight:600;color:var(--red);font-size:9px;">ASIST Lista</th>
+            <th style="text-align:right;padding:5px 6px;font-weight:600;color:var(--amber);font-size:9px;">PANEL Ejec</th>
+            <th style="text-align:right;padding:5px 6px;font-weight:600;color:var(--red);font-size:9px;">ASIST Ejec</th>
+          </tr></thead><tbody>`;
+      rows.forEach((d,i)=>{
+        const rowBg = i%2===0?'#fff':'var(--bg3)';
+        const lD = d.panel.lista!==d.snap.lista;
+        const eD = d.panel.ejec!==d.snap.ejec;
+        const fmtV = v => v>0?'$'+v.toLocaleString('es-CL'):'—';
+        body += `<tr style="background:${rowBg};">
+          <td style="padding:5px 8px;font-size:11px;">${d.nombre}<div style="font-size:9px;color:var(--text4);">${d.categoria}</div></td>
+          <td style="padding:5px 6px;text-align:right;font-family:'Roboto Mono',monospace;color:var(--amber);font-weight:700;">${fmtV(d.panel.lista)}</td>
+          <td style="padding:5px 6px;text-align:right;font-family:'Roboto Mono',monospace;color:${lD?'var(--red)':'var(--text3)'};${lD?'text-decoration:line-through;':''}">${fmtV(d.snap.lista)}</td>
+          <td style="padding:5px 6px;text-align:right;font-family:'Roboto Mono',monospace;font-size:10px;color:var(--amber);font-weight:${eD?700:400};">${fmtV(d.panel.ejec)}</td>
+          <td style="padding:5px 6px;text-align:right;font-family:'Roboto Mono',monospace;font-size:10px;color:${eD?'var(--red)':'var(--text3)'};${eD?'text-decoration:line-through;':''}">${fmtV(d.snap.ejec)}</td>
+        </tr>`;
+      });
+      body += '</tbody></table></div>';
+    });
+    body += `<div style="background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:6px;padding:10px 14px;font-size:11px;color:var(--blue);margin-top:4px;">
+      💡 Para sincronizar: Tab C → acepta cambios → Publicar versión → el Asistente se actualiza automáticamente.
+    </div>`;
+  }
+
+  const modal = document.createElement('div');
+  modal.id = 'modal-verificar';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `
+    <div style="background:var(--bg2);border-radius:12px;width:100%;max-width:820px;max-height:82vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+      <div style="padding:16px 20px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <div>
+          <div style="font-size:14px;font-weight:700;">Verificación de Precios · Panel vs Asistente</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">Compara precios del panel con el snapshot publicado en Supabase</div>
+        </div>
+        <button onclick="document.getElementById('modal-verificar').remove()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;">✕</button>
+      </div>
+      <div style="padding:20px;overflow-y:auto;flex:1;">${body}</div>
+      <div style="padding:12px 20px;border-top:1.5px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;">
+        ${!ok?`<button class="btn p" onclick="document.getElementById('modal-verificar').remove();publicarVersion()">↑ Publicar ahora</button>`:''}
+        <button class="btn" onclick="document.getElementById('modal-verificar').remove()">Cerrar</button>
+      </div>
+    </div>`;
+  modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
 
 // INIT
 // ═══════════════════════════════════════════════════════════

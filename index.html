@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin · Reciclean-Farex v88</title>
+<title>Admin · Reciclean-Farex v89</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap');
 :root{
@@ -381,7 +381,7 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
 <nav class="nav">
   <div class="nav-brand">
     <div class="nav-logo">Reciclean · Farex</div>
-    <div class="nav-sub">Admin Panel v88</div>
+    <div class="nav-sub">Admin Panel v89</div>
   </div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="goTab('carga',this)">
@@ -398,9 +398,6 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
     </button>
     <button class="nav-tab" onclick="goTab('publico',this)">
       <span class="ltr">E</span> Tablas
-    </button>
-    <button class="nav-tab" onclick="goTab('usuarios',this)">
-      <span class="ltr">F</span> Usuarios
     </button>
   </div>
   <div class="nav-right">
@@ -426,7 +423,7 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
           🔧 <span>Diagnóstico</span></div>
         <div style="padding:6px 14px;font-size:9px;color:var(--text4);display:flex;align-items:center;justify-content:space-between;">
           <span id="db-status">● local</span>
-          <span>v88</span>
+          <span>v89</span>
           <span id="draft-saved-at"></span>
         </div>
       </div>
@@ -720,8 +717,6 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
     </div><!-- end padding -->
   </div>
 </div>
-<!-- ════════════════════════════════════════════════════════
-     C · PRECIOS & MÁRGENES
 ════════════════════════════════════════════════════════ -->
 <div class="panel" id="panel-precios">
 <div class="scroll">
@@ -738,6 +733,7 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
       <button class="btn err" id="btn-rechazar-todos" style="display:none;" onclick="rechazarTodos()">✕ Rechazar todos</button>
       <button class="btn p" id="btn-pub" style="display:none;" onclick="publicarVersion()">✓ Publicar version</button>
       <button class="btn" id="btn-desc" style="display:none;" onclick="descartarCambios()">↺ Descartar</button>
+      <button class="btn" id="btn-verificar" onclick="verificarPrecios()" title="Compara precios del panel con el snapshot que ve el Asistente en Supabase">🔍 Verificar vs Asistente</button>
     </div>
   </div>
 
@@ -797,7 +793,6 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
   </div>
 </div>
 </div>
-<!-- ════════════════════════════════════════════════════════
      C · CARGA IA
 ════════════════════════════════════════════════════════ -->
 <div class="panel" id="panel-carga">
@@ -1026,91 +1021,10 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
 </div>
 </div>
 
-<!-- ── TAB F · USUARIOS ── -->
-<div class="panel" id="panel-usuarios">
-  <div class="scroll">
-    <div class="ph">
-      <div>
-        <div class="ph-title">Usuarios Autorizados</div>
-        <div class="ph-sub">Gestión de accesos al sistema</div>
-      </div>
-      <div class="ph-actions">
-        <button class="btn p" onclick="abrirModalUsuario()">+ Nuevo Usuario</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="tw" style="overflow-x:auto">
-        <table class="t" id="usr-table">
-          <thead><tr>
-            <th>Nombre</th><th>Teléfono</th><th>Email</th>
-            <th>PIN</th><th>Rol</th><th>Panel</th>
-            <th>Asistente</th><th>Activo</th><th>Acciones</th>
-          </tr></thead>
-          <tbody id="usr-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ── MODAL · USUARIO ── -->
-<div id="usr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:600;align-items:center;justify-content:center;padding:16px;">
-  <div style="background:#fff;border-radius:var(--r3);width:min(500px,100%);max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.25);">
-    <div style="background:#1A1A14;padding:14px 20px;border-radius:var(--r3) var(--r3) 0 0;display:flex;align-items:center;justify-content:space-between;">
-      <div style="font-size:14px;font-weight:700;color:#fff;" id="usr-modal-title">Nuevo Usuario</div>
-      <button onclick="cerrarModalUsuario()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">&times;</button>
-    </div>
-    <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
-      <input type="hidden" id="usr-edit-id">
-      <div>
-        <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;">Nombre</label>
-        <input class="ctrl" id="usr-nombre" placeholder="Nombre completo" style="width:100%;margin-top:4px;">
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div>
-          <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;">Teléfono WhatsApp</label>
-          <input class="ctrl" id="usr-telefono" placeholder="+56912345678" type="tel" style="width:100%;margin-top:4px;">
-        </div>
-        <div>
-          <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;">PIN</label>
-          <input class="ctrl" id="usr-pin" placeholder="1234" maxlength="8" style="width:100%;margin-top:4px;">
-        </div>
-      </div>
-      <div>
-        <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;">Email</label>
-        <input class="ctrl" id="usr-email" placeholder="correo@empresa.cl" type="email" style="width:100%;margin-top:4px;">
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
-        <div>
-          <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;">Rol</label>
-          <select class="ctrl" id="usr-rol" style="width:100%;margin-top:4px;">
-            <option value="ejecutivo">Ejecutivo</option>
-            <option value="visor">Visor</option>
-            <option value="editor">Editor</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:14px;">
-          <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;">Panel</label>
-          <input type="checkbox" id="usr-acceso-panel">
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:14px;">
-          <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.5px;">Asistente</label>
-          <input type="checkbox" id="usr-acceso-asistente" checked>
-        </div>
-      </div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
-        <button class="btn" onclick="cerrarModalUsuario()">Cancelar</button>
-        <button class="btn p" onclick="guardarUsuario()">Guardar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 
-<!-- ═══════════════════════════════════════════════════════════
+<\!-- ═══════════════════════════════════════════════════════════
      MÓDULOS JS
 ══════════════════════════════════════════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -1123,7 +1037,6 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
 <script src="js/ia.js"></script>
 <script src="js/historial.js"></script>
 <script src="js/correccion.js"></script>
-<script src="js/usuarios.js"></script>
 <script src="js/estado.js"></script>
 
 <!-- ════════════════════════════════════════════════════════
