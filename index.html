@@ -1210,7 +1210,7 @@ function calc(m, factor=1, suc=null) {
     if(pmax<plista) pmax=plista;
     pejec = Math.floor((plista+pmax)/2/10)*10;
   }
-  var pctE = (suc && COMISION_EJEC_POR_SUC[m.id] && COMISION_EJEC_POR_SUC[m.id][suc]!==undefined) ? COMISION_EJEC_POR_SUC[m.id][suc] : 0;
+  var pctE = (suc && COMISION_EJEC_POR_SUC[m.id] && COMISION_EJEC_POR_SUC[m.id][suc]!==undefined) ? COMISION_EJEC_POR_SUC[m.id][suc] : 0.0025;
   var utilidadLista = plista>0 ? plista - compra : 0;
   var comisionEjec = Math.round(utilidadLista * pctE);
   return {lista:plista, ejec:pejec, max:pmax, compra:compra, neto:neto, sinMargen:sinMargen, flete:flete, margen:margen, mcSpread:mcSpread, pctE:pctE, comisionEjec:comisionEjec};
@@ -2894,14 +2894,54 @@ function startEdSuc(matId, field, suc, el){
   var current;
   if(field==='flete') current = (storage[matId]&&storage[matId][suc]!==undefined)?storage[matId][suc]:(m.flete||0);
   else if(field==='margen') current = (storage[matId]&&storage[matId][suc]!==undefined)?(storage[matId][suc]*100).toFixed(1):(m.margen*100).toFixed(1);
-  else if(field==='ce') current = (storage[matId]&&storage[matId][suc]!==undefined)?(storage[matId][suc]*100).toFixed(2):'0.00';
+  else if(field==='ce') current = (storage[matId]&&storage[matId][suc]!==undefined)?(storage[matId][suc]*100).toFixed(2):'0.25';
   else current = (storage[matId]&&storage[matId][suc]!==undefined)?(storage[matId][suc]*100).toFixed(1):(parseFloat(document.getElementById('cfg-spread')?.value||15)).toFixed(1);
+  var step = field==='ce'?'0.01':field==='flete'?'1':'0.5';
   var inp = document.createElement('input');
-  inp.type='number'; inp.className='ci'; inp.value=current;
-  inp.style.cssText='width:45px;font-size:9px;padding:1px 3px;';
+  inp.type='number'; inp.className='ci'; inp.value=current; inp.step=step;
+  inp.style.cssText='width:50px;font-size:9px;padding:2px 3px;';
+  // Recalculo en tiempo real al escribir o usar flechas
+  inp.oninput=function(){liveRecalcSuc(matId,field,suc,inp.value);};
   inp.onblur=function(){commitEdSuc(matId,field,suc,inp.value);};
-  inp.onkeydown=function(e){if(e.key==='Enter')commitEdSuc(matId,field,suc,inp.value);if(e.key==='Escape')renderPrecios();};
+  inp.onkeydown=function(e){if(e.key==='Enter'){inp.blur();}if(e.key==='Escape')renderPrecios();};
   el.replaceWith(inp); inp.focus(); inp.select();
+}
+// Recalculo visual en tiempo real sin guardar
+function liveRecalcSuc(matId, field, suc, raw){
+  var v = parseFloat(raw);
+  if(isNaN(v)) return;
+  var m = mats.find(function(x){return x.id===matId;});
+  if(!m) return;
+  // Aplicar temporalmente
+  var tempStorage = field==='flete'?FLETE_POR_SUC:field==='margen'?MARGEN_POR_SUC:field==='ce'?COMISION_EJEC_POR_SUC:MC_EJEC_POR_SUC;
+  if(!tempStorage[matId]) tempStorage[matId]={};
+  var oldVal = tempStorage[matId][suc];
+  if(field==='flete') tempStorage[matId][suc]=v;
+  else tempStorage[matId][suc]=v/100;
+  // Recalcular
+  var f=SUC_FACTOR[suc]||1;
+  var cNew=calc(m,f,suc);
+  // Buscar las celdas de Lista/Ejec/Max en la misma fila
+  var row = document.querySelector('input.ci:focus')?.closest('tr');
+  if(!row) return;
+  var cells = row.querySelectorAll('td');
+  // Encontrar el grupo de celdas de esta sucursal
+  var sucIdx = SUCS.indexOf(suc);
+  if(sucIdx<0) return;
+  // Cada sucursal tiene 9 columnas, empezando desde col 3
+  var baseCol = 3 + sucIdx*9;
+  // Col +5=Anterior, +6=Lista, +7=Ejec, +8=Max
+  if(cells[baseCol+6]){
+    var listaEl=cells[baseCol+6].querySelector('span');
+    if(listaEl) listaEl.innerHTML=fmt(cNew.lista);
+  }
+  if(cells[baseCol+7]) cells[baseCol+7].innerHTML='<span style="font-size:9px;color:var(--text2);">'+fmt(cNew.ejec)+'</span>';
+  if(cells[baseCol+8]) cells[baseCol+8].innerHTML='<span style="font-size:9px;color:var(--text2);">'+fmt(cNew.max)+'</span>';
+  // %E comision
+  if(field==='ce' && cells[baseCol+4]){
+    var comVal = cNew.comisionEjec;
+    // No actualizar el input, solo la comision debajo
+  }
 }
 async function commitEdSuc(matId, field, suc, raw){
   var v = parseFloat(raw);
