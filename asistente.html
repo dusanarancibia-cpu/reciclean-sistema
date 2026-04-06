@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Asistente Comercial v24 · Reciclean-Farex</title>
+<title>Asistente Comercial v25 · Reciclean-Farex</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1A1A14">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -122,7 +122,7 @@ select.neg-input option{background:#1A2D3E;color:#fff}
     <div>
       <div class="brand-sub">Grupo Reciclean · Farex</div>
       <div class="brand-title">Asistente Comercial v23</div>
-      <div style="font-size:9px;color:#4FC3F7;margin-top:2px;font-weight:700;letter-spacing:1px">v23 · PRECIOS v9 · 4 SUCURSALES · <span id="suc-mat-count">75 MATERIALES</span></div>
+      <div style="font-size:9px;color:#4FC3F7;margin-top:2px;font-weight:700;letter-spacing:1px">v25 · SUPABASE · 4 SUCURSALES · <span id="suc-mat-count">75 MATERIALES</span></div>
       <div id="suc-indicator" onclick="document.getElementById('neg-form').classList.add('open'); document.getElementById('neg-arrow').textContent='▼'; document.getElementById('neg-suc').focus();" style="margin-top:4px;font-size:11px;font-weight:800;color:#69F0AE;letter-spacing:.5px;cursor:pointer;text-decoration:underline dotted">📍 <span id="suc-indicator-name">Sin sucursal seleccionada</span></div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
@@ -239,7 +239,7 @@ select.neg-input option{background:#1A2D3E;color:#fff}
   <button class="close-btn" onclick="cerrarConsulta()">✅ Cerrar Consulta y Generar Resumen</button>
   <button class="close-btn" style="background:linear-gradient(135deg,#E65100,#BF360C);margin-top:8px;font-size:13px;padding:12px" onclick="limpiarMateriales()">🗑️ Limpiar todos los materiales</button>
 </div>
-<div class="footer">v24 · Precios JSON v9 · 75 Materiales · 19-03-2026 · *Precios sujetos a cambios según mercado</div>
+<div class="footer">v25 · Cargando precios... · *Precios sujetos a cambios según mercado</div>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
@@ -670,7 +670,7 @@ function generatePDF(){
   doc.setFontSize(18);doc.setFont('helvetica','bold');
   doc.text('Grupo Reciclean · Farex',margin,12);
   doc.setFontSize(10);doc.setFont('helvetica','normal');
-  doc.text('Asistente Comercial v24 — Resumen de Negocio',margin,20);
+  doc.text('Asistente Comercial v25 — Resumen de Negocio',margin,20);
   doc.setFontSize(9);doc.text('Fecha: '+today,W-margin,20,{align:'right'});
   y=36;
 

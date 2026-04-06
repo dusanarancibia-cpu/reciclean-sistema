@@ -93,7 +93,7 @@ async function loadPreciosFromSupabase() {
       .select('*');
     if (error) throw error;
 
-    // Convertir a formato MATERIALES_DATA[sucursal] = [{nombre, precio, ...}]
+    // Convertir a formato MATERIALES_DATA[sucursal] = [{id, material, precio, ...}]
     const result = {};
     const sucursales = ['Cerrillos', 'Maipú', 'Talca', 'Puerto Montt'];
     sucursales.forEach(s => { result[s] = []; });
@@ -103,23 +103,40 @@ async function loadPreciosFromSupabase() {
       const suc = row.sucursal;
       if (!result[suc]) result[suc] = [];
       result[suc].push({
-        nombre: row.material,
-        categoria: row.categoria,
-        precio: parseFloat(row.precio_lista),
-        precioEjec: parseFloat(row.precio_ejecutivo),
-        precioMax: parseFloat(row.precio_maximo),
-        compra: parseFloat(row.precio_compra),
-        iva: row.iva_aplicado,
-        farex: row.farex,
-        reciclean: row.reciclean
+        id:              row.material_id,
+        material:        row.material,
+        categoria:       row.categoria,
+        reciclean:       row.reciclean,
+        farex:           row.farex,
+        precioCompra:    parseFloat(row.precio_compra)    || 0,
+        precioLista:     parseFloat(row.precio_lista)     || 0,
+        precioEjecutivo: parseFloat(row.precio_ejecutivo) || 0,
+        precioMaximo:    parseFloat(row.precio_maximo)    || 0,
+        metaKgTotal:     row.meta_kg                      || 0,
+        metaCategoriaTotal: 0,
+        ivaTret:         row.iva_aplicado,
+        flete:           parseFloat(row.flete_aplicado ?? row.flete_default) || 15,
+        margen:          parseFloat(row.margen_aplicado ?? row.margen_default) || 0.15
       });
     });
 
-    // Ordenar por categoria y nombre
+    // Calcular metaCategoriaTotal: suma de metaKgTotal por categoría
+    Object.keys(result).forEach(suc => {
+      const catMeta = {};
+      result[suc].forEach(m => {
+        if (!catMeta[m.categoria]) catMeta[m.categoria] = 0;
+        catMeta[m.categoria] += (m.metaKgTotal || 0);
+      });
+      result[suc].forEach(m => {
+        m.metaCategoriaTotal = catMeta[m.categoria] || 0;
+      });
+    });
+
+    // Ordenar por categoría y nombre
     Object.keys(result).forEach(suc => {
       result[suc].sort((a, b) => {
         if (a.categoria !== b.categoria) return a.categoria.localeCompare(b.categoria);
-        return a.nombre.localeCompare(b.nombre);
+        return a.material.localeCompare(b.material);
       });
     });
 
@@ -215,6 +232,14 @@ async function initSupabaseData() {
     // Re-renderizar la lista de materiales
     if (typeof window.updateSucursalMateriales === 'function') window.updateSucursalMateriales();
     if (typeof window.render === 'function') window.render();
+
+    // Actualizar footer con info de Supabase
+    const totalMats = precios['Cerrillos'] ? precios['Cerrillos'].length : 0;
+    const footerEl = document.querySelector('.footer');
+    if (footerEl) {
+      const hoy = new Date().toLocaleDateString('es-CL');
+      footerEl.textContent = 'v25 · Supabase · ' + totalMats + ' Materiales · ' + hoy + ' · *Precios sujetos a cambios según mercado';
+    }
   } else {
     console.log('⚠️ Usando precios locales (Supabase no disponible)');
   }
