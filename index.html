@@ -3148,60 +3148,83 @@ function generarFichaDespacho(){
   });
   window._fichaMessages['global']=globalMsg;
 
-  // Build flow diagram HTML
-  var flowHtml='';
+  // Colores por categoría
+  var CAT_COLORS={
+    'FIERROS Y LATAS':'#4A6FA5','LATA CHATARRA':'#5B7FB5',
+    'COBRES':'#C0392B','BRONCES':'#D4A017','ALUMINIOS':'#7D8CA3',
+    'ACEROS INOXIDABLES':'#2C3E50',
+    'CARTÓN Y PAPEL':'#8B6914','VIDRIO':'#1ABC9C',
+    'PLÁSTICOS — PET':'#2980B9','PLÁSTICOS — FILM Y POLIETILENOS':'#27AE60',
+    'PLÁSTICOS — RÍGIDOS':'#8E44AD','PLÁSTICOS — SOPLADOS':'#E67E22'
+  };
+  var CAT_SHORT={
+    'FIERROS Y LATAS':'FE','LATA CHATARRA':'LATA','COBRES':'CU','BRONCES':'BR',
+    'ALUMINIOS':'AL','ACEROS INOXIDABLES':'INOX','CARTÓN Y PAPEL':'PAPEL',
+    'VIDRIO':'VID','PLÁSTICOS — PET':'PET','PLÁSTICOS — FILM Y POLIETILENOS':'FILM',
+    'PLÁSTICOS — RÍGIDOS':'RIG','PLÁSTICOS — SOPLADOS':'SOPL'
+  };
+
+  // Build flow diagram HTML — diseño compacto para PDF
+  var flowHtml='<div id="ficha-print-area">';
+  // Header para PDF
+  flowHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #1A7A3C;">';
+  flowHtml+='<div><div style="font-size:16px;font-weight:800;color:#1A1A14;">FICHA DE DESPACHO</div>';
+  flowHtml+='<div style="font-size:10px;color:#666;">Reciclean + Farex &middot; '+fecha+' '+hora+'</div></div>';
+  flowHtml+='<div style="text-align:right;font-size:9px;color:#999;">Basado en precios seleccionados</div></div>';
+
+  // Leyenda de categorías
+  flowHtml+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px;">';
+  CAT_ORDER.forEach(function(cat){
+    var c=CAT_COLORS[cat]||'#666';
+    var s=CAT_SHORT[cat]||cat.substring(0,3);
+    flowHtml+='<span style="background:'+c+';color:#fff;font-size:7px;font-weight:700;padding:2px 5px;border-radius:3px;letter-spacing:.5px;">'+s+'</span>';
+  });
+  flowHtml+='</div>';
+
   SUCS.forEach(function(suc){
     var items=flujos[suc];
     if(!items.length) return;
     var clientes=[...clientesSet[suc]];
     var dest=DESTINATARIOS_DESPACHO[suc]||{nombre:'—',cargo:'—'};
+    var sucShort=suc.replace('Puerto Montt','P.Montt');
 
-    flowHtml+='<div style="margin-bottom:24px;">';
     // Sucursal header
-    flowHtml+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">';
-    flowHtml+='<div style="font-size:14px;font-weight:700;color:var(--ink);">&#128205; '+suc+'</div>';
-    flowHtml+='<div style="display:flex;gap:6px;">';
-    flowHtml+='<button class="btn" onclick="copiarFichaWA(\''+suc+'\')" style="font-size:10px;padding:3px 8px;">&#128203; Copiar WA</button>';
-    if(dest.tel) flowHtml+='<a href="https://wa.me/'+dest.tel.replace(/[^0-9]/g,'')+'" target="_blank" class="btn ok" style="font-size:10px;padding:3px 8px;text-decoration:none;">&#128172; '+dest.nombre.split(' ')[0]+'</a>';
+    flowHtml+='<div style="margin-bottom:14px;">';
+    flowHtml+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">';
+    flowHtml+='<div style="display:flex;align-items:center;gap:8px;">';
+    flowHtml+='<div style="background:#1A7A3C;color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:6px;letter-spacing:.5px;">'+sucShort.toUpperCase()+'</div>';
+    flowHtml+='<span style="font-size:10px;color:#999;">'+items.length+' materiales &rarr; '+clientes.length+' cliente'+(clientes.length>1?'s':'')+'</span>';
+    flowHtml+='</div>';
+    flowHtml+='<div style="display:flex;gap:4px;" class="no-print">';
+    flowHtml+='<button class="btn" onclick="copiarFichaWA(\''+suc+'\')" style="font-size:9px;padding:2px 6px;">Copiar WA</button>';
+    if(dest.tel) flowHtml+='<a href="https://wa.me/'+dest.tel.replace(/[^0-9]/g,'')+'" target="_blank" class="btn ok" style="font-size:9px;padding:2px 6px;text-decoration:none;">WA '+dest.nombre.split(' ')[0]+'</a>';
     flowHtml+='</div></div>';
 
-    // Flow: Sucursal → Material → Cliente
-    // Group by client for cleaner arrows
+    // Tabla compacta por cliente
+    flowHtml+='<div style="display:flex;gap:6px;flex-wrap:wrap;">';
     clientes.forEach(function(cli){
       var matsCli=items.filter(function(i){return i.cliente===cli;});
-      flowHtml+='<div style="display:flex;align-items:stretch;gap:0;margin-bottom:8px;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;">';
-
-      // Left: Sucursal node
-      flowHtml+='<div style="background:var(--ink);color:#F0D060;padding:8px 12px;min-width:70px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;writing-mode:vertical-lr;text-orientation:mixed;letter-spacing:1px;">'+suc.replace('Puerto Montt','P.MTT').toUpperCase()+'</div>';
-
-      // Center: Materials list
-      flowHtml+='<div style="flex:1;padding:6px 10px;background:var(--bg2);">';
-      var prevCat='';
+      flowHtml+='<div style="flex:1;min-width:200px;max-width:400px;border:1px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:4px;">';
+      // Cliente header
+      flowHtml+='<div style="background:#F5F0E0;padding:5px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #ddd;">';
+      flowHtml+='<span style="font-size:11px;font-weight:800;color:#92650A;">'+cli+'</span>';
+      flowHtml+='<span style="font-size:8px;color:#999;background:#fff;padding:1px 5px;border-radius:3px;">'+matsCli.length+' mat.</span>';
+      flowHtml+='</div>';
+      // Materiales con color por categoría
       matsCli.forEach(function(it){
-        if(it.cat!==prevCat){
-          prevCat=it.cat;
-          flowHtml+='<div style="font-size:8px;color:var(--text3);font-weight:700;letter-spacing:.5px;margin-top:'+(prevCat?'6':'0')+'px;margin-bottom:2px;text-transform:uppercase;">'+it.cat+'</div>';
-        }
-        flowHtml+='<div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0;font-size:11px;">';
-        flowHtml+='<span style="color:var(--text);">'+it.material+'</span>';
-        flowHtml+='<span style="font-family:\'Roboto Mono\',monospace;font-size:10px;color:var(--green);font-weight:600;">$'+it.precio.toLocaleString('es-CL')+'</span>';
+        var catCol=CAT_COLORS[it.cat]||'#666';
+        var catTag=CAT_SHORT[it.cat]||'';
+        flowHtml+='<div style="display:flex;align-items:center;padding:3px 8px;border-bottom:1px solid #f0f0f0;font-size:10px;">';
+        flowHtml+='<span style="background:'+catCol+';color:#fff;font-size:6px;font-weight:700;padding:1px 3px;border-radius:2px;margin-right:6px;min-width:22px;text-align:center;">'+catTag+'</span>';
+        flowHtml+='<span style="flex:1;color:#333;">'+it.material+'</span>';
+        flowHtml+='<span style="font-family:monospace;font-size:9px;color:#1A7A3C;font-weight:700;">$'+it.precio.toLocaleString('es-CL')+'</span>';
         flowHtml+='</div>';
       });
       flowHtml+='</div>';
-
-      // Arrow
-      flowHtml+='<div style="display:flex;align-items:center;padding:0 8px;background:var(--bg3);font-size:18px;color:var(--amber);">&#9654;</div>';
-
-      // Right: Cliente node
-      flowHtml+='<div style="background:var(--amber-bg);border-left:3px solid var(--amber);padding:10px 14px;min-width:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;">';
-      flowHtml+='<div style="font-size:12px;font-weight:700;color:var(--amber);text-align:center;">'+cli+'</div>';
-      flowHtml+='<div style="font-size:9px;color:var(--text3);margin-top:2px;">'+matsCli.length+' material'+(matsCli.length>1?'es':'')+'</div>';
-      flowHtml+='</div>';
-
-      flowHtml+='</div>'; // end flow row
     });
-    flowHtml+='</div>'; // end sucursal block
+    flowHtml+='</div></div>';
   });
+  flowHtml+='</div>'; // end print area
 
   // If no selections at all
   if(!flowHtml){
@@ -3217,7 +3240,8 @@ function generarFichaDespacho(){
     +'<div><div style="font-size:14px;font-weight:700;color:#fff;">&#128203; Flujo de Despacho</div>'
     +'<div style="font-size:11px;color:rgba(255,255,255,.4);">'+fecha+' '+hora+' &#183; Basado en precios seleccionados Tab B</div></div>'
     +'<div style="display:flex;gap:6px;align-items:center;">'
-    +'<button class="btn ok" onclick="copiarFichaWA(\'global\')" style="font-size:10px;">&#128203; Copiar todo WA</button>'
+    +'<button class="btn ok" onclick="copiarFichaWA(\'global\')" style="font-size:10px;">&#128203; Copiar WA</button>'
+    +'<button class="btn" onclick="imprimirFicha()" style="font-size:10px;background:#2980B9;border-color:#2980B9;color:#fff;">&#128424; PDF</button>'
     +'<button onclick="cerrarFichaDespacho()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer;padding:0 4px;">&#10005;</button>'
     +'</div></div>'
     +'<div style="padding:16px;overflow-y:auto;flex:1;">'+flowHtml+'</div>'
@@ -3236,6 +3260,20 @@ function fichaTab(key){
 function copiarFichaWA(key){
   var msg=window._fichaMessages&&window._fichaMessages[key]||'';
   navigator.clipboard.writeText(msg).then(function(){toast('Mensaje copiado al portapapeles','ok');});
+}
+function imprimirFicha(){
+  var area=document.getElementById('ficha-print-area');
+  if(!area) return;
+  var w=window.open('','_blank','width=800,height=1000');
+  w.document.write('<html><head><title>Ficha Despacho</title><style>');
+  w.document.write('*{box-sizing:border-box;margin:0;padding:0;}body{font-family:system-ui,sans-serif;padding:12px;font-size:10px;}');
+  w.document.write('.no-print{display:none!important;}');
+  w.document.write('@media print{@page{size:A4;margin:10mm;}body{padding:0;}}');
+  w.document.write('</style></head><body>');
+  w.document.write(area.innerHTML);
+  w.document.write('</body></html>');
+  w.document.close();
+  setTimeout(function(){w.print();},300);
 }
 function cerrarFichaDespacho(){
   var modal=document.getElementById('ficha-modal');
