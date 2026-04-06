@@ -207,12 +207,14 @@ async function initSupabaseData() {
     window.MATERIALES = precios['Cerrillos'] || [];
     console.log('✅ Precios cargados de Supabase en tiempo real');
 
-    // Actualizar la vista si la sucursal ya está seleccionada
-    const sucSelect = document.getElementById('sucursal');
-    if (sucSelect) {
-      const suc = sucSelect.value;
-      window.MATERIALES = precios[suc] || precios['Cerrillos'] || [];
-    }
+    // Actualizar la vista con los precios nuevos
+    const sucSelect = document.getElementById('neg-suc');
+    const suc = sucSelect ? sucSelect.value : 'Cerrillos';
+    window.MATERIALES = precios[suc] || precios['Cerrillos'] || [];
+
+    // Re-renderizar la lista de materiales
+    if (typeof window.updateSucursalMateriales === 'function') window.updateSucursalMateriales();
+    if (typeof window.render === 'function') window.render();
   } else {
     console.log('⚠️ Usando precios locales (Supabase no disponible)');
   }
@@ -253,6 +255,7 @@ function showPriceUpdateBanner(label) {
   setTimeout(function() {
     if (banner.parentNode) banner.style.opacity = '0.7';
   }, 30000);
+} // fin showPriceUpdateBanner
 
 // ── Auto-init ──
 window.addEventListener('DOMContentLoaded', async () => {
