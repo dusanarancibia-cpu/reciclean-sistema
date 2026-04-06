@@ -3,1136 +3,681 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Asistente Comercial v25 · Reciclean-Farex</title>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#1A1A14">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Reciclean">
-<link rel="apple-touch-icon" href="/icon-192.svg">
-<script>
-(function(){
-  var s = localStorage.getItem('rf_session');
-  if(s){
-    try{var p=JSON.parse(s);if(Date.now()-p.timestamp>24*60*60*1000){localStorage.removeItem('rf_session');s=null;}}catch(e){s=null;}
-  }
-  if(!s){
-    document.documentElement.style.cssText='display:none!important';
-    window.location.replace('/login.html');
-  }
-})();
-</script>
+<title>Asistente Comercial · Reciclean-Farex</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F2F5;min-height:100vh;max-width:480px;margin:0 auto}
-input,select{-webkit-appearance:none;appearance:none;font-family:inherit}
-input:focus,select:focus{outline:none}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F2F5;min-height:100vh;max-width:480px;margin:0 auto;color:#1A2332}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;background:#0D1B2A;display:flex;align-items:center;justify-content:center;z-index:900;padding:20px;}
+.login-box{width:100%;max-width:360px;}
+.login-logo{text-align:center;margin-bottom:32px;}
+.login-logo .brand-sub{color:#4FC3F7;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+.login-logo .brand-title{color:#fff;font-size:26px;font-weight:800;margin-top:4px;}
+.login-logo .brand-desc{color:#6B8FA8;font-size:12px;margin-top:6px;}
+.login-field{margin-bottom:14px;}
+.login-field label{display:block;color:#4FC3F7;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.login-input{width:100%;padding:13px 16px;border-radius:10px;border:1.5px solid #2C3E50;background:#1A2D3E;color:#fff;font-size:15px;outline:none;transition:border-color .2s;}
+.login-input:focus{border-color:#4FC3F7;}
+.login-input::placeholder{color:#4A6278;}
+.login-btn{width:100%;padding:14px;border-radius:10px;border:none;background:linear-gradient(135deg,#1565C0,#0D47A1);color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;letter-spacing:.5px;}
+.login-btn:active{opacity:.9;}
+.login-btn:disabled{opacity:.6;cursor:not-allowed;}
+.login-error{background:#4A1A1A;border:1px solid #8B3A3A;border-radius:8px;padding:10px 14px;color:#FF8080;font-size:12px;margin-top:10px;display:none;}
+.login-hint{color:#4A6278;font-size:11px;text-align:center;margin-top:16px;}
+
+/* ── UPDATE BANNER ── */
+#update-banner{background:#1B5E20;color:#fff;text-align:center;padding:10px 16px;font-size:12px;font-weight:600;cursor:pointer;display:none;position:sticky;top:0;z-index:200;animation:pulse-green 1.5s infinite;}
+@keyframes pulse-green{0%,100%{background:#1B5E20;}50%{background:#2E7D32;}}
+
+/* ── TOP NOTICE ── */
+.top-notice{background:#1B5E20;color:#fff;text-align:center;padding:8px 12px;font-size:11px;font-weight:600;letter-spacing:.5px;}
+
+/* ── TOPBAR ── */
 .topbar{background:#0D1B2A;padding:14px 16px 0;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.4)}
-.topbar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .brand-sub{color:#4FC3F7;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
 .brand-title{color:#fff;font-size:19px;font-weight:800;line-height:1.1}
 .mc-box{text-align:right}
-.mc-label{color:#4FC3F7;font-size:10px;font-weight:600}
-.mc-val{font-size:17px;font-weight:800}
+.logout-btn{background:rgba(255,255,255,.1);border:none;color:#aaa;font-size:10px;padding:5px 10px;border-radius:6px;cursor:pointer;font-weight:600;}
+.logout-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+
+/* ── NEGOCIO BAR ── */
 .negocio-bar{background:#1A2B3A;padding:10px 16px}
-.negocio-toggle{color:#fff;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none}
-.negocio-form{display:none;padding-top:10px}
-.negocio-form.open{display:block}
 .neg-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
 .neg-field label{color:#4FC3F7;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px}
 .neg-input{width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid #2C3E50;background:#1A2D3E;color:#fff;font-size:12px}
-.neg-input.err{border-color:#FF5252 !important}
-.neg-input::placeholder{color:#5A7A8A}
-select.neg-input option{background:#1A2D3E;color:#fff}
+select.neg-input option{background:#1A2D3E}
 .search-wrap{position:relative;margin-bottom:8px}
 .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#999;font-size:13px;pointer-events:none}
 .search-input{width:100%;padding:8px 10px 8px 30px;border-radius:10px;border:none;background:#2C3E50;color:#fff;font-size:13px}
-.search-input::placeholder{color:#7A9AB0}
 .cat-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
 .cat-scroll::-webkit-scrollbar{display:none}
 .cat-btn{flex-shrink:0;padding:4px 10px;border-radius:20px;border:none;cursor:pointer;font-size:10px;font-weight:700;white-space:nowrap;transition:all .15s}
 .tabs{display:flex;border-top:1px solid #2C3E50}
 .tab-btn{flex:1;padding:9px 0;background:none;border:none;border-bottom:2px solid transparent;color:#888;font-weight:700;font-size:11px;cursor:pointer;text-transform:uppercase;letter-spacing:.5px}
 .tab-btn.active{color:#4FC3F7;border-bottom-color:#4FC3F7}
+
+/* ── CARDS ── */
 .content{padding:12px}
 .card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.09);margin-bottom:14px}
 .card-header{padding:11px 14px;display:flex;justify-content:space-between;align-items:flex-start}
 .cat-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
 .mat-name{color:#fff;font-size:14px;font-weight:700;margin-top:2px;line-height:1.2}
-.badges{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
-.badge{font-size:9px;padding:2px 7px;border-radius:20px;font-weight:700;color:#fff}
 .price-band{display:grid;grid-template-columns:1fr 1fr 1fr}
 .price-cell{padding:9px 6px;text-align:center}
 .price-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
 .price-val{font-size:14px;font-weight:800;margin-top:1px}
-.price-sub{font-size:9px;color:#666;margin-top:1px}
 .inputs{padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .input-label{font-size:10px;color:#555;font-weight:600;display:block;margin-bottom:3px}
-.price-input{width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid #ddd;font-size:14px;font-weight:600;color:#222;transition:border-color .2s}
+.price-input{width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid #ddd;font-size:14px;font-weight:600;color:#222}
 .results{padding:0 14px 12px}
 .semaforo-bar{border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;margin-bottom:8px;text-align:center;color:#fff}
 .result-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
 .result-cell{background:#F8F8F8;border-radius:8px;padding:7px 10px}
 .result-label{font-size:9px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
 .result-val{font-size:14px;font-weight:800;color:#333;margin-top:2px}
-/* CERRAR CONSULTA BTN */
 .close-btn-wrap{padding:0 14px 80px}
-.close-btn{width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,#1565C0,#0D47A1);color:#fff;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:.5px;box-shadow:0 4px 16px rgba(21,101,192,.4);transition:transform .1s}
-.close-btn:active{transform:scale(.98)}
-/* MODAL */
+.close-btn{width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,#1565C0,#0D47A1);color:#fff;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:.5px;margin-bottom:8px}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;align-items:flex-end;justify-content:center}
 .modal-overlay.show{display:flex}
 .modal{background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
 .modal-title{font-size:17px;font-weight:800;color:#1A2332;margin-bottom:6px}
-.modal-sub{font-size:12px;color:#888;margin-bottom:18px}
-.error-list{background:#FFF3E0;border-radius:10px;padding:12px 14px;margin-bottom:18px}
-.error-item{font-size:12px;color:#E65100;font-weight:600;padding:3px 0}
-/* PDF PREVIEW */
-.pdf-section{margin-bottom:14px}
-.pdf-section-title{font-size:11px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #eee}
-.pdf-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #F5F5F5;font-size:12px}
-.pdf-row-label{color:#888;font-weight:500}
-.pdf-row-val{color:#222;font-weight:700;text-align:right;max-width:60%}
-.pdf-mat-row{background:#F8F8F8;border-radius:8px;padding:8px 10px;margin-bottom:6px}
-.pdf-mat-name{font-size:12px;font-weight:700;color:#1A2332}
-.pdf-mat-detail{display:flex;gap:12px;margin-top:4px;flex-wrap:wrap}
-.pdf-mat-chip{font-size:10px;color:#555}
-.pdf-mat-chip span{font-weight:700;color:#1A2332}
-.pdf-total{background:#0D1B2A;border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:10px}
-.pdf-total-label{color:#4FC3F7;font-size:11px;font-weight:700}
-.pdf-total-val{font-size:20px;font-weight:800}
-/* SHARE BTNS */
-.share-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-.share-btn{padding:13px 10px;border-radius:12px;border:none;cursor:pointer;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;transition:transform .1s}
-.share-btn:active{transform:scale(.97)}
-.btn-wa{background:#25D366;color:#fff}
-.btn-mail{background:#0D1B2A;color:#fff}
-.btn-pdf{background:#E53935;color:#fff}
-.btn-cancel{background:#F0F2F5;color:#555;font-weight:600;border-radius:12px;padding:12px;border:none;cursor:pointer;width:100%;margin-top:8px;font-size:13px}
-.empty{text-align:center;padding:50px 20px;color:#aaa}
-.footer{text-align:center;padding:6px 0 20px;color:#aaa;font-size:10px}
+.footer{text-align:center;font-size:9px;color:#aaa;padding:8px;background:#F0F2F5}
+.loading-msg{text-align:center;padding:60px 20px;color:#4FC3F7;font-size:14px;font-weight:600;}
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="topbar-head">
-    <div>
-      <div class="brand-sub">Grupo Reciclean · Farex</div>
-      <div class="brand-title">Asistente Comercial v25</div>
-      <div style="font-size:9px;color:#4FC3F7;margin-top:2px;font-weight:700;letter-spacing:1px">v25 · SUPABASE · 4 SUCURSALES · <span id="suc-mat-count">75 MATERIALES</span></div>
-      <div id="suc-indicator" onclick="document.getElementById('neg-form').classList.add('open'); document.getElementById('neg-arrow').textContent='▼'; document.getElementById('neg-suc').focus();" style="margin-top:4px;font-size:11px;font-weight:800;color:#69F0AE;letter-spacing:.5px;cursor:pointer;text-decoration:underline dotted">📍 <span id="suc-indicator-name">Sin sucursal seleccionada</span></div>
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="brand-sub">Reciclean · Farex</div>
+      <div class="brand-title">Asistente Comercial</div>
+      <div class="brand-desc">Ingresa con tu teléfono y PIN</div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-    <button onclick="localStorage.removeItem('rf_session');window.location.replace('/login.html')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.6);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;">Salir</button>
-    <div class="mc-box" id="mc-total-wrap" style="display:none">
-      <div class="mc-label">MC TOTAL</div>
-      <div class="mc-val" id="mc-total-val">$0</div>
+    <div class="login-field">
+      <label>Teléfono WhatsApp</label>
+      <input class="login-input" id="login-tel" type="tel" inputmode="tel" placeholder="+56912345678" autocomplete="tel">
     </div>
-
-
-
-
-
-
+    <div class="login-field">
+      <label>PIN</label>
+      <input class="login-input" id="login-pin" type="password" inputmode="numeric" placeholder="••••" maxlength="8" autocomplete="current-password">
     </div>
-  </div>
-  <!-- DATOS NEGOCIO -->
-  <div class="negocio-bar">
-    <div class="negocio-toggle" onclick="toggleNeg()">
-      <span id="neg-arrow">▶</span> Datos del negocio
-      <span id="neg-inline" style="color:#fff;font-size:10px;margin-left:4px"></span>
-    </div>
-    <div style="display:flex;gap:4px;padding:0 4px">
-      <button onclick="document.getElementById('neg-form').classList.add('open'); document.getElementById('neg-arrow').textContent='▼';" style="padding:4px 8px;font-size:9px;background:#1565C0;color:#fff;border:none;border-radius:3px;cursor:pointer;font-weight:600">✎ Editar</button>
-      <button onclick="if(confirm('¿Limpiar datos?')) limpiarDatos()" style="padding:4px 8px;font-size:9px;background:#f44336;color:#fff;border:none;border-radius:3px;cursor:pointer;font-weight:600">⨯ Limpiar</button>
-      <button onclick="document.getElementById('neg-form').classList.remove('open'); document.getElementById('neg-arrow').textContent='▶';" style="padding:4px 8px;font-size:9px;background:#FF9800;color:#fff;border:none;border-radius:3px;cursor:pointer;font-weight:600">✓ Cerrar</button>
-    </div>
-    <div class="negocio-form" id="neg-form">
-      <div class="neg-grid">
-        <div class="neg-field">
-          <label>Sucursal *</label>
-          <select class="neg-input" id="neg-suc" onchange="updateNegInline(); updateSucursalMateriales()">
-            <option value="">— Seleccionar —</option>
-            <option>Cerrillos</option><option>Maipú</option><option>Talca</option><option>Puerto Montt</option>
-          </select>
-        </div>
-        <div class="neg-field">
-          <label>Ejecutivo *</label>
-          <input class="neg-input" id="neg-ejec" placeholder="Nombre ejecutivo" oninput="updateNegInline()">
-        </div>
-        <div class="neg-field">
-          <label>Proveedor *</label>
-          <input class="neg-input" id="neg-prov" placeholder="Nombre proveedor" oninput="updateNegInline()">
-        </div>
-        <div class="neg-field">
-          <label>RUT Proveedor</label>
-          <input class="neg-input" id="neg-rut" placeholder="12.345.678-9" oninput="updateNegInline()">
-        </div>
-        <div class="neg-field">
-          <label>Fecha llegada</label>
-          <input class="neg-input" id="neg-fecha" type="date" oninput="updateNegInline()">
-        </div>
-        <div class="neg-field">
-          <label>N° Factura</label>
-          <input class="neg-input" id="neg-folio" placeholder="000000" oninput="updateNegInline()">
-        </div>
-        <div class="neg-field">
-          <label>Frecuencia de Compra *</label>
-          <select class="neg-input" id="neg-freq" onchange="updateNegInline()">
-            <option value="">— Seleccionar —</option>
-            <option>Puntual</option><option>Semanal</option><option>Quincenal</option><option>Mensual</option>
-          </select>
-        </div>
-        <div class="neg-field">
-          <label>Kilos reales Factura</label>
-          <input class="neg-input" id="neg-kg-fact" type="number" placeholder="kg factura" oninput="updateNegInline(); updateTotals()">
-        </div>
-        <div class="neg-field">
-          <label>Fecha Factura</label>
-          <input class="neg-input" id="neg-fecha-fact" type="date" oninput="updateNegInline()">
-        </div>
-
-        <div class="neg-field">
-          <label>WhatsApp Personalizado</label>
-          <input class="neg-input" id="neg-wa" placeholder="+56912345678" oninput="updateNegInline()">
-        </div>
-      </div>
-
-      <!-- GUÍA DE USO -->
-      <div style="background:linear-gradient(135deg,#0D1B2A,#1A2B3A);border-radius:12px;padding:14px;margin-top:10px;color:#fff">
-        <div style="font-size:12px;font-weight:800;color:#4FC3F7;margin-bottom:8px">📋 Guía de uso — Asistente Comercial</div>
-        <div style="font-size:10px;line-height:1.7;color:#CBD5E0;max-height:140px;overflow-y:auto;padding-right:6px">
-          <b style="color:#FF8A65">⚠ Paso 0 — Elige tu sucursal</b> — Es lo primero y más importante. Los precios, materiales disponibles y metas cambian según la sucursal. Sin sucursal seleccionada, los precios pueden no corresponder a tu realidad.<br>
-          <b style="color:#69F0AE">1. Datos del negocio</b> — Completa sucursal, tu nombre y el proveedor antes de comenzar.<br>
-          <b style="color:#69F0AE">2. Busca el material</b> — Usa el buscador o los filtros de categoría. Solo verás los materiales que compra tu sucursal.<br>
-          <b style="color:#69F0AE">3. Ingresa kilos</b> — El semáforo 🟢🟡🔴 indica tu nivel de negociación según la meta mensual.<br>
-          <b style="color:#69F0AE">4. Precio Ejecutivo</b> — Ingresa los kilos que te ofrecen, el precio adecuado, entre más bajo mejora tu comisión. El sistema muestra tu puntuación en comisión. Anda respaldando los negocios, estamos en desarrollo.<br>
-          <b style="color:#69F0AE">5. Cierra la consulta</b> — Usa "Cerrar Consulta" para generar el resumen, PDF y mensaje WhatsApp.<br>
-          <span style="color:#FFC107;font-size:9px">⚠ Precio Lista = mínimo · Precio Ejecutivo = sugerido · Precio Máximo = techo — nunca superar sin autorización.</span>
-        </div>
-      </div>
-
-    </div>
-  </div>
-  <!-- SEARCH + FILTERS -->
-  <div style="padding:8px 0 0">
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input class="search-input" id="search" placeholder="Buscar material..." oninput="render()">
-    </div>
-    <div class="cat-scroll" id="cat-scroll"></div>
-  </div>
-  <div class="tabs">
-    <button class="tab-btn active" id="tab-browse" onclick="switchTab('browse')">Todos (<span id="cnt-browse">0</span>)</button>
-    <button class="tab-btn" id="tab-active" onclick="switchTab('active')">Activos (<span id="cnt-active">0</span>)</button>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Ingresar →</button>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-hint">¿No tienes PIN? Contacta a tu supervisor.</div>
   </div>
 </div>
 
-<!-- CARDS -->
-<div class="content" id="content"></div>
-
-<!-- CERRAR CONSULTA -->
-<div class="close-btn-wrap">
-  <button class="close-btn" onclick="cerrarConsulta()">✅ Cerrar Consulta y Generar Resumen</button>
-  <button class="close-btn" style="background:linear-gradient(135deg,#E65100,#BF360C);margin-top:8px;font-size:13px;padding:12px" onclick="limpiarMateriales()">🗑️ Limpiar todos los materiales</button>
+<!-- ── BANNER PRECIOS ACTUALIZADOS (Realtime) ── -->
+<div id="update-banner">
+  🔔 Precios actualizados — <strong>toca para recargar</strong>
 </div>
-<div class="footer">v25 · Cargando precios... · *Precios sujetos a cambios según mercado</div>
 
-<!-- MODAL -->
+<!-- ── APP PRINCIPAL (oculto hasta login) ── -->
+<div id="app" style="display:none">
+  <div class="top-notice" id="top-notice-text">Asistente Comercial · Reciclean-Farex</div>
+
+  <div class="topbar">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div><div class="brand-sub">Reciclean · Farex</div><div class="brand-title">Asistente Comercial</div></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div class="mc-box" id="mc-total-wrap" style="display:none">
+          <div style="color:#4FC3F7;font-size:10px;font-weight:600">Comisión</div>
+          <div id="mc-total-val" style="font-size:17px;font-weight:800"></div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()">Salir</button>
+      </div>
+    </div>
+    <div class="negocio-bar">
+      <div style="color:#fff;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none" onclick="toggleNeg()">
+        <span id="neg-arrow">▶</span> Datos del Negocio
+        <span id="neg-inline" style="color:#4FC3F7;font-size:10px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+      </div>
+      <div id="neg-form" style="display:none;padding-top:10px">
+        <div class="neg-grid">
+          <div class="neg-field"><label>Sucursal</label>
+            <select class="neg-input" id="neg-suc" onchange="updateSucursalMateriales();updateNegInline()">
+              <option value="">Seleccionar...</option>
+              <option>Cerrillos</option><option>Maipú</option><option>Talca</option><option>Puerto Montt</option>
+            </select>
+          </div>
+          <div class="neg-field"><label>Ejecutivo</label>
+            <select class="neg-input" id="neg-tipo-ejec">
+              <option>Administrador</option><option>Interno</option><option>Externo</option>
+            </select>
+          </div>
+          <div class="neg-field"><label>Nombre Ejecutivo</label>
+            <input class="neg-input" id="neg-ejec" placeholder="Nombre..." oninput="updateNegInline()">
+          </div>
+          <div class="neg-field"><label>Proveedor</label>
+            <input class="neg-input" id="neg-prov" placeholder="Empresa..." oninput="updateNegInline()">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:8px 0 0">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" id="search" placeholder="Buscar material..." oninput="render()">
+      </div>
+      <div class="cat-scroll" id="cat-scroll"></div>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-browse" onclick="switchTab('browse')">Todos (<span id="cnt-browse">0</span>)</button>
+      <button class="tab-btn" id="tab-active" onclick="switchTab('active')">Activos (<span id="cnt-active">0</span>)</button>
+    </div>
+  </div>
+
+  <div class="content" id="content">
+    <div class="loading-msg">⏳ Cargando precios...</div>
+  </div>
+
+  <div class="close-btn-wrap">
+    <button class="close-btn" onclick="finalizarConsulta()">📋 Generar Resumen Consulta</button>
+    <button class="close-btn" style="background:linear-gradient(135deg,#17A2B8,#0D8BA7)" onclick="mostrarTablaPrecios()">📊 Ver Tabla de Precios</button>
+    <button class="close-btn" style="background:linear-gradient(135deg,#F57C00,#E64A19);font-size:13px;padding:12px" onclick="limpiarMateriales()">🗑 Limpiar materiales</button>
+  </div>
+
+  <div class="footer" id="app-footer">Reciclean-Farex · Precios referenciales sujetos a cambio</div>
+</div>
+
+<!-- ── MODAL ── -->
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
   <div class="modal" id="modal-box">
-    <div class="modal-title" id="modal-title">Resumen de Negocio</div>
-    <div class="modal-sub" id="modal-sub"></div>
+    <div class="modal-title" id="modal-title"></div>
+    <div style="font-size:12px;color:#888;margin-bottom:18px" id="modal-sub"></div>
     <div id="modal-body"></div>
   </div>
 </div>
 
 <script>
-// ==================== JSONBIN CLOUD STORAGE ====================
-const API_KEY = '$2a$10$ehLFxVGTs6TYldWxdW0iAu4soMZv7bQCp5mbGStzudt/2ENxME9FW';
-const BIN_ID = '69b167beb7ec241ddc5d07e9';
-const TIMEOUT_MS = 5000;
+// ── SUPABASE ──
+const SUPABASE_URL = 'https://eknmtsrtfkzroxnovfqn.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_y-ivpVdiL141kz4ZASje5g_SYG7do5z';
+const _supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const cloudStorage = {
-  async getHistorial() {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-        headers: { 'X-Master-Key': API_KEY }
-      });
-      clearTimeout(timeout);
-      if (!res.ok) return this._getFallback();
-      const data = await res.json();
-      return data.record || [];
-    } catch (err) {
-      console.warn('Cloud error:', err.message);
-      return this._getFallback();
-    }
-  },
+// ── ESTADO ──
+let MATERIALES_DATA = null;
+let MATERIALES = [];
+let USUARIO = null;
+let _realtimeChannel = null;
+let _pendingUpdate = null;
+const states = {};
+let selCats = new Set(), curTab = 'browse', negOpen = false;
 
-  async guardarCotizacion(cotizacion) {
-    const historial = await this.getHistorial();
-    if (!cotizacion.id) cotizacion.id = 'COT-' + Date.now();
-    cotizacion.timestamp = new Date().toISOString();
-    historial.push(cotizacion);
-    await this._guardar(historial);
-  },
+// ── COLORES ──
+const COL = {"FIERROS Y LATAS":{bg:"#37474F",ac:"#78909C",lt:"#ECEFF1"},"LATA CHATARRA":{bg:"#37474F",ac:"#78909C",lt:"#ECEFF1"},"COBRES":{bg:"#BF360C",ac:"#FF7043",lt:"#FBE9E7"},"BRONCES":{bg:"#E65100",ac:"#FFB74D",lt:"#FFF3E0"},"ALUMINIOS":{bg:"#1565C0",ac:"#42A5F5",lt:"#E3F2FD"},"ACEROS INOXIDABLES":{bg:"#4A148C",ac:"#AB47BC",lt:"#F3E5F5"},"CARTÓN Y PAPEL":{bg:"#33691E",ac:"#8BC34A",lt:"#F1F8E9"},"VIDRIO":{bg:"#006064",ac:"#26C6DA",lt:"#E0F7FA"},"PLÁSTICOS — PET":{bg:"#880E4F",ac:"#EC407A",lt:"#FCE4EC"},"PLÁSTICOS — FILM Y POLIETILENOS":{bg:"#4527A0",ac:"#7E57C2",lt:"#EDE7F6"},"PLÁSTICOS — RÍGIDOS":{bg:"#1A237E",ac:"#5C6BC0",lt:"#E8EAF6"},"PLÁSTICOS — SOPLADOS":{bg:"#01579B",ac:"#29B6F6",lt:"#E1F5FE"}};
 
-  async _guardar(historial) {
-    try {
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-        method: 'PUT',
-        headers: { 'X-Master-Key': API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify(historial)
-      });
-      if (!res.ok) this._saveFallback(historial);
-    } catch (err) {
-      this._saveFallback(historial);
-    }
-  },
+const fmt = n => n > 0 ? '$' + Math.round(n).toLocaleString('es-CL') : '—';
+const fmtNum = n => n > 0 ? n.toLocaleString('es-CL') : '-';
 
-  _getFallback() {
-    try {
-      return JSON.parse(localStorage.getItem('cotizacionesLocal') || '[]');
-    } catch { return []; }
-  },
+// ── Roles ──
+// admin/editor: acceso completo + ve precio compra
+// ejecutivo: acceso completo al asistente
+// visor: solo consulta de precios, sin cotizar
+let _rolActual = 'ejecutivo';
+const ROL_PUEDE_COTIZAR = rol => ['admin','editor','ejecutivo'].includes(rol);
+const ROL_VE_COMPRA     = rol => ['admin','editor'].includes(rol);
 
-  _saveFallback(data) {
-    try {
-      localStorage.setItem('cotizacionesLocal', JSON.stringify(data));
-    } catch {}
+// ══════════════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════════════
+function normTel(t) {
+  const d = t.replace(/\s+/g,'').replace(/[^\d+]/g,'');
+  if(d.startsWith('+')) return d;
+  if(d.startsWith('56')) return '+' + d;
+  if(d.length <= 9) return '+56' + d;
+  return '+' + d;
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+  const btn = document.getElementById('login-btn');
+  btn.disabled = false;
+  btn.textContent = 'Ingresar →';
+}
+
+async function doLogin() {
+  const tel = document.getElementById('login-tel').value.trim();
+  const pin = document.getElementById('login-pin').value.trim();
+  if(!tel || !pin) { showLoginError('Ingresa tu teléfono y PIN'); return; }
+
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Verificando...';
+  document.getElementById('login-error').style.display = 'none';
+
+  const telNorm = normTel(tel);
+
+  // Intentar con teléfono normalizado, y también con el valor original
+  const {data, error} = await _supa
+    .from('usuarios_autorizados')
+    .select('*')
+    .or(`telefono.eq.${telNorm},telefono.eq.${tel}`)
+    .eq('pin', pin)
+    .eq('activo', true)
+    .eq('acceso_asistente', true)
+    .maybeSingle();
+
+  if(error || !data) {
+    showLoginError('Teléfono o PIN incorrecto');
+    return;
   }
-};
-// ================================================================
 
-const {jsPDF} = window.jspdf;
-
-// Sucursal admins (email + whatsapp)
-const ADMINS = {
-  'Cerrillos':    {email:'comercial@gestionrepchile.cl', wa:'56995342437', nombre:'Dusan Arancibia'},
-  'Maipú':        {email:'comercial@gestionrepchile.cl', wa:'56995342437', nombre:'Pablo Arancibia'},
-  'Talca':        {email:'comercial@gestionrepchile.cl', wa:'56995342437', nombre:'Ingrid Cancino'},
-  'Puerto Montt': {email:'comercial@gestionrepchile.cl', wa:'56995342437', nombre:'Jose Alaminos'},
-};
-
-var MATERIALES_DATA = {"Cerrillos":[{"id":1,"categoria":"FIERROS Y LATAS","material":"Fierro Corto (≤ 80 cm)","reciclean":false,"farex":true,"precioCompra":210,"precioLista":110,"precioEjecutivo":120,"precioMaximo":130,"metaKgTotal":10000,"metaCategoriaTotal":25000,"ivaTret":true,"flete":15,"margen":0.15},{"id":2,"categoria":"FIERROS Y LATAS","material":"Fierro Largo (≤ 3 m)","reciclean":false,"farex":true,"precioCompra":195,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":15000,"metaCategoriaTotal":25000,"ivaTret":true,"flete":15,"margen":0.15},{"id":3,"categoria":"LATA CHATARRA","material":"Lata Chatarra","reciclean":true,"farex":true,"precioCompra":195,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":10000,"metaCategoriaTotal":10000,"ivaTret":true,"flete":15,"margen":0.2},{"id":4,"categoria":"FIERROS Y LATAS","material":"Fierro Mixto","reciclean":false,"farex":true,"precioCompra":185,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":true,"flete":15,"margen":0.15},{"id":5,"categoria":"FIERROS Y LATAS","material":"Oxicorte","reciclean":false,"farex":true,"precioCompra":195,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":true,"flete":15,"margen":0.15},{"id":6,"categoria":"FIERROS Y LATAS","material":"Viruta","reciclean":false,"farex":true,"precioCompra":60,"precioLista":30,"precioEjecutivo":30,"precioMaximo":30,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":true,"flete":15,"margen":0.15},{"id":7,"categoria":"FIERROS Y LATAS","material":"Fierro Fundido","reciclean":false,"farex":true,"precioCompra":100,"precioLista":50,"precioEjecutivo":60,"precioMaximo":60,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":true,"flete":15,"margen":0.15},{"id":8,"categoria":"FIERROS Y LATAS","material":"Manganeso","reciclean":false,"farex":true,"precioCompra":220,"precioLista":120,"precioEjecutivo":130,"precioMaximo":140,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":true,"flete":15,"margen":0.15},{"id":9,"categoria":"COBRES","material":"Cobre 1° Tubo","reciclean":false,"farex":true,"precioCompra":9700,"precioLista":6000,"precioEjecutivo":6530,"precioMaximo":7060,"metaKgTotal":1000,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":10,"categoria":"COBRES","material":"Cobre 1° Pelillo","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":11,"categoria":"COBRES","material":"Cobre 3ra","reciclean":false,"farex":true,"precioCompra":9600,"precioLista":5940,"precioEjecutivo":6460,"precioMaximo":6990,"metaKgTotal":5000,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":12,"categoria":"COBRES","material":"Cobre Esmaltado","reciclean":false,"farex":true,"precioCompra":9000,"precioLista":5570,"precioEjecutivo":6060,"precioMaximo":6550,"metaKgTotal":5000,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":13,"categoria":"COBRES","material":"Cobre Calefón","reciclean":false,"farex":true,"precioCompra":8100,"precioLista":5010,"precioEjecutivo":5450,"precioMaximo":5890,"metaKgTotal":1000,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":14,"categoria":"COBRES","material":"Cobre Radiador","reciclean":false,"farex":true,"precioCompra":5700,"precioLista":3520,"precioEjecutivo":3830,"precioMaximo":4140,"metaKgTotal":500,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":15,"categoria":"COBRES","material":"Cobre Radiador Chico","reciclean":false,"farex":true,"precioCompra":5680,"precioLista":3510,"precioEjecutivo":3820,"precioMaximo":4130,"metaKgTotal":300,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":16,"categoria":"COBRES","material":"Cobre-Níquel (Cu/Ni)","reciclean":false,"farex":true,"precioCompra":2600,"precioLista":1600,"precioEjecutivo":1740,"precioMaximo":1880,"metaKgTotal":0,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":17,"categoria":"BRONCES","material":"Bronce Amarillo","reciclean":false,"farex":true,"precioCompra":6350,"precioLista":3930,"precioEjecutivo":4280,"precioMaximo":4620,"metaKgTotal":3000,"metaCategoriaTotal":4600,"ivaTret":true,"flete":15,"margen":0.1},{"id":18,"categoria":"BRONCES","material":"Bronce Colorado","reciclean":false,"farex":true,"precioCompra":8100,"precioLista":5010,"precioEjecutivo":5450,"precioMaximo":5890,"metaKgTotal":1000,"metaCategoriaTotal":4600,"ivaTret":true,"flete":15,"margen":0.1},{"id":19,"categoria":"BRONCES","material":"Bronce Contaminado","reciclean":false,"farex":true,"precioCompra":4500,"precioLista":2780,"precioEjecutivo":3020,"precioMaximo":3270,"metaKgTotal":500,"metaCategoriaTotal":4600,"ivaTret":true,"flete":15,"margen":0.1},{"id":20,"categoria":"BRONCES","material":"Bronce Aserrín Limpio","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":100,"metaCategoriaTotal":4600,"ivaTret":true,"flete":15,"margen":0.1},{"id":21,"categoria":"BRONCES","material":"Bronce Magnético","reciclean":false,"farex":true,"precioCompra":4500,"precioLista":2780,"precioEjecutivo":3020,"precioMaximo":3270,"metaKgTotal":0,"metaCategoriaTotal":4600,"ivaTret":true,"flete":15,"margen":0.1},{"id":22,"categoria":"ALUMINIOS","material":"Aluminio Off-Set","reciclean":false,"farex":true,"precioCompra":2200,"precioLista":1350,"precioEjecutivo":1470,"precioMaximo":1590,"metaKgTotal":0,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":23,"categoria":"ALUMINIOS","material":"Aluminio Perfil A","reciclean":false,"farex":true,"precioCompra":2150,"precioLista":1330,"precioEjecutivo":1440,"precioMaximo":1560,"metaKgTotal":0,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":24,"categoria":"ALUMINIOS","material":"Aluminio Perfil B","reciclean":false,"farex":true,"precioCompra":2100,"precioLista":1290,"precioEjecutivo":1400,"precioMaximo":1520,"metaKgTotal":3000,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":25,"categoria":"ALUMINIOS","material":"Aluminio Duro","reciclean":false,"farex":true,"precioCompra":1820,"precioLista":1120,"precioEjecutivo":1220,"precioMaximo":1320,"metaKgTotal":5000,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":26,"categoria":"ALUMINIOS","material":"Aluminio Duro Lata","reciclean":false,"farex":true,"precioCompra":1820,"precioLista":1120,"precioEjecutivo":1220,"precioMaximo":1320,"metaKgTotal":3000,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":27,"categoria":"ALUMINIOS","material":"Aluminio Blando","reciclean":false,"farex":true,"precioCompra":1300,"precioLista":800,"precioEjecutivo":870,"precioMaximo":940,"metaKgTotal":0,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":28,"categoria":"ALUMINIOS","material":"Aluminio Latas Bebidas (UBC)","reciclean":true,"farex":true,"precioCompra":1830,"precioLista":1120,"precioEjecutivo":1220,"precioMaximo":1320,"metaKgTotal":2000,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":29,"categoria":"ALUMINIOS","material":"Aluminio Pomos","reciclean":false,"farex":true,"precioCompra":1000,"precioLista":610,"precioEjecutivo":660,"precioMaximo":720,"metaKgTotal":0,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":30,"categoria":"ALUMINIOS","material":"Aluminio Radiador","reciclean":false,"farex":true,"precioCompra":1200,"precioLista":730,"precioEjecutivo":800,"precioMaximo":860,"metaKgTotal":500,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":31,"categoria":"ALUMINIOS","material":"Aluminio Radiador Mixto","reciclean":false,"farex":true,"precioCompra":4700,"precioLista":2910,"precioEjecutivo":3160,"precioMaximo":3420,"metaKgTotal":100,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":32,"categoria":"ALUMINIOS","material":"Aluminio FOIL","reciclean":false,"farex":true,"precioCompra":600,"precioLista":370,"precioEjecutivo":400,"precioMaximo":430,"metaKgTotal":0,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":33,"categoria":"ALUMINIOS","material":"Papel Foil Blanco","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":34,"categoria":"ALUMINIOS","material":"Papel Foil Color","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":35,"categoria":"ACEROS INOXIDABLES","material":"Acero Inox. SS 304","reciclean":false,"farex":true,"precioCompra":810,"precioLista":490,"precioEjecutivo":540,"precioMaximo":580,"metaKgTotal":5000,"metaCategoriaTotal":5000,"ivaTret":true,"flete":15,"margen":0.1},{"id":36,"categoria":"ACEROS INOXIDABLES","material":"Acero Inox. SS 316","reciclean":false,"farex":true,"precioCompra":1300,"precioLista":800,"precioEjecutivo":870,"precioMaximo":940,"metaKgTotal":0,"metaCategoriaTotal":5000,"ivaTret":true,"flete":15,"margen":0.1},{"id":37,"categoria":"ACEROS INOXIDABLES","material":"Acero Inox. SS 201","reciclean":false,"farex":true,"precioCompra":210,"precioLista":120,"precioEjecutivo":130,"precioMaximo":140,"metaKgTotal":0,"metaCategoriaTotal":5000,"ivaTret":true,"flete":15,"margen":0.1},{"id":38,"categoria":"ACEROS INOXIDABLES","material":"Zinc (Ánodos)","reciclean":false,"farex":true,"precioCompra":350,"precioLista":200,"precioEjecutivo":220,"precioMaximo":240,"metaKgTotal":0,"metaCategoriaTotal":5000,"ivaTret":true,"flete":15,"margen":0.1},{"id":39,"categoria":"ACEROS INOXIDABLES","material":"Plomo","reciclean":false,"farex":true,"precioCompra":500,"precioLista":300,"precioEjecutivo":320,"precioMaximo":350,"metaKgTotal":0,"metaCategoriaTotal":5000,"ivaTret":true,"flete":15,"margen":0.1},{"id":40,"categoria":"CARTÓN Y PAPEL","material":"Cartón Corrugado","reciclean":true,"farex":false,"precioCompra":40,"precioLista":10,"precioEjecutivo":10,"precioMaximo":10,"metaKgTotal":10000,"metaCategoriaTotal":15000,"ivaTret":false,"flete":30,"margen":0.08},{"id":41,"categoria":"CARTÓN Y PAPEL","material":"Cartón Dúplex","reciclean":true,"farex":false,"precioCompra":0,"precioLista":10,"precioEjecutivo":10,"precioMaximo":10,"metaKgTotal":0,"metaCategoriaTotal":15000,"ivaTret":false,"flete":30,"margen":0.08},{"id":42,"categoria":"CARTÓN Y PAPEL","material":"Papel Blanco 2","reciclean":true,"farex":false,"precioCompra":140,"precioLista":80,"precioEjecutivo":90,"precioMaximo":100,"metaKgTotal":5000,"metaCategoriaTotal":15000,"ivaTret":false,"flete":30,"margen":0.08},{"id":43,"categoria":"CARTÓN Y PAPEL","material":"Papel Blanco 3","reciclean":true,"farex":false,"precioCompra":0,"precioLista":10,"precioEjecutivo":10,"precioMaximo":10,"metaKgTotal":0,"metaCategoriaTotal":15000,"ivaTret":false,"flete":30,"margen":0.08},{"id":44,"categoria":"CARTÓN Y PAPEL","material":"Papel Tissue/Kraft","reciclean":true,"farex":false,"precioCompra":0,"precioLista":10,"precioEjecutivo":10,"precioMaximo":10,"metaKgTotal":0,"metaCategoriaTotal":15000,"ivaTret":false,"flete":30,"margen":0.08},{"id":45,"categoria":"CARTÓN Y PAPEL","material":"Papel Diario","reciclean":true,"farex":false,"precioCompra":0,"precioLista":10,"precioEjecutivo":10,"precioMaximo":10,"metaKgTotal":0,"metaCategoriaTotal":15000,"ivaTret":false,"flete":30,"margen":0.08},{"id":46,"categoria":"CARTÓN Y PAPEL","material":"Semimixto","reciclean":true,"farex":false,"precioCompra":0,"precioLista":10,"precioEjecutivo":10,"precioMaximo":10,"metaKgTotal":0,"metaCategoriaTotal":15000,"ivaTret":false,"flete":30,"margen":0.08},{"id":47,"categoria":"VIDRIO","material":"Vidrio de Botellas","reciclean":true,"farex":false,"precioCompra":60,"precioLista":30,"precioEjecutivo":30,"precioMaximo":30,"metaKgTotal":5000,"metaCategoriaTotal":5000,"ivaTret":false,"flete":15,"margen":0.4},{"id":48,"categoria":"PLÁSTICOS — PET","material":"PET Transparente","reciclean":true,"farex":false,"precioCompra":720,"precioLista":410,"precioEjecutivo":440,"precioMaximo":480,"metaKgTotal":2000,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.3},{"id":49,"categoria":"PLÁSTICOS — PET","material":"PET Color","reciclean":true,"farex":false,"precioCompra":400,"precioLista":220,"precioEjecutivo":240,"precioMaximo":260,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.3},{"id":50,"categoria":"PLÁSTICOS — PET","material":"PET Revuelto","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.3},{"id":51,"categoria":"PLÁSTICOS — PET","material":"PET Preforma Transparente","reciclean":true,"farex":false,"precioCompra":500,"precioLista":280,"precioEjecutivo":300,"precioMaximo":330,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.3},{"id":52,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Stretch Film c/Etiqueta","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":2000,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":53,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Stretch Film s/Etiqueta","reciclean":true,"farex":false,"precioCompra":160,"precioLista":80,"precioEjecutivo":80,"precioMaximo":90,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":54,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno con Stretch Film","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":1000,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":55,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno para Lavado","reciclean":true,"farex":false,"precioCompra":260,"precioLista":140,"precioEjecutivo":150,"precioMaximo":160,"metaKgTotal":1000,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":56,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno Limpio","reciclean":true,"farex":false,"precioCompra":400,"precioLista":220,"precioEjecutivo":240,"precioMaximo":260,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":57,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Techo Invernadero","reciclean":true,"farex":false,"precioCompra":210,"precioLista":110,"precioEjecutivo":120,"precioMaximo":130,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":58,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Pesquero (sin Residuos)","reciclean":true,"farex":false,"precioCompra":200,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":59,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Cinta de Riego","reciclean":true,"farex":false,"precioCompra":210,"precioLista":110,"precioEjecutivo":120,"precioMaximo":130,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":60,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Caramelo Limpio","reciclean":true,"farex":false,"precioCompra":400,"precioLista":220,"precioEjecutivo":240,"precioMaximo":260,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":61,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno Sucio","reciclean":true,"farex":false,"precioCompra":200,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":62,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"LDPE","reciclean":true,"farex":false,"precioCompra":120,"precioLista":50,"precioEjecutivo":60,"precioMaximo":60,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":63,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"HDPE","reciclean":true,"farex":false,"precioCompra":250,"precioLista":130,"precioEjecutivo":140,"precioMaximo":150,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":64,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Tapas Bebidas","reciclean":true,"farex":false,"precioCompra":200,"precioLista":60,"precioEjecutivo":60,"precioMaximo":70,"metaKgTotal":2000,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":65,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Tapón Agua Purificada","reciclean":true,"farex":false,"precioCompra":300,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":66,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Bins Agrícola","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":67,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Pallet PP","reciclean":true,"farex":false,"precioCompra":300,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":68,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Basureros sin Eje y Ruedas","reciclean":true,"farex":false,"precioCompra":250,"precioLista":80,"precioEjecutivo":80,"precioMaximo":90,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":69,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Planza de Fardos","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":70,"categoria":"PLÁSTICOS — RÍGIDOS","material":"HDPE PP Inyección","reciclean":true,"farex":false,"precioCompra":300,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":71,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Post Consumo","reciclean":true,"farex":false,"precioCompra":300,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":72,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Pet Clear","reciclean":true,"farex":false,"precioCompra":720,"precioLista":240,"precioEjecutivo":260,"precioMaximo":280,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":73,"categoria":"PLÁSTICOS — SOPLADOS","material":"Bidón Granel Triple Lavado","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":2000,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":74,"categoria":"PLÁSTICOS — SOPLADOS","material":"Bidón Fardo Triple Lavado","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":75,"categoria":"PLÁSTICOS — SOPLADOS","material":"Bidón Sacas/Pallet","reciclean":true,"farex":false,"precioCompra":300,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6}],"Maipú":[{"id":1,"categoria":"FIERROS Y LATAS","material":"Fierro Corto (≤ 80 cm)","reciclean":false,"farex":true,"precioCompra":210,"precioLista":110,"precioEjecutivo":120,"precioMaximo":130,"metaKgTotal":10000,"metaCategoriaTotal":25000,"ivaTret":true,"flete":15,"margen":0.15},{"id":2,"categoria":"FIERROS Y LATAS","material":"Fierro Largo (≤ 3 m)","reciclean":false,"farex":true,"precioCompra":195,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":15000,"metaCategoriaTotal":25000,"ivaTret":true,"flete":15,"margen":0.15},{"id":3,"categoria":"LATA CHATARRA","material":"Lata Chatarra","reciclean":true,"farex":true,"precioCompra":195,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":10000,"metaCategoriaTotal":10000,"ivaTret":true,"flete":15,"margen":0.2},{"id":4,"categoria":"FIERROS Y LATAS","material":"Fierro Mixto","reciclean":false,"farex":true,"precioCompra":185,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":true,"flete":15,"margen":0.15},{"id":5,"categoria":"FIERROS Y LATAS","material":"Oxicorte","reciclean":false,"farex":true,"precioCompra":195,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":true,"flete":15,"margen":0.15},{"id":6,"categoria":"FIERROS Y LATAS","material":"Viruta","reciclean":false,"farex":true,"precioCompra":60,"precioLista":30,"precioEjecutivo":30,"precioMaximo":30,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":true,"flete":15,"margen":0.15},{"id":7,"categoria":"FIERROS Y LATAS","material":"Fierro Fundido","reciclean":false,"farex":true,"precioCompra":100,"precioLista":50,"precioEjecutivo":60,"precioMaximo":60,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":true,"flete":15,"margen":0.15},{"id":8,"categoria":"FIERROS Y LATAS","material":"Manganeso","reciclean":false,"farex":true,"precioCompra":220,"precioLista":120,"precioEjecutivo":130,"precioMaximo":140,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":true,"flete":15,"margen":0.15},{"id":9,"categoria":"COBRES","material":"Cobre 1° Tubo","reciclean":false,"farex":true,"precioCompra":9700,"precioLista":6000,"precioEjecutivo":6530,"precioMaximo":7060,"metaKgTotal":1000,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":10,"categoria":"COBRES","material":"Cobre 1° Pelillo","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":11,"categoria":"COBRES","material":"Cobre 3ra","reciclean":false,"farex":true,"precioCompra":9600,"precioLista":5940,"precioEjecutivo":6460,"precioMaximo":6990,"metaKgTotal":5000,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":12,"categoria":"COBRES","material":"Cobre Esmaltado","reciclean":false,"farex":true,"precioCompra":9000,"precioLista":5570,"precioEjecutivo":6060,"precioMaximo":6550,"metaKgTotal":5000,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":13,"categoria":"COBRES","material":"Cobre Calefón","reciclean":false,"farex":true,"precioCompra":8100,"precioLista":5010,"precioEjecutivo":5450,"precioMaximo":5890,"metaKgTotal":1000,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":14,"categoria":"COBRES","material":"Cobre Radiador","reciclean":false,"farex":true,"precioCompra":5700,"precioLista":3520,"precioEjecutivo":3830,"precioMaximo":4140,"metaKgTotal":500,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":15,"categoria":"COBRES","material":"Cobre Radiador Chico","reciclean":false,"farex":true,"precioCompra":5680,"precioLista":3510,"precioEjecutivo":3820,"precioMaximo":4130,"metaKgTotal":300,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":16,"categoria":"COBRES","material":"Cobre-Níquel (Cu/Ni)","reciclean":false,"farex":true,"precioCompra":2600,"precioLista":1600,"precioEjecutivo":1740,"precioMaximo":1880,"metaKgTotal":0,"metaCategoriaTotal":12800,"ivaTret":true,"flete":15,"margen":0.1},{"id":17,"categoria":"BRONCES","material":"Bronce Amarillo","reciclean":false,"farex":true,"precioCompra":6350,"precioLista":3930,"precioEjecutivo":4280,"precioMaximo":4620,"metaKgTotal":3000,"metaCategoriaTotal":4600,"ivaTret":true,"flete":15,"margen":0.1},{"id":18,"categoria":"BRONCES","material":"Bronce Colorado","reciclean":false,"farex":true,"precioCompra":8100,"precioLista":5010,"precioEjecutivo":5450,"precioMaximo":5890,"metaKgTotal":1000,"metaCategoriaTotal":4600,"ivaTret":true,"flete":15,"margen":0.1},{"id":19,"categoria":"BRONCES","material":"Bronce Contaminado","reciclean":false,"farex":true,"precioCompra":4500,"precioLista":2780,"precioEjecutivo":3020,"precioMaximo":3270,"metaKgTotal":500,"metaCategoriaTotal":4600,"ivaTret":true,"flete":15,"margen":0.1},{"id":20,"categoria":"BRONCES","material":"Bronce Aserrín Limpio","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":100,"metaCategoriaTotal":4600,"ivaTret":true,"flete":15,"margen":0.1},{"id":21,"categoria":"BRONCES","material":"Bronce Magnético","reciclean":false,"farex":true,"precioCompra":4500,"precioLista":2780,"precioEjecutivo":3020,"precioMaximo":3270,"metaKgTotal":0,"metaCategoriaTotal":4600,"ivaTret":true,"flete":15,"margen":0.1},{"id":22,"categoria":"ALUMINIOS","material":"Aluminio Off-Set","reciclean":false,"farex":true,"precioCompra":2200,"precioLista":1350,"precioEjecutivo":1470,"precioMaximo":1590,"metaKgTotal":0,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":23,"categoria":"ALUMINIOS","material":"Aluminio Perfil A","reciclean":false,"farex":true,"precioCompra":2150,"precioLista":1330,"precioEjecutivo":1440,"precioMaximo":1560,"metaKgTotal":0,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":24,"categoria":"ALUMINIOS","material":"Aluminio Perfil B","reciclean":false,"farex":true,"precioCompra":2100,"precioLista":1290,"precioEjecutivo":1400,"precioMaximo":1520,"metaKgTotal":3000,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":25,"categoria":"ALUMINIOS","material":"Aluminio Duro","reciclean":false,"farex":true,"precioCompra":1820,"precioLista":1120,"precioEjecutivo":1220,"precioMaximo":1320,"metaKgTotal":5000,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":26,"categoria":"ALUMINIOS","material":"Aluminio Duro Lata","reciclean":false,"farex":true,"precioCompra":1820,"precioLista":1120,"precioEjecutivo":1220,"precioMaximo":1320,"metaKgTotal":3000,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":27,"categoria":"ALUMINIOS","material":"Aluminio Blando","reciclean":false,"farex":true,"precioCompra":1300,"precioLista":800,"precioEjecutivo":870,"precioMaximo":940,"metaKgTotal":0,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":28,"categoria":"ALUMINIOS","material":"Aluminio Latas Bebidas (UBC)","reciclean":true,"farex":true,"precioCompra":1830,"precioLista":1120,"precioEjecutivo":1220,"precioMaximo":1320,"metaKgTotal":2000,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":29,"categoria":"ALUMINIOS","material":"Aluminio Pomos","reciclean":false,"farex":true,"precioCompra":1000,"precioLista":610,"precioEjecutivo":660,"precioMaximo":720,"metaKgTotal":0,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":30,"categoria":"ALUMINIOS","material":"Aluminio Radiador","reciclean":false,"farex":true,"precioCompra":1200,"precioLista":730,"precioEjecutivo":800,"precioMaximo":860,"metaKgTotal":500,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":31,"categoria":"ALUMINIOS","material":"Aluminio Radiador Mixto","reciclean":false,"farex":true,"precioCompra":4700,"precioLista":2910,"precioEjecutivo":3160,"precioMaximo":3420,"metaKgTotal":100,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":32,"categoria":"ALUMINIOS","material":"Aluminio FOIL","reciclean":false,"farex":true,"precioCompra":600,"precioLista":370,"precioEjecutivo":400,"precioMaximo":430,"metaKgTotal":0,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":33,"categoria":"ALUMINIOS","material":"Papel Foil Blanco","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":34,"categoria":"ALUMINIOS","material":"Papel Foil Color","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":13600,"ivaTret":true,"flete":15,"margen":0.1},{"id":35,"categoria":"ACEROS INOXIDABLES","material":"Acero Inox. SS 304","reciclean":false,"farex":true,"precioCompra":810,"precioLista":490,"precioEjecutivo":540,"precioMaximo":580,"metaKgTotal":5000,"metaCategoriaTotal":5000,"ivaTret":true,"flete":15,"margen":0.1},{"id":36,"categoria":"ACEROS INOXIDABLES","material":"Acero Inox. SS 316","reciclean":false,"farex":true,"precioCompra":1300,"precioLista":800,"precioEjecutivo":870,"precioMaximo":940,"metaKgTotal":0,"metaCategoriaTotal":5000,"ivaTret":true,"flete":15,"margen":0.1},{"id":37,"categoria":"ACEROS INOXIDABLES","material":"Acero Inox. SS 201","reciclean":false,"farex":true,"precioCompra":210,"precioLista":120,"precioEjecutivo":130,"precioMaximo":140,"metaKgTotal":0,"metaCategoriaTotal":5000,"ivaTret":true,"flete":15,"margen":0.1},{"id":38,"categoria":"ACEROS INOXIDABLES","material":"Zinc (Ánodos)","reciclean":false,"farex":true,"precioCompra":350,"precioLista":200,"precioEjecutivo":220,"precioMaximo":240,"metaKgTotal":0,"metaCategoriaTotal":5000,"ivaTret":true,"flete":15,"margen":0.1},{"id":39,"categoria":"ACEROS INOXIDABLES","material":"Plomo","reciclean":false,"farex":true,"precioCompra":500,"precioLista":300,"precioEjecutivo":320,"precioMaximo":350,"metaKgTotal":0,"metaCategoriaTotal":5000,"ivaTret":true,"flete":15,"margen":0.1},{"id":40,"categoria":"CARTÓN Y PAPEL","material":"Cartón Corrugado","reciclean":true,"farex":false,"precioCompra":40,"precioLista":10,"precioEjecutivo":10,"precioMaximo":10,"metaKgTotal":10000,"metaCategoriaTotal":15000,"ivaTret":false,"flete":30,"margen":0.08},{"id":41,"categoria":"CARTÓN Y PAPEL","material":"Cartón Dúplex","reciclean":true,"farex":false,"precioCompra":0,"precioLista":10,"precioEjecutivo":10,"precioMaximo":10,"metaKgTotal":0,"metaCategoriaTotal":15000,"ivaTret":false,"flete":30,"margen":0.08},{"id":42,"categoria":"CARTÓN Y PAPEL","material":"Papel Blanco 2","reciclean":true,"farex":false,"precioCompra":140,"precioLista":80,"precioEjecutivo":90,"precioMaximo":100,"metaKgTotal":5000,"metaCategoriaTotal":15000,"ivaTret":false,"flete":30,"margen":0.08},{"id":43,"categoria":"CARTÓN Y PAPEL","material":"Papel Blanco 3","reciclean":true,"farex":false,"precioCompra":0,"precioLista":10,"precioEjecutivo":10,"precioMaximo":10,"metaKgTotal":0,"metaCategoriaTotal":15000,"ivaTret":false,"flete":30,"margen":0.08},{"id":44,"categoria":"CARTÓN Y PAPEL","material":"Papel Tissue/Kraft","reciclean":true,"farex":false,"precioCompra":0,"precioLista":10,"precioEjecutivo":10,"precioMaximo":10,"metaKgTotal":0,"metaCategoriaTotal":15000,"ivaTret":false,"flete":30,"margen":0.08},{"id":45,"categoria":"CARTÓN Y PAPEL","material":"Papel Diario","reciclean":true,"farex":false,"precioCompra":0,"precioLista":10,"precioEjecutivo":10,"precioMaximo":10,"metaKgTotal":0,"metaCategoriaTotal":15000,"ivaTret":false,"flete":30,"margen":0.08},{"id":46,"categoria":"CARTÓN Y PAPEL","material":"Semimixto","reciclean":true,"farex":false,"precioCompra":0,"precioLista":10,"precioEjecutivo":10,"precioMaximo":10,"metaKgTotal":0,"metaCategoriaTotal":15000,"ivaTret":false,"flete":30,"margen":0.08},{"id":47,"categoria":"VIDRIO","material":"Vidrio de Botellas","reciclean":true,"farex":false,"precioCompra":60,"precioLista":30,"precioEjecutivo":30,"precioMaximo":30,"metaKgTotal":5000,"metaCategoriaTotal":5000,"ivaTret":false,"flete":15,"margen":0.4},{"id":48,"categoria":"PLÁSTICOS — PET","material":"PET Transparente","reciclean":true,"farex":false,"precioCompra":720,"precioLista":410,"precioEjecutivo":440,"precioMaximo":480,"metaKgTotal":2000,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.3},{"id":49,"categoria":"PLÁSTICOS — PET","material":"PET Color","reciclean":true,"farex":false,"precioCompra":400,"precioLista":220,"precioEjecutivo":240,"precioMaximo":260,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.3},{"id":50,"categoria":"PLÁSTICOS — PET","material":"PET Revuelto","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.3},{"id":51,"categoria":"PLÁSTICOS — PET","material":"PET Preforma Transparente","reciclean":true,"farex":false,"precioCompra":500,"precioLista":280,"precioEjecutivo":300,"precioMaximo":330,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.3},{"id":52,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Stretch Film c/Etiqueta","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":2000,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":53,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Stretch Film s/Etiqueta","reciclean":true,"farex":false,"precioCompra":160,"precioLista":80,"precioEjecutivo":80,"precioMaximo":90,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":54,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno con Stretch Film","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":1000,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":55,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno para Lavado","reciclean":true,"farex":false,"precioCompra":260,"precioLista":140,"precioEjecutivo":150,"precioMaximo":160,"metaKgTotal":1000,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":56,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno Limpio","reciclean":true,"farex":false,"precioCompra":400,"precioLista":220,"precioEjecutivo":240,"precioMaximo":260,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":57,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Techo Invernadero","reciclean":true,"farex":false,"precioCompra":210,"precioLista":110,"precioEjecutivo":120,"precioMaximo":130,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":58,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Pesquero (sin Residuos)","reciclean":true,"farex":false,"precioCompra":200,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":59,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Cinta de Riego","reciclean":true,"farex":false,"precioCompra":210,"precioLista":110,"precioEjecutivo":120,"precioMaximo":130,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":60,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Caramelo Limpio","reciclean":true,"farex":false,"precioCompra":400,"precioLista":220,"precioEjecutivo":240,"precioMaximo":260,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":61,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno Sucio","reciclean":true,"farex":false,"precioCompra":200,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":62,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"LDPE","reciclean":true,"farex":false,"precioCompra":120,"precioLista":50,"precioEjecutivo":60,"precioMaximo":60,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":63,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"HDPE","reciclean":true,"farex":false,"precioCompra":250,"precioLista":130,"precioEjecutivo":140,"precioMaximo":150,"metaKgTotal":0,"metaCategoriaTotal":4000,"ivaTret":false,"flete":30,"margen":0.3},{"id":64,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Tapas Bebidas","reciclean":true,"farex":false,"precioCompra":200,"precioLista":60,"precioEjecutivo":60,"precioMaximo":70,"metaKgTotal":2000,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":65,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Tapón Agua Purificada","reciclean":true,"farex":false,"precioCompra":300,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":66,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Bins Agrícola","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":67,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Pallet PP","reciclean":true,"farex":false,"precioCompra":300,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":68,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Basureros sin Eje y Ruedas","reciclean":true,"farex":false,"precioCompra":250,"precioLista":80,"precioEjecutivo":80,"precioMaximo":90,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":69,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Planza de Fardos","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":70,"categoria":"PLÁSTICOS — RÍGIDOS","material":"HDPE PP Inyección","reciclean":true,"farex":false,"precioCompra":300,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":71,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Post Consumo","reciclean":true,"farex":false,"precioCompra":300,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":72,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Pet Clear","reciclean":true,"farex":false,"precioCompra":720,"precioLista":240,"precioEjecutivo":260,"precioMaximo":280,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":73,"categoria":"PLÁSTICOS — SOPLADOS","material":"Bidón Granel Triple Lavado","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":2000,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":74,"categoria":"PLÁSTICOS — SOPLADOS","material":"Bidón Fardo Triple Lavado","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6},{"id":75,"categoria":"PLÁSTICOS — SOPLADOS","material":"Bidón Sacas/Pallet","reciclean":true,"farex":false,"precioCompra":300,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":30,"margen":0.6}],"Talca":[{"id":1,"categoria":"FIERROS Y LATAS","material":"Fierro Corto (≤ 80 cm)","reciclean":false,"farex":true,"precioCompra":180,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.15},{"id":2,"categoria":"FIERROS Y LATAS","material":"Fierro Largo (≤ 3 m)","reciclean":false,"farex":true,"precioCompra":170,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.15},{"id":3,"categoria":"LATA CHATARRA","material":"Lata Chatarra","reciclean":true,"farex":true,"precioCompra":168,"precioLista":80,"precioEjecutivo":90,"precioMaximo":100,"metaKgTotal":5000,"metaCategoriaTotal":5000,"ivaTret":true,"flete":14,"margen":0.2},{"id":4,"categoria":"FIERROS Y LATAS","material":"Fierro Mixto","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.15},{"id":5,"categoria":"FIERROS Y LATAS","material":"Oxicorte","reciclean":false,"farex":true,"precioCompra":175,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.15},{"id":6,"categoria":"FIERROS Y LATAS","material":"Viruta","reciclean":false,"farex":true,"precioCompra":60,"precioLista":30,"precioEjecutivo":30,"precioMaximo":30,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.15},{"id":7,"categoria":"FIERROS Y LATAS","material":"Fierro Fundido","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.15},{"id":8,"categoria":"FIERROS Y LATAS","material":"Manganeso","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.15},{"id":9,"categoria":"COBRES","material":"Cobre 1° Tubo","reciclean":false,"farex":true,"precioCompra":9700,"precioLista":6000,"precioEjecutivo":6530,"precioMaximo":7060,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":10,"categoria":"COBRES","material":"Cobre 1° Pelillo","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":11,"categoria":"COBRES","material":"Cobre 3ra","reciclean":false,"farex":true,"precioCompra":9600,"precioLista":5940,"precioEjecutivo":6460,"precioMaximo":6990,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":12,"categoria":"COBRES","material":"Cobre Esmaltado","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":13,"categoria":"COBRES","material":"Cobre Calefón","reciclean":false,"farex":true,"precioCompra":5000,"precioLista":3090,"precioEjecutivo":3360,"precioMaximo":3630,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":14,"categoria":"COBRES","material":"Cobre Radiador","reciclean":false,"farex":true,"precioCompra":3600,"precioLista":2220,"precioEjecutivo":2420,"precioMaximo":2610,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":15,"categoria":"COBRES","material":"Cobre Radiador Chico","reciclean":false,"farex":true,"precioCompra":5680,"precioLista":3510,"precioEjecutivo":3820,"precioMaximo":4130,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":16,"categoria":"COBRES","material":"Cobre-Níquel (Cu/Ni)","reciclean":false,"farex":true,"precioCompra":2600,"precioLista":1610,"precioEjecutivo":1750,"precioMaximo":1890,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":17,"categoria":"BRONCES","material":"Bronce Amarillo","reciclean":false,"farex":true,"precioCompra":4000,"precioLista":2470,"precioEjecutivo":2690,"precioMaximo":2910,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":18,"categoria":"BRONCES","material":"Bronce Colorado","reciclean":false,"farex":true,"precioCompra":8100,"precioLista":5010,"precioEjecutivo":5450,"precioMaximo":5890,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":19,"categoria":"BRONCES","material":"Bronce Contaminado","reciclean":false,"farex":true,"precioCompra":4500,"precioLista":2780,"precioEjecutivo":3020,"precioMaximo":3270,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":20,"categoria":"BRONCES","material":"Bronce Aserrín Limpio","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":21,"categoria":"BRONCES","material":"Bronce Magnético","reciclean":false,"farex":true,"precioCompra":4500,"precioLista":2780,"precioEjecutivo":3020,"precioMaximo":3270,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":22,"categoria":"ALUMINIOS","material":"Aluminio Off-Set","reciclean":false,"farex":true,"precioCompra":2200,"precioLista":1350,"precioEjecutivo":1470,"precioMaximo":1590,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":14,"margen":0.1},{"id":23,"categoria":"ALUMINIOS","material":"Aluminio Perfil A","reciclean":false,"farex":true,"precioCompra":2150,"precioLista":1330,"precioEjecutivo":1440,"precioMaximo":1560,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":14,"margen":0.1},{"id":24,"categoria":"ALUMINIOS","material":"Aluminio Perfil B","reciclean":false,"farex":true,"precioCompra":2100,"precioLista":1290,"precioEjecutivo":1400,"precioMaximo":1520,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":14,"margen":0.1},{"id":25,"categoria":"ALUMINIOS","material":"Aluminio Duro","reciclean":false,"farex":true,"precioCompra":1200,"precioLista":730,"precioEjecutivo":800,"precioMaximo":860,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":14,"margen":0.1},{"id":26,"categoria":"ALUMINIOS","material":"Aluminio Duro Lata","reciclean":false,"farex":true,"precioCompra":1820,"precioLista":1120,"precioEjecutivo":1220,"precioMaximo":1320,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":14,"margen":0.1},{"id":27,"categoria":"ALUMINIOS","material":"Aluminio Blando","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":14,"margen":0.1},{"id":28,"categoria":"ALUMINIOS","material":"Aluminio Latas Bebidas (UBC)","reciclean":true,"farex":true,"precioCompra":1400,"precioLista":860,"precioEjecutivo":940,"precioMaximo":1010,"metaKgTotal":2000,"metaCategoriaTotal":2000,"ivaTret":true,"flete":14,"margen":0.1},{"id":29,"categoria":"ALUMINIOS","material":"Aluminio Pomos","reciclean":false,"farex":true,"precioCompra":1000,"precioLista":610,"precioEjecutivo":660,"precioMaximo":720,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":14,"margen":0.1},{"id":30,"categoria":"ALUMINIOS","material":"Aluminio Radiador","reciclean":false,"farex":true,"precioCompra":600,"precioLista":370,"precioEjecutivo":400,"precioMaximo":430,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":14,"margen":0.1},{"id":31,"categoria":"ALUMINIOS","material":"Aluminio Radiador Mixto","reciclean":false,"farex":true,"precioCompra":4700,"precioLista":2910,"precioEjecutivo":3160,"precioMaximo":3420,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":14,"margen":0.1},{"id":32,"categoria":"ALUMINIOS","material":"Aluminio FOIL","reciclean":false,"farex":true,"precioCompra":600,"precioLista":370,"precioEjecutivo":400,"precioMaximo":430,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":14,"margen":0.1},{"id":33,"categoria":"ALUMINIOS","material":"Papel Foil Blanco","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":14,"margen":0.1},{"id":34,"categoria":"ALUMINIOS","material":"Papel Foil Color","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":14,"margen":0.1},{"id":35,"categoria":"ACEROS INOXIDABLES","material":"Acero Inox. SS 304","reciclean":false,"farex":true,"precioCompra":550,"precioLista":330,"precioEjecutivo":360,"precioMaximo":390,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":36,"categoria":"ACEROS INOXIDABLES","material":"Acero Inox. SS 316","reciclean":false,"farex":true,"precioCompra":1300,"precioLista":800,"precioEjecutivo":870,"precioMaximo":940,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":37,"categoria":"ACEROS INOXIDABLES","material":"Acero Inox. SS 201","reciclean":false,"farex":true,"precioCompra":210,"precioLista":120,"precioEjecutivo":130,"precioMaximo":140,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":38,"categoria":"ACEROS INOXIDABLES","material":"Zinc (Ánodos)","reciclean":false,"farex":true,"precioCompra":350,"precioLista":200,"precioEjecutivo":220,"precioMaximo":240,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":39,"categoria":"ACEROS INOXIDABLES","material":"Plomo","reciclean":false,"farex":true,"precioCompra":500,"precioLista":300,"precioEjecutivo":320,"precioMaximo":350,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":14,"margen":0.1},{"id":40,"categoria":"CARTÓN Y PAPEL","material":"Cartón Corrugado","reciclean":true,"farex":false,"precioCompra":120,"precioLista":15,"precioEjecutivo":30,"precioMaximo":40,"metaKgTotal":50000,"metaCategoriaTotal":70000,"ivaTret":false,"flete":14,"margen":0.08},{"id":41,"categoria":"CARTÓN Y PAPEL","material":"Cartón Dúplex","reciclean":true,"farex":false,"precioCompra":0,"precioLista":15,"precioEjecutivo":20,"precioMaximo":20,"metaKgTotal":0,"metaCategoriaTotal":70000,"ivaTret":false,"flete":14,"margen":0.08},{"id":42,"categoria":"CARTÓN Y PAPEL","material":"Papel Blanco 2","reciclean":true,"farex":false,"precioCompra":140,"precioLista":40,"precioEjecutivo":60,"precioMaximo":70,"metaKgTotal":20000,"metaCategoriaTotal":70000,"ivaTret":false,"flete":14,"margen":0.08},{"id":43,"categoria":"CARTÓN Y PAPEL","material":"Papel Blanco 3","reciclean":true,"farex":false,"precioCompra":0,"precioLista":15,"precioEjecutivo":20,"precioMaximo":20,"metaKgTotal":0,"metaCategoriaTotal":70000,"ivaTret":false,"flete":14,"margen":0.08},{"id":44,"categoria":"CARTÓN Y PAPEL","material":"Papel Tissue/Kraft","reciclean":true,"farex":false,"precioCompra":0,"precioLista":15,"precioEjecutivo":20,"precioMaximo":20,"metaKgTotal":0,"metaCategoriaTotal":70000,"ivaTret":false,"flete":14,"margen":0.08},{"id":45,"categoria":"CARTÓN Y PAPEL","material":"Papel Diario","reciclean":true,"farex":false,"precioCompra":0,"precioLista":15,"precioEjecutivo":20,"precioMaximo":20,"metaKgTotal":0,"metaCategoriaTotal":70000,"ivaTret":false,"flete":14,"margen":0.08},{"id":46,"categoria":"CARTÓN Y PAPEL","material":"Semimixto","reciclean":true,"farex":false,"precioCompra":0,"precioLista":15,"precioEjecutivo":20,"precioMaximo":20,"metaKgTotal":0,"metaCategoriaTotal":70000,"ivaTret":false,"flete":14,"margen":0.08},{"id":47,"categoria":"VIDRIO","material":"Vidrio de Botellas","reciclean":true,"farex":false,"precioCompra":50,"precioLista":20,"precioEjecutivo":20,"precioMaximo":20,"metaKgTotal":15000,"metaCategoriaTotal":15000,"ivaTret":false,"flete":14,"margen":0.4},{"id":48,"categoria":"PLÁSTICOS — PET","material":"PET Transparente","reciclean":true,"farex":false,"precioCompra":720,"precioLista":420,"precioEjecutivo":460,"precioMaximo":500,"metaKgTotal":5000,"metaCategoriaTotal":5000,"ivaTret":false,"flete":10,"margen":0.3},{"id":49,"categoria":"PLÁSTICOS — PET","material":"PET Color","reciclean":true,"farex":false,"precioCompra":400,"precioLista":230,"precioEjecutivo":250,"precioMaximo":270,"metaKgTotal":0,"metaCategoriaTotal":5000,"ivaTret":false,"flete":10,"margen":0.3},{"id":50,"categoria":"PLÁSTICOS — PET","material":"PET Revuelto","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":5000,"ivaTret":false,"flete":10,"margen":0.3},{"id":51,"categoria":"PLÁSTICOS — PET","material":"PET Preforma Transparente","reciclean":true,"farex":false,"precioCompra":500,"precioLista":290,"precioEjecutivo":320,"precioMaximo":340,"metaKgTotal":0,"metaCategoriaTotal":5000,"ivaTret":false,"flete":10,"margen":0.3},{"id":52,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Stretch Film c/Etiqueta","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":10000,"metaCategoriaTotal":25000,"ivaTret":false,"flete":10,"margen":0.3},{"id":53,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Stretch Film s/Etiqueta","reciclean":true,"farex":false,"precioCompra":160,"precioLista":80,"precioEjecutivo":90,"precioMaximo":100,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":false,"flete":10,"margen":0.3},{"id":54,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno con Stretch Film","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":5000,"metaCategoriaTotal":25000,"ivaTret":false,"flete":10,"margen":0.3},{"id":55,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno para Lavado","reciclean":true,"farex":false,"precioCompra":260,"precioLista":150,"precioEjecutivo":160,"precioMaximo":180,"metaKgTotal":5000,"metaCategoriaTotal":25000,"ivaTret":false,"flete":10,"margen":0.3},{"id":56,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno Limpio","reciclean":true,"farex":false,"precioCompra":400,"precioLista":230,"precioEjecutivo":250,"precioMaximo":270,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":false,"flete":10,"margen":0.3},{"id":57,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Techo Invernadero","reciclean":true,"farex":false,"precioCompra":210,"precioLista":120,"precioEjecutivo":130,"precioMaximo":140,"metaKgTotal":5000,"metaCategoriaTotal":25000,"ivaTret":false,"flete":10,"margen":0.3},{"id":58,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Pesquero (sin Residuos)","reciclean":true,"farex":false,"precioCompra":200,"precioLista":110,"precioEjecutivo":120,"precioMaximo":130,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":false,"flete":10,"margen":0.3},{"id":59,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Cinta de Riego","reciclean":true,"farex":false,"precioCompra":210,"precioLista":120,"precioEjecutivo":130,"precioMaximo":140,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":false,"flete":10,"margen":0.3},{"id":60,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Caramelo Limpio","reciclean":true,"farex":false,"precioCompra":400,"precioLista":230,"precioEjecutivo":250,"precioMaximo":270,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":false,"flete":10,"margen":0.3},{"id":61,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno Sucio","reciclean":true,"farex":false,"precioCompra":200,"precioLista":110,"precioEjecutivo":120,"precioMaximo":130,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":false,"flete":10,"margen":0.3},{"id":62,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"LDPE","reciclean":true,"farex":false,"precioCompra":120,"precioLista":70,"precioEjecutivo":80,"precioMaximo":80,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":false,"flete":10,"margen":0.3},{"id":63,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"HDPE","reciclean":true,"farex":false,"precioCompra":250,"precioLista":140,"precioEjecutivo":160,"precioMaximo":170,"metaKgTotal":0,"metaCategoriaTotal":25000,"ivaTret":false,"flete":10,"margen":0.3},{"id":64,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Tapas Bebidas","reciclean":true,"farex":false,"precioCompra":200,"precioLista":70,"precioEjecutivo":80,"precioMaximo":80,"metaKgTotal":2000,"metaCategoriaTotal":2000,"ivaTret":false,"flete":10,"margen":0.6},{"id":65,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Tapón Agua Purificada","reciclean":true,"farex":false,"precioCompra":300,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":10,"margen":0.6},{"id":66,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Bins Agrícola","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":10,"margen":0.6},{"id":67,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Pallet PP","reciclean":true,"farex":false,"precioCompra":300,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":10,"margen":0.6},{"id":68,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Basureros sin Eje y Ruedas","reciclean":true,"farex":false,"precioCompra":250,"precioLista":80,"precioEjecutivo":90,"precioMaximo":100,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":10,"margen":0.6},{"id":69,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Planza de Fardos","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":10,"margen":0.6},{"id":70,"categoria":"PLÁSTICOS — RÍGIDOS","material":"HDPE PP Inyección","reciclean":true,"farex":false,"precioCompra":300,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":10,"margen":0.6},{"id":71,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Post Consumo","reciclean":true,"farex":false,"precioCompra":300,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":10,"margen":0.6},{"id":72,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Pet Clear","reciclean":true,"farex":false,"precioCompra":720,"precioLista":240,"precioEjecutivo":260,"precioMaximo":280,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":10,"margen":0.6},{"id":73,"categoria":"PLÁSTICOS — SOPLADOS","material":"Bidón Granel Triple Lavado","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":2000,"metaCategoriaTotal":2000,"ivaTret":false,"flete":10,"margen":0.6},{"id":74,"categoria":"PLÁSTICOS — SOPLADOS","material":"Bidón Fardo Triple Lavado","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":10,"margen":0.6},{"id":75,"categoria":"PLÁSTICOS — SOPLADOS","material":"Bidón Sacas/Pallet","reciclean":true,"farex":false,"precioCompra":300,"precioLista":100,"precioEjecutivo":110,"precioMaximo":120,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":10,"margen":0.6}],"Puerto Montt":[{"id":1,"categoria":"FIERROS Y LATAS","material":"Fierro Corto (≤ 80 cm)","reciclean":false,"farex":true,"precioCompra":170,"precioLista":80,"precioEjecutivo":90,"precioMaximo":100,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.15},{"id":2,"categoria":"FIERROS Y LATAS","material":"Fierro Largo (≤ 3 m)","reciclean":false,"farex":true,"precioCompra":170,"precioLista":80,"precioEjecutivo":90,"precioMaximo":100,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.15},{"id":3,"categoria":"LATA CHATARRA","material":"Lata Chatarra","reciclean":true,"farex":true,"precioCompra":170,"precioLista":80,"precioEjecutivo":80,"precioMaximo":90,"metaKgTotal":5000,"metaCategoriaTotal":5000,"ivaTret":true,"flete":32,"margen":0.2},{"id":4,"categoria":"FIERROS Y LATAS","material":"Fierro Mixto","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.15},{"id":5,"categoria":"FIERROS Y LATAS","material":"Oxicorte","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.15},{"id":6,"categoria":"FIERROS Y LATAS","material":"Viruta","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.15},{"id":7,"categoria":"FIERROS Y LATAS","material":"Fierro Fundido","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.15},{"id":8,"categoria":"FIERROS Y LATAS","material":"Manganeso","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.15},{"id":9,"categoria":"COBRES","material":"Cobre 1° Tubo","reciclean":false,"farex":true,"precioCompra":9700,"precioLista":5990,"precioEjecutivo":6520,"precioMaximo":7050,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":10,"categoria":"COBRES","material":"Cobre 1° Pelillo","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":11,"categoria":"COBRES","material":"Cobre 3ra","reciclean":false,"farex":true,"precioCompra":9600,"precioLista":5930,"precioEjecutivo":6460,"precioMaximo":6980,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":12,"categoria":"COBRES","material":"Cobre Esmaltado","reciclean":false,"farex":true,"precioCompra":9000,"precioLista":5560,"precioEjecutivo":6050,"precioMaximo":6540,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":13,"categoria":"COBRES","material":"Cobre Calefón","reciclean":false,"farex":true,"precioCompra":8100,"precioLista":5000,"precioEjecutivo":5440,"precioMaximo":5880,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":14,"categoria":"COBRES","material":"Cobre Radiador","reciclean":false,"farex":true,"precioCompra":5700,"precioLista":3510,"precioEjecutivo":3820,"precioMaximo":4130,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":15,"categoria":"COBRES","material":"Cobre Radiador Chico","reciclean":false,"farex":true,"precioCompra":5680,"precioLista":3500,"precioEjecutivo":3810,"precioMaximo":4120,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":16,"categoria":"COBRES","material":"Cobre-Níquel (Cu/Ni)","reciclean":false,"farex":true,"precioCompra":2600,"precioLista":1590,"precioEjecutivo":1730,"precioMaximo":1870,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":17,"categoria":"BRONCES","material":"Bronce Amarillo","reciclean":false,"farex":true,"precioCompra":6350,"precioLista":3920,"precioEjecutivo":4260,"precioMaximo":4610,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":18,"categoria":"BRONCES","material":"Bronce Colorado","reciclean":false,"farex":true,"precioCompra":8100,"precioLista":5000,"precioEjecutivo":5440,"precioMaximo":5880,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":19,"categoria":"BRONCES","material":"Bronce Contaminado","reciclean":false,"farex":true,"precioCompra":4500,"precioLista":2770,"precioEjecutivo":3020,"precioMaximo":3260,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":20,"categoria":"BRONCES","material":"Bronce Aserrín Limpio","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":21,"categoria":"BRONCES","material":"Bronce Magnético","reciclean":false,"farex":true,"precioCompra":4500,"precioLista":2770,"precioEjecutivo":3020,"precioMaximo":3260,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":22,"categoria":"ALUMINIOS","material":"Aluminio Off-Set","reciclean":false,"farex":true,"precioCompra":2200,"precioLista":1340,"precioEjecutivo":1460,"precioMaximo":1580,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":32,"margen":0.1},{"id":23,"categoria":"ALUMINIOS","material":"Aluminio Perfil A","reciclean":false,"farex":true,"precioCompra":2150,"precioLista":1310,"precioEjecutivo":1420,"precioMaximo":1540,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":32,"margen":0.1},{"id":24,"categoria":"ALUMINIOS","material":"Aluminio Perfil B","reciclean":false,"farex":true,"precioCompra":2100,"precioLista":1280,"precioEjecutivo":1400,"precioMaximo":1510,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":32,"margen":0.1},{"id":25,"categoria":"ALUMINIOS","material":"Aluminio Duro","reciclean":false,"farex":true,"precioCompra":1820,"precioLista":1100,"precioEjecutivo":1200,"precioMaximo":1300,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":32,"margen":0.1},{"id":26,"categoria":"ALUMINIOS","material":"Aluminio Duro Lata","reciclean":false,"farex":true,"precioCompra":1820,"precioLista":1100,"precioEjecutivo":1200,"precioMaximo":1300,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":32,"margen":0.1},{"id":27,"categoria":"ALUMINIOS","material":"Aluminio Blando","reciclean":false,"farex":true,"precioCompra":1300,"precioLista":780,"precioEjecutivo":850,"precioMaximo":920,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":32,"margen":0.1},{"id":28,"categoria":"ALUMINIOS","material":"Aluminio Latas Bebidas (UBC)","reciclean":true,"farex":true,"precioCompra":1830,"precioLista":1110,"precioEjecutivo":1210,"precioMaximo":1310,"metaKgTotal":2000,"metaCategoriaTotal":2000,"ivaTret":true,"flete":32,"margen":0.1},{"id":29,"categoria":"ALUMINIOS","material":"Aluminio Pomos","reciclean":false,"farex":true,"precioCompra":1000,"precioLista":600,"precioEjecutivo":660,"precioMaximo":710,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":32,"margen":0.1},{"id":30,"categoria":"ALUMINIOS","material":"Aluminio Radiador","reciclean":false,"farex":true,"precioCompra":1200,"precioLista":720,"precioEjecutivo":780,"precioMaximo":850,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":32,"margen":0.1},{"id":31,"categoria":"ALUMINIOS","material":"Aluminio Radiador Mixto","reciclean":false,"farex":true,"precioCompra":4700,"precioLista":2890,"precioEjecutivo":3140,"precioMaximo":3400,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":32,"margen":0.1},{"id":32,"categoria":"ALUMINIOS","material":"Aluminio FOIL","reciclean":false,"farex":true,"precioCompra":600,"precioLista":350,"precioEjecutivo":380,"precioMaximo":410,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":32,"margen":0.1},{"id":33,"categoria":"ALUMINIOS","material":"Papel Foil Blanco","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":32,"margen":0.1},{"id":34,"categoria":"ALUMINIOS","material":"Papel Foil Color","reciclean":false,"farex":true,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":true,"flete":32,"margen":0.1},{"id":35,"categoria":"ACEROS INOXIDABLES","material":"Acero Inox. SS 304","reciclean":false,"farex":true,"precioCompra":810,"precioLista":480,"precioEjecutivo":520,"precioMaximo":570,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":36,"categoria":"ACEROS INOXIDABLES","material":"Acero Inox. SS 316","reciclean":false,"farex":true,"precioCompra":1300,"precioLista":780,"precioEjecutivo":850,"precioMaximo":920,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":37,"categoria":"ACEROS INOXIDABLES","material":"Acero Inox. SS 201","reciclean":false,"farex":true,"precioCompra":210,"precioLista":110,"precioEjecutivo":120,"precioMaximo":130,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":38,"categoria":"ACEROS INOXIDABLES","material":"Zinc (Ánodos)","reciclean":false,"farex":true,"precioCompra":350,"precioLista":200,"precioEjecutivo":220,"precioMaximo":230,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":39,"categoria":"ACEROS INOXIDABLES","material":"Plomo","reciclean":false,"farex":true,"precioCompra":500,"precioLista":290,"precioEjecutivo":320,"precioMaximo":340,"metaKgTotal":0,"metaCategoriaTotal":0,"ivaTret":true,"flete":32,"margen":0.1},{"id":40,"categoria":"CARTÓN Y PAPEL","material":"Cartón Corrugado","reciclean":true,"farex":false,"precioCompra":120,"precioLista":15,"precioEjecutivo":30,"precioMaximo":40,"metaKgTotal":50000,"metaCategoriaTotal":70000,"ivaTret":false,"flete":32,"margen":0.08},{"id":41,"categoria":"CARTÓN Y PAPEL","material":"Cartón Dúplex","reciclean":true,"farex":false,"precioCompra":0,"precioLista":15,"precioEjecutivo":20,"precioMaximo":20,"metaKgTotal":0,"metaCategoriaTotal":70000,"ivaTret":false,"flete":32,"margen":0.08},{"id":42,"categoria":"CARTÓN Y PAPEL","material":"Papel Blanco 2","reciclean":true,"farex":false,"precioCompra":140,"precioLista":40,"precioEjecutivo":60,"precioMaximo":70,"metaKgTotal":20000,"metaCategoriaTotal":70000,"ivaTret":false,"flete":32,"margen":0.08},{"id":43,"categoria":"CARTÓN Y PAPEL","material":"Papel Blanco 3","reciclean":true,"farex":false,"precioCompra":0,"precioLista":15,"precioEjecutivo":20,"precioMaximo":20,"metaKgTotal":0,"metaCategoriaTotal":70000,"ivaTret":false,"flete":32,"margen":0.08},{"id":44,"categoria":"CARTÓN Y PAPEL","material":"Papel Tissue/Kraft","reciclean":true,"farex":false,"precioCompra":0,"precioLista":15,"precioEjecutivo":20,"precioMaximo":20,"metaKgTotal":0,"metaCategoriaTotal":70000,"ivaTret":false,"flete":32,"margen":0.08},{"id":45,"categoria":"CARTÓN Y PAPEL","material":"Papel Diario","reciclean":true,"farex":false,"precioCompra":0,"precioLista":15,"precioEjecutivo":20,"precioMaximo":20,"metaKgTotal":0,"metaCategoriaTotal":70000,"ivaTret":false,"flete":32,"margen":0.08},{"id":46,"categoria":"CARTÓN Y PAPEL","material":"Semimixto","reciclean":true,"farex":false,"precioCompra":0,"precioLista":15,"precioEjecutivo":20,"precioMaximo":20,"metaKgTotal":0,"metaCategoriaTotal":70000,"ivaTret":false,"flete":32,"margen":0.08},{"id":47,"categoria":"VIDRIO","material":"Vidrio de Botellas","reciclean":true,"farex":false,"precioCompra":60,"precioLista":20,"precioEjecutivo":20,"precioMaximo":20,"metaKgTotal":15000,"metaCategoriaTotal":15000,"ivaTret":false,"flete":32,"margen":0.4},{"id":48,"categoria":"PLÁSTICOS — PET","material":"PET Transparente","reciclean":true,"farex":false,"precioCompra":720,"precioLista":420,"precioEjecutivo":460,"precioMaximo":490,"metaKgTotal":5000,"metaCategoriaTotal":5000,"ivaTret":false,"flete":18,"margen":0.3},{"id":49,"categoria":"PLÁSTICOS — PET","material":"PET Color","reciclean":true,"farex":false,"precioCompra":400,"precioLista":230,"precioEjecutivo":250,"precioMaximo":270,"metaKgTotal":0,"metaCategoriaTotal":5000,"ivaTret":false,"flete":18,"margen":0.3},{"id":50,"categoria":"PLÁSTICOS — PET","material":"PET Revuelto","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":5000,"ivaTret":false,"flete":18,"margen":0.3},{"id":51,"categoria":"PLÁSTICOS — PET","material":"PET Preforma Transparente","reciclean":true,"farex":false,"precioCompra":500,"precioLista":290,"precioEjecutivo":320,"precioMaximo":340,"metaKgTotal":0,"metaCategoriaTotal":5000,"ivaTret":false,"flete":18,"margen":0.3},{"id":52,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Stretch Film c/Etiqueta","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":10000,"metaCategoriaTotal":20000,"ivaTret":false,"flete":18,"margen":0.3},{"id":53,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Stretch Film s/Etiqueta","reciclean":true,"farex":false,"precioCompra":160,"precioLista":80,"precioEjecutivo":90,"precioMaximo":100,"metaKgTotal":0,"metaCategoriaTotal":20000,"ivaTret":false,"flete":18,"margen":0.3},{"id":54,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno con Stretch Film","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":5000,"metaCategoriaTotal":20000,"ivaTret":false,"flete":18,"margen":0.3},{"id":55,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno para Lavado","reciclean":true,"farex":false,"precioCompra":260,"precioLista":140,"precioEjecutivo":160,"precioMaximo":170,"metaKgTotal":5000,"metaCategoriaTotal":20000,"ivaTret":false,"flete":18,"margen":0.3},{"id":56,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno Limpio","reciclean":true,"farex":false,"precioCompra":400,"precioLista":230,"precioEjecutivo":250,"precioMaximo":270,"metaKgTotal":0,"metaCategoriaTotal":20000,"ivaTret":false,"flete":18,"margen":0.3},{"id":57,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Techo Invernadero","reciclean":true,"farex":false,"precioCompra":210,"precioLista":110,"precioEjecutivo":120,"precioMaximo":130,"metaKgTotal":0,"metaCategoriaTotal":20000,"ivaTret":false,"flete":18,"margen":0.3},{"id":58,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Pesquero (sin Residuos)","reciclean":true,"farex":false,"precioCompra":200,"precioLista":110,"precioEjecutivo":120,"precioMaximo":130,"metaKgTotal":0,"metaCategoriaTotal":20000,"ivaTret":false,"flete":18,"margen":0.3},{"id":59,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Cinta de Riego","reciclean":true,"farex":false,"precioCompra":210,"precioLista":110,"precioEjecutivo":120,"precioMaximo":130,"metaKgTotal":0,"metaCategoriaTotal":20000,"ivaTret":false,"flete":18,"margen":0.3},{"id":60,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Caramelo Limpio","reciclean":true,"farex":false,"precioCompra":400,"precioLista":230,"precioEjecutivo":250,"precioMaximo":270,"metaKgTotal":0,"metaCategoriaTotal":20000,"ivaTret":false,"flete":18,"margen":0.3},{"id":61,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"Polietileno Sucio","reciclean":true,"farex":false,"precioCompra":200,"precioLista":110,"precioEjecutivo":120,"precioMaximo":130,"metaKgTotal":0,"metaCategoriaTotal":20000,"ivaTret":false,"flete":18,"margen":0.3},{"id":62,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"LDPE","reciclean":true,"farex":false,"precioCompra":120,"precioLista":60,"precioEjecutivo":60,"precioMaximo":70,"metaKgTotal":0,"metaCategoriaTotal":20000,"ivaTret":false,"flete":18,"margen":0.3},{"id":63,"categoria":"PLÁSTICOS — FILM Y POLIETILENOS","material":"HDPE","reciclean":true,"farex":false,"precioCompra":250,"precioLista":140,"precioEjecutivo":150,"precioMaximo":160,"metaKgTotal":0,"metaCategoriaTotal":20000,"ivaTret":false,"flete":18,"margen":0.3},{"id":64,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Tapas Bebidas","reciclean":true,"farex":false,"precioCompra":200,"precioLista":60,"precioEjecutivo":60,"precioMaximo":70,"metaKgTotal":2000,"metaCategoriaTotal":2000,"ivaTret":false,"flete":18,"margen":0.6},{"id":65,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Tapón Agua Purificada","reciclean":true,"farex":false,"precioCompra":300,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":18,"margen":0.6},{"id":66,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Bins Agrícola","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":18,"margen":0.6},{"id":67,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Pallet PP","reciclean":true,"farex":false,"precioCompra":300,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":18,"margen":0.6},{"id":68,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Basureros sin Eje y Ruedas","reciclean":true,"farex":false,"precioCompra":250,"precioLista":80,"precioEjecutivo":80,"precioMaximo":90,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":18,"margen":0.6},{"id":69,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Planza de Fardos","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":18,"margen":0.6},{"id":70,"categoria":"PLÁSTICOS — RÍGIDOS","material":"HDPE PP Inyección","reciclean":true,"farex":false,"precioCompra":300,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":18,"margen":0.6},{"id":71,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Post Consumo","reciclean":true,"farex":false,"precioCompra":300,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":18,"margen":0.6},{"id":72,"categoria":"PLÁSTICOS — RÍGIDOS","material":"Pet Clear","reciclean":true,"farex":false,"precioCompra":720,"precioLista":240,"precioEjecutivo":260,"precioMaximo":280,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":18,"margen":0.6},{"id":73,"categoria":"PLÁSTICOS — SOPLADOS","material":"Bidón Granel Triple Lavado","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":2000,"metaCategoriaTotal":2000,"ivaTret":false,"flete":18,"margen":0.6},{"id":74,"categoria":"PLÁSTICOS — SOPLADOS","material":"Bidón Fardo Triple Lavado","reciclean":true,"farex":false,"precioCompra":0,"precioLista":0,"precioEjecutivo":0,"precioMaximo":0,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":18,"margen":0.6},{"id":75,"categoria":"PLÁSTICOS — SOPLADOS","material":"Bidón Sacas/Pallet","reciclean":true,"farex":false,"precioCompra":300,"precioLista":90,"precioEjecutivo":100,"precioMaximo":110,"metaKgTotal":0,"metaCategoriaTotal":2000,"ivaTret":false,"flete":18,"margen":0.6}]};
-var MATERIALES = MATERIALES_DATA["Cerrillos"];
-
-const COL={"FIERROS Y LATAS":{bg:"#37474F",ac:"#78909C",lt:"#ECEFF1"},"COBRES":{bg:"#BF360C",ac:"#FF7043",lt:"#FBE9E7"},"BRONCES":{bg:"#E65100",ac:"#FFB74D",lt:"#FFF3E0"},"ALUMINIOS":{bg:"#1565C0",ac:"#42A5F5",lt:"#E3F2FD"},"ACEROS INOXIDABLES":{bg:"#4A148C",ac:"#AB47BC",lt:"#F3E5F5"},"CARTÓN Y PAPEL":{bg:"#33691E",ac:"#8BC34A",lt:"#F1F8E9"},"VIDRIO":{bg:"#006064",ac:"#26C6DA",lt:"#E0F7FA"},"PLÁSTICOS — PET":{bg:"#880E4F",ac:"#EC407A",lt:"#FCE4EC"},"PLÁSTICOS — FILM Y POLIETILENOS":{bg:"#4527A0",ac:"#7E57C2",lt:"#EDE7F6"},"PLÁSTICOS — RÍGIDOS":{bg:"#1A237E",ac:"#5C6BC0",lt:"#E8EAF6"},"PLÁSTICOS — SOPLADOS":{bg:"#01579B",ac:"#29B6F6",lt:"#E1F5FE"}};
-let CATS=[...new Set(MATERIALES.map(m=>m.categoria))];
-const states={};
-let selCats=new Set(), curTab='browse', negOpen=false;
-
-const fmt=n=>n>0?'$'+Math.round(n).toLocaleString('es-CL'):'—';
-const fmtNum=n=>n>0?n.toLocaleString('es-CL'):'-';
-
-function getSem(kg,mat){
-  if(!kg||kg<=0)return null;
-  const metaTotal=mat.metaKgTotal||0;
-  if(metaTotal<=0)return 'rojo';  // Sin meta definida = rojo
-  const pct=(kg/metaTotal)*100;
-  if(pct>=25)return 'verde';
-  if(pct>=5)return 'amarillo';
-  return 'rojo';
-}
-function getHab(sem,mat){
-  if(!sem||sem==='rojo')return mat.precioLista;
-  if(sem==='verde')return mat.precioMaximo;
-  return Math.round(mat.precioLista+(mat.precioMaximo-mat.precioLista)*0.5);
-}
-function getMC(kg,ej,mat){
-  // MC Empresa = kg × (precioMaximo − precioEjecutivo)
-  if(!kg||!ej||kg<=0||ej<=0)return null;
-  if(!mat.precioMaximo||mat.precioMaximo<=0)return null;
-  if(ej>mat.precioMaximo)return null;
-  return Math.round(kg*(mat.precioMaximo-ej));
-}
-function getComision(mc){
-  // Comisión ejecutivo según tipo
-  if(mc===null||mc<=0)return null;
-  const tipo=document.getElementById('neg-tipo-ejec')?.value||'Administrador';
-  const pct=tipo==='Externo'?0.005:0.0025;
-  return Math.round(mc*pct);
-}
-function getMCFinal(kg,ej,mat){
-  const neg=getNegData();
-  const kgFinal=neg.kgFactura>0?neg.kgFactura:kg;
-  return getMC(kgFinal,ej,mat);
-}
-function sinPrecios(mat){return mat.precioMaximo<=0&&mat.precioLista<=0;}
-function getActives(){
-  return MATERIALES.filter(m=>{const s=states[m.id]||{};return(parseFloat(s.kg)||0)>0||(parseFloat(s.ej)||0)>0;});
+  USUARIO = data;
+  sessionStorage.setItem('rf_usuario', JSON.stringify(data));
+  await loadSnapshot();
 }
 
-function toggleNeg(){
-  negOpen=!negOpen;
-  document.getElementById('neg-form').className='negocio-form'+(negOpen?' open':'');
-  document.getElementById('neg-arrow').textContent=negOpen?'▼':'▶';
-}
-function limpiarDatos(){
-  if(!confirm('¿Limpiar todos los datos del negocio?')) return;
-  document.getElementById('neg-suc').value='';
-  document.getElementById('neg-ejec').value='';
-  document.getElementById('neg-prov').value='';
-  document.getElementById('neg-rut').value='';
-  document.getElementById('neg-fecha').value='';
-  document.getElementById('neg-folio').value='';
-  document.getElementById('neg-freq').value='';
-  document.getElementById('neg-kg-fact').value='';
-  document.getElementById('neg-fecha-fact').value='';
-  document.getElementById('neg-wa').value='';
-  updateNegInline();
-  updateTotals();
-}
+document.getElementById('login-pin').addEventListener('keydown', e => {
+  if(e.key === 'Enter') doLogin();
+});
 
-function cerrarDatos(){
-  const suc=document.getElementById('neg-suc').value;
-  const ejec=document.getElementById('neg-ejec').value.trim();
-  const prov=document.getElementById('neg-prov').value.trim();
-  if(suc&&ejec&&prov){
-    document.getElementById('neg-form').className='negocio-form';
-    document.getElementById('neg-arrow').textContent='▶';
-    return true;
+// ══════════════════════════════════════════════════
+// CARGA DE DATOS — snapshot primero, view como fallback
+// ══════════════════════════════════════════════════
+let _usandoSnapshot = false;
+
+async function loadSnapshot() {
+  // Intento 1: asistente_snapshot (publicado desde el panel)
+  const {data: snap} = await _supa
+    .from('asistente_snapshot')
+    .select('datos, version_label, actualizado_en')
+    .eq('id', 1)
+    .maybeSingle();
+
+  if(snap && snap.datos && Object.keys(snap.datos).length > 0) {
+    _usandoSnapshot = true;
+    MATERIALES_DATA = snap.datos;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initApp(snap.version_label, snap.actualizado_en);
+    subscribeRealtime();
+    return;
   }
-  return false;
+
+  // Intento 2: v_precios_activos (precios activos directos de Supabase)
+  await loadDesdeVista();
 }
 
+async function loadDesdeVista() {
+  const [{data: precios, error: e1}, {data: matsData}] = await Promise.all([
+    _supa.from('v_precios_activos').select('*'),
+    _supa.from('materiales').select('id, meta_kg')
+  ]);
 
-function guardarMemoria(){
-  const ejec=document.getElementById('neg-ejec').value.trim();
-  const prov=document.getElementById('neg-prov').value.trim();
-  if(ejec) localStorage.setItem('ultimoEjecutivo', ejec);
-  if(prov) localStorage.setItem('ultimoProveedor', prov);
+  if(e1 || !precios || !precios.length) {
+    showLoginError('No hay precios disponibles. El administrador debe publicar precios desde el Panel.');
+    return;
+  }
+
+  const metaMap = {};
+  (matsData || []).forEach(m => { metaMap[m.id] = m.meta_kg || 0; });
+
+  const byBranch = {};
+  precios.forEach(row => {
+    if(!byBranch[row.sucursal]) byBranch[row.sucursal] = [];
+    byBranch[row.sucursal].push({
+      id:              row.material_id,
+      categoria:       row.categoria,
+      material:        row.material,
+      reciclean:       !!row.reciclean,
+      farex:           !!row.farex,
+      precioCompra:    parseFloat(row.precio_compra)    || 0,
+      precioLista:     parseFloat(row.precio_lista)     || 0,
+      precioEjecutivo: parseFloat(row.precio_ejecutivo) || 0,
+      precioMaximo:    parseFloat(row.precio_maximo)    || 0,
+      metaKgTotal:     metaMap[row.material_id]         || 0,
+      metaCategoriaTotal: 0,
+      ivaTret:         !!row.iva_aplicado,
+      flete:           parseFloat(row.flete_aplicado)   || 0,
+      margen:          parseFloat(row.margen_aplicado)  || 0
+    });
+  });
+
+  _usandoSnapshot = false;
+  MATERIALES_DATA = byBranch;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  const firstRow = precios[0];
+  initApp(firstRow.version_label || 'live', firstRow.version_fecha || new Date().toISOString());
+  subscribeRealtime();
 }
 
-function cargarMemoria(){
-  const ultimoEjec=localStorage.getItem('ultimoEjecutivo');
-  const ultimoProv=localStorage.getItem('ultimoProveedor');
-  if(ultimoEjec) document.getElementById('neg-ejec').value=ultimoEjec;
-  if(ultimoProv) document.getElementById('neg-prov').value=ultimoProv;
+function initApp(vLabel, fechaActualizada) {
+  const d = new Date(fechaActualizada);
+  const dStr = d.toLocaleDateString('es-CL', {day:'2-digit', month:'short', year:'numeric'});
+  const tStr = d.toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('top-notice-text').textContent = `v${vLabel} · Actualizado: ${dStr} ${tStr} · Precios sujetos a cambio`;
+  document.getElementById('app-footer').textContent = `v${vLabel} · ${dStr} · Reciclean-Farex · *Precios referenciales sujetos a cambio`;
+  _rolActual = USUARIO?.rol || 'ejecutivo';
+  applyRoleRestrictions(_rolActual);
+  MATERIALES = MATERIALES_DATA['Cerrillos'] || [];
+  buildCats();
+  render();
 }
 
-function updateNegInline(){
-  const s=document.getElementById('neg-suc').value;
-  const e=document.getElementById('neg-ejec').value;
-  const p=document.getElementById('neg-prov').value;
-  const parts=[s,e,p].filter(Boolean);
-  document.getElementById('neg-inline').textContent=parts.length?'· '+parts.join(' · '):'';
-  guardarMemoria();
+function applyRoleRestrictions(rol) {
+  const puedeCotz = ROL_PUEDE_COTIZAR(rol);
+
+  // Botones de acción inferiores
+  const wrap = document.querySelector('.close-btn-wrap');
+  if(wrap) {
+    if(puedeCotz) {
+      wrap.innerHTML = `
+        <button class="close-btn" onclick="finalizarConsulta()">📋 Generar Resumen Consulta</button>
+        <button class="close-btn" style="background:linear-gradient(135deg,#17A2B8,#0D8BA7)" onclick="mostrarTablaPrecios()">📊 Ver Tabla de Precios</button>
+        <button class="close-btn" style="background:linear-gradient(135deg,#F57C00,#E64A19);font-size:13px;padding:12px" onclick="limpiarMateriales()">🗑 Limpiar materiales</button>`;
+    } else {
+      wrap.innerHTML = `
+        <button class="close-btn" style="background:linear-gradient(135deg,#17A2B8,#0D8BA7)" onclick="mostrarTablaPrecios()">📊 Ver Tabla de Precios</button>
+        <div style="text-align:center;padding:10px 14px 40px;color:#aaa;font-size:11px;font-weight:600;letter-spacing:.3px">
+          👁 Modo Visor — solo consulta de precios
+        </div>`;
+    }
+  }
+
+  // Indicador de rol en topbar (solo si no es ejecutivo normal)
+  if(rol === 'visor') {
+    const bar = document.createElement('div');
+    bar.style.cssText = 'background:#1A2B3A;color:#4FC3F7;text-align:center;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid #2C3E50;';
+    bar.textContent = '👁 MODO VISOR — Consulta de precios';
+    const topbar = document.querySelector('.topbar');
+    if(topbar) topbar.insertAdjacentElement('afterend', bar);
+  }
+  if(rol === 'admin') {
+    const bar = document.createElement('div');
+    bar.style.cssText = 'background:#1A2B3A;color:#FFD54F;text-align:center;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid #2C3E50;';
+    bar.textContent = '⚙ MODO ADMIN';
+    const topbar = document.querySelector('.topbar');
+    if(topbar) topbar.insertAdjacentElement('afterend', bar);
+  }
 }
+
+// ══════════════════════════════════════════════════
+// REALTIME
+// ══════════════════════════════════════════════════
+function subscribeRealtime() {
+  if(_usandoSnapshot) {
+    // Escuchar cambios en asistente_snapshot (publicado desde panel)
+    _realtimeChannel = _supa.channel('asistente-snapshot-ch')
+      .on('postgres_changes', {event: '*', schema: 'public', table: 'asistente_snapshot'},
+        payload => {
+          if(!payload.new?.datos) return;
+          _pendingUpdate = payload.new;
+          showUpdateBanner(payload.new.version_label, payload.new.actualizado_en);
+          if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        })
+      .subscribe();
+  } else {
+    // Escuchar nuevas versiones publicadas en precios_version
+    _realtimeChannel = _supa.channel('asistente-precios-version-ch')
+      .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'precios_version'},
+        payload => {
+          // Nueva versión publicada → recargar desde vista
+          _pendingUpdate = { version_label: payload.new?.label || 'nueva', actualizado_en: new Date().toISOString(), fromView: true };
+          showUpdateBanner(_pendingUpdate.version_label, _pendingUpdate.actualizado_en);
+          if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        })
+      .subscribe();
+  }
+}
+
+function showUpdateBanner(vLabel, fechaActualizada) {
+  const banner = document.getElementById('update-banner');
+  const d = new Date(fechaActualizada);
+  const tStr = d.toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
+  banner.innerHTML = `🔔 Precios actualizados (v${vLabel} · ${tStr}) — <strong>toca para recargar</strong>`;
+  banner.style.display = 'block';
+  banner.onclick = applyPendingUpdate;
+}
+
+async function applyPendingUpdate() {
+  if(!_pendingUpdate) return;
+  document.getElementById('update-banner').style.display = 'none';
+
+  if(_pendingUpdate.fromView) {
+    // Recargar desde v_precios_activos
+    await loadDesdeVista();
+  } else {
+    // Aplicar snapshot recibido por Realtime
+    MATERIALES_DATA = _pendingUpdate.datos;
+    const suc = document.getElementById('neg-suc')?.value || 'Cerrillos';
+    const allMats = MATERIALES_DATA[suc] || MATERIALES_DATA['Cerrillos'];
+    MATERIALES = filtrarMaterialesPorSucursal(suc, allMats);
+    buildCats();
+    render();
+    initApp(_pendingUpdate.version_label, _pendingUpdate.actualizado_en);
+  }
+  _pendingUpdate = null;
+}
+
+// ══════════════════════════════════════════════════
+// LOGOUT
+// ══════════════════════════════════════════════════
+function doLogout() {
+  sessionStorage.removeItem('rf_usuario');
+  if(_realtimeChannel) _supa.removeChannel(_realtimeChannel);
+  USUARIO = null;
+  MATERIALES_DATA = null;
+  _pendingUpdate = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('update-banner').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-pin').value = '';
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-btn').disabled = false;
+  document.getElementById('login-btn').textContent = 'Ingresar →';
+}
+
+// ══════════════════════════════════════════════════
+// LÓGICA V24 — MATERIALES
+// ══════════════════════════════════════════════════
+function getSem(kg, mat){ if(!kg||kg<=0) return null; const m=mat.metaKgTotal||0; if(m<=0) return 'rojo'; const p=(kg/m)*100; return p>=25?'verde':p>=5?'amarillo':'rojo'; }
+function getHab(sem, mat){ if(!sem||sem==='rojo') return mat.precioLista; if(sem==='verde') return mat.precioMaximo; return Math.round(mat.precioLista+(mat.precioMaximo-mat.precioLista)*0.5); }
+function getMC(kg, ej, mat){ if(!kg||!ej||kg<=0||ej<=0||!mat.precioMaximo||mat.precioMaximo<=0||ej>mat.precioMaximo) return null; return Math.round(kg*(mat.precioMaximo-ej)); }
+function getComision(mc){ if(mc===null||mc<=0) return null; const tipo=document.getElementById('neg-tipo-ejec')?.value||'Administrador'; return Math.round(mc*(tipo==='Externo'?0.005:0.0025)); }
+function sinPrecios(mat){ return mat.precioMaximo<=0&&mat.precioLista<=0; }
+function getActives(){ return MATERIALES.filter(m=>{ const s=states[m.id]||{}; return(parseFloat(s.kg)||0)>0||(parseFloat(s.ej)||0)>0; }); }
+
+function toggleNeg(){ negOpen=!negOpen; document.getElementById('neg-form').style.display=negOpen?'block':'none'; document.getElementById('neg-arrow').textContent=negOpen?'▼':'▶'; }
+function updateNegInline(){ const s=document.getElementById('neg-suc').value,e=document.getElementById('neg-ejec').value,p=document.getElementById('neg-prov').value; document.getElementById('neg-inline').textContent=[s,e,p].filter(Boolean).join(' · '); }
+
 function buildCats(){
-  const wrap=document.getElementById('cat-scroll');wrap.innerHTML='';
-  CATS.forEach(cat=>{
-    const c=COL[cat]||{bg:'#455A64'};const on=selCats.has(cat);
-    const btn=document.createElement('button');btn.className='cat-btn';
-    btn.textContent=cat.replace('PLÁSTICOS — ','PL. ');
-    btn.style.cssText=`background:${on?c.bg:'#2C3E50'};color:${on?'#fff':'#aaa'}`;
-    btn.onclick=()=>{selCats.has(cat)?selCats.delete(cat):selCats.add(cat);buildCats();render()};
-    wrap.appendChild(btn);
+  const CATS = [...new Set(MATERIALES.map(m => m.categoria))];
+  const w = document.getElementById('cat-scroll');
+  w.innerHTML = '';
+  CATS.forEach(cat => {
+    const c = COL[cat] || {bg:'#455A64'};
+    const on = selCats.has(cat);
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn';
+    btn.textContent = cat.replace('PLÁSTICOS — ','PL. ');
+    btn.style.cssText = 'background:'+(on?c.bg:'#2C3E50')+';color:'+(on?'#fff':'#aaa');
+    btn.onclick = () => { selCats.has(cat)?selCats.delete(cat):selCats.add(cat); buildCats(); render(); };
+    w.appendChild(btn);
   });
 }
 
-function onInput(id,field,val){
-  if(!states[id])states[id]={};
-  states[id][field]=val;
-  updateResults(id);
-  updateTotals();
-}
+function onInput(id, field, val){ if(!states[id]) states[id]={}; states[id][field]=val; updateResults(id); updateTotals(); }
+
 function updateResults(id){
   const mat=MATERIALES.find(m=>m.id===id);
   const s=states[id]||{};
-  const kg=parseFloat(s.kg)||0,ej=parseFloat(s.ej)||0;
-  const sem=getSem(kg,mat),hab=getHab(sem,mat),mc=getMCFinal(kg,ej,mat);
+  const kg=parseFloat(s.kg)||0, ej=parseFloat(s.ej)||0;
+  const sem=getSem(kg,mat), hab=getHab(sem,mat), mc=getMC(kg,ej,mat);
   const semMap={verde:{e:'🟢',l:'VERDE — hasta Precio Máximo',bg:'#1B5E20'},amarillo:{e:'🟡',l:'AMARILLO — hasta 50% spread',bg:'#F57F17'},rojo:{e:'🔴',l:'ROJO — solo Precio Lista',bg:'#B71C1C'}};
   const sc=sem?semMap[sem]:null;
   const im=mat.metaKgTotal>0&&kg>0?(kg/mat.metaKgTotal*100).toFixed(1)+'%':'—';
   const ic=mat.metaCategoriaTotal>0&&kg>0?(kg/mat.metaCategoriaTotal*100).toFixed(1)+'%':'—';
   let alerta='—';
-  if(ej>0){
-    if(ej>mat.precioMaximo){
-      alerta='🔴 EXCEDE MÁXIMO';
-    } else if(ej<mat.precioLista){
-      alerta='🔴 BAJO PRECIO LISTA';
-    } else if(ej>hab){
-      alerta='🟡 FUERA DE NIVEL';
-    } else {
-      alerta='🟢 OK';
-    }
-  }
-  const hv=document.getElementById('hab-val-'+id);if(hv){hv.textContent=fmt(hab);document.getElementById('hab-sub-'+id).textContent=sc?sc.e:'—';}
-  const ei=document.getElementById('ej-input-'+id);if(ei)ei.style.borderColor=ej>mat.precioMaximo?'#c62828':ej>0&&ej>=mat.precioLista&&ej<=hab?'#2e7d32':'#f57f17';
-  const rd=document.getElementById('res-'+id);if(!rd)return;
-  if(kg<=0&&ej<=0){rd.innerHTML='';return;}
-  rd.innerHTML=`${sc?`<div class="semaforo-bar" style="background:${sc.bg}">${sc.e} ${sc.l}</div>`:''}
-  <div class="result-grid">
-    <div class="result-cell"><div class="result-label">Incid. Material</div><div class="result-val">${im}</div></div>
-    <div class="result-cell"><div class="result-label">Incid. Categoría</div><div class="result-val">${ic}</div></div>
-    <div class="result-cell"><div class="result-label">Alerta</div><div class="result-val">${alerta}</div></div>
-    <div class="result-cell" style="background:#E3F2FD">
-      <div class="result-label">🏆 Comisión</div>
-      <div class="result-val" style="color:#1565C0">${getComision(mc)!==null?'$'+getComision(mc).toLocaleString('es-CL'):'—'}</div>
-    </div>
-  </div>`;
+  if(ej>0){ if(ej>mat.precioMaximo) alerta='🔴 EXCEDE MÁXIMO'; else if(ej<mat.precioLista) alerta='🔴 BAJO LISTA'; else if(ej>hab) alerta='🟡 FUERA DE NIVEL'; else alerta='🟢 OK'; }
+  const hv=document.getElementById('hab-val-'+id);
+  if(hv){ hv.textContent=fmt(hab); document.getElementById('hab-sub-'+id).textContent=sc?sc.e:'—'; }
+  const ei=document.getElementById('ej-input-'+id);
+  if(ei) ei.style.borderColor=ej>mat.precioMaximo?'#c62828':ej>0&&ej>=mat.precioLista&&ej<=hab?'#2e7d32':'#f57f17';
+  const rd=document.getElementById('res-'+id); if(!rd) return;
+  if(kg<=0&&ej<=0){ rd.innerHTML=''; return; }
+  rd.innerHTML=(sc?'<div class="semaforo-bar" style="background:'+sc.bg+'">'+sc.e+' '+sc.l+'</div>':'')+'<div class="result-grid"><div class="result-cell"><div class="result-label">Incid. Material</div><div class="result-val">'+im+'</div></div><div class="result-cell"><div class="result-label">Incid. Categoría</div><div class="result-val">'+ic+'</div></div><div class="result-cell"><div class="result-label">Alerta</div><div class="result-val">'+alerta+'</div></div><div class="result-cell" style="background:#E3F2FD"><div class="result-label">🏆 Comisión</div><div class="result-val" style="color:#1565C0">'+(getComision(mc)!==null?'$'+getComision(mc).toLocaleString('es-CL'):'—')+'</div></div></div>';
 }
+
 function updateTotals(){
   const a=getActives();
   document.getElementById('cnt-active').textContent=a.length;
-  const tot=a.reduce((s,mat)=>{const st=states[mat.id]||{};const mc=getMC(parseFloat(st.kg)||0,parseFloat(st.ej)||0,mat);return s+(mc||0);},0);
+  const tot=a.reduce((s,mat)=>{ const st=states[mat.id]||{}; const mc=getMC(parseFloat(st.kg)||0,parseFloat(st.ej)||0,mat); return s+(mc||0); },0);
   const totCom=getComision(tot)||0;
   const w=document.getElementById('mc-total-wrap');
-  if(a.length>0){
-    w.style.display='block';
-    const v=document.getElementById('mc-total-val');
-    v.innerHTML='<div style="font-size:9px;color:#B3E5FC;font-weight:700;text-transform:uppercase;letter-spacing:1px">Comisión</div><div style="color:#FFD54F;font-size:18px;font-weight:800">$'+totCom.toLocaleString('es-CL')+'</div>';
-  } else w.style.display='none';
+  if(a.length>0){ w.style.display='block'; document.getElementById('mc-total-val').innerHTML='<div style="font-size:9px;color:#B3E5FC;font-weight:700;text-transform:uppercase;letter-spacing:1px">Comisión</div><div style="color:#FFD54F;font-size:18px;font-weight:800">$'+totCom.toLocaleString('es-CL')+'</div>'; }
+  else w.style.display='none';
 }
 
-// ──────────────────────────────────────────────
-// CERRAR CONSULTA
-// ──────────────────────────────────────────────
-function cerrarConsulta(){
-  const suc=document.getElementById('neg-suc').value;
-  const ejec=document.getElementById('neg-ejec').value.trim();
-  const prov=document.getElementById('neg-prov').value.trim();
-  const actives=getActives();
-  const errors=[];
-  if(!suc) errors.push('Debes seleccionar la sucursal');
-  if(!ejec) errors.push('Debes ingresar el nombre del ejecutivo');
-  if(!prov) errors.push('Debes ingresar el nombre del proveedor');
-  if(actives.length===0) errors.push('Debes ingresar al menos 1 material con kg o precio');
-
-  if(errors.length>0){
-    // Open negocio form so user can fix
-    if(!negOpen) toggleNeg();
-    // Highlight missing fields
-    document.getElementById('neg-suc').className='neg-input'+(suc?'':' err');
-    document.getElementById('neg-ejec').className='neg-input'+(ejec?'':' err');
-    document.getElementById('neg-prov').className='neg-input'+(prov?'':' err');
-    showModal('error', errors);
-    return;
-  }
-  showModal('preview');
-}
-
-function getNegData(){
-  return {
-    suc: document.getElementById('neg-suc').value,
-    ejec: document.getElementById('neg-ejec').value.trim(),
-    prov: document.getElementById('neg-prov').value.trim(),
-    rut: document.getElementById('neg-rut').value.trim(),
-    fecha: document.getElementById('neg-fecha').value,
-    folio: document.getElementById('neg-folio').value.trim(),
-    freq: document.getElementById('neg-freq').value,
-    kgFactura: parseFloat(document.getElementById('neg-kg-fact').value) || 0,
-    fechaFactura: document.getElementById('neg-fecha-fact').value,
-    wa: document.getElementById('neg-wa').value.trim(),
-    tipoEjec: document.getElementById('neg-tipo-ejec')?.value||'Administrador',
-  };
-}
-
-function showModal(type, errors){
-  const overlay=document.getElementById('modal');
-  const title=document.getElementById('modal-title');
-  const sub=document.getElementById('modal-sub');
-  const body=document.getElementById('modal-body');
-  overlay.className='modal-overlay show';
-
-  if(type==='error'){
-    title.textContent='Faltan datos obligatorios';
-    sub.textContent='Completa los campos marcados en rojo para continuar.';
-    body.innerHTML=`<div class="error-list">${errors.map(e=>`<div class="error-item">⚠ ${e}</div>`).join('')}</div>
-    <button class="btn-cancel" onclick="closeModal()">Volver a completar</button>`;
-    return;
-  }
-
-  // PREVIEW
-  const neg=getNegData();
-  const actives=getActives();
-  const totalMC=actives.reduce((s,mat)=>{const st=states[mat.id]||{};return s+(getMC(parseFloat(st.kg)||0,parseFloat(st.ej)||0,mat)||0);},0);
-  const totalKg=actives.reduce((s,mat)=>{return s+(parseFloat((states[mat.id]||{}).kg)||0);},0);
-  const today=new Date().toLocaleDateString('es-CL');
-  const admin=ADMINS[neg.suc]||{};
-
-  title.textContent='Resumen de Negocio';
-  sub.textContent='Revisa el resumen antes de generar y enviar.';
-
-  let mats='';
-  actives.forEach(mat=>{
-    const s=states[mat.id]||{};
-    const kg=parseFloat(s.kg)||0,ej=parseFloat(s.ej)||0;
-    const sem=getSem(kg,mat);
-    const semTxt=sem?{verde:'🟢 VERDE',amarillo:'🟡 AMARILLO',rojo:'🔴 ROJO'}[sem]:'—';
-    const mc=getMC(kg,ej,mat);
-    mats+=`<div class="pdf-mat-row">
-      <div class="pdf-mat-name">${mat.material}</div>
-      <div class="pdf-mat-detail">
-        <div class="pdf-mat-chip">Kg: <span>${fmtNum(kg)}</span></div>
-        <div class="pdf-mat-chip">Ejec: <span>${fmt(ej)}</span></div>
-
-        <div class="pdf-mat-chip">Comisión: <span style="color:#1565C0">${getComision(mc)!==null?'$'+getComision(mc).toLocaleString('es-CL'):'—'}</span></div>
-        <div class="pdf-mat-chip">${semTxt}</div>
-      </div>
-    </div>`;
-  });
-
-  body.innerHTML=`
-  <div class="pdf-section">
-    <div class="pdf-section-title">📋 Datos del Negocio</div>
-    <div class="pdf-row"><span class="pdf-row-label">Sucursal</span><span class="pdf-row-val">${neg.suc}</span></div>
-    <div class="pdf-row"><span class="pdf-row-label">Ejecutivo</span><span class="pdf-row-val">${neg.ejec}</span></div>
-    <div class="pdf-row"><span class="pdf-row-label">Proveedor</span><span class="pdf-row-val">${neg.prov}</span></div>
-    ${neg.rut?`<div class="pdf-row"><span class="pdf-row-label">RUT Proveedor</span><span class="pdf-row-val">${neg.rut}</span></div>`:''}
-    ${neg.fecha?`<div class="pdf-row"><span class="pdf-row-label">Fecha llegada</span><span class="pdf-row-val">${neg.fecha}</span></div>`:''}
-    ${neg.folio?`<div class="pdf-row"><span class="pdf-row-label">N° Pesaje/Factura</span><span class="pdf-row-val">${neg.folio}</span></div>`:''}
-    <div class="pdf-row"><span class="pdf-row-label">Fecha consulta</span><span class="pdf-row-val">${today}</span></div>
-  </div>
-  <div class="pdf-section">
-    <div class="pdf-section-title">📦 Materiales (${actives.length})</div>
-    ${mats}
-  </div>
-  <div class="pdf-total">
-    <div>
-      <div class="pdf-total-label">Total kg</div>
-      <div style="color:#fff;font-size:13px;font-weight:700">${fmtNum(totalKg)} kg</div>
-    </div>
-
-    <div style="text-align:right">
-      <div class="pdf-total-label">Comisión Ejecutivo</div>
-      <div style="color:#4FC3F7;font-size:15px;font-weight:800">$${(getComision(totalMC)||0).toLocaleString('es-CL')}</div>
-
-
-
-
-    </div>
-  </div>
-  <div class="share-grid">
-    <button class="share-btn btn-pdf" onclick="generatePDF()">📄 Descargar PDF</button>
-    <button class="share-btn btn-wa" onclick="shareWA()">📱 WhatsApp</button>
-    <button class="share-btn btn-mail" style="grid-column:1/-1" onclick="shareEmail()">✉️ Enviar por correo al administrador</button>
-  </div>
-  <button class="btn-cancel" onclick="closeModal()">← Volver</button>`;
-}
-
-function limpiarMateriales(){
-  if(confirm('¿Eliminar todos los materiales ingresados?')){
-    states={};
-    render();
-    alert('✓ Todos los materiales han sido eliminados');
-  }
-}
-
-function closeModal(e){
-  if(e&&e.target!==document.getElementById('modal'))return;
-  document.getElementById('modal').className='modal-overlay';
-}
-
-// ──────────────────────────────────────────────
-// PDF GENERATION
-// ──────────────────────────────────────────────
-function generatePDF(){
-  const neg=getNegData();
-  const actives=getActives();
-  const totalMC=actives.reduce((s,mat)=>{const st=states[mat.id]||{};return s+(getMC(parseFloat(st.kg)||0,parseFloat(st.ej)||0,mat)||0);},0);
-  const totalKg=actives.reduce((s,mat)=>s+(parseFloat((states[mat.id]||{}).kg)||0),0);
-  const today=new Date().toLocaleDateString('es-CL');
-  
-  // Guardar en cloud
-  const cot = {
-    sucursal: neg.suc,
-    ejecutivo: neg.ejec,
-    proveedor: neg.prov,
-    rut: neg.rut,
-    fecha: neg.fecha,
-    folio: neg.folio,
-    materiales: actives.map(m => ({
-      id: m.id,
-      material: m.material,
-      kg: parseFloat((states[m.id]||{}).kg) || 0,
-      precio: parseFloat((states[m.id]||{}).ej) || 0
-    })),
-    totalKg,
-    totalMC
-  };
-  cloudStorage.guardarCotizacion(cot).catch(err => console.log('Guardado en local (sin cloud)', err));
-
-  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210, margin=15;
-  let y=15;
-
-  // Header bar
-  doc.setFillColor(26,35,50);
-  doc.rect(0,0,W,28,'F');
-  doc.setTextColor(255,255,255);
-  doc.setFontSize(18);doc.setFont('helvetica','bold');
-  doc.text('Grupo Reciclean · Farex',margin,12);
-  doc.setFontSize(10);doc.setFont('helvetica','normal');
-  doc.text('Asistente Comercial v25 — Resumen de Negocio',margin,20);
-  doc.setFontSize(9);doc.text('Fecha: '+today,W-margin,20,{align:'right'});
-  y=36;
-
-  // Negocio data
-  doc.setFillColor(240,242,245);doc.rect(margin,y,W-2*margin,32,'F');
-  doc.setTextColor(79,195,247);doc.setFontSize(8);doc.setFont('helvetica','bold');
-  doc.text('DATOS DEL NEGOCIO',margin+3,y+6);
-  doc.setTextColor(50,50,50);doc.setFontSize(9);doc.setFont('helvetica','normal');
-  const neg1=[['Sucursal',neg.suc],['Ejecutivo',neg.ejec],['Proveedor',neg.prov]];
-  const neg2=[['RUT Proveedor',neg.rut||'—'],['Fecha llegada',neg.fecha||'—'],['N° Pesaje/Factura',neg.folio||'—']];
-  neg1.forEach(([k,v],i)=>{doc.setFont('helvetica','bold');doc.text(k+':',margin+3,y+12+i*6);doc.setFont('helvetica','normal');doc.text(v||'—',margin+35,y+12+i*6);});
-  neg2.forEach(([k,v],i)=>{doc.setFont('helvetica','bold');doc.text(k+':',W/2+2,y+12+i*6);doc.setFont('helvetica','normal');doc.text(v,W/2+30,y+12+i*6);});
-  y+=38;
-
-  // RESEÑA COMERCIAL (Mejora #12)
-  doc.setTextColor(79,195,247);doc.setFontSize(8);doc.setFont('helvetica','bold');
-  doc.text('SOBRE GRUPO RECICLEAN · FAREX',margin,y);
-  doc.setTextColor(80,80,80);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
-  doc.text('Empresa especializada en compra y comercialización de chatarras, metales y plásticos reciclables.',margin,y+4);
-  doc.text('Sucursales en Cerrillos, Maipú (Santiago), Talca y Puerto Montt. Compromiso con calidad y sustentabilidad.',margin,y+7);
-  y+=14;
-
-  // CATEGORÍAS, RETENCIÓN IVA Y PROHIBICIONES (Mejoras #13 y #8)
-  doc.setFillColor(240,242,245);doc.rect(margin,y,W-2*margin,18,'F');
-  doc.setTextColor(79,195,247);doc.setFontSize(7);doc.setFont('helvetica','bold');
-  doc.text('CATEGORÍAS - RETENCIÓN IVA Y RESTRICCIONES',margin+2,y+4);
-  doc.setTextColor(50,50,50);doc.setFontSize(6);doc.setFont('helvetica','normal');
-  doc.text('METALES (Fierros/Cobres/Bronces/Aluminios/Aceros): RET. IVA 9.5% · Sin óxido pesado · Max 20% impurezas',margin+2,y+8);
-  doc.text('CARTÓN Y PAPEL: Sin retención · Limpio y seco · Sin plástico ni metal',margin+2,y+11);
-  doc.text('PLÁSTICOS Y VIDRIO: Sin retención · Limpio · Separado por tipo · Sin etiquetas o contaminación',margin+2,y+14);
-  y+=22;
-
-  // Materials table header
-  doc.setFillColor(26,35,50);doc.rect(margin,y,W-2*margin,7,'F');
-  doc.setTextColor(255,255,255);doc.setFontSize(8);doc.setFont('helvetica','bold');
-  doc.text('MATERIAL',margin+2,y+5);
-  doc.text('KG',margin+100,y+5,{align:'right'});
-  doc.text('P. EJECUTIVO',margin+145,y+5,{align:'right'});
-  doc.text('ESTADO',W-margin,y+5,{align:'right'});
-  y+=9;
-
-  actives.forEach((mat,i)=>{
-    if(y>270){doc.addPage();y=15;}
-    const s=states[mat.id]||{};
-    const kg=parseFloat(s.kg)||0,ej=parseFloat(s.ej)||0;
-    const sem=getSem(kg,mat);
-    const semTxt=sem?{verde:'🟢',amarillo:'🟡',rojo:'🔴'}[sem]:'—';
-    const mc=getMC(kg,ej,mat);
-    const bg=i%2===0?[248,248,248]:[255,255,255];
-    doc.setFillColor(...bg);doc.rect(margin,y,W-2*margin,7,'F');
-    doc.setTextColor(30,30,30);doc.setFontSize(8);doc.setFont('helvetica','normal');
-    doc.text(mat.material.substring(0,28),margin+2,y+5);
-    doc.text(kg>0?kg.toLocaleString('es-CL'):'—',margin+100,y+5,{align:'right'});
-    doc.text(ej>0?'$'+ej.toLocaleString('es-CL'):'—',margin+145,y+5,{align:'right'});
-    if(sem){const semCol={verde:[27,94,32],amarillo:[245,127,23],rojo:[183,28,28]}[sem];doc.setTextColor(...semCol);}
-    doc.text(semTxt,W-margin,y+5,{align:'right'});
-    y+=7;
-  });
-
-  // Total bar
-  y+=4;
-  doc.setFillColor(26,35,50);doc.rect(margin,y,W-2*margin,10,'F');
-  doc.setTextColor(255,255,255);doc.setFontSize(9);doc.setFont('helvetica','bold');
-  doc.text('TOTAL',margin+3,y+7);
-  doc.text(fmtNum(totalKg)+' kg',margin+70,y+7,{align:'right'});
-  const comisionTotal=getComision(totalMC)||0;
-  doc.setTextColor(79,195,247);
-  doc.text('Comisión Ejecutivo: $'+comisionTotal.toLocaleString('es-CL'),W-margin,y+7,{align:'right'});
-
-  y+=16;
-  doc.setTextColor(150,150,150);doc.setFontSize(7);doc.setFont('helvetica','italic');
-  doc.text('Precios actualizados al 19-03-2026 · Generado: '+new Date().toLocaleString('es-CL'),margin,y);
-  doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(100,100,100);
-  doc.text('* Precios válidos a la fecha de emisión, sujetos a cambios según condiciones de mercado.',margin,y+4);
-
-  const fname=`Consulta_${neg.suc}_${neg.prov.replace(/\s/g,'_')}_${today.replace(/\//g,'-')}.pdf`;
-  doc.save(fname);
-  window._lastPDFDoc=doc;
-  window._lastPDFName=fname;
-}
-
-function buildWAText(){
-  const neg=getNegData();
-  const actives=getActives();
-  const totalMC=actives.reduce((s,mat)=>{const st=states[mat.id]||{};return s+(getMC(parseFloat(st.kg)||0,parseFloat(st.ej)||0,mat)||0);},0);
-  const today=new Date().toLocaleDateString('es-CL');
-  let txt=`*Resumen Consulta — Reciclean/Farex*\n`;
-  txt+=`📅 ${today}\n🏢 Sucursal: ${neg.suc}\n👤 Ejecutivo: ${neg.ejec}\n🧾 Proveedor: ${neg.prov}`;
-  if(neg.rut) txt+=`\n🪪 RUT: ${neg.rut}`;
-  if(neg.fecha) txt+=`\n📅 Llegada: ${neg.fecha}`;
-  if(neg.folio) txt+=`\n🔢 N° Pesaje/Factura: ${neg.folio}`;
-  txt+=`\n\n*Materiales:*\n`;
-  actives.forEach(mat=>{
-    const s=states[mat.id]||{};
-    const kg=parseFloat(s.kg)||0,ej=parseFloat(s.ej)||0;
-    txt+=`• ${mat.material}: ${fmtNum(kg)} kg | Ejec: ${fmt(ej)}\n`;
-  });
-  txt+=`\n_Precios sujetos a cambios según mercado_\n_Grupo Reciclean · Farex · +56 9 9534 2437_`;
-  return txt;
-}
-
-function shareWA(){
-  const neg=getNegData();
-  const actives=getActives();
-  if(actives.length===0){alert('Debes ingresar al menos un material con kilos');return;}
-
-  let phone=neg.wa.replace(/\D/g,'');
-  if(!phone){const admin=ADMINS[neg.suc]||{};phone=admin.wa||'';}
-  if(!phone){alert('Ingresa número WhatsApp del proveedor');return;}
-  if(!phone.startsWith('56')){phone='56'+phone;}
-
-  const msg=buildWAText();
-  const url='https://wa.me/'+phone+'?text='+encodeURIComponent(msg);
-  window.open(url);
-}
-function shareEmail(){
-  const neg=getNegData();
-  const admin=ADMINS[neg.suc]||{};
-  const today=new Date().toLocaleDateString('es-CL');
-  const actives=getActives();
-  const totalMC=actives.reduce((s,mat)=>{const st=states[mat.id]||{};return s+(getMC(parseFloat(st.kg)||0,parseFloat(st.ej)||0,mat)||0);},0);
-  const subj=encodeURIComponent(`Consulta Precios ${neg.suc} — ${neg.prov} — ${today}`);
-  let body=`Resumen de Negocio - Grupo Reciclean/Farex\n\n`;
-  body+=`Sucursal: ${neg.suc}\nEjecutivo: ${neg.ejec}\nProveedor: ${neg.prov}`;
-  if(neg.rut) body+=`\nRUT: ${neg.rut}`;
-  if(neg.fecha) body+=`\nFecha llegada: ${neg.fecha}`;
-  if(neg.folio) body+=`\nN° Pesaje/Factura: ${neg.folio}`;
-  body+=`\n\nMateriales:\n`;
-  actives.forEach(mat=>{
-    const s=states[mat.id]||{};
-    const kg=parseFloat(s.kg)||0,ej=parseFloat(s.ej)||0;
-    const mc=getMC(kg,ej,mat);
-    body+=`• ${mat.material}: ${fmtNum(kg)} kg | Precio Ejec: ${fmt(ej)} | MC: ${mc!==null?'$'+mc.toLocaleString('es-CL'):'—'}\n`;
-  });
-  body+=`\nMC Total: $${totalMC.toLocaleString('es-CL')}`;
-  window.open(`mailto:${admin.email||''}?subject=${subj}&body=${encodeURIComponent(body)}`,'_blank');
-}
-
-// ──────────────────────────────────────────────
-// CARD RENDERING
-// ──────────────────────────────────────────────
 function buildCard(mat){
   const c=COL[mat.categoria]||{bg:'#455A64',ac:'#90A4AE',lt:'#ECEFF1'};
   const s=states[mat.id]||{};
-  const kg=parseFloat(s.kg)||0,ej=parseFloat(s.ej)||0;
-  const sem=getSem(kg,mat),hab=getHab(sem,mat),mc=getMC(kg,ej,mat);
-  const semMap={verde:{e:'🟢',l:'VERDE — hasta Precio Máximo',bg:'#1B5E20'},amarillo:{e:'🟡',l:'AMARILLO — hasta 50% spread',bg:'#F57F17'},rojo:{e:'🔴',l:'ROJO — solo Precio Lista',bg:'#B71C1C'}};
-  const sc=sem?semMap[sem]:null;
-  const im=mat.metaKgTotal>0&&kg>0?(kg/mat.metaKgTotal*100).toFixed(1)+'%':'—';
-  const ic=mat.metaCategoriaTotal>0&&kg>0?(kg/mat.metaCategoriaTotal*100).toFixed(1)+'%':'—';
-  let alerta='—';
-  if(ej>0&&mat.precioMaximo>0){if(ej>mat.precioMaximo)alerta='⚠️ Excede máximo';else if(ej>hab)alerta='⚠️ Fuera de nivel';else alerta='✓ OK';}
+  const kg=parseFloat(s.kg)||0, ej=parseFloat(s.ej)||0;
+  const sem=getSem(kg,mat), hab=getHab(sem,mat);
+  const sc=sem?{verde:{e:'🟢'},amarillo:{e:'🟡'},rojo:{e:'🔴'}}[sem]:null;
   const ejBorder=ej>mat.precioMaximo?'#c62828':ej>0&&ej<=hab?'#2e7d32':'#ddd';
-  const hasRes=kg>0||ej>0;
-  return `<div class="card">
-    <div class="card-header" style="background:${c.bg}">
-      <div><div class="cat-label" style="color:${c.ac}">${mat.categoria}</div><div class="mat-name">${mat.material}</div></div>
-      <div class="badges">${mat.farex?'<span class="badge" style="background:#1565C0">FAREX</span>':''}${mat.reciclean?'<span class="badge" style="background:#2E7D32">RECICLEAN</span>':''}</div>
-    </div>
-    ${sinPrecios(mat)
-      ? `<div style="background:${c.lt};padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid ${c.bg}18">
-           <span style="font-size:16px">⚠️</span>
-           <div>
-             <div style="font-size:11px;font-weight:700;color:#E65100">Sin precios de mercado cargados</div>
-             <div style="font-size:10px;color:#888;margin-top:1px">Actualiza el Excel y recarga el simulador para ver precios y calcular MC</div>
-           </div>
-         </div>`
-      : `<div class="price-band" style="background:${c.lt}">
-           <div class="price-cell" style="border-right:1px solid ${c.bg}18">
-             <div class="price-label" style="color:${c.bg}">Precio Lista</div><div class="price-val" style="color:${c.bg}">${fmt(mat.precioLista)}</div><div class="price-sub">mínimo</div>
-           </div>
-           <div class="price-cell" style="border-right:1px solid ${c.bg}18;background:${sc?c.bg+'15':'transparent'}">
-             <div class="price-label" style="color:${c.bg}">Habilitado</div><div class="price-val" style="color:${c.bg}" id="hab-val-${mat.id}">${fmt(hab)}</div><div class="price-sub" id="hab-sub-${mat.id}">${sc?sc.e:'—'}</div>
-           </div>
-           <div class="price-cell">
-             <div class="price-label" style="color:${c.bg}">Precio Máximo</div><div class="price-val" style="color:${c.bg}">${fmt(mat.precioMaximo)}</div><div class="price-sub">techo</div>
-           </div>
-         </div>`
-    }
-    <div class="inputs">
-      <div><label class="input-label">Kilos proveedor</label>
-        <input class="price-input" type="number" inputmode="numeric" placeholder="kg" value="${s.kg||''}" oninput="onInput(${mat.id},'kg',this.value)">
-      </div>
-      <div><label class="input-label">Precio Ejecutivo $/kg</label>
-        <input class="price-input" id="ej-input-${mat.id}" type="number" inputmode="numeric" placeholder="${hab>0?'Sugerido '+fmt(hab):'$0'}" value="${s.ej||''}" style="border-color:${ejBorder}" oninput="onInput(${mat.id},'ej',this.value)">
-      </div>
-    </div>
-    <div style="padding:8px 14px;background:${c.lt};border-top:1px solid ${c.bg}18;font-size:10px;color:${c.bg};font-weight:600">📊 Meta: ${mat.metaKgTotal?.toLocaleString('es-CL')||'—'} kg/mes</div>
-    <div class="results" id="res-${mat.id}">${hasRes?`${sc?`<div class="semaforo-bar" style="background:${sc.bg}">${sc.e} ${sc.l}</div>`:''}
-    <div class="result-grid">
-      <div class="result-cell"><div class="result-label">Incid. Material</div><div class="result-val">${im}</div></div>
-      <div class="result-cell"><div class="result-label">Incid. Categoría</div><div class="result-val">${ic}</div></div>
-      <div class="result-cell"><div class="result-label">Alerta</div><div class="result-val">${alerta}</div></div>
-      <div class="result-cell" style="background:#E3F2FD">
-        <div class="result-label">🏆 Comisión</div>
-        <div class="result-val" style="color:#1565C0">${getComision(mc)!==null?'$'+getComision(mc).toLocaleString('es-CL'):'—'}</div>
-      </div>
-    </div>`:''}</div>
-  </div>`;
+  const puedeCotz = ROL_PUEDE_COTIZAR(_rolActual);
+  const veCompra  = ROL_VE_COMPRA(_rolActual);
+
+  // Banda de precios — admin/editor ven precio compra extra
+  const compraRow = veCompra && mat.precioCompra > 0
+    ? '<div style="background:'+c.bg+';padding:5px 14px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:9px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Precio Compra (interno)</span><span style="font-size:12px;font-weight:800;color:#FFD54F">'+fmt(mat.precioCompra)+'</span></div>'
+    : '';
+
+  const priceBand = sinPrecios(mat)
+    ? '<div style="background:'+c.lt+';padding:10px 14px;font-size:11px;font-weight:700;color:#E65100">⚠️ Sin precios activos</div>'
+    : '<div class="price-band" style="background:'+c.lt+'">'
+      +'<div class="price-cell" style="border-right:1px solid '+c.bg+'18"><div class="price-label" style="color:'+c.bg+'">Precio Lista</div><div class="price-val" style="color:'+c.bg+'">'+fmt(mat.precioLista)+'</div><div style="font-size:9px;color:#666">mínimo</div></div>'
+      +'<div class="price-cell" style="border-right:1px solid '+c.bg+'18"><div class="price-label" style="color:'+c.bg+'">Habilitado</div><div class="price-val" style="color:'+c.bg+'" id="hab-val-'+mat.id+'">'+fmt(hab)+'</div><div style="font-size:9px;color:#666" id="hab-sub-'+mat.id+'">'+(sc?sc.e:'—')+'</div></div>'
+      +'<div class="price-cell"><div class="price-label" style="color:'+c.bg+'">Precio Máximo</div><div class="price-val" style="color:'+c.bg+'">'+fmt(mat.precioMaximo)+'</div><div style="font-size:9px;color:#666">techo</div></div>'
+      +'</div>';
+
+  // Inputs: solo para roles que pueden cotizar
+  const inputsSection = puedeCotz
+    ? '<div class="inputs"><div><label class="input-label">Kilos proveedor</label><input class="price-input" type="number" inputmode="numeric" placeholder="kg" value="'+(s.kg||'')+'" oninput="onInput('+mat.id+',\'kg\',this.value)"></div><div><label class="input-label">Precio Ejecutivo $/kg</label><input class="price-input" id="ej-input-'+mat.id+'" type="number" inputmode="numeric" placeholder="'+(hab>0?'Sugerido '+fmt(hab):'$0')+'" value="'+(s.ej||'')+'" style="border-color:'+ejBorder+'" oninput="onInput('+mat.id+',\'ej\',this.value)"></div></div>'
+    : '';
+
+  const metaRow = '<div style="padding:8px 14px;background:'+c.lt+';border-top:1px solid '+c.bg+'18;font-size:10px;color:'+c.bg+';font-weight:600">📊 Meta: '+(mat.metaKgTotal?.toLocaleString('es-CL')||'—')+' kg/mes</div>';
+  const resultsSection = puedeCotz ? '<div class="results" id="res-'+mat.id+'"></div>' : '';
+
+  return '<div class="card">'
+    +'<div class="card-header" style="background:'+c.bg+'"><div><div class="cat-label" style="color:'+c.ac+'">'+mat.categoria+'</div><div class="mat-name">'+mat.material+'</div></div><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">'+(mat.farex?'<span style="font-size:9px;padding:2px 7px;border-radius:20px;font-weight:700;color:#fff;background:#1565C0">FAREX</span>':'')+(mat.reciclean?'<span style="font-size:9px;padding:2px 7px;border-radius:20px;font-weight:700;color:#fff;background:#2E7D32">RECICLEAN</span>':'')+'</div></div>'
+    +compraRow+priceBand+inputsSection+metaRow+resultsSection
+    +'</div>';
 }
-function switchTab(tab){
-  curTab=tab;
-  document.getElementById('tab-browse').className='tab-btn'+(tab==='browse'?' active':'');
-  document.getElementById('tab-active').className='tab-btn'+(tab==='active'?' active':'');
-  render();
-}
+
+function switchTab(tab){ curTab=tab; document.getElementById('tab-browse').className='tab-btn'+(tab==='browse'?' active':''); document.getElementById('tab-active').className='tab-btn'+(tab==='active'?' active':''); render(); }
+
 function render(){
+  if(!MATERIALES.length) return;
   const q=document.getElementById('search').value.toLowerCase();
   const actives=new Set(getActives().map(m=>m.id));
   document.getElementById('cnt-active').textContent=actives.size;
   let list=MATERIALES.filter(m=>(selCats.size===0||selCats.has(m.categoria))&&(q===''||m.material.toLowerCase().includes(q)));
   document.getElementById('cnt-browse').textContent=list.length;
   const content=document.getElementById('content');
-  if(curTab==='active'){
-    const al=MATERIALES.filter(m=>actives.has(m.id));
-    content.innerHTML=al.length?al.map(buildCard).join(''):'<div class="empty"><div style="font-size:36px;margin-bottom:10px">📋</div><div style="font-size:13px;font-weight:600">Sin materiales activos</div><div style="font-size:11px;margin-top:5px;color:#bbb">Ingresa kg o precio ejecutivo</div></div>';
-  } else {
-    content.innerHTML=list.map(buildCard).join('');
-  }
+  if(curTab==='active'){ const al=MATERIALES.filter(m=>actives.has(m.id)); content.innerHTML=al.length?al.map(buildCard).join(''):'<div style="text-align:center;padding:40px;color:#999">Sin materiales activos</div>'; }
+  else{ content.innerHTML=list.map(buildCard).join(''); }
 }
 
-
-// Filtrar materiales según sucursal
-// Cerrillos/Maipú: FAREX+RECICLEAN | Talca/Pto.Montt: solo RECICLEAN
 function filtrarMaterialesPorSucursal(suc, mats){
-  const sucFarex = ['Cerrillos','Maipú'];
-  if(!suc || sucFarex.includes(suc)) return mats;
-  return mats.filter(m => m.reciclean === true);
+  if(!suc||['Cerrillos','Maipú'].includes(suc)) return mats;
+  return mats.filter(m=>m.reciclean===true);
 }
+
 function updateSucursalMateriales(){
-  const suc = document.getElementById('neg-suc').value;
-  // Actualizar indicador de sucursal en topbar
-  const ind = document.getElementById('suc-indicator');
-  const indName = document.getElementById('suc-indicator-name');
-  if(suc){
-    ind.style.color = '#69F0AE';
-    indName.textContent = suc;
-  } else {
-    ind.style.color = '#FF8A65';
-    indName.textContent = 'Sin sucursal seleccionada';
-  }
-  // Actualizar sucursal en modal tabla
-  const tablaSuc = document.getElementById('tabla-suc-name');
-  if(tablaSuc) tablaSuc.textContent = suc || 'Cerrillos';
-  // Actualizar materiales filtrados por sucursal
-  const allMats = MATERIALES_DATA[suc] || MATERIALES_DATA['Cerrillos'];
-  MATERIALES = filtrarMaterialesPorSucursal(suc, allMats);
-  // Actualizar contador en topbar
-  const cntEl = document.getElementById('suc-mat-count');
-  if(cntEl) cntEl.textContent = MATERIALES.length + ' MATERIALES';
-  // Recalcular categorías visibles
-  CATS.length = 0;
-  [...new Set(MATERIALES.map(m=>m.categoria))].forEach(c=>CATS.push(c));
+  if(!MATERIALES_DATA) return;
+  const suc=document.getElementById('neg-suc').value;
+  const allMats=MATERIALES_DATA[suc]||MATERIALES_DATA['Cerrillos'];
+  MATERIALES=filtrarMaterialesPorSucursal(suc,allMats);
   selCats.clear();
-  Object.keys(states).forEach(id => {
-    const mat = MATERIALES.find(m=>m.id===parseInt(id));
-    if(mat) updateResults(parseInt(id));
-  });
   buildCats();
   render();
 }
 
-cargarMemoria();buildCats();render();
-// Sincronizar indicador sucursal al cargar
-const _sucInit=document.getElementById('neg-suc').value;
-if(_sucInit) updateSucursalMateriales();
+function finalizarConsulta(){
+  const suc=document.getElementById('neg-suc').value, ejec=document.getElementById('neg-ejec').value.trim(), prov=document.getElementById('neg-prov').value.trim(), actives=getActives();
+  if(!suc||!ejec||!prov||actives.length===0){ if(!negOpen) toggleNeg(); alert('Completa: sucursal, ejecutivo, proveedor y al menos 1 material'); return; }
+  showModal();
+}
 
-// FUNCIONES V22 - TABLA DE PRECIOS Y SERVICIOS
-// Guardar datos en resumen final
+function getNegData(){ return{suc:document.getElementById('neg-suc').value,ejec:document.getElementById('neg-ejec').value.trim(),prov:document.getElementById('neg-prov').value.trim(),tipoEjec:document.getElementById('neg-tipo-ejec')?.value||'Administrador'}; }
 
+function showModal(){
+  const neg=getNegData(), actives=getActives();
+  const totalMC=actives.reduce((s,mat)=>{ const st=states[mat.id]||{}; return s+(getMC(parseFloat(st.kg)||0,parseFloat(st.ej)||0,mat)||0); },0);
+  const totalKg=actives.reduce((s,mat)=>s+(parseFloat((states[mat.id]||{}).kg)||0),0);
+  document.getElementById('modal-title').textContent='Resumen de Negocio';
+  document.getElementById('modal-sub').textContent='Revisa antes de enviar';
+  let mats='';
+  actives.forEach(mat=>{ const s=states[mat.id]||{}; const kg=parseFloat(s.kg)||0,ej=parseFloat(s.ej)||0; const mc=getMC(kg,ej,mat); mats+='<div style="background:#F8F8F8;border-radius:8px;padding:8px 10px;margin-bottom:6px"><div style="font-size:12px;font-weight:700;color:#1A2332">'+mat.material+'</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;font-size:11px;color:#555"><span>Kg: '+fmtNum(kg)+'</span><span>Ejec: '+fmt(ej)+'</span><span style="color:#1565C0">Comisión: '+(getComision(mc)!==null?'$'+getComision(mc).toLocaleString('es-CL'):'—')+'</span></div></div>'; });
+  document.getElementById('modal-body').innerHTML='<div style="margin-bottom:12px;font-size:12px"><b>Sucursal:</b> '+neg.suc+' | <b>Ejecutivo:</b> '+neg.ejec+' | <b>Proveedor:</b> '+neg.prov+'</div>'+mats+'<div style="background:#0D1B2A;border-radius:10px;padding:12px;margin:12px 0;display:flex;justify-content:space-between"><div style="color:#fff;font-size:13px;font-weight:700">'+fmtNum(totalKg)+' kg</div><div style="color:#4FC3F7;font-size:15px;font-weight:800">$'+(getComision(totalMC)||0).toLocaleString('es-CL')+' comisión</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button style="padding:12px;background:#25D366;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px" onclick="shareWA()">📱 WhatsApp</button><button style="padding:12px;background:#1565C0;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px" onclick="closeModal()">← Volver</button></div>';
+  document.getElementById('modal').className='modal-overlay show';
+}
 
-</script>
+function closeModal(e){ if(e&&e.target!==document.getElementById('modal')) return; document.getElementById('modal').className='modal-overlay'; }
 
+function shareWA(){
+  const neg=getNegData(), actives=getActives();
+  if(!actives.length){ alert('Sin materiales'); return; }
+  let txt='*Resumen Consulta — Reciclean/Farex*\n📅 '+new Date().toLocaleDateString('es-CL')+'\n🏢 '+neg.suc+'\n👤 '+neg.ejec+'\n🧾 '+neg.prov+'\n\n*Materiales:*\n';
+  actives.forEach(mat=>{ const s=states[mat.id]||{}; txt+='• '+mat.material+': '+fmtNum(parseFloat(s.kg)||0)+' kg | Ejec: '+fmt(parseFloat(s.ej)||0)+'\n'; });
+  txt+='\n_Precios referenciales — Reciclean·Farex_';
+  window.open('https://wa.me/?text='+encodeURIComponent(txt));
+}
 
-
-<!-- BOTONES FINALES Y MODAL TABLA PRECIOS -->
-<div class="close-btn-wrap">
-  <button class="close-btn" onclick="mostrarTablaPrecios()" style="background:linear-gradient(135deg,#17A2B8,#0D8BA7);margin-bottom:8px">📊 Ver Tabla de Precios</button>
-  <button class="close-btn" onclick="descargarTablaPDF()" style="background:linear-gradient(135deg,#E53935,#C62828);margin-bottom:8px">📄 Descargar Precios en PDF</button>
-  <button class="close-btn" onclick="finalizarConsulta()" style="background:linear-gradient(135deg,#1565C0,#0D47A1)">📋 Generar Resumen Consulta</button>
-  <button class="close-btn" onclick="limpiarMateriales()" style="background:linear-gradient(135deg,#F57C00,#E64A19);margin-top:8px">⨯ Limpiar Todos los Materiales</button>
-</div>
-
-<!-- MODAL TABLA PRECIOS -->
-<div id="tablaPreciosModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:16px;padding:24px;width:95%;max-width:600px;max-height:90vh;overflow-y:auto">
-    <div style="font-size:18px;font-weight:800;margin-bottom:4px;color:#0D1B2A">Tabla de Precios</div>
-    <div style="font-size:12px;color:#888;margin-bottom:4px">Precios en CLP/kg · Sucursal: <span id="tabla-suc-name">Cerrillos</span></div>
-    <div style="font-size:11px;color:#666;margin-bottom:16px;font-style:italic">Actualizado: 19 de marzo de 2026</div>
-    <div id="tablaPreciosContent" style="max-height:70vh;overflow-y:auto"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
-      <button onclick="descargarTablaPDF()" style="padding:10px;background:#E53935;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:12px">📄 Descargar PDF</button>
-      <button onclick="document.getElementById('tablaPreciosModal').style.display='none'" style="padding:10px;background:#999;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:12px">Cerrar</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// Datos de tabla precios
-const TABLA_PRECIOS_DATA = [{"categoria": "FIERROS Y LATAS", "materiales": [{"material": "Fierro Corto (≤ 80 cm)", "precioLista": 90}, {"material": "Fierro Largo (≤ 3 m)", "precioLista": 80}, {"material": "Fierro Fundido", "precioLista": 0}, {"material": "Oxicorte", "precioLista": 70}, {"material": "Manganeso", "precioLista": 0}]}, {"categoria": "LATA CHATARRA", "materiales": [{"material": "Lata Chatarra", "precioLista": 70}]}, {"categoria": "VIRUTA", "materiales": [{"material": "Viruta", "precioLista": 5}]}, {"categoria": "COBRES", "materiales": [{"material": "Cobre 1° Tubo", "precioLista": 6890}, {"material": "Cobre 1° Pelillo", "precioLista": 0}, {"material": "Cobre 3a", "precioLista": 6820}, {"material": "Cobre Esmaltado", "precioLista": 6820}, {"material": "Cobre Calefón", "precioLista": 5750}, {"material": "Cobre Radiador", "precioLista": 4050}, {"material": "Cobre Radiador Chico", "precioLista": 4030}, {"material": "Cobre-Níquel (Cu/Ni)", "precioLista": 1840}]}, {"categoria": "BRONCES", "materiales": [{"material": "Bronce Amarillo", "precioLista": 4430}, {"material": "Bronce Colorado", "precioLista": 5690}, {"material": "Bronce Contaminado", "precioLista": 3160}, {"material": "Bronce Aserrín Limpio", "precioLista": 0}]}, {"categoria": "ALUMINIOS", "materiales": [{"material": "Aluminio Off-Set", "precioLista": 1440}, {"material": "Aluminio Perfil A", "precioLista": 1410}, {"material": "Aluminio Perfil B", "precioLista": 1380}, {"material": "Aluminio Duro", "precioLista": 1190}, {"material": "Aluminio Duro Lata", "precioLista": 1190}, {"material": "Aluminio Blando", "precioLista": 0}, {"material": "Aluminio Latas Bebidas (UBC)", "precioLista": 1210}, {"material": "Aluminio Pomos", "precioLista": 660}, {"material": "Aluminio Radiador", "precioLista": 790}, {"material": "Aluminio Radiador Mixto (Al/Cu)", "precioLista": 3090}, {"material": "Aluminio FOIL", "precioLista": 390}]}, {"categoria": "ACEROS INOXIDABLES", "materiales": [{"material": "Acero Inox. SS 304", "precioLista": 500}, {"material": "Acero Inox. SS 316", "precioLista": 800}, {"material": "Acero Inox. SS 201", "precioLista": 0}, {"material": "Zinc (Ánodos)", "precioLista": 210}, {"material": "Plomo", "precioLista": 300}]}, {"categoria": "CARTÓN Y PAPEL", "materiales": [{"material": "Cartón Corrugado", "precioLista": 16}, {"material": "Dúplex", "precioLista": 0}, {"material": "Blanco 2 (Papel Oficina)", "precioLista": 40}, {"material": "Blanco 3", "precioLista": 0}, {"material": "Papel Diario", "precioLista": 0}]}, {"categoria": "VIDRIO", "materiales": [{"material": "Vidrio de Botellas", "precioLista": 4}]}, {"categoria": "PLÁSTICOS — PET", "materiales": [{"material": "PET Transparente", "precioLista": 310}, {"material": "PET Color", "precioLista": 130}, {"material": "PET Revuelto", "precioLista": 0}, {"material": "PET Preforma Transparente", "precioLista": 0}]}, {"categoria": "PLÁSTICOS — FILM Y POLIETILENOS", "materiales": [{"material": "Stretch Film c/Etiqueta", "precioLista": 0}, {"material": "Stretch Film s/Etiqueta", "precioLista": 0}, {"material": "Polietileno con Stretch Film", "precioLista": 80}, {"material": "Polietileno para Lavado", "precioLista": 0}, {"material": "Polietileno Limpio", "precioLista": 130}, {"material": "Techo Invernadero", "precioLista": 20}]}, {"categoria": "PLÁSTICOS — RÍGIDOS", "materiales": [{"material": "Tapas Bebidas", "precioLista": 20}, {"material": "Tapón Agua Purificada", "precioLista": 80}, {"material": "Bins Agrícola", "precioLista": 50}, {"material": "Pallet PP", "precioLista": 80}, {"material": "Basureros sin Eje y Ruedas", "precioLista": 50}, {"material": "Planza de Fardos", "precioLista": 50}]}, {"categoria": "PLÁSTICOS — SOPLADOS", "materiales": [{"material": "Bidón Granel con Triple Lavado", "precioLista": 60}, {"material": "Bidón Fardo con Triple Lavado", "precioLista": 90}]}];
+function limpiarMateriales(){ if(confirm('¿Limpiar todos los materiales?')){ document.querySelectorAll('input[type="number"]').forEach(i=>i.value=''); Object.keys(states).forEach(k=>delete states[k]); render(); updateTotals(); } }
 
 function mostrarTablaPrecios(){
-  const neg = getNegData();
-  const suc = neg.suc || 'Cerrillos';
-  const allMatsTbl = MATERIALES_DATA[suc] || MATERIALES_DATA['Cerrillos'];
-  const mats = filtrarMaterialesPorSucursal(suc, allMatsTbl);
-  
-  // Group by category
-  const cats = {};
-  mats.forEach(m => {
-    if(!cats[m.categoria]) cats[m.categoria] = [];
-    cats[m.categoria].push(m);
-  });
-
-  const nota = '';  // Guía movida a Datos del Negocio
-
-  let tableHtml = '<table style="width:100%;border-collapse:collapse;font-size:11px">';
-  tableHtml += '<tr style="background:#1F3864;color:#fff">' +
-    '<td style="padding:8px 10px;font-weight:700">MATERIAL</td>' +
-    '<td style="padding:8px 10px;text-align:right;font-weight:700">P. LISTA</td>' +
-    '<td style="padding:8px 10px;text-align:right;font-weight:700">P. EJECUTIVO</td>' +
-    '<td style="padding:8px 10px;text-align:right;font-weight:700">P. MÁXIMO</td>' +
-    '</tr>';
-  
-  let prevCat = '';
-  mats.forEach((mat,i) => {
-    if(mat.categoria !== prevCat){
-      tableHtml += '<tr><td colspan="4" style="padding:10px 10px 4px;background:#2E75B6;color:#fff;font-weight:700;font-size:11px;letter-spacing:.5px">' + mat.categoria + '</td></tr>';
-      prevCat = mat.categoria;
-    }
-    if(mat.precioLista === 0 && mat.precioMaximo === 0) return; // skip sin precio
-    const bg = i%2===0?'#F8F9FA':'#FFFFFF';
-    const fmtP = v => v>0?'$'+v.toLocaleString('es-CL'):'—';
-    tableHtml += '<tr style="background:'+bg+';border-bottom:1px solid #eee">' +
-      '<td style="padding:6px 10px;color:#333">' + mat.material + '</td>' +
-      '<td style="padding:6px 10px;text-align:right;color:#555">' + fmtP(mat.precioLista) + '</td>' +
-      '<td style="padding:6px 10px;text-align:right;font-weight:700;color:#1565C0">' + fmtP(mat.precioEjecutivo) + '</td>' +
-      '<td style="padding:6px 10px;text-align:right;color:#2E7D32;font-weight:700">' + fmtP(mat.precioMaximo) + '</td>' +
-      '</tr>';
-  });
-  tableHtml += '</table>';
-  
-  document.getElementById('tablaPreciosContent').innerHTML = nota + tableHtml;
-  // Actualizar nombre sucursal en modal
-  const tSuc = document.getElementById('tabla-suc-name');
-  if(tSuc) tSuc.textContent = suc;
-  document.getElementById('tablaPreciosModal').style.display='flex';
+  const neg=getNegData(), suc=neg.suc||'Cerrillos';
+  const allMats=MATERIALES_DATA[suc]||MATERIALES_DATA['Cerrillos'];
+  const mats=filtrarMaterialesPorSucursal(suc,allMats);
+  let html='<table style="width:100%;border-collapse:collapse;font-size:11px"><tr style="background:#1F3864;color:#fff"><td style="padding:8px 10px;font-weight:700">MATERIAL</td><td style="padding:8px 10px;text-align:right;font-weight:700">P. LISTA</td></tr>';
+  let prevCat='';
+  mats.forEach((mat,i)=>{ if(mat.categoria!==prevCat){ html+='<tr><td colspan="2" style="padding:8px 10px 4px;background:#2E75B6;color:#fff;font-weight:700;font-size:10px">'+mat.categoria+'</td></tr>'; prevCat=mat.categoria; } if(mat.precioLista===0&&mat.precioMaximo===0) return; html+='<tr style="background:'+(i%2===0?'#F8F9FA':'#fff')+';border-bottom:1px solid #eee"><td style="padding:6px 10px;color:#333">'+mat.material+'</td><td style="padding:6px 10px;text-align:right;font-family:monospace;font-weight:600;color:#1A7A3C">'+(mat.precioLista>0?'$'+mat.precioLista.toLocaleString('es-CL'):'—')+'</td></tr>'; });
+  html+='</table>';
+  document.getElementById('modal-title').textContent='Tabla de Precios · '+suc;
+  document.getElementById('modal-sub').textContent=document.getElementById('top-notice-text').textContent;
+  document.getElementById('modal-body').innerHTML=html+'<button style="width:100%;margin-top:12px;padding:10px;background:#999;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700" onclick="closeModal()">Cerrar</button>';
+  document.getElementById('modal').className='modal-overlay show';
 }
 
-function descargarTablaPDF(){
-  const {jsPDF} = window.jspdf;
-  const doc = new jsPDF('p','mm','a4');
-  const W = doc.internal.pageSize.getWidth();
-  const H = doc.internal.pageSize.getHeight();
-  const mg = 12;
-  let y = mg;
-
-  // ── HEADER ──────────────────────────────────────────────────────────────
-  doc.setFillColor(13,27,42);
-  doc.rect(0,0,W,26,'F');
-  doc.setFontSize(16); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-  doc.text('TABLA DE PRECIOS', mg, 12);
-  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(79,195,247);
-  doc.text('Grupo Reciclean · Farex', mg, 18);
-  const neg = getNegData();
-  const sucPDF = neg.suc || 'Cerrillos';
-  doc.text('Sucursal: ' + sucPDF, mg, 23);
-  const fecha = new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'});
-  doc.setTextColor(180,180,180);
-  doc.text('Actualizado: ' + fecha, W - mg, 23, {align:'right'});
-  y = 32;
-
-  // ── COLUMNAS HEADER ──────────────────────────────────────────────────────
-  doc.setFillColor(31,56,100);
-  doc.rect(mg, y, W - 2*mg, 7, 'F');
-  doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-  doc.text('MATERIAL',            mg+2,    y+5);
-  doc.text('P. LISTA',            mg+115,  y+5, {align:'right'});
-  doc.text('P. EJECUTIVO',        mg+143,  y+5, {align:'right'});
-  doc.text('P. MÁXIMO',           W-mg,    y+5, {align:'right'});
-  y += 9;
-
-  // ── DATOS ────────────────────────────────────────────────────────────────
-  const allMatsPDF = MATERIALES_DATA[sucPDF] || MATERIALES_DATA['Cerrillos'];
-  const mats = filtrarMaterialesPorSucursal(sucPDF, allMatsPDF);
-  const fmtP = v => v>0 ? '$'+v.toLocaleString('es-CL') : '—';
-  let prevCat = ''; let rowIdx = 0;
-
-  mats.forEach(mat => {
-    if(y > H - 18){ doc.addPage(); y = mg; }
-
-    // Subtítulo categoría
-    if(mat.categoria !== prevCat){
-      if(y > H - 25){ doc.addPage(); y = mg; }
-      doc.setFillColor(46,117,182);
-      doc.rect(mg, y, W-2*mg, 6, 'F');
-      doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-      doc.text(mat.categoria, mg+2, y+4.2);
-      y += 7; rowIdx = 0;
-      prevCat = mat.categoria;
-    }
-
-    // Fila material
-    const bg = rowIdx%2===0 ? [248,249,250] : [255,255,255];
-    doc.setFillColor(...bg);
-    doc.rect(mg, y, W-2*mg, 6, 'F');
-
-    // Nombre
-    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(40,40,40);
-    doc.text(mat.material.substring(0,38), mg+2, y+4.2);
-
-    // P. Lista
-    doc.setTextColor(100,100,100); doc.setFont('helvetica','normal');
-    doc.text(fmtP(mat.precioLista), mg+115, y+4.2, {align:'right'});
-
-    // P. Ejecutivo (azul)
-    doc.setTextColor(21,101,192); doc.setFont('helvetica','bold');
-    doc.text(fmtP(mat.precioEjecutivo), mg+143, y+4.2, {align:'right'});
-
-    // P. Máximo (verde)
-    doc.setTextColor(46,125,50); doc.setFont('helvetica','bold');
-    doc.text(fmtP(mat.precioMaximo), W-mg, y+4.2, {align:'right'});
-
-    // Línea divisora
-    doc.setDrawColor(220,220,220); doc.setLineWidth(0.1);
-    doc.line(mg, y+6, W-mg, y+6);
-    y += 6; rowIdx++;
-  });
-
-  // ── FOOTER ───────────────────────────────────────────────────────────────
-  const totalPag = doc.getNumberOfPages();
-  for(let p=1; p<=totalPag; p++){
-    doc.setPage(p);
-    doc.setDrawColor(79,195,247); doc.setLineWidth(0.3);
-    doc.line(mg, H-10, W-mg, H-10);
-    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(150,150,150);
-    doc.text('Reciclean · Farex | +56 9 9534 2437 | reciclean.cl | farex.cl', mg, H-6);
-    doc.text('Precios sujetos a cambios · Pág '+p+'/'+totalPag, W-mg, H-6, {align:'right'});
+// ══════════════════════════════════════════════════
+// INICIO
+// ══════════════════════════════════════════════════
+(async function init(){
+  // 1. Sesión propia (sessionStorage — login directo en asistente)
+  const savedPropio = sessionStorage.getItem('rf_usuario');
+  if(savedPropio){
+    try { USUARIO = JSON.parse(savedPropio); await loadSnapshot(); return; }
+    catch(e){ sessionStorage.removeItem('rf_usuario'); }
   }
 
-  const dateStr = new Date().toISOString().split('T')[0].replace(/-/g,'');
-  doc.save('tabla-precios-'+sucPDF.replace(/\s/g,'-')+'-'+dateStr+'.pdf');
-}
-function limpiarMateriales(){
-  if(confirm('¿Limpiar todos los materiales ingresados?')){
-    document.querySelectorAll('input[type="number"]').forEach(input=>input.value='');
-    if(typeof updateMC !== 'undefined') updateMC();
+  // 2. Sesión de login.html (localStorage rf_session — ejecutivos redirigidos)
+  const savedLogin = localStorage.getItem('rf_session');
+  if(savedLogin){
+    try {
+      const sess = JSON.parse(savedLogin);
+      const expirado = Date.now() - sess.timestamp > 24*60*60*1000;
+      if(!expirado && sess.acceso_asistente !== false){
+        USUARIO = { nombre: sess.nombre, rol: sess.rol || 'ejecutivo',
+                    telefono: sess.telefono || '', acceso_asistente: true };
+        await loadSnapshot();
+        return;
+      }
+    } catch(e){}
   }
-}
 
-function finalizarConsulta(){
-  // Ya existe en el código original
-  if(typeof cerrarConsulta === 'function') cerrarConsulta();
-}
-</script>
-<script type="module" src="/src/asistente-bridge.js"></script>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
-  });
-}
+  // 3. Sin sesión — mostrar login propio
+})();
 </script>
 </body>
 </html>
