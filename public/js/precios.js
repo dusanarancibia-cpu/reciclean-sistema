@@ -485,6 +485,7 @@ function generarFichaDespacho(){
     +'<div style="font-size:11px;color:rgba(255,255,255,.4);">Reciclean + Farex &middot; '+fecha+' '+hora+' &middot; Basado en precios seleccionados</div></div>'
     +'<div style="display:flex;gap:6px;align-items:center;">'
     +'<button class="btn ok" onclick="copiarFichaWA(\'global\')" style="font-size:10px;">Copiar todo WA</button>'
+    +'<button class="btn" onclick="descargarFichaPDF()" style="font-size:10px;background:#C0392B;border-color:#C0392B;color:#fff;">PDF</button>'
     +'<button onclick="cerrarFichaDespacho()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer;padding:0 4px;">&#10005;</button>'
     +'</div></div>'
     +'<div style="padding:16px;overflow-y:auto;flex:1;">'+fichaHtml+'</div>'
@@ -503,6 +504,29 @@ function fichaTab(key){
 function copiarFichaWA(key){
   var msg=window._fichaMessages&&window._fichaMessages[key]||'';
   navigator.clipboard.writeText(msg).then(function(){toast('Mensaje copiado al portapapeles','ok');});
+}
+function descargarFichaPDF(){
+  var content=document.querySelector('#ficha-modal > div > div:last-child');
+  if(!content) return;
+  var fecha=new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'});
+  var hora=new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+  var w=window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ficha de Despacho '+fecha+'</title><style>'
+    +'@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Roboto+Mono:wght@400;500;700&display=swap");'
+    +'*{box-sizing:border-box;margin:0;padding:0;}'
+    +'body{font-family:"Syne",sans-serif;padding:24px;color:#1A1A14;}'
+    +'h1{font-size:18px;font-weight:800;margin-bottom:2px;}'
+    +'.sub{font-size:11px;color:#888;margin-bottom:16px;}'
+    +'.note{font-size:10px;color:#999;text-align:right;margin-bottom:12px;}'
+    +'@media print{body{padding:12px;} .no-print{display:none!important;}}'
+    +'</style></head><body>'
+    +'<h1>FICHA DE DESPACHO</h1>'
+    +'<div class="sub">Reciclean + Farex &middot; '+fecha+' '+hora+'</div>'
+    +'<div class="note">Basado en precios seleccionados</div>'
+    +content.innerHTML
+    +'<script>setTimeout(function(){window.print();},400);<\/script>'
+    +'</body></html>');
+  w.document.close();
 }
 function cerrarFichaDespacho(){
   var modal=document.getElementById('ficha-modal');
