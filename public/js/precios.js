@@ -391,126 +391,103 @@ const DESTINATARIOS_DESPACHO = {
 };
 const LOGISTICA_GLOBAL = {nombre:'Andrea Rivera Contreras', cargo:'Encargada Logística (Todas)', tel:''};
 
-// ── v86: Ficha de Despacho con flujo visual nodos/flechas ──
+// ── Ficha de Despacho — formato tarjetas por cliente ──
 function generarFichaDespacho(){
   var fecha=new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'});
   var hora=new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+  var CAT_BADGE={"FIERROS Y LATAS":"FE","LATA CHATARRA":"LATA","COBRES":"CU","BRONCES":"BR","ALUMINIOS":"AL","ACEROS INOXIDABLES":"INOX","CARTON Y PAPEL":"PAPEL","CARTÓN Y PAPEL":"PAPEL","VIDRIO":"VID","PLASTICOS — PET":"PET","PLÁSTICOS — PET":"PET","PLASTICOS — FILM Y POLIETILENOS":"FILM","PLÁSTICOS — FILM Y POLIETILENOS":"FILM","PLASTICOS — RÍGIDOS":"RIG","PLÁSTICOS — RÍGIDOS":"RIG","PLASTICOS — SOPLADOS":"SOPL","PLÁSTICOS — SOPLADOS":"SOPL"};
+  var CAT_COLOR={"FE":"#37474F","LATA":"#37474F","CU":"#BF360C","BR":"#E65100","AL":"#1565C0","INOX":"#4A148C","PAPEL":"#33691E","VID":"#006064","PET":"#880E4F","FILM":"#4527A0","RIG":"#1A237E","SOPL":"#01579B"};
+  function badge(cat){var b=CAT_BADGE[cat]||cat.slice(0,4).toUpperCase();var c=CAT_COLOR[b]||'#555';return '<span style="display:inline-block;background:'+c+';color:#fff;font-size:8px;font-weight:700;padding:2px 5px;border-radius:3px;min-width:28px;text-align:center;letter-spacing:.5px;">'+b+'</span>';}
 
-  // Recopilar flujos: sucursal → material → cliente (solo PRECIO_SELECCIONADO)
-  var flujos={}; // suc → [{material, cliente, precio, cat, matId}]
-  var clientesSet={}; // suc → Set de clientes
+  // Recopilar datos
+  var fichas={};var clientesSet={};
   SUCS.forEach(function(suc){
-    flujos[suc]=[];
-    clientesSet[suc]=new Set();
+    fichas[suc]=[];clientesSet[suc]=new Set();
     mats.forEach(function(m){
       var sel=PRECIO_SELECCIONADO[m.id]&&PRECIO_SELECCIONADO[m.id][suc];
       if(sel&&sel.precio>0){
-        flujos[suc].push({material:m.nombre,cliente:sel.cliente,precio:sel.precio,cat:m.cat,matId:m.id});
+        fichas[suc].push({material:m.nombre,cliente:sel.cliente,precio:sel.precio,cat:m.cat,matId:m.id});
         clientesSet[suc].add(sel.cliente);
       }
     });
-    flujos[suc].sort(function(a,b){
-      var ca=CAT_ORDER.indexOf(a.cat),cb=CAT_ORDER.indexOf(b.cat);
-      return ca-cb||a.material.localeCompare(b.material,'es');
-    });
+    fichas[suc].sort(function(a,b){var ca=CAT_ORDER.indexOf(a.cat),cb=CAT_ORDER.indexOf(b.cat);return ca-cb||a.material.localeCompare(b.material,'es');});
   });
 
-  // Build WA messages (mantener funcionalidad)
+  // WA messages
   window._fichaMessages={};
   var globalMsg='*FICHA DE DESPACHO*\n_'+fecha+' '+hora+'_\n';
   SUCS.forEach(function(suc){
-    var items=flujos[suc];
-    if(!items.length) return;
+    var items=fichas[suc];if(!items.length)return;
     var msg='*DESPACHO '+suc.toUpperCase()+'*\n_'+fecha+'_\n\n';
     var prevCat='';
-    items.forEach(function(it){
-      if(it.cat!==prevCat){prevCat=it.cat;msg+='*'+it.cat+'*\n';}
-      msg+='  '+it.material+' → '+it.cliente+' ($'+it.precio.toLocaleString('es-CL')+'/kg)\n';
-    });
+    items.forEach(function(it){if(it.cat!==prevCat){prevCat=it.cat;msg+='*'+it.cat+'*\n';}msg+='  '+it.material+' → '+it.cliente+' ($'+it.precio.toLocaleString('es-CL')+'/kg)\n';});
     msg+='\n_Total: '+items.length+' materiales_';
     window._fichaMessages[suc]=msg;
     globalMsg+='\n*'+suc+'* ('+items.length+' mat.)\n';
     var clientes=[...clientesSet[suc]];
-    clientes.forEach(function(c){
-      var matsCli=items.filter(function(i){return i.cliente===c;});
-      globalMsg+='  → '+c+': '+matsCli.length+' mat.\n';
-    });
+    clientes.forEach(function(c){var mc=items.filter(function(i){return i.cliente===c;});globalMsg+='  -> '+c+': '+mc.length+' mat.\n';});
   });
   window._fichaMessages['global']=globalMsg;
 
-  // Build flow diagram HTML
-  var flowHtml='';
+  // Build card HTML
+  var allBadges=Object.values(CAT_BADGE).filter(function(v,i,a){return a.indexOf(v)===i;});
+  var fichaHtml='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px;">'+allBadges.map(function(b){return '<span style="display:inline-block;background:'+(CAT_COLOR[b]||'#555')+';color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;">'+b+'</span>';}).join('')+'</div>';
+
   SUCS.forEach(function(suc){
-    var items=flujos[suc];
-    if(!items.length) return;
+    var items=fichas[suc];if(!items.length)return;
     var clientes=[...clientesSet[suc]];
-    var dest=DESTINATARIOS_DESPACHO[suc]||{nombre:'—',cargo:'—'};
+    var dest=DESTINATARIOS_DESPACHO[suc]||{nombre:'—'};
+    var sucLabel=suc.replace('Puerto Montt','P.MONTT').toUpperCase();
 
-    flowHtml+='<div style="margin-bottom:24px;">';
     // Sucursal header
-    flowHtml+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">';
-    flowHtml+='<div style="font-size:14px;font-weight:700;color:var(--ink);">&#128205; '+suc+'</div>';
-    flowHtml+='<div style="display:flex;gap:6px;">';
-    flowHtml+='<button class="btn" onclick="copiarFichaWA(\''+suc+'\')" style="font-size:10px;padding:3px 8px;">&#128203; Copiar WA</button>';
-    if(dest.tel) flowHtml+='<a href="https://wa.me/'+dest.tel.replace(/[^0-9]/g,'')+'" target="_blank" class="btn ok" style="font-size:10px;padding:3px 8px;text-decoration:none;">&#128172; '+dest.nombre.split(' ')[0]+'</a>';
-    flowHtml+='</div></div>';
+    fichaHtml+='<div style="margin-bottom:20px;">';
+    fichaHtml+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">';
+    fichaHtml+='<div style="display:flex;align-items:center;gap:8px;"><span style="background:var(--green);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:6px;">'+sucLabel+'</span><span style="font-size:12px;color:var(--text3);">'+items.length+' materiales &rarr; '+clientes.length+' clientes</span></div>';
+    fichaHtml+='<div style="display:flex;gap:6px;">';
+    fichaHtml+='<button class="btn" onclick="copiarFichaWA(\''+suc+'\')" style="font-size:10px;padding:3px 8px;">Copiar WA</button>';
+    if(dest.tel) fichaHtml+='<a href="https://wa.me/'+dest.tel.replace(/[^0-9]/g,'')+'" target="_blank" class="btn ok" style="font-size:10px;padding:3px 8px;text-decoration:none;">'+dest.nombre.split(' ')[0]+'</a>';
+    fichaHtml+='</div></div>';
 
-    // Flow: Sucursal → Material → Cliente
-    // Group by client for cleaner arrows
+    // Cards per client (horizontal wrap)
+    fichaHtml+='<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;">';
     clientes.forEach(function(cli){
       var matsCli=items.filter(function(i){return i.cliente===cli;});
-      flowHtml+='<div style="display:flex;align-items:stretch;gap:0;margin-bottom:8px;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;">';
-
-      // Left: Sucursal node
-      flowHtml+='<div style="background:var(--ink);color:#F0D060;padding:8px 12px;min-width:70px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;writing-mode:vertical-lr;text-orientation:mixed;letter-spacing:1px;">'+suc.replace('Puerto Montt','P.MTT').toUpperCase()+'</div>';
-
-      // Center: Materials list
-      flowHtml+='<div style="flex:1;padding:6px 10px;background:var(--bg2);">';
-      var prevCat='';
+      fichaHtml+='<div style="border:1.5px solid var(--border);border-radius:var(--r2);overflow:hidden;min-width:200px;max-width:280px;flex:1;">';
+      // Card header
+      fichaHtml+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg3);">';
+      fichaHtml+='<div style="font-size:12px;font-weight:800;color:var(--ink);letter-spacing:.3px;">'+cli+'</div>';
+      fichaHtml+='<span style="font-size:9px;color:var(--text3);background:var(--bg);padding:2px 6px;border-radius:4px;font-weight:600;">'+matsCli.length+' mat.</span>';
+      fichaHtml+='</div>';
+      // Card body — rows
+      fichaHtml+='<div style="padding:4px 0;">';
       matsCli.forEach(function(it){
-        if(it.cat!==prevCat){
-          prevCat=it.cat;
-          flowHtml+='<div style="font-size:8px;color:var(--text3);font-weight:700;letter-spacing:.5px;margin-top:'+(prevCat?'6':'0')+'px;margin-bottom:2px;text-transform:uppercase;">'+it.cat+'</div>';
-        }
-        flowHtml+='<div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0;font-size:11px;">';
-        flowHtml+='<span style="color:var(--text);">'+it.material+'</span>';
-        flowHtml+='<span style="font-family:\'Roboto Mono\',monospace;font-size:10px;color:var(--green);font-weight:600;">$'+it.precio.toLocaleString('es-CL')+'</span>';
-        flowHtml+='</div>';
+        fichaHtml+='<div style="display:flex;align-items:center;gap:6px;padding:3px 10px;font-size:11px;">';
+        fichaHtml+=badge(it.cat);
+        fichaHtml+='<span style="flex:1;color:var(--text);">'+it.material+'</span>';
+        fichaHtml+='<span style="font-family:\'Roboto Mono\',monospace;font-size:10px;font-weight:700;color:var(--green);white-space:nowrap;">$'+it.precio.toLocaleString('es-CL')+'</span>';
+        fichaHtml+='</div>';
       });
-      flowHtml+='</div>';
-
-      // Arrow
-      flowHtml+='<div style="display:flex;align-items:center;padding:0 8px;background:var(--bg3);font-size:18px;color:var(--amber);">&#9654;</div>';
-
-      // Right: Cliente node
-      flowHtml+='<div style="background:var(--amber-bg);border-left:3px solid var(--amber);padding:10px 14px;min-width:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;">';
-      flowHtml+='<div style="font-size:12px;font-weight:700;color:var(--amber);text-align:center;">'+cli+'</div>';
-      flowHtml+='<div style="font-size:9px;color:var(--text3);margin-top:2px;">'+matsCli.length+' material'+(matsCli.length>1?'es':'')+'</div>';
-      flowHtml+='</div>';
-
-      flowHtml+='</div>'; // end flow row
+      fichaHtml+='</div></div>';
     });
-    flowHtml+='</div>'; // end sucursal block
+    fichaHtml+='</div></div>';
   });
 
-  // If no selections at all
-  if(!flowHtml){
-    flowHtml='<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px;">No hay precios seleccionados en Tab B. Selecciona precios primero.</div>';
+  if(!fichaHtml||!SUCS.some(function(s){return fichas[s].length>0;})){
+    fichaHtml='<div style="text-align:center;padding:40px;color:var(--text3);">No hay precios seleccionados en Tab B.</div>';
   }
 
-  // Render modal
   var modal=document.createElement('div');
   modal.id='ficha-modal';
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px;';
-  modal.innerHTML='<div style="background:#fff;border-radius:var(--r3);width:100%;max-width:900px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.3);">'
+  modal.innerHTML='<div style="background:#fff;border-radius:var(--r3);width:100%;max-width:1200px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.3);">'
     +'<div style="background:#1A1A14;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">'
-    +'<div><div style="font-size:14px;font-weight:700;color:#fff;">&#128203; Flujo de Despacho</div>'
-    +'<div style="font-size:11px;color:rgba(255,255,255,.4);">'+fecha+' '+hora+' &#183; Basado en precios seleccionados Tab B</div></div>'
+    +'<div><div style="font-size:14px;font-weight:700;color:#fff;">FICHA DE DESPACHO</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.4);">Reciclean + Farex &middot; '+fecha+' '+hora+' &middot; Basado en precios seleccionados</div></div>'
     +'<div style="display:flex;gap:6px;align-items:center;">'
-    +'<button class="btn ok" onclick="copiarFichaWA(\'global\')" style="font-size:10px;">&#128203; Copiar todo WA</button>'
+    +'<button class="btn ok" onclick="copiarFichaWA(\'global\')" style="font-size:10px;">Copiar todo WA</button>'
     +'<button onclick="cerrarFichaDespacho()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer;padding:0 4px;">&#10005;</button>'
     +'</div></div>'
-    +'<div style="padding:16px;overflow-y:auto;flex:1;">'+flowHtml+'</div>'
+    +'<div style="padding:16px;overflow-y:auto;flex:1;">'+fichaHtml+'</div>'
     +'</div>';
   document.body.appendChild(modal);
   modal.onclick=function(e){if(e.target===modal)cerrarFichaDespacho();};
