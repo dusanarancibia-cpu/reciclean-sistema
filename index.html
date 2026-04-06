@@ -137,6 +137,12 @@ table.t td{padding:7px 11px;border-bottom:1px solid var(--bg3);
 table.t tr:last-child td{border-bottom:none;}
 table.t tr:hover td{background:var(--bg3);}
 td.mat{font-weight:600;color:var(--text)!important;}
+/* Sticky first columns in Tab C */
+#pc-table th:nth-child(1),#pc-table td:nth-child(1){position:sticky;left:0;z-index:3;background:var(--bg2);min-width:20px;}
+#pc-table th:nth-child(2),#pc-table td:nth-child(2){position:sticky;left:20px;z-index:3;background:var(--bg2);min-width:110px;}
+#pc-table th:nth-child(3),#pc-table td:nth-child(3){position:sticky;left:130px;z-index:3;background:var(--bg2);}
+#pc-table th:nth-child(1),#pc-table th:nth-child(2),#pc-table th:nth-child(3){z-index:6;background:var(--bg3);}
+#pc-table tr:hover td:nth-child(1),#pc-table tr:hover td:nth-child(2),#pc-table tr:hover td:nth-child(3){background:var(--bg3);}
 td.cat{font-family:'Roboto Mono',monospace;font-size:9px;
   color:var(--text3)!important;text-transform:uppercase;letter-spacing:.5px;}
 td.num{font-family:'Roboto Mono',monospace;text-align:right;font-size:11px;}
