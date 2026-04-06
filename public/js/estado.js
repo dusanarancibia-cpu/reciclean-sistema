@@ -1079,21 +1079,46 @@ async function verificarPrecios(){
   const btn = document.getElementById('btn-verificar');
   if(btn){ btn.disabled=true; btn.textContent='⏳ Verificando...'; }
   try {
-    const { data: rows, error } = await _supabase
-      .from('asistente_snapshot')
-      .select('datos,version_label,actualizado_en')
-      .eq('id', 1)
-      .single();
-    if(error || !rows){
-      toast('⚠ Sin snapshot en Supabase — publica una versión primero','warn');
+    // Obtener AMBAS fuentes de datos (como hace el asistente)
+    const [snapRes, vistaRes] = await Promise.all([
+      _supabase.from('asistente_snapshot').select('datos,version_label,actualizado_en').eq('id',1).maybeSingle(),
+      _supabase.from('v_precios_activos').select('*')
+    ]);
+
+    const snap = snapRes.data;
+    const vista = vistaRes.data;
+
+    // Determinar qué fuente usa el asistente (misma lógica que asistente.html)
+    let asistData = null, fuente = '', fuenteLabel = '', fuenteFecha = '';
+
+    if(snap && snap.datos && Object.keys(snap.datos).length > 0){
+      asistData = snap.datos;
+      fuente = 'snapshot';
+      fuenteLabel = snap.version_label || '?';
+      fuenteFecha = snap.actualizado_en ? new Date(snap.actualizado_en).toLocaleString('es-CL') : '?';
+    } else if(vista && vista.length > 0){
+      // Reconstruir estructura por sucursal (como hace el asistente)
+      asistData = {};
+      vista.forEach(row => {
+        if(!asistData[row.sucursal]) asistData[row.sucursal] = [];
+        asistData[row.sucursal].push({
+          id: row.material_id, material: row.material, categoria: row.categoria,
+          precioLista: parseFloat(row.precio_lista)||0,
+          precioEjecutivo: parseFloat(row.precio_ejecutivo)||0,
+          precioMaximo: parseFloat(row.precio_maximo)||0
+        });
+      });
+      fuente = 'v_precios_activos';
+      fuenteLabel = 'BD directa';
+      fuenteFecha = vista[0]?.version_fecha ? new Date(vista[0].version_fecha).toLocaleString('es-CL') : '?';
+    }
+
+    if(!asistData){
+      toast('⚠ Sin datos en Supabase — publica una versión primero','warn');
       return;
     }
-    const snap = rows.datos;
-    const snapLabel = rows.version_label || '?';
-    const snapFecha = rows.actualizado_en
-      ? new Date(rows.actualizado_en).toLocaleString('es-CL') : '?';
 
-    // Calcular precios actuales del panel usando calc() (incluye PRECIO_OVERRIDE)
+    // Calcular precios actuales del panel usando calc()
     const SUCS_LIST = ['Cerrillos','Maipú','Talca','Puerto Montt'];
     const panelData = {};
     SUCS_LIST.forEach(suc=>{
@@ -1105,26 +1130,27 @@ async function verificarPrecios(){
       });
     });
 
-    // Comparar panel vs snapshot
+    // Comparar panel vs lo que ve el asistente
     const diffs = [];
     SUCS_LIST.forEach(suc=>{
       const panelMats = panelData[suc] || [];
-      const snapMats  = snap[suc] || [];
-      const snapById  = {};
-      snapMats.forEach(m=>{ snapById[m.id] = m; });
+      const asistMats = asistData[suc] || [];
+      const asistById = {};
+      asistMats.forEach(m=>{ asistById[m.id] = m; });
       panelMats.forEach(pm=>{
-        const sm = snapById[pm.id];
-        if(!sm) return;
-        if(pm.precioLista===0 && (!sm.precioLista || sm.precioLista===0)) return;
-        if(pm.precioLista!==sm.precioLista || pm.precioEjecutivo!==sm.precioEjecutivo || pm.precioMaximo!==sm.precioMaximo){
+        const am = asistById[pm.id];
+        if(!am) return;
+        const aLista = am.precioLista||0, aEjec = am.precioEjecutivo||0, aMax = am.precioMaximo||0;
+        if(pm.precioLista===0 && aLista===0) return;
+        if(pm.precioLista!==aLista || pm.precioEjecutivo!==aEjec || pm.precioMaximo!==aMax){
           diffs.push({ suc, id:pm.id, nombre:pm.nombre, categoria:pm.categoria,
             panel:{ lista:pm.precioLista, ejec:pm.precioEjecutivo, max:pm.precioMaximo },
-            snap: { lista:sm.precioLista,  ejec:sm.precioEjecutivo,  max:sm.precioMaximo }
+            snap: { lista:aLista, ejec:aEjec, max:aMax }
           });
         }
       });
     });
-    _mostrarResultadoVerificacion(diffs, snapLabel, snapFecha);
+    _mostrarResultadoVerificacion(diffs, fuenteLabel, fuenteFecha, fuente);
   } catch(err){
     console.error('verificarPrecios:', err);
     toast('⚠ Error al verificar: '+err.message,'err');
@@ -1133,7 +1159,7 @@ async function verificarPrecios(){
   }
 }
 
-function _mostrarResultadoVerificacion(diffs, snapLabel, snapFecha){
+function _mostrarResultadoVerificacion(diffs, snapLabel, snapFecha, fuente){
   const existing = document.getElementById('modal-verificar');
   if(existing) existing.remove();
   const nDiff = diffs.length;
@@ -1152,7 +1178,7 @@ function _mostrarResultadoVerificacion(diffs, snapLabel, snapFecha){
 
   let body = `<div style="background:${bannerBg};border:1.5px solid ${bannerBorder};border-radius:8px;padding:12px 16px;margin-bottom:16px;">
     <div style="font-size:14px;font-weight:700;color:${bannerColor};">${ok?'✓':'⚠'} ${bannerMsg}</div>
-    <div style="font-size:11px;color:#777;margin-top:4px;">Snapshot publicado: v${snapLabel} · ${snapFecha}</div>
+    <div style="font-size:11px;color:#777;margin-top:4px;">Fuente: ${fuente==='snapshot'?'asistente_snapshot':'v_precios_activos (BD directa)'} · v${snapLabel} · ${snapFecha}</div>
   </div>`;
 
   if(ok){
