@@ -3202,8 +3202,9 @@ function generarFichaDespacho(){
     flowHtml+='<span style="font-size:10px;color:#999;">'+items.length+' materiales &rarr; '+clientes.length+' cliente'+(clientes.length>1?'s':'')+'</span>';
     flowHtml+='</div>';
     flowHtml+='<div style="display:flex;gap:4px;" class="no-print">';
-    flowHtml+='<button class="btn" onclick="copiarFichaWA(\''+suc+'\')" style="font-size:9px;padding:2px 6px;">Copiar WA</button>';
-    if(dest.tel) flowHtml+='<a href="https://wa.me/'+dest.tel.replace(/[^0-9]/g,'')+'" target="_blank" class="btn ok" style="font-size:9px;padding:2px 6px;text-decoration:none;">WA '+dest.nombre.split(' ')[0]+'</a>';
+    flowHtml+='<button class="btn" onclick="generarPDFDespachoSuc(\''+suc+'\')" style="font-size:9px;padding:2px 6px;background:#2980B9;border-color:#2980B9;color:#fff;">&#128424; PDF '+sucShort+'</button>';
+    flowHtml+='<button class="btn" onclick="copiarFichaWA(\''+suc+'\')" style="font-size:9px;padding:2px 6px;">&#128203; Texto WA</button>';
+    if(dest.tel) flowHtml+='<a href="https://wa.me/'+dest.tel.replace(/[^0-9]/g,'')+'" target="_blank" class="btn ok" style="font-size:9px;padding:2px 6px;text-decoration:none;">&#128172; '+dest.nombre.split(' ')[0]+'</a>';
     flowHtml+='</div></div>';
 
     // Tabla compacta por cliente
@@ -3267,19 +3268,109 @@ function copiarFichaWA(key){
   var msg=window._fichaMessages&&window._fichaMessages[key]||'';
   navigator.clipboard.writeText(msg).then(function(){toast('Mensaje copiado al portapapeles','ok');});
 }
-function imprimirFicha(){
+function imprimirFicha(sucFilter){
   var area=document.getElementById('ficha-print-area');
   if(!area) return;
-  var w=window.open('','_blank','width=800,height=1000');
-  w.document.write('<html><head><title>Ficha Despacho</title><style>');
-  w.document.write('*{box-sizing:border-box;margin:0;padding:0;}body{font-family:system-ui,sans-serif;padding:12px;font-size:10px;}');
+  var content = area.innerHTML;
+  // Si es para una sucursal específica, filtrar solo esa sección
+  var title = sucFilter ? 'Despacho '+sucFilter : 'Ficha de Despacho';
+  var w=window.open('','_blank','width=1200,height=800');
+  w.document.write('<!DOCTYPE html><html><head><title>'+title+'</title><style>');
+  w.document.write('*{box-sizing:border-box;margin:0;padding:0;}');
+  w.document.write('body{font-family:system-ui,-apple-system,sans-serif;padding:16px;font-size:10px;background:#fff;}');
   w.document.write('.no-print{display:none!important;}');
-  w.document.write('@media print{@page{size:A4;margin:10mm;}body{padding:0;}}');
+  w.document.write('@media print{@page{size:A4 landscape;margin:8mm;}body{padding:0;}}');
   w.document.write('</style></head><body>');
-  w.document.write(area.innerHTML);
+  w.document.write(content);
   w.document.write('</body></html>');
   w.document.close();
-  setTimeout(function(){w.print();},300);
+  setTimeout(function(){w.print();},400);
+}
+function generarPDFDespachoSuc(suc){
+  // Genera PDF visual para una sucursal, listo para WhatsApp
+  var fecha=new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'});
+  var hora=new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+  var CAT_COLORS_PDF={'FIERROS Y LATAS':'#4A6FA5','LATA CHATARRA':'#5B7FB5','COBRES':'#C0392B','BRONCES':'#D4A017','ALUMINIOS':'#7D8CA3','ACEROS INOXIDABLES':'#2C3E50','CARTÓN Y PAPEL':'#8B6914','VIDRIO':'#1ABC9C','PLÁSTICOS — PET':'#2980B9','PLÁSTICOS — FILM Y POLIETILENOS':'#27AE60','PLÁSTICOS — RÍGIDOS':'#8E44AD','PLÁSTICOS — SOPLADOS':'#E67E22'};
+  var CAT_SHORT_PDF={'FIERROS Y LATAS':'FE','LATA CHATARRA':'LATA','COBRES':'CU','BRONCES':'BR','ALUMINIOS':'AL','ACEROS INOXIDABLES':'INOX','CARTÓN Y PAPEL':'PAPEL','VIDRIO':'VID','PLÁSTICOS — PET':'PET','PLÁSTICOS — FILM Y POLIETILENOS':'FILM','PLÁSTICOS — RÍGIDOS':'RIG','PLÁSTICOS — SOPLADOS':'SOPL'};
+
+  // Recopilar datos de esta sucursal
+  var items=[];
+  var clientesSet=new Set();
+  mats.forEach(function(m){
+    var sel=PRECIO_SELECCIONADO[m.id]&&PRECIO_SELECCIONADO[m.id][suc];
+    if(sel&&sel.precio>0){
+      var f=SUC_FACTOR[suc]||1;
+      var cv=calc(m,f,suc);
+      items.push({material:m.nombre,cliente:sel.cliente,precioCompra:sel.precio,precioLista:cv.lista,precioEjec:cv.ejec,precioMax:cv.max,cat:m.cat});
+      clientesSet.add(sel.cliente);
+    }
+  });
+  items.sort(function(a,b){var ca=CAT_ORDER.indexOf(a.cat),cb=CAT_ORDER.indexOf(b.cat);return ca-cb||a.material.localeCompare(b.material,'es');});
+  var clientes=[...clientesSet];
+  var sucShort=suc.replace('Puerto Montt','P.Montt');
+
+  // Generar HTML visual
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Despacho '+sucShort+'</title><style>';
+  html+='*{box-sizing:border-box;margin:0;padding:0;}body{font-family:system-ui,-apple-system,sans-serif;padding:20px;background:#fff;}';
+  html+='@media print{@page{size:A4 landscape;margin:8mm;}body{padding:0;}}';
+  html+='table{border-collapse:collapse;width:100%;}th,td{padding:4px 8px;text-align:left;font-size:10px;border-bottom:1px solid #eee;}';
+  html+='th{background:#f5f5f5;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#666;border-bottom:2px solid #ddd;}';
+  html+='.tag{color:#fff;font-size:7px;font-weight:700;padding:1px 4px;border-radius:2px;display:inline-block;min-width:24px;text-align:center;}';
+  html+='.price{font-family:monospace;font-weight:700;text-align:right;}';
+  html+='.cat-row{background:#f8f8f8;font-weight:700;font-size:9px;color:#666;letter-spacing:.5px;}';
+  html+='</style></head><body>';
+
+  // Header
+  html+='<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;padding-bottom:8px;border-bottom:3px solid #1A7A3C;">';
+  html+='<div>';
+  html+='<div style="font-size:20px;font-weight:800;color:#1A1A14;">DESPACHO '+sucShort.toUpperCase()+'</div>';
+  html+='<div style="font-size:11px;color:#666;margin-top:2px;">Reciclean + Farex &middot; '+fecha+' '+hora+'</div>';
+  html+='</div>';
+  html+='<div style="text-align:right;">';
+  html+='<div style="font-size:22px;font-weight:800;color:#1A7A3C;">'+items.length+'</div>';
+  html+='<div style="font-size:9px;color:#999;">materiales</div>';
+  html+='</div></div>';
+
+  // Tabla por cliente
+  clientes.forEach(function(cli){
+    var matsCli=items.filter(function(i){return i.cliente===cli;});
+    html+='<div style="margin-bottom:14px;">';
+    html+='<div style="background:#92650A;color:#fff;padding:6px 12px;border-radius:6px 6px 0 0;font-size:12px;font-weight:700;display:flex;justify-content:space-between;">';
+    html+='<span>&#9654; '+cli+'</span><span style="font-weight:400;font-size:10px;">'+matsCli.length+' materiales</span></div>';
+    html+='<table>';
+    html+='<tr><th style="width:30px;"></th><th>Material</th><th style="text-align:right;">Compra</th><th style="text-align:right;">P.Lista</th><th style="text-align:right;">P.Ejec</th><th style="text-align:right;">P.Max</th></tr>';
+    var prevCat='';
+    matsCli.forEach(function(it){
+      var catCol=CAT_COLORS_PDF[it.cat]||'#666';
+      var catTag=CAT_SHORT_PDF[it.cat]||'';
+      if(it.cat!==prevCat){
+        prevCat=it.cat;
+        html+='<tr class="cat-row"><td colspan="6" style="padding:3px 8px;">'+it.cat+'</td></tr>';
+      }
+      html+='<tr>';
+      html+='<td><span class="tag" style="background:'+catCol+';">'+catTag+'</span></td>';
+      html+='<td style="font-weight:600;">'+it.material+'</td>';
+      html+='<td class="price" style="color:#666;">$'+it.precioCompra.toLocaleString('es-CL')+'</td>';
+      html+='<td class="price" style="color:#1A7A3C;">$'+it.precioLista.toLocaleString('es-CL')+'</td>';
+      html+='<td class="price" style="color:#92650A;">$'+it.precioEjec.toLocaleString('es-CL')+'</td>';
+      html+='<td class="price" style="color:#2980B9;">$'+it.precioMax.toLocaleString('es-CL')+'</td>';
+      html+='</tr>';
+    });
+    html+='</table></div>';
+  });
+
+  // Footer
+  html+='<div style="margin-top:10px;padding-top:6px;border-top:1px solid #ddd;font-size:8px;color:#aaa;display:flex;justify-content:space-between;">';
+  html+='<span>Generado por Sistema Reciclean-Farex</span>';
+  html+='<span>Precios sujetos a cambios seg&uacute;n mercado</span>';
+  html+='</div>';
+
+  html+='</body></html>';
+
+  var w=window.open('','_blank','width=1100,height=800');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){w.print();},400);
 }
 function cerrarFichaDespacho(){
   var modal=document.getElementById('ficha-modal');
