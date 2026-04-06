@@ -45,10 +45,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F2F5;min-height:1
 
 /* ── NEGOCIO BAR ── */
 .negocio-bar{background:#1A2B3A;padding:10px 16px}
+.negocio-toggle{color:#fff;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none}
+.negocio-form{display:none;padding-top:10px}
+.negocio-form.open{display:block}
 .neg-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
 .neg-field label{color:#4FC3F7;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px}
 .neg-input{width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid #2C3E50;background:#1A2D3E;color:#fff;font-size:12px}
-select.neg-input option{background:#1A2D3E}
+.neg-input.err{border-color:#FF5252 !important}
+.neg-input::placeholder{color:#5A7A8A}
+select.neg-input option{background:#1A2D3E;color:#fff}
 .search-wrap{position:relative;margin-bottom:8px}
 .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#999;font-size:13px;pointer-events:none}
 .search-input{width:100%;padding:8px 10px 8px 30px;border-radius:10px;border:none;background:#2C3E50;color:#fff;font-size:13px}
@@ -133,28 +138,80 @@ select.neg-input option{background:#1A2D3E}
       </div>
     </div>
     <div class="negocio-bar">
-      <div style="color:#fff;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none" onclick="toggleNeg()">
-        <span id="neg-arrow">▶</span> Datos del Negocio
-        <span id="neg-inline" style="color:#4FC3F7;font-size:10px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+      <div class="negocio-toggle" onclick="toggleNeg()">
+        <span id="neg-arrow">▼</span> Datos del negocio
+        <span id="neg-inline" style="color:#fff;font-size:10px;margin-left:4px"></span>
       </div>
-      <div id="neg-form" style="display:none;padding-top:10px">
+      <div style="display:flex;gap:4px;padding:0 4px">
+        <button onclick="document.getElementById('neg-form').classList.add('open'); document.getElementById('neg-arrow').textContent='▼';" style="padding:4px 8px;font-size:9px;background:#1565C0;color:#fff;border:none;border-radius:3px;cursor:pointer;font-weight:600">✎ Editar</button>
+        <button onclick="if(confirm('¿Limpiar datos?')) limpiarDatos()" style="padding:4px 8px;font-size:9px;background:#f44336;color:#fff;border:none;border-radius:3px;cursor:pointer;font-weight:600">⨯ Limpiar</button>
+        <button onclick="document.getElementById('neg-form').classList.remove('open'); document.getElementById('neg-arrow').textContent='▶';" style="padding:4px 8px;font-size:9px;background:#FF9800;color:#fff;border:none;border-radius:3px;cursor:pointer;font-weight:600">✓ Cerrar</button>
+      </div>
+      <div class="negocio-form open" id="neg-form">
         <div class="neg-grid">
-          <div class="neg-field"><label>Sucursal</label>
-            <select class="neg-input" id="neg-suc" onchange="updateSucursalMateriales();updateNegInline()">
-              <option value="">Seleccionar...</option>
+          <div class="neg-field">
+            <label>Sucursal *</label>
+            <select class="neg-input" id="neg-suc" onchange="updateNegInline(); updateSucursalMateriales()">
+              <option value="">— Seleccionar —</option>
               <option>Cerrillos</option><option>Maipú</option><option>Talca</option><option>Puerto Montt</option>
             </select>
           </div>
-          <div class="neg-field"><label>Ejecutivo</label>
-            <select class="neg-input" id="neg-tipo-ejec">
+          <div class="neg-field">
+            <label>Ejecutivo *</label>
+            <input class="neg-input" id="neg-ejec" placeholder="Nombre ejecutivo" oninput="updateNegInline()">
+          </div>
+          <div class="neg-field">
+            <label>Proveedor *</label>
+            <input class="neg-input" id="neg-prov" placeholder="Nombre proveedor" oninput="updateNegInline()">
+          </div>
+          <div class="neg-field">
+            <label>RUT Proveedor</label>
+            <input class="neg-input" id="neg-rut" placeholder="12.345.678-9" oninput="updateNegInline()">
+          </div>
+          <div class="neg-field">
+            <label>Fecha llegada</label>
+            <input class="neg-input" id="neg-fecha" type="date" oninput="updateNegInline()">
+          </div>
+          <div class="neg-field">
+            <label>N° Factura</label>
+            <input class="neg-input" id="neg-folio" placeholder="000000" oninput="updateNegInline()">
+          </div>
+          <div class="neg-field">
+            <label>Frecuencia de Compra *</label>
+            <select class="neg-input" id="neg-freq" onchange="updateNegInline()">
+              <option value="">— Seleccionar —</option>
+              <option>Puntual</option><option>Semanal</option><option>Quincenal</option><option>Mensual</option>
+            </select>
+          </div>
+          <div class="neg-field">
+            <label>Kilos reales Factura</label>
+            <input class="neg-input" id="neg-kg-fact" type="number" placeholder="kg factura" oninput="updateNegInline(); updateTotals()">
+          </div>
+          <div class="neg-field">
+            <label>Fecha Factura</label>
+            <input class="neg-input" id="neg-fecha-fact" type="date" oninput="updateNegInline()">
+          </div>
+          <div class="neg-field">
+            <label>WhatsApp Personalizado</label>
+            <input class="neg-input" id="neg-wa" placeholder="+56912345678" oninput="updateNegInline()">
+          </div>
+          <div class="neg-field">
+            <label>Tipo Ejecutivo</label>
+            <select class="neg-input" id="neg-tipo-ejec" onchange="updateNegInline()">
               <option>Administrador</option><option>Interno</option><option>Externo</option>
             </select>
           </div>
-          <div class="neg-field"><label>Nombre Ejecutivo</label>
-            <input class="neg-input" id="neg-ejec" placeholder="Nombre..." oninput="updateNegInline()">
-          </div>
-          <div class="neg-field"><label>Proveedor</label>
-            <input class="neg-input" id="neg-prov" placeholder="Empresa..." oninput="updateNegInline()">
+        </div>
+        <div style="background:linear-gradient(135deg,#0D1B2A,#1A2B3A);border-radius:12px;padding:14px;margin-top:10px;color:#fff">
+          <div style="font-size:12px;font-weight:800;color:#4FC3F7;margin-bottom:8px">📋 Guía de uso — Asistente Comercial</div>
+          <div style="font-size:10px;line-height:1.7;color:#CBD5E0;max-height:140px;overflow-y:auto;padding-right:6px">
+            <b style="color:#FF8A65">⚠ Paso 0 — Elige tu sucursal</b> — Es lo primero y más importante. Los precios, materiales disponibles y metas cambian según la sucursal.<br>
+            <b style="color:#69F0AE">1. Datos del negocio</b> — Completa sucursal, tu nombre y el proveedor antes de comenzar.<br>
+            <b style="color:#69F0AE">2. Busca el material</b> — Usa el buscador o los filtros de categoría.<br>
+            <b style="color:#69F0AE">3. Ingresa kilos</b> — El semáforo 🟢🟡🔴 indica tu nivel de negociación según la meta mensual.<br>
+            <b style="color:#69F0AE">4. Precio Ejecutivo</b> — Entre más bajo, mejor tu comisión.<br>
+            <b style="color:#69F0AE">5. Cierra la consulta</b> — Genera el resumen y mensaje WhatsApp.<br>
+            <span style="color:#FFC107;font-size:9px">⚠ Precio Lista = mínimo · Precio Máximo = techo — nunca superar sin autorización.</span>
           </div>
         </div>
       </div>
@@ -471,8 +528,30 @@ function getComision(mc){ if(mc===null||mc<=0) return null; const tipo=document.
 function sinPrecios(mat){ return mat.precioMaximo<=0&&mat.precioLista<=0; }
 function getActives(){ return MATERIALES.filter(m=>{ const s=states[m.id]||{}; return(parseFloat(s.kg)||0)>0||(parseFloat(s.ej)||0)>0; }); }
 
-function toggleNeg(){ negOpen=!negOpen; document.getElementById('neg-form').style.display=negOpen?'block':'none'; document.getElementById('neg-arrow').textContent=negOpen?'▼':'▶'; }
-function updateNegInline(){ const s=document.getElementById('neg-suc').value,e=document.getElementById('neg-ejec').value,p=document.getElementById('neg-prov').value; document.getElementById('neg-inline').textContent=[s,e,p].filter(Boolean).join(' · '); }
+function toggleNeg(){
+  negOpen=!negOpen;
+  document.getElementById('neg-form').className='negocio-form'+(negOpen?' open':'');
+  document.getElementById('neg-arrow').textContent=negOpen?'▼':'▶';
+}
+function limpiarDatos(){
+  document.getElementById('neg-suc').value='';
+  document.getElementById('neg-ejec').value='';
+  document.getElementById('neg-prov').value='';
+  document.getElementById('neg-rut').value='';
+  document.getElementById('neg-fecha').value='';
+  document.getElementById('neg-folio').value='';
+  document.getElementById('neg-freq').value='';
+  document.getElementById('neg-kg-fact').value='';
+  document.getElementById('neg-fecha-fact').value='';
+  document.getElementById('neg-wa').value='';
+  updateNegInline();
+  updateTotals();
+}
+function updateNegInline(){
+  const s=document.getElementById('neg-suc').value,e=document.getElementById('neg-ejec').value,p=document.getElementById('neg-prov').value;
+  const parts=[s,e,p].filter(Boolean);
+  document.getElementById('neg-inline').textContent=parts.length?'· '+parts.join(' · '):'';
+}
 
 function buildCats(){
   const CATS = [...new Set(MATERIALES.map(m => m.categoria))];
@@ -588,7 +667,21 @@ function finalizarConsulta(){
   showModal();
 }
 
-function getNegData(){ return{suc:document.getElementById('neg-suc').value,ejec:document.getElementById('neg-ejec').value.trim(),prov:document.getElementById('neg-prov').value.trim(),tipoEjec:document.getElementById('neg-tipo-ejec')?.value||'Administrador'}; }
+function getNegData(){
+  return {
+    suc: document.getElementById('neg-suc').value,
+    ejec: document.getElementById('neg-ejec').value.trim(),
+    prov: document.getElementById('neg-prov').value.trim(),
+    rut: document.getElementById('neg-rut')?.value.trim()||'',
+    fecha: document.getElementById('neg-fecha')?.value||'',
+    folio: document.getElementById('neg-folio')?.value.trim()||'',
+    freq: document.getElementById('neg-freq')?.value||'',
+    kgFactura: parseFloat(document.getElementById('neg-kg-fact')?.value)||0,
+    fechaFactura: document.getElementById('neg-fecha-fact')?.value||'',
+    wa: document.getElementById('neg-wa')?.value.trim()||'',
+    tipoEjec: document.getElementById('neg-tipo-ejec')?.value||'Administrador'
+  };
+}
 
 function showModal(){
   const neg=getNegData(), actives=getActives();
