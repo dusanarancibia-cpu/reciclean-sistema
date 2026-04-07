@@ -749,7 +749,25 @@ async function publicarVersion(){
     cambios={};
     _aprobaciones={};
 
-    // Limpiar overrides de materiales aceptados (ya absorbidos en precio publicado)
+    renderPrecios();
+    renderHistorial();
+    renderPreview();
+    toast(res?.ok
+      ? `✓ Versión "${label}" publicada en BD`
+      : `✓ Versión "${label}" guardada localmente (${items.length} materiales)`,'ok');
+
+    // v91 FIX: publicar snapshot al Asistente ANTES de borrar PRECIO_OVERRIDE.
+    // Antes se borraba primero y el snapshot quedaba con precios recalculados
+    // por calc() sin el override, dejando v_precios_activos y el snapshot desincronizados.
+    renderPublico();
+    try {
+      await generarAsistente(true);
+    } catch(e) {
+      console.error('generarAsistente falló:', e);
+      toast('⚠ Error publicando al Asistente: ' + (e.message||e), 'err');
+    }
+
+    // Ahora sí limpiar overrides de materiales aceptados (ya usados para el snapshot)
     aceptados.forEach(id=>{
       const matId = parseInt(id);
       if(PRECIO_OVERRIDE[matId]) delete PRECIO_OVERRIDE[matId];
@@ -758,18 +776,8 @@ async function publicarVersion(){
     if(_db) try{ await idbSaveConfig('precio_override', JSON.stringify(PRECIO_OVERRIDE)); }catch(e){}
     safeLS('rf_precio_override', JSON.stringify(PRECIO_OVERRIDE));
 
-    renderPrecios();
-    renderHistorial();
-    renderPreview();
-    toast(res?.ok
-      ? `✓ Versión "${label}" publicada en BD`
-      : `✓ Versión "${label}" guardada localmente (${items.length} materiales)`,'ok');
-
     // Auto-generar ficha de despacho al publicar
     setTimeout(()=> generarFichaDespacho(), 500);
-    // v84: auto-alimentar Tab E y generar Asistente Comercial
-    renderPublico();
-    setTimeout(function(){ generarAsistente(true); }, 1000);
 
   }catch(err){
     console.error('Error en publicarVersion:', err);
