@@ -82,7 +82,8 @@ function calc(m, factor=1, suc=null) {
     if(pmax<plista) pmax=plista;
     pejec = Math.floor((plista+pmax)/2/10)*10;
   }
-  var pctE = (suc && COMISION_EJEC_POR_SUC[m.id] && COMISION_EJEC_POR_SUC[m.id][suc]!==undefined) ? COMISION_EJEC_POR_SUC[m.id][suc] : 0;
+  // v91: default 0.0025 (= 0.25%) — antes era 0; el valor sigue editable por celda en Tab C
+  var pctE = (suc && COMISION_EJEC_POR_SUC[m.id] && COMISION_EJEC_POR_SUC[m.id][suc]!==undefined) ? COMISION_EJEC_POR_SUC[m.id][suc] : 0.0025;
   var utilidadLista = plista>0 ? plista - compra : 0;
   var comisionEjec = Math.round(utilidadLista * pctE);
   return {lista:plista, ejec:pejec, max:pmax, compra:compra, neto:neto, sinMargen:sinMargen, flete:flete, margen:margen, mcSpread:mcSpread, pctE:pctE, comisionEjec:comisionEjec};
