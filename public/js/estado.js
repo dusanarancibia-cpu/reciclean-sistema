@@ -302,6 +302,10 @@ document.getElementById('json-pre').textContent = FULL_JSON.slice(0,800)+'...';
     } catch(sbEx){
       toast('⚠ Error Supabase: '+sbEx.message,'warn');
     }
+  } else {
+    // v91: antes este caso fallaba en silencio y el usuario creía que había publicado
+    console.error('_supabase es null al intentar publicar snapshot — el Asistente NO se actualizó');
+    toast('⚠ Supabase no inicializado — snapshot NO publicado. Recarga el panel.','err');
   }
 
   // Also offer direct V24 patch — generate the full updated HTML
