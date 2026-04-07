@@ -373,6 +373,154 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
   .g2,.g3,.g4{grid-template-columns:1fr;}
   table.t{min-width:480px;}
 }
+
+/* ══════════════════════════════════════════════════════════
+   v91 — RESPONSIVE MOBILE (480 / 414 / 375)
+   Touch targets ≥44px, tipografía ≥14px, modales full-screen
+   ══════════════════════════════════════════════════════════ */
+
+@media(max-width:480px){
+  /* Tipografía y layout global */
+  html{font-size:14px;}
+  body{font-size:14px;}
+  .scroll{padding:10px;}
+
+  /* Nav */
+  .nav{min-height:48px;}
+  .nav-tab{padding:0 12px;min-height:44px;font-size:12px;touch-action:manipulation;}
+  .nav-tab .ltr{font-size:9px;padding:1px 4px;}
+  .nav-suc{font-size:12px;padding:8px 8px;min-height:36px;}
+  .nav-right{padding:0 8px;gap:6px;}
+  /* Override de los botones inline-style del nav (GRABAR/Despacho/Asistente) */
+  .nav-right .btn[style*="font-size:10px"]{
+    padding:9px 11px!important;font-size:11px!important;min-height:38px!important;
+  }
+
+  /* Botones generales del body */
+  .btn{padding:11px 14px;font-size:13px;min-height:44px;touch-action:manipulation;}
+  .btn-grp .btn{padding:9px 12px;}
+  /* Override de los botones inline-style del body (toolbars, filtros, "Activar todos", etc.) */
+  .scroll .btn[style*="font-size:10px"],
+  #panel-config .btn[style*="font-size:10px"],
+  #panel-revisor .btn[style*="font-size:10px"]{
+    padding:11px 14px!important;font-size:13px!important;min-height:44px!important;
+  }
+  .rv-filtro-btn{padding:11px 14px;min-height:44px;font-size:13px;}
+  .rv-filtro-sel{padding:10px 12px;min-height:44px;font-size:13px;}
+
+  /* Inputs/select */
+  select.ctrl,input.ctrl{font-size:14px;padding:11px 12px;min-height:44px;}
+  input.ai{font-size:14px;padding:10px 12px;min-height:44px;}
+  /* Inputs in-table son más compactos pero usables */
+  input.ci{font-size:13px;padding:8px 10px;min-height:36px;}
+
+  /* Tablas */
+  table.t{min-width:520px;}
+  table.t th{padding:10px 9px;font-size:10px;}
+  table.t td{padding:9px 9px;font-size:13px;}
+  td.num{font-size:12px;}
+
+  /* Cards */
+  .ch{padding:11px 12px;}
+  .cb{padding:12px 12px;}
+  .ct{font-size:14px;}
+  .cs{font-size:12px;}
+
+  /* Toast: full-width abajo */
+  .toast{
+    bottom:12px;right:12px;left:12px;
+    max-width:none;font-size:13px;padding:12px 14px;
+  }
+
+  /* Page header */
+  .ph-title{font-size:18px;}
+  .ph-sub{font-size:12px;}
+
+  /* ── MODALES FULL-SCREEN + STICKY HEADER/FOOTER ── */
+  /* Wrapper outer: sin padding para que el modal ocupe toda la pantalla */
+  #import-modal,#usr-modal,#diag-modal{padding:0!important;}
+  /* Contenido inner: full-screen, sin border-radius */
+  #import-modal > div,
+  #usr-modal > div,
+  #diag-modal > div{
+    width:100%!important;max-width:100%!important;
+    max-height:100vh!important;height:100vh!important;
+    border-radius:0!important;
+    display:flex!important;flex-direction:column!important;
+  }
+  /* Header del modal: sticky arriba */
+  #import-modal > div > div:first-child,
+  #usr-modal > div > div:first-child,
+  #diag-modal > div > div:first-child{
+    position:sticky!important;top:0!important;z-index:10;flex-shrink:0;
+    border-radius:0!important;
+  }
+  /* Botón cerrar del modal: tappable */
+  #import-modal button[onclick*="cerrar"],
+  #usr-modal button[onclick*="cerrar"],
+  #diag-modal button[onclick*="cerrar"]{
+    width:44px!important;height:44px!important;font-size:20px!important;
+  }
+
+  /* ── TAB G (Revisor): grids más compactos ── */
+  .rv-fuentes{grid-template-columns:1fr 1fr;gap:8px;}
+  .rv-fuente-card{padding:10px 12px;}
+  .rv-fuente-nombre{font-size:12px;}
+  .rv-fuente-url{font-size:9px;}
+  .rv-resumen{grid-template-columns:1fr 1fr;gap:8px;}
+  .rv-res-num{font-size:22px;}
+  .rv-res-label{font-size:10px;}
+  .rv-tabla-wrap{overflow-x:auto;}
+  .rv-tabla-header,.rv-tabla-row{min-width:780px;}
+  .rv-tests-grid{grid-template-columns:1fr;}
+
+  /* ── TAB H (Empresa): grid de switches compacto ── */
+  .cfg-suc-grid{grid-template-columns:90px repeat(4,1fr);font-size:11px;}
+  .cfg-suc-cell{padding:10px 6px;}
+  .cfg-section{padding:14px 12px;}
+  .cfg-mat-table th,.cfg-mat-table td{padding:10px 8px;font-size:13px;}
+  .cfg-mat-nombre{font-size:13px;}
+  .cfg-empresa-badge{font-size:9px;}
+  /* Switch: hacer el área tappable más grande sin agrandar el switch visual */
+  .sw{padding:12px;margin:-12px;}
+
+  /* ── TAB B (Alias): chips + preview ── */
+  .preview-body{max-height:340px;}
+  .prev-row{grid-template-columns:1fr 24px 1fr 70px;font-size:11px;}
+}
+
+@media(max-width:414px){
+  /* iPhone XR / Plus — ajustes finos sobre 480 */
+  .scroll{padding:8px;}
+  .nav-tab{padding:0 10px;}
+  .nav-right{gap:5px;padding:0 6px;}
+  .nav-right .btn[style*="font-size:10px"]{padding:8px 9px!important;font-size:10px!important;}
+  .nav-suc{padding:7px 6px;font-size:11px;}
+  .ph-title{font-size:17px;}
+  .cfg-suc-grid{grid-template-columns:80px repeat(4,1fr);font-size:10px;}
+  .cfg-suc-cell{padding:9px 4px;}
+  .rv-res-num{font-size:20px;}
+}
+
+@media(max-width:375px){
+  /* iPhone SE / Galaxy S10e — la más comprimida */
+  html{font-size:13.5px;}
+  body{font-size:13.5px;}
+  .scroll{padding:6px;}
+  .nav-tab{padding:0 9px;font-size:11px;}
+  .nav-tab .ltr{display:none;} /* ocultar la letra A/B/C... ahorra ~14px por tab */
+  .nav-suc{font-size:10px;padding:7px 5px;}
+  .nav-logo{font-size:10px;}
+  .nav-right{gap:4px;padding:0 5px;}
+  .nav-right .btn[style*="font-size:10px"]{padding:7px 8px!important;font-size:10px!important;}
+  .btn{padding:10px 12px;font-size:12px;}
+  .ph-title{font-size:16px;}
+  .cfg-suc-grid{grid-template-columns:70px repeat(4,1fr);font-size:10px;}
+  .cfg-suc-cell{padding:9px 3px;}
+  .cfg-mat-table th,.cfg-mat-table td{padding:9px 6px;font-size:12px;}
+  .rv-fuente-card{padding:8px 10px;}
+  .rv-res-num{font-size:18px;}
+}
 </style>
 </head>
 <body>
