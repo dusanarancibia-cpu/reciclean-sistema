@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin · Reciclean-Farex v89</title>
+<title>Admin · Reciclean-Farex v90</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap');
 :root{
@@ -381,7 +381,7 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
 <nav class="nav">
   <div class="nav-brand">
     <div class="nav-logo">Reciclean · Farex</div>
-    <div class="nav-sub">Admin Panel v89</div>
+    <div class="nav-sub">Admin Panel v90</div>
   </div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="goTab('carga',this)">
@@ -399,8 +399,14 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
     <button class="nav-tab" onclick="goTab('publico',this)">
       <span class="ltr">E</span> Tablas
     </button>
-    <button class="nav-tab" onclick="goTab('usuarios',this)">
+    <button class="nav-tab" id="nav-tab-usuarios" onclick="goTab('usuarios',this)">
       <span class="ltr">F</span> Usuarios
+    </button>
+    <button class="nav-tab" id="tab-revisor" onclick="goTab('revisor',this);revAutoIniciar()">
+      <span class="ltr">G</span> Revisor
+    </button>
+    <button class="nav-tab" id="tab-config" onclick="goTab('config',this);cfgRender()">
+      <span class="ltr">H</span> Empresa
     </button>
   </div>
   <div class="nav-right">
@@ -1105,10 +1111,720 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════
+     TAB G · REVISOR DE PRECIOS
+═══════════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-revisor">
+<style>
+/* ── REVISOR: estilos propios (sin conflicto con panel) ── */
+.rv-fuentes{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.rv-fuente-card{background:#fff;border-radius:10px;padding:14px 16px;border:2px solid #e8eaed;transition:border-color .3s;}
+.rv-fuente-card.ok{border-color:#509e2f;}.rv-fuente-card.warn{border-color:#f59e0b;}
+.rv-fuente-card.error{border-color:#ef4444;}.rv-fuente-card.loading{border-color:#94a3b8;}
+.rv-fuente-nombre{font-size:13px;font-weight:700;color:#1e302b;margin-bottom:4px;}
+.rv-fuente-url{font-size:10px;color:#999;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rv-fuente-estado{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;}
+.rv-fuente-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.rv-dot-ok{background:#509e2f;}.rv-dot-warn{background:#f59e0b;}
+.rv-dot-error{background:#ef4444;}.rv-dot-loading{background:#94a3b8;animation:rvPulse 1s infinite;}
+@keyframes rvPulse{0%,100%{opacity:1}50%{opacity:.4}}
+.rv-fuente-meta{font-size:10px;color:#999;margin-top:6px;}
+.rv-tests-section{background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:20px;border:1px solid #e8eaed;}
+.rv-tests-title{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.rv-tests-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;}
+.rv-test-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;background:#f8fafb;font-size:12px;}
+.rv-test-item.pass{background:#f0fdf4;}.rv-test-item.fail{background:#fef2f2;}
+.rv-test-item.warn{background:#fffbeb;}.rv-test-item.checking{background:#f1f5f9;}
+.rv-test-icon{font-size:16px;flex-shrink:0;}
+.rv-test-label{font-weight:600;color:#374151;}.rv-test-desc{color:#6b7280;font-size:11px;}
+.rv-resumen{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
+.rv-res-card{background:#fff;border-radius:10px;padding:12px 16px;text-align:center;border:1px solid #e8eaed;}
+.rv-res-num{font-size:28px;font-weight:800;}.rv-res-label{font-size:11px;color:#6b7280;margin-top:2px;}
+.rv-num-ok{color:#509e2f;}.rv-num-diff{color:#f59e0b;}.rv-num-error{color:#ef4444;}
+.rv-num-blue{color:#2C85CF;}.rv-num-gray{color:#94a3b8;}
+.rv-filtros{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.rv-filtro-sel{padding:6px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:12px;background:#fff;cursor:pointer;outline:none;}
+.rv-filtro-sel:focus{border-color:#509e2f;}
+.rv-filtro-btn{padding:6px 14px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:12px;background:#fff;cursor:pointer;font-weight:600;transition:all .15s;}
+.rv-filtro-btn.activo{background:#509e2f;color:#fff;border-color:#509e2f;}
+.rv-badge-count{display:inline-block;background:#ef4444;color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:4px;}
+.rv-tabla-wrap{background:#fff;border-radius:10px;border:1px solid #e8eaed;overflow:hidden;}
+.rv-tabla-header{display:grid;grid-template-columns:180px 100px 110px 110px 80px 80px 120px;
+  background:#f8fafb;border-bottom:2px solid #e8eaed;padding:10px 16px;
+  font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;gap:8px;}
+.rv-tabla-row{display:grid;grid-template-columns:180px 100px 110px 110px 80px 80px 120px;
+  padding:9px 16px;border-bottom:1px solid #f0f1f3;gap:8px;align-items:center;transition:background .1s;font-size:12px;}
+.rv-tabla-row:hover{background:#f8fafb;}
+.rv-tabla-row.diff-precio{background:#fffbeb;}.rv-tabla-row.diff-precio:hover{background:#fef9c3;}
+.rv-tabla-row.no-publicado{background:#fef2f2;}.rv-tabla-row.no-publicado:hover{background:#fee2e2;}
+.rv-tabla-row.huerfano{background:#f0f9ff;}.rv-tabla-row.sync{background:#fff;}
+.rv-mat-name{font-weight:600;color:#1e302b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rv-mat-suc{color:#6b7280;}
+.rv-precio-panel{font-weight:700;color:#1e302b;}
+.rv-precio-equal{color:#509e2f;font-weight:700;}
+.rv-precio-diff{color:#f59e0b;font-weight:700;}
+.rv-precio-none{color:#94a3b8;font-style:italic;}
+.rv-flag{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;font-size:9px;font-weight:800;}
+.rv-flag-ok{background:#dcfce7;color:#166534;}.rv-flag-off{background:#f1f5f9;color:#94a3b8;}.rv-flag-mismatch{background:#fef3c7;color:#92400e;}
+.rv-status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;white-space:nowrap;}
+.rv-status-sync{background:#dcfce7;color:#166534;}.rv-status-diff{background:#fef3c7;color:#92400e;}
+.rv-status-nopub{background:#fee2e2;color:#991b1b;}.rv-status-huerfano{background:#dbeafe;color:#1e40af;}
+.rv-soluciones{background:#fff;border-radius:10px;padding:16px 20px;margin-top:16px;border:1px solid #e8eaed;display:none;}
+.rv-sol-title{font-size:14px;font-weight:700;margin-bottom:10px;color:#1e302b;}
+.rv-sol-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;background:#f8fafb;margin-bottom:8px;border-left:3px solid #e8eaed;}
+.rv-sol-item.sol-ok{border-left-color:#509e2f;background:#f0fdf4;}
+.rv-sol-item.sol-warn{border-left-color:#f59e0b;background:#fffbeb;}
+.rv-sol-item.sol-error{border-left-color:#ef4444;background:#fef2f2;}
+.rv-sol-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.rv-sol-text{font-size:12px;line-height:1.5;color:#374151;}
+.rv-sol-text strong{color:#1e302b;}
+.rv-empty{text-align:center;padding:48px 20px;color:#94a3b8;}
+.rv-empty-icon{font-size:32px;margin-bottom:8px;}
+.rv-empty-text{font-size:13px;}
+</style>
+<div class="scroll">
+  <!-- PAGE HEADER -->
+  <div class="ph">
+    <div>
+      <div class="ph-title">🔍 Revisor de Precios</div>
+      <div class="ph-sub">Compara Panel Admin · Snapshot Publicado · Reciclean.cl · Farex.cl — detecta diferencias y sugiere soluciones</div>
+    </div>
+    <div class="ph-actions">
+      <button id="btn-revisar" class="btn p" onclick="revIniciarRevision()" style="background:#509e2f;border-color:#509e2f;">🔄 Revisar ahora</button>
+    </div>
+  </div>
+
+  <!-- FUENTES STATUS -->
+  <div class="rv-fuentes">
+    <div class="rv-fuente-card loading" id="rv-src-panel">
+      <div class="rv-fuente-nombre">📊 Panel Admin</div>
+      <div class="rv-fuente-url">Supabase › v_precios_activos</div>
+      <div class="rv-fuente-estado"><span class="rv-fuente-dot rv-dot-loading"></span><span id="rv-src-panel-txt">Esperando...</span></div>
+      <div class="rv-fuente-meta" id="rv-src-panel-meta"></div>
+    </div>
+    <div class="rv-fuente-card loading" id="rv-src-snap">
+      <div class="rv-fuente-nombre">📡 Snapshot Publicado</div>
+      <div class="rv-fuente-url">Supabase › asistente_snapshot</div>
+      <div class="rv-fuente-estado"><span class="rv-fuente-dot rv-dot-loading"></span><span id="rv-src-snap-txt">Esperando...</span></div>
+      <div class="rv-fuente-meta" id="rv-src-snap-meta"></div>
+    </div>
+    <div class="rv-fuente-card loading" id="rv-src-reciclean">
+      <div class="rv-fuente-nombre">🌿 Reciclean.cl</div>
+      <div class="rv-fuente-url">Widget › filtro reciclean=true</div>
+      <div class="rv-fuente-estado"><span class="rv-fuente-dot rv-dot-loading"></span><span id="rv-src-reciclean-txt">Esperando...</span></div>
+      <div class="rv-fuente-meta" id="rv-src-reciclean-meta"></div>
+    </div>
+    <div class="rv-fuente-card loading" id="rv-src-farex">
+      <div class="rv-fuente-nombre">🔵 Farex.cl</div>
+      <div class="rv-fuente-url">Widget › filtro farex=true</div>
+      <div class="rv-fuente-estado"><span class="rv-fuente-dot rv-dot-loading"></span><span id="rv-src-farex-txt">Esperando...</span></div>
+      <div class="rv-fuente-meta" id="rv-src-farex-meta"></div>
+    </div>
+  </div>
+
+  <!-- TESTS -->
+  <div class="rv-tests-section">
+    <div class="rv-tests-title">
+      🧪 Tests de Validación
+      <span style="font-size:11px;font-weight:400;color:#6b7280;" id="rv-tests-resumen">Haz clic en "Revisar ahora" para comenzar</span>
+    </div>
+    <div class="rv-tests-grid" id="rv-tests-grid">
+      <div class="rv-test-item checking"><span class="rv-test-icon">⏸</span><div><div class="rv-test-label">Esperando revisión</div><div class="rv-test-desc">Haz clic en "Revisar ahora"</div></div></div>
+    </div>
+  </div>
+
+  <!-- RESUMEN COUNTERS -->
+  <div class="rv-resumen" id="rv-resumen" style="display:none;">
+    <div class="rv-res-card"><div class="rv-res-num rv-num-ok" id="rv-res-sync">—</div><div class="rv-res-label">Sincronizados</div></div>
+    <div class="rv-res-card"><div class="rv-res-num rv-num-diff" id="rv-res-diff">—</div><div class="rv-res-label">Precio diferente</div></div>
+    <div class="rv-res-card"><div class="rv-res-num rv-num-error" id="rv-res-nopub">—</div><div class="rv-res-label">Sin publicar</div></div>
+    <div class="rv-res-card"><div class="rv-res-num rv-num-blue" id="rv-res-huerfano">—</div><div class="rv-res-label">En snap, no en panel</div></div>
+    <div class="rv-res-card"><div class="rv-res-num rv-num-gray" id="rv-res-total">—</div><div class="rv-res-label">Total comparados</div></div>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="rv-filtros" id="rv-filtros" style="display:none;">
+    <select class="rv-filtro-sel" id="rv-fil-suc" onchange="revAplicarFiltros()">
+      <option value="">Todas las sucursales</option>
+      <option value="Cerrillos">Cerrillos</option>
+      <option value="Maipú">Maipú</option>
+      <option value="Talca">Talca</option>
+      <option value="Puerto Montt">Puerto Montt</option>
+    </select>
+    <select class="rv-filtro-sel" id="rv-fil-empresa" onchange="revAplicarFiltros()">
+      <option value="">Reciclean + Farex</option>
+      <option value="reciclean">Solo Reciclean</option>
+      <option value="farex">Solo Farex</option>
+    </select>
+    <button class="rv-filtro-btn activo" id="rv-fil-todos" onclick="revSetFiltroEstado('todos')">Todos <span class="rv-badge-count" id="rv-cnt-todos">—</span></button>
+    <button class="rv-filtro-btn" id="rv-fil-diff" onclick="revSetFiltroEstado('diff')">⚠ Diferencias <span class="rv-badge-count" id="rv-cnt-diff">—</span></button>
+    <button class="rv-filtro-btn" id="rv-fil-error" onclick="revSetFiltroEstado('error')">🔴 Sin publicar <span class="rv-badge-count" id="rv-cnt-error">—</span></button>
+    <button class="rv-filtro-btn" id="rv-fil-sync" onclick="revSetFiltroEstado('sync')">✅ OK</button>
+  </div>
+
+  <!-- TABLA -->
+  <div class="rv-tabla-wrap" id="rv-tabla-wrap" style="display:none;">
+    <div class="rv-tabla-header">
+      <div>Material</div><div>Sucursal</div><div>Precio Panel</div>
+      <div>Precio Snap</div><div>Reciclean</div><div>Farex</div><div>Estado</div>
+    </div>
+    <div id="rv-tabla-body">
+      <div class="rv-empty"><div class="rv-empty-icon">📋</div><div class="rv-empty-text">Sin datos</div></div>
+    </div>
+  </div>
+
+  <!-- SOLUCIONES -->
+  <div class="rv-soluciones" id="rv-soluciones">
+    <div class="rv-sol-title">💡 Soluciones detectadas</div>
+    <div id="rv-sol-body"></div>
+  </div>
+</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  REVISOR DE PRECIOS — Tab G
+// ══════════════════════════════════════════════════════
+var _rv_comparacion = [];
+var _rv_filtroEstado = 'todos';
+var _rv_iniciado = false;
+
+function revFmt(n){ return n > 0 ? '$' + Math.round(n).toLocaleString('es-CL') : null; }
+
+function revSetSrcStatus(id, tipo, texto, meta){
+  var card = document.getElementById('rv-src-'+id);
+  var txt  = document.getElementById('rv-src-'+id+'-txt');
+  var m    = document.getElementById('rv-src-'+id+'-meta');
+  if(!card) return;
+  card.className = 'rv-fuente-card ' + tipo;
+  var dot = card.querySelector('.rv-fuente-dot');
+  if(dot) dot.className = 'rv-fuente-dot rv-dot-' + tipo;
+  if(txt) txt.textContent = texto;
+  if(meta && m) m.textContent = meta;
+}
+
+function revSetTest(tests, idx, tipo, label, desc){
+  var el = tests[idx];
+  if(!el) return;
+  el.className = 'rv-test-item ' + tipo;
+  var iconos = {pass:'✅', fail:'❌', warn:'⚠️', checking:'⏳'};
+  el.innerHTML = '<span class="rv-test-icon">' + (iconos[tipo]||'❓') + '</span>'
+    + '<div><div class="rv-test-label">' + label + '</div><div class="rv-test-desc">' + desc + '</div></div>';
+}
+
+function revCrearTests(){
+  var nombres = [
+    'Conexión Supabase','Panel tiene precios','Snapshot existe','Snapshot con datos',
+    'Snapshot reciente (< 48h)','Todas las sucursales','Datos Reciclean.cl',
+    'Datos Farex.cl','Precios sincronizados','Flags empresa correctos'
+  ];
+  var grid = document.getElementById('rv-tests-grid');
+  grid.innerHTML = '';
+  var tests = [];
+  nombres.forEach(function(n){
+    var d = document.createElement('div');
+    d.className = 'rv-test-item checking';
+    d.innerHTML = '<span class="rv-test-icon">⏳</span><div><div class="rv-test-label">'+n+'</div><div class="rv-test-desc">Verificando...</div></div>';
+    grid.appendChild(d);
+    tests.push(d);
+  });
+  return tests;
+}
+
+function revAutoIniciar(){
+  if(!_rv_iniciado) revIniciarRevision();
+}
+
+function revIniciarRevision(){
+  _rv_iniciado = true;
+  var btn = document.getElementById('btn-revisar');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Revisando...'; }
+
+  ['panel','snap','reciclean','farex'].forEach(function(id){
+    revSetSrcStatus(id, 'loading', 'Verificando...', '');
+  });
+  document.getElementById('rv-resumen').style.display = 'none';
+  document.getElementById('rv-filtros').style.display = 'none';
+  document.getElementById('rv-tabla-wrap').style.display = 'none';
+  document.getElementById('rv-soluciones').style.display = 'none';
+
+  var tests = revCrearTests();
+  var SB_URL = window.SUPABASE_URL || 'https://eknmtsrtfkzroxnovfqn.supabase.co';
+  var SB_KEY = window.SUPABASE_KEY || 'sb_publishable_y-ivpVdiL141kz4ZASje5g_SYG7do5z';
+  var HDR = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
+
+  Promise.all([
+    fetch(SB_URL + '/rest/v1/v_precios_activos?select=material_id,material,sucursal,categoria,precio_lista,reciclean,farex&order=sucursal,material', {headers: HDR}).then(function(r){ return r.json(); }),
+    fetch(SB_URL + '/rest/v1/asistente_snapshot?id=eq.1&select=datos,version_label,actualizado_en', {headers: HDR}).then(function(r){ return r.json(); })
+  ])
+  .then(function(results){
+    var panelRows = results[0];
+    var snapRows  = results[1];
+
+    revSetTest(tests, 0, 'pass', 'Conexión Supabase', 'API respondió correctamente');
+
+    if(!panelRows || !panelRows.length){
+      revSetTest(tests, 1, 'fail', 'Panel sin precios', 'No hay precios en v_precios_activos');
+      revSetSrcStatus('panel', 'error', 'Sin datos', '0 precios');
+      revFinalizar(btn, tests); return;
+    }
+    revSetTest(tests, 1, 'pass', 'Panel tiene precios', panelRows.length + ' registros encontrados');
+    revSetSrcStatus('panel', 'ok', 'Online', panelRows.length + ' precios activos');
+
+    var snapRow = snapRows && snapRows[0];
+    if(!snapRow){
+      revSetTest(tests, 2, 'fail', 'Snapshot no existe', 'La tabla asistente_snapshot está vacía');
+      revSetTest(tests, 3, 'fail', 'Sin datos publicados', 'Ejecuta GRABAR en el panel primero');
+      ['snap','reciclean','farex'].forEach(function(id){ revSetSrcStatus(id, 'error', 'Sin snapshot', 'No publicado'); });
+      revFinalizar(btn, tests); return;
+    }
+    revSetTest(tests, 2, 'pass', 'Snapshot existe', 'Tabla asistente_snapshot OK');
+
+    var snapDatos = snapRow.datos || {};
+    var snapTotal = 0;
+    Object.keys(snapDatos).forEach(function(s){ snapTotal += (snapDatos[s]||[]).length; });
+
+    if(snapTotal === 0){
+      revSetTest(tests, 3, 'fail', 'Snapshot vacío', 'datos={} — ejecuta GRABAR en el panel');
+      revSetSrcStatus('snap', 'warn', 'Vacío', 'Sin materiales publicados');
+      revFinalizar(btn, tests); return;
+    }
+    revSetTest(tests, 3, 'pass', 'Snapshot con datos', snapTotal + ' materiales publicados');
+
+    var actualizado = new Date(snapRow.actualizado_en);
+    var horasAtras  = (Date.now() - actualizado.getTime()) / 3600000;
+    var fechaStr    = actualizado.toLocaleString('es-CL');
+    if(horasAtras > 48){
+      revSetTest(tests, 4, 'warn', 'Snapshot desactualizado', 'Última actualización: ' + fechaStr);
+      revSetSrcStatus('snap', 'warn', 'Desactualizado', 'Hace ' + Math.round(horasAtras) + 'h');
+    } else {
+      revSetTest(tests, 4, 'pass', 'Snapshot reciente', 'Hace ' + Math.round(horasAtras) + 'h — ' + fechaStr);
+      revSetSrcStatus('snap', 'ok', 'Online', snapTotal + ' materiales · ' + (snapRow.version_label||''));
+    }
+
+    var sucExpected = ['Cerrillos','Maipú','Talca','Puerto Montt'];
+    var sucFaltantes = sucExpected.filter(function(s){ return !snapDatos[s] || !snapDatos[s].length; });
+    if(sucFaltantes.length){
+      revSetTest(tests, 5, 'warn', 'Sucursales incompletas', 'Sin datos: ' + sucFaltantes.join(', '));
+    } else {
+      revSetTest(tests, 5, 'pass', 'Todas las sucursales', '4/4 sucursales en snapshot');
+    }
+
+    var cntReciclean = 0, cntFarex = 0;
+    Object.keys(snapDatos).forEach(function(s){
+      (snapDatos[s]||[]).forEach(function(m){ if(m.reciclean) cntReciclean++; if(m.farex) cntFarex++; });
+    });
+    if(cntReciclean > 0){
+      revSetTest(tests, 6, 'pass', 'Datos Reciclean.cl', cntReciclean + ' materiales con flag reciclean=true');
+      revSetSrcStatus('reciclean', 'ok', 'Online', cntReciclean + ' materiales visibles');
+    } else {
+      revSetTest(tests, 6, 'warn', 'Reciclean sin datos', 'Ningún material tiene flag reciclean=true');
+      revSetSrcStatus('reciclean', 'warn', 'Sin materiales', 'flag reciclean=false en todos');
+    }
+    if(cntFarex > 0){
+      revSetTest(tests, 7, 'pass', 'Datos Farex.cl', cntFarex + ' materiales con flag farex=true');
+      revSetSrcStatus('farex', 'ok', 'Online', cntFarex + ' materiales visibles');
+    } else {
+      revSetTest(tests, 7, 'warn', 'Farex sin datos', 'Ningún material tiene flag farex=true');
+      revSetSrcStatus('farex', 'warn', 'Sin materiales', 'flag farex=false en todos');
+    }
+
+    // ── Comparación ──
+    var comparacion = [];
+    var snapIndex = {};
+    Object.keys(snapDatos).forEach(function(suc){
+      (snapDatos[suc]||[]).forEach(function(m){
+        snapIndex[(suc+'|'+m.material).toLowerCase()] = {suc:suc, data:m};
+      });
+    });
+    var panelIndex = {};
+    panelRows.forEach(function(p){ panelIndex[(p.sucursal+'|'+p.material).toLowerCase()] = p; });
+
+    var diffPrecios=0, noPub=0, huerfanos=0, syncs=0, flagDiffs=0;
+
+    panelRows.forEach(function(p){
+      var key = (p.sucursal+'|'+p.material).toLowerCase();
+      var snap = snapIndex[key];
+      var precioPanel = parseFloat(p.precio_lista)||0;
+      var precioSnap  = snap ? (parseFloat(snap.data.precioLista)||0) : null;
+      var recPanelFlag  = !!p.reciclean, farexPanelFlag = !!p.farex;
+      var recSnapFlag   = snap ? !!snap.data.reciclean : null;
+      var farexSnapFlag = snap ? !!snap.data.farex     : null;
+      var flagMismatch  = snap && (recPanelFlag !== recSnapFlag || farexPanelFlag !== farexSnapFlag);
+      var estado;
+      if(!snap){ estado='no-publicado'; noPub++; }
+      else if(Math.abs(precioPanel - precioSnap) > 0.5){ estado='diff-precio'; diffPrecios++; if(flagMismatch) flagDiffs++; }
+      else if(flagMismatch){ estado='diff-precio'; flagDiffs++; diffPrecios++; }
+      else { estado='sync'; syncs++; }
+      comparacion.push({material:p.material,sucursal:p.sucursal,categoria:p.categoria,
+        precioPanel:precioPanel,precioSnap:precioSnap,
+        recPanel:recPanelFlag,farexPanel:farexPanelFlag,
+        recSnap:recSnapFlag,farexSnap:farexSnapFlag,
+        flagMismatch:flagMismatch,estado:estado,fuente:'panel'});
+    });
+    Object.keys(snapIndex).forEach(function(key){
+      if(!panelIndex[key]){
+        var s = snapIndex[key];
+        comparacion.push({material:s.data.material,sucursal:s.suc,categoria:s.data.categoria,
+          precioPanel:null,precioSnap:parseFloat(s.data.precioLista)||0,
+          recPanel:null,farexPanel:null,recSnap:!!s.data.reciclean,farexSnap:!!s.data.farex,
+          flagMismatch:false,estado:'huerfano',fuente:'snap'});
+        huerfanos++;
+      }
+    });
+
+    if(diffPrecios===0 && noPub===0){
+      revSetTest(tests, 8, 'pass', 'Precios sincronizados', 'Panel y snapshot coinciden en '+syncs+' materiales');
+    } else {
+      var msg=[];
+      if(diffPrecios>0) msg.push(diffPrecios+' con precio distinto');
+      if(noPub>0) msg.push(noPub+' sin publicar');
+      revSetTest(tests, 8, diffPrecios>5||noPub>5 ? 'fail':'warn', 'Diferencias detectadas', msg.join(' · '));
+    }
+    if(flagDiffs===0){ revSetTest(tests,9,'pass','Flags empresa OK','Reciclean/Farex coinciden en panel y snapshot'); }
+    else { revSetTest(tests,9,'warn','Flags con diferencias',flagDiffs+' materiales con flag distinto en snapshot'); }
+
+    var passCount=tests.filter(function(t){return t.className.includes('pass');}).length;
+    var failCount=tests.filter(function(t){return t.className.includes('fail');}).length;
+    var warnCount=tests.filter(function(t){return t.className.includes('warn');}).length;
+    document.getElementById('rv-tests-resumen').textContent='✅ '+passCount+' ok · ⚠️ '+warnCount+' avisos · ❌ '+failCount+' errores';
+
+    _rv_comparacion = comparacion;
+    document.getElementById('rv-res-sync').textContent    = syncs;
+    document.getElementById('rv-res-diff').textContent    = diffPrecios;
+    document.getElementById('rv-res-nopub').textContent   = noPub;
+    document.getElementById('rv-res-huerfano').textContent= huerfanos;
+    document.getElementById('rv-res-total').textContent   = comparacion.length;
+    document.getElementById('rv-cnt-todos').textContent   = comparacion.length;
+    document.getElementById('rv-cnt-diff').textContent    = diffPrecios+noPub+huerfanos;
+    document.getElementById('rv-cnt-error').textContent   = noPub;
+    document.getElementById('rv-resumen').style.display   = 'grid';
+    document.getElementById('rv-filtros').style.display   = 'flex';
+    document.getElementById('rv-tabla-wrap').style.display= 'block';
+
+    revRenderTabla(comparacion);
+    revGenerarSoluciones(comparacion,syncs,diffPrecios,noPub,huerfanos,flagDiffs,horasAtras);
+    revFinalizar(btn, tests);
+  })
+  .catch(function(err){
+    revSetTest(revCrearTests(), 0, 'fail', 'Error de conexión', err.message||'No se pudo conectar a Supabase');
+    ['panel','snap','reciclean','farex'].forEach(function(id){ revSetSrcStatus(id,'error','Error','Sin conexión'); });
+    revFinalizar(btn, []);
+  });
+}
+
+function revFinalizar(btn, tests){
+  if(btn){ btn.disabled=false; btn.textContent='🔄 Revisar de nuevo'; }
+}
+
+function revRenderTabla(data){
+  var filSuc = document.getElementById('rv-fil-suc').value;
+  var filEmp = document.getElementById('rv-fil-empresa').value;
+  var filtrado = data.filter(function(r){
+    if(filSuc && r.sucursal !== filSuc) return false;
+    if(filEmp==='reciclean' && !r.recPanel && !r.recSnap) return false;
+    if(filEmp==='farex' && !r.farexPanel && !r.farexSnap) return false;
+    if(_rv_filtroEstado==='diff' && r.estado==='sync') return false;
+    if(_rv_filtroEstado==='error' && r.estado!=='no-publicado') return false;
+    if(_rv_filtroEstado==='sync' && r.estado!=='sync') return false;
+    return true;
+  });
+  var body = document.getElementById('rv-tabla-body');
+  if(!filtrado.length){
+    body.innerHTML='<div class="rv-empty"><div class="rv-empty-icon">✅</div><div class="rv-empty-text">Sin resultados para este filtro</div></div>';
+    return;
+  }
+  var html='';
+  filtrado.forEach(function(r){
+    var ppStr = r.precioPanel!=null ? (revFmt(r.precioPanel)||'—') : '<span class="rv-precio-none">—</span>';
+    var psStr = r.precioSnap!=null  ? (revFmt(r.precioSnap)||'—') : '<span class="rv-precio-none">Sin publicar</span>';
+    var psCls = r.precioSnap==null ? 'rv-precio-none' : (Math.abs(r.precioPanel-r.precioSnap)<0.5 ? 'rv-precio-equal':'rv-precio-diff');
+    var recFlag  = r.recPanel!=null  ? (r.recPanel  ?'<span class="rv-flag rv-flag-ok">✓</span>':'<span class="rv-flag rv-flag-off">—</span>') : (r.recSnap!=null?(r.recSnap?'<span class="rv-flag rv-flag-mismatch">!</span>':'<span class="rv-flag rv-flag-off">—</span>'):'');
+    var farFlag  = r.farexPanel!=null? (r.farexPanel?'<span class="rv-flag rv-flag-ok">✓</span>':'<span class="rv-flag rv-flag-off">—</span>') : (r.farexSnap!=null?(r.farexSnap?'<span class="rv-flag rv-flag-mismatch">!</span>':'<span class="rv-flag rv-flag-off">—</span>'):'');
+    var badge;
+    if(r.estado==='sync') badge='<span class="rv-status-badge rv-status-sync">✅ OK</span>';
+    else if(r.estado==='diff-precio') badge=r.flagMismatch?'<span class="rv-status-badge rv-status-diff">⚠ Precio+Flag</span>':'<span class="rv-status-badge rv-status-diff">⚠ Precio distinto</span>';
+    else if(r.estado==='no-publicado') badge='<span class="rv-status-badge rv-status-nopub">🔴 Sin publicar</span>';
+    else badge='<span class="rv-status-badge rv-status-huerfano">💧 Huérfano</span>';
+    html+='<div class="rv-tabla-row '+r.estado+'">'
+      +'<div class="rv-mat-name" title="'+r.material+'">'+r.material+'</div>'
+      +'<div class="rv-mat-suc">'+r.sucursal+'</div>'
+      +'<div class="rv-precio-panel">'+ppStr+'</div>'
+      +'<div class="'+psCls+'">'+psStr+'</div>'
+      +'<div>'+recFlag+'</div><div>'+farFlag+'</div>'
+      +'<div>'+badge+'</div>'
+      +'</div>';
+  });
+  body.innerHTML=html;
+}
+
+function revAplicarFiltros(){ revRenderTabla(_rv_comparacion); }
+
+function revSetFiltroEstado(estado){
+  _rv_filtroEstado=estado;
+  ['todos','diff','error','sync'].forEach(function(e){
+    var el=document.getElementById('rv-fil-'+e);
+    if(el) el.className='rv-filtro-btn'+(e===estado?' activo':'');
+  });
+  revRenderTabla(_rv_comparacion);
+}
+
+function revGenerarSoluciones(comp,syncs,diffPrecios,noPub,huerfanos,flagDiffs,horasAtras){
+  var solDiv=document.getElementById('rv-soluciones');
+  var body=document.getElementById('rv-sol-body');
+  var items=[];
+  if(syncs===comp.length-huerfanos && diffPrecios===0 && noPub===0){
+    items.push({tipo:'ok',icon:'🎉',titulo:'Todo sincronizado',desc:'Panel y sitios web muestran los mismos precios.'});
+  }
+  if(noPub>0) items.push({tipo:'error',icon:'🔴',titulo:noPub+' materiales sin publicar',desc:'Hay precios en el panel que NO aparecen en los sitios. Solución: presiona <strong>GRABAR</strong> en el panel.'});
+  if(diffPrecios>0) items.push({tipo:'warn',icon:'⚠️',titulo:diffPrecios+' precios desactualizados en los sitios',desc:'El panel tiene precios distintos al snapshot publicado. Solución: presiona <strong>GRABAR</strong> en el panel para sincronizar.'});
+  if(huerfanos>0) items.push({tipo:'warn',icon:'💧',titulo:huerfanos+' materiales huérfanos en snapshot',desc:'Materiales que aparecen online pero ya no existen en el panel. Solución: presiona <strong>GRABAR</strong> para regenerar el snapshot limpio.'});
+  if(flagDiffs>0) items.push({tipo:'warn',icon:'🏷️',titulo:flagDiffs+' materiales con flags incorrectos',desc:'La asignación Reciclean/Farex difiere entre panel y snapshot. Solución: presiona <strong>GRABAR</strong> en el panel.'});
+  if(horasAtras>48) items.push({tipo:'warn',icon:'🕐',titulo:'Snapshot desactualizado ('+Math.round(horasAtras)+'h)',desc:'El snapshot no se actualiza hace más de 48 horas. Solución: presiona <strong>GRABAR</strong> en el panel.'});
+  if(!items.length) return;
+  body.innerHTML=items.map(function(i){
+    return '<div class="rv-sol-item sol-'+i.tipo+'"><span class="rv-sol-icon">'+i.icon+'</span><div class="rv-sol-text"><strong>'+i.titulo+'</strong> — '+i.desc+'</div></div>';
+  }).join('');
+  solDiv.style.display='block';
+}
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TAB H · CONFIGURACIÓN EMPRESA (Switch Materiales + Sucursales)
+═══════════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-config">
+<style>
+/* ── Tab H: Config Empresa ── */
+.cfg-section{background:#fff;border-radius:10px;border:1.5px solid var(--border);padding:20px;margin-bottom:20px;}
+.cfg-section-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.cfg-section-sub{font-size:11px;color:var(--text3);margin-bottom:16px;}
+/* Toggle switch */
+.sw{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0;}
+.sw input{opacity:0;width:0;height:0;}
+.sw-slider{position:absolute;cursor:pointer;inset:0;background:#D6D1C4;border-radius:20px;transition:.2s;}
+.sw-slider:before{content:"";position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;}
+.sw input:checked+.sw-slider{background:var(--green);}
+.sw input:checked+.sw-slider:before{transform:translateX(16px);}
+.sw.farex input:checked+.sw-slider{background:#1A4A8A;}
+/* Tabla materiales */
+.cfg-mat-table{width:100%;border-collapse:collapse;font-size:12px;}
+.cfg-mat-table th{padding:7px 10px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);background:var(--bg3);}
+.cfg-mat-table th.center{text-align:center;}
+.cfg-mat-table td{padding:7px 10px;border-bottom:1px solid var(--bg4);vertical-align:middle;}
+.cfg-mat-table tr:hover td{background:var(--bg3);}
+.cfg-mat-cat-row td{background:var(--bg4);font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:5px 10px;}
+.cfg-mat-table td.center{text-align:center;}
+.cfg-mat-nombre{font-size:12px;color:var(--text);font-weight:500;}
+.cfg-empresa-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700;letter-spacing:.3px;}
+.cfg-badge-r{background:#E8F5ED;color:#1A7A3C;border:1px solid #B8DFC7;}
+.cfg-badge-f{background:#EAF0FB;color:#1A4A8A;border:1px solid #B8CCF0;}
+.cfg-badge-none{background:#F0EEE8;color:#9C9484;border:1px solid #D6D1C4;}
+/* Grid sucursales */
+.cfg-suc-grid{display:grid;grid-template-columns:160px repeat(4,1fr);gap:0;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;}
+.cfg-suc-cell{padding:10px 12px;border-bottom:1px solid var(--bg4);border-right:1px solid var(--bg4);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.cfg-suc-cell:last-child{border-right:none;}
+.cfg-suc-header{background:var(--bg4);font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;}
+.cfg-suc-label{justify-content:flex-start;background:var(--bg3);font-weight:600;color:var(--text);}
+.cfg-suc-row:last-child .cfg-suc-cell{border-bottom:none;}
+/* Botón guardar */
+.cfg-save-bar{position:sticky;bottom:0;background:var(--bg);border-top:1.5px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:12px;justify-content:flex-end;margin:-20px;margin-top:0;}
+@media(max-width:640px){
+  .cfg-suc-grid{grid-template-columns:120px repeat(4,1fr);}
+  .cfg-suc-cell{padding:8px 6px;font-size:11px;}
+}
+</style>
+
+<!-- HEADER -->
+<div style="padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+  <div>
+    <div style="font-size:16px;font-weight:700;">Config Empresa</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:2px;">Activa o desactiva materiales y sucursales por empresa (Reciclean / Farex). Los cambios se aplican al publicar.</div>
+  </div>
+  <button onclick="cfgGuardar()" style="background:var(--green);border:none;color:#fff;padding:8px 18px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
+    💾 Guardar cambios empresa
+  </button>
+</div>
+
+<!-- SECCIÓN 1: Sucursales por empresa -->
+<div style="padding:20px;">
+<div class="cfg-section">
+  <div class="cfg-section-title">🏭 Sucursales activas por empresa</div>
+  <div class="cfg-section-sub">Marca qué sucursales opera cada empresa. Afecta los widgets en reciclean.cl y farex.cl.</div>
+  <div class="cfg-suc-grid" id="cfg-suc-grid">
+    <!-- Se genera con cfgRender() -->
+  </div>
+</div>
+
+<!-- SECCIÓN 2: Materiales por empresa -->
+<div class="cfg-section">
+  <div class="cfg-section-title">♻ Materiales por empresa</div>
+  <div class="cfg-section-sub">Define qué materiales muestra cada empresa. Verde = Reciclean · Azul = Farex. Los cambios se publican al hacer "Generar Asistente".</div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+    <button onclick="cfgFiltrarCat('')" id="cfg-cat-todos" class="btn" style="font-size:10px;padding:4px 10px;background:var(--amber-bg);border-color:var(--amber-border);color:var(--amber);">Todas las categorías</button>
+    <button onclick="cfgActivarTodos('reciclean')" class="btn" style="font-size:10px;padding:4px 10px;background:var(--green-bg);border-color:var(--green-border);color:var(--green);">✓ Activar todos en Reciclean</button>
+    <button onclick="cfgActivarTodos('farex')" class="btn" style="font-size:10px;padding:4px 10px;background:var(--blue-bg);border-color:var(--blue-border);color:var(--blue);">✓ Activar todos en Farex</button>
+  </div>
+  <div style="overflow-x:auto;">
+  <table class="cfg-mat-table">
+    <thead>
+      <tr>
+        <th style="width:50%;">Material</th>
+        <th class="center" style="width:80px;">
+          <span class="cfg-empresa-badge cfg-badge-r">Reciclean</span>
+        </th>
+        <th class="center" style="width:80px;">
+          <span class="cfg-empresa-badge cfg-badge-f">Farex</span>
+        </th>
+        <th class="center" style="width:80px;">Ambas</th>
+      </tr>
+    </thead>
+    <tbody id="cfg-mat-tbody">
+      <!-- Se genera con cfgRender() -->
+    </tbody>
+  </table>
+  </div>
+</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  TAB H — CONFIG EMPRESA
+// ══════════════════════════════════════════════════════
+var _cfgFiltro = '';
+var _cfgIniciado = false;
+
+// Carga SUCS_EMPRESA desde localStorage 'rf_sucs_empresa'
+function cfgLoadSucsEmpresa(){
+  var def = {
+    reciclean: {Cerrillos:true, 'Maipú':true, Talca:true, 'Puerto Montt':true},
+    farex:     {Cerrillos:true, 'Maipú':true, Talca:false, 'Puerto Montt':false}
+  };
+  try{
+    var s = localStorage.getItem('rf_sucs_empresa');
+    return s ? JSON.parse(s) : def;
+  } catch(e){ return def; }
+}
+
+function cfgSaveSucsEmpresa(obj){
+  safeLS('rf_sucs_empresa', JSON.stringify(obj));
+}
+
+function cfgRender(){
+  cfgRenderSucursales();
+  cfgRenderMateriales();
+  _cfgIniciado = true;
+}
+
+function cfgRenderSucursales(){
+  var se = cfgLoadSucsEmpresa();
+  var sucs = ['Cerrillos','Maipú','Talca','Puerto Montt'];
+  var empresas = ['reciclean','farex'];
+  var labels = {reciclean:'Reciclean', farex:'Farex'};
+  var grid = document.getElementById('cfg-suc-grid');
+  if(!grid) return;
+  var html = '';
+  // Header
+  html += '<div class="cfg-suc-cell cfg-suc-header" style="justify-content:flex-start;">Empresa</div>';
+  sucs.forEach(function(s){
+    html += '<div class="cfg-suc-cell cfg-suc-header">'+s.split(' ')[0]+'</div>';
+  });
+  // Filas
+  empresas.forEach(function(emp){
+    html += '<div class="cfg-suc-row" style="display:contents;">';
+    html += '<div class="cfg-suc-cell cfg-suc-label"><span class="cfg-empresa-badge '+(emp==='reciclean'?'cfg-badge-r':'cfg-badge-f')+'">'+labels[emp]+'</span></div>';
+    sucs.forEach(function(suc){
+      var checked = se[emp] && se[emp][suc] ? 'checked' : '';
+      html += '<div class="cfg-suc-cell"><label class="sw '+(emp==='farex'?'farex':'')+'"><input type="checkbox" '+checked+' onchange="cfgToggleSuc(\''+emp+'\',\''+suc+'\',this.checked)"><span class="sw-slider"></span></label></div>';
+    });
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+}
+
+function cfgToggleSuc(empresa, suc, val){
+  var se = cfgLoadSucsEmpresa();
+  if(!se[empresa]) se[empresa] = {};
+  se[empresa][suc] = val;
+  cfgSaveSucsEmpresa(se);
+  toast((val ? '✓ ' : '○ ') + suc + ' en ' + empresa, val ? 'ok' : 'warn');
+}
+
+function cfgRenderMateriales(){
+  var tbody = document.getElementById('cfg-mat-tbody');
+  if(!tbody) return;
+  var cats = {};
+  mats.forEach(function(m){
+    if(m.activo === false) return; // no mostrar materiales desactivados
+    if(_cfgFiltro && m.cat !== _cfgFiltro) return;
+    if(!cats[m.cat]) cats[m.cat] = [];
+    cats[m.cat].push(m);
+  });
+  var html = '';
+  Object.keys(cats).forEach(function(cat){
+    html += '<tr class="cfg-mat-cat-row"><td colspan="4">'+cat+'</td></tr>';
+    cats[cat].forEach(function(m){
+      var r = m.reciclean !== false && (m.reciclean === true);
+      var f = m.farex !== false && (m.farex === true);
+      html += '<tr>';
+      html += '<td class="cfg-mat-nombre">'+m.nombre+'</td>';
+      // Reciclean toggle
+      html += '<td class="center"><label class="sw"><input type="checkbox" '+(r?'checked':'')+' onchange="cfgToggleMat('+m.id+',\'reciclean\',this.checked)"><span class="sw-slider"></span></label></td>';
+      // Farex toggle
+      html += '<td class="center"><label class="sw farex"><input type="checkbox" '+(f?'checked':'')+' onchange="cfgToggleMat('+m.id+',\'farex\',this.checked)"><span class="sw-slider"></span></label></td>';
+      // Badge estado
+      var badge = '';
+      if(r && f) badge = '<span class="cfg-empresa-badge" style="background:#FFF3CD;color:#856404;border:1px solid #FFE69C;">Ambas</span>';
+      else if(r) badge = '<span class="cfg-empresa-badge cfg-badge-r">Reciclean</span>';
+      else if(f) badge = '<span class="cfg-empresa-badge cfg-badge-f">Farex</span>';
+      else badge = '<span class="cfg-empresa-badge cfg-badge-none">Ninguna</span>';
+      html += '<td class="center">'+badge+'</td>';
+      html += '</tr>';
+    });
+  });
+  tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px;">Sin materiales</td></tr>';
+}
+
+function cfgToggleMat(id, empresa, val){
+  var m = mats.find(function(x){ return x.id === id; });
+  if(!m) return;
+  m[empresa] = val;
+  if(!cambios[id]) cambios[id] = {};
+  cambios[id][empresa] = val;
+  idbSaveDraft();
+  // Actualizar badge en la fila sin re-renderizar todo
+  cfgRenderMateriales();
+  var label = empresa === 'reciclean' ? 'Reciclean' : 'Farex';
+  toast((val ? '✓ ' : '○ ') + m.nombre + ' → ' + label, val ? 'ok' : 'warn');
+}
+
+function cfgFiltrarCat(cat){
+  _cfgFiltro = cat;
+  cfgRenderMateriales();
+}
+
+function cfgActivarTodos(empresa){
+  mats.forEach(function(m){
+    if(m.activo === false) return;
+    m[empresa] = true;
+    if(!cambios[m.id]) cambios[m.id] = {};
+    cambios[m.id][empresa] = true;
+  });
+  idbSaveDraft();
+  cfgRenderMateriales();
+  toast('✓ Todos los materiales activados en ' + empresa, 'ok');
+}
+
+function cfgGuardar(){
+  grabarEstado();
+  toast('💾 Configuración de empresa guardada', 'ok');
+}
+</script>
+</div>
+
 <div class="toast" id="toast"></div>
 
 
-<\!-- ═══════════════════════════════════════════════════════════
+<!-- ═══════════════════════════════════════════════════════════
      MÓDULOS JS
 ══════════════════════════════════════════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -1147,5 +1863,30 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
     <div style="padding:16px;overflow-y:auto;flex:1;" id="diag-body"></div>
   </div>
 </div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  GATING TAB USUARIOS — solo visible para rol admin
+//  Lee la sesión guardada por src/lib/auth.js en localStorage.rf_session
+// ══════════════════════════════════════════════════════════
+(function gateTabUsuarios(){
+  try {
+    var raw = localStorage.getItem('rf_session');
+    if (!raw) return;
+    var sess = JSON.parse(raw);
+    if (sess && sess.rol !== 'admin') {
+      var btn = document.getElementById('nav-tab-usuarios');
+      if (btn) btn.style.display = 'none';
+      // Si está visible el panel de usuarios, redirigir al primero
+      var panel = document.getElementById('panel-usuarios');
+      if (panel && panel.classList.contains('active')) {
+        var primero = document.querySelector('.nav-tab[onclick*="carga"]');
+        if (primero) primero.click();
+      }
+    }
+  } catch(e) { /* sin sesión válida → no se filtra (el login se encarga) */ }
+})();
+</script>
+
 </body>
 </html>

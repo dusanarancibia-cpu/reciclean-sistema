@@ -263,6 +263,20 @@ function toggleActivo(id){
   toast(m.activo ? '✓ Activo en lista de precios' : '○ Oculto de lista de precios');
 }
 
+// Activa/desactiva un material para una empresa específica ('reciclean' o 'farex')
+// Se puede llamar desde Tab H (Config Empresa) o desde cualquier módulo externo
+function toggleEmpresaFlag(id, empresa, valor){
+  const m = mats.find(x=>x.id===id);
+  if(!m) return;
+  const nuevoValor = (valor !== undefined) ? Boolean(valor) : !m[empresa];
+  m[empresa] = nuevoValor;
+  if(!cambios[id]) cambios[id]={};
+  cambios[id][empresa] = nuevoValor;
+  idbSaveDraft();
+  const label = empresa === 'reciclean' ? 'Reciclean' : 'Farex';
+  toast((nuevoValor ? '✓ ' : '○ ') + m.nombre + ' → ' + label, nuevoValor ? 'ok' : 'warn');
+}
+
 function toggleIva(id){
   const m=mats.find(x=>x.id===id);
   m.iva=!m.iva;
