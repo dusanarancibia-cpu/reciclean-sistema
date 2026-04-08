@@ -1069,7 +1069,7 @@ const MATERIALES_REC = [
   { label:'📄 Papel Blanco 2',      can:'Blanco 2',           emp:'reciclean' },
   { label:'🍶 Vidrio',              can:'Vidrio',             emp:'reciclean' },
   { label:'♳ PET Transparente',    can:'PET Transparente',   emp:'reciclean' },
-  { label:'🧴 Polietileno Limpio',  can:'Polietileno Limpio', emp:'reciclean' },
+  { label:'🧴 Polietileno Lavado',  can:'Polietileno Lavado', emp:'reciclean' },
   { label:'🔩 Lata Chatarra',       can:'Lata Chatarra',      emp:'farex' },
   { label:'⚙️ Aluminio UBC (latas)',can:'Aluminio UBC',       emp:'farex' },
 ];
@@ -1401,40 +1401,47 @@ async function rfNodo4Sin(mat) {
   });
 }
 
-// Metales Farex (lista dinámica)
 // ═══ METALES FAREX — categorías y materiales ═══
+// Los nombres `can` deben coincidir 1:1 con el snapshot Supabase (ver public/js/config.js
+// MATS_LOCAL) para que rfGetPrecio devuelva el precio correcto del día.
 const METALES_CATS = [
-  { label: '🔩 Fierros y Chatarra', items: [
-    { label: 'Fierro Corto',   can: 'Fierro Corto'   },
-    { label: 'Fierro Largo',   can: 'Fierro Largo'   },
-    { label: 'Fierro Mixto',   can: 'Fierro Mixto'   },
-    { label: 'Lata Chatarra',  can: 'Lata Chatarra'  },
-    { label: 'Fierro Fundido', can: 'Fierro Fundido'  },
+  { label: '🔩 Fierros', key: 'fierros', items: [
+    { label: 'Fierro Corto', can: 'Fierro Corto' },
+    { label: 'Fierro Largo', can: 'Fierro Largo' },
   ]},
-  { label: '🥉 Cobres', items: [
-    { label: 'Cobre 1 Tubo',    can: 'Cobre 1 Tubo'    },
-    { label: 'Cobre 3ra',       can: 'Cobre 3ra'       },
-    { label: 'Cobre Esmaltado', can: 'Cobre Esmaltado' },
-    { label: 'Cobre Calefón',   can: 'Cobre Calefón'   },
-    { label: 'Cobre Radiador',  can: 'Cobre Radiador'  },
+  { label: '🥉 Cobres', key: 'cobres', items: [
+    { label: 'Cobre 1 Tubo',         can: 'Cobre 1 Tubo'         },
+    { label: 'Cobre 3ra',            can: 'Cobre 3ra'            },
+    { label: 'Cobre Esmaltado',      can: 'Cobre Esmaltado'      },
+    { label: 'Cobre Calefón',        can: 'Cobre Calefón'        },
+    { label: 'Cobre Radiador Chico', can: 'Cobre Radiador Chico' },
+    { label: 'Cobre Radiador',       can: 'Cobre Radiador'       },
+    { label: 'Cobre Niquel',         can: 'Cobre Niquel'         },
   ]},
-  { label: '🥈 Bronces', items: [
-    { label: 'Bronce Amarillo',    can: 'Bronce Amarillo'    },
-    { label: 'Bronce Colorado',    can: 'Bronce Colorado'    },
-    { label: 'Bronce Contaminado', can: 'Bronce Contaminado' },
+  { label: '🥈 Bronces', key: 'bronces', items: [
+    { label: 'Bronce Amarillo',       can: 'Bronce Amarillo'       },
+    { label: 'Bronce Colorado',       can: 'Bronce Colorado'       },
+    { label: 'Bronce Contaminado',    can: 'Bronce Contaminado'    },
+    { label: 'Bronce Aserrín Limpio', can: 'Bronce Aserrín Limpio' },
+    { label: 'Bronce Magnético',      can: 'Bronce Magnético'      },
   ]},
-  { label: '✨ Aluminios', items: [
-    { label: 'Aluminio Perfil A', can: 'Aluminio Perfil A' },
-    { label: 'Aluminio Perfil B', can: 'Aluminio Perfil B' },
-    { label: 'Aluminio Duro',     can: 'Aluminio Duro'     },
-    { label: 'Aluminio Blando',   can: 'Aluminio Blando'   },
-    { label: 'Aluminio UBC',      can: 'Aluminio UBC'      },
+  { label: '✨ Aluminios', key: 'aluminios', items: [
+    { label: 'Aluminio Off Set',        can: 'Aluminio Off Set'        },
+    { label: 'Aluminio Perfil A',       can: 'Aluminio Perfil A'       },
+    { label: 'Aluminio Perfil B',       can: 'Aluminio Perfil B'       },
+    { label: 'Aluminio Duro',           can: 'Aluminio Duro'           },
+    { label: 'Aluminio Duro Lata',      can: 'Aluminio Duro Lata'      },
+    { label: 'Aluminio Blando',         can: 'Aluminio Blando'         },
+    { label: 'Aluminio Pomos',          can: 'Aluminio Pomos'          },
+    { label: 'Aluminio Radiador',       can: 'Aluminio Radiador'       },
+    { label: 'Aluminio Radiador Mixto', can: 'Aluminio Radiador Mixto' },
+    { label: 'Aluminio FOIL',           can: 'Aluminio FOIL'           },
   ]},
-  { label: '⚙️ Acero Inoxidable y otros', items: [
-    { label: 'Acero Inox. 304', can: 'Acero Inoxidable 304' },
-    { label: 'Acero Inox. 201', can: 'Acero Inox. SS 201'   },
-    { label: 'Plomo',           can: 'Plomo'                },
-    { label: 'Zinc / Ánodos',   can: 'Zinc Anodos'          },
+  { label: '⚙️ Acero Inox.', key: 'inox', items: [
+    { label: 'Acero Inoxidable 304', can: 'Acero Inoxidable 304' },
+    { label: 'Acero Inoxidable 316', can: 'Acero Inoxidable 316' },
+    { label: 'Acero Inox. SS 201',   can: 'Acero Inox. SS 201'   },
+    { label: 'Zinc Ánodos',          can: 'Zinc Anodos'          },
   ]},
 ];
 
@@ -2099,26 +2106,17 @@ async function rfNodoFin() {
    obtener un precio mejorado según la suma total de kilos.
 ═══════════════════════════════════════════════════════════════════ */
 
-// Lista completa de materiales disponibles para el carrito
-// (Reciclean + Farex, solo los más comunes para no saturar el menú)
+// Lista de materiales comunes para el carrito rápido (Reciclean + latas).
+// Los metales Farex (fierros, cobres, bronces, aluminios, inox) se gestionan
+// por el flujo de tabla de precios por familia (ver rfNodoMetalesTabla).
 const CARRITO_MATERIALES = [
-  // Reciclean
   { label: '📦 Cartón',             can: 'Carton',            emp: 'reciclean' },
-  { label: '📄 Papel Blanco',       can: 'Blanco 2',          emp: 'reciclean' },
+  { label: '📄 Papel Blanco 2',     can: 'Blanco 2',          emp: 'reciclean' },
   { label: '🍶 Vidrio',             can: 'Vidrio',            emp: 'reciclean' },
-  { label: '♳ PET Transparente',   can: 'PET Transparente',  emp: 'reciclean' },
-  { label: '🧴 Polietileno Limpio', can: 'Polietileno Limpio',emp: 'reciclean' },
-  // Farex (solo disponibles en Cerrillos y Maipú)
-  { label: '🔩 Fierro Corto',       can: 'Fierro Corto',      emp: 'farex' },
-  { label: '🔩 Fierro Largo',       can: 'Fierro Largo',      emp: 'farex' },
-  { label: '🔩 Fierro Mixto',       can: 'Fierro Mixto',      emp: 'farex' },
+  { label: '♳ PET Transparente',    can: 'PET Transparente',  emp: 'reciclean' },
+  { label: '🧴 Polietileno Lavado', can: 'Polietileno Lavado',emp: 'reciclean' },
   { label: '🥫 Lata Chatarra',      can: 'Lata Chatarra',     emp: 'farex' },
-  { label: '🥉 Cobre 1 Tubo',       can: 'Cobre 1 Tubo',      emp: 'farex' },
-  { label: '🥉 Cobre Esmaltado',    can: 'Cobre Esmaltado',   emp: 'farex' },
-  { label: '🥈 Bronce Amarillo',    can: 'Bronce Amarillo',   emp: 'farex' },
-  { label: '✨ Aluminio Perfil',    can: 'Aluminio Perfil B', emp: 'farex' },
-  { label: '✨ Aluminio UBC',       can: 'Aluminio UBC',      emp: 'farex' },
-  { label: '⚙️ Acero Inox. 304',    can: 'Acero Inoxidable 304', emp: 'farex' },
+  { label: '⚙️ Aluminio UBC',       can: 'Aluminio UBC',      emp: 'farex' },
 ];
 
 async function rfNodoCarritoSelect() {
