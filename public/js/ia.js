@@ -75,15 +75,15 @@ async function fileToContent(file){
 function parseTextoLocal(texto, fuente){
   const lineas = texto.split('\n').map(l=>l.trim()).filter(l=>l.length>2);
   const resultados = [];
-  // Regex: captura "nombre: $precio" o "nombre: precio"
-  const RE = /^(.{2,60}?):\s*\$?\s*(\d[\d.,]*)\s*(?:a\s*\$?\s*(\d[\d.,]*))?/i;
+  // Regex: captura "nombre: $precio", "nombre | precio" o "nombre: precio"
+  const RE = /^(.{2,60}?)[:|]\s*\$?\s*(\d[\d.,]*)\s*(?:a\s*\$?\s*(\d[\d.,]*))?/i;
   const NO_RECIBE = /no se recibe|no compra|no aplica|sin precio/i;
 
   lineas.forEach(linea => {
     // Ignorar líneas de encabezado/separador
     if(/^[-=*#]{3,}/.test(linea)) return;
     if(/^(cliente|dirección|direccion|comuna|informado|fecha|observ)/i.test(linea)) return;
-    if(/^(CARTON|PLASTICO|VIDRIO|PAPEL|FIERRO|METAL|ALUMIN|COBRE)/i.test(linea) && !linea.includes(':')) return;
+    if(/^(CARTON|PLASTICO|VIDRIO|PAPEL|FIERRO|METAL|ALUMIN|COBRE)/i.test(linea) && !linea.includes(':') && !linea.includes('|')) return;
 
     // No se recibe
     if(NO_RECIBE.test(linea)){

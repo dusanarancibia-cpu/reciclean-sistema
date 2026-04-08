@@ -930,6 +930,28 @@ async function procesarImportIA(){
   document.getElementById('imp-loading').style.display='block';
   document.getElementById('imp-loading-sub').textContent='Leyendo contenido...';
 
+  // Parseo local para texto (sin API) — soporta formato "nombre: precio" y "nombre | precio"
+  if(impType==='texto'){
+    document.getElementById('imp-loading-sub').textContent='Analizando texto...';
+    const localItems = parseTextoLocal(texto, fuente);
+    if(localItems.length > 0){
+      const parsed = {
+        empresas_detectadas: fuente ? [fuente] : [],
+        modo: 'simple',
+        datos: localItems.map(it => ({
+          empresa: fuente || it.empresa || '—',
+          nombre_cliente: it.nombre,
+          material_oficial: it.nombre,
+          precio_clp: it.precio_clp_kg,
+          confianza: it.confianza || 'alta'
+        }))
+      };
+      mostrarResultadoImport(parsed, fuente);
+      document.getElementById('imp-loading').style.display='none';
+      return;
+    }
+  }
+
   const MATS_LIST = MATS_LOCAL.map(m=>`- ${m.nombre} (${m.cat})`).join('\n');
 
   const PROMPT_MULTI = `Eres experto en reciclaje en Chile. Analiza este documento con precios de materiales reciclables.
