@@ -322,6 +322,9 @@ let rfS = {
   comentarios: null,
   // Para donación empresa
   requiere_cert_rep: false,
+  // Foto del material (Fase 1 · 8 abril 2026)
+  foto_url: null,           // URL pública en Supabase Storage
+  foto_codigo: null,        // código de verificación 4 dígitos
   // Métricas
   session_id: null,
   inicio: null,
@@ -447,6 +450,10 @@ async function rfPostCotizacion(estado) {
     estado:          estado || 'pendiente',
     canal:           'web_chatbot_v2',
     fuente:          'chatbot_v2',
+    // Foto del material (Fase 1 · 8 abril 2026)
+    foto_url:           rfS.foto_url || null,
+    foto_codigo_verif:  rfS.foto_codigo || null,
+    foto_verificada:    false,            // Andrea la marca manualmente al revisarla
     raw_state:       JSON.stringify(rfS)
   };
 
@@ -733,6 +740,107 @@ function rfShowResumen(filas, onConfirm, onEdit) {
   rfScroll();
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   HELPERS DE FOTO (Fase 1 · 8 abril 2026)
+   - Código de verificación 4 dígitos (único por sesión)
+   - Input de cámara con preview
+   - Upload a Supabase Storage bucket "chatbot-fotos"
+═══════════════════════════════════════════════════════════════════ */
+function rfGenerarCodigoVerif() {
+  return String(Math.floor(1000 + Math.random() * 9000));
+}
+
+async function rfSubirFotoStorage(file, sessionId) {
+  const ext    = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const safeExt = ['jpg','jpeg','png','webp'].includes(ext) ? ext : 'jpg';
+  const path   = `${sessionId}/${Date.now()}.${safeExt}`;
+  const url    = `${RF2.SUPABASE_URL}/storage/v1/object/chatbot-fotos/${path}`;
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: {
+      apikey:        RF2.SUPABASE_KEY,
+      Authorization: 'Bearer ' + RF2.SUPABASE_KEY,
+      'Content-Type': file.type || 'image/jpeg',
+      'x-upsert':    'true'
+    },
+    body: file
+  });
+  if (!r.ok) {
+    const txt = await r.text().catch(()=>'');
+    throw new Error('upload ' + r.status + ' ' + txt.slice(0,120));
+  }
+  return `${RF2.SUPABASE_URL}/storage/v1/object/public/chatbot-fotos/${path}`;
+}
+
+function rfShowFileInput(opts) {
+  rfClearActions();
+  const block = document.createElement('div');
+  block.className = 'rf2-input-block';
+
+  const input = document.createElement('input');
+  input.type   = 'file';
+  input.accept = opts.accept || 'image/*';
+  if (opts.capture) input.setAttribute('capture', opts.capture);
+  input.style.display = 'none';
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;gap:6px;width:100%';
+
+  const btnCam = document.createElement('button');
+  btnCam.className = 'rf2-btn rf2-btn-primary rf2-btn-full';
+  btnCam.textContent = opts.label || '📸 Tomar foto ahora';
+  btnCam.onclick = (e) => { e.preventDefault(); input.click(); };
+
+  const btnSkip = document.createElement('button');
+  btnSkip.className = 'rf2-btn rf2-btn-secondary rf2-btn-full';
+  btnSkip.textContent = opts.skipLabel || '⏭ Continuar sin foto';
+  btnSkip.onclick = (e) => {
+    e.preventDefault();
+    rfClearActions();
+    rfUserMsg('⏭ Continuar sin foto');
+    opts.onSkip && opts.onSkip();
+  };
+
+  input.onchange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (!/^image\//.test(file.type)) {
+      alert('Por favor seleccioná un archivo de imagen (JPG, PNG o WebP).');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('La foto es demasiado grande (máx. 5 MB). Intentá con menor resolución.');
+      return;
+    }
+    rfClearActions();
+    rfShowPreviewFoto(file);
+    opts.onSelect && opts.onSelect(file);
+  };
+
+  wrap.appendChild(input);
+  wrap.appendChild(btnCam);
+  wrap.appendChild(btnSkip);
+  block.appendChild(wrap);
+  $msgs().appendChild(block);
+  rfScroll();
+}
+
+function rfShowPreviewFoto(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const msg = document.createElement('div');
+    msg.className = 'rf2-msg-user';
+    msg.innerHTML = `
+      <div class="rf2-bubble" style="padding:4px;max-width:220px;background:#005c4b">
+        <img src="${e.target.result}" alt="foto del material"
+             style="width:100%;height:auto;display:block;border-radius:10px;max-height:260px;object-fit:cover">
+      </div>`;
+    $msgs().appendChild(msg);
+    rfScroll();
+  };
+  reader.readAsDataURL(file);
+}
+
 function rfShowExito(orden, tipo) {
   rfClearActions();
   const nombre = rfS.nombre ? rfS.nombre.split(' ')[0] : '';
@@ -999,7 +1107,9 @@ function rfEstimarKgNum(kgStr) {
   return { 'menos de 10 kg':5, '10–50 kg':30, '50–200 kg':100, '200–500 kg':300, 'más de 500 kg':600 }[kgStr] || 50;
 }
 
-// N4 — INTRO NEGOCIACIÓN (reemplaza el antiguo N4)
+// N4 — INTRO NEGOCIACIÓN
+// Flujo: mensaje humanizado con precio lista + tramos + pedido de foto
+// con código de verificación y objeto de referencia universal.
 async function rfNodo4(precio, mat) {
   rfTrack('N4');
   rfS.precio_lista = precio; // guarda precio lista
@@ -1008,7 +1118,7 @@ async function rfNodo4(precio, mat) {
     ? '<span style="color:#fbbf24">FAREX</span>'
     : '<span style="color:#86efac">RECICLEAN</span>';
 
-  // Si es donación, ir directo al flujo sin negociación
+  // Si es donación, ir directo al flujo sin negociación ni foto
   if (rfS.intent === 'donar') {
     await rfSeq([
       `💚 Para <strong>${mat.label}</strong> en sucursal ${rfS.sucursal} — ¡gracias por donar! El proceso es igual a una venta, sin el pago. ¿Continuamos?`
@@ -1019,20 +1129,54 @@ async function rfNodo4(precio, mat) {
     return;
   }
 
+  // Genera el código de verificación único para esta cotización
+  if (!rfS.foto_codigo) rfS.foto_codigo = rfGenerarCodigoVerif();
+
   await rfSeq([
-    `Para <strong>${mat.label}</strong> en sucursal <strong>${rfS.sucursal}</strong>, nuestros precios de compra parten desde <span class="rf2-price-big">$${precio.toLocaleString('es-CL')}/kg</span> y pueden llegar hasta <strong>$${precioMax.toLocaleString('es-CL')}/kg</strong> dependiendo del volumen que traigas. 💰<br>
-     <span class="rf2-note">Empresa compradora: ${empresa_txt} · Pago al contado · Pesaje con romana certificada</span>`,
-    '¿Cuántos kilos tienes aproximadamente? Con eso te damos el precio exacto que corresponde a tu carga. 👇'
-  ], () => {
-    rfShowBtns([
-      { label: 'Menos de 10 kg',  fn: () => rfNodoPrecioNegociar(precio, mat, 'menos de 10 kg') },
-      { label: '10 – 50 kg',      fn: () => rfNodoPrecioNegociar(precio, mat, '10–50 kg') },
-      { label: '50 – 200 kg',     fn: () => rfNodoPrecioNegociar(precio, mat, '50–200 kg') },
-      { label: '200 – 500 kg',    fn: () => rfNodoPrecioNegociar(precio, mat, '200–500 kg') },
-      { label: 'Más de 500 kg',   fn: () => rfNodoPrecioNegociar(precio, mat, 'más de 500 kg') },
-      { label: '🔙 Ver otros materiales', secondary: true, fn: rfNodo3A }
-    ]);
+    `Para <strong>${mat.label}</strong> en sucursal <strong>${rfS.sucursal}</strong>, te confirmo que el precio lista es:<br><span class="rf2-price-big">$${precio.toLocaleString('es-CL')}/kg</span><span class="rf2-note">Empresa compradora: ${empresa_txt} · Pago al contado · Pesaje con romana certificada</span>`,
+    `Si al pesarlo caes en alguno de estos tramos, el precio podría mejorar un poco cuando lo pesemos 😊:<br>• <strong>50 – 200 kg</strong> → hasta <strong>$${rfPrecioEjecutivo(precio,'50–200 kg').toLocaleString('es-CL')}/kg</strong><br>• <strong>200 – 500 kg</strong> → hasta <strong>$${rfPrecioEjecutivo(precio,'200–500 kg').toLocaleString('es-CL')}/kg</strong><br>• <strong>Más de 500 kg</strong> → hasta <strong>$${precioMax.toLocaleString('es-CL')}/kg</strong>`,
+    `Para darte la mejor cotización, <strong>envíame una foto del material</strong> 📸<br><br>La foto debe mostrar estas 3 cosas:<br><br>1️⃣ <strong>El material completo</strong> para que se aprecie la cantidad que tienes<br><br>2️⃣ <strong>Un objeto de tamaño conocido</strong> al lado del material (un <strong>casco</strong>, una <strong>botella de 2 litros</strong>, un <strong>zapato</strong> o una <strong>hoja A4</strong>) — nos sirve para estimar el volumen<br><br>3️⃣ <strong>Un papel escrito a mano con este código:</strong><div style="background:#22c55e;color:#0b141a;padding:12px 16px;margin:10px 0;border-radius:12px;text-align:center;font-size:32px;font-weight:800;letter-spacing:6px;font-family:monospace">${rfS.foto_codigo}</div><span class="rf2-note">El código es único para esta cotización — sirve para confirmar que la foto es tuya y reciente.</span>`
+  ], () => rfNodoPedirFoto(precio, mat));
+}
+
+// N4-FOTO — Pide foto del material con cámara
+async function rfNodoPedirFoto(precio, mat) {
+  rfTrack('N4-foto');
+  rfSetProgress(40);
+  rfShowFileInput({
+    label: '📸 Tomar foto del material',
+    accept: 'image/*',
+    capture: 'environment',           // fuerza cámara trasera en mobile
+    skipLabel: '⏭ Prefiero elegir tramo sin foto',
+    onSelect: async (file) => {
+      rfUserMsg('📸 Foto enviada');
+      await rfBotMsg('Recibida. Subiéndola a nuestros servidores... 📤');
+      try {
+        const url = await rfSubirFotoStorage(file, rfS.session_id);
+        rfS.foto_url = url;
+        await rfBotMsg('¡Listo! Foto guardada correctamente. ✅<br>Nuestro equipo la revisará para confirmar el volumen cuando te pesemos el material.');
+      } catch(e) {
+        console.error('[RF2] upload foto:', e.message);
+        await rfBotMsg('Mmm, no pude subir la foto en este momento 😕 pero no te preocupes, podemos seguir igual y coordinamos cuando vengas.');
+      }
+      rfMostrarTramosManual(precio, mat);
+    },
+    onSkip: () => {
+      rfBotMsg('Sin problema 😊 elige el tramo que mejor se aproxime:').then(() => rfMostrarTramosManual(precio, mat));
+    }
   });
+}
+
+// Muestra los botones de tramos manuales (se usa con o sin foto)
+function rfMostrarTramosManual(precio, mat) {
+  rfShowBtns([
+    { label: 'Menos de 10 kg',          fn: () => rfNodoPrecioNegociar(precio, mat, 'menos de 10 kg') },
+    { label: '10 – 50 kg',              fn: () => rfNodoPrecioNegociar(precio, mat, '10–50 kg')       },
+    { label: '50 – 200 kg',             fn: () => rfNodoPrecioNegociar(precio, mat, '50–200 kg')      },
+    { label: '200 – 500 kg',            fn: () => rfNodoPrecioNegociar(precio, mat, '200–500 kg')     },
+    { label: 'Más de 500 kg',           fn: () => rfNodoPrecioNegociar(precio, mat, 'más de 500 kg')  },
+    { label: '🔙 Ver otros materiales', secondary: true, fn: rfNodo3A }
+  ]);
 }
 
 // N4-NEGOCIAR — Muestra precio ejecutivo y cierra el trato
@@ -1267,19 +1411,56 @@ async function rfNodoMetalesItems(cat) {
 
 async function rfNodo4Farex(precio, item) {
   rfTrack('N4-farex');
+  rfS.precio_lista = precio;
   const precioFmt    = '$' + precio.toLocaleString('es-CL');
   const precioMax    = rfPrecioMaximo(precio);
   const precioMaxFmt = '$' + precioMax.toLocaleString('es-CL');
+
+  // Genera el código de verificación único para esta cotización
+  if (!rfS.foto_codigo) rfS.foto_codigo = rfGenerarCodigoVerif();
+
   await rfSeq([
-    `¡Listo! 🙌 El precio de <strong>${item.label}</strong> en <strong>Farex ${rfS.sucursal}</strong> es:<br><span class="rf2-price-big">${precioFmt} / kg</span><span class="rf2-note">Precio lista publicado en farex.cl · Retención IVA 19% · Pago al contado · Puedes recibir hasta ${precioMaxFmt}/kg según volumen</span>`,
-    `Dependiendo de cuánto tengas, podemos ajustar el precio. ¿Cuántos kilos aproximados son?`
-  ], () => rfShowBtns([
-    { label: 'Menos de 50 kg',     fn: () => rfNodoPrecioNegociar(precio, item, 'menos de 10 kg') },
-    { label: '50 – 500 kg',        fn: () => rfNodoPrecioNegociar(precio, item, '50–200 kg')      },
-    { label: '500 kg – 2 ton',     fn: () => rfNodoPrecioNegociar(precio, item, '200–500 kg')     },
-    { label: 'Más de 2 toneladas', fn: () => rfNodoPrecioNegociar(precio, item, 'más de 500 kg')  },
+    `¡Listo! 🙌 El precio lista de <strong>${item.label}</strong> en <strong>Farex ${rfS.sucursal}</strong> es:<br><span class="rf2-price-big">${precioFmt} / kg</span><span class="rf2-note">Precio publicado en farex.cl · Retención IVA 19% · Pago al contado · Hasta ${precioMaxFmt}/kg según volumen</span>`,
+    `Para darte el mejor precio, <strong>envíame una foto del material</strong> 📸<br><br>La foto debe mostrar:<br><br>1️⃣ <strong>Todo el material</strong> (que se vea la cantidad total)<br><br>2️⃣ <strong>Un objeto de tamaño conocido</strong> al lado (un <strong>casco</strong> de seguridad, una <strong>botella 2L</strong>, un <strong>zapato</strong> o una <strong>hoja A4</strong>) — nos ayuda a estimar el volumen<br><br>3️⃣ <strong>Un papel escrito a mano con el código:</strong><div style="background:#22c55e;color:#0b141a;padding:12px 16px;margin:10px 0;border-radius:12px;text-align:center;font-size:32px;font-weight:800;letter-spacing:6px;font-family:monospace">${rfS.foto_codigo}</div><span class="rf2-note">El código es único para esta cotización — evita que otra persona la use.</span>`
+  ], () => rfNodoPedirFotoFarex(precio, item));
+}
+
+// Pide foto en el flujo Farex (metales)
+async function rfNodoPedirFotoFarex(precio, item) {
+  rfTrack('N4-farex-foto');
+  rfSetProgress(50);
+  rfShowFileInput({
+    label: '📸 Tomar foto del material',
+    accept: 'image/*',
+    capture: 'environment',
+    skipLabel: '⏭ Prefiero elegir tramo sin foto',
+    onSelect: async (file) => {
+      rfUserMsg('📸 Foto enviada');
+      await rfBotMsg('Recibida. Subiéndola... 📤');
+      try {
+        const url = await rfSubirFotoStorage(file, rfS.session_id);
+        rfS.foto_url = url;
+        await rfBotMsg('¡Foto guardada! ✅<br>El equipo de Farex la revisará para darte el precio ejecutivo al momento de pesar.');
+      } catch(e) {
+        console.error('[RF2] upload foto farex:', e.message);
+        await rfBotMsg('Mmm, no pude subir la foto 😕 pero seguimos igual, coordinamos al momento de pesar.');
+      }
+      rfMostrarTramosFarex(precio, item);
+    },
+    onSkip: () => {
+      rfBotMsg('Sin problema 😊 elige el tramo que estimas:').then(() => rfMostrarTramosFarex(precio, item));
+    }
+  });
+}
+
+function rfMostrarTramosFarex(precio, item) {
+  rfShowBtns([
+    { label: 'Menos de 50 kg',       fn: () => rfNodoPrecioNegociar(precio, item, 'menos de 10 kg') },
+    { label: '50 – 500 kg',          fn: () => rfNodoPrecioNegociar(precio, item, '50–200 kg')      },
+    { label: '500 kg – 2 ton',       fn: () => rfNodoPrecioNegociar(precio, item, '200–500 kg')     },
+    { label: 'Más de 2 toneladas',   fn: () => rfNodoPrecioNegociar(precio, item, 'más de 500 kg')  },
     { label: '🔙 Ver otros metales', secondary: true, fn: rfNodoMetalesCat },
-  ]));
+  ]);
 }
 
 async function rfNodo4FarexSinPrecio(item) {
