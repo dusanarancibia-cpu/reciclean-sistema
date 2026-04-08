@@ -88,7 +88,7 @@ async function exportBackup(){
   const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `reciclean_backup_${fecha}.json`;
+  a.download = nombreDescarga('json');
   a.click();
   URL.revokeObjectURL(a.href);
   toast('✓ Backup descargado: reciclean_backup_'+fecha+'.json','ok');
@@ -227,6 +227,7 @@ async function generarAsistente(forzar){
     const f = SUC_FACTOR[suc]||1;
     DATA[suc] = mats.map(m=>{
       const c = calc(m, f, suc);
+      if(!c.compra) return null; // v92: sin precio asignado para esta sucursal = omitir del snapshot
       return {
         id:m.id, categoria:m.cat, material:m.nombre,
         reciclean:!!m.reciclean, farex:!!m.farex,
@@ -235,7 +236,7 @@ async function generarAsistente(forzar){
         metaKgTotal:m.meta||0, metaCategoriaTotal:0,
         ivaTret:!!m.iva, flete:c.flete, margen:c.margen
       };
-    });
+    }).filter(Boolean);
   });
 
   // Fetch V24 base HTML and inject updated data
@@ -316,7 +317,7 @@ document.getElementById('json-pre').textContent = FULL_JSON.slice(0,800)+'...';
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href = url;
-  a.download = `Asistente_Comercial_V${tag}_${fecha.replace(/ /g,'_')}.html`;
+  a.download = nombreDescarga('html');
   a.click();
   URL.revokeObjectURL(url);
 

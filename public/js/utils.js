@@ -41,6 +41,20 @@ function normName(s){
     .replace(/\s+/g,' ')
     .trim();
 }
+// ── Nombre estándar para descargas: panel_YYYYMMDD_HHMM_usuario.ext ──
+function nombreDescarga(ext){
+  const sess = JSON.parse(localStorage.getItem('rf_session')||'{}');
+  const usuario = (sess.nombre||'anon').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]/g,'').slice(0,12) || 'anon';
+  const d = new Date();
+  const fecha = d.getFullYear().toString()
+    + String(d.getMonth()+1).padStart(2,'0')
+    + String(d.getDate()).padStart(2,'0');
+  const hora = String(d.getHours()).padStart(2,'0')
+    + String(d.getMinutes()).padStart(2,'0');
+  return `panel_${fecha}_${hora}_${usuario}.${ext}`;
+}
 // ── FÓRMULA — usa precio del cliente asignado a la sucursal ──
 function getPrecioCompra(m, suc){
   // 1. Precio explícitamente seleccionado para este material x sucursal
@@ -57,7 +71,7 @@ function getPrecioCompra(m, suc){
     });
     if(mejor > 0) return mejor;
   }
-  return m.compra || 0;
+  return 0; // v92: sin precio asignado para esta sucursal = no disponible
 }
 
 function calc(m, factor=1, suc=null) {
