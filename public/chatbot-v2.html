@@ -755,7 +755,36 @@ function rfShowExito(orden, tipo) {
   }
   $msgs().appendChild(el);
 
+  // Mensaje WhatsApp con resumen COMPLETO — incluye número de orden.
+  // Ya se guardó en Supabase, así que es seguro abrir WhatsApp en nueva pestaña.
+  const s       = rfS;
+  const precioFmt = s.precio ? `$${s.precio.toLocaleString('es-CL')}/kg` : 'a confirmar';
+  const modeFmt  = (s.modo_entrega === 'retiro' || s.intent === 'retiro')
+    ? `Retiro en dirección${s.direccion ? ': ' + s.direccion : ''}`
+    : `Entrega propia en sucursal ${s.sucursal}`;
+  const empresaTxt = s.nombre_empresa ? `\n🏢 Empresa: ${s.nombre_empresa} (RUT ${s.rut_empresa || '—'})` : '';
+
+  const msgWA = encodeURIComponent(
+    `✅ *Cotización ${orden}*\n\n` +
+    `Hola equipo Reciclean-Farex, confirmo mi cotización generada desde el chatbot de reciclean.cl:\n\n` +
+    `👤 ${s.nombre}\n` +
+    `🪪 RUT: ${s.rut}\n` +
+    `📱 Tel: ${s.telefono || '—'}\n` +
+    `📧 Email: ${s.email || '—'}` +
+    empresaTxt + `\n\n` +
+    `📦 Material: ${s.material}\n` +
+    `⚖️ Cantidad aprox: ${s.kg_aproximados || '—'}\n` +
+    `💰 Precio: ${precioFmt}\n` +
+    `📍 Sucursal: ${s.sucursal}\n` +
+    `🚛 ${modeFmt}\n` +
+    `📅 ${s.dia_preferido || '—'} · ${s.jornada || '—'}\n\n` +
+    `_Generado desde el chatbot de reciclean.cl_`
+  );
+
   rfShowBtns([
+    { label: '📲 Enviar confirmación por WhatsApp', primary: true, full: true, fn: () => {
+        window.open(`https://wa.me/${RF2.WHATSAPP}?text=${msgWA}`, '_blank');
+      }},
     { label: '🏠 Volver al inicio', secondary: true, full: true, fn: rfNodo1 }
   ]);
   rfScroll();
@@ -1096,42 +1125,19 @@ function rfNodoCoordinacion() {
   ]);
 }
 
-// N4-CIERRE — Envía WhatsApp de cierre y pide correo para cotización formal
+// N4-CIERRE — Confirma el acuerdo y avanza a pedir datos de contacto
+// IMPORTANTE: el WhatsApp de cierre se envía al FINAL (en rfShowExito), después
+// de guardar en Supabase. Así aunque el usuario se distraiga con WhatsApp,
+// la cotización ya quedó persistida.
 async function rfNodoCierreWhatsapp(modo) {
   rfTrack('N4-cierre');
   rfSetProgress(65);
-
   const primerNombre = (rfS.nombre || '').split(' ')[0];
-  const precioFmt    = rfS.precio ? `$${rfS.precio.toLocaleString('es-CL')}/kg` : 'a confirmar';
-  const kgFmt        = rfS.kg_aproximados || 'a confirmar';
-  const modeFmt      = (modo === 'retiro') ? 'Servicio de retiro en mi dirección' : `Entrega en sucursal ${rfS.sucursal}`;
-
-  // Mensaje WhatsApp de cierre de negocio
-  const msgWA = encodeURIComponent(
-    `✅ *Acuerdo cerrado — ${rfS.material || 'Material'}*\n\n` +
-    `Hola equipo Reciclean-Farex, cerramos un acuerdo con los siguientes datos:\n\n` +
-    `👤 Nombre: ${rfS.nombre}\n` +
-    `🪪 RUT: ${rfS.rut}\n` +
-    `📦 Material: ${rfS.material}\n` +
-    `⚖️ Cantidad aprox.: ${kgFmt}\n` +
-    `💰 Precio acordado: ${precioFmt}\n` +
-    `📍 Sucursal: ${rfS.sucursal}\n` +
-    `🚛 Modo entrega: ${modeFmt}\n\n` +
-    `Por favor enviar cotización formal a mi correo (a completar).`
-  );
 
   await rfSeq([
-    `¡Negocio cerrado, <strong>${primerNombre}</strong>! 🎉🤝<br>
-     Te generé un mensaje de confirmación para enviarnos por WhatsApp — así queda todo documentado.`,
-  ], () => {
-    rfShowBtns([
-      { label: '📲 Enviar confirmación por WhatsApp', primary: true, full: true, fn: () => {
-          window.open(`https://wa.me/${RF2.WHATSAPP}?text=${msgWA}`, '_blank');
-          rfNodoPedirCorreo(modo);
-        }},
-      { label: '➡️ Continuar sin enviar', secondary: true, full: true, fn: () => rfNodoPedirCorreo(modo) }
-    ]);
-  });
+    `¡Negocio cerrado, <strong>${primerNombre}</strong>! 🎉🤝`,
+    `Ahora solo necesito algunos datos más para dejar todo listo y mandarte la cotización formal. Son pocos pasos, te lo prometo. 😊`
+  ], () => rfNodoPedirCorreo(modo));
 }
 
 // Pide correo para cotización formal
