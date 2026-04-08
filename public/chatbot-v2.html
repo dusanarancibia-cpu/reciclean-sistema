@@ -309,6 +309,57 @@ select.rf2-input { cursor:pointer; }
   border-top:1px solid rgba(255,255,255,.06);
 }
 
+/* ═══ GRID MULTI-SELECT DE CATEGORÍAS (N3A) ═══ */
+.rf2-cat-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-bottom:10px;
+}
+.rf2-cat-btn {
+  background:rgba(255,255,255,.04);
+  border:1.5px solid rgba(255,255,255,.18);
+  border-radius:12px;
+  color:#e9edef;
+  padding:10px 8px;
+  font-size:13px;
+  font-family:inherit;
+  cursor:pointer;
+  transition:all .2s;
+  text-align:center;
+  line-height:1.3;
+}
+.rf2-cat-btn:hover { border-color:rgba(134,239,172,.5); }
+.rf2-cat-btn.rf2-cat-selected {
+  background:rgba(34,197,94,.15);
+  border-color:#22c55e;
+  color:#86efac;
+  font-weight:600;
+}
+.rf2-cat-btn.rf2-cat-full { grid-column:1/-1; }
+/* Input de kg inline en tabla de categorías Reciclean */
+.rf2-tabla-input-kg {
+  width:66px;
+  padding:4px 6px;
+  border-radius:6px;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.08);
+  color:#e9edef;
+  text-align:right;
+  font-size:14px;
+  font-family:inherit;
+}
+.rf2-tabla-input-kg:focus {
+  outline:none;
+  border-color:#22c55e;
+  background:rgba(34,197,94,.08);
+}
+.rf2-tabla-row.rf2-row-kilos {
+  cursor:default;
+  grid-template-columns:1fr auto 66px;
+}
+.rf2-tabla-row.rf2-row-kilos:hover { background:transparent; }
+
 /* ═══ MOBILE ═══ */
 @media (max-width:480px) {
   #rf2-window {
@@ -407,11 +458,12 @@ let rfS = {
   comentarios: null,
   // Para donación empresa
   requiere_cert_rep: false,
-  // Foto del material (Fase 1 · 8 abril 2026)
+  // Foto del material
   foto_url: null,           // URL pública en Supabase Storage
-  foto_codigo: null,        // código de verificación 4 dígitos
-  // Carrito multi-material (Fase 1 · 8 abril 2026)
+  foto_codigo: null,        // código de verificación 4 dígitos (solo flujo individual)
+  // Carrito multi-material
   carrito: [],              // [{label, can, emp, kg, precioLista}]
+  frecuencia: null,         // Una vez | Mensual | Semanal | Diaria
   // Métricas
   session_id: null,
   inicio: null,
@@ -1171,50 +1223,236 @@ async function rfNodo2B() {
   ]);
 }
 
-// N3A — TIPO DE MATERIAL (Reciclean/Farex)
-const MATERIALES_REC = [
-  { label:'📦 Cartón',              can:'Carton',             emp:'reciclean' },
-  { label:'📄 Papel Blanco 2',      can:'Blanco 2',           emp:'reciclean' },
-  { label:'🍶 Vidrio',              can:'Vidrio',             emp:'reciclean' },
-  { label:'♳ PET Transparente',    can:'PET Transparente',   emp:'reciclean' },
-  { label:'🧴 Polietileno Lavado',  can:'Polietileno Lavado', emp:'reciclean' },
-  { label:'🔩 Lata Chatarra',       can:'Lata Chatarra',      emp:'farex' },
-  { label:'⚙️ Aluminio UBC (latas)',can:'Aluminio UBC',       emp:'farex' },
+// N3A — SELECTOR DE CATEGORÍAS (grid multi-select)
+// Reemplaza el flujo anterior de botones planos. El cliente elige una o varias
+// categorías; al confirmar se procesan en secuencia con tablas inline de kilos.
+const CATEGORIAS_PRINCIPALES = [
+  {
+    key: 'carton', label: '📦 Cartón', emp: 'reciclean',
+    subtipos: [
+      { label: 'Cartón',       can: 'Carton'   },
+      { label: 'Papel Blanco', can: 'Blanco 2' },
+    ]
+  },
+  {
+    key: 'plasticos', label: '♳ Plásticos', emp: 'reciclean',
+    subtipos: [
+      { label: 'PET Transparente',   can: 'PET Transparente'   },
+      { label: 'Polietileno Lavado', can: 'Polietileno Lavado' },
+    ]
+  },
+  {
+    key: 'vidrio', label: '🍶 Vidrio', emp: 'reciclean',
+    subtipos: [{ label: 'Vidrio', can: 'Vidrio' }]
+  },
+  {
+    key: 'latas_aluminio', label: '🥫 Latas de aluminio', emp: 'farex',
+    farexOnly: true,
+    subtipos: [{ label: 'Aluminio UBC', can: 'Aluminio UBC' }]
+  },
+  {
+    key: 'lata_chatarra', label: '🥡 Lata chatarra', emp: 'farex',
+    farexOnly: true,
+    subtipos: [{ label: 'Lata Chatarra', can: 'Lata Chatarra' }]
+  },
+  {
+    key: 'metales', label: '⚙️ Metales', emp: 'farex',
+    farexOnly: true, submenu: true, subtipos: null
+  },
+  {
+    key: 'fierros', label: '🔩 Fierros', emp: 'farex',
+    farexOnly: true, full: true,
+    subtipos: [
+      { label: 'Fierro Corto', can: 'Fierro Corto' },
+      { label: 'Fierro Largo', can: 'Fierro Largo' },
+    ]
+  },
 ];
 
 async function rfNodo3A() {
   rfTrack('N3A');
   rfSetProgress(30);
-  await rfBotMsg('¡Buenísimo! ¿Qué material tienes para reciclar? Selecciona el que más se acerque 👇');
-  const btns = [];
-  // Opción destacada: carrito multi-material (solo si no es donación)
-  if (rfS.intent !== 'donar') {
-    btns.push({
-      label: '🧺 Tengo varios materiales juntos',
-      primary: true, full: true,
-      fn: () => rfNodoCarritoSelect()
-    });
-  }
-  // Materiales individuales
-  MATERIALES_REC.forEach(m => btns.push({
-    label: m.label,
-    fn: async () => {
-      rfS.material = m.can; rfS.empresa = m.emp;
-      rfSetProgress(40);
-      await rfBotMsg('Un segundo, consultando el precio del día... 🔎');
-      const precio = await rfGetPrecio(m.can, rfS.sucursal, m.emp);
-      rfClearActions();
-      if (precio) {
-        rfS.precio = precio;
-        rfNodo4(precio, m);
+  if (!Array.isArray(rfS.carrito)) rfS.carrito = [];
+
+  await rfBotMsg('¡Buenísimo! ¿Qué materiales tienes para reciclar? Podés elegir varios 👇');
+
+  // Filtrar categorías: Talca y Pto Montt no tienen servicio Farex
+  const esSantiago = rfS.sucursal === 'Cerrillos' || rfS.sucursal === 'Maipú';
+  const disponibles = CATEGORIAS_PRINCIPALES.filter(c => !c.farexOnly || esSantiago);
+
+  rfClearActions();
+  const blk = document.createElement('div');
+  blk.className = 'rf2-input-block';
+  blk.style.cssText = 'width:100%;padding:4px 0;';
+
+  const grid = document.createElement('div');
+  grid.className = 'rf2-cat-grid';
+
+  const seleccionadas = new Set();
+
+  disponibles.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'rf2-cat-btn' + (cat.full ? ' rf2-cat-full' : '');
+    btn.textContent = cat.label;
+    btn.onclick = () => {
+      if (seleccionadas.has(cat.key)) {
+        seleccionadas.delete(cat.key);
+        btn.classList.remove('rf2-cat-selected');
       } else {
-        rfNodo4Sin(m);
+        seleccionadas.add(cat.key);
+        btn.classList.add('rf2-cat-selected');
+      }
+      continuarBtn.disabled = seleccionadas.size === 0;
+    };
+    grid.appendChild(btn);
+  });
+  blk.appendChild(grid);
+
+  const continuarBtn = document.createElement('button');
+  continuarBtn.className = 'rf2-btn rf2-btn-primary rf2-btn-full';
+  continuarBtn.style.marginTop = '6px';
+  continuarBtn.textContent = '✅ Continuar';
+  continuarBtn.disabled = true;
+  continuarBtn.onclick = () => {
+    rfClearActions();
+    const cats = disponibles.filter(c => seleccionadas.has(c.key));
+    rfUserMsg(cats.map(c => c.label).join(', '));
+    rfS._pendingCats = [...cats];
+    rfProcesarSiguienteCategoria();
+  };
+  blk.appendChild(continuarBtn);
+
+  $msgs().appendChild(blk);
+  rfScroll();
+}
+
+// Procesa la cola de categorías pendientes una a una.
+// Cuando termina todas llama a rfNodoFrecuencia.
+function rfProcesarSiguienteCategoria() {
+  if (!rfS._pendingCats || rfS._pendingCats.length === 0) {
+    if (rfS.carrito.length === 0) {
+      rfBotMsg('Parece que no ingresaste kilos en ningún material 🙃 Intentemos de nuevo.')
+        .then(() => rfNodo3A());
+      return;
+    }
+    return rfNodoFrecuencia();
+  }
+  const cat = rfS._pendingCats.shift();
+  if (cat.submenu) {
+    rfS._metalesDesdeGrid = true;
+    rfNodoMetalesSubMenu();
+  } else {
+    rfMostrarTablaCategoria(cat);
+  }
+}
+
+// Intro breve antes del menú de familias de metales (cuando viene del grid).
+async function rfNodoMetalesSubMenu() {
+  rfTrack('N-metales-submenu');
+  rfS.empresa = 'farex';
+  rfSetProgress(38);
+  await rfBotMsg(
+    `⚙️ ¡Perfecto! En <strong>Farex ${rfS.sucursal}</strong> compramos cobres, bronces, ` +
+    `aluminios, acero inoxidable y más.<br><br>Elegí la familia y te muestro los precios del día 👇`
+  );
+  rfNodoMetalesCat();
+}
+
+// Tabla inline con precio del día + input de kg por subtipo de categoría Reciclean.
+// El usuario llena solo los materiales que tiene; deja vacío el resto.
+async function rfMostrarTablaCategoria(cat) {
+  rfTrack('N-cat-tabla');
+  rfSetProgress(35);
+
+  if (!rfS._snapshot) rfS._snapshot = await rfGetSnapshot();
+  const snap = rfS._snapshot;
+
+  const items = cat.subtipos.map(s => {
+    let precio = 0;
+    if (snap && snap[rfS.sucursal]) {
+      const term = rfNormalize(s.can);
+      const row = snap[rfS.sucursal].find(r =>
+        rfNormalize(r.material || '') === term || rfNormalize(r.nombre || '') === term
+      );
+      precio = row?.precioLista || row?.precio_lista || 0;
+    }
+    return { ...s, precio };
+  });
+
+  rfClearActions();
+  const blk = document.createElement('div');
+  blk.className = 'rf2-input-block';
+
+  const tabla = document.createElement('div');
+  tabla.className = 'rf2-tabla-precios';
+  tabla.style.marginBottom = '8px';
+
+  const hdr = document.createElement('div');
+  hdr.className = 'rf2-tabla-header';
+  hdr.innerHTML = `<span>${cat.label}</span><span class="rf2-tabla-suc">${rfEsc(rfS.sucursal)}</span>`;
+  tabla.appendChild(hdr);
+
+  const inputs = [];
+  items.forEach(it => {
+    const row = document.createElement('div');
+    row.className = 'rf2-tabla-row rf2-row-kilos';
+
+    const labelEl = document.createElement('span');
+    labelEl.className = 'rf2-tabla-label';
+    labelEl.textContent = it.label;
+
+    const precioEl = document.createElement('span');
+    precioEl.className = 'rf2-tabla-precio';
+    precioEl.textContent = it.precio > 0 ? '$' + it.precio.toLocaleString('es-CL') + '/kg' : '—';
+
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.min = '0';
+    inp.max = '99999';
+    inp.placeholder = 'kg';
+    inp.className = 'rf2-tabla-input-kg';
+
+    inputs.push({ it, inp });
+    row.appendChild(labelEl);
+    row.appendChild(precioEl);
+    row.appendChild(inp);
+    tabla.appendChild(row);
+  });
+
+  const footer = document.createElement('div');
+  footer.className = 'rf2-tabla-footer';
+  footer.textContent = 'Dejá en blanco los materiales que no tenés';
+  tabla.appendChild(footer);
+  blk.appendChild(tabla);
+
+  const btn = document.createElement('button');
+  btn.className = 'rf2-btn rf2-btn-primary rf2-btn-full';
+  btn.textContent = '✅ Agregar al carrito';
+  btn.onclick = async () => {
+    const agregados = [];
+    for (const { it, inp } of inputs) {
+      const kg = parseFloat(inp.value);
+      if (kg > 0 && kg <= 99999) {
+        const idx = rfS.carrito.findIndex(x => x.can === it.can && x.emp === cat.emp);
+        const item = { label: it.label, can: it.can, emp: cat.emp, kg, precioLista: it.precio };
+        if (idx >= 0) rfS.carrito[idx] = item;
+        else rfS.carrito.push(item);
+        agregados.push(`${it.label} (${kg} kg)`);
       }
     }
-  }));
-  btns.push({ label: '🔧 Fierros / Metales variados', fn: rfNodoMetales });
-  btns.push({ label: '🗂 Otros materiales',           secondary: true, fn: rfNodoOtros });
-  rfShowBtns(btns);
+    rfClearActions();
+    if (agregados.length > 0) {
+      rfUserMsg(agregados.join(', '));
+      await rfBotMsg(`Anotado: <strong>${agregados.join(', ')}</strong> ✅`);
+    } else {
+      rfUserMsg('Sin materiales en esta sección');
+    }
+    rfProcesarSiguienteCategoria();
+  };
+  blk.appendChild(btn);
+
+  $msgs().appendChild(blk);
+  rfScroll();
 }
 
 /* ═══ HELPERS DE NEGOCIACIÓN ═══ */
@@ -1643,7 +1881,15 @@ async function rfNodoMetalesCat() {
   }));
 
   if (tieneItems) {
-    btns.push({ label: `🧺 Ver mi cotización (${rfS.carrito.length})`, primary: true, full: true, fn: rfNodoCarritoResumen });
+    if (rfS._metalesDesdeGrid) {
+      // Viene del nuevo grid multi-select → continuar secuencia de categorías
+      btns.push({ label: '✅ Listo con metales, continuar', primary: true, full: true, fn: () => {
+        rfS._metalesDesdeGrid = false;
+        rfProcesarSiguienteCategoria();
+      }});
+    } else {
+      btns.push({ label: `🧺 Ver mi cotización (${rfS.carrito.length})`, primary: true, full: true, fn: rfNodoCarritoResumen });
+    }
   }
   btns.push({ label: '🔙 Ver otros materiales', secondary: true, fn: rfNodo3A });
   rfShowBtns(btns);
@@ -2297,62 +2543,11 @@ async function rfNodoFin() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   CARRITO MULTI-MATERIAL (Fase 1 · 8 abril 2026)
-   Permite al usuario agregar varios materiales con sus kilos y
-   obtener un precio mejorado según la suma total de kilos.
+   CARRITO MULTI-MATERIAL
+   rfNodoCarritoKilos: usado por window.rf2AddMetal (flujo metales Farex).
+   rfNodoCarritoResumen / rfMostrarOpcionesResumen / rfNodoEjecutivoFoto:
+   convergencia final de todos los flujos de venta.
 ═══════════════════════════════════════════════════════════════════ */
-
-// Lista de materiales comunes para el carrito rápido (Reciclean + latas).
-// Los metales Farex (fierros, cobres, bronces, aluminios, inox) se gestionan
-// por el flujo de tabla de precios por familia (ver rfNodoMetalesTabla).
-const CARRITO_MATERIALES = [
-  { label: '📦 Cartón',             can: 'Carton',            emp: 'reciclean' },
-  { label: '📄 Papel Blanco 2',     can: 'Blanco 2',          emp: 'reciclean' },
-  { label: '🍶 Vidrio',             can: 'Vidrio',            emp: 'reciclean' },
-  { label: '♳ PET Transparente',    can: 'PET Transparente',  emp: 'reciclean' },
-  { label: '🧴 Polietileno Lavado', can: 'Polietileno Lavado',emp: 'reciclean' },
-  { label: '🥫 Lata Chatarra',      can: 'Lata Chatarra',     emp: 'farex' },
-  { label: '⚙️ Aluminio UBC',       can: 'Aluminio UBC',      emp: 'farex' },
-];
-
-async function rfNodoCarritoSelect() {
-  rfTrack('N-carrito-select');
-  // Safety net: garantiza que rfS.carrito sea siempre un array
-  if (!Array.isArray(rfS.carrito)) rfS.carrito = [];
-  rfS.intent = rfS.intent || 'vender';
-  rfSetProgress(32);
-
-  const haySeleccion = rfS.carrito.length > 0;
-
-  // Si ya hay items en el carrito, muestra el resumen primero
-  if (haySeleccion) {
-    await rfBotMsg(rfCarritoResumenHTML(rfS.carrito));
-  }
-
-  await rfBotMsg(haySeleccion
-    ? '¿Qué otro material querés agregar? 👇'
-    : 'Perfecto. Agregá uno a uno los materiales que tienes. La suma total de kilos determina el mejor precio. 💪');
-
-  // Filtro: si es Talca o Puerto Montt, ocultar materiales Farex
-  const disponibles = CARRITO_MATERIALES.filter(m => {
-    if (m.emp === 'farex' && (rfS.sucursal === 'Talca' || rfS.ciudad === 'Puerto Montt')) return false;
-    return true;
-  });
-
-  const btns = disponibles.map(m => ({
-    label: m.label,
-    fn: () => rfNodoCarritoKilos(m)
-  }));
-
-  // Botones de acción
-  if (rfS.carrito && rfS.carrito.length > 0) {
-    btns.push({ label: '✅ Listo, cotizar con estos',   primary: true, full: true, fn: rfNodoCarritoResumen });
-    btns.push({ label: '🔄 Empezar de nuevo',           secondary: true, fn: () => { rfS.carrito = []; rfNodo3A(); }});
-  } else {
-    btns.push({ label: '🔙 Volver a un solo material', secondary: true, fn: rfNodo3A });
-  }
-  rfShowBtns(btns);
-}
 
 async function rfNodoCarritoKilos(mat) {
   rfTrack('N-carrito-kilos');
@@ -2390,11 +2585,11 @@ async function rfNodoCarritoKilos(mat) {
       rfClearActions();
       await rfBotMsg(`Agregado: <strong>${mat.label}</strong> — ${kg} kg ✅`);
       // Vuelve al origen del que vino el material para que la UX sea coherente:
-      // tabla de metales → menú de familias; carrito genérico → menú Reciclean.
+      // tabla de metales → menú de familias; cualquier otro → selector principal.
       if (mat.origen === 'metales') {
         rfNodoMetalesCat();
       } else {
-        rfNodoCarritoSelect();
+        rfNodo3A();
       }
     }
   });
@@ -2406,80 +2601,73 @@ async function rfNodoCarritoResumen() {
   rfSetProgress(40);
 
   if (rfS.carrito.length === 0) {
-    await rfBotMsg('No hay materiales en el carrito 😅');
-    return rfNodoCarritoSelect();
+    await rfBotMsg('No hay materiales registrados 😅');
+    return rfNodo3A();
   }
 
   await rfBotMsg(rfCarritoResumenHTML(rfS.carrito));
 
   const kgTotal = rfCarritoTotalKg(rfS.carrito);
-  const tramo   = rfTramoPorKilos(kgTotal);
-  const hayMetales = rfS.carrito.some(it => it.emp === 'farex');
+  const { total } = rfCarritoTotalValor(rfS.carrito);
 
-  // Setea los campos principales de rfS para que el flujo posterior funcione
+  // Setea los campos principales de rfS para el flujo posterior
   rfS.material = rfS.carrito.map(it => `${it.label} (${it.kg}kg)`).join(', ');
   rfS.kg_aproximados = `${kgTotal} kg (multi-material)`;
-  rfS.empresa  = hayMetales ? 'farex' : 'reciclean';
-  // Precio "promedio ponderado" a precio lista solo para persistencia
-  const { total } = rfCarritoTotalValor(rfS.carrito);
+  rfS.empresa  = rfS.carrito.some(it => it.emp === 'farex') ? 'farex' : 'reciclean';
   rfS.precio_lista = Math.round(total / Math.max(kgTotal, 1));
   rfS.precio       = rfS.precio_lista;
 
-  // Genera código de verificación si no existe
-  if (!rfS.foto_codigo) rfS.foto_codigo = rfGenerarCodigoVerif();
-
-  // Mensaje de transición: honesto, sin prometer multiplicador automático.
-  // El precio final lo acuerda Farex al pesar.
-  const sig = rfFaltanParaSiguienteTramo(kgTotal);
-  let intro;
-  if (hayMetales) {
-    intro = sig
-      ? `¡Buenísimo! 🙌 Tenés <strong>${kgTotal} kg</strong> registrados (tramo ${tramo}). Te recuerdo: si juntás <strong>${sig.faltan} kg más</strong> y mantenés la preferencia, al momento del pesaje el equipo de Farex te puede dar un mejor precio. 💪`
-      : `¡Excelente! 🙌 Tenés <strong>${kgTotal} kg</strong> en total — estás en el tramo más alto. Al momento del pesaje el equipo de Farex te ofrecerá el mejor precio.`;
-  } else {
-    intro = `¡Excelente! 🙌 Tenés <strong>${kgTotal} kg</strong> en total. La suma de kilos ayuda al equipo a darte el mejor precio al momento de pesar. 💪`;
-  }
-
-  await rfSeq([
-    intro,
-    `Antes de continuar, <strong>envíame una foto</strong> donde se vean todos los materiales juntos 📸<br><br>La foto debe mostrar:<br><br>1️⃣ <strong>Todos los materiales visibles</strong> en el mismo cuadro<br><br>2️⃣ <strong>Un objeto de tamaño conocido</strong> al lado (un <strong>casco</strong>, una <strong>botella 2L</strong>, un <strong>zapato</strong> o una <strong>hoja A4</strong>)<br><br>3️⃣ <strong>Un papel con este código escrito a mano:</strong><div style="background:#22c55e;color:#0b141a;padding:12px 16px;margin:10px 0;border-radius:12px;text-align:center;font-size:32px;font-weight:800;letter-spacing:6px;font-family:monospace">${rfS.foto_codigo}</div><span class="rf2-note">Código único de esta cotización.</span>`
-  ], () => rfNodoCarritoFoto());
+  // Pregunta frecuencia antes de mostrar las opciones de cierre
+  await rfBotMsg('¿Con qué frecuencia podés vendernos estos materiales?');
+  rfShowBtns([
+    { label: '1️⃣ Solo una vez', fn: async () => { rfS.frecuencia = 'Una vez';  await rfMostrarOpcionesResumen(); } },
+    { label: '📅 Mensual',      fn: async () => { rfS.frecuencia = 'Mensual';  await rfMostrarOpcionesResumen(); } },
+    { label: '🗓️ Semanal',     fn: async () => { rfS.frecuencia = 'Semanal';  await rfMostrarOpcionesResumen(); } },
+    { label: '🔥 Diaria',      fn: async () => { rfS.frecuencia = 'Diaria';   await rfMostrarOpcionesResumen(); } },
+  ]);
 }
 
-async function rfNodoCarritoFoto() {
-  rfTrack('N-carrito-foto');
+// Muestra el mensaje de upsell genérico y los 3 botones de cierre.
+async function rfMostrarOpcionesResumen() {
   rfSetProgress(50);
+  await rfBotMsg(
+    '💡 Si aumentás los kilos podemos evaluar un precio especial para vos. ¿Cómo querés seguir?'
+  );
+  rfShowBtns([
+    { label: '✅ Sí, cerramos trato',   primary: true,    fn: rfNodoAcuerdo       },
+    { label: '💬 Hablar con ejecutivo',              fn: rfNodoEjecutivoFoto  },
+    { label: '✏️ Corregir datos',       secondary: true,  fn: rfNodo3A            },
+  ]);
+}
+
+// Pide foto simple (sin código ni objeto de referencia) antes de derivar al ejecutivo.
+async function rfNodoEjecutivoFoto() {
+  rfTrack('N-ejecutivo-foto');
+  rfSetProgress(55);
+  await rfBotMsg(
+    '¡Perfecto! Para que nuestro equipo te prepare la mejor oferta, ¿podés mandarme una foto del material? 📸' +
+    '<br><span class="rf2-note">Es opcional pero nos ayuda mucho.</span>'
+  );
   rfShowFileInput({
-    label: '📸 Tomar foto de todos los materiales',
+    label: '📸 Tomar foto del material',
     accept: 'image/*',
     capture: 'environment',
     skipLabel: '⏭ Continuar sin foto',
     onSelect: async (file) => {
       rfUserMsg('📸 Foto enviada');
-      await rfBotMsg('Subiendo foto... 📤');
+      await rfBotMsg('Recibida, subiéndola... 📤');
       try {
         const url = await rfSubirFotoStorage(file, rfS.session_id);
         rfS.foto_url = url;
-        await rfBotMsg('¡Foto guardada! ✅<br>Nuestro equipo la revisará para confirmar el volumen al momento de pesar.');
+        await rfBotMsg('¡Foto guardada! ✅ El equipo la revisará antes de contactarte.');
       } catch(e) {
-        console.error('[RF2] upload carrito foto:', e.message);
+        console.error('[RF2] ejecutivo foto upload:', e.message);
         await rfBotMsg('No pude subir la foto 😕 pero seguimos igual.');
       }
-      rfNodoCarritoConfirmar();
+      rfNodoDatosContacto();
     },
-    onSkip: () => rfNodoCarritoConfirmar()
+    onSkip: () => rfNodoDatosContacto()
   });
-}
-
-async function rfNodoCarritoConfirmar() {
-  rfTrack('N-carrito-confirmar');
-  rfSetProgress(55);
-  await rfBotMsg('¡Perfecto! 🤝 ¿Cerramos el negocio y seguimos con tus datos?');
-  rfShowBtns([
-    { label: '✅ Sí, cerramos trato', primary: true, fn: rfNodoAcuerdo },
-    { label: '🚛 Prefiero que vengan a buscar', fn: () => { rfS.intent='retiro'; rfNodoRetiro(); }},
-    { label: '🤔 Necesito pensarlo', secondary: true, fn: rfNodoMeditar },
-  ]);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
