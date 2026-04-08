@@ -397,14 +397,20 @@ async function rfGetSnapshot() {
   }
 }
 
+// Normaliza texto: minúsculas + sin tildes + sin espacios extra
+function rfNormalize(s) {
+  return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+}
+
 async function rfGetPrecio(material, sucursal, empresa) {
   if (!rfS._snapshot) rfS._snapshot = await rfGetSnapshot();
   const snap = rfS._snapshot;
   if (!snap || !snap[sucursal]) return null;
   const items = snap[sucursal];
+  const term = rfNormalize(material);
   const item = items.find(i =>
-    i.material?.toLowerCase() === material?.toLowerCase() ||
-    i.nombre?.toLowerCase() === material?.toLowerCase()
+    rfNormalize(i.material) === term ||
+    rfNormalize(i.nombre)   === term
   );
   return item?.precioLista || item?.precio_lista || null;
 }
@@ -1167,14 +1173,122 @@ async function rfNodo4Sin(mat) {
 }
 
 // Metales Farex (lista dinámica)
+// ═══ METALES FAREX — categorías y materiales ═══
+const METALES_CATS = [
+  { label: '🔩 Fierros y Chatarra', items: [
+    { label: 'Fierro Corto',   can: 'Fierro Corto'   },
+    { label: 'Fierro Largo',   can: 'Fierro Largo'   },
+    { label: 'Fierro Mixto',   can: 'Fierro Mixto'   },
+    { label: 'Lata Chatarra',  can: 'Lata Chatarra'  },
+    { label: 'Fierro Fundido', can: 'Fierro Fundido'  },
+  ]},
+  { label: '🥉 Cobres', items: [
+    { label: 'Cobre 1 Tubo',    can: 'Cobre 1 Tubo'    },
+    { label: 'Cobre 3ra',       can: 'Cobre 3ra'       },
+    { label: 'Cobre Esmaltado', can: 'Cobre Esmaltado' },
+    { label: 'Cobre Calefón',   can: 'Cobre Calefón'   },
+    { label: 'Cobre Radiador',  can: 'Cobre Radiador'  },
+  ]},
+  { label: '🥈 Bronces', items: [
+    { label: 'Bronce Amarillo',    can: 'Bronce Amarillo'    },
+    { label: 'Bronce Colorado',    can: 'Bronce Colorado'    },
+    { label: 'Bronce Contaminado', can: 'Bronce Contaminado' },
+  ]},
+  { label: '✨ Aluminios', items: [
+    { label: 'Aluminio Perfil A', can: 'Aluminio Perfil A' },
+    { label: 'Aluminio Perfil B', can: 'Aluminio Perfil B' },
+    { label: 'Aluminio Duro',     can: 'Aluminio Duro'     },
+    { label: 'Aluminio Blando',   can: 'Aluminio Blando'   },
+    { label: 'Aluminio UBC',      can: 'Aluminio UBC'      },
+  ]},
+  { label: '⚙️ Acero Inoxidable y otros', items: [
+    { label: 'Acero Inox. 304', can: 'Acero Inoxidable 304' },
+    { label: 'Acero Inox. 201', can: 'Acero Inox. SS 201'   },
+    { label: 'Plomo',           can: 'Plomo'                },
+    { label: 'Zinc / Ánodos',   can: 'Zinc Anodos'          },
+  ]},
+];
+
 async function rfNodoMetales() {
   rfTrack('N-metales'); rfS.empresa = 'farex';
   rfSetProgress(35);
-  await rfBotMsg('🔩 <strong>Fierros y Metales (Farex)</strong><br>Compramos:<br>• Fierro corto/largo/mixto<br>• Cobre (1°, pelillo, esmaltado, calefón...)<br>• Bronce, Aluminio, Acero Inoxidable<br>• Lata chatarra<br><br>Los precios varían según tipo y calidad. ¿Quieres continuar?');
-  rfShowBtns([
-    { label: '✅ Sí, quiero cotizar', fn: () => { rfS.material='Metales varios'; rfS.precio=null; rfNodoDatos(); }},
-    { label: '🔙 Ver otros',         secondary: true, fn: rfNodo3A }
-  ]);
+
+  // Farex solo opera en Cerrillos y Maipú — Talca y Puerto Montt no tienen servicio de metales
+  if (rfS.sucursal === 'Talca' || rfS.ciudad === 'Puerto Montt') {
+    await rfBotMsg(`¡Gracias por consultarnos! 😊 La compra de metales, fierros y chatarras la realizamos a través de <strong>Farex</strong>, que por ahora opera solo en <strong>Santiago</strong> (Cerrillos y Maipú).<br><br>En ${rfS.sucursal || 'tu ciudad'} no contamos con ese servicio todavía. Si tienes otro material reciclable como cartón, plástico o vidrio, con mucho gusto te cotizamos acá. 💚`);
+    rfShowBtns([
+      { label: '♻️ Ver otros materiales', primary: true, fn: rfNodo3A },
+      { label: '🏠 Volver al inicio',     secondary: true, fn: rfNodo1 },
+    ]);
+    return;
+  }
+  rfNodoMetalesCat();
+}
+
+async function rfNodoMetalesCat() {
+  rfSetProgress(40);
+  await rfBotMsg(`💪 ¡Perfecto! En <strong>Farex ${rfS.sucursal}</strong> compramos todo tipo de metales y chatarra. Los precios que verás son los mismos que publicamos en <strong style="color:#86efac">farex.cl</strong> — actualizados al día de hoy.<br><br>¿Qué tipo de metal tienes?`);
+  const btns = METALES_CATS.map(cat => ({
+    label: cat.label,
+    fn: () => rfNodoMetalesItems(cat)
+  }));
+  btns.push({ label: '🔙 Ver otros materiales', secondary: true, fn: rfNodo3A });
+  rfShowBtns(btns);
+}
+
+async function rfNodoMetalesItems(cat) {
+  rfSetProgress(45);
+  await rfBotMsg(`Dentro de <strong>${cat.label}</strong>, estos son los materiales que recibimos en <strong>${rfS.sucursal}</strong>. ¿Cuál es el tuyo? 👇`);
+  const btns = cat.items.map(item => ({
+    label: item.label,
+    fn: async () => {
+      rfS.material = item.can; rfS.empresa = 'farex';
+      rfSetProgress(50);
+      await rfBotMsg('Un momento, consulto el precio del día en Farex... 🔎');
+      const precio = await rfGetPrecio(item.can, rfS.sucursal, 'farex');
+      rfClearActions();
+      if (precio && precio > 0) {
+        rfS.precio = precio;
+        rfNodo4Farex(precio, item);
+      } else {
+        rfNodo4FarexSinPrecio(item);
+      }
+    }
+  }));
+  btns.push({ label: '🔙 Cambiar categoría', secondary: true, fn: rfNodoMetalesCat });
+  rfShowBtns(btns);
+}
+
+async function rfNodo4Farex(precio, item) {
+  rfTrack('N4-farex');
+  const precioFmt    = '$' + precio.toLocaleString('es-CL');
+  const precioMax    = rfPrecioMaximo(precio);
+  const precioMaxFmt = '$' + precioMax.toLocaleString('es-CL');
+  await rfSeq([
+    `¡Listo! 🙌 El precio de <strong>${item.label}</strong> en <strong>Farex ${rfS.sucursal}</strong> es:<br><span class="rf2-price-big">${precioFmt} / kg</span><span class="rf2-note">Precio lista publicado en farex.cl · Retención IVA 19% · Pago al contado · Puedes recibir hasta ${precioMaxFmt}/kg según volumen</span>`,
+    `Dependiendo de cuánto tengas, podemos ajustar el precio. ¿Cuántos kilos aproximados son?`
+  ], () => rfShowBtns([
+    { label: 'Menos de 50 kg',     fn: () => rfNodoPrecioNegociar(precio, item, 'menos de 10 kg') },
+    { label: '50 – 500 kg',        fn: () => rfNodoPrecioNegociar(precio, item, '50–200 kg')      },
+    { label: '500 kg – 2 ton',     fn: () => rfNodoPrecioNegociar(precio, item, '200–500 kg')     },
+    { label: 'Más de 2 toneladas', fn: () => rfNodoPrecioNegociar(precio, item, 'más de 500 kg')  },
+    { label: '🔙 Ver otros metales', secondary: true, fn: rfNodoMetalesCat },
+  ]));
+}
+
+async function rfNodo4FarexSinPrecio(item) {
+  rfTrack('N4-farex-sin-precio');
+  await rfSeq([
+    `El precio de <strong>${item.label}</strong> depende mucho de la calidad y el estado del material, por eso nuestro equipo prefiere verlo antes de darte un número. 🧐`,
+    `No te preocupes — es rápido. ¿Quieres que alguien de <strong>Farex ${rfS.sucursal}</strong> te contacte hoy para coordinar?`
+  ], () => rfShowBtns([
+    { label: '✅ Sí, que me contacten', primary: true, fn: () => { rfS.intent = rfS.intent || 'vender'; rfNodoDatos(); }},
+    { label: '💬 Prefiero escribir por WhatsApp', fn: () => {
+      const m = encodeURIComponent(`Hola, quiero consultar el precio de ${item.label} en Farex ${rfS.sucursal}.`);
+      window.open(`https://wa.me/${RF2.WHATSAPP}?text=${m}`, '_blank');
+    }},
+    { label: '🔙 Ver otros metales', secondary: true, fn: rfNodoMetalesCat },
+  ]));
 }
 
 // Otros materiales
