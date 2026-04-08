@@ -2369,11 +2369,15 @@ function rfOnOpen() {
   // Inicializar sesión nueva
   rfS = Object.assign({}, {
     intent:null, ciudad:null, sucursal:null, material:null, empresa:null,
-    precio:null, modo_entrega:null, tipo_cliente:null, nombre:null, rut:null,
+    precio:null, precio_lista:null, modo_entrega:null, tipo_cliente:null,
+    nombre:null, rut:null,
     email:null, telefono:null, nombre_empresa:null, rut_empresa:null, cargo:null,
     kg_aproximados:null, dia_preferido:null, jornada:null, direccion:null,
     link_maps:null, tipo_camion:null, grua_horquilla:null, comentarios:null,
-    requiere_cert_rep:false, session_id: generarSession(), inicio: Date.now(),
+    requiere_cert_rep:false,
+    // Fase 1 · 8 abril 2026 — foto y carrito multi-material
+    foto_url:null, foto_codigo:null, carrito:[],
+    session_id: generarSession(), inicio: Date.now(),
     nodos:[], numero_orden:null, estado_envio:null, _snapshot: rfS._snapshot
   });
 
