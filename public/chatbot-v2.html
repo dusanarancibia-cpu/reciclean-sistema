@@ -636,7 +636,8 @@ function rfGenerarResumenTexto() {
   if (s.nombre_empresa) txt += `Empresa: ${s.nombre_empresa} | RUT emp: ${s.rut_empresa}\n`;
   txt += `Sucursal: ${s.sucursal}\n`;
 
-  // Si hay carrito (multi-material o metales) detallamos cada ítem.
+  // Si hay carrito (multi-material o metales) detallamos cada ítem a precio lista.
+  // El precio ejecutivo final se acuerda al momento del pesaje.
   const carrito = Array.isArray(s.carrito) ? s.carrito : [];
   if (carrito.length > 0) {
     const { kgTotal, tramo, total } = rfCarritoTotalValor(carrito);
@@ -644,15 +645,14 @@ function rfGenerarResumenTexto() {
     txt += `Materiales (${carrito.length}):\n`;
     carrito.forEach(it => {
       if (hayMetales && it.precioLista > 0) {
-        const precioEjec = rfPrecioEjecutivo(it.precioLista, tramo);
-        const subtotal  = precioEjec * (parseFloat(it.kg) || 0);
-        txt += `  - ${it.label}: ${it.kg} kg × $${precioEjec.toLocaleString('es-CL')}/kg = $${subtotal.toLocaleString('es-CL')}\n`;
+        const subtotal = it.precioLista * (parseFloat(it.kg) || 0);
+        txt += `  - ${it.label}: ${it.kg} kg × $${it.precioLista.toLocaleString('es-CL')}/kg (lista) = $${subtotal.toLocaleString('es-CL')}\n`;
       } else {
         txt += `  - ${it.label}: ${it.kg} kg\n`;
       }
     });
     txt += `Total: ${kgTotal} kg (tramo ${tramo})`;
-    if (hayMetales && total > 0) txt += ` ≈ $${total.toLocaleString('es-CL')}`;
+    if (hayMetales && total > 0) txt += ` ≈ $${total.toLocaleString('es-CL')} (precio lista)`;
     txt += `\n`;
   } else {
     txt += `Material: ${s.material} | Precio: $${(s.precio||0).toLocaleString('es-CL')}/kg | Kg aprox: ${s.kg_aproximados}\n`;
@@ -1260,23 +1260,37 @@ function rfCarritoTotalKg(carrito) {
   return (carrito || []).reduce((sum, it) => sum + (parseFloat(it.kg) || 0), 0);
 }
 
-// Calcula el valor total del carrito usando el tramo de la suma
-// Se usa SOLO para el WhatsApp interno — el cliente no ve los precios individuales
+// Calcula el valor total del carrito a PRECIO LISTA (sin multiplicador).
+// El precio ejecutivo se acuerda al momento del pesaje, no en el chat —
+// el chatbot solo informa precio lista oficial farex.cl y el aproximado.
 function rfCarritoTotalValor(carrito) {
   const kgTotal = rfCarritoTotalKg(carrito);
   const tramo   = rfTramoPorKilos(kgTotal);
   let total = 0;
   (carrito || []).forEach(it => {
-    const precio = rfPrecioEjecutivo(it.precioLista || 0, tramo);
+    const precio = it.precioLista || 0;
     total += precio * (parseFloat(it.kg) || 0);
   });
   return { total, tramo, kgTotal };
 }
 
+// Si los kilos totales no llegan al tope (más de 500), devuelve cuántos kg
+// faltan para alcanzar el siguiente umbral y el nombre del próximo tramo.
+// Devuelve null si ya está en el tramo más alto.
+function rfFaltanParaSiguienteTramo(kgTotal) {
+  const umbrales = [10, 50, 200, 500];
+  for (const u of umbrales) {
+    if (kgTotal < u) {
+      return { faltan: u - kgTotal, siguienteTramo: rfTramoPorKilos(u) };
+    }
+  }
+  return null;
+}
+
 // Devuelve un resumen del carrito en HTML para mostrar en el chat.
-// Si el carrito contiene metales Farex, muestra precios y subtotal por ítem
-// (los precios son públicos en farex.cl). Para materiales Reciclean se mantienen
-// ocultos hasta la negociación final (política "precios ocultos" del carrito v1).
+// Si el carrito contiene metales Farex, muestra el precio lista oficial y el
+// aproximado a precio lista. Para Reciclean los precios siguen ocultos hasta
+// la negociación final.
 function rfCarritoResumenHTML(carrito) {
   if (!carrito || !carrito.length) return '<em>Carrito vacío</em>';
   const { kgTotal, tramo, total } = rfCarritoTotalValor(carrito);
@@ -1286,16 +1300,16 @@ function rfCarritoResumenHTML(carrito) {
   let html = '<div style="background:#0f1b22;border:1px solid rgba(134,239,172,.3);border-radius:12px;padding:12px;margin:6px 0">';
   html += '<div style="color:#86efac;font-weight:700;margin-bottom:8px">📋 Tu cotización</div>';
   carrito.forEach((it) => {
-    const precioEjec = rfPrecioEjecutivo(it.precioLista || 0, tramo);
-    const subtotal = precioEjec * (parseFloat(it.kg) || 0);
-    if (mostrarPrecios && it.precioLista > 0) {
+    const precioLista = it.precioLista || 0;
+    const subtotal = precioLista * (parseFloat(it.kg) || 0);
+    if (mostrarPrecios && precioLista > 0) {
       html += `<div style="padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.08);font-size:13px">
                  <div style="display:flex;justify-content:space-between;align-items:center">
                    <span>${rfEsc(it.label)}</span>
                    <span style="color:#86efac;font-weight:600">${it.kg} kg</span>
                  </div>
                  <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(233,237,239,.65);margin-top:2px">
-                   <span>$${precioEjec.toLocaleString('es-CL')}/kg</span>
+                   <span>$${precioLista.toLocaleString('es-CL')}/kg</span>
                    <span>$${subtotal.toLocaleString('es-CL')}</span>
                  </div>
                </div>`;
@@ -1312,11 +1326,26 @@ function rfCarritoResumenHTML(carrito) {
            </div>`;
   if (mostrarPrecios && total > 0) {
     html += `<div style="display:flex;justify-content:space-between;margin-top:4px;font-weight:800">
-               <span style="color:#fbbf24">Aprox a pagar:</span>
+               <span style="color:#fbbf24">Aprox a precio lista:</span>
                <span style="color:#fbbf24;font-size:17px">$${total.toLocaleString('es-CL')}</span>
              </div>`;
   }
-  html += `<div style="text-align:center;margin-top:6px;color:#fbbf24;font-size:11px">🎯 Tramo por volumen total: <strong>${tramo}</strong>${mostrarPrecios ? ' · Precios oficiales farex.cl' : ''}</div>`;
+  html += `<div style="text-align:center;margin-top:6px;color:#fbbf24;font-size:11px">🎯 Volumen total: <strong>${kgTotal} kg</strong> · tramo <strong>${tramo}</strong>${mostrarPrecios ? ' · Precios oficiales farex.cl' : ''}</div>`;
+
+  // Mensaje de upsell honesto: si no está en el tope, sugerir agregar más kilos
+  // para acceder a un mejor precio al momento del pesaje (no calculamos cuánto).
+  if (mostrarPrecios) {
+    const sig = rfFaltanParaSiguienteTramo(kgTotal);
+    if (sig) {
+      html += `<div style="margin-top:10px;padding:9px 11px;background:rgba(34,197,94,.12);border-left:3px solid #22c55e;border-radius:6px;font-size:12px;color:#d1fae5;line-height:1.4">
+        💡 <strong>Tip:</strong> con <strong>${sig.faltan} kg más</strong> alcanzás el tramo <strong>${sig.siguienteTramo}</strong>. Si juntás más material y mantenés la preferencia, al momento del pesaje el equipo de Farex te puede dar un mejor precio. 💪
+      </div>`;
+    } else {
+      html += `<div style="margin-top:10px;padding:9px 11px;background:rgba(251,191,36,.12);border-left:3px solid #fbbf24;border-radius:6px;font-size:12px;color:#fef3c7;line-height:1.4">
+        🏆 <strong>¡Gran volumen!</strong> Estás en el tramo más alto. El equipo de Farex te ofrecerá el mejor precio al momento del pesaje.
+      </div>`;
+    }
+  }
   html += '</div>';
   return html;
 }
@@ -1786,23 +1815,23 @@ async function rfNodoResumenFinal() {
   ];
 
   // Si hay carrito (multi-material o metales), detallamos cada ítem.
-  // Para metales (Farex) mostramos el precio por kg + subtotal aproximado.
+  // Para metales (Farex) mostramos precio LISTA + subtotal a precio lista.
+  // El precio ejecutivo final se acuerda al momento del pesaje.
   const carrito = Array.isArray(rfS.carrito) ? rfS.carrito : [];
   if (carrito.length > 0) {
     const { kgTotal, tramo, total } = rfCarritoTotalValor(carrito);
     const hayMetales = carrito.some(it => it.emp === 'farex');
     carrito.forEach(it => {
       if (hayMetales && it.precioLista > 0) {
-        const precioEjec = rfPrecioEjecutivo(it.precioLista, tramo);
-        const subtotal = precioEjec * (parseFloat(it.kg) || 0);
-        filas.push([it.label, `${it.kg} kg · $${precioEjec.toLocaleString('es-CL')}/kg = $${subtotal.toLocaleString('es-CL')}`]);
+        const subtotal = it.precioLista * (parseFloat(it.kg) || 0);
+        filas.push([it.label, `${it.kg} kg · $${it.precioLista.toLocaleString('es-CL')}/kg = $${subtotal.toLocaleString('es-CL')}`]);
       } else {
         filas.push([it.label, `${it.kg} kg`]);
       }
     });
     filas.push(['Total kg', `${kgTotal} kg (tramo ${tramo})`]);
     if (hayMetales && total > 0) {
-      filas.push(['Aprox. a pagar', `$${total.toLocaleString('es-CL')}`]);
+      filas.push(['Aprox. a precio lista', `$${total.toLocaleString('es-CL')}`]);
     }
   } else {
     filas.push(['Material', rfS.material]);
@@ -2385,12 +2414,13 @@ async function rfNodoCarritoResumen() {
 
   const kgTotal = rfCarritoTotalKg(rfS.carrito);
   const tramo   = rfTramoPorKilos(kgTotal);
+  const hayMetales = rfS.carrito.some(it => it.emp === 'farex');
 
   // Setea los campos principales de rfS para que el flujo posterior funcione
   rfS.material = rfS.carrito.map(it => `${it.label} (${it.kg}kg)`).join(', ');
   rfS.kg_aproximados = `${kgTotal} kg (multi-material)`;
-  rfS.empresa  = rfS.carrito.some(it => it.emp === 'farex') ? 'farex' : 'reciclean';
-  // Precio "promedio ponderado" solo para persistencia (no se muestra)
+  rfS.empresa  = hayMetales ? 'farex' : 'reciclean';
+  // Precio "promedio ponderado" a precio lista solo para persistencia
   const { total } = rfCarritoTotalValor(rfS.carrito);
   rfS.precio_lista = Math.round(total / Math.max(kgTotal, 1));
   rfS.precio       = rfS.precio_lista;
@@ -2398,8 +2428,20 @@ async function rfNodoCarritoResumen() {
   // Genera código de verificación si no existe
   if (!rfS.foto_codigo) rfS.foto_codigo = rfGenerarCodigoVerif();
 
+  // Mensaje de transición: honesto, sin prometer multiplicador automático.
+  // El precio final lo acuerda Farex al pesar.
+  const sig = rfFaltanParaSiguienteTramo(kgTotal);
+  let intro;
+  if (hayMetales) {
+    intro = sig
+      ? `¡Buenísimo! 🙌 Tenés <strong>${kgTotal} kg</strong> registrados (tramo ${tramo}). Te recuerdo: si juntás <strong>${sig.faltan} kg más</strong> y mantenés la preferencia, al momento del pesaje el equipo de Farex te puede dar un mejor precio. 💪`
+      : `¡Excelente! 🙌 Tenés <strong>${kgTotal} kg</strong> en total — estás en el tramo más alto. Al momento del pesaje el equipo de Farex te ofrecerá el mejor precio.`;
+  } else {
+    intro = `¡Excelente! 🙌 Tenés <strong>${kgTotal} kg</strong> en total. La suma de kilos ayuda al equipo a darte el mejor precio al momento de pesar. 💪`;
+  }
+
   await rfSeq([
-    `¡Excelente! 🙌 Con <strong>${kgTotal} kg</strong> en total, tu cotización cae en el tramo <strong>${tramo}</strong> — eso mejora el precio para todos los materiales. 💪`,
+    intro,
     `Antes de continuar, <strong>envíame una foto</strong> donde se vean todos los materiales juntos 📸<br><br>La foto debe mostrar:<br><br>1️⃣ <strong>Todos los materiales visibles</strong> en el mismo cuadro<br><br>2️⃣ <strong>Un objeto de tamaño conocido</strong> al lado (un <strong>casco</strong>, una <strong>botella 2L</strong>, un <strong>zapato</strong> o una <strong>hoja A4</strong>)<br><br>3️⃣ <strong>Un papel con este código escrito a mano:</strong><div style="background:#22c55e;color:#0b141a;padding:12px 16px;margin:10px 0;border-radius:12px;text-align:center;font-size:32px;font-weight:800;letter-spacing:6px;font-family:monospace">${rfS.foto_codigo}</div><span class="rf2-note">Código único de esta cotización.</span>`
   ], () => rfNodoCarritoFoto());
 }
