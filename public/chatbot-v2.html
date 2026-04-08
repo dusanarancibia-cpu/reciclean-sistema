@@ -2123,15 +2123,19 @@ const CARRITO_MATERIALES = [
 
 async function rfNodoCarritoSelect() {
   rfTrack('N-carrito-select');
+  // Safety net: garantiza que rfS.carrito sea siempre un array
+  if (!Array.isArray(rfS.carrito)) rfS.carrito = [];
   rfS.intent = rfS.intent || 'vender';
   rfSetProgress(32);
 
+  const haySeleccion = rfS.carrito.length > 0;
+
   // Si ya hay items en el carrito, muestra el resumen primero
-  if (rfS.carrito && rfS.carrito.length > 0) {
+  if (haySeleccion) {
     await rfBotMsg(rfCarritoResumenHTML(rfS.carrito));
   }
 
-  await rfBotMsg(rfS.carrito.length > 0
+  await rfBotMsg(haySeleccion
     ? '¿Qué otro material querés agregar? 👇'
     : 'Perfecto. Agregá uno a uno los materiales que tienes. La suma total de kilos determina el mejor precio. 💪');
 
@@ -2158,6 +2162,7 @@ async function rfNodoCarritoSelect() {
 
 async function rfNodoCarritoKilos(mat) {
   rfTrack('N-carrito-kilos');
+  if (!Array.isArray(rfS.carrito)) rfS.carrito = [];
   rfSetProgress(35);
   await rfBotMsg(`¿Cuántos kilos aproximados de <strong>${mat.label}</strong> tienes?<br><span class="rf2-note">Escribe solo el número, ej: 30</span>`);
   rfShowInput({
@@ -2190,9 +2195,10 @@ async function rfNodoCarritoKilos(mat) {
 
 async function rfNodoCarritoResumen() {
   rfTrack('N-carrito-resumen');
+  if (!Array.isArray(rfS.carrito)) rfS.carrito = [];
   rfSetProgress(40);
 
-  if (!rfS.carrito || rfS.carrito.length === 0) {
+  if (rfS.carrito.length === 0) {
     await rfBotMsg('No hay materiales en el carrito 😅');
     return rfNodoCarritoSelect();
   }
