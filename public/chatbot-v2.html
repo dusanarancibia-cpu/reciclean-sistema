@@ -325,6 +325,8 @@ let rfS = {
   // Foto del material (Fase 1 · 8 abril 2026)
   foto_url: null,           // URL pública en Supabase Storage
   foto_codigo: null,        // código de verificación 4 dígitos
+  // Carrito multi-material (Fase 1 · 8 abril 2026)
+  carrito: [],              // [{label, can, emp, kg, precioLista}]
   // Métricas
   session_id: null,
   inicio: null,
@@ -866,11 +868,29 @@ function rfShowExito(orden, tipo) {
   // Mensaje WhatsApp con resumen COMPLETO — incluye número de orden.
   // Ya se guardó en Supabase, así que es seguro abrir WhatsApp en nueva pestaña.
   const s       = rfS;
-  const precioFmt = s.precio ? `$${s.precio.toLocaleString('es-CL')}/kg` : 'a confirmar';
-  const modeFmt  = (s.modo_entrega === 'retiro' || s.intent === 'retiro')
+  const esMulti = s.carrito && s.carrito.length > 0;
+  const modeFmt = (s.modo_entrega === 'retiro' || s.intent === 'retiro')
     ? `Retiro en dirección${s.direccion ? ': ' + s.direccion : ''}`
     : `Entrega propia en sucursal ${s.sucursal}`;
   const empresaTxt = s.nombre_empresa ? `\n🏢 Empresa: ${s.nombre_empresa} (RUT ${s.rut_empresa || '—'})` : '';
+  const fotoTxt    = s.foto_url ? `\n📸 Foto: ${s.foto_url}\n🔐 Código verif: ${s.foto_codigo || '—'}` : '';
+
+  let materialBlock;
+  if (esMulti) {
+    const { kgTotal, tramo, total } = rfCarritoTotalValor(s.carrito);
+    let desglose = s.carrito.map(it => `  • ${it.label} — ${it.kg} kg`).join('\n');
+    const totalFmt = '$' + Math.round(total).toLocaleString('es-CL');
+    materialBlock =
+      `🧺 *Multi-material*\n${desglose}\n` +
+      `⚖️ Total: *${kgTotal} kg* (tramo: ${tramo})\n` +
+      `💰 Valor estimado: ${totalFmt}`;
+  } else {
+    const precioFmt = s.precio ? `$${s.precio.toLocaleString('es-CL')}/kg` : 'a confirmar';
+    materialBlock =
+      `📦 Material: ${s.material}\n` +
+      `⚖️ Cantidad aprox: ${s.kg_aproximados || '—'}\n` +
+      `💰 Precio: ${precioFmt}`;
+  }
 
   const msgWA = encodeURIComponent(
     `✅ *Cotización ${orden}*\n\n` +
@@ -880,12 +900,11 @@ function rfShowExito(orden, tipo) {
     `📱 Tel: ${s.telefono || '—'}\n` +
     `📧 Email: ${s.email || '—'}` +
     empresaTxt + `\n\n` +
-    `📦 Material: ${s.material}\n` +
-    `⚖️ Cantidad aprox: ${s.kg_aproximados || '—'}\n` +
-    `💰 Precio: ${precioFmt}\n` +
+    materialBlock + `\n` +
     `📍 Sucursal: ${s.sucursal}\n` +
     `🚛 ${modeFmt}\n` +
-    `📅 ${s.dia_preferido || '—'} · ${s.jornada || '—'}\n\n` +
+    `📅 ${s.dia_preferido || '—'} · ${s.jornada || '—'}` +
+    fotoTxt + `\n\n` +
     `_Generado desde el chatbot de reciclean.cl_`
   );
 
@@ -1059,7 +1078,17 @@ async function rfNodo3A() {
   rfTrack('N3A');
   rfSetProgress(30);
   await rfBotMsg('¡Buenísimo! ¿Qué material tienes para reciclar? Selecciona el que más se acerque 👇');
-  const btns = MATERIALES_REC.map(m => ({
+  const btns = [];
+  // Opción destacada: carrito multi-material (solo si no es donación)
+  if (rfS.intent !== 'donar') {
+    btns.push({
+      label: '🧺 Tengo varios materiales juntos',
+      primary: true, full: true,
+      fn: () => rfNodoCarritoSelect()
+    });
+  }
+  // Materiales individuales
+  MATERIALES_REC.forEach(m => btns.push({
     label: m.label,
     fn: async () => {
       rfS.material = m.can; rfS.empresa = m.emp;
@@ -1107,6 +1136,56 @@ function rfEstimarKgNum(kgStr) {
   return { 'menos de 10 kg':5, '10–50 kg':30, '50–200 kg':100, '200–500 kg':300, 'más de 500 kg':600 }[kgStr] || 50;
 }
 
+/* ═══ HELPERS DE CARRITO MULTI-MATERIAL (Fase 1 · 8 abril 2026) ═══ */
+
+// Dado un número de kilos totales, devuelve el tramo estándar
+function rfTramoPorKilos(kgTotal) {
+  if (kgTotal < 10)   return 'menos de 10 kg';
+  if (kgTotal < 50)   return '10–50 kg';
+  if (kgTotal < 200)  return '50–200 kg';
+  if (kgTotal < 500)  return '200–500 kg';
+  return 'más de 500 kg';
+}
+
+// Suma los kilos de todos los items del carrito
+function rfCarritoTotalKg(carrito) {
+  return (carrito || []).reduce((sum, it) => sum + (parseFloat(it.kg) || 0), 0);
+}
+
+// Calcula el valor total del carrito usando el tramo de la suma
+// Se usa SOLO para el WhatsApp interno — el cliente no ve los precios individuales
+function rfCarritoTotalValor(carrito) {
+  const kgTotal = rfCarritoTotalKg(carrito);
+  const tramo   = rfTramoPorKilos(kgTotal);
+  let total = 0;
+  (carrito || []).forEach(it => {
+    const precio = rfPrecioEjecutivo(it.precioLista || 0, tramo);
+    total += precio * (parseFloat(it.kg) || 0);
+  });
+  return { total, tramo, kgTotal };
+}
+
+// Devuelve un resumen del carrito en HTML para mostrar en el chat
+function rfCarritoResumenHTML(carrito) {
+  if (!carrito || !carrito.length) return '<em>Carrito vacío</em>';
+  const { kgTotal, tramo } = rfCarritoTotalValor(carrito);
+  let html = '<div style="background:#0f1b22;border:1px solid rgba(134,239,172,.3);border-radius:12px;padding:12px;margin:6px 0">';
+  html += '<div style="color:#86efac;font-weight:700;margin-bottom:8px">📋 Tu carrito</div>';
+  carrito.forEach((it, i) => {
+    html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.08);font-size:13px">
+               <span>${it.label}</span>
+               <span style="color:#86efac;font-weight:600">${it.kg} kg</span>
+             </div>`;
+  });
+  html += `<div style="display:flex;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:2px solid rgba(134,239,172,.25);font-weight:700">
+             <span>Total:</span>
+             <span style="color:#22c55e;font-size:16px">${kgTotal} kg</span>
+           </div>`;
+  html += `<div style="text-align:center;margin-top:6px;color:#fbbf24;font-size:12px">🎯 Tramo estimado: <strong>${tramo}</strong></div>`;
+  html += '</div>';
+  return html;
+}
+
 // N4 — INTRO NEGOCIACIÓN
 // Flujo: mensaje humanizado con precio lista + tramos + pedido de foto
 // con código de verificación y objeto de referencia universal.
@@ -1134,7 +1213,7 @@ async function rfNodo4(precio, mat) {
 
   await rfSeq([
     `Para <strong>${mat.label}</strong> en sucursal <strong>${rfS.sucursal}</strong>, te confirmo que el precio lista es:<br><span class="rf2-price-big">$${precio.toLocaleString('es-CL')}/kg</span><span class="rf2-note">Empresa compradora: ${empresa_txt} · Pago al contado · Pesaje con romana certificada</span>`,
-    `Si al pesarlo caes en alguno de estos tramos, el precio podría mejorar un poco cuando lo pesemos 😊:<br>• <strong>50 – 200 kg</strong> → hasta <strong>$${rfPrecioEjecutivo(precio,'50–200 kg').toLocaleString('es-CL')}/kg</strong><br>• <strong>200 – 500 kg</strong> → hasta <strong>$${rfPrecioEjecutivo(precio,'200–500 kg').toLocaleString('es-CL')}/kg</strong><br>• <strong>Más de 500 kg</strong> → hasta <strong>$${precioMax.toLocaleString('es-CL')}/kg</strong>`,
+    `Si al pesarlo caes en alguno de estos tramos, el precio podría mejorar un poco cuando lo pesemos 😊:<br>• <strong>50 – 200 kg</strong> → mejor precio<br>• <strong>200 – 500 kg</strong> → aún mejor<br>• <strong>Más de 500 kg</strong> → el mejor precio`,
     `Para darte la mejor cotización, <strong>envíame una foto del material</strong> 📸<br><br>La foto debe mostrar estas 3 cosas:<br><br>1️⃣ <strong>El material completo</strong> para que se aprecie la cantidad que tienes<br><br>2️⃣ <strong>Un objeto de tamaño conocido</strong> al lado del material (un <strong>casco</strong>, una <strong>botella de 2 litros</strong>, un <strong>zapato</strong> o una <strong>hoja A4</strong>) — nos sirve para estimar el volumen<br><br>3️⃣ <strong>Un papel escrito a mano con este código:</strong><div style="background:#22c55e;color:#0b141a;padding:12px 16px;margin:10px 0;border-radius:12px;text-align:center;font-size:32px;font-weight:800;letter-spacing:6px;font-family:monospace">${rfS.foto_codigo}</div><span class="rf2-note">El código es único para esta cotización — sirve para confirmar que la foto es tuya y reciente.</span>`
   ], () => rfNodoPedirFoto(precio, mat));
 }
@@ -1413,14 +1492,12 @@ async function rfNodo4Farex(precio, item) {
   rfTrack('N4-farex');
   rfS.precio_lista = precio;
   const precioFmt    = '$' + precio.toLocaleString('es-CL');
-  const precioMax    = rfPrecioMaximo(precio);
-  const precioMaxFmt = '$' + precioMax.toLocaleString('es-CL');
 
   // Genera el código de verificación único para esta cotización
   if (!rfS.foto_codigo) rfS.foto_codigo = rfGenerarCodigoVerif();
 
   await rfSeq([
-    `¡Listo! 🙌 El precio lista de <strong>${item.label}</strong> en <strong>Farex ${rfS.sucursal}</strong> es:<br><span class="rf2-price-big">${precioFmt} / kg</span><span class="rf2-note">Precio publicado en farex.cl · Retención IVA 19% · Pago al contado · Hasta ${precioMaxFmt}/kg según volumen</span>`,
+    `¡Listo! 🙌 El precio lista de <strong>${item.label}</strong> en <strong>Farex ${rfS.sucursal}</strong> es:<br><span class="rf2-price-big">${precioFmt} / kg</span><span class="rf2-note">Precio publicado en farex.cl · Retención IVA 19% · Pago al contado · Mejor precio según volumen</span>`,
     `Para darte el mejor precio, <strong>envíame una foto del material</strong> 📸<br><br>La foto debe mostrar:<br><br>1️⃣ <strong>Todo el material</strong> (que se vea la cantidad total)<br><br>2️⃣ <strong>Un objeto de tamaño conocido</strong> al lado (un <strong>casco</strong> de seguridad, una <strong>botella 2L</strong>, un <strong>zapato</strong> o una <strong>hoja A4</strong>) — nos ayuda a estimar el volumen<br><br>3️⃣ <strong>Un papel escrito a mano con el código:</strong><div style="background:#22c55e;color:#0b141a;padding:12px 16px;margin:10px 0;border-radius:12px;text-align:center;font-size:32px;font-weight:800;letter-spacing:6px;font-family:monospace">${rfS.foto_codigo}</div><span class="rf2-note">El código es único para esta cotización — evita que otra persona la use.</span>`
   ], () => rfNodoPedirFotoFarex(precio, item));
 }
@@ -2014,6 +2091,169 @@ async function rfNodoFin() {
   rfClearActions();
   await rfBotMsg('¡Hasta pronto! Si en algún momento te animas, aquí estaremos. 👋♻️');
   rfShowBtns([{ label: '🏠 Volver al inicio', secondary: true, fn: rfNodo1 }]);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CARRITO MULTI-MATERIAL (Fase 1 · 8 abril 2026)
+   Permite al usuario agregar varios materiales con sus kilos y
+   obtener un precio mejorado según la suma total de kilos.
+═══════════════════════════════════════════════════════════════════ */
+
+// Lista completa de materiales disponibles para el carrito
+// (Reciclean + Farex, solo los más comunes para no saturar el menú)
+const CARRITO_MATERIALES = [
+  // Reciclean
+  { label: '📦 Cartón',             can: 'Carton',            emp: 'reciclean' },
+  { label: '📄 Papel Blanco',       can: 'Blanco 2',          emp: 'reciclean' },
+  { label: '🍶 Vidrio',             can: 'Vidrio',            emp: 'reciclean' },
+  { label: '♳ PET Transparente',   can: 'PET Transparente',  emp: 'reciclean' },
+  { label: '🧴 Polietileno Limpio', can: 'Polietileno Limpio',emp: 'reciclean' },
+  // Farex (solo disponibles en Cerrillos y Maipú)
+  { label: '🔩 Fierro Corto',       can: 'Fierro Corto',      emp: 'farex' },
+  { label: '🔩 Fierro Largo',       can: 'Fierro Largo',      emp: 'farex' },
+  { label: '🔩 Fierro Mixto',       can: 'Fierro Mixto',      emp: 'farex' },
+  { label: '🥫 Lata Chatarra',      can: 'Lata Chatarra',     emp: 'farex' },
+  { label: '🥉 Cobre 1 Tubo',       can: 'Cobre 1 Tubo',      emp: 'farex' },
+  { label: '🥉 Cobre Esmaltado',    can: 'Cobre Esmaltado',   emp: 'farex' },
+  { label: '🥈 Bronce Amarillo',    can: 'Bronce Amarillo',   emp: 'farex' },
+  { label: '✨ Aluminio Perfil',    can: 'Aluminio Perfil B', emp: 'farex' },
+  { label: '✨ Aluminio UBC',       can: 'Aluminio UBC',      emp: 'farex' },
+  { label: '⚙️ Acero Inox. 304',    can: 'Acero Inoxidable 304', emp: 'farex' },
+];
+
+async function rfNodoCarritoSelect() {
+  rfTrack('N-carrito-select');
+  rfS.intent = rfS.intent || 'vender';
+  rfSetProgress(32);
+
+  // Si ya hay items en el carrito, muestra el resumen primero
+  if (rfS.carrito && rfS.carrito.length > 0) {
+    await rfBotMsg(rfCarritoResumenHTML(rfS.carrito));
+  }
+
+  await rfBotMsg(rfS.carrito.length > 0
+    ? '¿Qué otro material querés agregar? 👇'
+    : 'Perfecto. Agregá uno a uno los materiales que tienes. La suma total de kilos determina el mejor precio. 💪');
+
+  // Filtro: si es Talca o Puerto Montt, ocultar materiales Farex
+  const disponibles = CARRITO_MATERIALES.filter(m => {
+    if (m.emp === 'farex' && (rfS.sucursal === 'Talca' || rfS.ciudad === 'Puerto Montt')) return false;
+    return true;
+  });
+
+  const btns = disponibles.map(m => ({
+    label: m.label,
+    fn: () => rfNodoCarritoKilos(m)
+  }));
+
+  // Botones de acción
+  if (rfS.carrito && rfS.carrito.length > 0) {
+    btns.push({ label: '✅ Listo, cotizar con estos',   primary: true, full: true, fn: rfNodoCarritoResumen });
+    btns.push({ label: '🔄 Empezar de nuevo',           secondary: true, fn: () => { rfS.carrito = []; rfNodo3A(); }});
+  } else {
+    btns.push({ label: '🔙 Volver a un solo material', secondary: true, fn: rfNodo3A });
+  }
+  rfShowBtns(btns);
+}
+
+async function rfNodoCarritoKilos(mat) {
+  rfTrack('N-carrito-kilos');
+  rfSetProgress(35);
+  await rfBotMsg(`¿Cuántos kilos aproximados de <strong>${mat.label}</strong> tienes?<br><span class="rf2-note">Escribe solo el número, ej: 30</span>`);
+  rfShowInput({
+    placeholder: 'Ej: 30',
+    type: 'number',
+    validate: (val) => {
+      const n = parseFloat(val);
+      if (isNaN(n) || n <= 0) return 'Ingresa un número mayor a 0';
+      if (n > 100000)          return 'Número demasiado grande, revisalo';
+      return true;
+    },
+    hintOk: '✓ Listo',
+    onSend: async (val) => {
+      const kg = parseFloat(val);
+      // Busca precio lista en snapshot para guardar (no se muestra al cliente)
+      const precio = await rfGetPrecio(mat.can, rfS.sucursal, mat.emp);
+      rfS.carrito.push({
+        label:       mat.label,
+        can:         mat.can,
+        emp:         mat.emp,
+        kg:          kg,
+        precioLista: precio || 0
+      });
+      rfClearActions();
+      await rfBotMsg(`Agregado: <strong>${mat.label}</strong> — ${kg} kg ✅`);
+      rfNodoCarritoSelect();
+    }
+  });
+}
+
+async function rfNodoCarritoResumen() {
+  rfTrack('N-carrito-resumen');
+  rfSetProgress(40);
+
+  if (!rfS.carrito || rfS.carrito.length === 0) {
+    await rfBotMsg('No hay materiales en el carrito 😅');
+    return rfNodoCarritoSelect();
+  }
+
+  await rfBotMsg(rfCarritoResumenHTML(rfS.carrito));
+
+  const kgTotal = rfCarritoTotalKg(rfS.carrito);
+  const tramo   = rfTramoPorKilos(kgTotal);
+
+  // Setea los campos principales de rfS para que el flujo posterior funcione
+  rfS.material = rfS.carrito.map(it => `${it.label} (${it.kg}kg)`).join(', ');
+  rfS.kg_aproximados = `${kgTotal} kg (multi-material)`;
+  rfS.empresa  = rfS.carrito.some(it => it.emp === 'farex') ? 'farex' : 'reciclean';
+  // Precio "promedio ponderado" solo para persistencia (no se muestra)
+  const { total } = rfCarritoTotalValor(rfS.carrito);
+  rfS.precio_lista = Math.round(total / Math.max(kgTotal, 1));
+  rfS.precio       = rfS.precio_lista;
+
+  // Genera código de verificación si no existe
+  if (!rfS.foto_codigo) rfS.foto_codigo = rfGenerarCodigoVerif();
+
+  await rfSeq([
+    `¡Excelente! 🙌 Con <strong>${kgTotal} kg</strong> en total, tu cotización cae en el tramo <strong>${tramo}</strong> — eso mejora el precio para todos los materiales. 💪`,
+    `Antes de continuar, <strong>envíame una foto</strong> donde se vean todos los materiales juntos 📸<br><br>La foto debe mostrar:<br><br>1️⃣ <strong>Todos los materiales visibles</strong> en el mismo cuadro<br><br>2️⃣ <strong>Un objeto de tamaño conocido</strong> al lado (un <strong>casco</strong>, una <strong>botella 2L</strong>, un <strong>zapato</strong> o una <strong>hoja A4</strong>)<br><br>3️⃣ <strong>Un papel con este código escrito a mano:</strong><div style="background:#22c55e;color:#0b141a;padding:12px 16px;margin:10px 0;border-radius:12px;text-align:center;font-size:32px;font-weight:800;letter-spacing:6px;font-family:monospace">${rfS.foto_codigo}</div><span class="rf2-note">Código único de esta cotización.</span>`
+  ], () => rfNodoCarritoFoto());
+}
+
+async function rfNodoCarritoFoto() {
+  rfTrack('N-carrito-foto');
+  rfSetProgress(50);
+  rfShowFileInput({
+    label: '📸 Tomar foto de todos los materiales',
+    accept: 'image/*',
+    capture: 'environment',
+    skipLabel: '⏭ Continuar sin foto',
+    onSelect: async (file) => {
+      rfUserMsg('📸 Foto enviada');
+      await rfBotMsg('Subiendo foto... 📤');
+      try {
+        const url = await rfSubirFotoStorage(file, rfS.session_id);
+        rfS.foto_url = url;
+        await rfBotMsg('¡Foto guardada! ✅<br>Nuestro equipo la revisará para confirmar el volumen al momento de pesar.');
+      } catch(e) {
+        console.error('[RF2] upload carrito foto:', e.message);
+        await rfBotMsg('No pude subir la foto 😕 pero seguimos igual.');
+      }
+      rfNodoCarritoConfirmar();
+    },
+    onSkip: () => rfNodoCarritoConfirmar()
+  });
+}
+
+async function rfNodoCarritoConfirmar() {
+  rfTrack('N-carrito-confirmar');
+  rfSetProgress(55);
+  await rfBotMsg('¡Perfecto! 🤝 ¿Cerramos el negocio y seguimos con tus datos?');
+  rfShowBtns([
+    { label: '✅ Sí, cerramos trato', primary: true, fn: rfNodoAcuerdo },
+    { label: '🚛 Prefiero que vengan a buscar', fn: () => { rfS.intent='retiro'; rfNodoRetiro(); }},
+    { label: '🤔 Necesito pensarlo', secondary: true, fn: rfNodoMeditar },
+  ]);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
