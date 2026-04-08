@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chatbot Reciclean-Farex · MVP v1</title>
+<!--
+═══════════════════════════════════════════════════════════════════
+  CHATBOT RECICLEAN-FAREX · MVP v1
+  Widget embebible standalone · Basado en el flujo v9 de Dusan
+  Precios en vivo desde Supabase · Cotización vía WhatsApp deeplink
+
+  Uso:
+    - Abrir directo en navegador para probar
+    - Embebible en reciclean.cl / farex.cl vía WPCode (ver README)
+    - Compatible con iframe en cualquier sitio
+
+  Autor: Claude · Para: Grupo Reciclean-Farex
+  Fecha: 7 abril 2026 · Versión: 1.0 MVP
+═══════════════════════════════════════════════════════════════════
+-->
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   RESET Y NAMESPACE rf-bot-*
+   Todos los estilos están prefijados para no afectar el sitio host
+═══════════════════════════════════════════════════════════════════ */
+#rf-bot-container, #rf-bot-container * { box-sizing:border-box; }
+#rf-bot-container { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+/* Botón flotante tipo burbuja (bottom-right) */
+#rf-bot-toggle {
+  position:fixed; bottom:24px; right:24px; z-index:999998;
+  width:64px; height:64px; border-radius:50%;
+  background:linear-gradient(135deg,#1A7A3C 0%,#0F4B25 100%);
+  border:none; cursor:pointer;
+  color:#fff; font-size:30px;
+  box-shadow:0 8px 28px rgba(26,122,60,.45), 0 2px 6px rgba(0,0,0,.2);
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .25s ease, box-shadow .25s ease;
+}
+#rf-bot-toggle:hover { transform:scale(1.08); box-shadow:0 12px 32px rgba(26,122,60,.6); }
+#rf-bot-toggle.open { background:linear-gradient(135deg,#475569 0%,#1e293b 100%); }
+#rf-bot-toggle .rf-pulse {
+  position:absolute; inset:-4px; border-radius:50%;
+  border:2px solid #1A7A3C; opacity:0;
+  animation:rfPulse 2s infinite;
+}
+@keyframes rfPulse { 0%{opacity:.8;transform:scale(1)} 100%{opacity:0;transform:scale(1.4)} }
+
+/* Ventana del chat */
+#rf-bot-window {
+  position:fixed; bottom:100px; right:24px; z-index:999999;
+  width:400px; height:640px; max-height:calc(100vh - 140px);
+  background:#0b141a; border-radius:18px;
+  box-shadow:0 30px 80px rgba(0,0,0,.45), 0 6px 20px rgba(0,0,0,.25);
+  overflow:hidden; display:none;
+  flex-direction:column;
+  border:1px solid rgba(255,255,255,.08);
+  animation:rfSlideUp .3s ease;
+}
+#rf-bot-window.open { display:flex; }
+@keyframes rfSlideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+/* Header */
+#rf-bot-header {
+  background:linear-gradient(135deg,#1A7A3C 0%,#0F4B25 100%);
+  padding:14px 18px;
+  display:flex; align-items:center; gap:12px;
+  flex-shrink:0;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+#rf-bot-header .rf-avatar {
+  width:42px; height:42px;
+  background:linear-gradient(135deg,#F0D060,#eab308);
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; flex-shrink:0;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+}
+#rf-bot-header .rf-brand { flex:1; min-width:0; }
+#rf-bot-header .rf-name { font-size:15px; font-weight:700; color:#fff; line-height:1.2; }
+#rf-bot-header .rf-status {
+  font-size:11px; color:rgba(255,255,255,.75); margin-top:2px;
+  display:flex; align-items:center; gap:5px;
+}
+#rf-bot-header .rf-status::before {
+  content:""; width:8px; height:8px; border-radius:50%;
+  background:#22c55e; box-shadow:0 0 0 0 rgba(34,197,94,.7);
+  animation:rfDot 2s infinite;
+}
+@keyframes rfDot { 0%{box-shadow:0 0 0 0 rgba(34,197,94,.7)} 70%{box-shadow:0 0 0 6px rgba(34,197,94,0)} 100%{box-shadow:0 0 0 0 rgba(34,197,94,0)} }
+#rf-bot-header .rf-close {
+  background:rgba(255,255,255,.12); border:none;
+  width:32px; height:32px; border-radius:50%;
+  color:#fff; cursor:pointer; font-size:16px;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s;
+}
+#rf-bot-header .rf-close:hover { background:rgba(255,255,255,.22); }
+
+/* Reset bar */
+#rf-bot-resetbar {
+  padding:8px 18px; background:#050c0f;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  flex-shrink:0;
+  display:flex; justify-content:center;
+}
+#rf-bot-resetbar button {
+  background:transparent; border:1px solid #2a3942;
+  color:#8696a0; font-size:11px;
+  padding:5px 14px; border-radius:12px; cursor:pointer;
+  transition:all .15s;
+  font-family:inherit;
+}
+#rf-bot-resetbar button:hover { border-color:#22c55e; color:#22c55e; }
+
+/* Chat area */
+#rf-bot-chat {
+  flex:1; overflow-y:auto; padding:12px 10px;
+  background:#0b141a;
+  background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  display:flex; flex-direction:column; gap:4px;
+}
+#rf-bot-chat::-webkit-scrollbar { width:4px; }
+#rf-bot-chat::-webkit-scrollbar-thumb { background:#2a3942; border-radius:2px; }
+
+/* Date separator */
+.rf-datesep { text-align:center; margin:8px 0; }
+.rf-datesep span {
+  background:#1f2c33; color:#8696a0; font-size:11px;
+  padding:3px 12px; border-radius:6px;
+}
+
+/* Bot bubble */
+.rf-bot-msg { display:flex; align-items:flex-end; gap:6px; margin-bottom:2px; max-width:88%; align-self:flex-start; }
+.rf-bot-bubble {
+  background:#202c33; color:#e9edef;
+  padding:9px 13px; border-radius:0 12px 12px 12px;
+  font-size:13.5px; line-height:1.5;
+  white-space:pre-wrap; word-break:break-word;
+  position:relative; box-shadow:0 1px 2px rgba(0,0,0,.2);
+}
+.rf-bot-time { font-size:10px; color:#8696a0; margin-top:2px; margin-left:4px; }
+
+/* User bubble */
+.rf-user-msg { display:flex; align-items:flex-end; justify-content:flex-end; gap:6px; margin-bottom:2px; max-width:88%; align-self:flex-end; }
+.rf-user-bubble {
+  background:#005c4b; color:#e9edef;
+  padding:9px 13px; border-radius:12px 0 12px 12px;
+  font-size:13.5px; line-height:1.5;
+  white-space:pre-wrap; word-break:break-word;
+  box-shadow:0 1px 2px rgba(0,0,0,.2);
+}
+.rf-user-time { font-size:10px; color:#8696a0; margin-top:2px; margin-right:4px; text-align:right; }
+
+/* Typing indicator */
+.rf-typing {
+  background:#202c33; padding:12px 16px;
+  border-radius:0 12px 12px 12px;
+  display:flex; gap:4px; align-items:center;
+}
+.rf-typing .rf-dot {
+  width:7px; height:7px; background:#8696a0; border-radius:50%;
+  animation:rfBounce 1.2s infinite;
+}
+.rf-typing .rf-dot:nth-child(2) { animation-delay:.15s; }
+.rf-typing .rf-dot:nth-child(3) { animation-delay:.3s; }
+@keyframes rfBounce { 0%,60%,100%{transform:translateY(0);opacity:.5} 30%{transform:translateY(-4px);opacity:1} }
+
+/* Options */
+.rf-options {
+  display:flex; flex-direction:column; gap:6px;
+  padding:8px 8px 4px; margin:4px 0;
+  max-width:88%; align-self:flex-start;
+}
+.rf-opt-btn {
+  background:#1f2c33; border:1px solid #2a3942;
+  color:#e9edef; padding:10px 14px;
+  border-radius:10px; font-size:13px; text-align:left;
+  cursor:pointer; transition:all .15s;
+  font-family:inherit;
+}
+.rf-opt-btn:hover { background:#2a3942; border-color:#22c55e; transform:translateX(2px); }
+.rf-opt-btn.rf-disabled { opacity:.5; pointer-events:none; }
+
+/* Input fake (no editable, solo visual) */
+#rf-bot-bottombar {
+  background:#1f2c33; padding:10px 14px; flex-shrink:0;
+  border-top:1px solid rgba(255,255,255,.05);
+  display:flex; align-items:center; gap:10px;
+}
+#rf-bot-bottombar .rf-input-fake {
+  flex:1; background:#2a3942; color:#8696a0;
+  padding:9px 14px; border-radius:22px; font-size:12.5px;
+  font-style:italic;
+}
+#rf-bot-bottombar .rf-wa-btn {
+  background:#25d366; color:#fff; border:none;
+  width:36px; height:36px; border-radius:50%;
+  cursor:pointer; font-size:16px;
+  display:flex; align-items:center; justify-content:center;
+  text-decoration:none;
+}
+#rf-bot-bottombar .rf-wa-btn:hover { background:#128c7e; }
+
+/* Precios tables inline */
+.rf-precio-tabla {
+  font-size:12px; line-height:1.55;
+}
+.rf-precio-tabla .rf-pt-title {
+  font-weight:700; color:#94a3b8;
+  margin-bottom:2px;
+}
+.rf-precio-tabla .rf-pt-fecha {
+  font-size:10px; color:#475569; margin-bottom:6px;
+}
+.rf-precio-tabla .rf-pt-section {
+  color:#fb923c; font-weight:700; font-size:11px;
+  margin:6px 0 3px; border-bottom:1px solid #334155;
+  padding-bottom:2px;
+}
+.rf-precio-tabla .rf-pt-row {
+  display:flex; justify-content:space-between;
+  padding:2px 0;
+}
+.rf-precio-tabla .rf-pt-row .rf-pt-val { color:#86efac; font-weight:600; }
+.rf-precio-tabla .rf-pt-row .rf-pt-consultar { color:#64748b; font-size:11px; }
+
+/* Certificados highlight */
+.rf-cert-box {
+  background:#162032; border-left:3px solid #6366f1;
+  padding:8px 12px; border-radius:0 8px 8px 0;
+  font-size:12px; margin-top:6px;
+}
+.rf-cert-empresa { font-weight:700; color:#a5b4fc; font-size:12px; margin-bottom:3px; }
+.rf-cert-item { color:#86efac; font-size:11.5px; line-height:1.6; }
+
+/* WhatsApp deeplink button — CTA final */
+.rf-wa-cta {
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  background:linear-gradient(135deg,#25d366 0%,#128c7e 100%);
+  color:#fff; text-decoration:none;
+  padding:14px 20px; border-radius:12px;
+  font-size:14px; font-weight:700;
+  box-shadow:0 6px 20px rgba(37,211,102,.4);
+  margin:10px 0;
+  transition:transform .2s;
+}
+.rf-wa-cta:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(37,211,102,.5); }
+.rf-wa-cta .rf-wa-icon { font-size:22px; }
+
+/* Responsive mobile */
+@media(max-width:480px) {
+  #rf-bot-window {
+    width:100vw; height:100vh; max-height:100vh;
+    bottom:0; right:0; left:0; top:0;
+    border-radius:0;
+  }
+  #rf-bot-toggle { bottom:16px; right:16px; width:56px; height:56px; font-size:26px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     WIDGET DEL CHATBOT
+═══════════════════════════════════════════════════════════════════ -->
+<div id="rf-bot-container">
+
+  <!-- Botón flotante toggle -->
+  <button id="rf-bot-toggle" onclick="rfBotToggle()" title="Habla con nosotros">
+    <span class="rf-pulse"></span>
+    <span id="rf-bot-toggle-icon">💬</span>
+  </button>
+
+  <!-- Ventana del chat -->
+  <div id="rf-bot-window">
+    <div id="rf-bot-header">
+      <div class="rf-avatar">♻</div>
+      <div class="rf-brand">
+        <div class="rf-name">Grupo Reciclean-Farex</div>
+        <div class="rf-status">en línea</div>
+      </div>
+      <button class="rf-close" onclick="rfBotToggle()">✕</button>
+    </div>
+
+    <div id="rf-bot-resetbar">
+      <button onclick="rfReset()">↺ Reiniciar conversación</button>
+    </div>
+
+    <div id="rf-bot-chat"></div>
+
+    <div id="rf-bot-bottombar">
+      <div class="rf-input-fake">Selecciona una opción...</div>
+      <a href="https://wa.me/56995342437" target="_blank" class="rf-wa-btn" title="WhatsApp directo">💬</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIGURACIÓN GLOBAL
+// ═══════════════════════════════════════════════════════════════
+const RF_CONFIG = {
+  SUPABASE_URL: 'https://eknmtsrtfkzroxnovfqn.supabase.co',
+  SUPABASE_KEY: 'sb_publishable_y-ivpVdiL141kz4ZASje5g_SYG7do5z',
+  WHATSAPP: '56995342437',
+  WHATSAPP_DISPLAY: '+56 9 9534 2437',
+  EMAIL: 'comercial@gestionrepchile.cl',
+  VERSION: '1.0-mvp'
+};
+
+// Estado global del flujo
+let rfState = {};
+let rfCatalogoPrecios = null;   // Cargado desde Supabase
+let rfCatalogoFecha = null;
+const rfChat = document.getElementById('rf-bot-chat');
+const rfWindow = document.getElementById('rf-bot-window');
+const rfToggle = document.getElementById('rf-bot-toggle');
+const rfToggleIcon = document.getElementById('rf-bot-toggle-icon');
+
+// ═══════════════════════════════════════════════════════════════
+// TOGGLE WIDGET
+// ═══════════════════════════════════════════════════════════════
+function rfBotToggle() {
+  const isOpen = rfWindow.classList.toggle('open');
+  rfToggle.classList.toggle('open', isOpen);
+  rfToggleIcon.textContent = isOpen ? '✕' : '💬';
+  if (isOpen && rfChat.children.length === 0) {
+    rfAddDate();
+    setTimeout(rfNodo1, 400);
+  }
+  // Comunicar al parent window (para embed iframe cross-origin)
+  try {
+    window.parent.postMessage({
+      type: 'rf-chatbot',
+      action: isOpen ? 'open' : 'close',
+      version: RF_CONFIG.VERSION
+    }, '*');
+  } catch(e) { /* ignore si no hay parent */ }
+}
+
+function rfReset() {
+  rfChat.innerHTML = '';
+  rfState = {};
+  rfAddDate();
+  setTimeout(rfNodo1, 300);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILIDADES UI
+// ═══════════════════════════════════════════════════════════════
+function rfTime() {
+  const n = new Date();
+  return n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0');
+}
+
+function rfScroll() {
+  setTimeout(() => { rfChat.scrollTop = rfChat.scrollHeight; }, 60);
+}
+
+function rfAddDate() {
+  const d = document.createElement('div');
+  d.className = 'rf-datesep';
+  d.innerHTML = '<span>Hoy</span>';
+  rfChat.appendChild(d);
+}
+
+function rfAddTyping() {
+  const div = document.createElement('div');
+  div.className = 'rf-bot-msg';
+  div.id = 'rf-typing-indicator';
+  div.innerHTML = '<div class="rf-typing"><div class="rf-dot"></div><div class="rf-dot"></div><div class="rf-dot"></div></div>';
+  rfChat.appendChild(div);
+  rfScroll();
+}
+
+function rfRemoveTyping() {
+  const t = document.getElementById('rf-typing-indicator');
+  if (t) t.remove();
+}
+
+function rfAddBotMsg(html, delay=0) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      rfRemoveTyping();
+      const wrap = document.createElement('div');
+      wrap.className = 'rf-bot-msg';
+      wrap.innerHTML = '<div><div class="rf-bot-bubble">'+html+'</div><div class="rf-bot-time">'+rfTime()+'</div></div>';
+      rfChat.appendChild(wrap);
+      rfScroll();
+      resolve();
+    }, delay);
+  });
+}
+
+function rfAddUserMsg(text) {
+  document.querySelectorAll('.rf-opt-btn').forEach(b => b.classList.add('rf-disabled'));
+  const wrap = document.createElement('div');
+  wrap.className = 'rf-user-msg';
+  wrap.innerHTML = '<div><div class="rf-user-bubble">'+text+'</div><div class="rf-user-time">'+rfTime()+' ✓✓</div></div>';
+  rfChat.appendChild(wrap);
+  rfScroll();
+}
+
+function rfAddOptions(opts) {
+  const container = document.createElement('div');
+  container.className = 'rf-options';
+  opts.forEach(o => {
+    const btn = document.createElement('button');
+    btn.className = 'rf-opt-btn';
+    btn.textContent = o.label;
+    btn.onclick = () => o.action();
+    container.appendChild(btn);
+  });
+  rfChat.appendChild(container);
+  rfScroll();
+}
+
+async function rfBotSequence(messages, thenFn, instant=false) {
+  for (let i = 0; i < messages.length; i++) {
+    if (!instant) {
+      rfAddTyping();
+      await new Promise(r => setTimeout(r, 800 + Math.random()*300));
+      rfRemoveTyping();
+    }
+    await rfAddBotMsg(messages[i], 0);
+    if (!instant && i < messages.length - 1) await new Promise(r => setTimeout(r, 250));
+  }
+  if (thenFn) thenFn();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUPABASE · Cargar catálogo de precios en vivo
+// ═══════════════════════════════════════════════════════════════
+async function rfFetchPrecios() {
+  try {
+    const r = await fetch(RF_CONFIG.SUPABASE_URL + '/rest/v1/asistente_snapshot?id=eq.1&select=datos,version_label,actualizado_en', {
+      headers: { 'apikey': RF_CONFIG.SUPABASE_KEY, 'Authorization': 'Bearer ' + RF_CONFIG.SUPABASE_KEY }
+    });
+    const rows = await r.json();
+    const row = rows && rows[0];
+    if (row && row.datos) {
+      rfCatalogoPrecios = row.datos;
+      rfCatalogoFecha = row.actualizado_en;
+      return true;
+    }
+  } catch(e) { console.warn('[RF Chatbot] No pudo cargar catálogo:', e); }
+  return false;
+}
+
+// Busca precio_lista de un material específico, en una sucursal específica
+// Devuelve el precio o null si no hay match
+function rfGetPrecio(nombreMaterial, sucursal, empresaFilter) {
+  if (!rfCatalogoPrecios) return null;
+  const lista = rfCatalogoPrecios[sucursal] || rfCatalogoPrecios['Cerrillos'] || [];
+  // Busca por nombre exacto, case-insensitive
+  const match = lista.find(m => {
+    if (empresaFilter === 'farex' && !m.farex) return false;
+    if (empresaFilter === 'reciclean' && !m.reciclean) return false;
+    return m.material && m.material.toLowerCase() === nombreMaterial.toLowerCase();
+  });
+  return match && match.precioLista > 0 ? match.precioLista : null;
+}
+
+// Lista top N materiales de una empresa en una sucursal, ordenados por precio descendente
+function rfTopMateriales(empresa, sucursal, topN) {
+  if (!rfCatalogoPrecios) return [];
+  const lista = rfCatalogoPrecios[sucursal] || rfCatalogoPrecios['Cerrillos'] || [];
+  return lista
+    .filter(m => m[empresa] && m.precioLista > 0)
+    .sort((a,b) => b.precioLista - a.precioLista)
+    .slice(0, topN || 20);
+}
+
+function rfFmtPrecio(v) {
+  return v ? '$' + Math.round(v).toLocaleString('es-CL') + '/kg' : 'consultar';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NODOS DEL FLUJO v9 (adaptado de simulacion_v9_sin_ia (8).html)
+// ═══════════════════════════════════════════════════════════════
+
+function rfNodo1() {
+  rfState = {};
+  rfBotSequence([
+    '👋 Hola, soy el asistente virtual del <b>Grupo Reciclean-Farex</b>.\n\n¿En qué te podemos ayudar hoy?'
+  ], () => {
+    rfAddOptions([
+      { label:'1. Vender materiales', action:()=>{ rfAddUserMsg('1. Vender materiales'); rfNodo2(); }},
+      { label:'2. Cotizar servicio de retiro', action:()=>{ rfAddUserMsg('2. Cotizar servicio de retiro'); rfNodo3c(); }},
+      { label:'3. 🤝 Quiénes somos', action:()=>{ rfAddUserMsg('3. Quiénes somos'); rfNodo1b(); }}
+    ]);
+  });
+}
+
+function rfNodo1b() {
+  rfBotSequence([
+    '🏢 Somos el <b>Grupo Reciclean-Farex</b>, empresa chilena de reciclaje industrial fundada en 2012 en Santiago. Partimos en Cerrillos, acreditados en los principales registros nacionales. Hoy operamos en 4 sucursales.\n\n📧 comercial@gestionrepchile.cl\n📱 +56 9 9534 2437\n🌐 reciclean.cl · farex.cl\n\n📍 <b>Sucursales:</b>\nSantiago Cerrillos — Piloto Acevedo #424\nSantiago Maipú — Cerro Sombrero #940\nTalca — Fundo El Sauzal S/N, Chacarillas\nPuerto Montt — El Tepual km3, Línea 10 Lote 2\n\n🕐 Lun-Jue 8:30-18:00 · Vie hasta 17:00'
+  ], () => {
+    rfAddOptions([
+      { label:'1. 📄 Ver certificados y autorizaciones', action:()=>{ rfAddUserMsg('Ver certificados'); rfNodo1c(); }},
+      { label:'2. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }},
+      { label:'3. No, muchas gracias', action:()=>{ rfAddUserMsg('No, gracias'); rfNodofin(); }}
+    ]);
+  });
+}
+
+function rfNodo1c() {
+  rfBotSequence([
+    '📋 <b>¿Por qué trabajar con un gestor certificado?</b>\n\nSi tu empresa genera residuos industriales, la ley te obliga a demostrar que los gestionaste correctamente:\n\n• <b>Ley 20.920 (REP):</b> Los residuos deben entregarse a gestores autorizados y registrados ante el Ministerio del Medio Ambiente.\n\n• <b>DS 594/1999:</b> Toda empresa debe declarar ante la SEREMI de Salud qué hace con sus residuos industriales.\n\n• Sin un certificado de recepción, tu empresa no puede acreditar cumplimiento ante una fiscalización de la SMA.\n\n✅ Al trabajar con nosotros, recibes un <b>Certificado de Recepción de Materiales</b> que respalda tu declaración legal.',
+    '🛡 <b>Nuestras acreditaciones:</b>\n\n<div class="rf-cert-box"><div class="rf-cert-empresa">RECICLEAN SPA</div><div class="rf-cert-item">• Resolución 041098</div><div class="rf-cert-item">• RETC #5464578</div><div class="rf-cert-item">• REP envases / embalajes</div></div>\n<div class="rf-cert-box"><div class="rf-cert-empresa">FAREX SPA</div><div class="rf-cert-item">• Resolución 041097</div><div class="rf-cert-item">• RETC #5465033</div><div class="rf-cert-item">• REP envases metálicos</div></div>'
+  ], () => {
+    rfAddOptions([
+      { label:'1. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }},
+      { label:'2. No, muchas gracias', action:()=>{ rfAddUserMsg('No, gracias'); rfNodofin(); }}
+    ]);
+  });
+}
+
+function rfNodo2() {
+  rfBotSequence(['Por favor, selecciona la ciudad desde donde nos contactas:'], () => {
+    rfAddOptions([
+      { label:'1. Santiago', action:()=>{ rfAddUserMsg('1. Santiago'); rfState.ciudad='Santiago'; rfNodo2b(); }},
+      { label:'2. Talca', action:()=>{ rfAddUserMsg('2. Talca'); rfState.ciudad='Talca'; rfState.sucursal='Talca'; rfNodo3a(); }},
+      { label:'3. Puerto Montt', action:()=>{ rfAddUserMsg('3. Puerto Montt'); rfState.ciudad='Puerto Montt'; rfState.sucursal='Puerto Montt'; rfNodo3a(); }},
+      { label:'4. Otra ciudad', action:()=>{ rfAddUserMsg('4. Otra ciudad'); rfState.ciudad='otra'; rfNodo2c(); }}
+    ]);
+  });
+}
+
+function rfNodo2b() {
+  rfBotSequence([
+    'Santiago tiene 2 sucursales. ¿Cuál te queda más cerca?\n\n1. <b>Cerrillos</b> — Piloto Acevedo #424\n   🗺 maps.app.goo.gl/fwcnfB9NxoZ8iSLg8\n\n2. <b>Maipú</b> — Cerro Sombrero #940\n   🗺 maps.app.goo.gl/2ZBAkSqeKwi8YP3d9'
+  ], () => {
+    rfAddOptions([
+      { label:'1. Cerrillos', action:()=>{ rfAddUserMsg('1. Cerrillos'); rfState.sucursal='Cerrillos'; rfNodo3a(); }},
+      { label:'2. Maipú', action:()=>{ rfAddUserMsg('2. Maipú'); rfState.sucursal='Maipú'; rfNodo3a(); }}
+    ]);
+  });
+}
+
+function rfNodo2c() {
+  rfBotSequence([
+    'No tenemos sucursal en tu ciudad, pero podemos coordinar un retiro especial dependiendo del volumen. Un ejecutivo te contactará para evaluar la opción.'
+  ], () => {
+    rfAddOptions([
+      { label:'1. Continuar con cotización de retiro', action:()=>{ rfAddUserMsg('Continuar cotización'); rfNodo3c(); }},
+      { label:'2. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }}
+    ]);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// N3A · TIPO DE RESIDUO · precios DESDE SUPABASE
+// ═══════════════════════════════════════════════════════════════
+function rfNodo3a() {
+  const sucursal = rfState.sucursal || 'Cerrillos';
+  // Materiales RECICLEAN disponibles (nombres canónicos del catálogo)
+  const materialesRec = [
+    { label:'Cartón',               canonico:'Carton',             empresa:'reciclean' },
+    { label:'Blanco 2',              canonico:'Blanco 2',           empresa:'reciclean' },
+    { label:'Vidrio',                canonico:'Vidrio',             empresa:'reciclean' },
+    { label:'PET Transparente',      canonico:'PET Transparente',   empresa:'reciclean' },
+    { label:'Polietileno Limpio',    canonico:'Polietileno Limpio', empresa:'reciclean' },
+    { label:'Tapas Bebidas',         canonico:'Tapas Bebidas',      empresa:'reciclean' },
+    { label:'Aluminio UBC (latas)',  canonico:'Aluminio UBC',       empresa:'farex'    },
+    { label:'Lata Chatarra',         canonico:'Lata Chatarra',      empresa:'farex',   esMetal:true }
+  ];
+
+  rfBotSequence(['¿Qué tipo de material quieres vender?']);
+
+  setTimeout(() => {
+    const opts = materialesRec.map(m => ({
+      label: m.label + ' · ' + rfFmtPrecio(rfGetPrecio(m.canonico, sucursal, m.empresa)),
+      action: () => {
+        rfAddUserMsg(m.label);
+        rfState.material = m.canonico;
+        rfState.empresa = m.empresa;
+        rfState.esMetal = !!m.esMetal;
+        rfState.precio = rfGetPrecio(m.canonico, sucursal, m.empresa);
+        rfNodo4();
+      }
+    }));
+    opts.push({
+      label:'🔩 Fierro y otros metales (Farex)',
+      action: () => { rfAddUserMsg('Fierro y metales'); rfState.esMetal=true; rfState.empresa='farex'; rfNodo3am(); }
+    });
+    opts.push({
+      label:'Otros materiales',
+      action: () => { rfAddUserMsg('Otros materiales'); rfNodo3av(); }
+    });
+    rfAddOptions(opts);
+  }, 1200);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// N3A-M · Fierro y Metales Farex (tabla dinámica desde Supabase)
+// ═══════════════════════════════════════════════════════════════
+function rfNodo3am() {
+  const sucursal = rfState.sucursal || 'Cerrillos';
+  const top = rfTopMateriales('farex', sucursal, 15);
+
+  let html = '<div class="rf-precio-tabla">';
+  html += '<div class="rf-pt-title">🔧 Metales y Fierros · ' + sucursal + '</div>';
+  html += '<div class="rf-pt-fecha">' + new Date().toLocaleDateString('es-CL') + ' · precios en vivo</div>';
+
+  // Agrupar por categoría
+  const grupos = {};
+  top.forEach(m => {
+    if (!grupos[m.categoria]) grupos[m.categoria] = [];
+    grupos[m.categoria].push(m);
+  });
+  Object.keys(grupos).forEach(cat => {
+    html += '<div class="rf-pt-section">' + cat + '</div>';
+    grupos[cat].forEach(m => {
+      html += '<div class="rf-pt-row"><span>' + m.material + '</span><span class="rf-pt-val">' + rfFmtPrecio(m.precioLista) + '</span></div>';
+    });
+  });
+  html += '</div>';
+
+  if (top.length === 0) {
+    html = '<div style="color:#fb923c">No hay precios disponibles en este momento. Por favor contacta a un ejecutivo.</div>';
+  }
+
+  rfBotSequence([html], () => {
+    rfAddOptions([
+      { label:'1. Continuar — me interesa vender ✅', action:()=>{
+          rfAddUserMsg('Me interesa vender');
+          rfState.material='metales varios';
+          rfState.precio=null;
+          rfNodo5a();
+      }},
+      { label:'2. Cotizar servicio de retiro', action:()=>{ rfAddUserMsg('Cotizar retiro'); rfNodo3c(); }},
+      { label:'3. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }}
+    ]);
+  });
+}
+
+function rfNodo3av() {
+  rfBotSequence(['Para materiales variados, un ejecutivo te orientará con la mejor alternativa. Cierra el chat y presiona el botón de WhatsApp para escribirle directamente a Andrea.'], () => {
+    rfState.intent = 'materiales_varios';
+    rfNodo7();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// N4 · PRECIO DEL MATERIAL
+// ═══════════════════════════════════════════════════════════════
+function rfNodo4() {
+  const ciudad = rfState.ciudad || 'Santiago';
+  const sucursal = rfState.sucursal || (ciudad === 'Santiago' ? 'Cerrillos' : ciudad);
+  const esMetal = rfState.esMetal;
+  const precio = rfState.precio ? '$' + Math.round(rfState.precio).toLocaleString('es-CL') + '/kg' : 'consultar con ejecutivo';
+  const material = rfState.material || 'el material';
+
+  const direcciones = {
+    'Cerrillos': 'Piloto Acevedo #424, Cerrillos, Santiago\n🗺 maps.app.goo.gl/fwcnfB9NxoZ8iSLg8',
+    'Maipú': 'Cerro Sombrero #940, Maipú, Santiago\n🗺 maps.app.goo.gl/2ZBAkSqeKwi8YP3d9',
+    'Talca': 'Fundo El Sauzal S/N, Chacarillas, Talca\n🗺 maps.app.goo.gl/TmooQP9vxhvGC7kE8',
+    'Puerto Montt': 'El Tepual km3, Línea 10 Lote 2, Puerto Montt\n🗺 maps.app.goo.gl/DqtEpj9aKXhVNCZ26'
+  };
+  const romana = ciudad === 'Santiago' ? 'Contamos con romana eléctrica para el pesaje.' : 'Contamos con romana para camiones en las instalaciones.';
+  const donacion = !esMetal ? '\n\n💚 Si prefieres, también puedes <b>donar</b> estos materiales.' : '';
+  const ivaNota = rfState.empresa === 'farex' ? '\n⚠ Precio con IVA Retención 19%' : '\n⚠ Precio sin IVA';
+
+  const seqs = [];
+  if (rfState.precio) seqs.push('💰 El precio de compra es <b>' + precio + ' de ' + material + '</b>, puesto en nuestra empresa.' + ivaNota);
+  else seqs.push('💰 Para este material: ' + precio + '. Un ejecutivo te confirmará el valor exacto.');
+  seqs.push('💳 Pago al contado con transferencia bancaria. ' + romana + donacion);
+  seqs.push('📍 <b>Dirección:</b>\n' + (direcciones[sucursal] || direcciones['Cerrillos']));
+  seqs.push('🕐 <b>Horarios:</b>\nLunes a Jueves: 8:30 — 18:00 hrs\nViernes: 8:30 — 17:00 hrs');
+
+  rfBotSequence(seqs, () => {
+    if (esMetal) {
+      rfAddOptions([
+        { label:'1. Me interesa vender ✅', action:()=>{ rfAddUserMsg('Me interesa vender'); rfNodo5a(); }},
+        { label:'2. Cotizar servicio de retiro', action:()=>{ rfAddUserMsg('Cotizar retiro'); rfNodo3c(); }},
+        { label:'3. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }},
+        { label:'4. Lo voy a meditar...', action:()=>{ rfAddUserMsg('Lo voy a meditar'); rfNodo3d(); }}
+      ]);
+    } else {
+      rfAddOptions([
+        { label:'1. Me interesa vender ✅', action:()=>{ rfAddUserMsg('Me interesa vender'); rfNodo5a(); }},
+        { label:'2. Quiero donar 💚', action:()=>{ rfAddUserMsg('Quiero donar'); rfNodo3b(); }},
+        { label:'3. Cotizar servicio de retiro', action:()=>{ rfAddUserMsg('Cotizar retiro'); rfNodo3c(); }},
+        { label:'4. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }},
+        { label:'5. Lo voy a meditar...', action:()=>{ rfAddUserMsg('Lo voy a meditar'); rfNodo3d(); }}
+      ]);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// N5A · LOGÍSTICA
+// ═══════════════════════════════════════════════════════════════
+function rfNodo5a() {
+  rfState.intent = rfState.intent || 'vender_material';
+  rfBotSequence(['¿Cómo nos harás llegar el material?'], () => {
+    rfAddOptions([
+      { label:'1. Lo llevaré por medios propios', action:()=>{ rfAddUserMsg('Medios propios'); rfState.modo_entrega='entrega_propia'; rfNodo6a(); }},
+      { label:'2. Me interesa el servicio de retiro (tiene costo)', action:()=>{ rfAddUserMsg('Retiro con costo'); rfState.modo_entrega='retiro'; rfNodo3c(); }}
+    ]);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// N6A · ENTREGA PROPIA (en MVP pedimos que los datos los manden por WhatsApp)
+// ═══════════════════════════════════════════════════════════════
+function rfNodo6a() {
+  rfBotSequence([
+    'Perfecto. Necesitamos algunos datos antes de cerrar la cotización. Cuando termines, te conectamos con Andrea por WhatsApp con toda la información pre-cargada.\n\n📋 Datos que necesitaremos:\n• Nombre y apellido\n• RUT\n• ¿Venta a nombre de empresa? (Sí → nombre + RUT empresa)\n• Correo electrónico\n• Día preferido para entregar\n• Jornada (AM o PM)\n\n💳 Los datos bancarios para la transferencia serán coordinados por un ejecutivo.'
+  ], () => {
+    rfState.intent = 'vender_material';
+    rfNodo7();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// N3B · DONAR
+// ═══════════════════════════════════════════════════════════════
+function rfNodo3b() {
+  rfState.intent = 'donar';
+  rfBotSequence([
+    '¡Gracias por tu generosidad! 💚',
+    'Para formalizar la donación, al momento de traer el material necesitarás firmar un <b>Acta de Donación</b> en nuestra sucursal.\n\nEste documento certifica que entregas los materiales de forma voluntaria y gratuita, y que serán reciclados y enviados a empresas que los transforman en nuevos productos.',
+    '¿La donación es de forma personal o a nombre de una empresa?'
+  ], () => {
+    rfAddOptions([
+      { label:'1. Personal', action:()=>{ rfAddUserMsg('Personal'); rfState.tipo_cliente='personal'; rfNodo3bPersonal(); }},
+      { label:'2. A nombre de una empresa', action:()=>{ rfAddUserMsg('A nombre de empresa'); rfState.tipo_cliente='empresa'; rfNodo3bEmpresa(); }}
+    ]);
+  });
+}
+
+function rfNodo3bPersonal() {
+  rfBotSequence([
+    'Perfecto. Los datos que necesitaremos:\n\n• Nombre y apellido\n• Kilos aproximados a donar\n• Día preferido para entregar\n• Jornada (AM o PM)\n\nAl cerrar el chat te redirigimos a WhatsApp con esos campos listos para completar.'
+  ], () => rfNodo7());
+}
+
+function rfNodo3bEmpresa() {
+  rfBotSequence([
+    'Perfecto. Los datos que necesitaremos:\n\n• Nombre de la empresa\n• RUT empresa\n• Nombre y RUT de quien traerá el material\n• Cargo\n• Kilos aproximados\n• Día y jornada preferida',
+    '¿Requieren un <b>Certificado de Recepción Ley REP</b>?\n\nEste certificado acredita oficialmente la entrega de materiales para reciclaje y tiene un valor de <b>2,7 UF anuales</b>.'
+  ], () => {
+    rfAddOptions([
+      { label:'✅ Sí, necesitamos el certificado REP', action:()=>{ rfAddUserMsg('Sí, certificado REP'); rfState.requiere_cert_rep=true; rfNodo7(); }},
+      { label:'❌ No lo necesitamos', action:()=>{ rfAddUserMsg('No lo necesitamos'); rfState.requiere_cert_rep=false; rfNodo7(); }}
+    ]);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// N3C · COTIZAR RETIRO
+// ═══════════════════════════════════════════════════════════════
+function rfNodo3c() {
+  rfState.intent = 'cotizar_retiro';
+  rfBotSequence([
+    '¡Perfecto! Para preparar tu cotización de retiro necesitamos estos datos:\n\n• Nombre y apellido\n• Correo electrónico\n• Dirección donde retirar\n• Ubicación Google Maps\n• 2 o más fotos del material\n• Tipo de camión (pequeño / ampliroll / que nos recomienden)\n• Kilos aproximados\n• Grúa horquilla disponible (sí/no)\n• Día y jornada preferida\n• Comentarios adicionales',
+    '📌 Al cerrar el chat te redirigimos a WhatsApp con esta lista lista para que nos la completes. Andrea te responderá con la cotización.'
+  ], () => rfNodo7());
+}
+
+// ═══════════════════════════════════════════════════════════════
+// N3D · LO VOY A MEDITAR
+// ═══════════════════════════════════════════════════════════════
+function rfNodo3d() {
+  rfState.intent = 'meditar';
+  rfBotSequence([
+    '¡Sin problema! Tómate el tiempo que necesites. 😊',
+    'Cuando estés listo, puedes volver a escribirnos y retomamos desde donde quedamos.',
+    '¿Te gustaría que un ejecutivo te contacte cuando lo decidas?'
+  ], () => {
+    rfAddOptions([
+      { label:'1. Sí, que me contacten', action:()=>{ rfAddUserMsg('Sí, que me contacten'); rfNodo7(); }},
+      { label:'2. No, no es necesario', action:()=>{ rfAddUserMsg('No, gracias'); rfNodofin(); }},
+      { label:'3. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }}
+    ]);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// N7 · CIERRE · Genera WhatsApp deeplink con TODO el state pre-lleno
+// ═══════════════════════════════════════════════════════════════
+function rfGenerarMensajeWhatsApp() {
+  const s = rfState;
+  const intent_labels = {
+    'vender_material': '💰 Quiero vender material',
+    'cotizar_retiro':  '🚛 Cotizar retiro',
+    'donar':           '💚 Quiero donar material',
+    'meditar':         '🤔 Me gustaría que me contacten luego',
+    'materiales_varios': '❓ Consulta materiales varios'
+  };
+  const header = intent_labels[s.intent] || '📩 Nueva consulta desde el chatbot web';
+
+  let msg = '*' + header + '*\n\n';
+  msg += '_Generado desde el chatbot de reciclean.cl_\n\n';
+
+  if (s.ciudad)   msg += '📍 Ciudad: ' + s.ciudad + '\n';
+  if (s.sucursal) msg += '📍 Sucursal: ' + s.sucursal + '\n';
+  if (s.material) msg += '📦 Material: ' + s.material + '\n';
+  if (s.empresa)  msg += '🏷 Empresa: ' + (s.empresa === 'farex' ? 'FAREX' : 'RECICLEAN') + '\n';
+  if (s.precio)   msg += '💰 Precio lista: $' + Math.round(s.precio).toLocaleString('es-CL') + '/kg\n';
+  if (s.modo_entrega) msg += '🚛 Modo entrega: ' + (s.modo_entrega === 'retiro' ? 'con retiro' : 'entrega propia') + '\n';
+
+  msg += '\n— — — — —\n';
+  msg += '*Datos pendientes de llenar:*\n\n';
+
+  if (s.intent === 'vender_material' && s.modo_entrega === 'entrega_propia') {
+    msg += '• Nombre y apellido: \n';
+    msg += '• RUT: \n';
+    msg += '• ¿Venta a nombre de empresa?: \n';
+    msg += '• Correo: \n';
+    msg += '• Día preferido: \n';
+    msg += '• Jornada (AM/PM): \n';
+  } else if (s.intent === 'cotizar_retiro') {
+    msg += '• Nombre y apellido: \n';
+    msg += '• Correo: \n';
+    msg += '• Dirección retiro: \n';
+    msg += '• Ubicación Google Maps: \n';
+    msg += '• Tipo camión (pequeño/ampliroll/no sé): \n';
+    msg += '• Kilos aproximados: \n';
+    msg += '• ¿Grúa horquilla?: \n';
+    msg += '• Día preferido: \n';
+    msg += '• Jornada (AM/PM): \n';
+    msg += '• Comentarios: \n';
+    msg += '\n📸 Por favor adjunta 2 o más fotos del material.';
+  } else if (s.intent === 'donar') {
+    if (s.tipo_cliente === 'personal') {
+      msg += '• Nombre y apellido: \n';
+      msg += '• Kilos aproximados: \n';
+      msg += '• Día preferido: \n';
+      msg += '• Jornada (AM/PM): \n';
+    } else {
+      msg += '• Nombre empresa: \n';
+      msg += '• RUT empresa: \n';
+      msg += '• Nombre y RUT de quien traerá el material: \n';
+      msg += '• Cargo: \n';
+      msg += '• Kilos aproximados: \n';
+      msg += '• Día preferido: \n';
+      msg += '• Jornada (AM/PM): \n';
+      msg += '• Certificado REP Ley 20.920: ' + (s.requiere_cert_rep ? 'SÍ (valor 2,7 UF anuales)' : 'NO') + '\n';
+      if (s.requiere_cert_rep) msg += '• Correo para el certificado: \n';
+    }
+  } else if (s.intent === 'meditar') {
+    msg += '• Nombre y apellido: \n';
+    msg += '• Canal preferido (WhatsApp / llamada): \n';
+  } else if (s.intent === 'materiales_varios') {
+    msg += '• Describe los materiales que tienes: \n';
+    msg += '• Cantidad aproximada: \n';
+    msg += '• Ciudad: \n';
+  }
+
+  msg += '\n_Gracias por contactarnos 💚_';
+  return msg;
+}
+
+function rfNodo7() {
+  // Generar WhatsApp deeplink
+  const mensaje = rfGenerarMensajeWhatsApp();
+  const waLink = 'https://wa.me/' + RF_CONFIG.WHATSAPP + '?text=' + encodeURIComponent(mensaje);
+
+  rfBotSequence([
+    '✅ <b>¡Listo!</b> Reúne los datos que te pedí y presiona el botón de abajo para enviarlos directamente a Andrea por WhatsApp (ya vienen pre-cargados).\n\nAndrea te responderá a la brevedad con la información o cotización.'
+  ], () => {
+    // Agregar botón CTA de WhatsApp directo
+    const wrap = document.createElement('div');
+    wrap.className = 'rf-bot-msg';
+    wrap.style.maxWidth = '92%';
+    wrap.innerHTML = '<div style="width:100%"><a href="' + waLink + '" target="_blank" class="rf-wa-cta"><span class="rf-wa-icon">💬</span>Abrir WhatsApp con datos pre-cargados</a></div>';
+    rfChat.appendChild(wrap);
+    rfScroll();
+
+    setTimeout(() => {
+      rfAddOptions([
+        { label:'1. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfReset(); }},
+        { label:'2. No, muchas gracias 👋', action:()=>{ rfAddUserMsg('Muchas gracias'); rfNodofin(); }}
+      ]);
+    }, 600);
+  });
+}
+
+function rfNodofin() {
+  rfBotSequence(['¡Hasta pronto! Cuando nos necesites, aquí estaremos. 👋♻']);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INICIALIZACIÓN
+// ═══════════════════════════════════════════════════════════════
+(async function rfInit() {
+  // Pre-cargar catálogo de precios en background
+  await rfFetchPrecios();
+  console.log('[RF Chatbot MVP v' + RF_CONFIG.VERSION + '] Listo. Catálogo:', rfCatalogoPrecios ? 'cargado' : 'sin datos (usará consultas directas)');
+})();
+</script>
+
+</body>
+</html>
