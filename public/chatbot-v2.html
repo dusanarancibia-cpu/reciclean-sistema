@@ -226,6 +226,89 @@ select.rf2-input { cursor:pointer; }
 .rf2-typing span:nth-child(3) { animation-delay:.4s; }
 @keyframes rf2Type { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
 
+/* ═══ TABLA DE PRECIOS POR FAMILIA (metales Farex) ═══ */
+.rf2-tabla-precios {
+  background:linear-gradient(180deg,#0e1a21 0%, #0b141a 100%);
+  border:1px solid rgba(134,239,172,.35);
+  border-radius:14px;
+  overflow:hidden;
+  margin:6px 0 2px 0;
+  box-shadow:0 6px 20px rgba(0,0,0,.35);
+}
+.rf2-tabla-header {
+  background:linear-gradient(135deg,#1A7A3C,#0F4B25);
+  color:#fff;
+  padding:10px 14px;
+  font-weight:800;
+  font-size:14px;
+  letter-spacing:.3px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:2px solid #22c55e;
+}
+.rf2-tabla-header .rf2-tabla-suc {
+  font-size:11px;
+  font-weight:600;
+  opacity:.85;
+  background:rgba(0,0,0,.25);
+  padding:3px 8px;
+  border-radius:20px;
+}
+.rf2-tabla-row {
+  display:grid;
+  grid-template-columns: 1fr auto auto;
+  align-items:center;
+  gap:10px;
+  padding:9px 12px;
+  border-bottom:1px dashed rgba(255,255,255,.08);
+  cursor:pointer;
+  transition:background .15s;
+}
+.rf2-tabla-row:last-child { border-bottom:none; }
+.rf2-tabla-row:hover { background:rgba(34,197,94,.08); }
+.rf2-tabla-row:active { background:rgba(34,197,94,.16); }
+.rf2-tabla-label {
+  color:#e9edef;
+  font-size:13px;
+  font-weight:500;
+  line-height:1.2;
+}
+.rf2-tabla-precio {
+  color:#86efac;
+  font-size:14px;
+  font-weight:800;
+  font-variant-numeric: tabular-nums;
+  white-space:nowrap;
+}
+.rf2-tabla-add {
+  background:#22c55e;
+  color:#0b141a;
+  border:none;
+  border-radius:50%;
+  width:28px;
+  height:28px;
+  font-size:16px;
+  font-weight:900;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  box-shadow:0 2px 6px rgba(34,197,94,.35);
+  pointer-events:none; /* el click va al row entero */
+}
+.rf2-tabla-row.rf2-ya-en-carrito .rf2-tabla-add { background:#fbbf24; }
+.rf2-tabla-row.rf2-ya-en-carrito .rf2-tabla-add::before { content:'✓'; font-size:14px; }
+.rf2-tabla-footer {
+  background:rgba(0,0,0,.3);
+  padding:8px 12px;
+  color:#fbbf24;
+  font-size:11px;
+  text-align:center;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+
 /* ═══ MOBILE ═══ */
 @media (max-width:480px) {
   #rf2-window {
@@ -233,6 +316,8 @@ select.rf2-input { cursor:pointer; }
     bottom:0 !important; right:0 !important; border-radius:0 !important;
   }
   #rf2-toggle { width:56px; height:56px; font-size:24px; bottom:16px; right:16px; }
+  .rf2-tabla-label { font-size:12px; }
+  .rf2-tabla-precio { font-size:13px; }
 }
 </style>
 </head>
@@ -549,8 +634,31 @@ function rfGenerarResumenTexto() {
   let txt = `ORDEN ${s.numero_orden}\n`;
   txt += `Cliente: ${s.nombre} | RUT: ${s.rut} | Tel: ${s.telefono} | Email: ${s.email}\n`;
   if (s.nombre_empresa) txt += `Empresa: ${s.nombre_empresa} | RUT emp: ${s.rut_empresa}\n`;
-  txt += `Sucursal: ${s.sucursal} | Material: ${s.material} | Precio: $${(s.precio||0).toLocaleString('es-CL')}/kg\n`;
-  txt += `Kg aprox: ${s.kg_aproximados} | Día: ${s.dia_preferido} | Jornada: ${s.jornada}\n`;
+  txt += `Sucursal: ${s.sucursal}\n`;
+
+  // Si hay carrito (multi-material o metales) detallamos cada ítem.
+  const carrito = Array.isArray(s.carrito) ? s.carrito : [];
+  if (carrito.length > 0) {
+    const { kgTotal, tramo, total } = rfCarritoTotalValor(carrito);
+    const hayMetales = carrito.some(it => it.emp === 'farex');
+    txt += `Materiales (${carrito.length}):\n`;
+    carrito.forEach(it => {
+      if (hayMetales && it.precioLista > 0) {
+        const precioEjec = rfPrecioEjecutivo(it.precioLista, tramo);
+        const subtotal  = precioEjec * (parseFloat(it.kg) || 0);
+        txt += `  - ${it.label}: ${it.kg} kg × $${precioEjec.toLocaleString('es-CL')}/kg = $${subtotal.toLocaleString('es-CL')}\n`;
+      } else {
+        txt += `  - ${it.label}: ${it.kg} kg\n`;
+      }
+    });
+    txt += `Total: ${kgTotal} kg (tramo ${tramo})`;
+    if (hayMetales && total > 0) txt += ` ≈ $${total.toLocaleString('es-CL')}`;
+    txt += `\n`;
+  } else {
+    txt += `Material: ${s.material} | Precio: $${(s.precio||0).toLocaleString('es-CL')}/kg | Kg aprox: ${s.kg_aproximados}\n`;
+  }
+
+  txt += `Día: ${s.dia_preferido} | Jornada: ${s.jornada}\n`;
   if (s.modo_entrega === 'retiro' || s.intent === 'retiro') {
     txt += `Dirección retiro: ${s.direccion}\n`;
     if (s.link_maps) txt += `Maps: ${s.link_maps}\n`;
@@ -1165,23 +1273,50 @@ function rfCarritoTotalValor(carrito) {
   return { total, tramo, kgTotal };
 }
 
-// Devuelve un resumen del carrito en HTML para mostrar en el chat
+// Devuelve un resumen del carrito en HTML para mostrar en el chat.
+// Si el carrito contiene metales Farex, muestra precios y subtotal por ítem
+// (los precios son públicos en farex.cl). Para materiales Reciclean se mantienen
+// ocultos hasta la negociación final (política "precios ocultos" del carrito v1).
 function rfCarritoResumenHTML(carrito) {
   if (!carrito || !carrito.length) return '<em>Carrito vacío</em>';
-  const { kgTotal, tramo } = rfCarritoTotalValor(carrito);
+  const { kgTotal, tramo, total } = rfCarritoTotalValor(carrito);
+  const hayMetales = carrito.some(it => it.emp === 'farex');
+  const mostrarPrecios = hayMetales;
+
   let html = '<div style="background:#0f1b22;border:1px solid rgba(134,239,172,.3);border-radius:12px;padding:12px;margin:6px 0">';
-  html += '<div style="color:#86efac;font-weight:700;margin-bottom:8px">📋 Tu carrito</div>';
-  carrito.forEach((it, i) => {
-    html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.08);font-size:13px">
-               <span>${it.label}</span>
-               <span style="color:#86efac;font-weight:600">${it.kg} kg</span>
-             </div>`;
+  html += '<div style="color:#86efac;font-weight:700;margin-bottom:8px">📋 Tu cotización</div>';
+  carrito.forEach((it) => {
+    const precioEjec = rfPrecioEjecutivo(it.precioLista || 0, tramo);
+    const subtotal = precioEjec * (parseFloat(it.kg) || 0);
+    if (mostrarPrecios && it.precioLista > 0) {
+      html += `<div style="padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.08);font-size:13px">
+                 <div style="display:flex;justify-content:space-between;align-items:center">
+                   <span>${rfEsc(it.label)}</span>
+                   <span style="color:#86efac;font-weight:600">${it.kg} kg</span>
+                 </div>
+                 <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(233,237,239,.65);margin-top:2px">
+                   <span>$${precioEjec.toLocaleString('es-CL')}/kg</span>
+                   <span>$${subtotal.toLocaleString('es-CL')}</span>
+                 </div>
+               </div>`;
+    } else {
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.08);font-size:13px">
+                 <span>${rfEsc(it.label)}</span>
+                 <span style="color:#86efac;font-weight:600">${it.kg} kg</span>
+               </div>`;
+    }
   });
   html += `<div style="display:flex;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:2px solid rgba(134,239,172,.25);font-weight:700">
              <span>Total:</span>
              <span style="color:#22c55e;font-size:16px">${kgTotal} kg</span>
            </div>`;
-  html += `<div style="text-align:center;margin-top:6px;color:#fbbf24;font-size:12px">🎯 Tramo estimado: <strong>${tramo}</strong></div>`;
+  if (mostrarPrecios && total > 0) {
+    html += `<div style="display:flex;justify-content:space-between;margin-top:4px;font-weight:800">
+               <span style="color:#fbbf24">Aprox a pagar:</span>
+               <span style="color:#fbbf24;font-size:17px">$${total.toLocaleString('es-CL')}</span>
+             </div>`;
+  }
+  html += `<div style="text-align:center;margin-top:6px;color:#fbbf24;font-size:11px">🎯 Tramo por volumen total: <strong>${tramo}</strong>${mostrarPrecios ? ' · Precios oficiales farex.cl' : ''}</div>`;
   html += '</div>';
   return html;
 }
@@ -1446,7 +1581,11 @@ const METALES_CATS = [
 ];
 
 async function rfNodoMetales() {
-  rfTrack('N-metales'); rfS.empresa = 'farex';
+  rfTrack('N-metales');
+  rfS.empresa = 'farex';
+  rfS.intent = rfS.intent || 'vender';
+  // Inicializa carrito si aún no existe — el flujo de metales usa el mismo carrito
+  if (!Array.isArray(rfS.carrito)) rfS.carrito = [];
   rfSetProgress(35);
 
   // Farex solo opera en Cerrillos y Maipú — Talca y Puerto Montt no tienen servicio de metales
@@ -1463,104 +1602,109 @@ async function rfNodoMetales() {
 
 async function rfNodoMetalesCat() {
   rfSetProgress(40);
-  await rfBotMsg(`💪 ¡Perfecto! En <strong>Farex ${rfS.sucursal}</strong> compramos todo tipo de metales y chatarra. Los precios que verás son los mismos que publicamos en <strong style="color:#86efac">farex.cl</strong> — actualizados al día de hoy.<br><br>¿Qué tipo de metal tienes?`);
+  const tieneItems = (rfS.carrito || []).some(it => it.emp === 'farex');
+  const saludo = tieneItems
+    ? `¿Qué otra familia de metales querés ver? 👇`
+    : `💪 ¡Perfecto! En <strong>Farex ${rfS.sucursal}</strong> compramos metales y chatarra con precios <strong style="color:#86efac">publicados en farex.cl</strong>, actualizados al día de hoy.<br><br>Elegí la familia y te muestro la tabla completa con precios 👇`;
+  await rfBotMsg(saludo);
+
   const btns = METALES_CATS.map(cat => ({
     label: cat.label,
-    fn: () => rfNodoMetalesItems(cat)
+    fn: () => rfNodoMetalesTabla(cat)
   }));
+
+  if (tieneItems) {
+    btns.push({ label: `🧺 Ver mi cotización (${rfS.carrito.length})`, primary: true, full: true, fn: rfNodoCarritoResumen });
+  }
   btns.push({ label: '🔙 Ver otros materiales', secondary: true, fn: rfNodo3A });
   rfShowBtns(btns);
 }
 
-async function rfNodoMetalesItems(cat) {
+/* ═══ TABLA DE PRECIOS POR FAMILIA (feat 8 abril 2026) ═══
+   Lee el snapshot Supabase y renderiza una tabla estilo farex.cl
+   dentro del chat. Cada fila es tappable y agrega el material al
+   carrito (reusa rfNodoCarritoKilos). */
+
+// Devuelve los items de una categoría con su precio lista leído del snapshot.
+// Filtra los que no tengan precio (>0). Si el snapshot aún no está cargado,
+// intenta cargarlo sincrónicamente (await).
+async function rfGetPreciosCategoria(cat, sucursal) {
+  if (!rfS._snapshot) rfS._snapshot = await rfGetSnapshot();
+  const snap = rfS._snapshot;
+  if (!snap || !snap[sucursal]) return [];
+  const items = snap[sucursal];
+  return cat.items.map(it => {
+    const term = rfNormalize(it.can);
+    const row = items.find(r =>
+      rfNormalize(r.material || '') === term ||
+      rfNormalize(r.nombre   || '') === term
+    );
+    const precio = row?.precioLista || row?.precio_lista || 0;
+    return { ...it, precio };
+  }).filter(it => it.precio > 0);
+}
+
+// Renderiza la tabla de precios como HTML (para insertarlo dentro de rfBotMsg).
+// Cada fila trae onclick que llama a la función global window.rf2AddMetal.
+function rfTablaPreciosHTML(cat, items, sucursal) {
+  const yaEnCarrito = new Set((rfS.carrito || []).filter(it => it.emp === 'farex').map(it => it.can));
+  let html = '<div class="rf2-tabla-precios">';
+  html += `<div class="rf2-tabla-header"><span>${cat.label}</span><span class="rf2-tabla-suc">Farex ${rfEsc(sucursal)}</span></div>`;
+  items.forEach(it => {
+    const yaEsta = yaEnCarrito.has(it.can);
+    const precioFmt = '$' + it.precio.toLocaleString('es-CL');
+    const canAttr = rfEsc(it.can).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const labelAttr = rfEsc(it.label).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    html += `<div class="rf2-tabla-row${yaEsta ? ' rf2-ya-en-carrito' : ''}" onclick="window.rf2AddMetal('${canAttr}','${labelAttr}')">
+      <span class="rf2-tabla-label">${rfEsc(it.label)}</span>
+      <span class="rf2-tabla-precio">${precioFmt}/kg</span>
+      <button class="rf2-tabla-add" tabindex="-1">${yaEsta ? '' : '+'}</button>
+    </div>`;
+  });
+  html += '<div class="rf2-tabla-footer">💪 Mejor precio según volumen total · IVA 19% retención · Pago al contado</div>';
+  html += '</div>';
+  return html;
+}
+
+// Hook global para que los onclick de la tabla puedan disparar el flujo de kg.
+// Se expone en window porque la tabla está inyectada vía innerHTML.
+window.rf2AddMetal = function(can, label) {
+  const mat = { label, can, emp: 'farex', origen: 'metales' };
+  rfUserMsg(`➕ ${label}`);
+  rfNodoCarritoKilos(mat);
+};
+
+async function rfNodoMetalesTabla(cat) {
+  rfTrack('N-metales-tabla');
   rfSetProgress(45);
-  await rfBotMsg(`Dentro de <strong>${cat.label}</strong>, estos son los materiales que recibimos en <strong>${rfS.sucursal}</strong>. ¿Cuál es el tuyo? 👇`);
-  const btns = cat.items.map(item => ({
-    label: item.label,
-    fn: async () => {
-      rfS.material = item.can; rfS.empresa = 'farex';
-      rfSetProgress(50);
-      await rfBotMsg('Un momento, consulto el precio del día en Farex... 🔎');
-      const precio = await rfGetPrecio(item.can, rfS.sucursal, 'farex');
-      rfClearActions();
-      if (precio && precio > 0) {
-        rfS.precio = precio;
-        rfNodo4Farex(precio, item);
-      } else {
-        rfNodo4FarexSinPrecio(item);
-      }
-    }
-  }));
-  btns.push({ label: '🔙 Cambiar categoría', secondary: true, fn: rfNodoMetalesCat });
+
+  await rfBotMsg(`Consultando precios de ${cat.label} en Farex ${rfS.sucursal}... 🔎`);
+  const items = await rfGetPreciosCategoria(cat, rfS.sucursal);
+  rfClearActions();
+
+  if (!items.length) {
+    await rfBotMsg(`Disculpá, no tenemos precios actualizados de <strong>${cat.label}</strong> hoy en <strong>Farex ${rfS.sucursal}</strong> 😕<br>Podemos contactarte por WhatsApp para darte el precio del día.`);
+    rfShowBtns([
+      { label: '💬 Escribir por WhatsApp', primary: true, fn: () => {
+        const m = encodeURIComponent(`Hola, quiero consultar precio de ${cat.label} en Farex ${rfS.sucursal}.`);
+        window.open(`https://wa.me/${RF2.WHATSAPP}?text=${m}`, '_blank');
+      }},
+      { label: '🔙 Otras familias', secondary: true, fn: rfNodoMetalesCat },
+    ]);
+    return;
+  }
+
+  await rfBotMsg(rfTablaPreciosHTML(cat, items, rfS.sucursal));
+  await rfBotMsg('Tocá el material que tenés y te pregunto los kilos 👆');
+
+  const btns = [];
+  if ((rfS.carrito || []).length > 0) {
+    btns.push({ label: `🧺 Ver mi cotización (${rfS.carrito.length})`, primary: true, full: true, fn: rfNodoCarritoResumen });
+  }
+  btns.push({ label: '🔙 Otras familias', secondary: true, fn: rfNodoMetalesCat });
   rfShowBtns(btns);
 }
 
-async function rfNodo4Farex(precio, item) {
-  rfTrack('N4-farex');
-  rfS.precio_lista = precio;
-  const precioFmt    = '$' + precio.toLocaleString('es-CL');
-
-  // Genera el código de verificación único para esta cotización
-  if (!rfS.foto_codigo) rfS.foto_codigo = rfGenerarCodigoVerif();
-
-  await rfSeq([
-    `¡Listo! 🙌 El precio lista de <strong>${item.label}</strong> en <strong>Farex ${rfS.sucursal}</strong> es:<br><span class="rf2-price-big">${precioFmt} / kg</span><span class="rf2-note">Precio publicado en farex.cl · Retención IVA 19% · Pago al contado · Mejor precio según volumen</span>`,
-    `Para darte el mejor precio, <strong>envíame una foto del material</strong> 📸<br><br>La foto debe mostrar:<br><br>1️⃣ <strong>Todo el material</strong> (que se vea la cantidad total)<br><br>2️⃣ <strong>Un objeto de tamaño conocido</strong> al lado (un <strong>casco</strong> de seguridad, una <strong>botella 2L</strong>, un <strong>zapato</strong> o una <strong>hoja A4</strong>) — nos ayuda a estimar el volumen<br><br>3️⃣ <strong>Un papel escrito a mano con el código:</strong><div style="background:#22c55e;color:#0b141a;padding:12px 16px;margin:10px 0;border-radius:12px;text-align:center;font-size:32px;font-weight:800;letter-spacing:6px;font-family:monospace">${rfS.foto_codigo}</div><span class="rf2-note">El código es único para esta cotización — evita que otra persona la use.</span>`
-  ], () => rfNodoPedirFotoFarex(precio, item));
-}
-
-// Pide foto en el flujo Farex (metales)
-async function rfNodoPedirFotoFarex(precio, item) {
-  rfTrack('N4-farex-foto');
-  rfSetProgress(50);
-  rfShowFileInput({
-    label: '📸 Tomar foto del material',
-    accept: 'image/*',
-    capture: 'environment',
-    skipLabel: '⏭ Prefiero elegir tramo sin foto',
-    onSelect: async (file) => {
-      rfUserMsg('📸 Foto enviada');
-      await rfBotMsg('Recibida. Subiéndola... 📤');
-      try {
-        const url = await rfSubirFotoStorage(file, rfS.session_id);
-        rfS.foto_url = url;
-        await rfBotMsg('¡Foto guardada! ✅<br>El equipo de Farex la revisará para darte el precio ejecutivo al momento de pesar.');
-      } catch(e) {
-        console.error('[RF2] upload foto farex:', e.message);
-        await rfBotMsg('Mmm, no pude subir la foto 😕 pero seguimos igual, coordinamos al momento de pesar.');
-      }
-      rfMostrarTramosFarex(precio, item);
-    },
-    onSkip: () => {
-      rfBotMsg('Sin problema 😊 elige el tramo que estimas:').then(() => rfMostrarTramosFarex(precio, item));
-    }
-  });
-}
-
-function rfMostrarTramosFarex(precio, item) {
-  rfShowBtns([
-    { label: 'Menos de 50 kg',       fn: () => rfNodoPrecioNegociar(precio, item, 'menos de 10 kg') },
-    { label: '50 – 500 kg',          fn: () => rfNodoPrecioNegociar(precio, item, '50–200 kg')      },
-    { label: '500 kg – 2 ton',       fn: () => rfNodoPrecioNegociar(precio, item, '200–500 kg')     },
-    { label: 'Más de 2 toneladas',   fn: () => rfNodoPrecioNegociar(precio, item, 'más de 500 kg')  },
-    { label: '🔙 Ver otros metales', secondary: true, fn: rfNodoMetalesCat },
-  ]);
-}
-
-async function rfNodo4FarexSinPrecio(item) {
-  rfTrack('N4-farex-sin-precio');
-  await rfSeq([
-    `El precio de <strong>${item.label}</strong> depende mucho de la calidad y el estado del material, por eso nuestro equipo prefiere verlo antes de darte un número. 🧐`,
-    `No te preocupes — es rápido. ¿Quieres que alguien de <strong>Farex ${rfS.sucursal}</strong> te contacte hoy para coordinar?`
-  ], () => rfShowBtns([
-    { label: '✅ Sí, que me contacten', primary: true, fn: () => { rfS.intent = rfS.intent || 'vender'; rfNodoDatos(); }},
-    { label: '💬 Prefiero escribir por WhatsApp', fn: () => {
-      const m = encodeURIComponent(`Hola, quiero consultar el precio de ${item.label} en Farex ${rfS.sucursal}.`);
-      window.open(`https://wa.me/${RF2.WHATSAPP}?text=${m}`, '_blank');
-    }},
-    { label: '🔙 Ver otros metales', secondary: true, fn: rfNodoMetalesCat },
-  ]));
-}
 
 // Otros materiales
 async function rfNodoOtros() {
@@ -1639,12 +1783,35 @@ async function rfNodoResumenFinal() {
     ['Empresa',       rfS.nombre_empresa],
     ['RUT empresa',   rfS.rut_empresa],
     ['Sucursal',      rfS.sucursal],
-    ['Material',      rfS.material],
-    ['Precio acordado', rfS.precio ? `$${rfS.precio.toLocaleString('es-CL')}/kg` : 'a confirmar'],
-    ['Kg aprox.',     rfS.kg_aproximados],
-    ['Día',           rfS.dia_preferido],
-    ['Jornada',       rfS.jornada]
   ];
+
+  // Si hay carrito (multi-material o metales), detallamos cada ítem.
+  // Para metales (Farex) mostramos el precio por kg + subtotal aproximado.
+  const carrito = Array.isArray(rfS.carrito) ? rfS.carrito : [];
+  if (carrito.length > 0) {
+    const { kgTotal, tramo, total } = rfCarritoTotalValor(carrito);
+    const hayMetales = carrito.some(it => it.emp === 'farex');
+    carrito.forEach(it => {
+      if (hayMetales && it.precioLista > 0) {
+        const precioEjec = rfPrecioEjecutivo(it.precioLista, tramo);
+        const subtotal = precioEjec * (parseFloat(it.kg) || 0);
+        filas.push([it.label, `${it.kg} kg · $${precioEjec.toLocaleString('es-CL')}/kg = $${subtotal.toLocaleString('es-CL')}`]);
+      } else {
+        filas.push([it.label, `${it.kg} kg`]);
+      }
+    });
+    filas.push(['Total kg', `${kgTotal} kg (tramo ${tramo})`]);
+    if (hayMetales && total > 0) {
+      filas.push(['Aprox. a pagar', `$${total.toLocaleString('es-CL')}`]);
+    }
+  } else {
+    filas.push(['Material', rfS.material]);
+    filas.push(['Precio acordado', rfS.precio ? `$${rfS.precio.toLocaleString('es-CL')}/kg` : 'a confirmar']);
+    filas.push(['Kg aprox.', rfS.kg_aproximados]);
+  }
+
+  filas.push(['Día',     rfS.dia_preferido]);
+  filas.push(['Jornada', rfS.jornada]);
 
   rfShowResumen(filas,
     () => rfNodoEnviar('confirmada'),
@@ -2175,18 +2342,31 @@ async function rfNodoCarritoKilos(mat) {
     hintOk: '✓ Listo',
     onSend: async (val) => {
       const kg = parseFloat(val);
-      // Busca precio lista en snapshot para guardar (no se muestra al cliente)
+      // Busca precio lista en snapshot
       const precio = await rfGetPrecio(mat.can, rfS.sucursal, mat.emp);
-      rfS.carrito.push({
+      // Si el material ya estaba en el carrito (mismo can+emp), reemplaza los kg
+      const idxExistente = rfS.carrito.findIndex(it => it.can === mat.can && it.emp === mat.emp);
+      const nuevoItem = {
         label:       mat.label,
         can:         mat.can,
         emp:         mat.emp,
         kg:          kg,
         precioLista: precio || 0
-      });
+      };
+      if (idxExistente >= 0) {
+        rfS.carrito[idxExistente] = nuevoItem;
+      } else {
+        rfS.carrito.push(nuevoItem);
+      }
       rfClearActions();
       await rfBotMsg(`Agregado: <strong>${mat.label}</strong> — ${kg} kg ✅`);
-      rfNodoCarritoSelect();
+      // Vuelve al origen del que vino el material para que la UX sea coherente:
+      // tabla de metales → menú de familias; carrito genérico → menú Reciclean.
+      if (mat.origen === 'metales') {
+        rfNodoMetalesCat();
+      } else {
+        rfNodoCarritoSelect();
+      }
     }
   });
 }
