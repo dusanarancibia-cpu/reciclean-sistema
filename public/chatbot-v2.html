@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chatbot Reciclean-Farex · v2</title>
+<!--
+═══════════════════════════════════════════════════════════════════
+  CHATBOT RECICLEAN-FAREX · v2
+  Widget embebible standalone — Basado en flujo v9 + investigación
+  de marketing/psicología/sociología de conversión (abril 2026)
+
+  NUEVAS FUNCIONES vs v1:
+  ✅ Captura completa de datos en el chat (nombre, RUT, email, teléfono...)
+  ✅ Validación RUT chileno (módulo 11) en tiempo real
+  ✅ POST a Supabase cotizaciones_chatbot (persiste todo)
+  ✅ Webhook Make.com → email automático a cliente + Andrea + sucursal
+  ✅ Flujo A: Entrega propia → confirmación automática sin Andrea
+  ✅ Flujo B: Retiro → Andrea aprueba → auto-envía email+WhatsApp
+  ✅ Progreso visual (barra de progreso por etapas)
+  ✅ Estados de carga, errores con retry, validación inline
+  ✅ Métricas por sesión (nodos visitados, tiempo, abandono)
+  ✅ Puerto Montt: solo muestra "Próximamente", nunca toma cotizaciones
+
+  CONFIGURACIÓN MAKE.COM REQUERIDA:
+  Ver sección RF_CONFIG → MAKE_WEBHOOK
+  Escenario 1: Nuevo cotización → email cliente + Andrea + encargado sucursal
+  Escenario 2: Andrea aprueba retiro → email+WhatsApp cliente
+
+  Autor: Claude · Para: Grupo Reciclean-Farex
+  Fecha: 7 abril 2026 · Versión: 2.0
+═══════════════════════════════════════════════════════════════════
+-->
+<style>
+/* ═══ RESET Y NAMESPACE rf2-* ═══ */
+#rf2-container, #rf2-container * { box-sizing:border-box; margin:0; padding:0; }
+#rf2-container {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size:15px; line-height:1.5;
+}
+
+/* ═══ BOTÓN FLOTANTE ═══ */
+#rf2-toggle {
+  position:fixed; bottom:24px; right:24px; z-index:999998;
+  width:64px; height:64px; border-radius:50%;
+  background:linear-gradient(135deg,#1A7A3C 0%,#0F4B25 100%);
+  border:none; cursor:pointer; color:#fff; font-size:28px;
+  box-shadow:0 8px 28px rgba(26,122,60,.45),0 2px 6px rgba(0,0,0,.2);
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .25s,box-shadow .25s;
+}
+#rf2-toggle:hover { transform:scale(1.08); box-shadow:0 12px 32px rgba(26,122,60,.6); }
+#rf2-toggle.open { background:linear-gradient(135deg,#475569,#1e293b); }
+.rf2-pulse {
+  position:absolute; inset:-4px; border-radius:50%;
+  border:2px solid #1A7A3C; opacity:0;
+  animation:rf2Pulse 2.5s infinite;
+}
+@keyframes rf2Pulse { 0%{opacity:.7;transform:scale(1)} 100%{opacity:0;transform:scale(1.45)} }
+
+/* ═══ VENTANA DEL CHAT ═══ */
+#rf2-window {
+  position:fixed; bottom:100px; right:24px; z-index:999999;
+  width:400px; max-height:calc(100vh - 140px);
+  background:#0b141a; border-radius:18px;
+  box-shadow:0 30px 80px rgba(0,0,0,.5),0 6px 20px rgba(0,0,0,.3);
+  overflow:hidden; display:none; flex-direction:column;
+  border:1px solid rgba(255,255,255,.08);
+  animation:rf2SlideUp .3s ease;
+}
+#rf2-window.open { display:flex; }
+@keyframes rf2SlideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+/* ═══ HEADER ═══ */
+#rf2-header {
+  background:linear-gradient(135deg,#1A7A3C,#0F4B25);
+  padding:12px 16px; display:flex; align-items:center; gap:10px;
+  flex-shrink:0; border-bottom:1px solid rgba(255,255,255,.08);
+}
+.rf2-avatar {
+  width:40px; height:40px; border-radius:50%;
+  background:linear-gradient(135deg,#F0D060,#eab308);
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; flex-shrink:0;
+}
+.rf2-brand { flex:1; min-width:0; }
+.rf2-brand-name { color:#fff; font-weight:700; font-size:14px; }
+.rf2-brand-status { color:#86efac; font-size:11px; display:flex; align-items:center; gap:4px; }
+.rf2-brand-status::before { content:''; display:inline-block; width:7px; height:7px; background:#22c55e; border-radius:50%; }
+#rf2-close { background:none; border:none; color:rgba(255,255,255,.7); font-size:20px; cursor:pointer; padding:4px; border-radius:6px; }
+#rf2-close:hover { color:#fff; background:rgba(255,255,255,.1); }
+
+/* ═══ BARRA DE PROGRESO ═══ */
+#rf2-progress-bar {
+  background:rgba(255,255,255,.06); height:3px; flex-shrink:0; position:relative;
+}
+#rf2-progress-fill {
+  height:100%; background:linear-gradient(90deg,#1A7A3C,#22c55e);
+  transition:width .5s ease; width:0%;
+}
+#rf2-progress-label {
+  position:absolute; right:10px; top:5px; font-size:10px;
+  color:rgba(255,255,255,.45); display:none;
+}
+
+/* ═══ ÁREA DE MENSAJES ═══ */
+#rf2-messages {
+  flex:1; overflow-y:auto; padding:16px 12px 8px;
+  display:flex; flex-direction:column; gap:6px;
+  scroll-behavior:smooth;
+}
+#rf2-messages::-webkit-scrollbar { width:4px; }
+#rf2-messages::-webkit-scrollbar-thumb { background:rgba(255,255,255,.15); border-radius:2px; }
+
+/* ═══ MENSAJES ═══ */
+.rf2-msg-bot, .rf2-msg-user { display:flex; max-width:88%; animation:rf2FadeIn .25s ease; }
+@keyframes rf2FadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.rf2-msg-bot { align-self:flex-start; }
+.rf2-msg-user { align-self:flex-end; }
+.rf2-bubble {
+  padding:10px 14px; border-radius:14px;
+  line-height:1.55; font-size:14px; word-wrap:break-word;
+}
+.rf2-msg-bot .rf2-bubble {
+  background:#1f2c34; color:#e9edef; border-bottom-left-radius:4px;
+}
+.rf2-msg-user .rf2-bubble {
+  background:#005c4b; color:#e9edef; border-bottom-right-radius:4px;
+}
+.rf2-bubble strong { font-weight:600; }
+.rf2-bubble .rf2-price-big { font-size:22px; font-weight:700; color:#22c55e; display:block; margin:4px 0; }
+.rf2-bubble .rf2-note { font-size:11px; color:rgba(233,237,239,.55); margin-top:4px; display:block; }
+
+/* ═══ BOTONES DE ACCIÓN ═══ */
+.rf2-btns {
+  display:flex; flex-wrap:wrap; gap:6px;
+  padding:6px 12px 10px; animation:rf2FadeIn .3s ease;
+}
+.rf2-btn {
+  background:#1f2c34; border:1px solid rgba(134,239,172,.35);
+  color:#86efac; padding:8px 14px; border-radius:20px;
+  font-size:13px; cursor:pointer; transition:all .2s;
+  text-align:left; white-space:normal;
+}
+.rf2-btn:hover, .rf2-btn:focus {
+  background:#22c55e; color:#fff; border-color:#22c55e;
+  transform:translateY(-1px);
+}
+.rf2-btn.rf2-btn-primary {
+  background:linear-gradient(135deg,#1A7A3C,#0F4B25);
+  border-color:#22c55e; color:#fff; font-weight:600;
+}
+.rf2-btn.rf2-btn-secondary { border-color:rgba(255,255,255,.2); color:rgba(255,255,255,.65); }
+.rf2-btn.rf2-btn-danger { border-color:rgba(239,68,68,.4); color:#f87171; }
+.rf2-btn.rf2-btn-full { width:100%; justify-content:center; display:flex; }
+
+/* ═══ INPUTS EN CHAT ═══ */
+.rf2-input-block {
+  padding:6px 12px 10px; animation:rf2FadeIn .3s ease;
+}
+.rf2-input-label { color:rgba(255,255,255,.55); font-size:11px; margin-bottom:4px; display:block; }
+.rf2-input-row { display:flex; gap:6px; align-items:flex-start; }
+.rf2-input {
+  flex:1; background:#1f2c34; border:1px solid rgba(255,255,255,.15);
+  color:#e9edef; padding:10px 12px; border-radius:10px;
+  font-size:14px; outline:none; transition:border-color .2s;
+  font-family:inherit;
+}
+.rf2-input:focus { border-color:#22c55e; }
+.rf2-input.valid { border-color:#22c55e; }
+.rf2-input.invalid { border-color:#ef4444; }
+.rf2-input-hint { font-size:11px; margin-top:4px; min-height:16px; }
+.rf2-input-hint.ok { color:#22c55e; }
+.rf2-input-hint.err { color:#f87171; }
+.rf2-btn-send {
+  background:#1A7A3C; border:none; color:#fff;
+  padding:10px 14px; border-radius:10px; cursor:pointer;
+  font-size:15px; transition:background .2s; flex-shrink:0;
+}
+.rf2-btn-send:hover { background:#22c55e; }
+.rf2-btn-send:disabled { background:#374151; cursor:not-allowed; }
+textarea.rf2-input { resize:none; height:72px; }
+select.rf2-input { cursor:pointer; }
+
+/* ═══ RESUMEN CARD ═══ */
+.rf2-summary {
+  background:#1f2c34; border:1px solid rgba(134,239,172,.2);
+  border-radius:12px; padding:12px 14px; margin:6px 12px 10px;
+  animation:rf2FadeIn .3s ease;
+}
+.rf2-summary h4 { color:#86efac; font-size:12px; text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px; }
+.rf2-summary-row { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid rgba(255,255,255,.06); font-size:13px; }
+.rf2-summary-row:last-child { border:none; }
+.rf2-summary-row .label { color:rgba(233,237,239,.55); }
+.rf2-summary-row .val { color:#e9edef; font-weight:500; text-align:right; max-width:60%; }
+
+/* ═══ ÉXITO ═══ */
+.rf2-success {
+  background:linear-gradient(135deg,rgba(26,122,60,.3),rgba(15,75,37,.2));
+  border:1px solid rgba(134,239,172,.3); border-radius:14px;
+  padding:16px; margin:8px 12px; text-align:center;
+  animation:rf2FadeIn .4s ease;
+}
+.rf2-success .rf2-order { font-size:20px; font-weight:700; color:#22c55e; margin:8px 0; letter-spacing:.05em; }
+.rf2-success p { font-size:13px; color:rgba(233,237,239,.7); margin-top:6px; }
+
+/* ═══ ERROR ═══ */
+.rf2-error-block {
+  background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3);
+  border-radius:12px; padding:12px; margin:6px 12px;
+  font-size:13px; color:#f87171; text-align:center;
+  animation:rf2FadeIn .3s ease;
+}
+
+/* ═══ LOADING ═══ */
+.rf2-typing {
+  display:flex; align-items:center; gap:4px; padding:10px 14px;
+  background:#1f2c34; border-radius:14px; border-bottom-left-radius:4px;
+  max-width:72px; margin-left:0;
+}
+.rf2-typing span {
+  width:7px; height:7px; background:#86efac; border-radius:50%;
+  animation:rf2Type 1.2s infinite;
+}
+.rf2-typing span:nth-child(2) { animation-delay:.2s; }
+.rf2-typing span:nth-child(3) { animation-delay:.4s; }
+@keyframes rf2Type { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+/* ═══ MOBILE ═══ */
+@media (max-width:480px) {
+  #rf2-window {
+    width:100vw !important; height:100vh !important; max-height:100vh !important;
+    bottom:0 !important; right:0 !important; border-radius:0 !important;
+  }
+  #rf2-toggle { width:56px; height:56px; font-size:24px; bottom:16px; right:16px; }
+}
+</style>
+</head>
+<body>
+<div id="rf2-container">
+
+  <!-- Botón flotante -->
+  <button id="rf2-toggle" aria-label="Abrir asistente de reciclaje">
+    <div class="rf2-pulse"></div>
+    ♻️
+  </button>
+
+  <!-- Ventana del chat -->
+  <div id="rf2-window" role="dialog" aria-label="Asistente Reciclean-Farex">
+
+    <!-- Header -->
+    <div id="rf2-header">
+      <div class="rf2-avatar">♻️</div>
+      <div class="rf2-brand">
+        <div class="rf2-brand-name">Asistente Reciclean-Farex</div>
+        <div class="rf2-brand-status">En línea · Responde de inmediato</div>
+      </div>
+      <button id="rf2-close" aria-label="Cerrar">✕</button>
+    </div>
+
+    <!-- Barra de progreso -->
+    <div id="rf2-progress-bar">
+      <div id="rf2-progress-fill"></div>
+      <span id="rf2-progress-label"></span>
+    </div>
+
+    <!-- Mensajes -->
+    <div id="rf2-messages"></div>
+
+  </div><!-- fin window -->
+</div><!-- fin container -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   CONFIGURACIÓN v2
+   Completar MAKE_WEBHOOK con la URL de tu escenario Make.com
+   Emails de encargados de sucursal: actualizar antes de deploy
+═══════════════════════════════════════════════════════════════════ */
+const RF2 = {
+  SUPABASE_URL:  'https://eknmtsrtfkzroxnovfqn.supabase.co',
+  SUPABASE_KEY:  'sb_publishable_y-ivpVdiL141kz4ZASje5g_SYG7do5z',
+  MAKE_WEBHOOK:  '', // ← PEGAR URL del webhook Make.com aquí
+  WHATSAPP:      '56995342437',
+  WHATSAPP_DISP: '+56 9 9534 2437',
+  EMAIL_ANDREA:  'comercial@gestionrepchile.cl',
+  // Emails encargados por sucursal (actualizar con los reales):
+  EMAIL_CERRILLOS: 'cerrillos@gestionrepchile.cl',
+  EMAIL_MAIPU:     'maipu@gestionrepchile.cl',
+  EMAIL_TALCA:     'talca@gestionrepchile.cl',
+  VERSION:       '2.0'
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   ESTADO GLOBAL
+═══════════════════════════════════════════════════════════════════ */
+let rfS = {
+  // Flujo
+  intent: null,          // vender | retiro | donar | meditar
+  ciudad: null,
+  sucursal: null,
+  material: null,
+  empresa: null,
+  precio: null,
+  modo_entrega: null,    // propia | retiro
+  tipo_cliente: null,    // personal | empresa
+  // Datos del cliente (capturados en chat)
+  nombre: null,
+  rut: null,
+  email: null,
+  telefono: null,
+  nombre_empresa: null,
+  rut_empresa: null,
+  cargo: null,
+  kg_aproximados: null,
+  dia_preferido: null,
+  jornada: null,
+  // Para retiro
+  direccion: null,
+  link_maps: null,
+  tipo_camion: null,
+  grua_horquilla: null,
+  comentarios: null,
+  // Para donación empresa
+  requiere_cert_rep: false,
+  // Métricas
+  session_id: null,
+  inicio: null,
+  nodos: [],             // [{ nodo, ts }]
+  numero_orden: null,
+  estado_envio: null     // pendiente | confirmada | error
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   VALIDACIÓN CHILENA
+═══════════════════════════════════════════════════════════════════ */
+function validarRut(rut) {
+  if (!rut) return false;
+  rut = rut.replace(/\s|\./g, '').toUpperCase().trim();
+  if (!/^[0-9]{7,8}-[0-9K]$/.test(rut)) return false;
+  const [nums, dv] = rut.split('-');
+  const m = [2,3,4,5,6,7];
+  let s = 0;
+  for (let i = nums.length - 1, j = 0; i >= 0; i--, j++) {
+    s += parseInt(nums[i]) * m[j % 6];
+  }
+  const r = 11 - (s % 11);
+  const dvCalc = r === 11 ? '0' : r === 10 ? 'K' : String(r);
+  return dvCalc === dv;
+}
+
+function formatearRut(rut) {
+  rut = rut.replace(/\s|\./g, '').toUpperCase().trim();
+  if (rut.length < 2) return rut;
+  const cuerpo = rut.replace(/-/g,'');
+  if (cuerpo.length < 2) return rut;
+  const nums = cuerpo.slice(0, -1);
+  const dv   = cuerpo.slice(-1);
+  const formateado = nums.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return formateado + '-' + dv;
+}
+
+function validarEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+}
+
+function validarTelefono(tel) {
+  const limpio = tel.replace(/[\s\-\(\)]/g,'');
+  return /^(\+?56)?9\d{8}$/.test(limpio);
+}
+
+function generarOrden() {
+  const ts = Date.now().toString(36).toUpperCase();
+  const rand = Math.floor(Math.random() * 1000).toString().padStart(3,'0');
+  const suc = (rfS.sucursal || 'RF').substring(0,2).toUpperCase();
+  return `${suc}-${ts}-${rand}`;
+}
+
+function generarSession() {
+  return 'ses_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SUPABASE API
+═══════════════════════════════════════════════════════════════════ */
+async function rfGetSnapshot() {
+  try {
+    const r = await fetch(
+      `${RF2.SUPABASE_URL}/rest/v1/asistente_snapshot?id=eq.1&select=datos,version_label`,
+      { headers: { apikey: RF2.SUPABASE_KEY, Authorization: 'Bearer ' + RF2.SUPABASE_KEY } }
+    );
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    return data[0]?.datos || null;
+  } catch(e) {
+    console.warn('[RF2] snapshot:', e.message);
+    return null;
+  }
+}
+
+async function rfGetPrecio(material, sucursal, empresa) {
+  if (!rfS._snapshot) rfS._snapshot = await rfGetSnapshot();
+  const snap = rfS._snapshot;
+  if (!snap || !snap[sucursal]) return null;
+  const items = snap[sucursal];
+  const item = items.find(i =>
+    i.material?.toLowerCase() === material?.toLowerCase() ||
+    i.nombre?.toLowerCase() === material?.toLowerCase()
+  );
+  return item?.precioLista || item?.precio_lista || null;
+}
+
+async function rfPostCotizacion(estado) {
+  const payload = {
+    session_id:      rfS.session_id,
+    intent:          rfS.intent,
+    ciudad:          rfS.ciudad,
+    sucursal:        rfS.sucursal,
+    material:        rfS.material,
+    empresa:         rfS.empresa,
+    precio_lista:    rfS.precio,
+    modo_entrega:    rfS.modo_entrega,
+    tipo_cliente:    rfS.tipo_cliente,
+    nombre:          rfS.nombre,
+    rut:             rfS.rut,
+    email:           rfS.email,
+    telefono:        rfS.telefono,
+    nombre_empresa:  rfS.nombre_empresa,
+    rut_empresa:     rfS.rut_empresa,
+    cargo:           rfS.cargo,
+    kg_aproximados:  rfS.kg_aproximados,
+    dia_preferido:   rfS.dia_preferido,
+    jornada:         rfS.jornada,
+    direccion_retiro:rfS.direccion,
+    ubicacion_maps:  rfS.link_maps,
+    tipo_camion:     rfS.tipo_camion,
+    grua_horquilla:  rfS.grua_horquilla,
+    comentarios:     rfS.comentarios,
+    es_donacion:     rfS.intent === 'donar',
+    requiere_cert_rep: rfS.requiere_cert_rep,
+    numero_orden:    rfS.numero_orden,
+    estado:          estado || 'pendiente',
+    canal:           'web_chatbot_v2',
+    fuente:          'chatbot_v2',
+    raw_state:       JSON.stringify(rfS)
+  };
+
+  try {
+    const r = await fetch(
+      `${RF2.SUPABASE_URL}/rest/v1/cotizaciones_chatbot`,
+      {
+        method: 'POST',
+        headers: {
+          apikey: RF2.SUPABASE_KEY,
+          Authorization: 'Bearer ' + RF2.SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal'
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+    if (!r.ok && r.status !== 201) throw new Error('HTTP ' + r.status);
+    return true;
+  } catch(e) {
+    console.error('[RF2] POST cotizacion:', e.message);
+    return false;
+  }
+}
+
+async function rfPostLead() {
+  const payload = {
+    session_id:     rfS.session_id,
+    intent:         rfS.intent,
+    material:       rfS.material,
+    ciudad:         rfS.ciudad,
+    sucursal:       rfS.sucursal,
+    empresa:        rfS.empresa,
+    nombre:         rfS.nombre,
+    telefono:       rfS.telefono,
+    email:          rfS.email,
+    canal_preferido:rfS.canal_preferido,
+    estado:         'pendiente',
+    fuente:         'n_meditar_v2',
+    raw_state:      JSON.stringify(rfS)
+  };
+  try {
+    await fetch(`${RF2.SUPABASE_URL}/rest/v1/leads_chatbot`, {
+      method: 'POST',
+      headers: {
+        apikey: RF2.SUPABASE_KEY, Authorization: 'Bearer ' + RF2.SUPABASE_KEY,
+        'Content-Type': 'application/json', Prefer: 'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+    return true;
+  } catch(e) { return false; }
+}
+
+// Notifica Make.com (no bloqueante — si falla, el usuario no lo ve)
+async function rfNotificarMake(tipo) {
+  if (!RF2.MAKE_WEBHOOK) return;
+  const emailSucursal = {
+    Cerrillos: RF2.EMAIL_CERRILLOS,
+    Maipú: RF2.EMAIL_MAIPU,
+    Talca: RF2.EMAIL_TALCA
+  }[rfS.sucursal] || RF2.EMAIL_ANDREA;
+  try {
+    await fetch(RF2.MAKE_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tipo,             // 'venta_confirmada' | 'retiro_pendiente' | 'donacion' | 'lead'
+        numero_orden:     rfS.numero_orden,
+        estado:           rfS.estado_envio,
+        email_cliente:    rfS.email,
+        telefono_cliente: rfS.telefono,
+        nombre_cliente:   rfS.nombre,
+        email_andrea:     RF2.EMAIL_ANDREA,
+        email_sucursal:   emailSucursal,
+        sucursal:         rfS.sucursal,
+        material:         rfS.material,
+        precio:           rfS.precio,
+        kg:               rfS.kg_aproximados,
+        dia:              rfS.dia_preferido,
+        jornada:          rfS.jornada,
+        modo_entrega:     rfS.modo_entrega,
+        resumen:          rfGenerarResumenTexto()
+      })
+    });
+  } catch(e) { /* silent */ }
+}
+
+function rfGenerarResumenTexto() {
+  const s = rfS;
+  let txt = `ORDEN ${s.numero_orden}\n`;
+  txt += `Cliente: ${s.nombre} | RUT: ${s.rut} | Tel: ${s.telefono} | Email: ${s.email}\n`;
+  if (s.nombre_empresa) txt += `Empresa: ${s.nombre_empresa} | RUT emp: ${s.rut_empresa}\n`;
+  txt += `Sucursal: ${s.sucursal} | Material: ${s.material} | Precio: $${(s.precio||0).toLocaleString('es-CL')}/kg\n`;
+  txt += `Kg aprox: ${s.kg_aproximados} | Día: ${s.dia_preferido} | Jornada: ${s.jornada}\n`;
+  if (s.modo_entrega === 'retiro' || s.intent === 'retiro') {
+    txt += `Dirección retiro: ${s.direccion}\n`;
+    if (s.link_maps) txt += `Maps: ${s.link_maps}\n`;
+    txt += `Camión: ${s.tipo_camion} | Grúa: ${s.grua_horquilla}\n`;
+  }
+  if (s.comentarios) txt += `Comentarios: ${s.comentarios}\n`;
+  return txt;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   UI HELPERS
+═══════════════════════════════════════════════════════════════════ */
+const $msgs = () => document.getElementById('rf2-messages');
+
+function rfClearActions() {
+  // Eliminar botones e inputs anteriores para no duplicar
+  document.querySelectorAll('.rf2-btns, .rf2-input-block, .rf2-summary, .rf2-success, .rf2-error-block')
+    .forEach(el => el.remove());
+}
+
+function rfBotMsg(html, delay = 0) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const msg = $msgs();
+      const typing = document.createElement('div');
+      typing.className = 'rf2-msg-bot';
+      typing.innerHTML = '<div class="rf2-typing"><span></span><span></span><span></span></div>';
+      msg.appendChild(typing);
+      rfScroll();
+      setTimeout(() => {
+        typing.remove();
+        const el = document.createElement('div');
+        el.className = 'rf2-msg-bot';
+        el.innerHTML = `<div class="rf2-bubble">${html}</div>`;
+        msg.appendChild(el);
+        rfScroll();
+        resolve();
+      }, 800);
+    }, delay);
+  });
+}
+
+function rfUserMsg(text) {
+  const el = document.createElement('div');
+  el.className = 'rf2-msg-user';
+  el.innerHTML = `<div class="rf2-bubble">${rfEsc(text)}</div>`;
+  $msgs().appendChild(el);
+  rfScroll();
+}
+
+function rfShowBtns(buttons) {
+  rfClearActions();
+  const wrap = document.createElement('div');
+  wrap.className = 'rf2-btns';
+  buttons.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'rf2-btn' + (b.primary ? ' rf2-btn-primary' : '') +
+      (b.secondary ? ' rf2-btn-secondary' : '') + (b.full ? ' rf2-btn-full' : '');
+    btn.textContent = b.label;
+    btn.onclick = () => {
+      rfClearActions();
+      if (b.userMsg !== false) rfUserMsg(b.label);
+      b.fn();
+    };
+    wrap.appendChild(btn);
+  });
+  $msgs().appendChild(wrap);
+  rfScroll();
+}
+
+/* Muestra campo de input en el chat */
+function rfShowInput(opts) {
+  // opts: { label, placeholder, type, hint, validate, onSend }
+  rfClearActions();
+  const block = document.createElement('div');
+  block.className = 'rf2-input-block';
+
+  const lbl = document.createElement('span');
+  lbl.className = 'rf2-input-label';
+  lbl.textContent = opts.label || '';
+  block.appendChild(lbl);
+
+  const row = document.createElement('div');
+  row.className = 'rf2-input-row';
+
+  let input;
+  if (opts.type === 'select') {
+    input = document.createElement('select');
+    input.className = 'rf2-input';
+    const dflt = document.createElement('option');
+    dflt.value = ''; dflt.textContent = opts.placeholder || 'Seleccionar...'; dflt.disabled = true; dflt.selected = true;
+    input.appendChild(dflt);
+    (opts.options || []).forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o.value || o; opt.textContent = o.label || o;
+      input.appendChild(opt);
+    });
+  } else if (opts.type === 'textarea') {
+    input = document.createElement('textarea');
+    input.className = 'rf2-input';
+    input.placeholder = opts.placeholder || '';
+    input.rows = 3;
+  } else {
+    input = document.createElement('input');
+    input.className = 'rf2-input';
+    input.type = opts.type || 'text';
+    input.placeholder = opts.placeholder || '';
+    if (opts.maxlength) input.maxLength = opts.maxlength;
+  }
+
+  const hint = document.createElement('div');
+  hint.className = 'rf2-input-hint';
+
+  const btn = document.createElement('button');
+  btn.className = 'rf2-btn-send';
+  btn.textContent = '→';
+  btn.disabled = true;
+
+  // Validación en tiempo real
+  const validate = () => {
+    const val = input.value.trim();
+    if (!val) { btn.disabled = true; input.className = 'rf2-input'; hint.textContent = ''; hint.className = 'rf2-input-hint'; return; }
+    if (opts.validate) {
+      const res = opts.validate(val);
+      if (res === true) {
+        input.className = 'rf2-input valid'; hint.className = 'rf2-input-hint ok'; hint.textContent = opts.hintOk || '✓'; btn.disabled = false;
+      } else {
+        input.className = 'rf2-input invalid'; hint.className = 'rf2-input-hint err'; hint.textContent = res || 'Valor inválido'; btn.disabled = true;
+      }
+    } else {
+      btn.disabled = val.length === 0;
+      if (val.length > 0) input.className = 'rf2-input valid';
+    }
+  };
+
+  input.addEventListener('input', validate);
+  if (opts.type === 'select') {
+    input.addEventListener('change', () => { btn.disabled = !input.value; });
+    btn.disabled = false; // allow after selection
+  }
+
+  const send = () => {
+    const val = input.value.trim();
+    if (!val && opts.required !== false) return;
+    rfClearActions();
+    rfUserMsg(opts.displayValue ? opts.displayValue(val) : val);
+    opts.onSend(val);
+  };
+
+  btn.onclick = send;
+  input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !btn.disabled) { e.preventDefault(); send(); }});
+
+  row.appendChild(input);
+  row.appendChild(btn);
+  block.appendChild(row);
+  block.appendChild(hint);
+  $msgs().appendChild(block);
+  rfScroll();
+
+  // Formateo especial para RUT
+  if (opts.formatRut) {
+    input.addEventListener('blur', () => {
+      const v = input.value.trim();
+      if (v.length > 3) input.value = formatearRut(v);
+      validate();
+    });
+  }
+
+  setTimeout(() => input.focus(), 100);
+  return block;
+}
+
+/* Muestra resumen antes de confirmar */
+function rfShowResumen(filas, onConfirm, onEdit) {
+  rfClearActions();
+  const card = document.createElement('div');
+  card.className = 'rf2-summary';
+  card.innerHTML = '<h4>📋 Resumen de tu solicitud</h4>';
+  filas.forEach(([label, val]) => {
+    if (!val) return;
+    card.innerHTML += `<div class="rf2-summary-row"><span class="label">${label}</span><span class="val">${rfEsc(String(val))}</span></div>`;
+  });
+  $msgs().appendChild(card);
+
+  rfShowBtns([
+    { label: '✅ Confirmar y enviar', primary: true, full: true, userMsg: false, fn: onConfirm },
+    { label: '✏️ Corregir datos', secondary: true, full: true, userMsg: false, fn: onEdit }
+  ]);
+  rfScroll();
+}
+
+function rfShowExito(orden, tipo) {
+  rfClearActions();
+  const nombre = rfS.nombre ? rfS.nombre.split(' ')[0] : '';
+  const el = document.createElement('div');
+  el.className = 'rf2-success';
+  if (tipo === 'confirmada') {
+    el.innerHTML = `
+      <div style="font-size:36px;">🎉</div>
+      <div style="color:#86efac;font-weight:700;margin:6px 0;">¡Todo listo, ${nombre}!</div>
+      <div class="rf2-order">${orden}</div>
+      <p>Te mandamos una confirmación a <strong>${rfS.email}</strong>.<br>
+         El equipo de <strong>sucursal ${rfS.sucursal}</strong> ya sabe que vienes 👍<br><br>
+         Recuerda traer tu <strong>RUT</strong> el día acordado. ¡Te esperamos! ♻️</p>`;
+  } else {
+    el.innerHTML = `
+      <div style="font-size:36px;">⏳</div>
+      <div style="color:#fbbf24;font-weight:700;margin:6px 0;">¡Recibimos tu solicitud, ${nombre}!</div>
+      <div class="rf2-order">${orden}</div>
+      <p>Nuestro equipo revisará los detalles y se contactará contigo en <strong>menos de 4 horas</strong> al <strong>${rfS.telefono}</strong> o a <strong>${rfS.email}</strong> para confirmar fecha y condiciones. 😊</p>`;
+  }
+  $msgs().appendChild(el);
+
+  rfShowBtns([
+    { label: '🏠 Volver al inicio', secondary: true, full: true, fn: rfNodo1 }
+  ]);
+  rfScroll();
+}
+
+function rfShowError(msg, onRetry) {
+  rfClearActions();
+  const el = document.createElement('div');
+  el.className = 'rf2-error-block';
+  el.innerHTML = `😕 ${rfEsc(msg)}`;
+  $msgs().appendChild(el);
+  rfShowBtns([
+    { label: '🔄 Intentar de nuevo', primary: true, fn: onRetry },
+    { label: '💬 Hablar con el equipo por WhatsApp', fn: () => rfFallbackWhatsapp() }
+  ]);
+  rfScroll();
+}
+
+function rfFallbackWhatsapp() {
+  rfClearActions();
+  const msg = encodeURIComponent(`Hola, intenté cotizar desde el chatbot pero tuve un error. Detalle: ${rfS.material || ''} en ${rfS.sucursal || ''}`);
+  window.open(`https://wa.me/${RF2.WHATSAPP}?text=${msg}`, '_blank');
+}
+
+function rfSetProgress(pct, label) {
+  const fill = document.getElementById('rf2-progress-fill');
+  const lbl  = document.getElementById('rf2-progress-label');
+  if (fill) fill.style.width = pct + '%';
+  if (lbl)  { lbl.textContent = label || ''; lbl.style.display = label ? 'block' : 'none'; }
+}
+
+function rfTrack(nodo) {
+  rfS.nodos.push({ nodo, ts: Date.now() });
+}
+
+function rfScroll() {
+  const m = $msgs();
+  if (m) m.scrollTop = m.scrollHeight + 200;
+}
+
+function rfEsc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* Secuencia de mensajes del bot con delays */
+async function rfSeq(mensajes, finalFn) {
+  for (let i = 0; i < mensajes.length; i++) {
+    await rfBotMsg(mensajes[i], i === 0 ? 0 : 300);
+  }
+  if (finalFn) finalFn();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FLUJO — NODOS
+═══════════════════════════════════════════════════════════════════ */
+
+// N1 — BIENVENIDA
+async function rfNodo1() {
+  rfTrack('N1');
+  rfSetProgress(5);
+  rfClearActions();
+  await rfSeq([
+    '👋 ¡Hola! Bienvenido al asistente del <strong>Grupo Reciclean-Farex</strong> 😊',
+    'Llevamos años comprando materiales reciclables en Santiago, Talca y Puerto Montt. El proceso es simple, rápido y te pagamos al contado el mismo día. ♻️',
+    '¿En qué te puedo ayudar hoy?'
+  ], () => {
+    rfShowBtns([
+      { label: '💰 Quiero vender materiales',         fn: () => { rfS.intent='vender'; rfNodo2(); }},
+      { label: '🚛 Necesito que retiren material',    fn: () => { rfS.intent='retiro'; rfNodoRetiro(); }},
+      { label: '💚 Quiero hacer una donación',        fn: () => { rfS.intent='donar';  rfNodo2(); }},
+      { label: '🏢 ¿Quiénes son?',                   fn: rfNodoQuienes },
+      { label: '🤔 Solo estoy mirando',               fn: rfNodoMeditar }
+    ]);
+  });
+}
+
+// N-QUIENES
+async function rfNodoQuienes() {
+  rfTrack('N-quienes');
+  rfSetProgress(10);
+  await rfSeq([
+    '¡Con gusto! 😊 Somos el <strong>Grupo Reciclean-Farex</strong>, una empresa chilena dedicada a la compra y gestión de materiales reciclables.',
+    '📍 <strong>¿Dónde estamos?</strong><br>• <strong>Cerrillos</strong> — Lun a Jue 8:30–18:00 / Vie 8:30–17:00<br>• <strong>Maipú</strong> — Mismo horario<br>• <strong>Talca</strong><br>• <strong>Puerto Montt</strong> 🔜 (próximamente)',
+    '♻️ Compramos cartón, papel, plásticos, vidrio, chatarra, cobre, bronce, aluminio y más. <strong>Pagamos al contado el mismo día</strong>, con pesaje certificado.<br><br>Para empresas: emitimos <strong>Certificados REP</strong> Ley 20.920.',
+    '¿Te animas a cotizar? 👇'
+  ], () => {
+    rfShowBtns([
+      { label: '💰 Vender materiales', fn: () => { rfS.intent='vender'; rfNodo2(); }},
+      { label: '🚛 Cotizar retiro',   fn: () => { rfS.intent='retiro'; rfNodoRetiro(); }},
+      { label: '🔙 Volver al inicio', secondary: true, fn: rfNodo1 }
+    ]);
+  });
+}
+
+// N2 — CIUDAD
+async function rfNodo2() {
+  rfTrack('N2');
+  rfSetProgress(15);
+  await rfBotMsg('¡Perfecto! 😊 ¿En qué ciudad estás?');
+  rfShowBtns([
+    { label: '📍 Santiago',      fn: rfNodo2B },
+    { label: '📍 Talca',         fn: () => { rfS.ciudad='Talca';       rfS.sucursal='Talca';        rfNodo3A(); }},
+    { label: '📍 Puerto Montt',  fn: rfNodoPuertoMontt },
+    { label: '📍 Otra ciudad',   fn: rfNodoOtraCiudad }
+  ]);
+}
+
+// Puerto Montt → siempre bloquear cotizaciones activas
+async function rfNodoPuertoMontt() {
+  rfTrack('N-pmontt');
+  rfS.ciudad = 'Puerto Montt'; rfS.sucursal = 'Puerto Montt';
+  rfSetProgress(20);
+  await rfSeq([
+    '¡Hola desde Puerto Montt! 👋 Te cuento con toda la transparencia: nuestra planta está en la etapa final de permisos y <strong>muy pronto</strong> estará operativa. 🔜',
+    'Sabemos que la espera desespera 😅 pero queremos hacer las cosas bien. Si quieres que te avisemos cuando abramos o tienes una consulta urgente, escríbenos al WhatsApp y el equipo te ayuda.'
+  ], () => {
+    rfShowBtns([
+      { label: '💬 Contactar al equipo por WhatsApp', fn: () => {
+          const m = encodeURIComponent('Hola, me interesa reciclar en Puerto Montt. ¿Cuándo estará operativa la planta?');
+          window.open(`https://wa.me/${RF2.WHATSAPP}?text=${m}`, '_blank');
+        }},
+      { label: '🔙 Elegir otra ciudad', fn: rfNodo2 }
+    ]);
+  });
+}
+
+// Otra ciudad
+async function rfNodoOtraCiudad() {
+  rfTrack('N-otrac');
+  await rfBotMsg('Por ahora solo operamos en <strong>Santiago, Talca y Puerto Montt</strong>. Para consultas de otras ciudades, nuestro equipo te puede orientar.');
+  rfShowBtns([
+    { label: '💬 Escribir por WhatsApp', fn: () => {
+        const m = encodeURIComponent(`Hola, me interesa reciclar desde ${rfS.ciudad || 'otra ciudad'}. ¿Tienen cobertura?`);
+        window.open(`https://wa.me/${RF2.WHATSAPP}?text=${m}`, '_blank');
+      }},
+    { label: '🔙 Volver', secondary: true, fn: rfNodo2 }
+  ]);
+}
+
+// N2B — Sub-sucursal Santiago
+async function rfNodo2B() {
+  rfS.ciudad = 'Santiago';
+  rfTrack('N2B');
+  rfSetProgress(20);
+  await rfBotMsg('Genial, tenemos dos sucursales en Santiago. ¿Cuál te queda más cerca?');
+  rfShowBtns([
+    { label: '🏭 Cerrillos', fn: () => { rfS.sucursal='Cerrillos'; rfNodo3A(); }},
+    { label: '🏭 Maipú',    fn: () => { rfS.sucursal='Maipú';    rfNodo3A(); }}
+  ]);
+}
+
+// N3A — TIPO DE MATERIAL (Reciclean/Farex)
+const MATERIALES_REC = [
+  { label:'📦 Cartón',              can:'Carton',             emp:'reciclean' },
+  { label:'📄 Papel Blanco 2',      can:'Blanco 2',           emp:'reciclean' },
+  { label:'🍶 Vidrio',              can:'Vidrio',             emp:'reciclean' },
+  { label:'♳ PET Transparente',    can:'PET Transparente',   emp:'reciclean' },
+  { label:'🧴 Polietileno Limpio',  can:'Polietileno Limpio', emp:'reciclean' },
+  { label:'🔩 Lata Chatarra',       can:'Lata Chatarra',      emp:'farex' },
+  { label:'⚙️ Aluminio UBC (latas)',can:'Aluminio UBC',       emp:'farex' },
+];
+
+async function rfNodo3A() {
+  rfTrack('N3A');
+  rfSetProgress(30);
+  await rfBotMsg('¡Buenísimo! ¿Qué material tienes para reciclar? Selecciona el que más se acerque 👇');
+  const btns = MATERIALES_REC.map(m => ({
+    label: m.label,
+    fn: async () => {
+      rfS.material = m.can; rfS.empresa = m.emp;
+      rfSetProgress(40);
+      await rfBotMsg('Un segundo, consultando el precio del día... 🔎');
+      const precio = await rfGetPrecio(m.can, rfS.sucursal, m.emp);
+      rfClearActions();
+      if (precio) {
+        rfS.precio = precio;
+        rfNodo4(precio, m);
+      } else {
+        rfNodo4Sin(m);
+      }
+    }
+  }));
+  btns.push({ label: '🔧 Fierros / Metales variados', fn: rfNodoMetales });
+  btns.push({ label: '🗂 Otros materiales',           secondary: true, fn: rfNodoOtros });
+  rfShowBtns(btns);
+}
+
+/* ═══ HELPERS DE NEGOCIACIÓN ═══ */
+function rfRedondear(valor) {
+  if (valor < 100)  return Math.round(valor);           // $1 para precios bajos
+  if (valor < 1000) return Math.round(valor / 10) * 10; // $10 para medios
+  return Math.round(valor / 50) * 50;                   // $50 para altos
+}
+
+function rfPrecioEjecutivo(lista, kgStr) {
+  const factores = {
+    'menos de 10 kg': 1.00,
+    '10–50 kg':       1.05,
+    '50–200 kg':      1.10,
+    '200–500 kg':     1.15,
+    'más de 500 kg':  1.20
+  };
+  const f = factores[kgStr] || 1.0;
+  return rfRedondear(lista * f);
+}
+
+function rfPrecioMaximo(lista) {
+  return rfRedondear(lista * 1.20);
+}
+
+function rfEstimarKgNum(kgStr) {
+  return { 'menos de 10 kg':5, '10–50 kg':30, '50–200 kg':100, '200–500 kg':300, 'más de 500 kg':600 }[kgStr] || 50;
+}
+
+// N4 — INTRO NEGOCIACIÓN (reemplaza el antiguo N4)
+async function rfNodo4(precio, mat) {
+  rfTrack('N4');
+  rfS.precio_lista = precio; // guarda precio lista
+  const precioMax = rfPrecioMaximo(precio);
+  const empresa_txt = rfS.empresa === 'farex'
+    ? '<span style="color:#fbbf24">FAREX</span>'
+    : '<span style="color:#86efac">RECICLEAN</span>';
+
+  // Si es donación, ir directo al flujo sin negociación
+  if (rfS.intent === 'donar') {
+    await rfSeq([
+      `💚 Para <strong>${mat.label}</strong> en sucursal ${rfS.sucursal} — ¡gracias por donar! El proceso es igual a una venta, sin el pago. ¿Continuamos?`
+    ], () => rfShowBtns([
+      { label: '💚 Sí, quiero donar', primary: true, fn: rfNodoDatos },
+      { label: '🔙 Ver otros',        secondary: true, fn: rfNodo3A }
+    ]));
+    return;
+  }
+
+  await rfSeq([
+    `Para <strong>${mat.label}</strong> en sucursal <strong>${rfS.sucursal}</strong>, nuestros precios de compra parten desde <span class="rf2-price-big">$${precio.toLocaleString('es-CL')}/kg</span> y pueden llegar hasta <strong>$${precioMax.toLocaleString('es-CL')}/kg</strong> dependiendo del volumen que traigas. 💰<br>
+     <span class="rf2-note">Empresa compradora: ${empresa_txt} · Pago al contado · Pesaje con romana certificada</span>`,
+    '¿Cuántos kilos tienes aproximadamente? Con eso te damos el precio exacto que corresponde a tu carga. 👇'
+  ], () => {
+    rfShowBtns([
+      { label: 'Menos de 10 kg',  fn: () => rfNodoPrecioNegociar(precio, mat, 'menos de 10 kg') },
+      { label: '10 – 50 kg',      fn: () => rfNodoPrecioNegociar(precio, mat, '10–50 kg') },
+      { label: '50 – 200 kg',     fn: () => rfNodoPrecioNegociar(precio, mat, '50–200 kg') },
+      { label: '200 – 500 kg',    fn: () => rfNodoPrecioNegociar(precio, mat, '200–500 kg') },
+      { label: 'Más de 500 kg',   fn: () => rfNodoPrecioNegociar(precio, mat, 'más de 500 kg') },
+      { label: '🔙 Ver otros materiales', secondary: true, fn: rfNodo3A }
+    ]);
+  });
+}
+
+// N4-NEGOCIAR — Muestra precio ejecutivo y cierra el trato
+async function rfNodoPrecioNegociar(precioLista, mat, kgStr) {
+  rfTrack('N4-neg');
+  rfSetProgress(45);
+  rfS.kg_aproximados = kgStr;
+  const precioEjec = rfPrecioEjecutivo(precioLista, kgStr);
+  const kgNum      = rfEstimarKgNum(kgStr);
+  const totalAprox = (precioEjec * kgNum).toLocaleString('es-CL');
+  rfS.precio       = precioEjec; // precio negociado = el que se compromete
+
+  let msgPrecio;
+  if (precioEjec === precioLista) {
+    msgPrecio = `Con <strong>${kgStr}</strong> de <strong>${mat.label}</strong>, el precio es el estándar:<br>
+    <span class="rf2-price-big">$${precioEjec.toLocaleString('es-CL')}/kg</span>
+    <span class="rf2-note">Tu carga valdría aproximadamente <strong>$${totalAprox}</strong></span>`;
+  } else {
+    msgPrecio = `¡Buenas noticias! 🎉 Con <strong>${kgStr}</strong> de <strong>${mat.label}</strong>, por volumen te podemos ofrecer:<br>
+    <span class="rf2-price-big">$${precioEjec.toLocaleString('es-CL')}/kg</span>
+    <span class="rf2-note">Mejor que el precio estándar ($${precioLista.toLocaleString('es-CL')}/kg) · Tu carga valdría ~<strong>$${totalAprox}</strong></span>`;
+  }
+
+  await rfSeq([
+    msgPrecio,
+    '¿Hacemos el negocio? 🤝'
+  ], () => {
+    rfShowBtns([
+      { label: '✅ Sí, cerramos trato',              primary: true, fn: rfNodoAcuerdo },
+      { label: '🚛 Prefiero que vengan a buscarme',  fn: () => { rfS.intent='retiro'; rfNodoRetiro(); }},
+      { label: '🤔 Necesito pensarlo',               secondary: true, fn: rfNodoMeditar },
+      { label: '💬 Quiero hablar con el equipo',     secondary: true, fn: () => {
+          const m = encodeURIComponent(`Hola, quiero negociar el precio de ${mat.label} en ${rfS.sucursal}. Tengo aprox. ${kgStr}.`);
+          window.open(`https://wa.me/${RF2.WHATSAPP}?text=${m}`, '_blank');
+        }},
+      { label: '🔙 Ver otros materiales',            secondary: true, fn: rfNodo3A }
+    ]);
+  });
+}
+
+// N4-ACUERDO — Captura nombre y RUT para comprometer el precio
+async function rfNodoAcuerdo() {
+  rfTrack('N4-acuerdo');
+  rfSetProgress(55);
+
+  if (!rfS.nombre) {
+    await rfBotMsg('¡Perfecto! Para registrar el acuerdo, ¿cómo te llamas?');
+    rfShowInput({
+      placeholder: 'Tu nombre completo',
+      onSend: async (val) => {
+        rfS.nombre = val;
+        const primerNombre = val.split(' ')[0];
+        await rfBotMsg(`De acuerdo, <strong>${primerNombre}</strong> 🤝 Para comprometer el precio de <strong>$${rfS.precio.toLocaleString('es-CL')}/kg</strong>, necesito tu RUT.`);
+        rfNodoAcuerdoRut();
+      }
+    });
+  } else {
+    const primerNombre = rfS.nombre.split(' ')[0];
+    await rfBotMsg(`De acuerdo, <strong>${primerNombre}</strong> 🤝 Para comprometer el precio de <strong>$${rfS.precio.toLocaleString('es-CL')}/kg</strong>, necesito tu RUT.`);
+    rfNodoAcuerdoRut();
+  }
+}
+
+function rfNodoAcuerdoRut() {
+  rfShowInput({
+    placeholder: 'Ej: 12.345.678-9',
+    formatRut: true,
+    validate: (val) => {
+      const r = val.replace(/\./g,'');
+      if (r.length < 9) return 'RUT muy corto, revisa';
+      return validarRut(r) || 'El dígito verificador no coincide — revísalo 😊';
+    },
+    hintOk: '✓ RUT válido',
+    displayValue: (val) => formatearRut(val.replace(/\./g,'')),
+    onSend: async (val) => {
+      rfS.rut = formatearRut(val.replace(/\./g,''));
+      rfSetProgress(62);
+      await rfBotMsg('¡Listo! 😊 Ya tenemos el acuerdo registrado. ¿Cómo nos harás llegar el material?');
+      rfNodoCoordinacion();
+    }
+  });
+}
+
+// N4-COORDINACION — Decide entrega propia o retiro
+function rfNodoCoordinacion() {
+  rfTrack('N4-coord');
+  rfShowBtns([
+    { label: `🏭 Lo llevo yo a sucursal ${rfS.sucursal}`, primary: true, fn: rfNodoCierreWhatsapp },
+    { label: '🚛 Prefiero que vengan a buscarlo',          fn: () => { rfS.intent='retiro'; rfNodoCierreWhatsapp('retiro'); }}
+  ]);
+}
+
+// N4-CIERRE — Envía WhatsApp de cierre y pide correo para cotización formal
+async function rfNodoCierreWhatsapp(modo) {
+  rfTrack('N4-cierre');
+  rfSetProgress(65);
+
+  const primerNombre = (rfS.nombre || '').split(' ')[0];
+  const precioFmt    = rfS.precio ? `$${rfS.precio.toLocaleString('es-CL')}/kg` : 'a confirmar';
+  const kgFmt        = rfS.kg_aproximados || 'a confirmar';
+  const modeFmt      = (modo === 'retiro') ? 'Servicio de retiro en mi dirección' : `Entrega en sucursal ${rfS.sucursal}`;
+
+  // Mensaje WhatsApp de cierre de negocio
+  const msgWA = encodeURIComponent(
+    `✅ *Acuerdo cerrado — ${rfS.material || 'Material'}*\n\n` +
+    `Hola equipo Reciclean-Farex, cerramos un acuerdo con los siguientes datos:\n\n` +
+    `👤 Nombre: ${rfS.nombre}\n` +
+    `🪪 RUT: ${rfS.rut}\n` +
+    `📦 Material: ${rfS.material}\n` +
+    `⚖️ Cantidad aprox.: ${kgFmt}\n` +
+    `💰 Precio acordado: ${precioFmt}\n` +
+    `📍 Sucursal: ${rfS.sucursal}\n` +
+    `🚛 Modo entrega: ${modeFmt}\n\n` +
+    `Por favor enviar cotización formal a mi correo (a completar).`
+  );
+
+  await rfSeq([
+    `¡Negocio cerrado, <strong>${primerNombre}</strong>! 🎉🤝<br>
+     Te generé un mensaje de confirmación para enviarnos por WhatsApp — así queda todo documentado.`,
+  ], () => {
+    rfShowBtns([
+      { label: '📲 Enviar confirmación por WhatsApp', primary: true, full: true, fn: () => {
+          window.open(`https://wa.me/${RF2.WHATSAPP}?text=${msgWA}`, '_blank');
+          rfNodoPedirCorreo(modo);
+        }},
+      { label: '➡️ Continuar sin enviar', secondary: true, full: true, fn: () => rfNodoPedirCorreo(modo) }
+    ]);
+  });
+}
+
+// Pide correo para cotización formal
+async function rfNodoPedirCorreo(modo) {
+  rfTrack('N4-correo');
+  rfSetProgress(68);
+  await rfBotMsg('¿A qué correo te enviamos la <strong>cotización formal</strong>? La recibirás con todos los detalles del acuerdo. 📄');
+  rfShowInput({
+    placeholder: 'tu@correo.com',
+    type: 'email',
+    validate: (val) => validarEmail(val) || 'Ese correo no parece válido, ¿lo revisas?',
+    hintOk: '✓ Perfecto',
+    onSend: (val) => {
+      rfS.email = val.trim();
+      if (modo === 'retiro') {
+        rfNodoRetiro();
+      } else {
+        rfNodoDatosContacto();
+      }
+    }
+  });
+}
+
+// Sin precio disponible
+async function rfNodo4Sin(mat) {
+  rfTrack('N4-sin');
+  await rfSeq([
+    `Mmm, el precio de <strong>${mat.label}</strong> en ${rfS.sucursal} no está disponible en este momento — puede que se esté actualizando. 😅`,
+    `El equipo te puede dar el precio exacto al instante por WhatsApp. ¿Te parece?`
+  ], () => {
+    rfShowBtns([
+      { label: '💬 Consultar por WhatsApp', fn: () => {
+          const m = encodeURIComponent(`Hola, consulto por el precio de ${mat.label} en ${rfS.sucursal}.`);
+          window.open(`https://wa.me/${RF2.WHATSAPP}?text=${m}`, '_blank');
+        }},
+      { label: '🔙 Ver otros materiales', secondary: true, fn: rfNodo3A }
+    ]);
+  });
+}
+
+// Metales Farex (lista dinámica)
+async function rfNodoMetales() {
+  rfTrack('N-metales'); rfS.empresa = 'farex';
+  rfSetProgress(35);
+  await rfBotMsg('🔩 <strong>Fierros y Metales (Farex)</strong><br>Compramos:<br>• Fierro corto/largo/mixto<br>• Cobre (1°, pelillo, esmaltado, calefón...)<br>• Bronce, Aluminio, Acero Inoxidable<br>• Lata chatarra<br><br>Los precios varían según tipo y calidad. ¿Quieres continuar?');
+  rfShowBtns([
+    { label: '✅ Sí, quiero cotizar', fn: () => { rfS.material='Metales varios'; rfS.precio=null; rfNodoDatos(); }},
+    { label: '🔙 Ver otros',         secondary: true, fn: rfNodo3A }
+  ]);
+}
+
+// Otros materiales
+async function rfNodoOtros() {
+  rfTrack('N-otros');
+  await rfBotMsg('Para materiales especiales o combinados, nuestro equipo te orientará mejor. ¿Cómo prefieres que te contactemos?');
+  rfShowBtns([
+    { label: '💬 WhatsApp',    fn: () => { window.open(`https://wa.me/${RF2.WHATSAPP}?text=${encodeURIComponent('Hola, tengo materiales para reciclar y no sé cómo clasificarlos.')}`, '_blank'); }},
+    { label: '🔙 Volver',      secondary: true, fn: rfNodo3A }
+  ]);
+}
+
+/* ═══ DATOS POST-ACUERDO (entrega propia) ═══
+   Nombre, RUT, kg y email ya fueron capturados en la negociación.
+   Solo falta: teléfono, empresa?, día, jornada → resumen
+═══════════════════════════════════════════════════════════════════ */
+async function rfNodoDatosContacto() {
+  rfTrack('N-contacto');
+  rfSetProgress(72);
+  await rfBotMsg('Perfecto. Solo me faltan un par de datos para coordinar la llegada. ¿Tu celular?');
+  rfShowInput({
+    placeholder: 'Ej: 9 1234 5678',
+    type: 'tel',
+    validate: (val) => validarTelefono(val) || 'Ingresa un celular chileno (9 + 8 dígitos)',
+    hintOk: '✓ Listo',
+    onSend: (val) => { rfS.telefono = val.replace(/[\s\-\(\)]/g,''); rfNodoDatosContacto2(); }
+  });
+}
+
+async function rfNodoDatosContacto2() {
+  rfSetProgress(76);
+  await rfBotMsg('¿La venta va a nombre de una empresa o como persona natural?');
+  rfShowBtns([
+    { label: '🏢 A nombre de empresa', fn: rfNodoDatosEmpresa },
+    { label: '👤 Persona natural',     fn: () => { rfS.tipo_cliente='personal'; rfNodoDatosContacto3(); }}
+  ]);
+}
+
+async function rfNodoDatosContacto3() {
+  rfSetProgress(80);
+  await rfBotMsg(`¿Qué día te queda bien para llegar a sucursal ${rfS.sucursal}?`);
+  rfShowInput({
+    type: 'select',
+    placeholder: 'Elige un día...',
+    options: [
+      { value:'Hoy',               label:'Hoy mismo' },
+      { value:'Mañana',            label:'Mañana' },
+      { value:'Esta semana',       label:'Cualquier día esta semana' },
+      { value:'La próxima semana', label:'La próxima semana' },
+      { value:'A coordinar',       label:'Coordinar después' }
+    ],
+    onSend: (val) => { rfS.dia_preferido = val; rfNodoDatosContacto4(); }
+  });
+}
+
+async function rfNodoDatosContacto4() {
+  rfSetProgress(85);
+  await rfBotMsg('¿Y en qué horario?');
+  rfShowBtns([
+    { label: '🌅 En la mañana',   fn: () => { rfS.jornada='AM'; rfNodoResumenFinal(); }},
+    { label: '🌆 En la tarde',    fn: () => { rfS.jornada='PM'; rfNodoResumenFinal(); }},
+    { label: '🕐 Me da lo mismo', fn: () => { rfS.jornada='Indiferente'; rfNodoResumenFinal(); }}
+  ]);
+}
+
+// Resumen final para entrega propia post-acuerdo
+async function rfNodoResumenFinal() {
+  rfTrack('N-resumen-final');
+  rfSetProgress(90);
+  await rfBotMsg('¡Casi listo! Revisa el resumen antes de confirmar 👇');
+
+  const filas = [
+    ['Nombre',        rfS.nombre],
+    ['RUT',           rfS.rut],
+    ['Email',         rfS.email],
+    ['Teléfono',      rfS.telefono],
+    ['Empresa',       rfS.nombre_empresa],
+    ['RUT empresa',   rfS.rut_empresa],
+    ['Sucursal',      rfS.sucursal],
+    ['Material',      rfS.material],
+    ['Precio acordado', rfS.precio ? `$${rfS.precio.toLocaleString('es-CL')}/kg` : 'a confirmar'],
+    ['Kg aprox.',     rfS.kg_aproximados],
+    ['Día',           rfS.dia_preferido],
+    ['Jornada',       rfS.jornada]
+  ];
+
+  rfShowResumen(filas,
+    () => rfNodoEnviar('confirmada'),
+    () => { rfClearActions(); rfNodoDatosContacto(); }
+  );
+}
+
+/* ═══ CAPTURA DE DATOS — Donación / Metales variados ═══ */
+async function rfNodoDatos() {
+  rfTrack('N-datos');
+  rfSetProgress(50);
+  await rfBotMsg('¡Genial! Solo necesito algunos datos para registrar tu ingreso — son 4 preguntas rápidas 😊 ¿Cómo te llamas?');
+  rfShowInput({
+    placeholder: 'Tu nombre completo',
+    onSend: (val) => { rfS.nombre = val; rfNodoDatos2(); }
+  });
+}
+
+async function rfNodoDatos2() {
+  rfSetProgress(55);
+  const nombre = rfS.nombre ? rfS.nombre.split(' ')[0] : '';
+  await rfBotMsg(`Mucho gusto, <strong>${nombre}</strong> 👋 Ahora necesito tu RUT — es para el proceso formal de compra.`);
+  rfShowInput({
+    placeholder: 'Ej: 12.345.678-9',
+    formatRut: true,
+    validate: (val) => {
+      const r = val.replace(/\./g,'');
+      if (r.length < 9) return 'RUT muy corto, revisa';
+      return validarRut(r) || 'El dígito verificador no coincide — revísalo 😊';
+    },
+    hintOk: '✓ RUT válido',
+    displayValue: (val) => formatearRut(val.replace(/\./g,'')),
+    onSend: (val) => { rfS.rut = formatearRut(val.replace(/\./g,'')); rfNodoDatos3(); }
+  });
+}
+
+async function rfNodoDatos3() {
+  rfSetProgress(60);
+  await rfBotMsg('¿A qué correo te enviamos la confirmación?');
+  rfShowInput({
+    placeholder: 'tu@correo.com',
+    type: 'email',
+    validate: (val) => validarEmail(val) || 'Ese correo no parece válido, ¿lo revisas?',
+    hintOk: '✓ Perfecto',
+    onSend: (val) => { rfS.email = val.trim(); rfNodoDatos4(); }
+  });
+}
+
+async function rfNodoDatos4() {
+  rfSetProgress(63);
+  await rfBotMsg('¿Y tu celular? Solo te contactamos si necesitamos coordinar algo puntual.');
+  rfShowInput({
+    placeholder: 'Ej: 9 1234 5678',
+    type: 'tel',
+    validate: (val) => validarTelefono(val) || 'Ingresa un celular chileno (9 + 8 dígitos)',
+    hintOk: '✓ Listo',
+    onSend: (val) => { rfS.telefono = val.replace(/[\s\-\(\)]/g,''); rfNodoDatos5(); }
+  });
+}
+
+async function rfNodoDatos5() {
+  rfSetProgress(65);
+  await rfBotMsg('¿La venta va a nombre de una empresa o como persona natural?');
+  rfShowBtns([
+    { label: '🏢 A nombre de empresa', fn: rfNodoDatosEmpresa },
+    { label: '👤 Persona natural',     fn: () => { rfS.tipo_cliente='personal'; rfNodoDatos6(); }}
+  ]);
+}
+
+async function rfNodoDatosEmpresa() {
+  rfS.tipo_cliente = 'empresa';
+  rfSetProgress(68);
+  await rfBotMsg('¿Cuál es la razón social de la empresa?');
+  rfShowInput({
+    placeholder: 'Nombre de la empresa',
+    onSend: (val) => { rfS.nombre_empresa = val; rfNodoDatosEmpresa2(); }
+  });
+}
+
+async function rfNodoDatosEmpresa2() {
+  await rfBotMsg(`¿Y el RUT de ${rfS.nombre_empresa}?`);
+  rfShowInput({
+    placeholder: 'Ej: 76.123.456-7',
+    formatRut: true,
+    validate: (val) => {
+      const r = val.replace(/\./g,'');
+      return validarRut(r) || 'RUT empresa inválido — revísalo 😊';
+    },
+    hintOk: '✓ RUT válido',
+    displayValue: (val) => formatearRut(val.replace(/\./g,'')),
+    onSend: (val) => {
+      rfS.rut_empresa = formatearRut(val.replace(/\./g,''));
+      // Si venimos del flujo de acuerdo (ya tenemos precio), ir a día
+      // Si venimos del flujo de donación/metales, ir a kg
+      if (rfS.precio !== null && rfS.kg_aproximados) {
+        rfNodoDatosContacto3();
+      } else {
+        rfNodoDatos6();
+      }
+    }
+  });
+}
+
+async function rfNodoDatos6() {
+  rfSetProgress(72);
+  await rfBotMsg('¿Cuántos kilos aproximados tienes? No tiene que ser exacto 😊');
+  rfShowInput({
+    type: 'select',
+    placeholder: 'Elige un rango...',
+    options: [
+      { value:'menos de 10 kg',   label:'Menos de 10 kg' },
+      { value:'10–50 kg',         label:'10 – 50 kg' },
+      { value:'50–200 kg',        label:'50 – 200 kg' },
+      { value:'200–500 kg',       label:'200 – 500 kg' },
+      { value:'más de 500 kg',    label:'Más de 500 kg' }
+    ],
+    onSend: (val) => { rfS.kg_aproximados = val; rfNodoDatos7(); }
+  });
+}
+
+async function rfNodoDatos7() {
+  rfSetProgress(78);
+  await rfBotMsg(`¿Qué día te queda bien para ir a sucursal ${rfS.sucursal}?`);
+  rfShowInput({
+    type: 'select',
+    placeholder: 'Elige un día...',
+    options: [
+      { value:'Hoy',               label:'Hoy mismo' },
+      { value:'Mañana',            label:'Mañana' },
+      { value:'Esta semana',       label:'Cualquier día esta semana' },
+      { value:'La próxima semana', label:'La próxima semana' },
+      { value:'A coordinar',       label:'Coordinar después' }
+    ],
+    onSend: (val) => { rfS.dia_preferido = val; rfNodoDatos8(); }
+  });
+}
+
+async function rfNodoDatos8() {
+  rfSetProgress(83);
+  await rfBotMsg('¿Y en qué horario?');
+  rfShowBtns([
+    { label: '🌅 En la mañana',  fn: () => { rfS.jornada='AM'; rfNodoResumen(); }},
+    { label: '🌆 En la tarde',   fn: () => { rfS.jornada='PM'; rfNodoResumen(); }},
+    { label: '🕐 Me da lo mismo',fn: () => { rfS.jornada='Indiferente'; rfNodoResumen(); }}
+  ]);
+}
+
+// N-RESUMEN — Confirmación antes de enviar
+async function rfNodoResumen() {
+  rfTrack('N-resumen');
+  rfSetProgress(90);
+  await rfBotMsg('¡Casi listo! Revisa que todo esté correcto antes de confirmar 👇');
+
+  const filas = [
+    ['Nombre', rfS.nombre],
+    ['RUT', rfS.rut],
+    ['Email', rfS.email],
+    ['Teléfono', rfS.telefono],
+    ['Empresa', rfS.nombre_empresa],
+    ['RUT empresa', rfS.rut_empresa],
+    ['Sucursal', rfS.sucursal],
+    ['Material', rfS.material],
+    ['Precio lista', rfS.precio ? `$${rfS.precio.toLocaleString('es-CL')}/kg` : 'A confirmar'],
+    ['Kg aproximados', rfS.kg_aproximados],
+    ['Día', rfS.dia_preferido],
+    ['Jornada', rfS.jornada]
+  ];
+
+  rfShowResumen(filas,
+    () => rfNodoEnviar('confirmada'),
+    () => { rfClearActions(); rfNodoDatos(); }
+  );
+}
+
+// Envío final — venta / donación / entrega propia
+async function rfNodoEnviar(estado) {
+  rfTrack('N-enviar');
+  rfSetProgress(95);
+  rfClearActions();
+  rfS.numero_orden = generarOrden();
+  rfS.estado_envio = estado;
+
+  await rfBotMsg('Enviando tu solicitud... ya casi 🚀');
+
+  const ok = await rfPostCotizacion(estado);
+
+  if (ok) {
+    rfNotificarMake('venta_confirmada'); // fire-and-forget
+    rfSetProgress(100);
+    rfShowExito(rfS.numero_orden, estado);
+  } else {
+    rfShowError(
+      'Hubo un problema al enviar tu solicitud. ¿Intentamos de nuevo?',
+      () => rfNodoEnviar(estado)
+    );
+  }
+}
+
+/* ═══ FLUJO RETIRO ═══ */
+async function rfNodoRetiro() {
+  rfTrack('N-retiro');
+  rfSetProgress(15);
+  await rfSeq([
+    '🚛 ¡Claro que sí! Coordinamos el retiro directamente en tu domicilio o empresa.',
+    'Voy a necesitar algunos datos para preparar la cotización — nuestro equipo la revisará y te confirma en <strong>menos de 4 horas</strong> 😊',
+    '¿Cómo te llamas?'
+  ], () => rfNodoRetiroDatos1());
+}
+
+async function rfNodoRetiroDatos1() {
+  rfSetProgress(25);
+  rfShowInput({
+    placeholder: 'Tu nombre completo',
+    onSend: (val) => { rfS.nombre = val; rfNodoRetiroDatos2(); }
+  });
+}
+
+async function rfNodoRetiroDatos2() {
+  rfSetProgress(30);
+  const nombre = rfS.nombre ? rfS.nombre.split(' ')[0] : '';
+  await rfBotMsg(`Mucho gusto, <strong>${nombre}</strong>! 👋 ¿Tu RUT?`);
+  rfShowInput({
+    placeholder: 'Ej: 12.345.678-9',
+    formatRut: true,
+    validate: (val) => validarRut(val.replace(/\./g,'')) || 'El dígito verificador no coincide — revísalo 😊',
+    hintOk: '✓ RUT válido',
+    displayValue: (val) => formatearRut(val.replace(/\./g,'')),
+    onSend: (val) => { rfS.rut = formatearRut(val.replace(/\./g,'')); rfNodoRetiroDatos3(); }
+  });
+}
+
+async function rfNodoRetiroDatos3() {
+  rfSetProgress(35);
+  await rfBotMsg('¿A qué correo te enviamos la cotización?');
+  rfShowInput({
+    placeholder: 'tu@correo.com',
+    type: 'email',
+    validate: (val) => validarEmail(val) || 'Ese correo no parece válido 😊',
+    hintOk: '✓ Perfecto',
+    onSend: (val) => { rfS.email = val.trim(); rfNodoRetiroDatos4(); }
+  });
+}
+
+async function rfNodoRetiroDatos4() {
+  rfSetProgress(40);
+  await rfBotMsg('¿Y tu celular para coordinar el retiro?');
+  rfShowInput({
+    placeholder: 'Ej: 9 1234 5678',
+    type: 'tel',
+    validate: (val) => validarTelefono(val) || 'Ingresa un celular chileno (9 + 8 dígitos)',
+    hintOk: '✓ Listo',
+    onSend: (val) => { rfS.telefono = val.replace(/[\s\-\(\)]/g,''); rfNodoRetiroDatos5(); }
+  });
+}
+
+async function rfNodoRetiroDatos5() {
+  rfSetProgress(45);
+  await rfBotMsg('¿Cuál es la dirección exacta donde retiramos?');
+  rfShowInput({
+    placeholder: 'Calle, número, comuna',
+    onSend: (val) => { rfS.direccion = val; rfNodoRetiroDatos6(); }
+  });
+}
+
+async function rfNodoRetiroDatos6() {
+  rfSetProgress(50);
+  await rfBotMsg('Si tienes un link de Google Maps de la dirección, nos ayuda mucho para coordinar. ¿Lo tienes? (escribe "no" si no)');
+  rfShowInput({
+    placeholder: 'https://maps.google.com/... o "no"',
+    required: false,
+    onSend: (val) => {
+      rfS.link_maps = (val.toLowerCase() === 'no' || val === '') ? null : val;
+      rfNodoRetiroDatos7();
+    }
+  });
+}
+
+async function rfNodoRetiroDatos7() {
+  rfSetProgress(55);
+  await rfBotMsg('¿Qué material necesitas que retiremos?');
+  rfShowInput({
+    placeholder: 'Ej: chatarra fierro, cartón, PET...',
+    onSend: (val) => { rfS.material = val; rfNodoRetiroDatos8(); }
+  });
+}
+
+async function rfNodoRetiroDatos8() {
+  rfSetProgress(60);
+  await rfBotMsg('¿Cuántos kilos aproximados? No tiene que ser exacto 😊');
+  rfShowInput({
+    type: 'select',
+    placeholder: 'Elige un rango...',
+    options: [
+      { value:'menos de 100 kg',  label:'Menos de 100 kg' },
+      { value:'100–500 kg',       label:'100 – 500 kg' },
+      { value:'500 kg – 2 ton',   label:'500 kg – 2 toneladas' },
+      { value:'más de 2 ton',     label:'Más de 2 toneladas' }
+    ],
+    onSend: (val) => { rfS.kg_aproximados = val; rfNodoRetiroDatos9(); }
+  });
+}
+
+async function rfNodoRetiroDatos9() {
+  rfSetProgress(65);
+  await rfBotMsg('¿Qué tipo de camión necesitas para el retiro? Si no sabes, no te preocupes 😊');
+  rfShowBtns([
+    { label: '🚐 Camión pequeño (menos de 2 ton)', fn: () => { rfS.tipo_camion='pequeño'; rfNodoRetiroDatos10(); }},
+    { label: '🚛 Ampliroll (más de 2 ton)',         fn: () => { rfS.tipo_camion='ampliroll'; rfNodoRetiroDatos10(); }},
+    { label: '❓ No sé — que me orienten',          fn: () => { rfS.tipo_camion='no sé'; rfNodoRetiroDatos10(); }}
+  ]);
+}
+
+async function rfNodoRetiroDatos10() {
+  rfSetProgress(70);
+  await rfBotMsg('¿Tienes grúa horquilla disponible en el lugar para ayudar a cargar?');
+  rfShowBtns([
+    { label: '✅ Sí, tenemos',       fn: () => { rfS.grua_horquilla='sí'; rfNodoRetiroDatos11(); }},
+    { label: '❌ No tenemos',        fn: () => { rfS.grua_horquilla='no'; rfNodoRetiroDatos11(); }},
+    { label: '❓ No estoy seguro/a', fn: () => { rfS.grua_horquilla='no sé'; rfNodoRetiroDatos11(); }}
+  ]);
+}
+
+async function rfNodoRetiroDatos11() {
+  rfSetProgress(75);
+  await rfBotMsg('¿Para cuándo necesitas el retiro?');
+  rfShowInput({
+    type: 'select',
+    placeholder: 'Elige una opción...',
+    options: [
+      { value:'Lo antes posible', label:'Lo antes posible' },
+      { value:'Esta semana',      label:'Esta semana' },
+      { value:'La próxima semana',label:'La próxima semana' },
+      { value:'A coordinar',      label:'Coordinar después' }
+    ],
+    onSend: (val) => { rfS.dia_preferido = val; rfNodoRetiroDatos12(); }
+  });
+}
+
+async function rfNodoRetiroDatos12() {
+  rfSetProgress(80);
+  await rfBotMsg('¿En qué horario?');
+  rfShowBtns([
+    { label: '🌅 En la mañana',   fn: () => { rfS.jornada='AM'; rfNodoRetiroDatos13(); }},
+    { label: '🌆 En la tarde',    fn: () => { rfS.jornada='PM'; rfNodoRetiroDatos13(); }},
+    { label: '🕐 Me da lo mismo', fn: () => { rfS.jornada='Indiferente'; rfNodoRetiroDatos13(); }}
+  ]);
+}
+
+async function rfNodoRetiroDatos13() {
+  rfSetProgress(85);
+  await rfBotMsg('¿Hay algo más que debamos saber? (acceso especial, piso, tipo de material, etc.) — escribe "no" si no hay nada.');
+  rfShowInput({
+    type: 'textarea',
+    placeholder: 'Ej: Material en 3er piso, requiere montacargas...',
+    required: false,
+    onSend: (val) => {
+      rfS.comentarios = (val.toLowerCase() === 'no' || val === '') ? null : val;
+      rfNodoRetiroResumen();
+    }
+  });
+}
+
+async function rfNodoRetiroResumen() {
+  rfTrack('N-retiro-resumen');
+  rfSetProgress(90);
+  await rfBotMsg('¡Perfecto! Revisemos todo antes de enviar la solicitud de retiro 👇');
+
+  const filas = [
+    ['Nombre', rfS.nombre],
+    ['RUT', rfS.rut],
+    ['Email', rfS.email],
+    ['Teléfono', rfS.telefono],
+    ['Dirección', rfS.direccion],
+    ['Link Maps', rfS.link_maps],
+    ['Material', rfS.material],
+    ['Cantidad aprox.', rfS.kg_aproximados],
+    ['Tipo camión', rfS.tipo_camion],
+    ['Grúa horquilla', rfS.grua_horquilla],
+    ['Día preferido', rfS.dia_preferido],
+    ['Jornada', rfS.jornada],
+    ['Comentarios', rfS.comentarios]
+  ];
+
+  rfShowResumen(filas,
+    () => rfNodoRetiroEnviar(),
+    () => { rfClearActions(); rfNodoRetiro(); }
+  );
+}
+
+async function rfNodoRetiroEnviar() {
+  rfTrack('N-retiro-enviar');
+  rfSetProgress(95);
+  rfClearActions();
+  rfS.numero_orden = generarOrden();
+  rfS.estado_envio = 'pendiente_revision';
+
+  await rfBotMsg('Enviando tu cotización... ⏳');
+
+  const ok = await rfPostCotizacion('pendiente_revision');
+
+  if (ok) {
+    rfNotificarMake('retiro_pendiente'); // fire-and-forget
+    rfSetProgress(100);
+    rfShowExito(rfS.numero_orden, 'pendiente_revision');
+  } else {
+    rfShowError(
+      'No pudimos enviar tu solicitud. ¿Intentamos de nuevo?',
+      () => rfNodoRetiroEnviar()
+    );
+  }
+}
+
+/* ═══ MEDITAR ═══ */
+async function rfNodoMeditar() {
+  rfTrack('N-meditar');
+  await rfBotMsg('¡Sin problema! Tómate todo el tiempo que necesites. 😊 ¿Quieres que te avisemos con alguna novedad o que te contactemos cuando estés listo/a?');
+  rfShowBtns([
+    { label: '✅ Sí, avísenme después', fn: rfNodoMeditar2 },
+    { label: '❌ No, gracias',          fn: rfNodoFin }
+  ]);
+}
+
+async function rfNodoMeditar2() {
+  await rfBotMsg('¡Dale! ¿Cómo te llamas?');
+  rfShowInput({
+    placeholder: 'Tu nombre',
+    onSend: (val) => { rfS.nombre = val; rfNodoMeditar3(); }
+  });
+}
+
+async function rfNodoMeditar3() {
+  const nombre = rfS.nombre ? rfS.nombre.split(' ')[0] : '';
+  await rfBotMsg(`${nombre}, ¿a qué número o correo te escribimos?`);
+  rfShowInput({
+    placeholder: 'Ej: 9 1234 5678 o tu@correo.com',
+    validate: (val) => (validarTelefono(val) || validarEmail(val)) || 'Ingresa un teléfono o correo válido',
+    hintOk: '✓ Perfecto',
+    onSend: async (val) => {
+      if (validarEmail(val)) { rfS.email = val; } else { rfS.telefono = val; }
+      await rfPostLead();
+      rfClearActions();
+      await rfBotMsg(`¡Listo, ${nombre}! El equipo te va a escribir pronto. 😊 Cuando quieras avanzar, aquí estaremos. ♻️`);
+      rfShowBtns([{ label: '🏠 Volver al inicio', secondary: true, fn: rfNodo1 }]);
+      rfSetProgress(100);
+    }
+  });
+}
+
+// FIN
+async function rfNodoFin() {
+  rfClearActions();
+  await rfBotMsg('¡Hasta pronto! Si en algún momento te animas, aquí estaremos. 👋♻️');
+  rfShowBtns([{ label: '🏠 Volver al inicio', secondary: true, fn: rfNodo1 }]);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PRUEBAS DE VALIDACIÓN Y ERROR (modo debug)
+   Ejecutar rfRunTests() en la consola del navegador para validar
+═══════════════════════════════════════════════════════════════════ */
+function rfRunTests() {
+  const tests = [
+    // RUT válidos
+    { desc:'RUT 15123456-3 válido',     fn: () => validarRut('15123456-3'),         expect: true  },
+    { desc:'RUT con puntos válido',     fn: () => validarRut('15.123.456-3'),        expect: true  },
+    { desc:'RUT 12345678-9',            fn: () => validarRut('12345678-9'),          expect: true  },
+    { desc:'RUT con K válido',          fn: () => validarRut('5126663-K'),           expect: true  },
+    // RUT inválidos
+    { desc:'RUT dv incorrecto',         fn: () => validarRut('15123456-4'),          expect: false },
+    { desc:'RUT muy corto',             fn: () => validarRut('123-4'),               expect: false },
+    { desc:'RUT letras',                fn: () => validarRut('ABCDEFG-H'),           expect: false },
+    { desc:'RUT vacío',                 fn: () => validarRut(''),                   expect: false },
+    // Email
+    { desc:'Email válido',              fn: () => validarEmail('a@b.cl'),            expect: true  },
+    { desc:'Email sin @',               fn: () => validarEmail('notanemail'),        expect: false },
+    { desc:'Email sin dominio',         fn: () => validarEmail('a@'),               expect: false },
+    // Teléfono
+    { desc:'Tel 912345678 válido',      fn: () => validarTelefono('912345678'),      expect: true  },
+    { desc:'Tel +56912345678 válido',   fn: () => validarTelefono('+56912345678'),   expect: true  },
+    { desc:'Tel 712345678 inválido',    fn: () => validarTelefono('712345678'),      expect: false },
+    { desc:'Tel demasiado corto',       fn: () => validarTelefono('9123'),           expect: false },
+    // Formato RUT
+    { desc:'Formato 15123456-3',        fn: () => formatearRut('151234563'),         expect: '15.123.456-3' },
+    { desc:'Formato 5126663-K',         fn: () => formatearRut('5126663K'),          expect: '5.126.663-K'  }
+  ];
+
+  let ok = 0, fail = 0;
+  console.group('[RF2] Tests de validación');
+  tests.forEach(t => {
+    const result = t.fn();
+    const pass = result === t.expect;
+    console[pass ? 'log' : 'error'](`${pass ? '✅' : '❌'} ${t.desc} → ${result} (esperado: ${t.expect})`);
+    pass ? ok++ : fail++;
+  });
+  console.groupEnd();
+  console.log(`[RF2] Tests: ${ok} ✅  ${fail} ❌  Total: ${tests.length}`);
+
+  // Test de conectividad Supabase
+  console.log('[RF2] Testeando Supabase...');
+  rfGetSnapshot().then(snap => {
+    if (snap) {
+      const suc = Object.keys(snap);
+      console.log(`[RF2] ✅ Snapshot cargado. Sucursales: ${suc.join(', ')}`);
+    } else {
+      console.warn('[RF2] ⚠️ Snapshot no disponible. Verificar asistente_snapshot en Supabase.');
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MÉTRICAS / RESUMEN DE SESIÓN
+═══════════════════════════════════════════════════════════════════ */
+function rfGetSessionMetrics() {
+  const duracion = Math.round((Date.now() - rfS.inicio) / 1000);
+  return {
+    session_id:       rfS.session_id,
+    duracion_seg:     duracion,
+    nodos_visitados:  rfS.nodos.map(n => n.nodo),
+    total_nodos:      rfS.nodos.length,
+    intent:           rfS.intent,
+    sucursal:         rfS.sucursal,
+    material:         rfS.material,
+    convertido:       !!rfS.numero_orden,
+    numero_orden:     rfS.numero_orden,
+    abandono_en:      rfS.numero_orden ? null : (rfS.nodos[rfS.nodos.length-1]?.nodo || null),
+    version:          RF2.VERSION
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   INICIALIZACIÓN
+═══════════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  const toggle = document.getElementById('rf2-toggle');
+  const win    = document.getElementById('rf2-window');
+  const close  = document.getElementById('rf2-close');
+
+  toggle.addEventListener('click', () => {
+    const isOpen = win.classList.contains('open');
+    win.classList.toggle('open');
+    toggle.classList.toggle('open');
+    if (!isOpen) rfOnOpen();
+
+    // Notifica iframe parent (para WPCode)
+    try {
+      window.parent.postMessage({ type:'rf-chatbot-v2', action: isOpen ? 'close' : 'open' }, '*');
+    } catch(e) {}
+  });
+
+  close.addEventListener('click', () => {
+    win.classList.remove('open');
+    toggle.classList.remove('open');
+    try { window.parent.postMessage({ type:'rf-chatbot-v2', action:'close' }, '*'); } catch(e) {}
+  });
+
+  // Pre-cargar snapshot en background
+  rfGetSnapshot().then(snap => {
+    if (snap) rfS._snapshot = snap;
+  });
+
+  console.log(`[RF2] Chatbot Reciclean-Farex v${RF2.VERSION} listo.`);
+  console.log('[RF2] Para validar: rfRunTests()');
+  console.log('[RF2] Para métricas: rfGetSessionMetrics()');
+});
+
+function rfOnOpen() {
+  // Inicializar sesión nueva
+  rfS = Object.assign({}, {
+    intent:null, ciudad:null, sucursal:null, material:null, empresa:null,
+    precio:null, modo_entrega:null, tipo_cliente:null, nombre:null, rut:null,
+    email:null, telefono:null, nombre_empresa:null, rut_empresa:null, cargo:null,
+    kg_aproximados:null, dia_preferido:null, jornada:null, direccion:null,
+    link_maps:null, tipo_camion:null, grua_horquilla:null, comentarios:null,
+    requiere_cert_rep:false, session_id: generarSession(), inicio: Date.now(),
+    nodos:[], numero_orden:null, estado_envio:null, _snapshot: rfS._snapshot
+  });
+
+  $msgs().innerHTML = '';
+  rfSetProgress(0);
+  rfNodo1();
+}
+</script>
+</body>
+</html>
