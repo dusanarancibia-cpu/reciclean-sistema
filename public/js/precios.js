@@ -82,7 +82,7 @@ function renderPrecios(){
     html+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;">';
     html+='<span style="font-weight:600;color:var(--amber);">Editar categoria:</span>';
     html+='Margen% <input type="number" class="ctrl" id="bulk-mg-'+cat.replace(/[^a-zA-Z0-9]/g,'_')+'" step="0.5" placeholder="'+(catMats[0]?Math.round(catMats[0].margen*100):10)+'" style="width:60px;">';
-    html+='<button class="btn amb" onclick="applyBulkMargen(\''+cat+'\')">Aplicar</button>';
+    html+='<button class="btn amb" onclick="applyBulkMargen(\''+cat+'\')" title="Aplica margen masivo">Aplicar</button>';
     html+='</div></td></tr>';
 
     catMats.forEach(function(m){
@@ -123,15 +123,15 @@ function renderPrecios(){
         html+='<div style="font-size:7px;color:var(--text3);max-width:55px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+sel.cliente+'">'+sel.cliente+'</div>';
         html+='</td>';
         // Flete (editable per suc)
-        html+='<td class="num"><span class="ed" onclick="startEdSuc('+m.id+',\'flete\',\''+suc+'\',this)" style="font-size:9px;">'+cNew.flete+'</span></td>';
+        html+='<td class="num"><span class="ed" onclick="startEdSuc('+m.id+',\'flete\',\''+suc+'\',this)" title="Click para editar" style="font-size:9px;">'+cNew.flete+'</span></td>';
         // Margen% (editable per suc)
-        html+='<td class="num"><span class="ed" onclick="startEdSuc('+m.id+',\'margen\',\''+suc+'\',this)" style="font-size:9px;">'+(cNew.margen*100).toFixed(0)+'%</span></td>';
+        html+='<td class="num"><span class="ed" onclick="startEdSuc('+m.id+',\'margen\',\''+suc+'\',this)" title="Click para editar" style="font-size:9px;">'+(cNew.margen*100).toFixed(0)+'%</span></td>';
         // %B (editable per suc)
-        html+='<td class="num"><span class="ed" onclick="startEdSuc('+m.id+',\'mc\',\''+suc+'\',this)" style="font-size:9px;">'+(cNew.mcSpread*100).toFixed(0)+'%</span></td>';
+        html+='<td class="num"><span class="ed" onclick="startEdSuc('+m.id+',\'mc\',\''+suc+'\',this)" title="Click para editar" style="font-size:9px;">'+(cNew.mcSpread*100).toFixed(0)+'%</span></td>';
         // %E (editable per suc)
         var pctEVal=cNew.pctE;
         var comVal=cNew.comisionEjec;
-        html+='<td class="num"><span class="ed" onclick="startEdSuc('+m.id+',\'ce\',\''+suc+'\',this)" style="font-size:9px;">'+(pctEVal*100).toFixed(2)+'%';
+        html+='<td class="num"><span class="ed" onclick="startEdSuc('+m.id+',\'ce\',\''+suc+'\',this)" title="Click para editar" style="font-size:9px;">'+(pctEVal*100).toFixed(2)+'%';
         if(comVal>0) html+='<div style="font-size:7px;color:var(--green);">$'+comVal+'</div>';
         html+='</span></td>';
         // Anterior
@@ -140,10 +140,10 @@ function renderPrecios(){
         var lCol=dir==='up'?'var(--green)':dir==='dn'?'var(--red)':'var(--text2)';
         html+='<td class="num" style="'+(changed?'background:rgba(240,208,96,.06);':'')+'">';
         if(tieneOvr){
-          html+='<span style="cursor:pointer;font-weight:700;color:var(--blue);font-size:10px;" onclick="overridePrecio('+m.id+',\''+suc+'\',this)">&#9998;'+fmt(PRECIO_OVERRIDE[m.id][suc])+'</span>';
+          html+='<span style="cursor:pointer;font-weight:700;color:var(--blue);font-size:10px;" onclick="overridePrecio('+m.id+',\''+suc+'\',this)" title="Click para editar">&#9998;'+fmt(PRECIO_OVERRIDE[m.id][suc])+'</span>';
           html+='<div style="font-size:7px;color:var(--blue);cursor:pointer;" onclick="quitarOverride('+m.id+',\''+suc+'\')" title="Volver al propuesto">&#8634; propuesto</div>';
         } else {
-          html+='<span style="cursor:pointer;font-weight:700;color:'+lCol+';font-size:10px;" onclick="overridePrecio('+m.id+',\''+suc+'\',this)">'+fmt(cNew.lista)+'</span>';
+          html+='<span style="cursor:pointer;font-weight:700;color:'+lCol+';font-size:10px;" onclick="overridePrecio('+m.id+',\''+suc+'\',this)" title="Click para editar">'+fmt(cNew.lista)+'</span>';
           if(changed&&pct) html+='<div style="font-size:7px;color:'+lCol+';">'+(cNew.lista>cOld.lista?'+':'')+pct+'%</div>';
         }
         html+='</td>';
@@ -159,8 +159,8 @@ function renderPrecios(){
         if(isChg){
           var acBg=estado===true?'var(--green)':'var(--bg3)';var acCol=estado===true?'#fff':'var(--text2)';
           var reBg=estado===false?'var(--red)':'var(--bg3)';var reCol=estado===false?'#fff':'var(--text2)';
-          html+='<button onclick="aceptarCambioMat('+m.id+')" style="background:'+acBg+';border:1px solid '+(estado===true?'var(--green)':'var(--border)')+';color:'+acCol+';border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;cursor:pointer;">&#10003;</button>';
-          html+='<button onclick="rechazarCambioMat('+m.id+')" style="background:'+reBg+';border:1px solid '+(estado===false?'var(--red)':'var(--border)')+';color:'+reCol+';border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;cursor:pointer;">&#10007;</button>';
+          html+='<button onclick="aceptarCambioMat('+m.id+')" title="Acepta este cambio" style="background:'+acBg+';border:1px solid '+(estado===true?'var(--green)':'var(--border)')+';color:'+acCol+';border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;cursor:pointer;">&#10003;</button>';
+          html+='<button onclick="rechazarCambioMat('+m.id+')" title="Rechaza este cambio" style="background:'+reBg+';border:1px solid '+(estado===false?'var(--red)':'var(--border)')+';color:'+reCol+';border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;cursor:pointer;">&#10007;</button>';
         } else {
           html+='<span style="color:var(--text4);font-size:9px;">&#8212;</span>';
         }
@@ -458,7 +458,7 @@ function generarFichaDespacho(){
     fichaHtml+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">';
     fichaHtml+='<div style="display:flex;align-items:center;gap:8px;"><span style="background:var(--green);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:6px;">'+sucLabel+'</span><span style="font-size:12px;color:var(--text3);">'+items.length+' materiales &rarr; '+clientes.length+' clientes</span></div>';
     fichaHtml+='<div style="display:flex;gap:6px;">';
-    fichaHtml+='<button class="btn" onclick="copiarFichaWA(\''+suc+'\')" style="font-size:10px;padding:3px 8px;">Copiar WA</button>';
+    fichaHtml+='<button class="btn" onclick="copiarFichaWA(\''+suc+'\')" title="Copia para WhatsApp" style="font-size:10px;padding:3px 8px;">Copiar WA</button>';
     if(dest.tel) fichaHtml+='<a href="https://wa.me/'+dest.tel.replace(/[^0-9]/g,'')+'" target="_blank" class="btn ok" style="font-size:10px;padding:3px 8px;text-decoration:none;">'+dest.nombre.split(' ')[0]+'</a>';
     fichaHtml+='</div></div>';
 
@@ -498,8 +498,8 @@ function generarFichaDespacho(){
     +'<div><div style="font-size:14px;font-weight:700;color:#fff;">FICHA DE DESPACHO</div>'
     +'<div style="font-size:11px;color:rgba(255,255,255,.4);">Reciclean + Farex &middot; '+fecha+' '+hora+' &middot; Basado en precios seleccionados</div></div>'
     +'<div style="display:flex;gap:6px;align-items:center;">'
-    +'<button class="btn ok" onclick="copiarFichaWA(\'global\')" style="font-size:10px;">Copiar todo WA</button>'
-    +'<button class="btn" onclick="descargarFichaPDF()" style="font-size:10px;background:#C0392B;border-color:#C0392B;color:#fff;">PDF</button>'
+    +'<button class="btn ok" onclick="copiarFichaWA(\'global\')" title="Copia para WhatsApp" style="font-size:10px;">Copiar todo WA</button>'
+    +'<button class="btn" onclick="descargarFichaPDF()" title="Descarga ficha PDF" style="font-size:10px;background:#C0392B;border-color:#C0392B;color:#fff;">PDF</button>'
     +'<button onclick="cerrarFichaDespacho()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer;padding:0 4px;">&#10005;</button>'
     +'</div></div>'
     +'<div style="padding:16px;overflow-y:auto;flex:1;">'+fichaHtml+'</div>'
@@ -551,7 +551,7 @@ function descargarFichaPDF(){
     // Sucursal header
     html+='<div style="display:flex;align-items:center;justify-content:space-between;margin:20px 0 10px;border-bottom:1px solid #ddd;padding-bottom:6px;">';
     html+='<div><span style="font-size:13px;font-weight:800;color:#1A7A3C;letter-spacing:.5px;">'+sucLabel+'</span> <span style="font-size:11px;color:#888;margin-left:8px;">'+items.length+' materiales &rarr; '+clientes.length+' clientes</span></div>';
-    html+='<div class="no-print" style="display:flex;gap:6px;"><button onclick="navigator.clipboard.writeText(window._fichaMessages[\''+suc+'\']);alert(\'Copiado\')" style="font-size:10px;padding:3px 10px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;">Copiar WA</button>';
+    html+='<div class="no-print" style="display:flex;gap:6px;"><button onclick="navigator.clipboard.writeText(window._fichaMessages[\''+suc+'\']);alert(\'Copiado\')" title="Copia para WhatsApp" style="font-size:10px;padding:3px 10px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;">Copiar WA</button>';
     if(dest.tel) html+='<a href="https://wa.me/'+dest.tel.replace(/[^0-9]/g,'')+'" target="_blank" style="font-size:10px;padding:3px 10px;border:1px solid #1A7A3C;border-radius:4px;background:#fff;color:#1A7A3C;text-decoration:none;font-weight:600;">'+dest.nombre.split(' ')[0]+'</a>';
     html+='</div></div>';
 

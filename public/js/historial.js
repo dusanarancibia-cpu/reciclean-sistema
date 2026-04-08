@@ -87,7 +87,7 @@ function descargarHTML(){
   const suc=(pubSuc==='todas'?'todas':pubSuc).replace(/\s/g,'-');
   const blob=new Blob([`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Precios ${pubSuc}</title><style>body{font-family:sans-serif;max-width:900px;margin:40px auto;padding:0 20px;}h1{font-size:20px;margin-bottom:4px;}p.s{font-size:11px;color:#888;margin-bottom:16px;}</style></head><body><h1>Lista de Precios · ${pubSuc}</h1><p class="s">Grupo Reciclean-Farex · Precios referenciales CLP/kg</p>${document.getElementById('pub-preview').innerHTML}
 </body></html>`],{type:'text/html;charset=utf-8;'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`precios-${suc}-${fecha}.html`;a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nombreDescarga('html');a.click();
   toast('✓ HTML descargado','ok');
 }
 function descargarCSV(){
@@ -109,7 +109,7 @@ function descargarCSV(){
   var blob = new Blob([csvContent], {type:"text/csv;charset=utf-8;"});
   var a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "precios-"+sucLabel+"-"+fecha+".csv";
+  a.download = nombreDescarga('csv');
   a.click();
   toast("CSV descargado","ok");
 }

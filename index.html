@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin · Reciclean-Farex v90</title>
+<title>Admin · Reciclean-Farex v93</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap');
 :root{
@@ -529,7 +529,7 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
 <nav class="nav">
   <div class="nav-brand">
     <div class="nav-logo">Reciclean · Farex</div>
-    <div class="nav-sub">Admin Panel v90</div>
+    <div class="nav-sub">Admin Panel v93</div>
   </div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="goTab('carga',this)">
@@ -563,26 +563,26 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
       <option>Cerrillos</option><option>Maipú</option>
       <option>Talca</option><option>Puerto Montt</option>
     </select>
-    <button class="btn" onclick="grabarEstado()" id="btn-grabar" style="background:#2A6A8A;border-color:#3A8AAA;color:#fff;font-size:10px;padding:4px 10px;" title="Guardar todo el estado actual en IndexedDB + localStorage">💾 GRABAR</button>
+    <button class="btn" onclick="grabarEstado()" id="btn-grabar" style="background:#2A6A8A;border-color:#3A8AAA;color:#fff;font-size:10px;padding:4px 10px;" title="Guardar todo el estado actual en IndexedDB + localStorage">2. 💾 GRABAR</button>
     <button class="btn" onclick="generarFichaDespacho()" style="background:#6A3A8A;border-color:#8A5AAA;color:#fff;font-size:10px;padding:4px 10px;" title="Ficha de despacho a clientes">📋 Despacho</button>
     <button class="btn" onclick="generarAsistente()" style="background:#1A7A3C;border-color:#2ECC71;color:#fff;font-size:10px;padding:4px 10px;" title="Generar Asistente Comercial">📱 Asistente</button>
     <!-- Menú de herramientas -->
     <div style="position:relative;" id="tools-menu-wrap">
-      <button class="btn" onclick="toggleToolsMenu()" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.6);font-size:10px;padding:4px 10px;">⚙ Herramientas ▾</button>
+      <button class="btn" onclick="toggleToolsMenu()" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.6);font-size:10px;padding:4px 10px;" title="Abre menu herramientas">⚙ Herramientas ▾</button>
       <div id="tools-menu" style="display:none;position:absolute;right:0;top:100%;margin-top:4px;
         background:var(--bg2);border:1.5px solid var(--border2);border-radius:var(--r2);
         box-shadow:0 4px 20px rgba(0,0,0,.2);min-width:200px;z-index:300;overflow:hidden;">
-        <div onclick="exportBackup();toggleToolsMenu()" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <div onclick="exportBackup();toggleToolsMenu()" title="Exporta datos locales" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
           💾 <span>Backup</span></div>
-        <div onclick="importBackup();toggleToolsMenu()" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <div onclick="importBackup();toggleToolsMenu()" title="Importa archivo backup" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
           ↩ <span>Restaurar backup</span></div>
-        <div onclick="abrirDiagnostico();toggleToolsMenu()" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <div onclick="abrirDiagnostico();toggleToolsMenu()" title="Abre panel diagnostico" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
           🔧 <span>Diagnóstico</span></div>
-        <div onclick="cerrarSesion();toggleToolsMenu()" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--red);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <div onclick="cerrarSesion();toggleToolsMenu()" title="Cierra sesion actual" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--red);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
           🚪 <span>Cerrar sesión</span></div>
         <div style="padding:6px 14px;font-size:9px;color:var(--text4);display:flex;align-items:center;justify-content:space-between;">
           <span id="db-status">● local</span>
-          <span>v89</span>
+          <span>v93</span>
           <span id="draft-saved-at"></span>
         </div>
       </div>
@@ -607,10 +607,10 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
       <select class="ctrl" id="al-cat" style="font-size:11px;padding:4px 8px;"><option value="">Todas las categorías</option></select>
       <input class="ctrl" id="al-q" placeholder="Buscar..." oninput="renderAlias()" style="width:120px;font-size:11px;padding:4px 8px;">
       <select class="ctrl" id="al-fuente-f" onchange="renderAlias();renderFuentes()" style="font-size:11px;padding:4px 8px;"><option value="">Todos los clientes</option></select>
-      <button class="btn" onclick="addFuente()" style="font-size:10px;padding:4px 10px;">+ Cliente</button>
-      <button class="btn" onclick="abrirImportModal()" style="font-size:10px;padding:4px 10px;">⬆ Alias</button>
+      <button class="btn" onclick="addFuente()" style="font-size:10px;padding:4px 10px;" title="Agrega cliente nuevo">+ Cliente</button>
+      <button class="btn" onclick="abrirImportModal()" style="font-size:10px;padding:4px 10px;" title="Importa alias cliente">⬆ Alias</button>
       <button class="btn" id="btn-ver-todos" onclick="_verTodosMats=!_verTodosMats;this.classList.toggle('active');renderAlias();" style="font-size:10px;padding:4px 10px;" title="Mostrar también materiales sin precio de ningún cliente">👁 Todos</button>
-      <button class="btn ok" id="btn-pub-alias" style="display:none;font-size:10px;padding:4px 10px;" onclick="publicarAliases()">✓ Publicar</button>
+      <button class="btn ok" id="btn-pub-alias" style="display:none;font-size:10px;padding:4px 10px;" onclick="publicarAliases()" title="Publica alias actuales">✓ Publicar</button>
     </div>
   </div>
 
@@ -768,6 +768,7 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
         <span style="font-size:11px;color:#3A5AB8;">¿Quieres cargar los <strong>precios de compra</strong> de un cliente? Usa el Módulo C.</span>
       </div>
       <button onclick="cerrarImportModal();goTab('carga',document.querySelector('.nav-tab[onclick*=carga]'))"
+        title="Abre carga IA"
         style="background:#1A3A8A;border:none;color:#fff;font-size:11px;font-weight:700;padding:7px 14px;border-radius:var(--r);cursor:pointer;white-space:nowrap;flex-shrink:0;">
         → Ir a Carga IA (precios)
       </button>
@@ -791,22 +792,22 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
       <div>
         <div style="font-family:'Roboto Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Paso 2 · Fuente del contenido</div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;" id="imp-type-btns">
-          <button class="imp-type-btn active" onclick="setImpType('imagen',this)">
+          <button class="imp-type-btn active" onclick="setImpType('imagen',this)" title="Carga foto cliente">
             <div style="font-size:22px;">📷</div>
             <div>Imagen / Foto</div>
             <div>WhatsApp, captura</div>
           </button>
-          <button class="imp-type-btn" onclick="setImpType('pdf',this)">
+          <button class="imp-type-btn" onclick="setImpType('pdf',this)" title="Carga PDF cliente">
             <div style="font-size:22px;">📑</div>
             <div>PDF</div>
             <div>Cotización, lista</div>
           </button>
-          <button class="imp-type-btn" onclick="setImpType('texto',this)">
+          <button class="imp-type-btn" onclick="setImpType('texto',this)" title="Pega texto cliente">
             <div style="font-size:22px;">📋</div>
             <div>Texto</div>
             <div>Copiar y pegar</div>
           </button>
-          <button class="imp-type-btn" onclick="setImpType('excel',this)">
+          <button class="imp-type-btn" onclick="setImpType('excel',this)" title="Carga Excel cliente">
             <div style="font-size:22px;">📊</div>
             <div>Excel / CSV</div>
             <div>Archivo tabulado</div>
@@ -835,7 +836,7 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
       </div>
 
       <!-- Botón procesar -->
-      <button class="btn p" style="width:100%;justify-content:center;padding:10px;" onclick="procesarImportIA()">
+      <button class="btn p" style="width:100%;justify-content:center;padding:10px;" onclick="procesarImportIA()" title="Procesa con IA">
         ✦ Procesar con IA y extraer alias
       </button>
 
@@ -855,8 +856,8 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
             <div style="font-size:11px;color:var(--text3);" id="imp-res-sub"></div>
           </div>
           <div style="display:flex;gap:8px;">
-            <button class="btn ok" onclick="aprobarImportAlias()">✓ Importar todos los alias</button>
-            <button class="btn err" onclick="cancelarImportAlias()">✕ Descartar</button>
+            <button class="btn ok" onclick="aprobarImportAlias()" title="Importa alias detectados">✓ Importar todos los alias</button>
+            <button class="btn err" onclick="cancelarImportAlias()" title="Descarta resultado IA">✕ Descartar</button>
           </div>
         </div>
         <div class="tw" style="max-height:280px;">
@@ -888,10 +889,10 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
       <select class="ctrl" id="pc-cat"><option value="">Todas las categorias</option></select>
       <input class="ctrl" id="pc-q" placeholder="Buscar..." oninput="renderPrecios()" style="width:140px;">
       <span class="badge ba" id="cambios-badge" style="display:none;"></span>
-      <button class="btn ok" id="btn-aceptar-todos" style="display:none;" onclick="aceptarTodos()">✓ Aceptar todos</button>
-      <button class="btn err" id="btn-rechazar-todos" style="display:none;" onclick="rechazarTodos()">✕ Rechazar todos</button>
-      <button class="btn p" id="btn-pub" style="display:none;" onclick="publicarVersion()">✓ Publicar version</button>
-      <button class="btn" id="btn-desc" style="display:none;" onclick="descartarCambios()">↺ Descartar</button>
+      <button class="btn ok" id="btn-aceptar-todos" style="display:none;" onclick="aceptarTodos()" title="Acepta cambios pendientes">1. ✓ Aceptar todos</button>
+      <button class="btn err" id="btn-rechazar-todos" style="display:none;" onclick="rechazarTodos()" title="Rechaza cambios pendientes">✕ Rechazar todos</button>
+      <button class="btn p" id="btn-pub" style="display:none;" onclick="publicarVersion()" title="Publica version final">3. ✓ Publicar versión</button>
+      <button class="btn" id="btn-desc" style="display:none;" onclick="descartarCambios()" title="Descarta cambios pendientes">↺ Descartar</button>
       <button class="btn" id="btn-verificar" onclick="verificarPrecios()" title="Compara precios del panel con el snapshot que ve el Asistente en Supabase">🔍 Verificar vs Asistente</button>
     </div>
   </div>
@@ -1145,9 +1146,9 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
         <button class="btn" onclick="setPubSuc('Talca',this)">Talca</button>
         <button class="btn" onclick="setPubSuc('Puerto Montt',this)">Pto. Montt</button>
       </div>
-      <button class="btn" onclick="copiarHTML()">⎘ Copiar HTML</button>
-      <button class="btn p" onclick="descargarHTML()">⬇ Descargar</button>
-      <button class="btn ok" onclick="descargarCSV()">📊 CSV</button>
+      <button class="btn" onclick="copiarHTML()" title="Copia tabla HTML">⎘ Copiar HTML</button>
+      <button class="btn p" onclick="descargarHTML()" title="Descarga tabla HTML">⬇ Descargar</button>
+      <button class="btn ok" onclick="descargarCSV()" title="Descarga tabla CSV">📊 CSV</button>
     </div>
   </div>
 
@@ -1254,8 +1255,8 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
         </div>
       </div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
-        <button class="btn" onclick="cerrarModalUsuario()">Cancelar</button>
-        <button class="btn p" onclick="guardarUsuario()">Guardar</button>
+        <button class="btn" onclick="cerrarModalUsuario()" title="Cancela sin guardar">Cancelar</button>
+        <button class="btn p" onclick="guardarUsuario()" title="Guarda usuario nuevo">Guardar</button>
       </div>
     </div>
   </div>
@@ -2053,5 +2054,23 @@ async function cerrarSesion() {
 }
 </script>
 
+
+<!-- ════════════════════════════════════════════════════════
+     CHANGELOG
+     v93 · 2026-04-08
+       - T1A: Descargas renombradas a formato panel_YYYYMMDD_HHMM_usuario.ext
+               (estado.js: exportBackup, generarAsistente · historial.js: descargarHTML, descargarCSV)
+               Helper nombreDescarga() agregado en utils.js
+       - T2:  Flujo de publicacion numerado: "1. Aceptar todos" / "2. GRABAR" / "3. Publicar version"
+               (index.html lineas 566, 891, 893)
+       - T3:  Tooltips title="3 palabras" en todos los botones clicables del panel
+               (index.html: ~25 botones · precios.js: ~9 botones dinamicos)
+       - Bump: titulo, nav-sub y tools-menu actualizados a v93
+     v92 · 2026-04-08
+       - T4 URGENTE: Correccion Aluminio Puerto Montt
+               utils.js:60 — getPrecioCompra ya no propaga m.compra global a sucursales sin precio asignado
+               estado.js:228 — generarAsistente filtra materiales con precio=0 del snapshot (filter(Boolean))
+               Efecto: ningun material aparece en reciclean.cl para una sucursal si no tiene precio real asignado
+════════════════════════════════════════════════════════ -->
 </body>
 </html>
