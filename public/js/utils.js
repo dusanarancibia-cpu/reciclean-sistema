@@ -29,6 +29,7 @@ function goTab(id, btn) {
   if(id==='historial') renderHistorial();
   if(id==='publico')   renderPublico();
   if(id==='usuarios')  renderUsuarios();
+  if(id==='tracking')  renderTracking();
 }
 
 

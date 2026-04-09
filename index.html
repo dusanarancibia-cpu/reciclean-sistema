@@ -556,6 +556,9 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
     <button class="nav-tab" id="tab-config" onclick="goTab('config',this);cfgRender()">
       <span class="ltr">H</span> Empresa
     </button>
+    <button class="nav-tab" onclick="goTab('tracking',this);renderTracking()">
+      <span class="ltr">I</span> Monitoreo
+    </button>
   </div>
   <div class="nav-right">
     <select class="nav-suc" id="nav-suc" onchange="onSucChange()">
@@ -1972,6 +1975,74 @@ function cfgGuardar(){
 </script>
 </div>
 
+<!-- ═══ TAB I: MONITOREO DE USO DEL ASISTENTE ═══ -->
+<div class="panel" id="panel-tracking">
+<div class="scroll">
+  <div class="ph">
+    <div><div class="ph-title">Monitoreo del Asistente</div>
+      <div class="ph-sub">Seguimiento de uso por trabajador. Verde = flujo completo, Amarillo = parcial, Rojo = solo mira precios.</div>
+    </div>
+    <div class="ph-actions">
+      <div class="btn-grp" id="trk-periodo-grp">
+        <button class="btn active" onclick="setTrkPeriodo('hoy',this)">Hoy</button>
+        <button class="btn" onclick="setTrkPeriodo('7d',this)">7 dias</button>
+        <button class="btn" onclick="setTrkPeriodo('30d',this)">30 dias</button>
+      </div>
+      <select class="ctrl" id="trk-suc-filter" onchange="renderTracking()">
+        <option value="">Todas las sucursales</option>
+        <option>Cerrillos</option><option>Maipu</option>
+        <option>Talca</option><option>Puerto Montt</option>
+      </select>
+      <button class="btn p" onclick="renderTracking()">Actualizar</button>
+    </div>
+  </div>
+  <div class="g4" style="margin-bottom:16px;">
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Sesiones</div>
+      <div id="trk-kpi-sesiones" style="font-size:28px;font-weight:800;color:var(--text1);margin-top:4px">—</div>
+    </div>
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Flujo Completo</div>
+      <div id="trk-kpi-completo" style="font-size:28px;font-weight:800;color:#2E7D32;margin-top:4px">—</div>
+    </div>
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Solo Mira Precios</div>
+      <div id="trk-kpi-solo-precios" style="font-size:28px;font-weight:800;color:#C62828;margin-top:4px">—</div>
+    </div>
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px">PDFs Generados</div>
+      <div id="trk-kpi-pdfs" style="font-size:28px;font-weight:800;color:#1565C0;margin-top:4px">—</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">Uso por Trabajador</div></div>
+    <div class="cb" style="overflow-x:auto;">
+      <table class="t" id="trk-tabla-usuarios" style="width:100%">
+        <thead><tr>
+          <th style="text-align:left">Nombre</th><th>Ultima sesion</th><th>Sesiones</th>
+          <th>Etapa maxima</th><th>Busquedas</th><th>Materiales</th><th>PDFs</th><th>Compartidos</th>
+        </tr></thead>
+        <tbody id="trk-tabla-body">
+          <tr><td colspan="8" style="text-align:center;color:var(--text3);padding:24px;">Cargando datos...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">Embudo de Conversion</div></div>
+    <div class="cb" id="trk-funnel" style="padding:8px 0;">
+      <div style="text-align:center;color:var(--text3);padding:24px;">Cargando...</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">Actividad Reciente</div></div>
+    <div class="cb" id="trk-timeline" style="max-height:400px;overflow-y:auto;">
+      <div style="text-align:center;color:var(--text3);padding:24px;">Cargando...</div>
+    </div>
+  </div>
+</div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 
@@ -1990,6 +2061,7 @@ function cfgGuardar(){
 <script src="js/historial.js"></script>
 <script src="js/correccion.js"></script>
 <script src="js/estado.js"></script>
+<script src="js/tracking-dashboard.js"></script>
 
 <!-- ════════════════════════════════════════════════════════
      MODAL · DIAGNÓSTICO DE DATOS

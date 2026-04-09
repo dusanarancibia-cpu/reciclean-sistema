@@ -6,6 +6,7 @@
 <title>Asistente Comercial · Reciclean-Farex</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="js/tracking.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F2F5;min-height:100vh;max-width:480px;margin:0 auto;color:#1A2332}
@@ -752,6 +753,73 @@ function mostrarTablaPrecios(){
   }
 
   // 3. Sin sesión — mostrar login propio
+})();
+
+// ══════════════════════════════════════════════════
+// TRACKING DE USO
+// ══════════════════════════════════════════════════
+(function instrumentarTracking(){
+  // Esperar a que USUARIO esté disponible
+  var _checkInterval = setInterval(function(){
+    if(!USUARIO || !USUARIO.id) return;
+    clearInterval(_checkInterval);
+
+    rfTrack.init(_supa, USUARIO.id);
+    rfTrack.track('login', { nombre: USUARIO.nombre || '' });
+
+    // ── Decoradores ──
+    var _origFinalizarConsulta = window.finalizarConsulta;
+    window.finalizarConsulta = function(){ rfTrack.track('cerrar_consulta', {}); return _origFinalizarConsulta.apply(this, arguments); };
+
+    var _origShowModal = window.showModal;
+    window.showModal = function(){ var n = typeof getActives==='function' ? getActives().length : 0; rfTrack.track('ver_preview', { n_materiales: n }); return _origShowModal.apply(this, arguments); };
+
+    var _origShareWA = window.shareWA;
+    window.shareWA = function(){ rfTrack.track('compartir_whatsapp', {}); return _origShareWA.apply(this, arguments); };
+
+    var _origUpdateSuc = window.updateSucursalMateriales;
+    window.updateSucursalMateriales = function(){ var s = document.getElementById('neg-suc'); if(s && s.value) rfTrack.track('seleccionar_sucursal', { sucursal: s.value }); return _origUpdateSuc.apply(this, arguments); };
+
+    var _origToggleNeg = window.toggleNeg;
+    window.toggleNeg = function(){ var f = document.getElementById('neg-form'); var estaba = f && f.classList.contains('open'); _origToggleNeg.apply(this, arguments); if(!estaba) rfTrack.track('abrir_datos_negocio', {}); };
+
+    var _origMostrarTabla = window.mostrarTablaPrecios;
+    window.mostrarTablaPrecios = function(){ rfTrack.track('ver_tabla_precios', { sucursal: document.getElementById('neg-suc')?.value || '' }); return _origMostrarTabla.apply(this, arguments); };
+
+    var _origDoLogout = window.doLogout;
+    window.doLogout = function(){ rfTrack.track('logout', {}); return _origDoLogout.apply(this, arguments); };
+
+    // onInput con debounce
+    var _origOnInput = window.onInput;
+    window.onInput = function(id, field, val){
+      _origOnInput.apply(this, arguments);
+      if(field === 'kg' && parseFloat(val) > 0){
+        var mat = (MATERIALES||[]).find(function(m){ return m.id === id; });
+        rfTrack.trackDebounced('kg_'+id, 3000, 'ingresar_kg', { material: mat ? mat.material : id, kg: parseFloat(val) });
+      }
+      if(field === 'ej' && parseFloat(val) > 0){
+        var mat2 = (MATERIALES||[]).find(function(m){ return m.id === id; });
+        rfTrack.trackDebounced('ej_'+id, 3000, 'ingresar_precio', { material: mat2 ? mat2.material : id, precio: parseFloat(val) });
+      }
+    };
+
+    // updateNegInline — detectar datos completos
+    var _origUpdateNeg = window.updateNegInline;
+    var _datosYaCompletos = false;
+    window.updateNegInline = function(){
+      _origUpdateNeg.apply(this, arguments);
+      var s = document.getElementById('neg-suc')?.value || '';
+      var e = document.getElementById('neg-ejec')?.value.trim() || '';
+      var p = document.getElementById('neg-prov')?.value.trim() || '';
+      if(s && e && p && !_datosYaCompletos){ _datosYaCompletos = true; rfTrack.track('completar_datos_negocio', { ejec: e, prov: p }); }
+    };
+
+    // Search — debounce 2s
+    var searchEl = document.getElementById('search');
+    if(searchEl) searchEl.addEventListener('input', function(){ var q = searchEl.value.trim(); if(q.length >= 2) rfTrack.trackDebounced('search', 2000, 'buscar_material', { query: q }); });
+
+    console.log('📊 Tracking de uso activado');
+  }, 500);
 })();
 </script>
 </body>
