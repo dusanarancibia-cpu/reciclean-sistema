@@ -293,10 +293,12 @@ async function loadFromDB(){
       if(fpJson) FLETE_POR_SUC=JSON.parse(fpJson);
       else { var ls=localStorage.getItem('rf_flete_por_suc'); if(ls) FLETE_POR_SUC=JSON.parse(ls); }
     }catch(e){}
+    // Deep-merge: ediciones manuales guardadas ganan sobre defaults de config.js
     try{
       var mpJson=await idbGetConfig('margen_por_suc','');
-      if(mpJson) MARGEN_POR_SUC=JSON.parse(mpJson);
-      else { var ls2=localStorage.getItem('rf_margen_por_suc'); if(ls2) MARGEN_POR_SUC=JSON.parse(ls2); }
+      var mpStored=mpJson?JSON.parse(mpJson):null;
+      if(!mpStored){ var ls2=localStorage.getItem('rf_margen_por_suc'); if(ls2) mpStored=JSON.parse(ls2); }
+      if(mpStored){ for(var id in mpStored){ if(!MARGEN_POR_SUC[id]) MARGEN_POR_SUC[id]={}; for(var s in mpStored[id]) MARGEN_POR_SUC[id][s]=mpStored[id][s]; } }
     }catch(e){}
     try{
       var mcJson=await idbGetConfig('mc_ejec_por_suc','');

@@ -100,7 +100,17 @@ let PRECIO_SELECCIONADO = {};
 let PRECIO_OVERRIDE = {};
 // v85: Flete, Margen y MC Ejecutivo por material por sucursal
 let FLETE_POR_SUC = {};     // FLETE_POR_SUC[matId][suc] = numero
-let MARGEN_POR_SUC = {};    // MARGEN_POR_SUC[matId][suc] = decimal (ej: 0.15)
+// MARGEN_POR_SUC[matId][suc] = decimal (ej: 0.15)
+// Defaults: compensan los factores 0.88 (Talca) y 0.82 (P.Montt) eliminados de SUC_FACTOR
+// Fórmula: margen_nuevo = 1 - (1 - margen_base) * factor_viejo
+// Al restaurar desde IDB/LS, se hace deep-merge: ediciones manuales ganan sobre estos defaults.
+let MARGEN_POR_SUC = {};
+MATS_LOCAL.forEach(function(m){
+  MARGEN_POR_SUC[m.id] = {
+    Talca:          1 - (1 - m.margen) * 0.88,
+    'Puerto Montt': 1 - (1 - m.margen) * 0.82
+  };
+});
 let MC_EJEC_POR_SUC = {};   // MC_EJEC_POR_SUC[matId][suc] = decimal (spread override)
 let COMISION_EJEC_POR_SUC = {}; // COMISION_EJEC_POR_SUC[matId][suc] = decimal (ej: 0.0025 = 0.25%)
 // SUCURSAL_FUENTE[sucursal] = nombre_cliente (o null)
