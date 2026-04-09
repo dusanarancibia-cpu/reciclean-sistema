@@ -36,7 +36,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ═══ RESET Y NAMESPACE rf2-* ═══ */
-#rf2-container, #rf2-container * { box-sizing:border-box; margin:0; padding:0; }
+#rf2-container, #rf2-container * { box-sizing:border-box; margin:0; padding:0; max-width:100%; }
 #rf2-container {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size:14px; line-height:1.5;
@@ -129,13 +129,16 @@
 #rf2-messages::-webkit-scrollbar-thumb { background:#d4c5a9; border-radius:2px; }
 
 /* ═══ MENSAJES ═══ */
-.rf2-msg-bot, .rf2-msg-user { display:flex; max-width:82%; animation:rf2FadeIn .25s ease; }
+.rf2-msg-bot, .rf2-msg-user { display:flex; max-width:82%; min-width:0; overflow:hidden; animation:rf2FadeIn .25s ease; }
 @keyframes rf2FadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 .rf2-msg-bot { align-self:flex-start; }
 .rf2-msg-user { align-self:flex-end; }
 .rf2-bubble {
   padding:12px 16px; border-radius:18px;
-  line-height:1.6; font-size:14px; word-wrap:break-word; word-break:break-word;
+  line-height:1.6; font-size:14px;
+  word-wrap:break-word; word-break:break-word;
+  overflow-wrap:break-word; overflow:hidden;
+  min-width:0; width:100%;
 }
 .rf2-msg-bot .rf2-bubble {
   background:rgba(255,255,255,0.9); color:#374151; border-bottom-left-radius:4px;
@@ -153,15 +156,17 @@
 .rf2-btns {
   display:flex; flex-wrap:wrap; gap:6px;
   padding:6px 12px 10px; animation:rf2FadeIn .3s ease;
+  overflow:hidden;
 }
 .rf2-btns.rf2-grid2 { display:grid; grid-template-columns:1fr 1fr; }
 .rf2-btns.rf2-grid2 .rf2-btn-full { grid-column:1/-1; }
 .rf2-btn {
   background:rgba(255,255,255,0.85); border:1px solid #059669;
-  color:#1E293B; padding:8px 14px; border-radius:9999px;
+  color:#1E293B; padding:8px 12px; border-radius:9999px;
   font-size:12px; font-family:inherit; cursor:pointer;
   transition:all 0.2s ease-in-out;
   text-align:center; white-space:normal; font-weight:600;
+  overflow:hidden; word-break:break-word; min-width:0;
 }
 .rf2-btn:hover, .rf2-btn:focus {
   background:#059669; color:#fff; border-color:#059669;
@@ -214,7 +219,7 @@ select.rf2-input { cursor:pointer; }
 .rf2-summary-row { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #F1F5F9; font-size:13px; }
 .rf2-summary-row:last-child { border:none; }
 .rf2-summary-row .label { color:#64748b; }
-.rf2-summary-row .val { color:#0F172A; font-weight:500; text-align:right; max-width:60%; }
+.rf2-summary-row .val { color:#0F172A; font-weight:500; text-align:right; max-width:60%; overflow:hidden; text-overflow:ellipsis; word-break:break-word; }
 
 /* ═══ ÉXITO ═══ */
 .rf2-success {
@@ -415,7 +420,7 @@ select.rf2-input { cursor:pointer; }
 
     <!-- Header -->
     <div id="rf2-header">
-      <div class="rf2-avatar"><img src="/assets/logos/reciclean.png" alt="Reciclean" style="padding:4px;filter:none;"></div>
+      <div class="rf2-avatar"><img src="/assets/logos/reciclean-icon.png" alt="Reciclean" style="padding:4px;filter:none;object-fit:contain;"></div>
       <div class="rf2-brand">
         <div class="rf2-brand-name">Soporte Reciclean <span class="rf2-brand-badge"><img src="/assets/logos/grc-simbolo.png" alt="">Verificado</span></div>
         <div class="rf2-brand-status">En línea · Responde de inmediato</div>
