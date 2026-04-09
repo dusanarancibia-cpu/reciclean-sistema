@@ -22,11 +22,11 @@ function _trkFechaInicio() {
 }
 
 async function renderTracking() {
-  if (typeof _supa === 'undefined') return;
+  if (typeof _supabase === 'undefined' || !_supabase) return;
   var sucFilter = document.getElementById('trk-suc-filter') ? document.getElementById('trk-suc-filter').value : '';
 
   try {
-    var query = _supa.from('eventos_asistente')
+    var query = _supabase.from('eventos_asistente')
       .select('*')
       .gte('client_ts', _trkFechaInicio())
       .order('client_ts', { ascending: false })
@@ -47,7 +47,7 @@ async function renderTracking() {
 
   if (!_trkRealtimeSub) {
     try {
-      _trkRealtimeSub = _supa.channel('tracking-live')
+      _trkRealtimeSub = _supabase.channel('tracking-live')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'eventos_asistente' }, function(payload) {
           _trkData.unshift(payload.new);
           _renderKPIs(); _renderTablaUsuarios(); _renderFunnel(); _prependTimeline(payload.new);
@@ -61,7 +61,7 @@ async function renderTracking() {
 async function _trkGetNombre(uid) {
   if (_trkNombres[uid]) return _trkNombres[uid];
   try {
-    var r = await _supa.from('usuarios_autorizados').select('nombre').eq('id', uid).single();
+    var r = await _supabase.from('usuarios_autorizados').select('nombre').eq('id', uid).single();
     _trkNombres[uid] = r.data ? r.data.nombre : ('Usuario ' + uid);
   } catch(e) { _trkNombres[uid] = 'Usuario ' + uid; }
   return _trkNombres[uid];
