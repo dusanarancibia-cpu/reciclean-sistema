@@ -228,12 +228,12 @@ select.rf2-input { cursor:pointer; }
 
 /* ═══ TABLA DE PRECIOS POR FAMILIA (metales Farex) ═══ */
 .rf2-tabla-precios {
-  background:linear-gradient(180deg,#0e1a21 0%, #0b141a 100%);
-  border:1px solid rgba(134,239,172,.35);
+  background:#ffffff;
+  border:1px solid #d1fae5;
   border-radius:14px;
   overflow:hidden;
   margin:6px 0 2px 0;
-  box-shadow:0 6px 20px rgba(0,0,0,.35);
+  box-shadow:0 4px 16px rgba(0,0,0,.1);
 }
 .rf2-tabla-header {
   background:linear-gradient(135deg,#1A7A3C,#0F4B25);
@@ -250,7 +250,7 @@ select.rf2-input { cursor:pointer; }
 .rf2-tabla-header .rf2-tabla-suc {
   font-size:11px;
   font-weight:600;
-  opacity:.85;
+  opacity:.9;
   background:rgba(0,0,0,.25);
   padding:3px 8px;
   border-radius:20px;
@@ -261,52 +261,57 @@ select.rf2-input { cursor:pointer; }
   align-items:center;
   gap:10px;
   padding:9px 12px;
-  border-bottom:1px dashed rgba(255,255,255,.08);
+  border-bottom:1px solid #f0fdf4;
   cursor:pointer;
   transition:background .15s;
 }
 .rf2-tabla-row:last-child { border-bottom:none; }
-.rf2-tabla-row:hover { background:rgba(34,197,94,.08); }
-.rf2-tabla-row:active { background:rgba(34,197,94,.16); }
+.rf2-tabla-row:hover { background:#f0fdf4; }
+.rf2-tabla-row:active { background:#dcfce7; }
 .rf2-tabla-label {
-  color:#e9edef;
+  color:#1f2937;
   font-size:13px;
   font-weight:500;
   line-height:1.2;
 }
 .rf2-tabla-precio {
-  color:#86efac;
-  font-size:14px;
-  font-weight:800;
+  color:#15803d;
+  font-size:13px;
+  font-weight:600;
   font-variant-numeric: tabular-nums;
   white-space:nowrap;
 }
 .rf2-tabla-add {
-  background:#22c55e;
-  color:#0b141a;
-  border:none;
-  border-radius:50%;
-  width:28px;
-  height:28px;
-  font-size:16px;
-  font-weight:900;
+  background:#f0fdf4;
+  color:#15803d;
+  border:1px solid #86efac;
+  border-radius:8px;
+  width:auto;
+  height:auto;
+  font-size:11px;
+  font-weight:700;
+  padding:3px 8px;
   cursor:pointer;
   display:flex;
   align-items:center;
   justify-content:center;
   flex-shrink:0;
-  box-shadow:0 2px 6px rgba(34,197,94,.35);
-  pointer-events:none; /* el click va al row entero */
+  pointer-events:none;
+  letter-spacing:.3px;
 }
-.rf2-tabla-row.rf2-ya-en-carrito .rf2-tabla-add { background:#fbbf24; }
-.rf2-tabla-row.rf2-ya-en-carrito .rf2-tabla-add::before { content:'✓'; font-size:14px; }
+.rf2-tabla-row.rf2-ya-en-carrito .rf2-tabla-add {
+  background:#fef9c3;
+  color:#854d0e;
+  border-color:#fde68a;
+}
+.rf2-tabla-row.rf2-ya-en-carrito .rf2-tabla-add::before { content:'✓ listo'; font-size:11px; }
 .rf2-tabla-footer {
-  background:rgba(0,0,0,.3);
+  background:#f9fafb;
   padding:8px 12px;
-  color:#fbbf24;
+  color:#6b7280;
   font-size:11px;
   text-align:center;
-  border-top:1px solid rgba(255,255,255,.06);
+  border-top:1px solid #e5e7eb;
 }
 
 /* ═══ GRID MULTI-SELECT DE CATEGORÍAS (N3A) ═══ */
@@ -342,9 +347,9 @@ select.rf2-input { cursor:pointer; }
   width:66px;
   padding:4px 6px;
   border-radius:6px;
-  border:1px solid rgba(255,255,255,.2);
-  background:rgba(255,255,255,.08);
-  color:#e9edef;
+  border:1px solid #d1d5db;
+  background:#f9fafb;
+  color:#1f2937;
   text-align:right;
   font-size:14px;
   font-family:inherit;
@@ -352,7 +357,7 @@ select.rf2-input { cursor:pointer; }
 .rf2-tabla-input-kg:focus {
   outline:none;
   border-color:#22c55e;
-  background:rgba(34,197,94,.08);
+  background:#f0fdf4;
 }
 .rf2-tabla-row.rf2-row-kilos {
   cursor:default;
@@ -1135,7 +1140,7 @@ async function rfNodo1() {
   rfClearActions();
   await rfSeq([
     '👋 ¡Hola! Bienvenido al asistente del <strong>Grupo Reciclean-Farex</strong> 😊',
-    'Llevamos años comprando materiales reciclables en Santiago, Talca y Puerto Montt. El proceso es simple, rápido y te pagamos al contado el mismo día. ♻️',
+    'Llevamos años comprando materiales reciclables en Santiago, Talca y ahora Puerto Montt. El proceso es simple, rápido y pagamos solo con transferencia bancaria. <span style="display:inline-flex;align-items:center;background:#1A7A3C;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.3px;vertical-align:middle;margin-left:2px;">GestiónRepChile</span>',
     '¿En qué te puedo ayudar hoy?'
   ], () => {
     rfShowBtns([
@@ -1172,9 +1177,9 @@ async function rfNodo2() {
   rfSetProgress(15);
   await rfBotMsg('¡Perfecto! 😊 ¿En qué ciudad estás?');
   rfShowBtns([
-    { label: '📍 Santiago',      fn: rfNodo2B },
-    { label: '📍 Talca',         fn: () => { rfS.ciudad='Talca';       rfS.sucursal='Talca';        rfNodo3A(); }},
-    { label: '📍 Puerto Montt',  fn: rfNodoPuertoMontt },
+    { label: '🏙️ Santiago',      fn: rfNodo2B },
+    { label: '🌾 Talca',         fn: () => { rfS.ciudad='Talca';       rfS.sucursal='Talca';        rfNodo3A(); }},
+    { label: '⛵ Puerto Montt',  fn: rfNodoPuertoMontt },
     { label: '📍 Otra ciudad',   fn: rfNodoOtraCiudad }
   ]);
 }
@@ -1218,8 +1223,8 @@ async function rfNodo2B() {
   rfSetProgress(20);
   await rfBotMsg('Genial, tenemos dos sucursales en Santiago. ¿Cuál te queda más cerca?');
   rfShowBtns([
-    { label: '🏭 Cerrillos', fn: () => { rfS.sucursal='Cerrillos'; rfNodo3A(); }},
-    { label: '🏭 Maipú',    fn: () => { rfS.sucursal='Maipú';    rfNodo3A(); }}
+    { label: '🏭 Cerrillos',  fn: () => { rfS.sucursal='Cerrillos'; rfNodo3A(); }},
+    { label: '🏗️ Maipú',     fn: () => { rfS.sucursal='Maipú';    rfNodo3A(); }}
   ]);
 }
 
@@ -1228,39 +1233,39 @@ async function rfNodo2B() {
 // categorías; al confirmar se procesan en secuencia con tablas inline de kilos.
 const CATEGORIAS_PRINCIPALES = [
   {
-    key: 'carton', label: '📦 Cartón', emp: 'reciclean',
+    key: 'carton', label: '📦 Materiales\ncategoría Cartón', emp: 'reciclean',
     subtipos: [
       { label: 'Cartón',       can: 'Carton'   },
       { label: 'Papel Blanco', can: 'Blanco 2' },
     ]
   },
   {
-    key: 'plasticos', label: '♳ Plásticos', emp: 'reciclean',
+    key: 'plasticos', label: '♳ Materiales\ncategoría Plásticos', emp: 'reciclean',
     subtipos: [
       { label: 'PET Transparente',   can: 'PET Transparente'   },
       { label: 'Polietileno Lavado', can: 'Polietileno Lavado' },
     ]
   },
   {
-    key: 'vidrio', label: '🍶 Vidrio', emp: 'reciclean',
+    key: 'vidrio', label: '🍶 Materiales\ncategoría Vidrio', emp: 'reciclean',
     subtipos: [{ label: 'Vidrio', can: 'Vidrio' }]
   },
   {
-    key: 'latas_aluminio', label: '🥫 Latas de aluminio', emp: 'farex',
+    key: 'latas_aluminio', label: '🥫 Materiales\ncategoría Latas', emp: 'farex',
     farexOnly: true,
     subtipos: [{ label: 'Aluminio UBC', can: 'Aluminio UBC' }]
   },
   {
-    key: 'lata_chatarra', label: '🥡 Lata chatarra', emp: 'farex',
+    key: 'lata_chatarra', label: '🥡 Materiales\ncategoría Chatarra', emp: 'farex',
     farexOnly: true,
     subtipos: [{ label: 'Lata Chatarra', can: 'Lata Chatarra' }]
   },
   {
-    key: 'metales', label: '⚙️ Metales', emp: 'farex',
+    key: 'metales', label: '🪙 Materiales\ncategoría Metales', emp: 'farex',
     farexOnly: true, submenu: true, subtipos: null
   },
   {
-    key: 'fierros', label: '🔩 Fierros', emp: 'farex',
+    key: 'fierros', label: '🏗️ Materiales categoría Fierros', emp: 'farex',
     farexOnly: true, full: true,
     subtipos: [
       { label: 'Fierro Corto', can: 'Fierro Corto' },
@@ -1327,7 +1332,7 @@ async function rfNodo3A() {
 }
 
 // Procesa la cola de categorías pendientes una a una.
-// Cuando termina todas llama a rfNodoFrecuencia.
+// Cuando termina todas, llama a rfNodoCarritoResumen (pregunta frecuencia + cierre).
 function rfProcesarSiguienteCategoria() {
   if (!rfS._pendingCats || rfS._pendingCats.length === 0) {
     if (rfS.carrito.length === 0) {
@@ -1335,7 +1340,7 @@ function rfProcesarSiguienteCategoria() {
         .then(() => rfNodo3A());
       return;
     }
-    return rfNodoFrecuencia();
+    return rfNodoCarritoResumen();
   }
   const cat = rfS._pendingCats.shift();
   if (cat.submenu) {
@@ -1352,8 +1357,9 @@ async function rfNodoMetalesSubMenu() {
   rfS.empresa = 'farex';
   rfSetProgress(38);
   await rfBotMsg(
-    `⚙️ ¡Perfecto! En <strong>Farex ${rfS.sucursal}</strong> compramos cobres, bronces, ` +
-    `aluminios, acero inoxidable y más.<br><br>Elegí la familia y te muestro los precios del día 👇`
+    `🏷️ ¡Perfecto! En <strong>${rfS.sucursal}</strong> también compramos cobres, bronces, aluminios, ` +
+    `acero inoxidable y más con <span style="display:inline-flex;align-items:center;background:#fbbf24;color:#0b141a;font-size:10px;font-weight:800;padding:2px 7px;border-radius:4px;letter-spacing:.5px;vertical-align:middle;">Farex SpA</span>` +
+    `<br><br>Elegí la familia y te muestro los precios del día 👇`
   );
   rfNodoMetalesCat();
 }
@@ -1421,7 +1427,7 @@ async function rfMostrarTablaCategoria(cat) {
 
   const footer = document.createElement('div');
   footer.className = 'rf2-tabla-footer';
-  footer.textContent = 'Dejá en blanco los materiales que no tenés';
+  footer.textContent = 'Dejá en blanco los materiales que no tengas';
   tabla.appendChild(footer);
   blk.appendChild(tabla);
 
@@ -1807,11 +1813,11 @@ async function rfNodo4Sin(mat) {
 // Los nombres `can` deben coincidir 1:1 con el snapshot Supabase (ver public/js/config.js
 // MATS_LOCAL) para que rfGetPrecio devuelva el precio correcto del día.
 const METALES_CATS = [
-  { label: '🔩 Fierros', key: 'fierros', items: [
+  { label: '🏗️ Fierros y Chatarra', key: 'fierros', items: [
     { label: 'Fierro Corto', can: 'Fierro Corto' },
     { label: 'Fierro Largo', can: 'Fierro Largo' },
   ]},
-  { label: '🥉 Cobres', key: 'cobres', items: [
+  { label: '🪙 Cobres', key: 'cobres', items: [
     { label: 'Cobre 1 Tubo',         can: 'Cobre 1 Tubo'         },
     { label: 'Cobre 3ra',            can: 'Cobre 3ra'            },
     { label: 'Cobre Esmaltado',      can: 'Cobre Esmaltado'      },
@@ -1820,14 +1826,14 @@ const METALES_CATS = [
     { label: 'Cobre Radiador',       can: 'Cobre Radiador'       },
     { label: 'Cobre Niquel',         can: 'Cobre Niquel'         },
   ]},
-  { label: '🥈 Bronces', key: 'bronces', items: [
+  { label: '🏺 Bronces', key: 'bronces', items: [
     { label: 'Bronce Amarillo',       can: 'Bronce Amarillo'       },
     { label: 'Bronce Colorado',       can: 'Bronce Colorado'       },
     { label: 'Bronce Contaminado',    can: 'Bronce Contaminado'    },
     { label: 'Bronce Aserrín Limpio', can: 'Bronce Aserrín Limpio' },
     { label: 'Bronce Magnético',      can: 'Bronce Magnético'      },
   ]},
-  { label: '✨ Aluminios', key: 'aluminios', items: [
+  { label: '🥈 Aluminios', key: 'aluminios', items: [
     { label: 'Aluminio Off Set',        can: 'Aluminio Off Set'        },
     { label: 'Aluminio Perfil A',       can: 'Aluminio Perfil A'       },
     { label: 'Aluminio Perfil B',       can: 'Aluminio Perfil B'       },
@@ -1839,7 +1845,7 @@ const METALES_CATS = [
     { label: 'Aluminio Radiador Mixto', can: 'Aluminio Radiador Mixto' },
     { label: 'Aluminio FOIL',           can: 'Aluminio FOIL'           },
   ]},
-  { label: '⚙️ Acero Inox.', key: 'inox', items: [
+  { label: '✨ Acero Inox.', key: 'inox', items: [
     { label: 'Acero Inoxidable 304', can: 'Acero Inoxidable 304' },
     { label: 'Acero Inoxidable 316', can: 'Acero Inoxidable 316' },
     { label: 'Acero Inox. SS 201',   can: 'Acero Inox. SS 201'   },
@@ -1933,10 +1939,10 @@ function rfTablaPreciosHTML(cat, items, sucursal) {
     html += `<div class="rf2-tabla-row${yaEsta ? ' rf2-ya-en-carrito' : ''}" onclick="window.rf2AddMetal('${canAttr}','${labelAttr}')">
       <span class="rf2-tabla-label">${rfEsc(it.label)}</span>
       <span class="rf2-tabla-precio">${precioFmt}/kg</span>
-      <button class="rf2-tabla-add" tabindex="-1">${yaEsta ? '' : '+'}</button>
+      <button class="rf2-tabla-add" tabindex="-1">${yaEsta ? '' : 'añadir'}</button>
     </div>`;
   });
-  html += '<div class="rf2-tabla-footer">💪 Mejor precio según volumen total · IVA 19% retención · Pago al contado</div>';
+  html += '<div class="rf2-tabla-footer">Precio de mercado, siempre actualizados · IVA 19% retención con factura de compra · Pago con transferencia bancaria y Acta de procedencia</div>';
   html += '</div>';
   return html;
 }
@@ -1953,7 +1959,7 @@ async function rfNodoMetalesTabla(cat) {
   rfTrack('N-metales-tabla');
   rfSetProgress(45);
 
-  await rfBotMsg(`Consultando precios de ${cat.label} en Farex ${rfS.sucursal}... 🔎`);
+  await rfBotMsg(`Consultando precios de ${cat.label} en <span style="display:inline-flex;align-items:center;background:#fbbf24;color:#0b141a;font-size:10px;font-weight:800;padding:2px 7px;border-radius:4px;letter-spacing:.5px;vertical-align:middle;">Farex</span> ${rfS.sucursal}... 🔎`);
   const items = await rfGetPreciosCategoria(cat, rfS.sucursal);
   rfClearActions();
 
