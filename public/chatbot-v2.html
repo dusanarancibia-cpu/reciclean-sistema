@@ -42,26 +42,52 @@
   font-size:14px; line-height:1.5;
 }
 
-/* ═══ BOTÓN FLOTANTE ═══ */
+/* ═══ BOTÓN FLOTANTE (componente CSS puro) ═══ */
 #rf2-toggle {
   position:fixed; bottom:24px; right:24px; z-index:999998;
-  width:64px; height:64px; border-radius:50%;
-  background:transparent;
-  border:none; cursor:pointer;
-  box-shadow:0 8px 28px rgba(15,23,42,.35),0 2px 8px rgba(0,0,0,.2);
+  width:66px; height:66px; border-radius:50%;
+  background: radial-gradient(circle at 38% 36%, #4dce53 0%, #28a22e 50%, #1a7a1f 100%);
+  border: 2px solid rgba(255,255,255,.22);
+  cursor:pointer;
+  box-shadow: 0 6px 22px rgba(26,110,32,.55), 0 2px 8px rgba(0,0,0,.18),
+              inset 0 1px 0 rgba(255,255,255,.18);
   display:flex; align-items:center; justify-content:center;
-  transition:transform .25s,box-shadow .25s;
-  overflow:hidden; padding:0;
+  transition:transform .25s, box-shadow .25s;
+  overflow:visible; padding:0;
 }
-#rf2-toggle img.rf2-toggle-logo { width:64px; height:64px; object-fit:cover; display:block; border-radius:50%; }
-#rf2-toggle:hover { transform:scale(1.08); box-shadow:0 12px 32px rgba(15,23,42,.5); }
-#rf2-toggle.open { filter:brightness(0.75); }
+#rf2-toggle:hover {
+  transform:scale(1.1);
+  box-shadow:0 10px 30px rgba(26,110,32,.65), 0 3px 10px rgba(0,0,0,.2);
+}
+#rf2-toggle.open { filter:brightness(0.8); }
+
+/* Burbuja de chat blanca interior */
+.rf2-launcher-bubble {
+  width:44px; height:40px;
+  background:#fff;
+  border-radius:50% 50% 46% 46% / 55% 55% 45% 45%;
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+  box-shadow:inset 0 1px 4px rgba(0,0,0,.08);
+  flex-shrink:0;
+}
+.rf2-launcher-bubble::after {
+  content:'';
+  position:absolute; bottom:-7px; left:9px;
+  width:13px; height:9px;
+  background:#fff;
+  clip-path:polygon(0 0, 85% 0, 0 100%);
+}
+.rf2-launcher-dots {
+  width:30px; height:auto; display:block;
+}
+
 .rf2-pulse {
-  position:absolute; inset:-4px; border-radius:50%;
-  border:2px solid #10B981; opacity:0;
-  animation:rf2Pulse 2.5s infinite;
+  position:absolute; inset:-5px; border-radius:50%;
+  border:2px solid #28a22e; opacity:0;
+  animation:rf2Pulse 2.5s infinite; pointer-events:none;
 }
-@keyframes rf2Pulse { 0%{opacity:.7;transform:scale(1)} 100%{opacity:0;transform:scale(1.45)} }
+@keyframes rf2Pulse { 0%{opacity:.6;transform:scale(1)} 100%{opacity:0;transform:scale(1.5)} }
 
 /* ═══ VENTANA DEL CHAT ═══ */
 #rf2-window {
@@ -412,7 +438,9 @@ select.rf2-input { cursor:pointer; }
   <!-- Botón flotante -->
   <button id="rf2-toggle" aria-label="Abrir asistente de reciclaje">
     <div class="rf2-pulse"></div>
-    <img src="/assets/logos/chatbot-launcher.png" class="rf2-toggle-logo" alt="Chat Reciclean">
+    <div class="rf2-launcher-bubble">
+      <img src="/assets/logos/reciclean-icon.png" class="rf2-launcher-dots" alt="Reciclean Chat">
+    </div>
   </button>
 
   <!-- Ventana del chat -->
