@@ -109,7 +109,7 @@
   background:#E2E8F0; height:3px; flex-shrink:0; position:relative;
 }
 #rf2-progress-fill {
-  height:100%; background:linear-gradient(90deg,#10B981,#34d399);
+  height:100%; background:linear-gradient(90deg,#059669,#34d399);
   transition:width .5s ease; width:0%;
 }
 #rf2-progress-label {
@@ -121,10 +121,12 @@
 #rf2-messages {
   flex:1; overflow-y:auto; padding:16px 12px 8px;
   display:flex; flex-direction:column; gap:6px;
-  scroll-behavior:smooth; background:#F8FAFC;
+  scroll-behavior:smooth;
+  background-color:#fdf6e3;
+  background-image:url("https://www.transparenttextures.com/patterns/cardboard-flat.png");
 }
 #rf2-messages::-webkit-scrollbar { width:4px; }
-#rf2-messages::-webkit-scrollbar-thumb { background:#CBD5E1; border-radius:2px; }
+#rf2-messages::-webkit-scrollbar-thumb { background:#d4c5a9; border-radius:2px; }
 
 /* ═══ MENSAJES ═══ */
 .rf2-msg-bot, .rf2-msg-user { display:flex; max-width:88%; animation:rf2FadeIn .25s ease; }
@@ -133,19 +135,19 @@
 .rf2-msg-user { align-self:flex-end; }
 .rf2-bubble {
   padding:10px 14px; border-radius:18px;
-  line-height:1.55; font-size:14px; word-wrap:break-word;
+  line-height:1.55; font-size:14.5px; word-wrap:break-word;
 }
 .rf2-msg-bot .rf2-bubble {
-  background:#ffffff; color:#0F172A; border-bottom-left-radius:4px;
-  border:1px solid #E2E8F0;
-  box-shadow:0 4px 6px -1px rgba(0,0,0,.05);
+  background:rgba(255,255,255,0.9); color:#374151; border-bottom-left-radius:4px;
+  border:1px solid rgba(0,0,0,.06);
+  box-shadow:0 4px 10px rgba(0,0,0,.03);
 }
 .rf2-msg-user .rf2-bubble {
-  background:#0F172A; color:#ffffff; border-bottom-right-radius:4px;
+  background:#1E293B; color:#ffffff; border-bottom-right-radius:4px;
 }
 .rf2-bubble strong { font-weight:600; }
-.rf2-bubble .rf2-price-big { font-size:22px; font-weight:700; color:#10B981; display:block; margin:4px 0; }
-.rf2-bubble .rf2-note { font-size:11px; color:#94a3b8; margin-top:4px; display:block; }
+.rf2-bubble .rf2-price-big { font-size:22px; font-weight:700; color:#059669; display:block; margin:4px 0; }
+.rf2-bubble .rf2-note { font-size:11px; color:#9ca3af; margin-top:4px; display:block; }
 
 /* ═══ BOTONES DE ACCIÓN ═══ */
 .rf2-btns {
@@ -155,21 +157,22 @@
 .rf2-btns.rf2-grid2 { display:grid; grid-template-columns:1fr 1fr; }
 .rf2-btns.rf2-grid2 .rf2-btn-full { grid-column:1/-1; }
 .rf2-btn {
-  background:#ffffff; border:1px solid #10B981;
-  color:#0F172A; padding:8px 14px; border-radius:9999px;
-  font-size:13px; font-family:inherit; cursor:pointer; transition:all .2s;
-  text-align:center; white-space:normal; font-weight:500;
+  background:rgba(255,255,255,0.85); border:1px solid #059669;
+  color:#1E293B; padding:8px 14px; border-radius:9999px;
+  font-size:12px; font-family:inherit; cursor:pointer;
+  transition:all 0.2s ease-in-out;
+  text-align:center; white-space:normal; font-weight:600;
 }
 .rf2-btn:hover, .rf2-btn:focus {
-  background:#10B981; color:#fff; border-color:#10B981;
+  background:#059669; color:#fff; border-color:#059669;
   transform:translateY(-1px);
 }
 .rf2-btn.rf2-btn-primary {
-  background:#0F172A; border-color:#0F172A; color:#fff; font-weight:600;
+  background:#1E293B; border-color:#1E293B; color:#fff; font-weight:600;
 }
-.rf2-btn.rf2-btn-primary:hover { background:#10B981; border-color:#10B981; }
-.rf2-btn.rf2-btn-secondary { border-color:#E2E8F0; color:#64748b; }
-.rf2-btn.rf2-btn-secondary:hover { background:#F1F5F9; color:#0F172A; border-color:#CBD5E1; }
+.rf2-btn.rf2-btn-primary:hover { background:#059669; border-color:#059669; }
+.rf2-btn.rf2-btn-secondary { border-color:#d1c4a8; color:#6b7280; background:rgba(255,255,255,.6); }
+.rf2-btn.rf2-btn-secondary:hover { background:#f5f0e8; color:#1E293B; border-color:#b8a98a; }
 .rf2-btn.rf2-btn-danger { border-color:rgba(239,68,68,.4); color:#dc2626; }
 .rf2-btn.rf2-btn-full { width:100%; justify-content:center; display:flex; }
 
@@ -180,24 +183,24 @@
 .rf2-input-label { color:#64748b; font-size:11px; margin-bottom:4px; display:block; font-weight:500; text-transform:uppercase; letter-spacing:.05em; }
 .rf2-input-row { display:flex; gap:6px; align-items:flex-start; }
 .rf2-input {
-  flex:1; background:#ffffff; border:1px solid #E2E8F0;
-  color:#0F172A; padding:10px 12px; border-radius:10px;
+  flex:1; background:rgba(255,255,255,0.9); border:1px solid #d4c5a9;
+  color:#374151; padding:10px 12px; border-radius:10px;
   font-size:14px; outline:none; transition:border-color .2s;
   font-family:inherit;
 }
-.rf2-input:focus { border-color:#10B981; box-shadow:0 0 0 3px rgba(16,185,129,.1); }
-.rf2-input.valid { border-color:#10B981; }
+.rf2-input:focus { border-color:#059669; box-shadow:0 0 0 3px rgba(5,150,105,.1); }
+.rf2-input.valid { border-color:#059669; }
 .rf2-input.invalid { border-color:#ef4444; }
 .rf2-input-hint { font-size:11px; margin-top:4px; min-height:16px; }
-.rf2-input-hint.ok { color:#10B981; }
+.rf2-input-hint.ok { color:#059669; }
 .rf2-input-hint.err { color:#ef4444; }
 .rf2-btn-send {
-  background:#0F172A; border:none; color:#fff;
+  background:#1E293B; border:none; color:#fff;
   padding:10px 14px; border-radius:10px; cursor:pointer;
   font-size:15px; transition:background .2s; flex-shrink:0;
 }
-.rf2-btn-send:hover { background:#10B981; }
-.rf2-btn-send:disabled { background:#E2E8F0; cursor:not-allowed; color:#94a3b8; }
+.rf2-btn-send:hover { background:#059669; }
+.rf2-btn-send:disabled { background:#e5e7eb; cursor:not-allowed; color:#9ca3af; }
 textarea.rf2-input { resize:none; height:72px; }
 select.rf2-input { cursor:pointer; }
 
@@ -207,7 +210,7 @@ select.rf2-input { cursor:pointer; }
   border-radius:12px; padding:12px 14px; margin:6px 12px 10px;
   animation:rf2FadeIn .3s ease; box-shadow:0 4px 6px -1px rgba(0,0,0,.05);
 }
-.rf2-summary h4 { color:#10B981; font-size:12px; text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px; font-weight:600; }
+.rf2-summary h4 { color:#059669; font-size:12px; text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px; font-weight:600; }
 .rf2-summary-row { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #F1F5F9; font-size:13px; }
 .rf2-summary-row:last-child { border:none; }
 .rf2-summary-row .label { color:#64748b; }
@@ -220,7 +223,7 @@ select.rf2-input { cursor:pointer; }
   padding:16px; margin:8px 12px; text-align:center;
   animation:rf2FadeIn .4s ease;
 }
-.rf2-success .rf2-order { font-size:20px; font-weight:700; color:#10B981; margin:8px 0; letter-spacing:.05em; }
+.rf2-success .rf2-order { font-size:20px; font-weight:700; color:#059669; margin:8px 0; letter-spacing:.05em; }
 .rf2-success p { font-size:13px; color:#64748b; margin-top:6px; }
 
 /* ═══ ERROR ═══ */
@@ -240,7 +243,7 @@ select.rf2-input { cursor:pointer; }
   box-shadow:0 4px 6px -1px rgba(0,0,0,.05);
 }
 .rf2-typing span {
-  width:7px; height:7px; background:#10B981; border-radius:50%;
+  width:7px; height:7px; background:#059669; border-radius:50%;
   animation:rf2Type 1.2s infinite;
 }
 .rf2-typing span:nth-child(2) { animation-delay:.2s; }
@@ -266,7 +269,7 @@ select.rf2-input { cursor:pointer; }
   display:flex;
   align-items:center;
   justify-content:space-between;
-  border-bottom:2px solid #10B981;
+  border-bottom:2px solid #059669;
 }
 .rf2-tabla-header .rf2-tabla-suc {
   font-size:11px;
@@ -296,7 +299,7 @@ select.rf2-input { cursor:pointer; }
   line-height:1.2;
 }
 .rf2-tabla-precio {
-  color:#10B981;
+  color:#059669;
   font-size:13px;
   font-weight:600;
   font-variant-numeric: tabular-nums;
@@ -355,10 +358,10 @@ select.rf2-input { cursor:pointer; }
   text-align:center;
   line-height:1.3;
 }
-.rf2-cat-btn:hover { border-color:#10B981; background:#F0FDF4; }
+.rf2-cat-btn:hover { border-color:#059669; background:rgba(5,150,105,.06); }
 .rf2-cat-btn.rf2-cat-selected {
-  background:#F0FDF4;
-  border-color:#10B981;
+  background:rgba(5,150,105,.1);
+  border-color:#059669;
   color:#065f46;
   font-weight:600;
 }
@@ -428,6 +431,19 @@ select.rf2-input { cursor:pointer; }
 
     <!-- Mensajes -->
     <div id="rf2-messages"></div>
+
+    <!-- Sello de verificación Kraft Eco -->
+    <div id="rf2-sello" style="
+      display:flex;align-items:center;justify-content:center;gap:5px;
+      padding:5px 12px 6px;
+      background:rgba(253,246,227,0.95);
+      border-top:1px solid rgba(0,0,0,.06);
+      opacity:0.6;
+      flex-shrink:0;
+    ">
+      <img src="/assets/logos/grc-simbolo.png" style="height:12px;width:auto;">
+      <span style="font-size:9px;font-weight:700;color:#374151;font-family:'Inter',sans-serif;letter-spacing:.3px;">Verificado por Gestión Rep Chile</span>
+    </div>
 
   </div><!-- fin window -->
 </div><!-- fin container -->
