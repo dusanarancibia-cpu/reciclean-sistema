@@ -104,7 +104,7 @@ async function _renderTablaUsuarios() {
   });
 
   if (Object.keys(porUsuario).length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:24px;">Sin datos en este período</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:24px;">Sin datos en este período</td></tr>';
     return;
   }
 
@@ -133,6 +133,7 @@ async function _renderTablaUsuarios() {
       '<td style="text-align:center;">' + u.materiales + '</td>' +
       '<td style="text-align:center;font-weight:700;">' + u.pdfs + '</td>' +
       '<td style="text-align:center;font-weight:700;">' + u.compartidos + '</td>' +
+      '<td style="text-align:center;"><button onclick="generarInformePDF(' + uid + ')" style="background:#1565C0;color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;">PDF</button></td>' +
       '</tr>';
   });
   tbody.innerHTML = html;
@@ -241,6 +242,182 @@ function _prependTimeline(ev) {
     '<div style="flex:1;">' + icono + ' ' + label + '</div>' +
     '<div style="font-size:10px;color:var(--text3);flex-shrink:0;">' + (ev.sucursal || '') + '</div>';
   el.prepend(div);
+}
+
+// ═══════════════════════════════════════════════════════════
+// INFORME PDF POR TRABAJADOR
+// ═══════════════════════════════════════════════════════════
+async function generarInformePDF(uid) {
+  var nombre = _trkNombres[uid] || await _trkGetNombre(uid);
+  var eventos = _trkData.filter(function(e) { return e.usuario_id === uid; });
+  if (eventos.length === 0) { alert('Sin datos para este trabajador'); return; }
+
+  // Agrupar por sesion
+  var sesiones = {};
+  var stats = { busquedas: 0, materiales: 0, pdfs: 0, compartidos: 0, tablaPrecios: 0 };
+  eventos.forEach(function(e) {
+    if (!sesiones[e.session_id]) sesiones[e.session_id] = { eventos: [], eventoSet: new Set(), inicio: e.client_ts, sucursal: e.sucursal || '' };
+    sesiones[e.session_id].eventos.push(e);
+    sesiones[e.session_id].eventoSet.add(e.evento);
+    if (e.client_ts < sesiones[e.session_id].inicio) sesiones[e.session_id].inicio = e.client_ts;
+    if (e.sucursal) sesiones[e.session_id].sucursal = e.sucursal;
+    if (e.evento === 'buscar_material') stats.busquedas++;
+    if (e.evento === 'ingresar_kg') stats.materiales++;
+    if (e.evento === 'generar_pdf') stats.pdfs++;
+    if (e.evento === 'compartir_whatsapp') stats.compartidos++;
+    if (e.evento === 'ver_tabla_precios') stats.tablaPrecios++;
+  });
+
+  var totalSesiones = Object.keys(sesiones).length;
+  var sesCompletas = 0, sesSoloPrecios = 0;
+  Object.values(sesiones).forEach(function(s) {
+    if (s.eventoSet.has('compartir_whatsapp') || s.eventoSet.has('generar_pdf')) sesCompletas++;
+    else if (!s.eventoSet.has('ingresar_kg') && !s.eventoSet.has('completar_datos_negocio')) sesSoloPrecios++;
+  });
+
+  // Etapa maxima global
+  var etapaLabel, etapaColor;
+  if (stats.compartidos > 0 || stats.pdfs > 0) { etapaLabel = 'COMPLETO'; etapaColor = [46,125,50]; }
+  else if (eventos.some(function(e){ return e.evento==='cerrar_consulta'||e.evento==='ver_preview'; })) { etapaLabel = 'PARCIAL'; etapaColor = [245,127,23]; }
+  else if (eventos.some(function(e){ return e.evento==='ingresar_kg'||e.evento==='completar_datos_negocio'; })) { etapaLabel = 'COTIZANDO'; etapaColor = [230,81,0]; }
+  else { etapaLabel = 'SOLO MIRA PRECIOS'; etapaColor = [198,40,40]; }
+
+  // Periodo
+  var periodoMap = { 'hoy': 'Hoy', '7d': 'Ultimos 7 dias', '30d': 'Ultimos 30 dias' };
+  var periodoTxt = periodoMap[_trkPeriodo] || _trkPeriodo;
+  var hoy = new Date().toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  // ── Generar PDF ──
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF('p', 'mm', 'a4');
+  var W = 210, mg = 15, y = 0;
+
+  // ── HEADER ──
+  doc.setFillColor(13, 27, 42);
+  doc.rect(0, 0, W, 30, 'F');
+  doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+  doc.text('INFORME DE USO — ASISTENTE COMERCIAL', mg, 13);
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(79, 195, 247);
+  doc.text('Grupo Reciclean · Farex', mg, 20);
+  doc.setTextColor(180, 180, 180);
+  doc.text('Generado: ' + hoy, mg, 26);
+  doc.text('Periodo: ' + periodoTxt, W - mg, 26, { align: 'right' });
+  y = 38;
+
+  // ── DATOS DEL TRABAJADOR ──
+  doc.setFillColor(240, 242, 245);
+  doc.rect(mg, y, W - 2 * mg, 22, 'F');
+  doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(26, 35, 50);
+  doc.text(nombre, mg + 6, y + 9);
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
+  doc.text(totalSesiones + ' sesiones en el periodo', mg + 6, y + 16);
+  // Etapa badge
+  doc.setFillColor(etapaColor[0], etapaColor[1], etapaColor[2]);
+  doc.roundedRect(W - mg - 45, y + 4, 40, 10, 2, 2, 'F');
+  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+  doc.text(etapaLabel, W - mg - 25, y + 10.5, { align: 'center' });
+  y += 30;
+
+  // ── RESUMEN NUMERICO ──
+  doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(26, 35, 50);
+  doc.text('Resumen', mg, y); y += 6;
+
+  var resumenData = [
+    ['Sesiones totales', '' + totalSesiones],
+    ['Flujo completo', '' + sesCompletas + ' (' + (totalSesiones > 0 ? Math.round(sesCompletas / totalSesiones * 100) : 0) + '%)'],
+    ['Solo mira precios', '' + sesSoloPrecios + ' (' + (totalSesiones > 0 ? Math.round(sesSoloPrecios / totalSesiones * 100) : 0) + '%)'],
+    ['Busquedas de material', '' + stats.busquedas],
+    ['Materiales con kg', '' + stats.materiales],
+    ['Veces tabla de precios', '' + stats.tablaPrecios],
+    ['PDFs generados', '' + stats.pdfs],
+    ['Compartidos WhatsApp', '' + stats.compartidos]
+  ];
+
+  resumenData.forEach(function(row, i) {
+    var bg = i % 2 === 0 ? [248, 249, 250] : [255, 255, 255];
+    doc.setFillColor(bg[0], bg[1], bg[2]);
+    doc.rect(mg, y, W - 2 * mg, 6, 'F');
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
+    doc.text(row[0], mg + 4, y + 4.2);
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(26, 35, 50);
+    doc.text(row[1], W - mg - 4, y + 4.2, { align: 'right' });
+    y += 6;
+  });
+  y += 8;
+
+  // ── DETALLE POR SESION ──
+  doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(26, 35, 50);
+  doc.text('Detalle por Sesion', mg, y); y += 6;
+
+  var sesOrdenadas = Object.entries(sesiones).sort(function(a, b) { return b[1].inicio.localeCompare(a[1].inicio); });
+
+  sesOrdenadas.forEach(function(pair, idx) {
+    var sesId = pair[0], ses = pair[1];
+    if (y > 270) { doc.addPage(); y = mg; }
+
+    // Titulo sesion
+    var fechaSes = new Date(ses.inicio);
+    var fechaTxt = fechaSes.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    var horaTxt = fechaSes.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+
+    // Etapa de la sesion
+    var sesEtapa, sesColor;
+    if (ses.eventoSet.has('compartir_whatsapp') || ses.eventoSet.has('generar_pdf')) { sesEtapa = 'Completo'; sesColor = [46,125,50]; }
+    else if (ses.eventoSet.has('cerrar_consulta') || ses.eventoSet.has('ver_preview')) { sesEtapa = 'Parcial'; sesColor = [245,127,23]; }
+    else if (ses.eventoSet.has('ingresar_kg') || ses.eventoSet.has('completar_datos_negocio')) { sesEtapa = 'Cotizando'; sesColor = [230,81,0]; }
+    else { sesEtapa = 'Solo precios'; sesColor = [198,40,40]; }
+
+    doc.setFillColor(31, 56, 100);
+    doc.rect(mg, y, W - 2 * mg, 7, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+    doc.text('Sesion ' + (idx + 1) + ' — ' + fechaTxt + ' ' + horaTxt + (ses.sucursal ? ' — ' + ses.sucursal : ''), mg + 3, y + 5);
+    // Etapa badge
+    doc.setFillColor(sesColor[0], sesColor[1], sesColor[2]);
+    doc.roundedRect(W - mg - 28, y + 1, 25, 5, 1, 1, 'F');
+    doc.setFontSize(6); doc.setTextColor(255, 255, 255);
+    doc.text(sesEtapa, W - mg - 15.5, y + 4.5, { align: 'center' });
+    y += 9;
+
+    // Eventos de la sesion (ordenados cronologicamente)
+    var evOrdenados = ses.eventos.sort(function(a, b) { return a.client_ts.localeCompare(b.client_ts); });
+    evOrdenados.forEach(function(ev, j) {
+      if (y > 280) { doc.addPage(); y = mg; }
+      var bg = j % 2 === 0 ? [248, 249, 250] : [255, 255, 255];
+      doc.setFillColor(bg[0], bg[1], bg[2]);
+      doc.rect(mg, y, W - 2 * mg, 5, 'F');
+
+      var evHora = new Date(ev.client_ts).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      var evLabel = _trkLabels[ev.evento] || ev.evento;
+      var meta = ev.metadata || {};
+      var detalle = '';
+      if (meta.query) detalle = '"' + meta.query + '"';
+      if (meta.material) detalle = meta.material + (meta.kg ? ' — ' + meta.kg + ' kg' : '') + (meta.precio ? ' — $' + meta.precio : '');
+      if (meta.sucursal) detalle = meta.sucursal;
+      if (meta.ejec) detalle = meta.ejec + ' / ' + (meta.prov || '');
+
+      doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(150, 150, 150);
+      doc.text(evHora, mg + 3, y + 3.5);
+      doc.setTextColor(60, 60, 60); doc.setFont('helvetica', 'bold');
+      doc.text(evLabel, mg + 22, y + 3.5);
+      if (detalle) {
+        doc.setFont('helvetica', 'normal'); doc.setTextColor(120, 120, 120);
+        doc.text(detalle.substring(0, 60), mg + 65, y + 3.5);
+      }
+      y += 5;
+    });
+    y += 4;
+  });
+
+  // ── PIE DE PAGINA ──
+  var totalPages = doc.internal.getNumberOfPages();
+  for (var p = 1; p <= totalPages; p++) {
+    doc.setPage(p);
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(180, 180, 180);
+    doc.text('Reciclean-Farex · Informe de Monitoreo · Pagina ' + p + '/' + totalPages, W / 2, 290, { align: 'center' });
+  }
+
+  var fname = 'Informe_' + nombre.replace(/\s/g, '_') + '_' + new Date().toISOString().slice(0, 10) + '.pdf';
+  doc.save(fname);
 }
 
 function _tiempoRelativo(ts) {
