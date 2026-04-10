@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pendientes — Dusan & Pablo · Reciclean-Farex</title>
+<style>
+@media print {
+  @page { size: A4; margin: 14mm 16mm; }
+  body { padding: 0; }
+  .no-print { display: none !important; }
+  .task-row select { -webkit-appearance: none; border: none; background: none; font-weight: 700; }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; color: #1A1A14; line-height: 1.4; font-size: 12px; }
+.header { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; border-bottom: 3px solid #1A7A3C; padding-bottom: 10px; }
+.header svg { width: 40px; height: 40px; flex-shrink: 0; }
+.header-text h1 { font-size: 17px; color: #1A7A3C; }
+.header-text .sub { font-size: 10px; color: #888; }
+.date-badge { margin-left: auto; background: #E8F5ED; border: 1px solid #B8DFC7; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 600; color: #1A7A3C; white-space: nowrap; }
+
+.section { margin-top: 12px; }
+.section-title { font-size: 13px; font-weight: 700; color: #fff; background: #1A7A3C; padding: 5px 12px; border-radius: 6px 6px 0 0; display: flex; align-items: center; gap: 6px; }
+.section-title .icon { font-size: 14px; }
+
+table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #ddd; border-top: none; }
+th { background: #f5f5f5; font-size: 9px; text-transform: uppercase; letter-spacing: .5px; color: #888; padding: 5px 8px; text-align: left; border-bottom: 1px solid #ddd; }
+td { padding: 5px 8px; border-bottom: 1px solid #eee; font-size: 11px; vertical-align: top; }
+.task-row:hover { background: #f9f9f9; }
+
+.tag { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 9px; font-weight: 700; }
+.tag.urgente { background: #FDECEA; color: #C0392B; }
+.tag.medio { background: #FDF5E4; color: #92650A; }
+.tag.bajo { background: #E8F5ED; color: #1A7A3C; }
+
+.assignee-select { font-size: 10px; font-weight: 700; padding: 2px 4px; border: 1px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer; color: #1A7A3C; }
+
+.check { width: 14px; height: 14px; cursor: pointer; accent-color: #1A7A3C; }
+
+.legend { margin-top: 10px; display: flex; gap: 14px; font-size: 9px; color: #888; flex-wrap: wrap; }
+.legend span { display: flex; align-items: center; gap: 3px; }
+
+.footer { margin-top: 10px; padding-top: 6px; border-top: 1px solid #ddd; font-size: 9px; color: #aaa; display: flex; justify-content: space-between; }
+
+.btn-print { background: #1A7A3C; color: #fff; border: none; padding: 7px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; margin-bottom: 14px; }
+.btn-print:hover { background: #145F2F; }
+
+.summary-box { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.summary-card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 8px 12px; text-align: center; }
+.summary-card .num { font-size: 22px; font-weight: 800; color: #1A7A3C; }
+.summary-card .label { font-size: 9px; color: #888; text-transform: uppercase; letter-spacing: .5px; }
+</style>
+</head>
+<body>
+
+<button class="btn-print no-print" onclick="window.print()">Imprimir / Guardar PDF</button>
+
+<div class="header">
+  <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#1A7A3C"/><text x="20" y="25" text-anchor="middle" fill="#fff" font-size="16" font-weight="800" font-family="system-ui">R</text></svg>
+  <div class="header-text">
+    <h1>Tareas Pendientes — Reciclean-Farex</h1>
+    <div class="sub">Resumen de cosas por hacer. Puedes reasignar cada tarea con el selector.</div>
+  </div>
+  <div class="date-badge">10 Abril 2026</div>
+</div>
+
+<div class="summary-box">
+  <div class="summary-card"><div class="num" id="total-count">12</div><div class="label">Total pendientes</div></div>
+  <div class="summary-card"><div class="num" id="dusan-count">6</div><div class="label">Dusan</div></div>
+  <div class="summary-card"><div class="num" id="pablo-count">6</div><div class="label">Pablo</div></div>
+</div>
+
+<!-- ═══ CONFIGURACION Y DEPLOY ═══ -->
+<div class="section">
+  <div class="section-title"><span class="icon">1</span> Configuracion y puesta en marcha</div>
+  <table>
+    <thead><tr><th style="width:20px;"></th><th>Tarea</th><th style="width:70px;">Prioridad</th><th style="width:80px;">Asignado</th></tr></thead>
+    <tbody>
+      <tr class="task-row">
+        <td><input type="checkbox" class="check"></td>
+        <td><strong>Pegar la URL del webhook de Make.com</strong> en el chatbot. Sin esto no se envian emails de cotizacion al cliente ni a Andrea.</td>
+        <td><span class="tag urgente">Urgente</span></td>
+        <td><select class="assignee-select" onchange="recount()"><option>Dusan</option><option>Pablo</option></select></td>
+      </tr>
+      <tr class="task-row">
+        <td><input type="checkbox" class="check"></td>
+        <td><strong>Crear los 2 escenarios en Make.com:</strong> (1) Cotizacion nueva → email a cliente + Andrea + encargado sucursal. (2) Andrea aprueba retiro → email + WhatsApp al cliente.</td>
+        <td><span class="tag urgente">Urgente</span></td>
+        <td><select class="assignee-select" onchange="recount()"><option>Dusan</option><option>Pablo</option></select></td>
+      </tr>
+      <tr class="task-row">
+        <td><input type="checkbox" class="check"></td>
+        <td><strong>Verificar los emails de encargados</strong> de cada sucursal (Cerrillos, Maipu, Talca) en la config del chatbot. Hoy tienen emails genericos.</td>
+        <td><span class="tag medio">Medio</span></td>
+        <td><select class="assignee-select" onchange="recount()"><option>Pablo</option><option>Dusan</option></select></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══ CHATBOT ═══ -->
+<div class="section">
+  <div class="section-title"><span class="icon">2</span> Chatbot (lo que ve el cliente)</div>
+  <table>
+    <thead><tr><th style="width:20px;"></th><th>Tarea</th><th style="width:70px;">Prioridad</th><th style="width:80px;">Asignado</th></tr></thead>
+    <tbody>
+      <tr class="task-row">
+        <td><input type="checkbox" class="check"></td>
+        <td><strong>Habilitar Puerto Montt</strong> en el chatbot. Hoy dice "Proximamente" y no deja cotizar. Cuando este listo, activar la sucursal.</td>
+        <td><span class="tag medio">Medio</span></td>
+        <td><select class="assignee-select" onchange="recount()"><option>Pablo</option><option>Dusan</option></select></td>
+      </tr>
+      <tr class="task-row">
+        <td><input type="checkbox" class="check"></td>
+        <td><strong>Probar el chatbot de punta a punta:</strong> elegir material, llenar datos, ver que la cotizacion llegue a Supabase y que el WhatsApp se abra bien.</td>
+        <td><span class="tag urgente">Urgente</span></td>
+        <td><select class="assignee-select" onchange="recount()"><option>Pablo</option><option>Dusan</option></select></td>
+      </tr>
+      <tr class="task-row">
+        <td><input type="checkbox" class="check"></td>
+        <td><strong>Agregar los horarios de Talca</strong> en el mensaje de sucursales del chatbot. Hoy aparece Talca sin horario.</td>
+        <td><span class="tag bajo">Normal</span></td>
+        <td><select class="assignee-select" onchange="recount()"><option>Dusan</option><option>Pablo</option></select></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══ PANEL ADMIN ═══ -->
+<div class="section">
+  <div class="section-title"><span class="icon">3</span> Panel Admin (lo que usan internamente)</div>
+  <table>
+    <thead><tr><th style="width:20px;"></th><th>Tarea</th><th style="width:70px;">Prioridad</th><th style="width:80px;">Asignado</th></tr></thead>
+    <tbody>
+      <tr class="task-row">
+        <td><input type="checkbox" class="check"></td>
+        <td><strong>Cargar la primera lista de precios real</strong> en el panel y publicar la version 1. Sin esto el Asistente Comercial no tiene precios.</td>
+        <td><span class="tag urgente">Urgente</span></td>
+        <td><select class="assignee-select" onchange="recount()"><option>Dusan</option><option>Pablo</option></select></td>
+      </tr>
+      <tr class="task-row">
+        <td><input type="checkbox" class="check"></td>
+        <td><strong>Crear las cuentas de usuario</strong> para el equipo (vendedores, encargados de sucursal) desde la tab Usuarios del panel.</td>
+        <td><span class="tag medio">Medio</span></td>
+        <td><select class="assignee-select" onchange="recount()"><option>Dusan</option><option>Pablo</option></select></td>
+      </tr>
+      <tr class="task-row">
+        <td><input type="checkbox" class="check"></td>
+        <td><strong>Revisar el dashboard de monitoreo</strong> (tab Tracking) y confirmar que los eventos del Asistente Comercial se estan guardando bien.</td>
+        <td><span class="tag bajo">Normal</span></td>
+        <td><select class="assignee-select" onchange="recount()"><option>Pablo</option><option>Dusan</option></select></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══ ASISTENTE COMERCIAL ═══ -->
+<div class="section">
+  <div class="section-title"><span class="icon">4</span> Asistente Comercial (app de vendedores)</div>
+  <table>
+    <thead><tr><th style="width:20px;"></th><th>Tarea</th><th style="width:70px;">Prioridad</th><th style="width:80px;">Asignado</th></tr></thead>
+    <tbody>
+      <tr class="task-row">
+        <td><input type="checkbox" class="check"></td>
+        <td><strong>Probar el Asistente en celular</strong> con cada vendedor. Ver que el login funcione, que los precios se vean, y que las cotizaciones por WhatsApp salgan bien.</td>
+        <td><span class="tag urgente">Urgente</span></td>
+        <td><select class="assignee-select" onchange="recount()"><option>Dusan</option><option>Pablo</option></select></td>
+      </tr>
+      <tr class="task-row">
+        <td><input type="checkbox" class="check"></td>
+        <td><strong>Capacitar a los vendedores:</strong> ensenarles como usar el Asistente. Ya existen guias imprimibles (usar-asistente.html y procedimiento.html).</td>
+        <td><span class="tag medio">Medio</span></td>
+        <td><select class="assignee-select" onchange="recount()"><option>Pablo</option><option>Dusan</option></select></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="legend">
+  <span><span class="tag urgente">Urgente</span> = bloquea el uso del sistema</span>
+  <span><span class="tag medio">Medio</span> = importante pero no bloquea</span>
+  <span><span class="tag bajo">Normal</span> = se puede hacer despues</span>
+  <span class="no-print">Tip: cambia el nombre en el selector para reasignar una tarea</span>
+</div>
+
+<div class="footer">
+  <span>Reciclean-Farex · Sistema v93</span>
+  <span>Generado el 10 de Abril 2026</span>
+</div>
+
+<script>
+function recount() {
+  var selects = document.querySelectorAll('.assignee-select');
+  var d = 0, p = 0;
+  selects.forEach(function(s) {
+    if (s.value === 'Dusan') d++;
+    else p++;
+  });
+  document.getElementById('dusan-count').textContent = d;
+  document.getElementById('pablo-count').textContent = p;
+  document.getElementById('total-count').textContent = d + p;
+}
+</script>
+
+</body>
+</html>
