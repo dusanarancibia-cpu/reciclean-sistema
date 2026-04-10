@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Tareas Pendientes — Reciclean Sistema</title>
+<style>
+  @page { size: A4; margin: 15mm 18mm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 11px;
+    color: #222;
+    padding: 20px 28px;
+    max-width: 210mm;
+    line-height: 1.35;
+  }
+
+  /* ── Encabezado ── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 3px solid #1a7a3a;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    font-size: 18px;
+    color: #1a7a3a;
+    font-weight: 700;
+  }
+  .header .meta {
+    text-align: right;
+    font-size: 10px;
+    color: #555;
+  }
+  .header .meta strong { color: #222; }
+
+  /* ── Destinatarios ── */
+  .destinatarios {
+    background: #f0f8f2;
+    border: 1px solid #c3e0ca;
+    border-radius: 6px;
+    padding: 8px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 40px;
+    font-size: 11px;
+  }
+  .destinatarios strong { color: #1a7a3a; }
+
+  /* ── Tabla principal ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+    font-size: 10.5px;
+  }
+  th {
+    background: #1a7a3a;
+    color: #fff;
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: top;
+  }
+  tr:nth-child(even) { background: #fafafa; }
+  tr:hover { background: #f0f8f2; }
+
+  /* ── Barra de progreso ── */
+  .bar-bg {
+    width: 100%;
+    height: 12px;
+    background: #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    font-size: 8px;
+    color: #fff;
+    text-align: center;
+    line-height: 12px;
+    font-weight: 700;
+  }
+  .green  { background: #2e9e51; }
+  .yellow { background: #e6a817; }
+  .orange { background: #e07b2a; }
+  .red    { background: #c0392b; }
+
+  /* ── Asignado ── */
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .tag-dusan { background: #2980b9; }
+  .tag-pablo { background: #8e44ad; }
+  .tag-ambos { background: #1a7a3a; }
+
+  /* ── Checkbox reasignar ── */
+  .reasignar {
+    font-size: 9px;
+    color: #888;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: 2px;
+  }
+  .reasignar input { width: 12px; height: 12px; accent-color: #1a7a3a; }
+
+  /* ── Pie ── */
+  .footer {
+    border-top: 2px solid #1a7a3a;
+    padding-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 9.5px;
+    color: #555;
+  }
+  .footer strong { color: #1a7a3a; }
+  .leyenda {
+    display: flex;
+    gap: 12px;
+    font-size: 9px;
+    margin-bottom: 8px;
+    color: #666;
+  }
+  .leyenda span {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .resumen-box {
+    background: #fff9e6;
+    border: 1px solid #e6d38a;
+    border-radius: 6px;
+    padding: 6px 14px;
+    margin-bottom: 10px;
+    font-size: 10.5px;
+    display: flex;
+    justify-content: space-around;
+  }
+  .resumen-box div { text-align: center; }
+  .resumen-box .num { font-size: 20px; font-weight: 700; color: #1a7a3a; }
+  .resumen-box .lbl { font-size: 9px; color: #777; }
+
+  @media print {
+    body { padding: 0; }
+    .reasignar input { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    tr { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ ENCABEZADO ═══════════ -->
+<div class="header">
+  <div>
+    <h1>Tareas Pendientes — Reciclean Sistema</h1>
+    <span style="font-size:10px; color:#666;">Resumen ejecutivo para seguimiento semanal</span>
+  </div>
+  <div class="meta">
+    <strong>Fecha:</strong> 10 de abril 2026<br>
+    <strong>Proyecto:</strong> Sistema Comercial GRC + Farex<br>
+    <strong>Versión actual:</strong> Panel v93 · Asistente v2
+  </div>
+</div>
+
+<!-- ═══════════ DESTINATARIOS ═══════════ -->
+<div class="destinatarios">
+  <div><strong>Para:</strong> Dusan Arancibia</div>
+  <div><strong>Para:</strong> Pablo</div>
+  <div><strong>De:</strong> Equipo de desarrollo</div>
+</div>
+
+<!-- ═══════════ RESUMEN RÁPIDO ═══════════ -->
+<div class="resumen-box">
+  <div><div class="num">10</div><div class="lbl">Tareas totales</div></div>
+  <div><div class="num">3</div><div class="lbl">Listas (100%)</div></div>
+  <div><div class="num">4</div><div class="lbl">Avanzadas (&ge;60%)</div></div>
+  <div><div class="num">3</div><div class="lbl">Por empezar / iniciales</div></div>
+  <div><div class="num" style="color:#e6a817;">65%</div><div class="lbl">Avance global</div></div>
+</div>
+
+<!-- ═══════════ TABLA PRINCIPAL ═══════════ -->
+<table>
+  <thead>
+    <tr>
+      <th style="width:4%">#</th>
+      <th style="width:27%">Tarea</th>
+      <th style="width:14%">Avance</th>
+      <th style="width:17%">Qué falta</th>
+      <th style="width:9%">Dueño</th>
+      <th style="width:11%">Fecha est.</th>
+      <th style="width:10%">Reasignar</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <!-- 1 -->
+    <tr>
+      <td><strong>1</strong></td>
+      <td><strong>Panel Admin (Tabs A-F)</strong><br>Carga de precios, alias, márgenes, usuarios</td>
+      <td>
+        <div class="bar-bg"><div class="bar-fill green" style="width:100%">100%</div></div>
+      </td>
+      <td>Nada — funcionando</td>
+      <td><span class="tag tag-dusan">Dusan</span></td>
+      <td>Listo</td>
+      <td>
+        <label class="reasignar"><input type="checkbox"> Pablo</label>
+        <label class="reasignar"><input type="checkbox"> Dusan</label>
+      </td>
+    </tr>
+
+    <!-- 2 -->
+    <tr>
+      <td><strong>2</strong></td>
+      <td><strong>Asistente Comercial (PWA)</strong><br>Consulta de precios, carrito, PDF, WhatsApp</td>
+      <td>
+        <div class="bar-bg"><div class="bar-fill green" style="width:100%">100%</div></div>
+      </td>
+      <td>Nada — funcionando</td>
+      <td><span class="tag tag-dusan">Dusan</span></td>
+      <td>Listo</td>
+      <td>
+        <label class="reasignar"><input type="checkbox"> Pablo</label>
+        <label class="reasignar"><input type="checkbox"> Dusan</label>
+      </td>
+    </tr>
+
+    <!-- 3 -->
+    <tr>
+      <td><strong>3</strong></td>
+      <td><strong>Dashboard Monitoreo (Tab I)</strong><br>KPIs de uso, semáforos, timeline en vivo</td>
+      <td>
+        <div class="bar-bg"><div class="bar-fill green" style="width:100%">100%</div></div>
+      </td>
+      <td>Nada — funcionando</td>
+      <td><span class="tag tag-dusan">Dusan</span></td>
+      <td>Listo</td>
+      <td>
+        <label class="reasignar"><input type="checkbox"> Pablo</label>
+        <label class="reasignar"><input type="checkbox"> Dusan</label>
+      </td>
+    </tr>
+
+    <!-- 4 -->
+    <tr>
+      <td><strong>4</strong></td>
+      <td><strong>Chatbot Web (v2)</strong><br>Widget para sitio web con cotización en línea</td>
+      <td>
+        <div class="bar-bg"><div class="bar-fill yellow" style="width:80%">80%</div></div>
+      </td>
+      <td>Ajustes visuales finales, pruebas en sitio real</td>
+      <td><span class="tag tag-pablo">Pablo</span></td>
+      <td>18 Abr 2026</td>
+      <td>
+        <label class="reasignar"><input type="checkbox"> Pablo</label>
+        <label class="reasignar"><input type="checkbox"> Dusan</label>
+      </td>
+    </tr>
+
+    <!-- 5 -->
+    <tr>
+      <td><strong>5</strong></td>
+      <td><strong>Puesta en producción del Chatbot</strong><br>Embeberlo en el sitio web de Reciclean</td>
+      <td>
+        <div class="bar-bg"><div class="bar-fill orange" style="width:40%">40%</div></div>
+      </td>
+      <td>Configurar hosting, insertar script en sitio</td>
+      <td><span class="tag tag-pablo">Pablo</span></td>
+      <td>25 Abr 2026</td>
+      <td>
+        <label class="reasignar"><input type="checkbox"> Pablo</label>
+        <label class="reasignar"><input type="checkbox"> Dusan</label>
+      </td>
+    </tr>
+
+    <!-- 6 -->
+    <tr>
+      <td><strong>6</strong></td>
+      <td><strong>Historial de cotizaciones</strong><br>Guardar y ver cotizaciones pasadas del asistente</td>
+      <td>
+        <div class="bar-bg"><div class="bar-fill yellow" style="width:60%">60%</div></div>
+      </td>
+      <td>Pantalla de listado, filtros por fecha y vendedor</td>
+      <td><span class="tag tag-dusan">Dusan</span></td>
+      <td>22 Abr 2026</td>
+      <td>
+        <label class="reasignar"><input type="checkbox"> Pablo</label>
+        <label class="reasignar"><input type="checkbox"> Dusan</label>
+      </td>
+    </tr>
+
+    <!-- 7 -->
+    <tr>
+      <td><strong>7</strong></td>
+      <td><strong>Notificaciones y webhooks</strong><br>Avisos automáticos cuando hay retiro o cotización</td>
+      <td>
+        <div class="bar-bg"><div class="bar-fill orange" style="width:35%">35%</div></div>
+      </td>
+      <td>Conectar Make/Zapier, probar flujo completo</td>
+      <td><span class="tag tag-ambos">Ambos</span></td>
+      <td>30 Abr 2026</td>
+      <td>
+        <label class="reasignar"><input type="checkbox"> Pablo</label>
+        <label class="reasignar"><input type="checkbox"> Dusan</label>
+      </td>
+    </tr>
+
+    <!-- 8 -->
+    <tr>
+      <td><strong>8</strong></td>
+      <td><strong>Pruebas y QA general</strong><br>Probar todo el flujo: login, precios, PDF, chatbot</td>
+      <td>
+        <div class="bar-bg"><div class="bar-fill red" style="width:15%">15%</div></div>
+      </td>
+      <td>Crear plan de pruebas, correr casos, anotar errores</td>
+      <td><span class="tag tag-ambos">Ambos</span></td>
+      <td>02 May 2026</td>
+      <td>
+        <label class="reasignar"><input type="checkbox"> Pablo</label>
+        <label class="reasignar"><input type="checkbox"> Dusan</label>
+      </td>
+    </tr>
+
+    <!-- 9 -->
+    <tr>
+      <td><strong>9</strong></td>
+      <td><strong>Reportes y exportación</strong><br>Bajar datos de ventas y monitoreo a Excel/CSV</td>
+      <td>
+        <div class="bar-bg"><div class="bar-fill red" style="width:10%">10%</div></div>
+      </td>
+      <td>Diseñar qué datos exportar, botón de descarga</td>
+      <td><span class="tag tag-dusan">Dusan</span></td>
+      <td>08 May 2026</td>
+      <td>
+        <label class="reasignar"><input type="checkbox"> Pablo</label>
+        <label class="reasignar"><input type="checkbox"> Dusan</label>
+      </td>
+    </tr>
+
+    <!-- 10 -->
+    <tr>
+      <td><strong>10</strong></td>
+      <td><strong>Documentación y capacitación</strong><br>Manual corto para que el equipo use el sistema</td>
+      <td>
+        <div class="bar-bg"><div class="bar-fill red" style="width:5%">5%</div></div>
+      </td>
+      <td>Escribir guía paso a paso, grabar video corto</td>
+      <td><span class="tag tag-pablo">Pablo</span></td>
+      <td>15 May 2026</td>
+      <td>
+        <label class="reasignar"><input type="checkbox"> Pablo</label>
+        <label class="reasignar"><input type="checkbox"> Dusan</label>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!-- ═══════════ LEYENDA ═══════════ -->
+<div class="leyenda">
+  <span><span class="dot" style="background:#2e9e51"></span> Listo (100%)</span>
+  <span><span class="dot" style="background:#e6a817"></span> Avanzado (60-80%)</span>
+  <span><span class="dot" style="background:#e07b2a"></span> En progreso (30-50%)</span>
+  <span><span class="dot" style="background:#c0392b"></span> Inicial (0-20%)</span>
+  <span style="margin-left:auto;"><span class="tag tag-dusan" style="font-size:8px">Dusan</span> <span class="tag tag-pablo" style="font-size:8px">Pablo</span> <span class="tag tag-ambos" style="font-size:8px">Ambos</span></span>
+</div>
+
+<!-- ═══════════ PIE ═══════════ -->
+<div class="footer">
+  <div>
+    <strong>Instrucciones:</strong> Marcar checkbox de reasignación si se quiere cambiar el dueño de una tarea.<br>
+    Imprimir o enviar por correo este documento a ambos.
+  </div>
+  <div style="text-align:right">
+    <strong>Próxima revisión:</strong> 17 Abr 2026<br>
+    Generado automáticamente · Reciclean Sistema
+  </div>
+</div>
+
+</body>
+</html>
