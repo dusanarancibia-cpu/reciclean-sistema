@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Resumen de Pendientes — Dusan & Pablo</title>
+  <style>
+    :root{
+      --verde:#2e7d32;
+      --crema:#faf7f0;
+      --kraft:#d9c9a3;
+      --tinta:#1f2a24;
+      --gris:#6b7269;
+      --linea:#e4dfce;
+      --rojo:#c0392b;
+      --amarillo:#e0a800;
+      --ok:#2e7d32;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:#ece7d7;color:var(--tinta);font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .hoja{
+      width:210mm;min-height:297mm;
+      margin:12px auto;padding:14mm 14mm 12mm;
+      background:var(--crema);
+      box-shadow:0 2px 14px rgba(0,0,0,.15);
+      position:relative;
+    }
+    header{
+      border-bottom:2px solid var(--verde);
+      padding-bottom:8px;margin-bottom:10px;
+      display:flex;justify-content:space-between;align-items:flex-end;gap:14px;
+    }
+    h1{font-size:20px;margin:0;color:var(--verde);letter-spacing:.2px}
+    .sub{font-size:12px;color:var(--gris);margin-top:2px}
+    .meta{font-size:11px;color:var(--gris);text-align:right;line-height:1.45}
+    .meta b{color:var(--tinta)}
+    .intro{
+      font-size:12px;line-height:1.45;
+      background:#fff;border:1px solid var(--linea);
+      padding:8px 10px;border-radius:6px;margin-bottom:10px;
+    }
+    table{width:100%;border-collapse:collapse;font-size:11.5px}
+    th{
+      background:var(--kraft);color:#3b2f14;
+      text-align:left;padding:6px 7px;border:1px solid var(--linea);
+      font-weight:700;font-size:11px;
+    }
+    td{border:1px solid var(--linea);padding:6px 7px;vertical-align:top;background:#fff}
+    .titulo{font-weight:700;color:var(--tinta);font-size:12px}
+    .nota{color:var(--gris);font-size:10.5px;line-height:1.35;margin-top:2px;display:block}
+    .bar{
+      position:relative;height:10px;background:#efe9d3;border-radius:5px;overflow:hidden;margin-top:4px;
+      border:1px solid var(--linea);
+    }
+    .bar > span{position:absolute;inset:0 auto 0 0;background:var(--verde);border-radius:5px}
+    .pct{font-weight:700;font-size:11px;margin-left:6px}
+    .pct.bajo{color:var(--rojo)}
+    .pct.medio{color:var(--amarillo)}
+    .pct.alto{color:var(--ok)}
+    .fecha{white-space:nowrap;font-variant-numeric:tabular-nums}
+    select.asig{
+      width:100%;font-size:11px;padding:3px 4px;
+      border:1px solid var(--linea);border-radius:4px;background:#fffdf7;
+      font-family:inherit;color:var(--tinta);
+    }
+    .col-tarea{width:44%}
+    .col-fecha{width:14%}
+    .col-asig{width:16%}
+    .col-estado{width:26%}
+    .totales{
+      margin-top:10px;display:flex;gap:8px;font-size:11px;
+    }
+    .chip{
+      flex:1;background:#fff;border:1px solid var(--linea);
+      border-radius:6px;padding:6px 8px;
+    }
+    .chip b{display:block;color:var(--verde);font-size:14px;margin-top:2px}
+    footer{
+      margin-top:10px;padding-top:8px;border-top:1px dashed var(--linea);
+      font-size:10.5px;color:var(--gris);display:flex;justify-content:space-between;gap:10px;
+    }
+    .firma{display:flex;gap:18px}
+    .firma div{border-top:1px solid var(--tinta);padding-top:2px;min-width:130px;text-align:center;font-size:10px}
+    .acciones{
+      margin:12px auto;max-width:210mm;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
+    }
+    .btn{
+      background:var(--verde);color:#fff;border:0;border-radius:6px;
+      padding:8px 14px;font-size:12px;cursor:pointer;font-weight:600;
+    }
+    .btn.sec{background:#fff;color:var(--verde);border:1px solid var(--verde)}
+    @media print{
+      body{background:#fff}
+      .hoja{margin:0;box-shadow:none;width:auto;min-height:auto}
+      .acciones{display:none}
+      @page{size:A4;margin:10mm}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hoja">
+    <header>
+      <div>
+        <h1>Resumen de Pendientes</h1>
+        <div class="sub">Reciclean · Farex — Panel administrativo v93</div>
+      </div>
+      <div class="meta">
+        <div>Fecha: <b>11 de abril de 2026</b></div>
+        <div>Despachado a: <b>Dusan Arancibia</b> + <b>Pablo</b></div>
+        <div>Revisión: semanal</div>
+      </div>
+    </header>
+
+    <div class="intro">
+      Este es el listado corto de lo que falta por terminar. Cada tarea muestra
+      un <b>% de avance</b>, una <b>fecha estimada de término</b> y a quién está asignada.
+      Puedes <b>cambiar el encargado</b> en la columna <i>Asignado</i> (Dusan o Pablo).
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th class="col-tarea">Tarea</th>
+          <th class="col-fecha">Fecha término</th>
+          <th class="col-asig">Asignado</th>
+          <th class="col-estado">Estado corto</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td>
+            <span class="titulo">1. Probar Dashboard de Monitoreo (Tab I) <span class="pct alto">85%</span></span>
+            <div class="bar"><span style="width:85%"></span></div>
+            <span class="nota">Revisar que los números de uso y los PDF por trabajador salgan bien.</span>
+          </td>
+          <td class="fecha">15 abril</td>
+          <td>
+            <select class="asig" aria-label="Asignado tarea 1">
+              <option>Dusan</option>
+              <option selected>Pablo</option>
+            </select>
+          </td>
+          <td>Recién terminado. Falta probar con datos reales.</td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="titulo">2. Confirmar precios de Talca y Puerto Montt <span class="pct alto">95%</span></span>
+            <div class="bar"><span style="width:95%"></span></div>
+            <span class="nota">Ya se arreglaron los márgenes. Falta que ventas valide en terreno.</span>
+          </td>
+          <td class="fecha">14 abril</td>
+          <td>
+            <select class="asig" aria-label="Asignado tarea 2">
+              <option selected>Dusan</option>
+              <option>Pablo</option>
+            </select>
+          </td>
+          <td>Validar con jefes de sucursal.</td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="titulo">3. Ajustes finales Chatbot v3 (Kraft Eco) <span class="pct alto">90%</span></span>
+            <div class="bar"><span style="width:90%"></span></div>
+            <span class="nota">Avatar, burbujas y botón flotante. Queda dejarlo listo para la web.</span>
+          </td>
+          <td class="fecha">18 abril</td>
+          <td>
+            <select class="asig" aria-label="Asignado tarea 3">
+              <option>Dusan</option>
+              <option selected>Pablo</option>
+            </select>
+          </td>
+          <td>Ultimos detalles visuales y subir a producción.</td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="titulo">4. Carrito multi-material con foto y código <span class="pct medio">80%</span></span>
+            <div class="bar"><span style="width:80%"></span></div>
+            <span class="nota">El cliente sube foto y recibe código de 4 dígitos. Probar end-to-end.</span>
+          </td>
+          <td class="fecha">22 abril</td>
+          <td>
+            <select class="asig" aria-label="Asignado tarea 4">
+              <option selected>Dusan</option>
+              <option>Pablo</option>
+            </select>
+          </td>
+          <td>Probar en celular, revisar subida a Supabase.</td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="titulo">5. Flujo de aprobación de cambios de precios <span class="pct medio">65%</span></span>
+            <div class="bar"><span style="width:65%"></span></div>
+            <span class="nota">Contador de cambios en borrador, revisar antes de publicar snapshot.</span>
+          </td>
+          <td class="fecha">30 abril</td>
+          <td>
+            <select class="asig" aria-label="Asignado tarea 5">
+              <option>Dusan</option>
+              <option selected>Pablo</option>
+            </select>
+          </td>
+          <td>Falta pantalla de revisión y un "sí, publicar".</td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="titulo">6. Revisar fotos de material de clientes <span class="pct medio">40%</span></span>
+            <div class="bar"><span style="width:40%"></span></div>
+            <span class="nota">Hoy Andrea marca a mano. Definir quién revisa y cada cuánto.</span>
+          </td>
+          <td class="fecha">25 abril</td>
+          <td>
+            <select class="asig" aria-label="Asignado tarea 6">
+              <option selected>Dusan</option>
+              <option>Pablo</option>
+            </select>
+          </td>
+          <td>Definir turnos y un botón rápido para "verificada".</td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="titulo">7. Botón para resetear PIN de usuarios <span class="pct bajo">20%</span></span>
+            <div class="bar"><span style="width:20%"></span></div>
+            <span class="nota">Hoy los usuarios llaman por WhatsApp. Hacer un botón en el panel.</span>
+          </td>
+          <td class="fecha">5 mayo</td>
+          <td>
+            <select class="asig" aria-label="Asignado tarea 7">
+              <option>Dusan</option>
+              <option selected>Pablo</option>
+            </select>
+          </td>
+          <td>Solo diseño inicial. Falta la pantalla y el cambio en base.</td>
+        </tr>
+
+      </tbody>
+    </table>
+
+    <div class="totales">
+      <div class="chip">Tareas totales <b>7</b></div>
+      <div class="chip">En Dusan <b>3</b></div>
+      <div class="chip">En Pablo <b>4</b></div>
+      <div class="chip">Avance promedio <b>68%</b></div>
+    </div>
+
+    <footer>
+      <div>Documento para uso interno — Reciclean / Farex</div>
+      <div class="firma">
+        <div>Dusan Arancibia</div>
+        <div>Pablo</div>
+      </div>
+    </footer>
+  </div>
+
+  <div class="acciones">
+    <button class="btn" onclick="window.print()">Imprimir / Guardar PDF</button>
+    <a class="btn sec" href="https://wa.me/56995342437?text=Resumen%20de%20pendientes%20Reciclean%20-%2011%20abril%202026.%20Revisar%20en%20el%20panel.">Enviar a Dusan por WhatsApp</a>
+    <a class="btn sec" href="mailto:?subject=Resumen%20de%20pendientes%20Reciclean%20-%2011%20abril%202026&body=Hola%20Dusan%20y%20Pablo%2C%20adjunto%20el%20resumen%20de%20pendientes%20de%20la%20semana.">Enviar por correo</a>
+  </div>
+
+</body>
+</html>
