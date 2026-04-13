@@ -91,7 +91,8 @@ async function exportBackup(){
   a.download = nombreDescarga('json');
   a.click();
   URL.revokeObjectURL(a.href);
-  toast('✓ Backup descargado: reciclean_backup_'+fecha+'.json','ok');
+  toast('✓ Backup descargado','ok');
+  driveUpload(blob, nombreDescarga('json'), 'Backups');
 }
 
 function importBackup(){
@@ -320,8 +321,8 @@ document.getElementById('json-pre').textContent = FULL_JSON.slice(0,800)+'...';
   a.download = nombreDescarga('html');
   a.click();
   URL.revokeObjectURL(url);
-
   toast(`✓ Asistente_Comercial_V${tag} generado — offline listo + online actualizado`,'ok');
+  driveUpload(blob, nombreDescarga('html'), 'Asistente');
 }
 
 async function buildV24WithData(DATA, fecha, tag){

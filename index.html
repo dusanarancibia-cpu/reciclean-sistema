@@ -581,11 +581,14 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
           ↩ <span>Restaurar backup</span></div>
         <div onclick="abrirDiagnostico();toggleToolsMenu()" title="Abre panel diagnostico" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
           🔧 <span>Diagnóstico</span></div>
+        <div id="drive-connect-btn" onclick="driveConnect();toggleToolsMenu()" title="Conecta con Google Drive" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+          ☁ Conectar Drive</div>
         <div onclick="cerrarSesion();toggleToolsMenu()" title="Cierra sesion actual" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--red);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
           🚪 <span>Cerrar sesión</span></div>
         <div style="padding:6px 14px;font-size:9px;color:var(--text4);display:flex;align-items:center;justify-content:space-between;">
           <span id="db-status">● local</span>
-          <span>v93</span>
+          <span id="drive-status" style="color:var(--text4);">☁ Drive ✗</span>
+          <span>v94</span>
           <span id="draft-saved-at"></span>
         </div>
       </div>
@@ -2051,6 +2054,7 @@ function cfgGuardar(){
 ══════════════════════════════════════════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="js/config.js"></script>
 <script src="js/idb.js"></script>
 <script src="js/utils.js"></script>
@@ -2061,6 +2065,7 @@ function cfgGuardar(){
 <script src="js/ia.js"></script>
 <script src="js/historial.js"></script>
 <script src="js/correccion.js"></script>
+<script src="js/drive.js"></script>
 <script src="js/estado.js"></script>
 <script src="js/tracking-dashboard.js"></script>
 

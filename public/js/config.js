@@ -10,6 +10,11 @@ const SUPABASE_URL = 'https://eknmtsrtfkzroxnovfqn.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_y-ivpVdiL141kz4ZASje5g_SYG7do5z';
 let _supabase = null;
 
+// ── Google Drive — subida automática a carpeta compartida ──
+const GOOGLE_CLIENT_ID = '569647813270-n3u85935sql3ov14ev055mccum9nihh0.apps.googleusercontent.com';
+const GOOGLE_DRIVE_FOLDER_ID = '0ANLZ0YevCuxAUk9PVA';
+const GOOGLE_SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
 // ── Constantes globales ──
 const CONFIG = {
   API_TIMEOUT_SHORT: 5000,

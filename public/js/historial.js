@@ -89,6 +89,7 @@ function descargarHTML(){
 </body></html>`],{type:'text/html;charset=utf-8;'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nombreDescarga('html');a.click();
   toast('✓ HTML descargado','ok');
+  driveUpload(blob, nombreDescarga('html'), 'Historial');
 }
 function descargarCSV(){
   var suc = pubSuc;
@@ -112,6 +113,7 @@ function descargarCSV(){
   a.download = nombreDescarga('csv');
   a.click();
   toast("CSV descargado","ok");
+  driveUpload(blob, nombreDescarga('csv'), 'Historial');
 }
 
 // ═══════════════════════════════════════════════════════════
