@@ -33,6 +33,7 @@ function driveInit(){
           safeLS('rf_drive_connected','1');
           driveUpdateUI(true);
           toast('☁ Google Drive conectado','ok');
+          driveCheckLatest();
         }
       });
       if(localStorage.getItem('rf_drive_connected')==='1'){
@@ -188,6 +189,177 @@ async function driveGetOrCreateFolder(name){
   const createData = await createRes.json();
   if(!createData.id) throw new Error('No se pudo crear carpeta');
   return createData.id;
+}
+
+// ── Cargar último backup desde Drive ──
+async function driveLoadLatest(){
+  if(!_driveToken){
+    toast('⚠ Primero conecta Google Drive desde Herramientas','warn');
+    return;
+  }
+  const valid = await driveCheckToken();
+  if(!valid) return;
+
+  try {
+    toast('☁ Buscando último backup en Drive...','ok');
+
+    // Buscar carpeta Backups
+    const escapedName = 'Backups'.replace(/'/g,"\\'");
+    const folderQuery = `name='${escapedName}' and '${GOOGLE_DRIVE_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`;
+    const folderUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(folderQuery)}&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=drive&driveId=${GOOGLE_DRIVE_FOLDER_ID}&fields=files(id)`;
+    const folderRes = await fetch(folderUrl, { headers: {'Authorization':'Bearer '+_driveToken} });
+    if(!folderRes.ok) throw new Error('No se encontró carpeta Backups');
+    const folderData = await folderRes.json();
+    if(!folderData.files || !folderData.files.length){
+      toast('⚠ No hay carpeta Backups en Drive todavía','warn');
+      return;
+    }
+    const backupFolderId = folderData.files[0].id;
+
+    // Listar archivos JSON ordenados por fecha (más reciente primero)
+    const filesQuery = `'${backupFolderId}' in parents and mimeType='application/json' and trashed=false`;
+    const filesUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(filesQuery)}&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=drive&driveId=${GOOGLE_DRIVE_FOLDER_ID}&orderBy=createdTime desc&pageSize=1&fields=files(id,name,createdTime)`;
+    const filesRes = await fetch(filesUrl, { headers: {'Authorization':'Bearer '+_driveToken} });
+    if(!filesRes.ok) throw new Error('Error listando backups');
+    const filesData = await filesRes.json();
+    if(!filesData.files || !filesData.files.length){
+      toast('⚠ No hay backups en Drive','warn');
+      return;
+    }
+
+    const latest = filesData.files[0];
+    const fecha = new Date(latest.createdTime).toLocaleString('es-CL');
+
+    // Descargar el contenido
+    const dlUrl = `https://www.googleapis.com/drive/v3/files/${latest.id}?alt=media&supportsAllDrives=true`;
+    const dlRes = await fetch(dlUrl, { headers: {'Authorization':'Bearer '+_driveToken} });
+    if(!dlRes.ok) throw new Error('Error descargando backup');
+    const text = await dlRes.text();
+    const backup = JSON.parse(text);
+
+    if(!backup.materiales) throw new Error('Formato de backup inválido');
+
+    // Usar la misma lógica de importBackup (estado.js)
+    driveApplyBackup(backup);
+    toast('☁ Backup cargado desde Drive: '+latest.name+' ('+fecha+')','ok');
+
+  } catch(e){
+    console.warn('Drive load error:', e);
+    toast('⚠ Error cargando desde Drive: '+e.message,'warn');
+  }
+}
+
+// ── Aplicar backup descargado de Drive (replica lógica de importBackup) ──
+async function driveApplyBackup(backup){
+  // Restaurar materiales
+  backup.materiales.forEach(m=>{
+    const idx = MATS_LOCAL.findIndex(x=>x.id===m.id);
+    if(idx>=0){
+      const {nombre, cat, ...rest} = m;
+      MATS_LOCAL[idx] = {...MATS_LOCAL[idx], ...rest};
+    }
+  });
+  mats = MATS_LOCAL.map(m=>({...m}));
+  if(typeof idbSaveMats === 'function') await idbSaveMats(mats);
+
+  // Restaurar fuentes
+  if(backup.fuentes){
+    if(typeof dbClear === 'function') await dbClear('fuentes');
+    backup.fuentes.forEach(f=>{ if(!FUENTES.includes(f)) FUENTES.push(f); });
+    if(typeof idbSaveFuente === 'function') for(const f of FUENTES) await idbSaveFuente(f);
+  }
+
+  // Restaurar clientes_precios
+  if(backup.clientes_precios){
+    CLIENTES_PRECIOS = backup.clientes_precios;
+    if(typeof idbSaveConfig === 'function') await idbSaveConfig('clientes_precios', JSON.stringify(CLIENTES_PRECIOS));
+    safeLS('rf_clientes_precios', JSON.stringify(CLIENTES_PRECIOS));
+  }
+  if(backup.precio_seleccionado){
+    PRECIO_SELECCIONADO = backup.precio_seleccionado;
+    if(typeof idbSaveConfig === 'function') await idbSaveConfig('precio_seleccionado', JSON.stringify(PRECIO_SELECCIONADO));
+    safeLS('rf_precio_seleccionado', JSON.stringify(PRECIO_SELECCIONADO));
+  }
+  if(backup.sucursal_fuente){
+    SUCURSAL_FUENTE = backup.sucursal_fuente;
+    if(typeof idbSaveConfig === 'function') await idbSaveConfig('sucursal_fuente', JSON.stringify(SUCURSAL_FUENTE));
+    safeLS('rf_sucursal_fuente', JSON.stringify(SUCURSAL_FUENTE));
+  }
+  if(backup.precio_override){
+    PRECIO_OVERRIDE = backup.precio_override;
+    if(typeof idbSaveConfig === 'function') await idbSaveConfig('precio_override', JSON.stringify(PRECIO_OVERRIDE));
+    safeLS('rf_precio_override', JSON.stringify(PRECIO_OVERRIDE));
+  }
+  if(backup.flete_por_suc){
+    FLETE_POR_SUC = backup.flete_por_suc;
+    if(typeof idbSaveConfig === 'function') await idbSaveConfig('flete_por_suc', JSON.stringify(FLETE_POR_SUC));
+    safeLS('rf_flete_por_suc', JSON.stringify(FLETE_POR_SUC));
+  }
+  if(backup.margen_por_suc){
+    MARGEN_POR_SUC = backup.margen_por_suc;
+    if(typeof idbSaveConfig === 'function') await idbSaveConfig('margen_por_suc', JSON.stringify(MARGEN_POR_SUC));
+    safeLS('rf_margen_por_suc', JSON.stringify(MARGEN_POR_SUC));
+  }
+  if(backup.mc_ejec_por_suc){
+    MC_EJEC_POR_SUC = backup.mc_ejec_por_suc;
+    if(typeof idbSaveConfig === 'function') await idbSaveConfig('mc_ejec_por_suc', JSON.stringify(MC_EJEC_POR_SUC));
+    safeLS('rf_mc_ejec_por_suc', JSON.stringify(MC_EJEC_POR_SUC));
+  }
+  if(backup.comision_ejec_por_suc){
+    COMISION_EJEC_POR_SUC = backup.comision_ejec_por_suc;
+    if(typeof idbSaveConfig === 'function') await idbSaveConfig('comision_ejec_por_suc', JSON.stringify(COMISION_EJEC_POR_SUC));
+    safeLS('rf_comision_ejec_por_suc', JSON.stringify(COMISION_EJEC_POR_SUC));
+  }
+  if(backup.config?.spread_por_suc){
+    backup.config.spread_por_suc.forEach((v,i)=>{ const el=document.getElementById('cfg-spread-'+i); if(el) el.value=v; });
+    if(typeof idbSaveConfig === 'function') await idbSaveConfig('spread_por_suc', JSON.stringify(backup.config.spread_por_suc));
+    safeLS('rf_spread_por_suc', JSON.stringify(backup.config.spread_por_suc));
+  }
+  if(backup.config?.iva_por_suc){
+    backup.config.iva_por_suc.forEach((v,i)=>{ const el=document.getElementById('cfg-iva-'+i); if(el) el.value=v; });
+    if(typeof idbSaveConfig === 'function') await idbSaveConfig('iva_por_suc', JSON.stringify(backup.config.iva_por_suc));
+    safeLS('rf_iva_por_suc', JSON.stringify(backup.config.iva_por_suc));
+  }
+  if(backup.historial?.length){
+    if(typeof dbClear === 'function') await dbClear('historial');
+    if(typeof idbSaveHistorial === 'function') for(const h of backup.historial) await idbSaveHistorial(h);
+    HISTORIAL = backup.historial;
+  }
+
+  // Refrescar toda la UI
+  if(typeof updateAliasCnt === 'function') updateAliasCnt();
+  if(typeof rebuildFuenteSelects === 'function') rebuildFuenteSelects();
+  if(typeof renderAlias === 'function') renderAlias();
+  if(typeof renderPrecios === 'function') renderPrecios();
+  if(typeof renderHistorial === 'function') renderHistorial();
+  if(typeof renderPublico === 'function') renderPublico();
+  if(typeof renderFuentes === 'function') renderFuentes();
+  if(typeof renderPreview === 'function') renderPreview();
+}
+
+// ── Auto-check: al conectar Drive, avisar si hay backup disponible ──
+async function driveCheckLatest(){
+  if(!_driveToken) return;
+  try {
+    const escapedName = 'Backups'.replace(/'/g,"\\'");
+    const folderQuery = `name='${escapedName}' and '${GOOGLE_DRIVE_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`;
+    const folderUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(folderQuery)}&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=drive&driveId=${GOOGLE_DRIVE_FOLDER_ID}&fields=files(id)`;
+    const folderRes = await fetch(folderUrl, { headers: {'Authorization':'Bearer '+_driveToken} });
+    if(!folderRes.ok) return;
+    const folderData = await folderRes.json();
+    if(!folderData.files || !folderData.files.length) return;
+
+    const filesQuery = `'${folderData.files[0].id}' in parents and mimeType='application/json' and trashed=false`;
+    const filesUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(filesQuery)}&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=drive&driveId=${GOOGLE_DRIVE_FOLDER_ID}&orderBy=createdTime desc&pageSize=1&fields=files(id,name,createdTime)`;
+    const filesRes = await fetch(filesUrl, { headers: {'Authorization':'Bearer '+_driveToken} });
+    if(!filesRes.ok) return;
+    const filesData = await filesRes.json();
+    if(!filesData.files || !filesData.files.length) return;
+
+    const latest = filesData.files[0];
+    const fecha = new Date(latest.createdTime).toLocaleString('es-CL');
+    toast('☁ Backup disponible en Drive: '+latest.name+' ('+fecha+') — usa Herramientas > Cargar desde Drive','ok');
+  } catch(e){ /* silencioso */ }
 }
 
 // ── Inicializar al cargar la página ──
