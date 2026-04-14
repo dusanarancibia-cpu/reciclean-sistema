@@ -1,57 +1,39 @@
 // ═══════════════════════════════════════════════════════════
-// GOOGLE DRIVE — Subida automática a Unidad compartida
-// v3 · 14-abril-2026
-// FIX: Soporte correcto para Shared Drives
-// - Obtener rootFolderId del Shared Drive y usarlo como raíz
-// - Agregar corpora=drive + driveId en todas las queries
-// - Corregir filtro de parents con rootFolderId
+// GOOGLE DRIVE — Subida automática a carpeta compartida
+// v4 · 14-abril-2026
+// Simplificado: funciona con Shared Drives Y carpetas normales
+// No depende de la API de Drives — solo usa Files API
 // ═══════════════════════════════════════════════════════════
 
 let _driveToken = null;
 let _driveTokenClient = null;
 let _driveChecking = false;
 let _driveFolderCache = {};
-let _driveRootFolderId = null;
 
 // ── Helper: buscar archivos en Drive ──
-async function driveQuery(q, fields, orderBy, pageSize, extraParams){
+async function driveQuery(q, fields, orderBy, pageSize){
   const params = new URLSearchParams({
     q: q,
     supportsAllDrives: 'true',
     includeItemsFromAllDrives: 'true',
+    corpora: 'allDrives',
     fields: 'files('+fields+')'
   });
-  if(extraParams) Object.entries(extraParams).forEach(([k,v])=>params.set(k,v));
   if(orderBy) params.set('orderBy', orderBy);
-  if(pageSize) params.set('pageSize', pageSize);
+  if(pageSize) params.set('pageSize', String(pageSize));
   const res = await fetch('https://www.googleapis.com/drive/v3/files?'+params.toString(),{
     headers: {'Authorization':'Bearer '+_driveToken}
   });
   if(!res.ok){
     const err = await res.json().catch(()=>({}));
+    console.warn('Drive query error:', res.status, err);
     throw new Error(err.error?.message || 'HTTP '+res.status);
   }
   const data = await res.json();
   return data.files || [];
 }
 
-// ── Obtener rootFolderId del Shared Drive ──
-async function getSharedDriveRootFolderId(driveId){
-  // Intentar obtener rootFolderId de la API de Drives
-  try {
-    const res = await fetch('https://www.googleapis.com/drive/v3/drives/'+driveId+'?fields=id,name',{
-      headers: {'Authorization':'Bearer '+_driveToken}
-    });
-    if(res.ok){
-      // Para Shared Drives, el driveId se usa como parent de la raíz
-      return driveId;
-    }
-  } catch(e){}
-  // Fallback: usar el ID tal cual
-  return driveId;
-}
-
-// ── Inicializar cuando la librería de Google esté lista ──
+// ── Inicializar ──
 function driveInit(){
   if(_driveChecking) return;
   _driveChecking = true;
@@ -68,17 +50,9 @@ function driveInit(){
             toast('⚠ No se pudo conectar a Drive','warn');
             driveUpdateUI(false);
             _driveToken = null;
-            _driveRootFolderId = null;
             return;
           }
           _driveToken = resp.access_token;
-          try {
-            _driveRootFolderId = await getSharedDriveRootFolderId(GOOGLE_DRIVE_FOLDER_ID);
-            console.log('Drive root:', _driveRootFolderId);
-          } catch(e){
-            console.warn('No se pudo acceder al Shared Drive:', e);
-            _driveRootFolderId = GOOGLE_DRIVE_FOLDER_ID;
-          }
           safeLS('rf_drive_connected','1');
           driveUpdateUI(true);
           toast('☁ Google Drive conectado','ok');
@@ -91,47 +65,35 @@ function driveInit(){
       _driveChecking = false;
     } else {
       attempts++;
-      if(attempts < 50){
-        setTimeout(checkGoogle, 100);
-      } else {
-        console.warn('Google Identity Services no cargó a tiempo');
-        _driveChecking = false;
-      }
+      if(attempts < 50) setTimeout(checkGoogle, 100);
+      else { console.warn('Google Identity Services no cargó'); _driveChecking = false; }
     }
   }
   checkGoogle();
 }
 
-// ── Conectar (con popup de Google) ──
 function driveConnect(){
-  if(!_driveTokenClient){
-    toast('⚠ Google no cargó correctamente — recarga la página','warn');
-    return;
-  }
+  if(!_driveTokenClient){ toast('⚠ Google no cargó — recarga la página','warn'); return; }
   _driveTokenClient.requestAccessToken({prompt:'consent'});
 }
 
-// ── Reconectar sin popup ──
 function driveConnectSilent(){
   if(!_driveTokenClient) return;
   _driveTokenClient.requestAccessToken({prompt:''});
 }
 
-// ── Desconectar ──
 function driveDisconnect(){
   _driveToken = null;
-  _driveRootFolderId = null;
   _driveFolderCache = {};
   localStorage.removeItem('rf_drive_connected');
   driveUpdateUI(false);
   toast('Drive desconectado','ok');
 }
 
-// ── Actualizar indicador visual ──
 function driveUpdateUI(connected){
   const el = document.getElementById('drive-status');
   if(!el) return;
-  if(connected && _driveToken && _driveRootFolderId){
+  if(connected && _driveToken){
     el.textContent = '☁ Drive ✓';
     el.style.color = '#4ADE80';
   } else {
@@ -149,7 +111,6 @@ function driveUpdateUI(connected){
   }
 }
 
-// ── Verificar si el token es válido ──
 async function driveCheckToken(){
   if(!_driveToken) return false;
   try {
@@ -157,30 +118,24 @@ async function driveCheckToken(){
       headers: {'Authorization':'Bearer '+_driveToken}
     });
     if(res.ok) return true;
-    if(res.status === 401){
-      _driveToken = null;
-      _driveRootFolderId = null;
-      driveUpdateUI(false);
-      toast('⚠ Sesión de Drive expiró — reconecta desde Herramientas','warn');
-      return false;
-    }
+    _driveToken = null;
+    driveUpdateUI(false);
+    toast('⚠ Sesión de Drive expiró — reconecta desde Herramientas','warn');
     return false;
   } catch(e){ return false; }
 }
 
-// ── Buscar o crear subcarpeta en Shared Drive ──
+// ── Buscar o crear subcarpeta ──
 async function driveGetOrCreateFolder(name){
-  if(!_driveRootFolderId) throw new Error('No se tiene la raíz del Shared Drive');
   if(_driveFolderCache[name]) return _driveFolderCache[name];
 
   const escapedName = name.replace(/'/g,"\\'");
-  const sdParams = {corpora:'drive', driveId: GOOGLE_DRIVE_FOLDER_ID};
+  const parentId = GOOGLE_DRIVE_FOLDER_ID;
 
-  // Buscar dentro del Shared Drive
+  // Buscar en todas las unidades
   const files = await driveQuery(
-    `name='${escapedName}' and '${_driveRootFolderId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-    'id,name,parents',
-    null, null, sdParams
+    `name='${escapedName}' and '${parentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    'id,name'
   );
 
   if(files.length > 0){
@@ -188,7 +143,7 @@ async function driveGetOrCreateFolder(name){
     return files[0].id;
   }
 
-  // Crear carpeta
+  // Crear
   const createRes = await fetch('https://www.googleapis.com/drive/v3/files?supportsAllDrives=true',{
     method:'POST',
     headers: {
@@ -198,11 +153,12 @@ async function driveGetOrCreateFolder(name){
     body: JSON.stringify({
       name: name,
       mimeType: 'application/vnd.google-apps.folder',
-      parents: [_driveRootFolderId]
+      parents: [parentId]
     })
   });
   if(!createRes.ok){
     const err = await createRes.json().catch(()=>({}));
+    console.warn('Create folder error:', createRes.status, err);
     throw new Error(err.error?.message || 'Error creando carpeta: HTTP '+createRes.status);
   }
   const createData = await createRes.json();
@@ -213,14 +169,12 @@ async function driveGetOrCreateFolder(name){
 
 // ── Subir archivo ──
 async function driveUpload(blob, filename, subcarpeta){
-  if(!_driveToken || !_driveRootFolderId) return;
+  if(!_driveToken) return;
   const valid = await driveCheckToken();
   if(!valid) return;
 
   try {
     const folderId = await driveGetOrCreateFolder(subcarpeta);
-    if(!folderId) throw new Error('No se pudo obtener/crear la carpeta');
-
     const metadata = {name: filename, parents: [folderId]};
     const form = new FormData();
     form.append('metadata', new Blob([JSON.stringify(metadata)],{type:'application/json'}));
@@ -234,16 +188,9 @@ async function driveUpload(blob, filename, subcarpeta){
 
     if(!res.ok){
       const err = await res.json().catch(()=>({}));
-      if(res.status === 401){
-        _driveToken = null;
-        _driveRootFolderId = null;
-        driveUpdateUI(false);
-        toast('⚠ Sesión de Drive expiró — reconecta desde Herramientas','warn');
-        return;
-      }
+      if(res.status === 401){ _driveToken = null; driveUpdateUI(false); toast('⚠ Sesión expiró','warn'); return; }
       throw new Error(err.error?.message || 'HTTP '+res.status);
     }
-
     toast('☁ '+filename+' subido a Drive/'+subcarpeta,'ok');
   } catch(e){
     console.warn('Drive upload error:', e);
@@ -253,28 +200,21 @@ async function driveUpload(blob, filename, subcarpeta){
 
 // ── Cargar último backup desde Drive ──
 async function driveLoadLatest(){
-  if(!_driveToken || !_driveRootFolderId){
-    toast('⚠ Primero conecta Google Drive desde Herramientas','warn');
-    return;
-  }
+  if(!_driveToken){ toast('⚠ Primero conecta Drive desde Herramientas','warn'); return; }
   const valid = await driveCheckToken();
   if(!valid) return;
 
   try {
-    toast('☁ Buscando último backup en Drive...','ok');
+    toast('☁ Buscando backup en Drive...','ok');
     const folderId = await driveGetOrCreateFolder('Backups');
-    const sdParams = {corpora:'drive', driveId: GOOGLE_DRIVE_FOLDER_ID};
 
     const files = await driveQuery(
       `'${folderId}' in parents and mimeType='application/json' and trashed=false`,
       'id,name,createdTime',
-      'createdTime desc', '1', sdParams
+      'createdTime desc', 1
     );
 
-    if(!files.length){
-      toast('⚠ No hay backups en Drive','warn');
-      return;
-    }
+    if(!files.length){ toast('⚠ No hay backups en Drive','warn'); return; }
 
     const latest = files[0];
     const fecha = new Date(latest.createdTime).toLocaleString('es-CL');
@@ -283,29 +223,24 @@ async function driveLoadLatest(){
       'https://www.googleapis.com/drive/v3/files/'+latest.id+'?alt=media&supportsAllDrives=true',
       {headers: {'Authorization':'Bearer '+_driveToken}}
     );
-    if(!dlRes.ok) throw new Error('Error descargando backup');
+    if(!dlRes.ok) throw new Error('Error descargando: HTTP '+dlRes.status);
     const text = await dlRes.text();
     const backup = JSON.parse(text);
-
-    if(!backup.materiales) throw new Error('Formato de backup inválido');
+    if(!backup.materiales) throw new Error('Formato inválido');
 
     driveApplyBackup(backup);
     toast('☁ Backup cargado: '+latest.name+' ('+fecha+')','ok');
-
   } catch(e){
     console.warn('Drive load error:', e);
     toast('⚠ Error cargando desde Drive: '+e.message,'warn');
   }
 }
 
-// ── Aplicar backup descargado de Drive ──
+// ── Aplicar backup ──
 async function driveApplyBackup(backup){
   backup.materiales.forEach(m=>{
     const idx = MATS_LOCAL.findIndex(x=>x.id===m.id);
-    if(idx>=0){
-      const {nombre, cat, ...rest} = m;
-      MATS_LOCAL[idx] = {...MATS_LOCAL[idx], ...rest};
-    }
+    if(idx>=0){ const {nombre, cat, ...rest} = m; MATS_LOCAL[idx] = {...MATS_LOCAL[idx], ...rest}; }
   });
   mats = MATS_LOCAL.map(m=>({...m}));
   if(typeof idbSaveMats === 'function') await idbSaveMats(mats);
@@ -381,24 +316,23 @@ async function driveApplyBackup(backup){
   if(typeof renderPreview === 'function') renderPreview();
 }
 
-// ── Auto-check: al conectar Drive, avisar si hay backup disponible ──
+// ── Auto-check al conectar ──
 async function driveCheckLatest(){
-  if(!_driveToken || !_driveRootFolderId) return;
+  if(!_driveToken) return;
   try {
     const folderId = await driveGetOrCreateFolder('Backups').catch(()=>null);
     if(!folderId) return;
-    const sdParams = {corpora:'drive', driveId: GOOGLE_DRIVE_FOLDER_ID};
     const files = await driveQuery(
       `'${folderId}' in parents and mimeType='application/json' and trashed=false`,
       'id,name,createdTime',
-      'createdTime desc', '1', sdParams
+      'createdTime desc', 1
     );
     if(files.length){
       const fecha = new Date(files[0].createdTime).toLocaleString('es-CL');
-      toast('☁ Backup en Drive: '+files[0].name+' ('+fecha+') — Herramientas > Cargar desde Drive','ok');
+      toast('☁ Backup en Drive: '+files[0].name+' — Herramientas > Cargar desde Drive','ok');
     }
   } catch(e){ /* silencioso */ }
 }
 
-// ── Inicializar al cargar la página ──
+// ── Inicializar ──
 window.addEventListener('load', ()=>{ setTimeout(driveInit, 100); });
