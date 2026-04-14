@@ -2842,22 +2842,52 @@ document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.style.background = 'transparent';
   }
 
+  // Redimensionar iframe directamente (fallback cuando parent no tiene listener)
+  function rfResizeIframe(open) {
+    try {
+      // Intenta via frameElement (funciona si same-origin o no hay restriccion)
+      if (window.frameElement) {
+        const f = window.frameElement;
+        const mobile = window.innerWidth <= 480 || (window.parent && window.parent.innerWidth <= 480);
+        if (open) {
+          if (mobile) {
+            f.style.width = '100vw'; f.style.height = '100vh';
+            f.style.bottom = '0'; f.style.right = '0';
+          } else {
+            f.style.width = '440px'; f.style.height = '760px';
+            f.style.maxHeight = 'calc(100vh - 32px)';
+            f.style.bottom = '16px'; f.style.right = '16px';
+          }
+        } else {
+          if (mobile) {
+            f.style.width = '80px'; f.style.height = '80px';
+            f.style.bottom = '16px'; f.style.right = '16px';
+          } else {
+            f.style.width = '90px'; f.style.height = '90px';
+            f.style.bottom = '24px'; f.style.right = '24px';
+          }
+          f.style.maxHeight = '';
+        }
+      }
+    } catch(e) {}
+    // Tambien envia postMessage como fallback
+    try {
+      window.parent.postMessage({ type:'rf-chatbot-v2', action: open ? 'open' : 'close' }, '*');
+    } catch(e) {}
+  }
+
   toggle.addEventListener('click', () => {
     const isOpen = win.classList.contains('open');
     win.classList.toggle('open');
     toggle.classList.toggle('open');
     if (!isOpen) rfOnOpen();
-
-    // Notifica iframe parent (para WPCode)
-    try {
-      window.parent.postMessage({ type:'rf-chatbot-v2', action: isOpen ? 'close' : 'open' }, '*');
-    } catch(e) {}
+    if (inIframe) rfResizeIframe(!isOpen);
   });
 
   close.addEventListener('click', () => {
     win.classList.remove('open');
     toggle.classList.remove('open');
-    try { window.parent.postMessage({ type:'rf-chatbot-v2', action:'close' }, '*'); } catch(e) {}
+    if (inIframe) rfResizeIframe(false);
   });
 
   // Pre-cargar snapshot en background
