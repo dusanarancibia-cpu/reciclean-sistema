@@ -1,14 +1,34 @@
 // ═══════════════════════════════════════════════════════════
 // GOOGLE DRIVE — Subida automática a Unidad compartida
-// v1 · 13-abril-2026
-// Fuentes: plan original + correcciones IA #2 (estado real,
-// carga robusta, checkToken) + fixes KIMI (#1 query parents,
-// #3 validación respuestas)
+// v2 · 14-abril-2026
+// Fix: queries simplificadas para compatibilidad con Shared Drives
 // ═══════════════════════════════════════════════════════════
 
 let _driveToken = null;
 let _driveTokenClient = null;
 let _driveChecking = false;
+let _driveFolderCache = {}; // Cache de IDs de subcarpetas
+
+// ── Helper: buscar archivos en Drive (simplificado para Shared Drives) ──
+async function driveQuery(q, fields, orderBy, pageSize){
+  const params = new URLSearchParams({
+    q: q,
+    supportsAllDrives: 'true',
+    includeItemsFromAllDrives: 'true',
+    fields: 'files('+fields+')'
+  });
+  if(orderBy) params.set('orderBy', orderBy);
+  if(pageSize) params.set('pageSize', pageSize);
+  const res = await fetch('https://www.googleapis.com/drive/v3/files?'+params.toString(),{
+    headers: {'Authorization':'Bearer '+_driveToken}
+  });
+  if(!res.ok){
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.error?.message || 'HTTP '+res.status);
+  }
+  const data = await res.json();
+  return data.files || [];
+}
 
 // ── Inicializar cuando la librería de Google esté lista ──
 function driveInit(){
@@ -71,6 +91,7 @@ function driveConnectSilent(){
 // ── Desconectar ──
 function driveDisconnect(){
   _driveToken = null;
+  _driveFolderCache = {};
   localStorage.removeItem('rf_drive_connected');
   driveUpdateUI(false);
   toast('Drive desconectado','ok');
@@ -116,6 +137,46 @@ async function driveCheckToken(){
   } catch(e){ return false; }
 }
 
+// ── Buscar o crear subcarpeta en el Drive compartido ──
+async function driveGetOrCreateFolder(name){
+  // Cache para no buscar cada vez
+  if(_driveFolderCache[name]) return _driveFolderCache[name];
+
+  const escapedName = name.replace(/'/g,"\\'");
+
+  // Buscar carpeta por nombre dentro del Drive compartido
+  const files = await driveQuery(
+    `name='${escapedName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    'id,name,parents'
+  );
+
+  // Filtrar las que están dentro de nuestro Drive compartido
+  const match = files.find(f => f.parents && f.parents.includes(GOOGLE_DRIVE_FOLDER_ID));
+  if(match){
+    _driveFolderCache[name] = match.id;
+    return match.id;
+  }
+
+  // No existe → crear
+  const createRes = await fetch('https://www.googleapis.com/drive/v3/files?supportsAllDrives=true',{
+    method:'POST',
+    headers: {
+      'Authorization':'Bearer '+_driveToken,
+      'Content-Type':'application/json'
+    },
+    body: JSON.stringify({
+      name: name,
+      mimeType: 'application/vnd.google-apps.folder',
+      parents: [GOOGLE_DRIVE_FOLDER_ID]
+    })
+  });
+  if(!createRes.ok) throw new Error('Error creando carpeta: HTTP '+createRes.status);
+  const createData = await createRes.json();
+  if(!createData.id) throw new Error('No se pudo crear carpeta');
+  _driveFolderCache[name] = createData.id;
+  return createData.id;
+}
+
 // ── Subir archivo a la Unidad compartida ──
 async function driveUpload(blob, filename, subcarpeta){
   if(!_driveToken) return;
@@ -156,41 +217,6 @@ async function driveUpload(blob, filename, subcarpeta){
   }
 }
 
-// ── Buscar o crear subcarpeta en Shared Drive ──
-// Fix KIMI #1: filtra por parent para no confundir carpetas de otros lugares
-// Fix KIMI #3: valida res.ok antes de usar respuesta
-async function driveGetOrCreateFolder(name){
-  const escapedName = name.replace(/'/g,"\\'");
-  const query = `name='${escapedName}' and '${GOOGLE_DRIVE_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`;
-  const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=drive&driveId=${GOOGLE_DRIVE_FOLDER_ID}&fields=files(id,name)`;
-
-  const searchRes = await fetch(url,{
-    headers: {'Authorization':'Bearer '+_driveToken}
-  });
-  if(!searchRes.ok) throw new Error('Error buscando carpeta: HTTP '+searchRes.status);
-  const searchData = await searchRes.json();
-  if(searchData.files && searchData.files.length > 0){
-    return searchData.files[0].id;
-  }
-
-  const createRes = await fetch('https://www.googleapis.com/drive/v3/files?supportsAllDrives=true',{
-    method:'POST',
-    headers: {
-      'Authorization':'Bearer '+_driveToken,
-      'Content-Type':'application/json'
-    },
-    body: JSON.stringify({
-      name: name,
-      mimeType: 'application/vnd.google-apps.folder',
-      parents: [GOOGLE_DRIVE_FOLDER_ID]
-    })
-  });
-  if(!createRes.ok) throw new Error('Error creando carpeta: HTTP '+createRes.status);
-  const createData = await createRes.json();
-  if(!createData.id) throw new Error('No se pudo crear carpeta');
-  return createData.id;
-}
-
 // ── Cargar último backup desde Drive ──
 async function driveLoadLatest(){
   if(!_driveToken){
@@ -204,44 +230,36 @@ async function driveLoadLatest(){
     toast('☁ Buscando último backup en Drive...','ok');
 
     // Buscar carpeta Backups
-    const escapedName = 'Backups'.replace(/'/g,"\\'");
-    const folderQuery = `name='${escapedName}' and '${GOOGLE_DRIVE_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`;
-    const folderUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(folderQuery)}&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=drive&driveId=${GOOGLE_DRIVE_FOLDER_ID}&fields=files(id)`;
-    const folderRes = await fetch(folderUrl, { headers: {'Authorization':'Bearer '+_driveToken} });
-    if(!folderRes.ok) throw new Error('No se encontró carpeta Backups');
-    const folderData = await folderRes.json();
-    if(!folderData.files || !folderData.files.length){
-      toast('⚠ No hay carpeta Backups en Drive todavía','warn');
-      return;
-    }
-    const backupFolderId = folderData.files[0].id;
+    const folderId = await driveGetOrCreateFolder('Backups');
 
-    // Listar archivos JSON ordenados por fecha (más reciente primero)
-    const filesQuery = `'${backupFolderId}' in parents and mimeType='application/json' and trashed=false`;
-    const filesUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(filesQuery)}&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=drive&driveId=${GOOGLE_DRIVE_FOLDER_ID}&orderBy=createdTime desc&pageSize=1&fields=files(id,name,createdTime)`;
-    const filesRes = await fetch(filesUrl, { headers: {'Authorization':'Bearer '+_driveToken} });
-    if(!filesRes.ok) throw new Error('Error listando backups');
-    const filesData = await filesRes.json();
-    if(!filesData.files || !filesData.files.length){
+    // Listar archivos JSON más recientes
+    const files = await driveQuery(
+      `'${folderId}' in parents and mimeType='application/json' and trashed=false`,
+      'id,name,createdTime',
+      'createdTime desc',
+      '1'
+    );
+
+    if(!files.length){
       toast('⚠ No hay backups en Drive','warn');
       return;
     }
 
-    const latest = filesData.files[0];
+    const latest = files[0];
     const fecha = new Date(latest.createdTime).toLocaleString('es-CL');
 
     // Descargar el contenido
-    const dlUrl = `https://www.googleapis.com/drive/v3/files/${latest.id}?alt=media&supportsAllDrives=true`;
-    const dlRes = await fetch(dlUrl, { headers: {'Authorization':'Bearer '+_driveToken} });
+    const dlRes = await fetch(`https://www.googleapis.com/drive/v3/files/${latest.id}?alt=media&supportsAllDrives=true`,{
+      headers: {'Authorization':'Bearer '+_driveToken}
+    });
     if(!dlRes.ok) throw new Error('Error descargando backup');
     const text = await dlRes.text();
     const backup = JSON.parse(text);
 
     if(!backup.materiales) throw new Error('Formato de backup inválido');
 
-    // Usar la misma lógica de importBackup (estado.js)
     driveApplyBackup(backup);
-    toast('☁ Backup cargado desde Drive: '+latest.name+' ('+fecha+')','ok');
+    toast('☁ Backup cargado: '+latest.name+' ('+fecha+')','ok');
 
   } catch(e){
     console.warn('Drive load error:', e);
@@ -249,9 +267,8 @@ async function driveLoadLatest(){
   }
 }
 
-// ── Aplicar backup descargado de Drive (replica lógica de importBackup) ──
+// ── Aplicar backup descargado de Drive ──
 async function driveApplyBackup(backup){
-  // Restaurar materiales
   backup.materiales.forEach(m=>{
     const idx = MATS_LOCAL.findIndex(x=>x.id===m.id);
     if(idx>=0){
@@ -262,14 +279,11 @@ async function driveApplyBackup(backup){
   mats = MATS_LOCAL.map(m=>({...m}));
   if(typeof idbSaveMats === 'function') await idbSaveMats(mats);
 
-  // Restaurar fuentes
   if(backup.fuentes){
     if(typeof dbClear === 'function') await dbClear('fuentes');
     backup.fuentes.forEach(f=>{ if(!FUENTES.includes(f)) FUENTES.push(f); });
     if(typeof idbSaveFuente === 'function') for(const f of FUENTES) await idbSaveFuente(f);
   }
-
-  // Restaurar clientes_precios
   if(backup.clientes_precios){
     CLIENTES_PRECIOS = backup.clientes_precios;
     if(typeof idbSaveConfig === 'function') await idbSaveConfig('clientes_precios', JSON.stringify(CLIENTES_PRECIOS));
@@ -326,7 +340,6 @@ async function driveApplyBackup(backup){
     HISTORIAL = backup.historial;
   }
 
-  // Refrescar toda la UI
   if(typeof updateAliasCnt === 'function') updateAliasCnt();
   if(typeof rebuildFuenteSelects === 'function') rebuildFuenteSelects();
   if(typeof renderAlias === 'function') renderAlias();
@@ -341,24 +354,17 @@ async function driveApplyBackup(backup){
 async function driveCheckLatest(){
   if(!_driveToken) return;
   try {
-    const escapedName = 'Backups'.replace(/'/g,"\\'");
-    const folderQuery = `name='${escapedName}' and '${GOOGLE_DRIVE_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`;
-    const folderUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(folderQuery)}&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=drive&driveId=${GOOGLE_DRIVE_FOLDER_ID}&fields=files(id)`;
-    const folderRes = await fetch(folderUrl, { headers: {'Authorization':'Bearer '+_driveToken} });
-    if(!folderRes.ok) return;
-    const folderData = await folderRes.json();
-    if(!folderData.files || !folderData.files.length) return;
-
-    const filesQuery = `'${folderData.files[0].id}' in parents and mimeType='application/json' and trashed=false`;
-    const filesUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(filesQuery)}&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=drive&driveId=${GOOGLE_DRIVE_FOLDER_ID}&orderBy=createdTime desc&pageSize=1&fields=files(id,name,createdTime)`;
-    const filesRes = await fetch(filesUrl, { headers: {'Authorization':'Bearer '+_driveToken} });
-    if(!filesRes.ok) return;
-    const filesData = await filesRes.json();
-    if(!filesData.files || !filesData.files.length) return;
-
-    const latest = filesData.files[0];
+    const folderId = await driveGetOrCreateFolder('Backups');
+    const files = await driveQuery(
+      `'${folderId}' in parents and mimeType='application/json' and trashed=false`,
+      'id,name,createdTime',
+      'createdTime desc',
+      '1'
+    );
+    if(!files.length) return;
+    const latest = files[0];
     const fecha = new Date(latest.createdTime).toLocaleString('es-CL');
-    toast('☁ Backup disponible en Drive: '+latest.name+' ('+fecha+') — usa Herramientas > Cargar desde Drive','ok');
+    toast('☁ Backup en Drive: '+latest.name+' ('+fecha+') — Herramientas > Cargar desde Drive','ok');
   } catch(e){ /* silencioso */ }
 }
 
