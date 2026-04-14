@@ -6,7 +6,12 @@
 <title>Asistente Comercial · Reciclean-Farex</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="js/tracking.js"></script>
+<!-- ACI: Modulos Asistente Comercial Integrado -->
+<script src="public/js/aci_proveedores.js" defer></script>
+<script src="public/js/aci_rutas.js" defer></script>
+<script src="public/js/aci_geo.js" defer></script>
+<script src="public/js/aci_vehiculo.js" defer></script>
+<script src="public/js/aci_nurturing.js" defer></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F2F5;min-height:100vh;max-width:480px;margin:0 auto;color:#1A2332}
@@ -95,6 +100,58 @@ select.neg-input option{background:#1A2D3E;color:#fff}
 .modal-title{font-size:17px;font-weight:800;color:#1A2332;margin-bottom:6px}
 .footer{text-align:center;font-size:9px;color:#aaa;padding:8px;background:#F0F2F5}
 .loading-msg{text-align:center;padding:60px 20px;color:#4FC3F7;font-size:14px;font-weight:600;}
+
+/* ── NAV PRINCIPAL (Fase 2) ── */
+.main-nav{display:flex;background:#0A1628;border-bottom:2px solid #1A2B3A;overflow-x:auto;scrollbar-width:none}
+.main-nav::-webkit-scrollbar{display:none}
+.main-nav-btn{flex:1;min-width:0;padding:10px 6px;background:none;border:none;border-bottom:2px solid transparent;color:#6B8FA8;font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;transition:all .15s}
+.main-nav-btn.active{color:#4FC3F7;border-bottom-color:#4FC3F7}
+.main-nav-btn .nav-icon{font-size:14px;display:block;margin-bottom:2px}
+.main-page{display:none}
+.main-page.active{display:block}
+
+/* ── TAB MIS COTIZACIONES ── */
+.cotiz-card{background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.08)}
+.cotiz-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.cotiz-prov{font-size:14px;font-weight:800;color:#1A2332}
+.cotiz-date{font-size:10px;color:#999;font-weight:600}
+.cotiz-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:11px;color:#555;margin-bottom:6px}
+.cotiz-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;text-transform:uppercase}
+.cotiz-badge.abierta{background:#E3F2FD;color:#1565C0}
+.cotiz-badge.cerrada{background:#E8F5E9;color:#2E7D32}
+.cotiz-badge.vencida{background:#FFF3E0;color:#E65100}
+.cotiz-mats{font-size:10px;color:#777;line-height:1.6}
+.cotiz-total{display:flex;justify-content:space-between;background:#F8F9FA;border-radius:8px;padding:8px 12px;margin-top:8px;font-weight:700;font-size:12px}
+.cotiz-empty{text-align:center;padding:60px 20px;color:#999;font-size:13px}
+.cotiz-filters{display:flex;gap:6px;padding:12px;flex-wrap:wrap}
+.cotiz-chip{padding:5px 12px;border-radius:20px;font-size:10px;font-weight:700;cursor:pointer;border:1.5px solid #ddd;background:#fff;color:#666;transition:all .15s}
+.cotiz-chip.active{background:#1565C0;color:#fff;border-color:#1565C0}
+
+/* ── TAB SEGUIMIENTO ── */
+.seg-section{margin-bottom:16px}
+.seg-title{font-size:12px;font-weight:800;color:#1A2332;padding:12px 14px 6px;display:flex;align-items:center;gap:6px}
+.seg-card{background:#fff;border-radius:12px;padding:12px 14px;margin:0 12px 8px;box-shadow:0 1px 6px rgba(0,0,0,.08);border-left:3px solid #ddd}
+.seg-card.urgente{border-left-color:#c62828}
+.seg-card.seguimiento{border-left-color:#F57F17}
+.seg-card.nuevo{border-left-color:#2E7D32}
+.seg-prov{font-size:13px;font-weight:700;color:#1A2332}
+.seg-detail{font-size:10px;color:#888;margin-top:2px;line-height:1.5}
+.seg-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.seg-btn{padding:6px 12px;border-radius:8px;border:none;font-size:10px;font-weight:700;cursor:pointer;color:#fff}
+.seg-btn.wa{background:#25D366}
+.seg-btn.email{background:#1565C0}
+.seg-btn.llamar{background:#F57C00}
+.seg-btn.resultado{background:#7B1FA2}
+.seg-empty{text-align:center;padding:40px 20px;color:#999;font-size:12px}
+
+/* ── INDICADOR CONEXION ── */
+.conn-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle;transition:background .3s}
+.conn-dot.online{background:#4CAF50}
+.conn-dot.offline{background:#FF9800;animation:pulse-orange 1.5s infinite}
+.conn-dot.syncing{background:#4CAF50;animation:pulse-green 1s infinite}
+@keyframes pulse-orange{0%,100%{opacity:1}50%{opacity:.4}}
+.conn-label{font-size:9px;color:#6B8FA8;vertical-align:middle;font-weight:600}
+.conn-pending{font-size:8px;color:#FF9800;margin-left:4px;font-weight:700}
 </style>
 </head>
 <body>
@@ -130,6 +187,19 @@ select.neg-input option{background:#1A2D3E;color:#fff}
 <div id="app" style="display:none">
   <div class="top-notice" id="top-notice-text">Asistente Comercial · Reciclean-Farex</div>
 
+  <!-- ── NAV PRINCIPAL ── -->
+  <div class="main-nav" id="main-nav">
+    <button class="main-nav-btn active" onclick="switchMainPage('cotizar')"><span class="nav-icon">💰</span>Cotizar</button>
+    <button class="main-nav-btn" onclick="switchMainPage('mi-ruta')"><span class="nav-icon">🗺</span>Mi Ruta</button>
+    <button class="main-nav-btn" onclick="switchMainPage('mis-cotizaciones')"><span class="nav-icon">📋</span>Historial</button>
+    <button class="main-nav-btn" onclick="switchMainPage('seguimiento')"><span class="nav-icon">📞</span>Seguim.</button>
+    <button class="main-nav-btn" id="nav-planificar" onclick="switchMainPage('planificar')" style="display:none"><span class="nav-icon">📌</span>Planificar</button>
+    <button class="main-nav-btn" id="nav-viajes" onclick="switchMainPage('mis-viajes')"><span class="nav-icon">🚗</span>Viajes</button>
+    <button class="main-nav-btn" id="nav-supervision" onclick="switchMainPage('supervision')" style="display:none"><span class="nav-icon">📊</span>Dashboard</button>
+  </div>
+
+  <!-- ════ PAGINA: COTIZAR (existente, envuelto) ════ -->
+  <div class="main-page active" id="page-cotizar">
   <div class="topbar">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div><div class="brand-sub">Reciclean · Farex</div><div class="brand-title">Asistente Comercial</div></div>
@@ -137,6 +207,11 @@ select.neg-input option{background:#1A2D3E;color:#fff}
         <div class="mc-box" id="mc-total-wrap" style="display:none">
           <div style="color:#4FC3F7;font-size:10px;font-weight:600">Comisión</div>
           <div id="mc-total-val" style="font-size:17px;font-weight:800"></div>
+        </div>
+        <div id="conn-indicator" style="display:flex;align-items:center;gap:2px;margin-bottom:2px">
+          <span class="conn-dot online" id="conn-dot"></span>
+          <span class="conn-label" id="conn-label">Online</span>
+          <span class="conn-pending" id="conn-pending"></span>
         </div>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
@@ -241,6 +316,96 @@ select.neg-input option{background:#1A2D3E;color:#fff}
     <button class="close-btn" onclick="finalizarConsulta()">📋 Generar Resumen Consulta</button>
     <button class="close-btn" style="background:linear-gradient(135deg,#17A2B8,#0D8BA7)" onclick="mostrarTablaPrecios()">📊 Ver Tabla de Precios</button>
     <button class="close-btn" style="background:linear-gradient(135deg,#F57C00,#E64A19);font-size:13px;padding:12px" onclick="limpiarMateriales()">🗑 Limpiar materiales</button>
+  </div>
+
+  </div><!-- /page-cotizar -->
+
+  <!-- ════ PAGINA: MIS COTIZACIONES ════ -->
+  <div class="main-page" id="page-mis-cotizaciones">
+    <div style="padding:12px">
+      <div style="font-size:16px;font-weight:800;color:#1A2332;margin-bottom:4px">Mis Cotizaciones</div>
+      <div style="font-size:11px;color:#888;margin-bottom:12px" id="cotiz-count-label">Cargando...</div>
+      <div class="cotiz-filters" id="cotiz-filters">
+        <button class="cotiz-chip active" onclick="filterCotiz('todas')">Todas</button>
+        <button class="cotiz-chip" onclick="filterCotiz('abierta')">Abiertas</button>
+        <button class="cotiz-chip" onclick="filterCotiz('cerrada')">Cerradas</button>
+        <button class="cotiz-chip" onclick="filterCotiz('hoy')">Hoy</button>
+        <button class="cotiz-chip" onclick="filterCotiz('semana')">Esta semana</button>
+      </div>
+      <div id="cotiz-list">
+        <div class="cotiz-empty">Cargando cotizaciones...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PAGINA: SEGUIMIENTO ════ -->
+  <div class="main-page" id="page-seguimiento">
+    <div style="padding:12px 0">
+      <div style="padding:0 14px;margin-bottom:8px">
+        <div style="font-size:16px;font-weight:800;color:#1A2332">Seguimiento</div>
+        <div style="font-size:11px;color:#888;margin-top:2px" id="seg-subtitle">Proveedores pendientes de contacto</div>
+      </div>
+
+      <div class="seg-section" id="seg-urgentes">
+        <div class="seg-title">🔴 Urgentes — sin contacto 7+ dias</div>
+        <div id="seg-urgentes-list"></div>
+      </div>
+
+      <div class="seg-section" id="seg-seguimiento">
+        <div class="seg-title">🟡 En seguimiento — esperando respuesta</div>
+        <div id="seg-seguimiento-list"></div>
+      </div>
+
+      <div class="seg-section" id="seg-nuevos">
+        <div class="seg-title">🟢 Nuevos — primer contacto pendiente</div>
+        <div id="seg-nuevos-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PAGINA: MI RUTA DEL DIA (Fase 3) ════ -->
+  <div class="main-page" id="page-mi-ruta">
+    <div style="padding:12px">
+      <div style="font-size:16px;font-weight:800;color:#1A2332;margin-bottom:4px">Mi Ruta del Dia</div>
+      <div style="font-size:11px;color:#888;margin-bottom:8px">Proveedores asignados para hoy</div>
+      <div id="geo-status" style="margin-bottom:8px"></div>
+      <div id="miruta-content">
+        <div class="cotiz-empty">Cargando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PAGINA: PLANIFICAR (Fase 3 — solo admin/editor) ════ -->
+  <div class="main-page" id="page-planificar">
+    <div style="padding:12px">
+      <div style="font-size:16px;font-weight:800;color:#1A2332;margin-bottom:4px">Planificar Ruta</div>
+      <div style="font-size:11px;color:#888;margin-bottom:12px">Selecciona proveedores y asigna a un ejecutivo</div>
+      <div id="planificar-content">
+        <div class="cotiz-empty">Cargando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PAGINA: MIS VIAJES (Fase 4) ════ -->
+  <div class="main-page" id="page-mis-viajes">
+    <div style="padding:12px">
+      <div style="font-size:16px;font-weight:800;color:#1A2332;margin-bottom:4px">Mis Viajes</div>
+      <div style="font-size:11px;color:#888;margin-bottom:12px">Control vehicular — km, combustible, fotos tablero</div>
+      <div id="misviajes-content">
+        <div class="cotiz-empty">Cargando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PAGINA: SUPERVISION (Fase 2.5) ════ -->
+  <div class="main-page" id="page-supervision">
+    <div style="padding:12px">
+      <div style="font-size:16px;font-weight:800;color:#1A2332;margin-bottom:4px">Supervision</div>
+      <div style="font-size:11px;color:#888;margin-bottom:12px">Actividad del equipo</div>
+      <div id="supervision-content">
+        <div class="cotiz-empty">Cargando datos...</div>
+      </div>
+    </div>
   </div>
 
   <div class="footer" id="app-footer">Reciclean-Farex · Precios referenciales sujetos a cambio</div>
@@ -422,10 +587,21 @@ function initApp(vLabel, fechaActualizada) {
   MATERIALES = MATERIALES_DATA['Cerrillos'] || [];
   buildCats();
   render();
+  // Fase 1: indicador conexion + sync pendientes + proveedores
+  updateConnIndicator();
+  syncCotizacionesPendientes();
+  if (typeof aciInit === 'function') aciInit();
 }
 
 function applyRoleRestrictions(rol) {
   const puedeCotz = ROL_PUEDE_COTIZAR(rol);
+  // Mostrar tabs segun rol
+  const navSup = document.getElementById('nav-supervision');
+  if (navSup) navSup.style.display = ['admin', 'editor'].includes(rol) ? '' : 'none';
+  const navPlan = document.getElementById('nav-planificar');
+  if (navPlan) navPlan.style.display = ['admin', 'editor'].includes(rol) ? '' : 'none';
+  // Suscribir ejecutivos a notificaciones de rutas asignadas
+  if (rol === 'ejecutivo' && typeof aciSubscribeRutas === 'function') aciSubscribeRutas();
 
   // Botones de acción inferiores
   const wrap = document.querySelector('.close-btn-wrap');
@@ -668,8 +844,131 @@ function updateSucursalMateriales(){
 function finalizarConsulta(){
   const suc=document.getElementById('neg-suc').value, ejec=document.getElementById('neg-ejec').value.trim(), prov=document.getElementById('neg-prov').value.trim(), actives=getActives();
   if(!suc||!ejec||!prov||actives.length===0){ if(!negOpen) toggleNeg(); alert('Completa: sucursal, ejecutivo, proveedor y al menos 1 material'); return; }
+  guardarCotizacionSupabase(); // Persistir en BD antes de mostrar modal
   showModal();
 }
+
+// ══════════════════════════════════════════════════
+// PERSISTENCIA COTIZACIONES EN SUPABASE (Fase 1)
+// ══════════════════════════════════════════════════
+async function guardarCotizacionSupabase(){
+  try {
+    const neg = getNegData();
+    const actives = getActives();
+    const materialesArr = actives.map(mat => {
+      const s = states[mat.id] || {};
+      const kg = parseFloat(s.kg) || 0;
+      const ej = parseFloat(s.ej) || 0;
+      const mc = getMC(kg, ej, mat);
+      return {
+        id: mat.id,
+        nombre: mat.material,
+        categoria: mat.categoria,
+        kg: kg,
+        precio_ejecutivo: ej,
+        precio_lista: mat.precioLista,
+        precio_maximo: mat.precioMaximo,
+        comision: getComision(mc)
+      };
+    });
+    const totalKg = materialesArr.reduce((s, m) => s + m.kg, 0);
+    const totalCLP = materialesArr.reduce((s, m) => s + (m.kg * m.precio_ejecutivo), 0);
+
+    // Vincular con proveedor de la BD si existe
+    const provMatch = (typeof aciBuscarProveedor === 'function') ? aciBuscarProveedor(neg.prov) : null;
+
+    const payload = {
+      usuario_id: USUARIO?.id || null,
+      proveedor_id: provMatch ? provMatch.id : null,
+      proveedor_nombre: neg.prov,
+      sucursal: neg.suc,
+      materiales_json: materialesArr,
+      total_kg: totalKg,
+      total_clp: totalCLP,
+      negocio_data: {
+        ejecutivo: neg.ejec,
+        rut: neg.rut,
+        frecuencia: neg.freq,
+        kg_factura: neg.kgFactura,
+        fecha_llegada: neg.fecha,
+        folio: neg.folio,
+        fecha_factura: neg.fechaFactura,
+        tipo_ejecutivo: neg.tipoEjec,
+        wa_personalizado: neg.wa
+      },
+      estado: 'abierta'
+    };
+
+    // Intentar guardar en Supabase
+    const { error } = await _supa.from('cotizaciones').insert(payload);
+    if (error) {
+      console.warn('Error guardando cotizacion en Supabase:', error.message);
+      // Guardar en cola offline si falla
+      guardarCotizacionOffline(payload);
+    } else {
+      console.log('Cotizacion guardada en Supabase');
+    }
+
+    // Registrar evento via ACI (incluye pipeline estado comercial)
+    if (typeof aciRegistrarEvento === 'function') {
+      await aciRegistrarEvento({
+        tipo: 'cotizacion',
+        proveedor_id: provMatch ? provMatch.id : null,
+        canal: 'presencial',
+        resultado: 'abierta',
+        detalle_json: { total_kg: totalKg, total_clp: totalCLP, materiales_count: materialesArr.length, proveedor: neg.prov, sucursal: neg.suc }
+      });
+    } else {
+      // Fallback si aci_proveedores.js no cargo
+      await _supa.from('eventos').insert({
+        tipo: 'cotizacion',
+        usuario_id: USUARIO?.id || null,
+        canal: 'presencial',
+        resultado: 'abierta',
+        detalle_json: { total_kg: totalKg, total_clp: totalCLP, materiales_count: materialesArr.length, proveedor: neg.prov, sucursal: neg.suc }
+      }).then(r => { if(r.error) console.warn('Error evento:', r.error.message); });
+    }
+
+  } catch(e) {
+    console.warn('guardarCotizacionSupabase error:', e);
+  }
+}
+
+// Cola offline para cotizaciones que no se pudieron guardar
+function guardarCotizacionOffline(payload){
+  try {
+    const queue = JSON.parse(localStorage.getItem('rf_pending_cotizaciones') || '[]');
+    queue.push({ payload, timestamp: Date.now() });
+    localStorage.setItem('rf_pending_cotizaciones', JSON.stringify(queue));
+    console.log('Cotizacion guardada en cola offline (' + queue.length + ' pendientes)');
+  } catch(e) { console.warn('Error cola offline:', e); }
+}
+
+// Sync cotizaciones pendientes al volver online
+async function syncCotizacionesPendientes(){
+  try {
+    const queue = JSON.parse(localStorage.getItem('rf_pending_cotizaciones') || '[]');
+    if (!queue.length) return;
+    const remaining = [];
+    for (const item of queue) {
+      const { error } = await _supa.from('cotizaciones').insert(item.payload);
+      if (error) { remaining.push(item); }
+    }
+    localStorage.setItem('rf_pending_cotizaciones', JSON.stringify(remaining));
+    if (remaining.length < queue.length) {
+      console.log('Sync: ' + (queue.length - remaining.length) + ' cotizaciones sincronizadas');
+    }
+  } catch(e) { console.warn('syncCotizacionesPendientes error:', e); }
+}
+
+// Escuchar cuando vuelve la conexion
+window.addEventListener('online', () => {
+  syncCotizacionesPendientes();
+  updateConnIndicator(true);
+});
+window.addEventListener('offline', () => {
+  updateConnIndicator(false);
+});
 
 function getNegData(){
   return {
@@ -727,6 +1026,462 @@ function mostrarTablaPrecios(){
 }
 
 // ══════════════════════════════════════════════════
+// NAVEGACION PRINCIPAL (Fase 2)
+// ══════════════════════════════════════════════════
+let _currentMainPage = 'cotizar';
+
+function switchMainPage(page) {
+  _currentMainPage = page;
+  document.querySelectorAll('.main-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.main-nav-btn').forEach(b => b.classList.remove('active'));
+  const pageEl = document.getElementById('page-' + page);
+  if (pageEl) pageEl.classList.add('active');
+  // Activar boton nav correspondiente (buscar por texto)
+  document.querySelectorAll('.main-nav-btn').forEach(b => {
+    const onclick = b.getAttribute('onclick') || '';
+    if (onclick.includes("'" + page + "'")) b.classList.add('active');
+  });
+  // Cargar datos de la pagina
+  if (page === 'mis-cotizaciones') loadMisCotizaciones();
+  if (page === 'seguimiento') loadSeguimiento();
+  if (page === 'supervision') loadSupervision();
+  if (page === 'mi-ruta' && typeof aciLoadMiRuta === 'function') aciLoadMiRuta();
+  if (page === 'planificar' && typeof aciLoadPlanificar === 'function') aciLoadPlanificar();
+  if (page === 'mis-viajes' && typeof aciLoadMisViajes === 'function') aciLoadMisViajes();
+}
+
+// ══════════════════════════════════════════════════
+// MIS COTIZACIONES (Fase 2)
+// ══════════════════════════════════════════════════
+let _cotizaciones = [];
+let _cotizFiltro = 'todas';
+
+async function loadMisCotizaciones() {
+  const list = document.getElementById('cotiz-list');
+  list.innerHTML = '<div class="cotiz-empty">Cargando...</div>';
+
+  try {
+    // Cargar cotizaciones del usuario actual (o todas si es admin/editor)
+    let query = _supa.from('cotizaciones').select('*').order('created_at', { ascending: false }).limit(100);
+    if (_rolActual === 'ejecutivo' && USUARIO?.id) {
+      query = query.eq('usuario_id', USUARIO.id);
+    }
+    const { data, error } = await query;
+    if (error) { list.innerHTML = '<div class="cotiz-empty">Error: ' + error.message + '</div>'; return; }
+    _cotizaciones = data || [];
+
+    // Tambien cargar de eventos_asistente (cotizaciones antiguas)
+    let queryOld = _supa.from('eventos_asistente').select('*').order('created_at', { ascending: false }).limit(50);
+    const { data: oldData } = await queryOld;
+    if (oldData && oldData.length) {
+      oldData.forEach(e => {
+        _cotizaciones.push({
+          id: 'old_' + e.id,
+          proveedor_nombre: e.proveedor || 'Sin proveedor',
+          sucursal: null,
+          materiales_json: e.materiales || [],
+          total_kg: e.kg_factura || 0,
+          total_clp: e.mc_total || 0,
+          estado: e.estado || 'abierta',
+          created_at: e.created_at,
+          negocio_data: { ejecutivo: e.ejecutivo, rut: e.rut, frecuencia: e.frecuencia },
+          _legacy: true
+        });
+      });
+      // Reordenar por fecha
+      _cotizaciones.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    }
+
+    renderCotizaciones();
+  } catch (e) {
+    list.innerHTML = '<div class="cotiz-empty">Error de conexion</div>';
+  }
+}
+
+function filterCotiz(filtro) {
+  _cotizFiltro = filtro;
+  document.querySelectorAll('.cotiz-chip').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  renderCotizaciones();
+}
+
+function renderCotizaciones() {
+  const list = document.getElementById('cotiz-list');
+  let filtered = [..._cotizaciones];
+  const hoy = new Date().toISOString().slice(0, 10);
+  const hace7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  if (_cotizFiltro === 'abierta') filtered = filtered.filter(c => c.estado === 'abierta');
+  else if (_cotizFiltro === 'cerrada') filtered = filtered.filter(c => c.estado !== 'abierta');
+  else if (_cotizFiltro === 'hoy') filtered = filtered.filter(c => c.created_at && c.created_at.slice(0, 10) === hoy);
+  else if (_cotizFiltro === 'semana') filtered = filtered.filter(c => c.created_at && c.created_at >= hace7d);
+
+  document.getElementById('cotiz-count-label').textContent = filtered.length + ' cotizaciones' + (_cotizFiltro !== 'todas' ? ' (' + _cotizFiltro + ')' : '');
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="cotiz-empty">Sin cotizaciones' + (_cotizFiltro !== 'todas' ? ' con filtro "' + _cotizFiltro + '"' : '') + '</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(c => {
+    const fecha = c.created_at ? new Date(c.created_at) : null;
+    const fechaStr = fecha ? fecha.toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+    const horaStr = fecha ? fecha.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) : '';
+    const mats = Array.isArray(c.materiales_json) ? c.materiales_json : [];
+    const matsStr = mats.map(m => (m.nombre || m.material || '?') + ' (' + (m.kg || 0) + 'kg)').join(', ');
+    const neg = c.negocio_data || {};
+    const ejec = neg.ejecutivo || '';
+    const kg = c.total_kg || mats.reduce((s, m) => s + (m.kg || 0), 0);
+    const legacy = c._legacy ? '<span style="font-size:8px;color:#aaa;margin-left:4px">v1</span>' : '';
+
+    return '<div class="cotiz-card">'
+      + '<div class="cotiz-header"><div class="cotiz-prov">' + (c.proveedor_nombre || 'Sin proveedor') + legacy + '</div>'
+      + '<div class="cotiz-date">' + fechaStr + ' ' + horaStr + '</div></div>'
+      + '<div class="cotiz-meta">'
+      + (c.sucursal ? '<span>🏢 ' + c.sucursal + '</span>' : '')
+      + (ejec ? '<span>👤 ' + ejec + '</span>' : '')
+      + '<span class="cotiz-badge ' + (c.estado || 'abierta') + '">' + (c.estado || 'abierta') + '</span>'
+      + '</div>'
+      + '<div class="cotiz-mats">' + (matsStr || 'Sin materiales registrados') + '</div>'
+      + '<div class="cotiz-total"><span>' + fmtNum(kg) + ' kg</span><span style="color:#1565C0">' + fmt(c.total_clp || 0) + '</span></div>'
+      + '</div>';
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════
+// SEGUIMIENTO (Fase 2)
+// ══════════════════════════════════════════════════
+
+async function loadSeguimiento() {
+  const urgList = document.getElementById('seg-urgentes-list');
+  const segList = document.getElementById('seg-seguimiento-list');
+  const newList = document.getElementById('seg-nuevos-list');
+  urgList.innerHTML = segList.innerHTML = newList.innerHTML = '<div class="seg-empty">Cargando...</div>';
+
+  if (typeof aciGetProveedores !== 'function') {
+    urgList.innerHTML = '<div class="seg-empty">Modulo proveedores no disponible</div>';
+    segList.innerHTML = newList.innerHTML = '';
+    return;
+  }
+
+  // Obtener todos los proveedores
+  const provs = aciGetProveedores();
+  if (!provs.length) {
+    urgList.innerHTML = '<div class="seg-empty">Sin proveedores cargados</div>';
+    segList.innerHTML = newList.innerHTML = '';
+    return;
+  }
+
+  // Obtener ultimos eventos por proveedor
+  let eventosRecientes = [];
+  try {
+    const { data } = await _supa.from('eventos')
+      .select('proveedor_id, tipo, resultado, created_at')
+      .order('created_at', { ascending: false })
+      .limit(500);
+    eventosRecientes = data || [];
+  } catch (e) { /* continuar sin eventos */ }
+
+  // Mapear ultimo evento por proveedor
+  const ultimoEvento = {};
+  eventosRecientes.forEach(ev => {
+    if (!ev.proveedor_id) return;
+    if (!ultimoEvento[ev.proveedor_id] || ev.created_at > ultimoEvento[ev.proveedor_id].created_at) {
+      ultimoEvento[ev.proveedor_id] = ev;
+    }
+  });
+
+  const ahora = Date.now();
+  const urgentes = []; // cotizacion abierta + sin contacto 7+ dias
+  const enSeguimiento = []; // contactados, esperando
+  const nuevos = []; // prospectos sin contacto
+
+  provs.forEach(p => {
+    const ue = ultimoEvento[p.id];
+    const diasSinContacto = ue ? Math.floor((ahora - new Date(ue.created_at).getTime()) / (24 * 60 * 60 * 1000)) : 999;
+
+    if (p.estado_comercial === 'prospecto' && !ue) {
+      nuevos.push({ ...p, diasSinContacto });
+    } else if (p.estado_comercial === 'cotizado' && diasSinContacto >= 7) {
+      urgentes.push({ ...p, diasSinContacto, ultimoEvento: ue });
+    } else if (['contactado', 'cotizado'].includes(p.estado_comercial) && ue && diasSinContacto < 7) {
+      enSeguimiento.push({ ...p, diasSinContacto, ultimoEvento: ue });
+    } else if (p.estado_comercial === 'contactado' && diasSinContacto >= 7) {
+      urgentes.push({ ...p, diasSinContacto, ultimoEvento: ue });
+    }
+  });
+
+  // Ordenar
+  urgentes.sort((a, b) => b.diasSinContacto - a.diasSinContacto);
+  enSeguimiento.sort((a, b) => b.diasSinContacto - a.diasSinContacto);
+  nuevos.sort((a, b) => {
+    const priOrder = { 'MÁX': 0, 'ALTA': 1, 'MEDIA': 2, 'BAJA': 3 };
+    return (priOrder[a.prioridad] || 9) - (priOrder[b.prioridad] || 9);
+  });
+
+  document.getElementById('seg-subtitle').textContent = urgentes.length + ' urgentes · ' + enSeguimiento.length + ' en seguimiento · ' + nuevos.length + ' nuevos';
+
+  urgList.innerHTML = urgentes.length ? urgentes.map(p => renderSegCard(p, 'urgente')).join('') : '<div class="seg-empty">Sin urgentes</div>';
+  segList.innerHTML = enSeguimiento.length ? enSeguimiento.map(p => renderSegCard(p, 'seguimiento')).join('') : '<div class="seg-empty">Sin seguimiento activo</div>';
+  newList.innerHTML = nuevos.length ? nuevos.map(p => renderSegCard(p, 'nuevo')).join('') : '<div class="seg-empty">Sin prospectos nuevos</div>';
+}
+
+function renderSegCard(p, tipo) {
+  const diasTxt = p.diasSinContacto < 999 ? 'Hace ' + p.diasSinContacto + ' dias' : 'Sin contacto';
+  const priColors = { 'MÁX': '#1a6b3c', 'ALTA': '#2471a3', 'MEDIA': '#d35400', 'BAJA': '#c0392b' };
+  const telLink = p.telefono ? 'https://wa.me/' + p.telefono.replace(/\s/g, '').replace(/^\+/, '') : null;
+
+  return '<div class="seg-card ' + tipo + '">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start">'
+    + '<div class="seg-prov">' + p.nombre + '</div>'
+    + '<span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff;background:' + (priColors[p.prioridad] || '#999') + '">' + (p.prioridad || '') + '</span>'
+    + '</div>'
+    + '<div class="seg-detail">'
+    + '📍 ' + (p.zona || '') + ' · ' + (p.materiales || '').substring(0, 50)
+    + '<br>⏱ ' + diasTxt + ' · Estado: ' + (p.estado_comercial || 'prospecto')
+    + (p.notas ? '<br>📝 ' + p.notas.substring(0, 80) : '')
+    + '</div>'
+    + '<div class="seg-actions">'
+    + (telLink ? '<button class="seg-btn wa" onclick="aciContactarWA(' + p.id + ')">WhatsApp</button>' : '')
+    + '<button class="seg-btn llamar" onclick="aciRegistrarContacto(' + p.id + ',\'llamada\')">Llamada</button>'
+    + '<button class="seg-btn email" onclick="aciRegistrarContacto(' + p.id + ',\'email\')">Email</button>'
+    + '<button class="seg-btn resultado" onclick="aciMarcarResultado(' + p.id + ')">Resultado</button>'
+    + '</div>'
+    + '</div>';
+}
+
+function aciContactarWA(provId) {
+  const p = typeof aciGetProveedorById === 'function' ? aciGetProveedorById(provId) : null;
+  if (!p || !p.telefono) { alert('Sin telefono registrado'); return; }
+  const tel = p.telefono.replace(/\s/g, '').replace(/^\+/, '');
+  const nombre = USUARIO?.nombre || 'Reciclean';
+  const txt = 'Hola, le saluda ' + nombre + ' de Reciclean. Nos dedicamos al reciclaje de materiales. Quisiera coordinar una visita para ver los materiales que manejan. Quedo atento.';
+  window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(txt));
+  // Registrar evento de seguimiento
+  if (typeof aciRegistrarEvento === 'function') {
+    aciRegistrarEvento({ tipo: 'seguimiento', proveedor_id: provId, canal: 'whatsapp', resultado: 'enviado', detalle_json: { mensaje: 'Contacto inicial WA' } });
+  }
+}
+
+function aciRegistrarContacto(provId, canal) {
+  const nota = prompt('Nota del contacto por ' + canal + ':');
+  if (nota === null) return;
+  if (typeof aciRegistrarEvento === 'function') {
+    aciRegistrarEvento({ tipo: 'seguimiento', proveedor_id: provId, canal: canal, resultado: 'enviado', detalle_json: { nota: nota } });
+  }
+  alert('Contacto registrado');
+  loadSeguimiento(); // Refrescar
+}
+
+function aciMarcarResultado(provId) {
+  const opciones = ['respondio_positivo', 'respondio_negativo', 'sin_respuesta', 'compra_cerrada', 'rechazo'];
+  const sel = prompt('Resultado:\n1. Respondio positivo\n2. Respondio negativo\n3. Sin respuesta\n4. Compra cerrada\n5. Rechazo\n\nIngresa numero (1-5):');
+  if (!sel) return;
+  const idx = parseInt(sel) - 1;
+  if (idx < 0 || idx >= opciones.length) { alert('Opcion invalida'); return; }
+  const resultado = opciones[idx];
+  const nota = prompt('Nota adicional (opcional):') || '';
+
+  if (typeof aciRegistrarEvento === 'function') {
+    const tipo = resultado === 'compra_cerrada' ? 'compra' : 'seguimiento';
+    aciRegistrarEvento({ tipo, proveedor_id: provId, canal: 'presencial', resultado, detalle_json: { nota } });
+  }
+  alert('Resultado: ' + resultado);
+  loadSeguimiento();
+}
+
+// ══════════════════════════════════════════════════
+// SUPERVISION BASICA (Fase 2.5)
+// ══════════════════════════════════════════════════
+
+async function loadSupervision() {
+  const content = document.getElementById('supervision-content');
+  content.innerHTML = '<div class="cotiz-empty">Cargando...</div>';
+
+  try {
+    const hoy = new Date().toISOString().slice(0, 10);
+    const hace7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const hace30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    const [{ data: eventos }, { data: cotizData }, { data: usuarios }, { data: rutasHoy }, { data: viajesHoy }, { data: nurturing }] = await Promise.all([
+      _supa.from('eventos').select('tipo, usuario_id, proveedor_id, resultado, created_at').gte('created_at', hace7d),
+      _supa.from('cotizaciones').select('usuario_id, total_kg, total_clp, proveedor_nombre, created_at').gte('created_at', hace7d),
+      _supa.from('usuarios_autorizados').select('id, nombre, rol, sucursal').eq('activo', true),
+      _supa.from('rutas_asignadas').select('id, ejecutivo_id, estado, proveedores_json').eq('fecha', hoy),
+      _supa.from('viajes_terreno').select('id, usuario_id, km_inicio, km_fin, estado, fecha').eq('fecha', hoy),
+      _supa.from('nurturing_queue').select('estado, tipo_envio, canal, abierto').eq('estado', 'enviado')
+    ]);
+
+    const evts = eventos || [];
+    const cotiz = cotizData || [];
+    const usrs = usuarios || [];
+    const provStats = typeof aciStats === 'function' ? aciStats() : null;
+
+    // Filtrar por sucursal si admin (no editor)
+    const miSuc = USUARIO?.sucursal;
+    const esEditor = _rolActual === 'editor';
+
+    let html = '';
+
+    // ── ALERTAS DEL DIA ──
+    const alertas = [];
+    // Rutas no iniciadas
+    (rutasHoy || []).forEach(r => {
+      if (r.estado === 'pendiente') {
+        const ejec = usrs.find(u => u.id === r.ejecutivo_id);
+        alertas.push({ tipo: 'warn', msg: (ejec?.nombre || 'Ejecutivo') + ' tiene ruta pendiente sin iniciar (' + (r.proveedores_json?.length || 0) + ' proveedores)' });
+      }
+    });
+    // Proveedores en riesgo (activos sin compra 30d)
+    if (provStats) {
+      const provs = typeof aciGetProveedores === 'function' ? aciGetProveedores({ sinCompra30d: true, estado: 'activo' }) : [];
+      if (provs.length) alertas.push({ tipo: 'err', msg: provs.length + ' proveedores activos sin compra hace 30+ dias' });
+    }
+    // Sin actividad hoy
+    const evtsHoy = evts.filter(e => e.created_at >= hoy + 'T00:00:00');
+    if (evtsHoy.length === 0 && new Date().getHours() >= 10) {
+      alertas.push({ tipo: 'warn', msg: 'Sin actividad registrada hoy (son las ' + new Date().getHours() + ':' + String(new Date().getMinutes()).padStart(2, '0') + ')' });
+    }
+
+    if (alertas.length) {
+      html += '<div style="margin-bottom:14px">';
+      alertas.forEach(a => {
+        const bg = a.tipo === 'err' ? '#FFEBEE' : '#FFF8E1';
+        const col = a.tipo === 'err' ? '#C62828' : '#F57F17';
+        const icon = a.tipo === 'err' ? '🔴' : '🟡';
+        html += '<div style="background:' + bg + ';border-radius:8px;padding:8px 12px;margin-bottom:4px;font-size:11px;font-weight:600;color:' + col + '">' + icon + ' ' + a.msg + '</div>';
+      });
+      html += '</div>';
+    }
+
+    // ── KPIs ──
+    const visitas = evts.filter(e => e.tipo === 'visita').length;
+    const seguimientos = evts.filter(e => e.tipo === 'seguimiento').length;
+    const compras = evts.filter(e => e.tipo === 'compra').length;
+    const totalCotiz = cotiz.length;
+    const totalKg = cotiz.reduce((s, c) => s + (parseFloat(c.total_kg) || 0), 0);
+    const kmHoy = (viajesHoy || []).reduce((s, v) => s + ((v.km_fin || 0) - (v.km_inicio || 0)), 0);
+
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">';
+    html += kpiBox('Cotizaciones', totalCotiz, '7 dias', '#1565C0');
+    html += kpiBox('Visitas', visitas, '7 dias', '#2E7D32');
+    html += kpiBox('Seguimientos', seguimientos, '7 dias', '#F57C00');
+    html += kpiBox('Compras', compras, '7 dias', '#7B1FA2');
+    html += kpiBox('Kg cotizados', fmtNum(totalKg), '7 dias', '#00838F');
+    html += kpiBox('Km hoy', kmHoy > 0 ? kmHoy + ' km' : '—', 'vehiculo', '#455A64');
+    html += '</div>';
+
+    // ── ACTIVIDAD POR EJECUTIVO ──
+    html += '<div style="font-size:13px;font-weight:800;color:#1A2332;margin-bottom:8px">Actividad por ejecutivo (7 dias)</div>';
+    html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px;background:#fff;border-radius:8px;overflow:hidden">';
+    html += '<tr style="background:#0D1B2A;color:#fff"><th style="padding:8px;text-align:left">Ejecutivo</th><th style="padding:8px;text-align:center">Cotiz.</th><th style="padding:8px;text-align:center">Visitas</th><th style="padding:8px;text-align:center">Seguim.</th><th style="padding:8px;text-align:center">Compras</th></tr>';
+
+    usrs.filter(u => ['ejecutivo', 'admin', 'editor'].includes(u.rol)).forEach(u => {
+      if (!esEditor && miSuc && miSuc !== 'Todas' && u.sucursal && u.sucursal !== miSuc) return;
+      const uEvts = evts.filter(e => e.usuario_id === u.id);
+      const uCotiz = cotiz.filter(c => c.usuario_id === u.id);
+      html += '<tr style="border-bottom:1px solid #eee">'
+        + '<td style="padding:8px;font-weight:600">' + u.nombre + '<br><span style="font-size:9px;color:#999">' + (u.sucursal || '') + ' · ' + u.rol + '</span></td>'
+        + '<td style="padding:8px;text-align:center;font-weight:700;color:#1565C0">' + uCotiz.length + '</td>'
+        + '<td style="padding:8px;text-align:center">' + uEvts.filter(e => e.tipo === 'visita').length + '</td>'
+        + '<td style="padding:8px;text-align:center">' + uEvts.filter(e => e.tipo === 'seguimiento').length + '</td>'
+        + '<td style="padding:8px;text-align:center;font-weight:700;color:#2E7D32">' + uEvts.filter(e => e.tipo === 'compra').length + '</td>'
+        + '</tr>';
+    });
+    html += '</table></div>';
+
+    // ── PROVEEDORES POR ESTADO ──
+    if (provStats) {
+      html += '<div style="font-size:13px;font-weight:800;color:#1A2332;margin:16px 0 8px">Proveedores por estado</div>';
+      html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">';
+      const colors = { prospecto: '#FF9800', contactado: '#2196F3', cotizado: '#9C27B0', activo: '#4CAF50', inactivo: '#9E9E9E' };
+      Object.entries(provStats.porEstado).forEach(([estado, count]) => {
+        html += '<div style="background:' + (colors[estado] || '#666') + ';color:#fff;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700">' + estado + ': ' + count + '</div>';
+      });
+      html += '</div>';
+
+      // Por zona
+      html += '<div style="font-size:13px;font-weight:800;color:#1A2332;margin-bottom:8px">Por zona</div>';
+      html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">';
+      Object.entries(provStats.porZona).sort((a, b) => b[1] - a[1]).forEach(([zona, count]) => {
+        html += '<div style="background:#fff;border:1.5px solid #ddd;padding:5px 10px;border-radius:8px;font-size:10px;font-weight:700;color:#333">' + zona + ': ' + count + '</div>';
+      });
+      html += '</div>';
+
+      // Sin telefono
+      if (provStats.sinTelefono > 0) {
+        html += '<div style="background:#FFF3E0;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:600;color:#E65100;margin-bottom:12px">📞 ' + provStats.sinTelefono + ' proveedores sin telefono registrado</div>';
+      }
+    }
+
+    // ── NURTURING ──
+    const nurt = nurturing || [];
+    if (nurt.length) {
+      html += '<div style="font-size:13px;font-weight:800;color:#1A2332;margin:8px 0">Nurturing enviados</div>';
+      const emailsEnv = nurt.filter(n => n.canal === 'email').length;
+      const waEnv = nurt.filter(n => n.canal === 'whatsapp').length;
+      const abiertos = nurt.filter(n => n.abierto).length;
+      html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+      html += kpiBox('Emails', emailsEnv, 'enviados', '#1565C0');
+      html += kpiBox('WhatsApp', waEnv, 'enviados', '#25D366');
+      html += kpiBox('Abiertos', abiertos, 'total', '#F57C00');
+      html += '</div>';
+    }
+
+    // ── RUTAS DE HOY ──
+    if ((rutasHoy || []).length) {
+      html += '<div style="font-size:13px;font-weight:800;color:#1A2332;margin:16px 0 8px">Rutas de hoy</div>';
+      (rutasHoy || []).forEach(r => {
+        const ejec = usrs.find(u => u.id === r.ejecutivo_id);
+        const provCount = r.proveedores_json?.length || 0;
+        const stCol = { pendiente: '#FF9800', en_curso: '#2196F3', completada: '#4CAF50' };
+        html += '<div style="background:#fff;border-radius:8px;padding:8px 12px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center">'
+          + '<div><div style="font-size:12px;font-weight:700">' + (ejec?.nombre || '?') + '</div><div style="font-size:9px;color:#999">' + provCount + ' proveedores</div></div>'
+          + '<span style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:8px;color:#fff;background:' + (stCol[r.estado] || '#999') + '">' + r.estado + '</span>'
+          + '</div>';
+      });
+    }
+
+    content.innerHTML = html;
+  } catch (e) {
+    content.innerHTML = '<div class="cotiz-empty">Error: ' + e.message + '</div>';
+  }
+}
+
+function kpiBox(label, value, sub, color) {
+  return '<div style="background:#fff;border-radius:10px;padding:10px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06)">'
+    + '<div style="font-size:20px;font-weight:800;color:' + color + '">' + value + '</div>'
+    + '<div style="font-size:9px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px">' + label + '</div>'
+    + '<div style="font-size:8px;color:#aaa">' + sub + '</div></div>';
+}
+
+// ══════════════════════════════════════════════════
+// INDICADOR DE CONEXION
+// ══════════════════════════════════════════════════
+function updateConnIndicator(online){
+  const dot = document.getElementById('conn-dot');
+  const label = document.getElementById('conn-label');
+  const pending = document.getElementById('conn-pending');
+  if(!dot) return;
+
+  const queue = JSON.parse(localStorage.getItem('rf_pending_cotizaciones') || '[]');
+
+  if(online === undefined) online = navigator.onLine;
+
+  if(online){
+    dot.className = 'conn-dot online';
+    label.textContent = 'Online';
+    label.style.color = '#4CAF50';
+    pending.textContent = queue.length ? '(' + queue.length + ' sincronizando...)' : '';
+  } else {
+    dot.className = 'conn-dot offline';
+    label.textContent = 'Sin conexion';
+    label.style.color = '#FF9800';
+    pending.textContent = queue.length ? '(' + queue.length + ' pendientes)' : '';
+  }
+}
+
+// ══════════════════════════════════════════════════
 // INICIO
 // ══════════════════════════════════════════════════
 (async function init(){
@@ -753,73 +1508,6 @@ function mostrarTablaPrecios(){
   }
 
   // 3. Sin sesión — mostrar login propio
-})();
-
-// ══════════════════════════════════════════════════
-// TRACKING DE USO
-// ══════════════════════════════════════════════════
-(function instrumentarTracking(){
-  // Esperar a que USUARIO esté disponible
-  var _checkInterval = setInterval(function(){
-    if(!USUARIO || !USUARIO.id) return;
-    clearInterval(_checkInterval);
-
-    rfTrack.init(_supa, USUARIO.id);
-    rfTrack.track('login', { nombre: USUARIO.nombre || '' });
-
-    // ── Decoradores ──
-    var _origFinalizarConsulta = window.finalizarConsulta;
-    window.finalizarConsulta = function(){ rfTrack.track('cerrar_consulta', {}); return _origFinalizarConsulta.apply(this, arguments); };
-
-    var _origShowModal = window.showModal;
-    window.showModal = function(){ var n = typeof getActives==='function' ? getActives().length : 0; rfTrack.track('ver_preview', { n_materiales: n }); return _origShowModal.apply(this, arguments); };
-
-    var _origShareWA = window.shareWA;
-    window.shareWA = function(){ rfTrack.track('compartir_whatsapp', {}); return _origShareWA.apply(this, arguments); };
-
-    var _origUpdateSuc = window.updateSucursalMateriales;
-    window.updateSucursalMateriales = function(){ var s = document.getElementById('neg-suc'); if(s && s.value) rfTrack.track('seleccionar_sucursal', { sucursal: s.value }); return _origUpdateSuc.apply(this, arguments); };
-
-    var _origToggleNeg = window.toggleNeg;
-    window.toggleNeg = function(){ var f = document.getElementById('neg-form'); var estaba = f && f.classList.contains('open'); _origToggleNeg.apply(this, arguments); if(!estaba) rfTrack.track('abrir_datos_negocio', {}); };
-
-    var _origMostrarTabla = window.mostrarTablaPrecios;
-    window.mostrarTablaPrecios = function(){ rfTrack.track('ver_tabla_precios', { sucursal: document.getElementById('neg-suc')?.value || '' }); return _origMostrarTabla.apply(this, arguments); };
-
-    var _origDoLogout = window.doLogout;
-    window.doLogout = function(){ rfTrack.track('logout', {}); return _origDoLogout.apply(this, arguments); };
-
-    // onInput con debounce
-    var _origOnInput = window.onInput;
-    window.onInput = function(id, field, val){
-      _origOnInput.apply(this, arguments);
-      if(field === 'kg' && parseFloat(val) > 0){
-        var mat = (MATERIALES||[]).find(function(m){ return m.id === id; });
-        rfTrack.trackDebounced('kg_'+id, 3000, 'ingresar_kg', { material: mat ? mat.material : id, kg: parseFloat(val) });
-      }
-      if(field === 'ej' && parseFloat(val) > 0){
-        var mat2 = (MATERIALES||[]).find(function(m){ return m.id === id; });
-        rfTrack.trackDebounced('ej_'+id, 3000, 'ingresar_precio', { material: mat2 ? mat2.material : id, precio: parseFloat(val) });
-      }
-    };
-
-    // updateNegInline — detectar datos completos
-    var _origUpdateNeg = window.updateNegInline;
-    var _datosYaCompletos = false;
-    window.updateNegInline = function(){
-      _origUpdateNeg.apply(this, arguments);
-      var s = document.getElementById('neg-suc')?.value || '';
-      var e = document.getElementById('neg-ejec')?.value.trim() || '';
-      var p = document.getElementById('neg-prov')?.value.trim() || '';
-      if(s && e && p && !_datosYaCompletos){ _datosYaCompletos = true; rfTrack.track('completar_datos_negocio', { ejec: e, prov: p }); }
-    };
-
-    // Search — debounce 2s
-    var searchEl = document.getElementById('search');
-    if(searchEl) searchEl.addEventListener('input', function(){ var q = searchEl.value.trim(); if(q.length >= 2) rfTrack.trackDebounced('search', 2000, 'buscar_material', { query: q }); });
-
-    console.log('📊 Tracking de uso activado');
-  }, 500);
 })();
 </script>
 </body>
