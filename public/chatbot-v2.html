@@ -2829,6 +2829,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const win    = document.getElementById('rf2-window');
   const close  = document.getElementById('rf2-close');
 
+  // Detectar si estamos dentro de un iframe (embebido en WPCode/Widget)
+  const inIframe = window.self !== window.top;
+  if (inIframe) {
+    toggle.style.position = 'fixed';
+    toggle.style.bottom = '8px';
+    toggle.style.right = '8px';
+    toggle.style.width = '66px';
+    toggle.style.height = '66px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = 'transparent';
+    document.documentElement.style.background = 'transparent';
+  }
+
   toggle.addEventListener('click', () => {
     const isOpen = win.classList.contains('open');
     win.classList.toggle('open');
