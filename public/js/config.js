@@ -13,7 +13,7 @@ let _supabase = null;
 // ── Google Drive — subida automática a carpeta compartida ──
 const GOOGLE_CLIENT_ID = '569647813270-n3u85935sql3ov14ev055mccum9nihh0.apps.googleusercontent.com';
 const GOOGLE_DRIVE_FOLDER_ID = '0ANLZ0YevCuxAUk9PVA';
-const GOOGLE_SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const GOOGLE_SCOPES = 'https://www.googleapis.com/auth/drive';
 
 // ── Constantes globales ──
 const CONFIG = {
