@@ -50,6 +50,8 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;overfl
   transition:background .3s;}
 .api-dot.ok{background:var(--green);}
 .api-dot.err{background:var(--red);}
+.mobile-menu-item{display:none;}
+.tools-short{display:none;}
 
 /* ── PANEL / SCROLL ─────────────────────────────────────── */
 .panel{display:none;}
@@ -385,13 +387,24 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
   body{font-size:14px;}
   .scroll{padding:10px;}
 
-  /* Nav */
-  .nav{min-height:48px;}
+  /* Nav — 2 filas en móvil */
+  .nav{flex-wrap:wrap;min-height:auto;}
+  .nav-brand{order:1;padding:0 8px;}
+  .nav-right{order:2;margin-left:auto;padding:0 8px;gap:6px;}
+  .nav-tabs{order:3;width:100%;flex:none;
+    border-top:1px solid rgba(255,255,255,.08);min-height:40px;position:relative;}
+  .nav-tabs::after{content:'';position:absolute;right:0;top:0;bottom:0;
+    width:24px;background:linear-gradient(to right,transparent,var(--ink));
+    pointer-events:none;z-index:1;}
   .nav-tab{padding:0 12px;min-height:44px;font-size:12px;touch-action:manipulation;}
   .nav-tab .ltr{font-size:9px;padding:1px 4px;}
   .nav-suc{font-size:12px;padding:8px 8px;min-height:36px;}
-  .nav-right{padding:0 8px;gap:6px;}
-  /* Override de los botones inline-style del nav (GRABAR/Despacho/Asistente) */
+  /* Ocultar botones Despacho/Asistente (están en menú ☰) */
+  #btn-despacho,#btn-asistente{display:none!important;}
+  .mobile-menu-item{display:flex!important;}
+  .tools-full{display:none!important;}
+  .tools-short{display:inline!important;}
+  /* Override de los botones inline-style del nav (GRABAR) */
   .nav-right .btn[style*="font-size:10px"]{
     padding:9px 11px!important;font-size:11px!important;min-height:38px!important;
   }
@@ -487,12 +500,28 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
   /* ── TAB B (Alias): chips + preview ── */
   .preview-body{max-height:340px;}
   .prev-row{grid-template-columns:1fr 24px 1fr 70px;font-size:11px;}
+
+  /* ── TAB B: header filtros en mobile ── */
+  #panel-alias .scroll > div:first-child{
+    flex-direction:column!important;align-items:stretch!important;gap:8px!important;
+  }
+  #panel-alias .scroll > div:first-child > div:last-child{
+    display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;
+  }
+  #panel-alias .scroll > div:first-child .ctrl{
+    width:100%!important;font-size:13px!important;padding:10px 10px!important;min-height:44px!important;
+  }
+  #panel-alias .scroll > div:first-child .btn{
+    font-size:12px!important;padding:10px 10px!important;min-height:44px!important;justify-content:center;
+  }
+  /* Tabla de precios: scroll horizontal con indicador */
+  #panel-alias .tw{-webkit-overflow-scrolling:touch;}
 }
 
 @media(max-width:414px){
   /* iPhone XR / Plus — ajustes finos sobre 480 */
   .scroll{padding:8px;}
-  .nav-tab{padding:0 10px;}
+  .nav-tab{padding:0 11px;}
   .nav-right{gap:5px;padding:0 6px;}
   .nav-right .btn[style*="font-size:10px"]{padding:8px 9px!important;font-size:10px!important;}
   .nav-suc{padding:7px 6px;font-size:11px;}
@@ -507,7 +536,7 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
   html{font-size:13.5px;}
   body{font-size:13.5px;}
   .scroll{padding:6px;}
-  .nav-tab{padding:0 9px;font-size:11px;}
+  .nav-tab{padding:0 10px;font-size:11px;}
   .nav-tab .ltr{display:none;} /* ocultar la letra A/B/C... ahorra ~14px por tab */
   .nav-suc{font-size:10px;padding:7px 5px;}
   .nav-logo{font-size:10px;}
@@ -556,9 +585,6 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
     <button class="nav-tab" id="tab-config" onclick="goTab('config',this);cfgRender()">
       <span class="ltr">H</span> Empresa
     </button>
-    <button class="nav-tab" onclick="goTab('tracking',this);renderTracking()">
-      <span class="ltr">I</span> Monitoreo
-    </button>
   </div>
   <div class="nav-right">
     <select class="nav-suc" id="nav-suc" onchange="onSucChange()">
@@ -567,28 +593,29 @@ hr.dv{border:none;border-top:1px solid var(--border);margin:12px 0;}
       <option>Talca</option><option>Puerto Montt</option>
     </select>
     <button class="btn" onclick="grabarEstado()" id="btn-grabar" style="background:#2A6A8A;border-color:#3A8AAA;color:#fff;font-size:10px;padding:4px 10px;" title="Guardar todo el estado actual en IndexedDB + localStorage"><span style="background:rgba(255,255,255,.35);border-radius:3px;padding:0 4px;margin-right:4px;font-weight:900;font-size:10px;">2</span>💾 GRABAR</button>
-    <button class="btn" onclick="generarFichaDespacho()" style="background:#6A3A8A;border-color:#8A5AAA;color:#fff;font-size:10px;padding:4px 10px;" title="Ficha de despacho a clientes">📋 Despacho</button>
-    <button class="btn" onclick="generarAsistente()" style="background:#1A7A3C;border-color:#2ECC71;color:#fff;font-size:10px;padding:4px 10px;" title="Generar Asistente Comercial">📱 Asistente</button>
+    <button class="btn" id="btn-despacho" onclick="generarFichaDespacho()" style="background:#6A3A8A;border-color:#8A5AAA;color:#fff;font-size:10px;padding:4px 10px;" title="Ficha de despacho a clientes">📋 Despacho</button>
+    <button class="btn" id="btn-asistente" onclick="generarAsistente()" style="background:#1A7A3C;border-color:#2ECC71;color:#fff;font-size:10px;padding:4px 10px;" title="Generar Asistente Comercial">📱 Asistente</button>
     <!-- Menú de herramientas -->
     <div style="position:relative;" id="tools-menu-wrap">
-      <button class="btn" onclick="toggleToolsMenu()" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.6);font-size:10px;padding:4px 10px;" title="Abre menu herramientas">⚙ Herramientas ▾</button>
+      <button class="btn" onclick="toggleToolsMenu()" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.6);font-size:10px;padding:4px 10px;" title="Abre menu herramientas"><span class="tools-full">⚙ Herramientas ▾</span><span class="tools-short">☰</span></button>
       <div id="tools-menu" style="display:none;position:absolute;right:0;top:100%;margin-top:4px;
         background:var(--bg2);border:1.5px solid var(--border2);border-radius:var(--r2);
         box-shadow:0 4px 20px rgba(0,0,0,.2);min-width:200px;z-index:300;overflow:hidden;">
+        <div class="mobile-menu-item" onclick="generarFichaDespacho();toggleToolsMenu()" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+          📋 <span>Despacho</span></div>
+        <div class="mobile-menu-item" onclick="generarAsistente();toggleToolsMenu()" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+          📱 <span>Asistente</span></div>
         <div onclick="exportBackup();toggleToolsMenu()" title="Exporta datos locales" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
           💾 <span>Backup</span></div>
         <div onclick="importBackup();toggleToolsMenu()" title="Importa archivo backup" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
           ↩ <span>Restaurar backup</span></div>
         <div onclick="abrirDiagnostico();toggleToolsMenu()" title="Abre panel diagnostico" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
           🔧 <span>Diagnóstico</span></div>
-        <div id="drive-connect-btn" onclick="driveConnect();toggleToolsMenu()" title="Conecta con Google Drive" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-          ☁ Conectar Drive</div>
         <div onclick="cerrarSesion();toggleToolsMenu()" title="Cierra sesion actual" style="padding:8px 14px;cursor:pointer;font-size:12px;color:var(--red);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
           🚪 <span>Cerrar sesión</span></div>
         <div style="padding:6px 14px;font-size:9px;color:var(--text4);display:flex;align-items:center;justify-content:space-between;">
           <span id="db-status">● local</span>
-          <span id="drive-status" style="color:var(--text4);">☁ Drive ✗</span>
-          <span>v94</span>
+          <span>v93</span>
           <span id="draft-saved-at"></span>
         </div>
       </div>
@@ -1978,74 +2005,6 @@ function cfgGuardar(){
 </script>
 </div>
 
-<!-- ═══ TAB I: MONITOREO DE USO DEL ASISTENTE ═══ -->
-<div class="panel" id="panel-tracking">
-<div class="scroll">
-  <div class="ph">
-    <div><div class="ph-title">Monitoreo del Asistente</div>
-      <div class="ph-sub">Seguimiento de uso por trabajador. Verde = flujo completo, Amarillo = parcial, Rojo = solo mira precios.</div>
-    </div>
-    <div class="ph-actions">
-      <div class="btn-grp" id="trk-periodo-grp">
-        <button class="btn active" onclick="setTrkPeriodo('hoy',this)">Hoy</button>
-        <button class="btn" onclick="setTrkPeriodo('7d',this)">7 dias</button>
-        <button class="btn" onclick="setTrkPeriodo('30d',this)">30 dias</button>
-      </div>
-      <select class="ctrl" id="trk-suc-filter" onchange="renderTracking()">
-        <option value="">Todas las sucursales</option>
-        <option>Cerrillos</option><option>Maipu</option>
-        <option>Talca</option><option>Puerto Montt</option>
-      </select>
-      <button class="btn p" onclick="renderTracking()">Actualizar</button>
-    </div>
-  </div>
-  <div class="g4" style="margin-bottom:16px;">
-    <div class="card" style="padding:16px;text-align:center;">
-      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Sesiones</div>
-      <div id="trk-kpi-sesiones" style="font-size:28px;font-weight:800;color:var(--text1);margin-top:4px">—</div>
-    </div>
-    <div class="card" style="padding:16px;text-align:center;">
-      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Flujo Completo</div>
-      <div id="trk-kpi-completo" style="font-size:28px;font-weight:800;color:#2E7D32;margin-top:4px">—</div>
-    </div>
-    <div class="card" style="padding:16px;text-align:center;">
-      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Solo Mira Precios</div>
-      <div id="trk-kpi-solo-precios" style="font-size:28px;font-weight:800;color:#C62828;margin-top:4px">—</div>
-    </div>
-    <div class="card" style="padding:16px;text-align:center;">
-      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px">PDFs Generados</div>
-      <div id="trk-kpi-pdfs" style="font-size:28px;font-weight:800;color:#1565C0;margin-top:4px">—</div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="ch"><div class="ct">Uso por Trabajador</div></div>
-    <div class="cb" style="overflow-x:auto;">
-      <table class="t" id="trk-tabla-usuarios" style="width:100%">
-        <thead><tr>
-          <th style="text-align:left">Nombre</th><th>Ultima sesion</th><th>Sesiones</th>
-          <th>Etapa maxima</th><th>Busquedas</th><th>Materiales</th><th>PDFs</th><th>Compartidos</th><th>Informe</th>
-        </tr></thead>
-        <tbody id="trk-tabla-body">
-          <tr><td colspan="9" style="text-align:center;color:var(--text3);padding:24px;">Cargando datos...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <div class="card">
-    <div class="ch"><div class="ct">Embudo de Conversion</div></div>
-    <div class="cb" id="trk-funnel" style="padding:8px 0;">
-      <div style="text-align:center;color:var(--text3);padding:24px;">Cargando...</div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="ch"><div class="ct">Actividad Reciente</div></div>
-    <div class="cb" id="trk-timeline" style="max-height:400px;overflow-y:auto;">
-      <div style="text-align:center;color:var(--text3);padding:24px;">Cargando...</div>
-    </div>
-  </div>
-</div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 
@@ -2053,8 +2012,6 @@ function cfgGuardar(){
      MÓDULOS JS
 ══════════════════════════════════════════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="js/config.js"></script>
 <script src="js/idb.js"></script>
 <script src="js/utils.js"></script>
@@ -2065,9 +2022,7 @@ function cfgGuardar(){
 <script src="js/ia.js"></script>
 <script src="js/historial.js"></script>
 <script src="js/correccion.js"></script>
-<script src="js/drive.js"></script>
 <script src="js/estado.js"></script>
-<script src="js/tracking-dashboard.js"></script>
 
 <!-- ════════════════════════════════════════════════════════
      MODAL · DIAGNÓSTICO DE DATOS
@@ -2150,5 +2105,16 @@ async function cerrarSesion() {
                estado.js:228 — generarAsistente filtra materiales con precio=0 del snapshot (filter(Boolean))
                Efecto: ningun material aparece en reciclean.cl para una sucursal si no tiene precio real asignado
 ════════════════════════════════════════════════════════ -->
+<script>
+/* v94 — Mobile UX: colapsar secciones pesadas en pantallas pequeñas */
+if(window.innerWidth<=480){
+  /* Fuentes de precio: colapsadas al inicio */
+  var fp=document.getElementById('fuentes-panel');
+  var fa=document.getElementById('fuentes-arrow');
+  if(fp){fp.style.display='none';}
+  if(fa){fa.style.transform='rotate(0deg)';}
+  /* Corrección de precios: ya inicia colapsada por defecto */
+}
+</script>
 </body>
 </html>
