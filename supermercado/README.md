@@ -1,29 +1,33 @@
 # Lista Supermercado — Comparador Líder vs Alvi
 
-App standalone para comparar precios de una lista de compra entre dos supermercados
-(Líder Central y Alvi Plaza Maipú) y exportar a PPTX inteligente.
+App simple, responsive y táctil para comparar precios entre Líder Central y Alvi Plaza Maipú,
+marcar productos en el carro y compartir la lista como PDF.
 
-## Cómo usarlo
+## Cómo usarlo (iPhone / Android)
 
-1. Abrir `supermercado/index.html` en el navegador (no requiere servidor).
-2. **Verificar precios**: cada producto tiene botones `🔍 Líder` y `🔍 Alvi` que abren
-   la búsqueda en la web oficial. Ajustá el precio inline según lo que veas.
-3. **Marcar productos al carro**: checkbox al inicio de cada fila. Progreso en tiempo real.
-4. **Exportar PPTX**: genera 4 slides:
-   - Portada con totales comparativos y ganador global
-   - Tabla comparativa producto por producto con ★ en el más barato
-   - Lista de compra para Líder (para imprimir)
-   - Lista de compra para Alvi (para imprimir)
-   - Compra mixta óptima (dónde comprar cada cosa para mínimo costo)
+1. Abrir `supermercado/index.html` en el navegador.
+2. Tocá el **cuadrado grande** a la izquierda de cada producto para marcarlo al carro.
+3. Usá **− / +** para cambiar la cantidad.
+4. Tocá 🔍 **Líder** o 🔍 **Alvi** para ir a la web y verificar el precio. Si cambió,
+   editá el número directamente en la card.
+5. **"📤 Compartir PDF por WhatsApp"** abre el diálogo nativo de iOS/Android para mandarlo
+   a quien quieras (asistente, pareja, etc.).
+
+## Formatos de salida
+
+- **PDF** (`📄 Descargar PDF`): A4 centrado con 3 páginas — comparativa + lista Líder + lista Alvi.
+- **Imprimir** (`🖨️`): abre el diálogo del sistema con estilos optimizados.
+- **PPTX** (`📊`): para presentaciones.
 
 ## Persistencia
 
-Todo se guarda en `localStorage` bajo la clave `supermercado_v1`.
-Botón "⟲ Resetear todo" limpia el storage.
+Todo se guarda en `localStorage` bajo la clave `supermercado_v2`.
+Botón **⟲ Resetear** limpia todo y vuelve a los valores iniciales.
 
-## Dependencias
+## Dependencias (CDN)
 
-- `PptxGenJS` 3.12 vía CDN (jsdelivr)
+- `jsPDF` 2.5.1 + `jspdf-autotable` 3.8.2 (PDF)
+- `PptxGenJS` 3.12 (PPTX)
 
 ## Notas
 
