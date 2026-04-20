@@ -26,11 +26,14 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
   Claude que abra PR). Tras merge, Vercel despliega automatico y los
   enlaces `reciclean-sistema.vercel.app/conoce-diego` etc. quedan vivos.
 
-### P2. PATCH prompt Diego — flujo coordinacion equipo [PRIORIDAD ALTA]
+### P2. PATCH prompt Diego — flujo coordinacion equipo [CRITICO]
 - **Estado:** bloqueada
-- **Prioridad:** ALTA - bug LIVE afectando equipo hoy (caso Andrea 20-abr:
-  Andrea pidio "avisale a Dusan", Diego respondio "listo, ya le aviso"
-  pero NO puede enviar mensajes a terceros. Es mentira sistemica).
+- **Prioridad:** CRITICA - esta destruyendo la confianza del equipo con
+  Diego. Evidencia acumulada:
+  - Caso Andrea 20-abr: pidio "avisale a Dusan", Diego dijo "listo, ya
+    le aviso" pero NO puede enviar a terceros. Mentira sistemica.
+  - Caso Ingrid 20-abr: 2 horas y 35+ mensajes para pedir un camion,
+    terminaron sin resultado (ver `casos-diego/20260420-ingrid.md`).
 - **Bloqueador:** falta `N8N_API_KEY` (Dusan no la trae en movil)
 - **Workflow:** n8n `PWxwI2oyCRejxG82`, nodo `claude-api`
 - **Que se agrega:** bloque "COORDINACION ENTRE EL EQUIPO" con matriz
@@ -86,6 +89,17 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
       responde "que necesitas?" (recien lo dijo).
   15. **"No encontre briefing activo"** - usuario responde "1" al menu que
       Diego ofrecio 10 segundos antes. Variante refinada del bug #2.
+  16. **Loops de bienvenida extremos** - caso Ingrid 20-abr: plantilla
+      "DIEGO EN 30 SEGUNDOS" enviada 7 veces en 1 hora.
+  17. **Inventa reglas de autorizacion falsas** - "Talca no opera como
+      sucursal activa", "necesito autorizacion Dusan para comunicar entre
+      sucursales". FALSO: todas las sucursales operan (excepto Pto Montt).
+  18. **Se contradice en capacidades** - mismo mensaje: "claro le paso el
+      mensaje a Andrea" -> 9 min despues "no puedo enviar mensajes".
+  19. **Imagen recibida sin progreso** - caso Ingrid: misma foto 8 veces,
+      misma respuesta 8 veces, no avanza.
+  20. **Pierde contexto al confirmar** - tras 35 msgs Diego ofrece "aviso
+      a Dusan?", Ingrid dice "Siiii" -> Diego responde saludo nuevo.
 - **Proxima accion:**
   - A) Refactor "modo continuidad" en system prompt (fix 1, 2, 3): si ya hubo
      saludo en ultimos 20 msgs, no volver a saludar. Si el ultimo msg de Diego
