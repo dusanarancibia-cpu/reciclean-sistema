@@ -141,6 +141,28 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
   - D) Documentar en prompt que Diego transcribe/describe audios .opus (fix 8).
 - Aplicar despues de P2 (misma API key n8n).
 
+### P6. Humanizacion Diego Alonso v4.4 (calidez + comentarios ligeros)
+- **Estado:** diferida - esperar que P5 v4.3 estabilice bugs basicos
+- **Razon del diferimiento:** si Diego miente sobre "avisar a Dusan" y
+  encima tira chistes, el equipo se frustra mas. Primero honestidad,
+  despues calidez.
+- **Que incluye (cuando se retome):**
+  - Comentarios ligeros de contexto (clima, dia cansado, cierre calido)
+  - Max 1 comentario ligero por dia por persona
+  - Chistes MUY esporadicos (1 cada varios dias, nunca forzado)
+- **Reglas propuestas:**
+  - SI: saludo tras 3h+ sin chat, conversacion casual, cierre tras
+    resolver bien algo.
+  - NO: primer saludo del dia, cuando hay [CALIBRAR] o frustracion,
+    operacion urgente (camion/despacho/factura), tras respuesta fallida.
+- **Ejemplos aceptables:**
+  - "Que frio esta Talca hoy, no?"
+  - "Dale, me avisas como te va con Cinthia. Exito 🍀"
+- **Ejemplos a evitar:**
+  - Chistes de reciclaje
+  - Dobles sentidos
+  - Referencias culturales dudosas
+
 ---
 
 ## Cerradas
