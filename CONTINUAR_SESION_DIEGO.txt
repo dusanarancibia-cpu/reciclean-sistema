@@ -1,50 +1,51 @@
-# CONTINUAR SESION DIEGO v4.2 - Dusan Arancibia
+# CONTINUAR SESION - Dusan Arancibia
 
-Lee CLAUDE.md en raiz del proyecto. Luego este contexto.
+Lee CLAUDE.md en raiz del proyecto. Luego PENDIENTES.md. Luego este
+archivo para contexto adicional.
 
 ## QUIEN SOY
 Dusan Arancibia, GM Grupo Reciclean-Farex (NO dev). Comunicacion SIEMPRE
 en espanol, corto y directo, con codigos A/B/C/D + slot Z abierto.
 Checkpoints antes de tocar Diego LIVE.
 
-## CONTEXTO
+## ESQUEMA DE TRABAJO
+- Cuando diga "status" o "que hay pendiente" -> leer PENDIENTES.md y
+  responder con lo que esta abierto.
+- Toda tarea nueva que quede sin cerrar en la sesion -> anotarla en
+  PENDIENTES.md antes de cerrar.
+- Mover tareas cerradas al final con fecha de cierre.
+
+## CONTEXTO DIEGO
 Diego v4.2 LIVE en WhatsApp (+56 9 6192 6365), workflow n8n
 PWxwI2oyCRejxG82. Hoy 20-abr se aplicaron 5 patches (permisologia Jair,
 modo aprendizaje, variantes por persona, fix whitelist dinamica, bloque
 FAQ). Equipo usando Diego activamente hoy.
 
-## LO QUE DISENAMOS (caso Ingrid->Andrea)
+## DISENO DE HOY (caso Ingrid->Andrea)
 Diego debe REDACTAR borradores de mensajes para que el equipo coordine
 entre si (no envia, solo genera texto + link wa.me). Matriz:
 - Verde operativo (Diego redacta): camion, despacho, inventario, sistema
 - Naranja mixto (redacta + copia Dusan): finanzas, RRHH, legal operativo
 - Rojo sensible (solo Dusan): sueldos, despidos, conflictos, negocio
 
-Pagina LIVE ya creada: /diego-coordinar.html
-
-## PENDIENTES (en orden)
-1. PATCH prompt Diego (nodo claude-api) con bloque "COORDINACION ENTRE EL
-   EQUIPO". BLOQUEADO: falta N8N_API_KEY, Dusan no la trae en el movil.
-2. URLs cortas con vercel.json (EN CURSO). Propuesta:
-   /d->diego-presentacion, /coord->diego-coordinar, /faq->diego-faq,
-   /ej->diego-ejemplos, /fb->diego-feedback, /video->diego-video-script.
-   PENDIENTE: Dusan respondio "1 Mi labor" al mapping de /d, ambiguo -
-   retomar preguntandole que quiso decir (cambiar ruta a /mi-labor? otra?).
-3. Difundir /diego-coordinar.html al equipo (3 variantes WhatsApp v1/v2).
-4. Opcional: revision semanal viernes tabla conversaciones en Supabase.
-
 ## ESTADO REPO
-- Branch actual: claude/continue-diego-mobile-U0cgA (working tree limpio)
-- vercel.json NO existe (hay que crearlo)
-- Archivos diego-*.html ya en public/
+- Branch: `claude/continue-diego-mobile-U0cgA`
+- Commits de esta sesion:
+  - `7a5eb2d` docs: agregar prompt continuidad movil
+  - `946b0d6` feat(urls): agregar redirects URLs cortas (vercel.json)
+- Archivos nuevos: `vercel.json`, `PENDIENTES.md`, `CONTINUAR_SESION_DIEGO.txt`
+- Falta mergear a `main` para que URLs cortas funcionen en produccion.
 
-## PROTOCOLO
+## URLs CORTAS DEFINIDAS (en branch, falta merge)
+- `/conoce-diego`     -> presentacion
+- `/coordinar-equipo` -> pagina coordinar
+- `/preguntas`        -> FAQ
+- `/ejemplos`         -> 5 formas de probar
+- `/dar-feedback`     -> feedback / [CALIBRAR]
+- `/videos-diego`     -> script video
+
+## PROTOCOLOS
 Para tocar Diego LIVE: backup -> diff -> OK explicito -> PUT -> smoke test
 Para repo: mostrar diff -> OK -> commit -> push
-Backup disponible si rompe:
+Backup disponible si rompe Diego:
 7_backup-prompts/incidentes/diego_workflow_backup_20260420_121639.json
-
-## PROXIMA ACCION
-Retomar pendiente 2: aclarar con Dusan que significo "1 Mi labor" en el
-mapping de /d, luego crear vercel.json con redirects, commit y push a
-claude/continue-diego-mobile-U0cgA.
