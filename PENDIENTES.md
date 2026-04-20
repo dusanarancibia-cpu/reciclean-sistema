@@ -116,6 +116,21 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
       misma respuesta 8 veces, no avanza.
   20. **Pierde contexto al confirmar** - tras 35 msgs Diego ofrece "aviso
       a Dusan?", Ingrid dice "Siiii" -> Diego responde saludo nuevo.
+  21. **"Registrado en memoria para Dusan" = mentira** (caso Jair
+      20-abr): Jair pide "notifica a Dusan que hay que anular FC 9026",
+      Diego responde largo analisis + "Registrado en memoria para
+      briefing a Dusan" -> NO envia nada. Patron identico a Andrea e
+      Ingrid con tercer usuario. Ver `casos-diego/20260420-jair.md`.
+  22. **Inventa URLs gubernamentales** (caso Jair 14:30): Diego da
+      `retc.mma.gob.cl` (inventado) tras que Jair a las 14:22 le
+      enseno el correcto `portalvu.mma.gob.cl`. Ignora lo que acaba
+      de aprender.
+  23. **Promete integraciones inexistentes** - ofrece a Jair "integracion
+      n8n en desarrollo para monitorizar Google Sheets/Airtable". No
+      existe tal proyecto.
+  24. **No parsea opciones (caso Jair)** - 14:12 Jair responde `2` al
+      menu A-F de Diego -> "no encontre briefing activo". Luego `B`,
+      mismo error. Variante del bug #2 confirmada con tercer usuario.
 - **Proxima accion:**
   - A) Refactor "modo continuidad" en system prompt (fix 1, 2, 3): si ya hubo
      saludo en ultimos 20 msgs, no volver a saludar. Si el ultimo msg de Diego
