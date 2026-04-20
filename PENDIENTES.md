@@ -131,6 +131,23 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
   24. **No parsea opciones (caso Jair)** - 14:12 Jair responde `2` al
       menu A-F de Diego -> "no encontre briefing activo". Luego `B`,
       mismo error. Variante del bug #2 confirmada con tercer usuario.
+  25. **Contradiccion de capacidades en el mismo hilo** (caso Nicolas
+      20-abr 15:07): "no tengo acceso directo a esa info" -> 30 segundos
+      despues "si tengo acceso a las listas de precios, estan en tabla
+      `precios`" -> pide el precio -> nunca lo da.
+  26. **Pregunta lo mismo 5 veces antes de no responder** (caso Nicolas
+      cobre tercera Cerrillos): "cuantos kg? - que material? - cliente?
+      - oferta o compra?" -> Nicolas responde todo -> no da precio.
+  27. **Interpreta "echar petroleo" = residuos peligrosos** (caso
+      Nicolas 15:29): Nicolas pregunto sobre combustible para vehiculos,
+      Diego respondio con normativa RES, residuos peligrosos, SGA.
+  28. **Inconsistencia de identidad** - mismo hilo: nombre contacto
+      registrado "Asistente Arancibia", se presenta como "Agente
+      Director", usuario le dice "Diego". Tres nombres en una
+      conversacion. Refuerza urgencia del cambio a "Diego Alonso"
+      unificado (P2 alcance b).
+- **Bug #2 / #15 / #24 ya confirmado con CUATRO usuarios distintos:**
+  Dusan, Jair, Ingrid, Nicolas. Sistemico.
 - **Proxima accion:**
   - A) Refactor "modo continuidad" en system prompt (fix 1, 2, 3): si ya hubo
      saludo en ultimos 20 msgs, no volver a saludar. Si el ultimo msg de Diego
