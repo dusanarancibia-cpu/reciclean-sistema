@@ -1,0 +1,50 @@
+# CONTINUAR SESION DIEGO v4.2 - Dusan Arancibia
+
+Lee CLAUDE.md en raiz del proyecto. Luego este contexto.
+
+## QUIEN SOY
+Dusan Arancibia, GM Grupo Reciclean-Farex (NO dev). Comunicacion SIEMPRE
+en espanol, corto y directo, con codigos A/B/C/D + slot Z abierto.
+Checkpoints antes de tocar Diego LIVE.
+
+## CONTEXTO
+Diego v4.2 LIVE en WhatsApp (+56 9 6192 6365), workflow n8n
+PWxwI2oyCRejxG82. Hoy 20-abr se aplicaron 5 patches (permisologia Jair,
+modo aprendizaje, variantes por persona, fix whitelist dinamica, bloque
+FAQ). Equipo usando Diego activamente hoy.
+
+## LO QUE DISENAMOS (caso Ingrid->Andrea)
+Diego debe REDACTAR borradores de mensajes para que el equipo coordine
+entre si (no envia, solo genera texto + link wa.me). Matriz:
+- Verde operativo (Diego redacta): camion, despacho, inventario, sistema
+- Naranja mixto (redacta + copia Dusan): finanzas, RRHH, legal operativo
+- Rojo sensible (solo Dusan): sueldos, despidos, conflictos, negocio
+
+Pagina LIVE ya creada: /diego-coordinar.html
+
+## PENDIENTES (en orden)
+1. PATCH prompt Diego (nodo claude-api) con bloque "COORDINACION ENTRE EL
+   EQUIPO". BLOQUEADO: falta N8N_API_KEY, Dusan no la trae en el movil.
+2. URLs cortas con vercel.json (EN CURSO). Propuesta:
+   /d->diego-presentacion, /coord->diego-coordinar, /faq->diego-faq,
+   /ej->diego-ejemplos, /fb->diego-feedback, /video->diego-video-script.
+   PENDIENTE: Dusan respondio "1 Mi labor" al mapping de /d, ambiguo -
+   retomar preguntandole que quiso decir (cambiar ruta a /mi-labor? otra?).
+3. Difundir /diego-coordinar.html al equipo (3 variantes WhatsApp v1/v2).
+4. Opcional: revision semanal viernes tabla conversaciones en Supabase.
+
+## ESTADO REPO
+- Branch actual: claude/continue-diego-mobile-U0cgA (working tree limpio)
+- vercel.json NO existe (hay que crearlo)
+- Archivos diego-*.html ya en public/
+
+## PROTOCOLO
+Para tocar Diego LIVE: backup -> diff -> OK explicito -> PUT -> smoke test
+Para repo: mostrar diff -> OK -> commit -> push
+Backup disponible si rompe:
+7_backup-prompts/incidentes/diego_workflow_backup_20260420_121639.json
+
+## PROXIMA ACCION
+Retomar pendiente 2: aclarar con Dusan que significo "1 Mi labor" en el
+mapping de /d, luego crear vercel.json con redirects, commit y push a
+claude/continue-diego-mobile-U0cgA.
