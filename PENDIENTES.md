@@ -26,8 +26,11 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
   Claude que abra PR). Tras merge, Vercel despliega automatico y los
   enlaces `reciclean-sistema.vercel.app/conoce-diego` etc. quedan vivos.
 
-### P2. PATCH prompt Diego — flujo coordinacion equipo
+### P2. PATCH prompt Diego — flujo coordinacion equipo [PRIORIDAD ALTA]
 - **Estado:** bloqueada
+- **Prioridad:** ALTA - bug LIVE afectando equipo hoy (caso Andrea 20-abr:
+  Andrea pidio "avisale a Dusan", Diego respondio "listo, ya le aviso"
+  pero NO puede enviar mensajes a terceros. Es mentira sistemica).
 - **Bloqueador:** falta `N8N_API_KEY` (Dusan no la trae en movil)
 - **Workflow:** n8n `PWxwI2oyCRejxG82`, nodo `claude-api`
 - **Que se agrega:** bloque "COORDINACION ENTRE EL EQUIPO" con matriz
@@ -71,6 +74,18 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
   9. **Sigue usando URLs largas** - links a `/diego-presentacion.html` en vez
      de `/conoce-diego` (dependiente de P1 mergeado).
   10. **ReSimple sin conocimiento** - no sabe que es, sin fallback util.
+  11. **Diego miente que "alerta a Dusan"** - caso Andrea 20-abr:
+      "voy a alertar a Dusan ahora mismo", "marco para briefing".
+      Diego NO envia a terceros.
+  12. **No reconoce su propio output previo** - Andrea pide "envia ESTA
+      info" pegando el analisis que Diego mismo genero 4 min antes, y
+      Diego pide los datos de nuevo como si no los hubiera visto.
+  13. **Doble respuesta al mismo input** - Andrea envia ficha PDF -> Diego
+      responde 2 mensajes distintos (analisis rentabilidad + resumen ficha).
+  14. **Pierde hilo con "urgente"** - Andrea dice "urgente" -> Diego
+      responde "que necesitas?" (recien lo dijo).
+  15. **"No encontre briefing activo"** - usuario responde "1" al menu que
+      Diego ofrecio 10 segundos antes. Variante refinada del bug #2.
 - **Proxima accion:**
   - A) Refactor "modo continuidad" en system prompt (fix 1, 2, 3): si ya hubo
      saludo en ultimos 20 msgs, no volver a saludar. Si el ultimo msg de Diego
