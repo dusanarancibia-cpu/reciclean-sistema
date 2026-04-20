@@ -26,15 +26,31 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
   Claude que abra PR). Tras merge, Vercel despliega automatico y los
   enlaces `reciclean-sistema.vercel.app/conoce-diego` etc. quedan vivos.
 
-### P2. PATCH prompt Diego — flujo coordinacion equipo [CRITICO]
+### P2. PATCH prompt Diego Alonso — flujo coordinacion equipo [CRITICO]
 - **Estado:** bloqueada
 - **Prioridad:** CRITICA - esta destruyendo la confianza del equipo con
-  Diego. Evidencia acumulada:
+  Diego Alonso. Evidencia acumulada:
   - Caso Andrea 20-abr: pidio "avisale a Dusan", Diego dijo "listo, ya
     le aviso" pero NO puede enviar a terceros. Mentira sistemica.
   - Caso Ingrid 20-abr: 2 horas y 35+ mensajes para pedir un camion,
     terminaron sin resultado (ver `casos-diego/20260420-ingrid.md`).
 - **Bloqueador:** falta `N8N_API_KEY` (Dusan no la trae en movil)
+- **Alcance ampliado (20-abr tarde):**
+  - a) Bloque "COORDINACION ENTRE EL EQUIPO" (matriz verde/naranja/rojo
+     + plantilla universal de borrador + "Diego redacta, NO envia" +
+     link wa.me).
+  - b) Cambio de nombre: "Diego" -> "Diego Alonso" en system prompt,
+     saludos, firmas, bienvenidas.
+  - c) Anuncio one-shot por persona (primera vez que escriba tras el
+     patch): prepender al inicio de la respuesta:
+     > "Ahora me llamo Diego Alonso, para evitar alivianar los
+     >  recuerdos. Diego Alonso habria sido el nombre de Almendra si
+     >  ubiese sido hombre. 🫶"
+     - Requiere tracking en BD: agregar columna `anuncio_nombre_visto`
+       en tabla `contactos` (Supabase). Default false. Se marca true
+       tras enviar el anuncio.
+     - NOTA: texto de Dusan tiene posibles typos ("alivianar"/"avivar",
+       "ubiese"/"hubiese"). Dusan debe confirmar antes de deploy.
 - **Workflow:** n8n `PWxwI2oyCRejxG82`, nodo `claude-api`
 - **Que se agrega:** bloque "COORDINACION ENTRE EL EQUIPO" con matriz
   verde/naranja/rojo + plantilla universal de borrador + instruccion
