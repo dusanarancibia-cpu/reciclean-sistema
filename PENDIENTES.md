@@ -42,15 +42,15 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
   - b) Cambio de nombre: "Diego" -> "Diego Alonso" en system prompt,
      saludos, firmas, bienvenidas.
   - c) Anuncio one-shot por persona (primera vez que escriba tras el
-     patch): prepender al inicio de la respuesta:
-     > "Ahora me llamo Diego Alonso, para evitar alivianar los
-     >  recuerdos. Diego Alonso habria sido el nombre de Almendra si
-     >  ubiese sido hombre. 🫶"
+     patch): prepender al inicio de la respuesta, texto final aprobado
+     por Dusan:
+     > "Ahora me llamo Diego Alonso, para alivianar los recuerdos
+     >  vividos en Talca.
+     >  Tambien, Diego Alonso habria sido mi nombre si Almendra hubiese
+     >  sido hombre. 🫶"
      - Requiere tracking en BD: agregar columna `anuncio_nombre_visto`
        en tabla `contactos` (Supabase). Default false. Se marca true
        tras enviar el anuncio.
-     - NOTA: texto de Dusan tiene posibles typos ("alivianar"/"avivar",
-       "ubiese"/"hubiese"). Dusan debe confirmar antes de deploy.
 - **Workflow:** n8n `PWxwI2oyCRejxG82`, nodo `claude-api`
 - **Que se agrega:** bloque "COORDINACION ENTRE EL EQUIPO" con matriz
   verde/naranja/rojo + plantilla universal de borrador + instruccion
