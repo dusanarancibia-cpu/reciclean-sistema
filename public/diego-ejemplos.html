@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diego — 5 formas de probarlo hoy</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; max-width: 780px; margin: 0 auto; color: #1A1A14; line-height: 1.5; background: #fafafa; }
+h1 { font-size: 26px; color: #1A7A3C; margin-bottom: 4px; }
+.subtitle { font-size: 13px; color: #666; margin-bottom: 20px; }
+.intro { background: #E8F5ED; border: 1px solid #B8DFC7; color: #1A7A3C; padding: 14px 18px; border-radius: 12px; font-size: 14px; margin-bottom: 20px; }
+.example { background: #fff; border: 1px solid #e5e5e5; border-radius: 14px; padding: 20px 22px; margin-bottom: 14px; }
+.ex-head { display: flex; gap: 14px; align-items: center; margin-bottom: 12px; }
+.num { background: #1A7A3C; color: #fff; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+.ex-title { font-size: 17px; font-weight: 700; color: #1A1A14; flex: 1; }
+.ex-tag { font-size: 11px; font-weight: 700; color: #92650A; background: #FDF5E4; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.3px; }
+.prompt { background: #f5f5f5; border-left: 4px solid #1A7A3C; padding: 12px 14px; font-family: system-ui, sans-serif; font-size: 14px; color: #222; border-radius: 0 8px 8px 0; margin: 8px 0 10px; white-space: pre-wrap; position: relative; }
+.copy { position: absolute; top: 8px; right: 8px; background: #1A7A3C; color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; }
+.copy.ok { background: #2E7D32; }
+.hint { font-size: 13px; color: #555; margin-top: 6px; }
+.hint strong { color: #1A7A3C; }
+.cta { display: block; background: #1A7A3C; color: #fff; padding: 16px 20px; border-radius: 12px; text-align: center; font-weight: 700; text-decoration: none; font-size: 15px; margin-top: 20px; }
+.cta:hover { background: #146030; }
+.cta small { display: block; font-weight: 400; font-size: 12px; margin-top: 4px; opacity: 0.9; }
+.footer { margin-top: 20px; padding: 14px; text-align: center; font-size: 12px; color: #777; border-top: 1px solid #e5e5e5; }
+.back { display: inline-block; margin-bottom: 14px; color: #1A7A3C; text-decoration: none; font-size: 13px; font-weight: 600; }
+@media (max-width: 600px) {
+  .ex-head { flex-wrap: wrap; }
+  .ex-tag { order: 3; }
+}
+</style>
+</head>
+<body>
+
+<a href="/diego-presentacion.html" class="back">← Volver a presentación</a>
+
+<h1>5 formas de probar Diego hoy</h1>
+<div class="subtitle">Copia cualquiera de estos prompts y envíaselo por WhatsApp a +56 9 6192 6365</div>
+
+<div class="intro">
+  No sabes por dónde empezar, es normal. Prueba cualquiera de estos 5 ejemplos. Cada uno muestra una capacidad distinta de Diego.
+</div>
+
+<div class="example">
+  <div class="ex-head">
+    <div class="num">1</div>
+    <div class="ex-title">Pregunta operativa simple</div>
+    <div class="ex-tag">Texto</div>
+  </div>
+  <div class="prompt" id="p1">Hola Diego, soy Juan de Cerrillos. ¿Qué precio de lista tiene hoy el cartón kraft?<button class="copy" onclick="copiar(this,'p1')">Copiar</button></div>
+  <div class="hint"><strong>Qué esperar:</strong> Diego responde con el precio vigente y puede agregar contexto del margen si se lo pides.</div>
+</div>
+
+<div class="example">
+  <div class="ex-head">
+    <div class="num">2</div>
+    <div class="ex-title">Foto de material para identificar</div>
+    <div class="ex-tag">Imagen</div>
+  </div>
+  <div class="prompt" id="p2">Diego, mira esta foto. ¿Qué material es y a qué precio aproximado podríamos comprarlo?
+
+[adjunta foto del material]<button class="copy" onclick="copiar(this,'p2')">Copiar</button></div>
+  <div class="hint"><strong>Qué esperar:</strong> Diego identifica el material (cartón, PET, plástico, metal), da contexto y sugiere categoría. Si no está seguro, pregunta.</div>
+</div>
+
+<div class="example">
+  <div class="ex-head">
+    <div class="num">3</div>
+    <div class="ex-title">Audio en terreno (manos ocupadas)</div>
+    <div class="ex-tag">Audio</div>
+  </div>
+  <div class="prompt" id="p3">[envía un audio de WhatsApp diciendo]
+
+"Diego, llegó un camión con 500 kilos de chatarra de fierro. ¿A cuánto lo compramos hoy y cuál es el margen?"<button class="copy" onclick="copiar(this,'p3')">Copiar</button></div>
+  <div class="hint"><strong>Qué esperar:</strong> Diego transcribe el audio, busca el precio y responde en texto. Útil cuando estás en bodega o conduciendo.</div>
+</div>
+
+<div class="example">
+  <div class="ex-head">
+    <div class="num">4</div>
+    <div class="ex-title">Resumir un PDF o documento</div>
+    <div class="ex-tag">PDF / TXT</div>
+  </div>
+  <div class="prompt" id="p4">Diego, resume este informe en 5 puntos clave y dime si detectas algún dato raro o contradicción.
+
+[adjunta PDF]<button class="copy" onclick="copiar(this,'p4')">Copiar</button></div>
+  <div class="hint"><strong>Qué esperar:</strong> Diego lee el PDF, extrae lo importante y marca anomalías. Ya detectó un typo de año (2027 → 2026) en un informe real.</div>
+</div>
+
+<div class="example">
+  <div class="ex-head">
+    <div class="num">5</div>
+    <div class="ex-title">Guardar información en su memoria</div>
+    <div class="ex-tag">Comando</div>
+  </div>
+  <div class="prompt" id="p5">!diego memoria
+
+Recordar: el cliente HUAL compra cartón kraft solo los martes y jueves, contacto Pedro al +56 9 XXXX XXXX.<button class="copy" onclick="copiar(this,'p5')">Copiar</button></div>
+  <div class="hint"><strong>Qué esperar:</strong> Diego confirma que guardó la nota. La próxima vez que preguntes por HUAL, lo va a recordar.</div>
+</div>
+
+<a href="https://wa.me/56961926365?text=Hola%20Diego%2C%20soy%20___%20de%20___%20y%20quiero%20probarte." class="cta">
+  Abrir WhatsApp con Diego
+  <small>+56 9 6192 6365 · Modo Aprendizaje</small>
+</a>
+
+<div class="footer">
+  ¿Algo no salió como esperabas? Escríbele a Dusan · Grupo Reciclean-Farex
+</div>
+
+<script>
+function copiar(btn, id) {
+  const el = document.getElementById(id);
+  const txt = el.childNodes[0].textContent.trim();
+  navigator.clipboard.writeText(txt).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copiado';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('ok'); }, 1800);
+  });
+}
+</script>
+
+</body>
+</html>
