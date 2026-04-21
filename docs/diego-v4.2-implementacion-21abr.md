@@ -1,10 +1,18 @@
 # Guía Implementación Diego v4.2 — Paso a Paso
 
-> **Fecha de ejecución prevista:** martes 21-abr-2026, 22:00 hrs Chile
+> **Fecha de ejecución prevista:** martes 21-abr-2026, 08:00-10:00 hrs Chile
 > **Responsable:** Dusan (con guía Claude Code, sin Pablo presente)
 > **Spec maestro:** [docs/diego-v4.2-spec.md en repo](https://github.com/dusanarancibia-cpu/reciclean-sistema/blob/main/docs/diego-v4.2-spec.md)
-> **Riesgo:** alto (toca workflow LIVE PWxwI2oyCRejxG82)
+> **Riesgo:** alto (toca workflow LIVE PWxwI2oyCRejxG82) — implementación en horario laboral, gestionar via aviso al grupo
 > **Plan de rollback:** ver Sección F al final
+>
+> **🔔 ANTES DE EMPEZAR (07:55 hrs) — mandar AVISO al grupo del equipo:**
+>
+> ```
+> Equipo, voy a estar haciendo mantenimiento a Diego entre las
+> 08:00 y las 10:00. Puede que no responda durante ese rato.
+> Les aviso cuando termine. — Dusan
+> ```
 
 ---
 
