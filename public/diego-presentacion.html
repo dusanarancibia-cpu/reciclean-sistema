@@ -97,9 +97,20 @@ canvas { display: none; }
   <ol class="steps">
     <li>Envía un mensaje a Diego Alonso por WhatsApp (+56 9 6192 6365)</li>
     <li>Diego Alonso analiza y responde en segundos</li>
-    <li>Si tiene dudas, avisa a Dusan</li>
-    <li>Seguimos mejorando juntos</li>
+    <li>Si no sabe algo, te pide permiso para hacerte 10 preguntas cortas y aprender</li>
+    <li>Dusan valida lo aprendido antes de que Diego lo use como respuesta oficial</li>
   </ol>
+</div>
+
+<div class="section">
+  <h2>Modo Entrevista (desde 30-abr)</h2>
+  <ul class="list">
+    <li>Diego parte de cero: no conoce rutas, conductores ni acuerdos internos</li>
+    <li>Los primeros 30 días dirá "no sé" muchas veces — es parte del aprendizaje</li>
+    <li>Cada vez que diga "no sé" te pedirá ~5 min para 10 preguntas cortas</li>
+    <li>Puedes aceptar, rechazar o pausar con "ahora no" / "después"</li>
+    <li>Lo que le cuentes queda guardado y Dusan lo revisa antes de activarlo</li>
+  </ul>
 </div>
 
 <div class="section">
@@ -108,7 +119,7 @@ canvas { display: none; }
     <li>Es un asistente, no reemplaza decisiones humanas</li>
     <li>Cualquier anomalía se reporta a Dusan</li>
     <li>Prueba y da feedback — es muy valioso</li>
-    <li>Gradualmente irá aprendiendo del equipo</li>
+    <li>Mientras más conversen con Diego, más útil se vuelve para todos</li>
   </ol>
 </div>
 
@@ -128,9 +139,10 @@ Nuestro asistente de IA está en modo aprendizaje. Escucha mensajes, audios, fot
 • Comparte una foto o documento
 • Pide análisis de datos
 
-⚠️ Si ves algo raro, avisa a Dusan.
+🧠 Modo Entrevista (desde 30-abr):
+Si Diego no sabe algo te dirá "no manejo este tema todavía" y te pedirá ~5 min para 10 preguntas cortas. Puedes aceptar, rechazar o pausar.
 
-Gracias por el feedback 🚀
+⚠️ Si ves algo raro, avisa a Dusan.
 
 📖 Más info:
 reciclean-sistema.vercel.app/diego-presentacion.html
@@ -148,9 +160,10 @@ reciclean-sistema.vercel.app/diego-presentacion.html
 1️⃣ Recibe: mensajes, audios, fotos, PDFs
 2️⃣ Analiza: procesos, números, anomalías
 3️⃣ Responde: en WhatsApp, 24/7
-4️⃣ Reporta: si hay dudas, a Dusan
+4️⃣ Aprende: si no sabe algo, te entrevista (10 preguntas)
+5️⃣ Valida: Dusan aprueba antes de que quede en memoria oficial
 
-Esta es la fase de aprendizaje. Tu feedback = oro para mejorar 💪
+Durante los primeros 30 días va a decir "no sé" seguido. Es por diseño — aprende de ustedes.
 
 📖 Más info:
 reciclean-sistema.vercel.app/diego-presentacion.html
@@ -168,14 +181,21 @@ reciclean-sistema.vercel.app/diego-presentacion.html
 ✅ Puedes preguntarle sobre:
 • Procesos de reciclaje
 • Precios y márgenes
-• Datos de sucursales
+• Datos de sucursales (Cerrillos, Maipú, Talca, Puerto Montt*)
 • Análisis de fotos/documentos
+
+🎙️ Si te pide entrevista:
+• "SI" → 10 preguntas cortas
+• "DESPUES" → te agenda para otro momento
+• "NO" → sigue sin presionar
 
 🚫 Evita:
 • Información sensible sin Dusan
 • Decisiones sin validar
 
 💬 Reporta anomalías a Dusan directamente
+
+*Puerto Montt en preparación (permisos en trámite)
 
 📖 Más info:
 reciclean-sistema.vercel.app/diego-presentacion.html
@@ -184,7 +204,7 @@ reciclean-sistema.vercel.app/diego-presentacion.html
 </div>
 
 <div class="footer">
-  ¿Preguntas? Escribe a Dusan · Grupo Reciclean-Farex · 20 abril 2026
+  ¿Preguntas? Escribe a Dusan · Grupo Reciclean-Farex · v4.2 · 21 abril 2026
 </div>
 
 <canvas id="canvas" width="1080" height="1920"></canvas>
@@ -255,7 +275,7 @@ function descargarPNG() {
     'Es un asistente, no reemplaza decisiones',
     'Cualquier anomalía se reporta a Dusan',
     'Prueba y da feedback (¡muy valioso!)',
-    'Gradualmente irá aprendiendo'
+    'Si dice "no sé", te pide 10 preguntas'
   ], 'number-orange');
 
   ctx.fillStyle = '#777';
@@ -264,7 +284,7 @@ function descargarPNG() {
   ctx.fillText('¿Preguntas? Escribe a Dusan', W / 2, H - 100);
   ctx.fillStyle = '#999';
   ctx.font = '22px system-ui, -apple-system, sans-serif';
-  ctx.fillText('Grupo Reciclean-Farex · 20 abril 2026', W / 2, H - 60);
+  ctx.fillText('Grupo Reciclean-Farex · v4.2 · 21 abril 2026', W / 2, H - 60);
   ctx.textAlign = 'left';
 
   c.toBlob((blob) => {
