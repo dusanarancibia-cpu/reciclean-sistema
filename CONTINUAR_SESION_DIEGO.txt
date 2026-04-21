@@ -1,51 +1,296 @@
-# CONTINUAR SESION - Dusan Arancibia
+================================================================
+PROMPT DE CONTINUIDAD - Sesion movil Dusan 20-abr-2026 tarde
+================================================================
 
-Lee CLAUDE.md en raiz del proyecto. Luego PENDIENTES.md. Luego este
-archivo para contexto adicional.
+Lee en este orden:
+1. CLAUDE.md (instrucciones del proyecto)
+2. Este archivo (resumen ejecutivo sesion movil)
+3. PENDIENTES.md (tareas abiertas con estado)
+4. casos-diego/*.md (evidencia de bugs documentados)
 
-## QUIEN SOY
-Dusan Arancibia, GM Grupo Reciclean-Farex (NO dev). Comunicacion SIEMPRE
-en espanol, corto y directo, con codigos A/B/C/D + slot Z abierto.
-Checkpoints antes de tocar Diego LIVE.
+================================================================
+QUIEN SOY
+================================================================
 
-## ESQUEMA DE TRABAJO
-- Cuando diga "status" o "que hay pendiente" -> leer PENDIENTES.md y
-  responder con lo que esta abierto.
-- Toda tarea nueva que quede sin cerrar en la sesion -> anotarla en
-  PENDIENTES.md antes de cerrar.
-- Mover tareas cerradas al final con fecha de cierre.
+Dusan Arancibia, Gerente General Grupo Reciclean-Farex (NO dev).
+Comunicacion SIEMPRE en espanol, corto y directo.
 
-## CONTEXTO DIEGO
+Estilo obligatorio de respuesta:
+- Codigos A/B/C/D en cada propuesta + slot Z abierto
+- Checkpoints antes de ejecutar cambios materiales
+- Checkpoints visibles si se toca Diego LIVE
+- No entrar en detalles tecnicos salvo que yo pregunte
+- No inventar / no mentir / si algo no se sabe, decirlo
+
+Equipo (9 personas activas):
+- Dusan: 56963069065 (nivel 3, CEO)
+- Andrea Rivera: 56961596938 (nivel 2, Comercial, Remota)
+- Pablo Arancibia: 56923962018 (nivel 2, Tech, Remoto, vacaciones
+  hasta 26-abr)
+- Ingrid Cancino: 56961908322 (nivel 2, Talca)
+- Juan Mendoza: 56990552591 (nivel 2, Cerrillos)
+- Nicolas Arancibia: 56923704441 (nivel 2, Cerrillos)
+- Dyana: 56967280603 (nivel 2, Cerrillos, admin/pagos)
+- Cesar Mora: 56994541662 (nivel 2, Remoto)
+- Jair Sanmartin: 56986558236 (nivel 2, Transversal, permisologia)
+
+================================================================
+ESQUEMA DE TRABAJO (no olvidar)
+================================================================
+
+- Cuando diga "status" o "que hay pendiente" -> leer PENDIENTES.md
+  y responder con lo que esta abierto.
+- Toda tarea nueva sin cerrar en la sesion -> anotarla en
+  PENDIENTES.md antes de terminar.
+- Tareas cerradas -> mover a seccion "Cerradas" al final con fecha.
+- Cada caso de bug real con usuario del equipo -> archivo en
+  casos-diego/ con fecha + nombre.
+
+================================================================
+CONTEXTO DIEGO / DIEGO ALONSO
+================================================================
+
 Diego v4.2 LIVE en WhatsApp (+56 9 6192 6365), workflow n8n
-PWxwI2oyCRejxG82. Hoy 20-abr se aplicaron 5 patches (permisologia Jair,
-modo aprendizaje, variantes por persona, fix whitelist dinamica, bloque
-FAQ). Equipo usando Diego activamente hoy.
+PWxwI2oyCRejxG82 (24 nodos), VPS 137.184.203.15.
 
-## DISENO DE HOY (caso Ingrid->Andrea)
-Diego debe REDACTAR borradores de mensajes para que el equipo coordine
-entre si (no envia, solo genera texto + link wa.me). Matriz:
-- Verde operativo (Diego redacta): camion, despacho, inventario, sistema
-- Naranja mixto (redacta + copia Dusan): finanzas, RRHH, legal operativo
+El 20-abr se aplicaron 5 patches sucesivos:
+1. Modo Permisologia para Jair
+2. Seccion "MODO APRENDIZAJE Y CALIBRACION" en system prompt
+3. Variantes por persona (V1/V2/Permisologia)
+4. Fix whitelist dinamica ($input.all() en parsear)
+5. Bloque FAQ del equipo
+
+Arquitectura:
+WhatsApp -> Meta Cloud API -> n8n webhook
+-> workflow PWxwI2oyCRejxG82
+   (webhook -> supabase-whitelist -> parsear
+    -> es-mensaje-autorizado -> supabase-contactos-get
+    -> pre-claude-lookup -> claude-api (aqui van los patches)
+    -> preparar-respuesta -> enviar-whatsapp
+    -> log-conversacion-supabase)
+-> Supabase eknmtsrtfkzroxnovfqn
+
+Decision de diseno (20-abr manana):
+Diego debe REDACTAR borradores de mensajes para que el equipo
+coordine entre si (no envia, solo genera texto + link wa.me). Matriz:
+- Verde operativo (Diego redacta): camion, despacho, inventario
+- Naranja mixto (redacta + copia Dusan): finanzas, RRHH, legal
 - Rojo sensible (solo Dusan): sueldos, despidos, conflictos, negocio
 
-## ESTADO REPO
-- Branch: `claude/continue-diego-mobile-U0cgA`
-- Commits de esta sesion:
-  - `7a5eb2d` docs: agregar prompt continuidad movil
-  - `946b0d6` feat(urls): agregar redirects URLs cortas (vercel.json)
-- Archivos nuevos: `vercel.json`, `PENDIENTES.md`, `CONTINUAR_SESION_DIEGO.txt`
-- Falta mergear a `main` para que URLs cortas funcionen en produccion.
+Pagina LIVE: /diego-coordinar.html (URL corta: /coordinar-equipo
+pendiente de merge PR #5).
 
-## URLs CORTAS DEFINIDAS (en branch, falta merge)
-- `/conoce-diego`     -> presentacion
-- `/coordinar-equipo` -> pagina coordinar
-- `/preguntas`        -> FAQ
-- `/ejemplos`         -> 5 formas de probar
-- `/dar-feedback`     -> feedback / [CALIBRAR]
-- `/videos-diego`     -> script video
+================================================================
+LO QUE SE HIZO EN ESTA SESION MOVIL (20-abr tarde)
+================================================================
 
-## PROTOCOLOS
-Para tocar Diego LIVE: backup -> diff -> OK explicito -> PUT -> smoke test
-Para repo: mostrar diff -> OK -> commit -> push
-Backup disponible si rompe Diego:
+1. URLs cortas con vercel.json
+   - Creado vercel.json con 6 redirects
+   - /conoce-diego -> /diego-presentacion.html
+   - /coordinar-equipo -> /diego-coordinar.html
+   - /preguntas -> /diego-faq.html
+   - /ejemplos -> /diego-ejemplos.html
+   - /dar-feedback -> /diego-feedback.html
+   - /videos-diego -> /diego-video-script.html
+   - Commit 946b0d6 en branch claude/continue-diego-mobile-U0cgA
+
+2. Rename Diego -> Diego Alonso en paginas web
+   - 6 archivos diego-*.html actualizados (67 menciones)
+   - h1 "DIEGO" -> "DIEGO ALONSO" en presentacion
+   - URLs y nombres de archivo NO cambiados (no romper links)
+   - Rename en system prompt n8n pendiente (P2)
+
+3. PENDIENTES.md como sistema de seguimiento
+   - Lista viva de tareas abiertas con estado, bloqueadores,
+     proxima accion
+   - 6 tareas registradas: P1 a P6
+
+4. casos-diego/ con evidencia de bugs
+   - 20260420-ingrid.md: 2 horas y 35 mensajes pidiendo camion,
+     sin resultado. Diego mintio sobre capacidades, invento
+     reglas de autorizacion falsas.
+   - 20260420-jair.md: pidio notificar FC 9026 a Dusan, Diego
+     dijo "registrado en memoria para briefing" sin enviar nada.
+     Ademas invento URL gubernamental.
+   - 20260420-nicolas.md: 5 veces pidio precio cobre tercera,
+     Diego nunca lo dio. Se contradijo en capacidades dentro
+     del mismo hilo.
+
+5. 28 bugs documentados en P5 del PENDIENTES.md
+   Bugs 1-10: transcripcion general 14-20 abr
+   Bugs 11-15: caso Andrea (bolsas Metecno)
+   Bugs 16-20: caso Ingrid (camion)
+   Bugs 21-24: caso Jair (FC 9026)
+   Bugs 25-28: caso Nicolas (cobre, identidad inconsistente)
+
+   Bug #2 (no parsea opciones numericas) confirmado con 4
+   usuarios distintos: Dusan, Jair, Ingrid, Nicolas. Sistemico.
+
+   Bug core repetido en 3 casos en un dia:
+   "Diego finge que avisa a otras personas cuando en realidad
+   no tiene capacidad de enviar mensajes a terceros". Motiva
+   P2 como CRITICO.
+
+6. mensajes-equipo/difusion-coordinar-equipo.md
+   - 8 mensajes personalizados para cada miembro del equipo
+   - Tono reflexivo: "despues de analizar la solucion es asi"
+   - Cada uno referencia el caso o contexto personal
+   - Orden sugerido de envio prioriza a quienes sufrieron ayer
+
+7. PR #5 creado en GitHub
+   - Branch claude/continue-diego-mobile-U0cgA -> main
+   - Titulo: "feat: URLs cortas Diego + rename a Diego Alonso +
+     documentacion sesion movil"
+   - Link:
+     https://github.com/dusanarancibia-cpu/reciclean-sistema/pull/5
+   - Pendiente de merge por Dusan
+
+================================================================
+ESTADO DE PENDIENTES (al 20-abr tarde)
+================================================================
+
+P1. Mergear PR #5 a main
+    Estado: en revision
+    Accion: Dusan da click en Merge pull request en GitHub
+    Bloqueador: ninguno
+    Impacto: URLs cortas entran en produccion
+
+P2. PATCH prompt Diego Alonso (CRITICO)
+    Estado: bloqueada
+    Bloqueador: falta N8N_API_KEY
+    Contenido del PATCH:
+    a) Bloque "COORDINACION ENTRE EL EQUIPO" (matriz
+       verde/naranja/rojo + plantilla borrador + "Diego redacta,
+       NO envia" + link wa.me + escalamiento Dusan)
+    b) Cambio nombre "Diego" -> "Diego Alonso" en system prompt
+    c) Anuncio one-shot por persona (primera vez que escriba
+       tras el patch), texto final aprobado por Dusan:
+       "Ahora me llamo Diego Alonso, para alivianar los
+        recuerdos vividos en Talca.
+        Tambien, Diego Alonso habria sido mi nombre si Almendra
+        hubiese sido hombre."
+       + emoji de manos en oracion (U+1F64F)
+       Requiere: nueva columna `anuncio_nombre_visto` en tabla
+       contactos (Supabase), default false, se marca true tras
+       envio del anuncio.
+    Protocolo: backup workflow -> diff -> OK explicito -> PUT
+    -> smoke test.
+    Backup: 7_backup-prompts/incidentes/
+            diego_workflow_backup_20260420_121639.json
+
+P3. Difundir /coordinar-equipo al equipo
+    Estado: abierta
+    Accion: Dusan envia los 8 mensajes desde su WhatsApp
+    Bloqueador: parcialmente P1 (URLs cortas) - si no se mergea
+                se puede usar link largo igualmente.
+    Orden sugerido:
+    1. Andrea (caso bolsas Metecno)
+    2. Ingrid (caso camion)
+    3. Jair (caso FC 9026)
+    4. Nicolas, Juan, Dyana, Cesar
+    5. Pablo (cuando vuelva 26-abr)
+
+P4. Monitoreo semanal Diego
+    Estado: abierta
+    Frecuencia: viernes
+    Accion: revisar tabla conversaciones en Supabase, analizar
+    patrones, proponer ajustes al prompt si hay [CALIBRAR]
+    repetidos.
+
+P5. Iteracion prompt Diego Alonso v4.3 (28 bugs)
+    Estado: bloqueada
+    Bloqueador: falta N8N_API_KEY
+    Resumen bugs criticos:
+    - Loops de bienvenida extremos (7 plantillas en 1h a Ingrid)
+    - Miente sobre avisar a terceros (Andrea, Ingrid, Jair)
+    - Alucina supervisiones, areas, reglas de autorizacion,
+      URLs gubernamentales
+    - No parsea opciones numericas del menu propio (4 usuarios)
+    - Contradice capacidades en el mismo hilo (Nicolas)
+    - Confusion de destinatarios (responde como si fuera para el)
+    - No procesa audios .opus
+    - Pregunta 5 veces lo mismo sin responder
+    - Interpreta "petroleo" (combustible) como residuo peligroso
+    - Identidad inconsistente (Asistente Arancibia / Agente
+      Director / Diego)
+    Aplicar despues o junto con P2 (mismo PUT al workflow).
+
+P6. Humanizacion Diego Alonso v4.4 (diferida)
+    Estado: diferida hasta que P5 estabilice los bugs basicos
+    Razon: si Diego miente sobre "avisar a Dusan" y encima tira
+    chistes, el equipo se frustra mas. Primero honestidad,
+    despues calidez.
+    Que incluye: comentarios ligeros de contexto (clima, dia
+    cansado, cierre calido), 1 por dia por persona, chistes
+    esporadicos.
+
+================================================================
+CREDENCIALES NECESARIAS (pedir a Dusan cuando se retome)
+================================================================
+
+- N8N_API_KEY (PUT al workflow Diego) -> desbloquea P2 + P5
+- SUPABASE_SERVICE_KEY (nueva columna anuncio_nombre_visto)
+- GITHUB_PAT (vence 27-abr)
+
+================================================================
+PROTOCOLOS
+================================================================
+
+Para tocar Diego LIVE (workflow n8n):
+1. GET workflow actual -> guardar backup en
+   7_backup-prompts/incidentes/ con timestamp
+2. Extraer system prompt del nodo claude-api
+3. Mostrar diff exacto al usuario
+4. Esperar OK explicito (Dusan dice "si" / "ok")
+5. PUT workflow parchado
+6. Smoke test (mensaje de prueba desde WhatsApp de Dusan)
+7. Si algo raro -> rollback inmediato
+
+Para cambios en repo:
+1. Mostrar diff / plan
+2. Esperar OK
+3. Commit con mensaje descriptivo + link de sesion
+4. Push a branch activa (nunca directo a main sin PR)
+
+Rollback Diego disponible:
 7_backup-prompts/incidentes/diego_workflow_backup_20260420_121639.json
+
+================================================================
+BRANCH Y COMMITS
+================================================================
+
+Branch activa: claude/continue-diego-mobile-U0cgA
+PR: #5 en github.com/dusanarancibia-cpu/reciclean-sistema/pull/5
+
+Commits principales de esta sesion:
+- 7a5eb2d docs: agregar prompt continuidad movil
+- 946b0d6 feat(urls): agregar redirects URLs cortas
+- efc5dcb docs: agregar PENDIENTES.md y actualizar prompt
+- 62f67ad docs: agregar P5 iteracion v4.3 con 10 bugs
+- b03ad40 docs: subir P2 prioridad alta + bugs 11-15 (Andrea)
+- e66de14 docs: P2 CRITICO + caso Ingrid + bugs 16-20
+- cdfc2a4 feat(diego-alonso): rename en paginas web
+- b9a6a9f docs: texto final anuncio aprobado por Dusan
+- 55e6d72 docs: bugs 21-24 y caso Jair
+- 9935955 docs: P6 humanizacion diferida
+- 29bfa10 docs: mensajes difusion V1/V2/Jair (primera version)
+- 59843da docs: mensajes personalizados por destinatario
+- 959e5e5 docs: bugs 25-28 y caso Nicolas
+
+================================================================
+PROXIMA ACCION SUGERIDA AL RETOMAR
+================================================================
+
+Orden recomendado:
+1. Verificar si PR #5 ya fue mergeado. Si no, mergearlo.
+2. Si Dusan trae la N8N_API_KEY: empezar P2 inmediatamente
+   (backup -> diff -> OK -> PUT -> smoke test). Esto
+   desbloquea a Diego Alonso para el equipo YA.
+3. Aprovechar el mismo PUT para aplicar P5 (bugs 1-28).
+4. Ayudar a Dusan a enviar los 8 mensajes del equipo.
+5. Agregar columna `anuncio_nombre_visto` en Supabase y
+   configurar nodo para enviar anuncio one-shot.
+6. P4 (monitoreo semanal) puede esperar al primer viernes.
+7. P6 (humanizacion) postergada.
+
+================================================================
