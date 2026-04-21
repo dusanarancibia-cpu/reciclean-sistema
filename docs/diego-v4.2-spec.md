@@ -182,27 +182,84 @@ Responde SI / NO / DESPUES"
 
 ### C. Nuevo workflow `Diego-Curador` (cron diario 02:00 AM Chile)
 
-1. **Trigger:** Schedule, daily 02:00 America/Santiago.
-2. **Supabase:** `SELECT * FROM entrevistas_respuestas WHERE created_at >= CURRENT_DATE - 1 AND sesion completada`.
-3. **Code node:** agrupa por `tema`.
-4. **Claude Sonnet:** prompt: "Normaliza estas respuestas crudas en un proceso operativo claro. Output JSON: { tema, categoria, contenido }".
-5. **Supabase:** `INSERT INTO procesos_borrador (estado='pendiente')`.
-6. **Meta Cloud API:** WA a Dusan (+56 9 6192 6365):
+> Workflow único que cumple 2 funciones: (1) curaduría de borradores y (2) auditoría diaria del sistema.
+> Decisiones Dusan 20-abr: D1=todas las categorías de error / D2.a=incluir resumen estadístico / D3.a=arranca 28-abr / D4.a=siempre llega WA aunque sea "0 errores".
+
+**Trigger:** Schedule, daily 02:00 America/Santiago.
+
+#### Sección 1 — Curaduría de borradores
+
+1. **Supabase:** `SELECT * FROM entrevistas_respuestas WHERE created_at >= CURRENT_DATE - 1 AND sesion_id IN (SELECT id FROM sesiones_entrevista WHERE estado='completada')`.
+2. **Code node:** agrupa por `tema`.
+3. **Claude Sonnet:** prompt: "Normaliza estas respuestas crudas en un proceso operativo claro. Output JSON: { tema, categoria, contenido }".
+4. **Supabase:** `INSERT INTO procesos_borrador (estado='pendiente')`.
+
+#### Sección 2 — Auditoría del día (queries SQL en paralelo)
+
+Categorías de error a detectar (todas activas — D1):
+
+- **a.** Mensajes inbound sin respuesta de Diego: `SELECT * FROM conversaciones WHERE direccion='inbound' AND respuesta_diego IS NULL AND created_at::date = CURRENT_DATE - 1`
+- **b.** Contactos fuera de whitelist: `SELECT phone, COUNT(*) FROM conversaciones WHERE phone NOT IN (SELECT phone FROM contactos WHERE activo=true) AND created_at::date = CURRENT_DATE - 1 GROUP BY phone`
+- **c.** Errores HTTP / fallos workflow: vía n8n execution log API filtrando por `status='error'` del día anterior
+- **d.** Tiempos respuesta > 30s: `SELECT * FROM conversaciones WHERE EXTRACT(EPOCH FROM (respondido_at - recibido_at)) > 30`
+- **e.** Audios/PDFs/imágenes con parsing fallido: filtrar por `tipo_mensaje IN ('audio','pdf','imagen') AND parsing_error IS NOT NULL`
+- **f.** Frustración (3+ mensajes seguidos sin respuesta del mismo contacto): query con window function sobre `conversaciones` particionada por `phone`
+- **g.** Mensajes con tag `[FEEDBACK]`: `SELECT * FROM conversaciones WHERE mensaje LIKE '%[FEEDBACK]%'`
+
+#### Sección 3 — Resumen estadístico (D2.a)
+
+```sql
+SELECT
+  COUNT(*) FILTER (WHERE direccion='inbound') AS mensajes_in,
+  COUNT(*) FILTER (WHERE direccion='outbound') AS mensajes_out,
+  AVG(EXTRACT(EPOCH FROM (respondido_at - recibido_at))) FILTER (WHERE respondido_at IS NOT NULL) AS tiempo_resp_promedio_seg,
+  COUNT(*) FILTER (WHERE EXTRACT(EPOCH FROM (respondido_at - recibido_at)) < 5) * 100.0 / NULLIF(COUNT(*) FILTER (WHERE respondido_at IS NOT NULL),0) AS pct_respondidos_bajo_5seg,
+  (SELECT COUNT(*) FROM sesiones_entrevista WHERE created_at::date = CURRENT_DATE - 1) AS entrevistas_iniciadas,
+  (SELECT COUNT(*) FROM sesiones_entrevista WHERE created_at::date = CURRENT_DATE - 1 AND estado='completada') AS entrevistas_completadas,
+  (SELECT COUNT(*) FROM sesiones_entrevista WHERE created_at::date = CURRENT_DATE - 1 AND estado='pausada') AS entrevistas_pausadas
+FROM conversaciones
+WHERE created_at::date = CURRENT_DATE - 1;
+```
+
+#### Sección 4 — Mensaje WA al Dusan (D4.a — siempre llega)
+
+**Meta Cloud API → Dusan (+56 9 6192 6365):**
 
 ```
-🧠 Diego-Curador, 02:00
-Hoy generé X borradores nuevos para validar:
+🧠 DIEGO-CURADOR — [fecha] 02:00
+
+📚 Borradores nuevos para validar (X):
 1. [tema A] (de N respuestas)
 2. [tema B] (de N respuestas)
-...
-Para validar responde:
-APROBAR 1 — pasa a procesos_empresa
-CORREGIR 2: [texto] — guarda tu versión
-DESCARTAR 3 — borra
-VER 4 — te muestro el borrador completo
+→ Responde APROBAR/CORREGIR/DESCARTAR/VER [N]
+
+🚨 Errores del día (Y):
+• A mensajes sin respuesta — [detalle contactos+horas]
+• B contactos fuera whitelist — [phones]
+• C errores HTTP — [endpoints]
+• D timeouts > 30s — [casos]
+• E parsing fallido — [tipos]
+• F casos de frustración — [contactos]
+• G feedbacks recibidos — [N]
+→ Responde DETALLE [N] para ver caso completo
+
+📊 Resumen del día:
+• Z mensajes procesados (W in / V out)
+• Tiempo respuesta promedio: T seg
+• U% respondidos < 5 seg
+• I entrevistas iniciadas (J completadas, K pausadas)
+
+✅ Sin errores hoy = mensaje igual llega con "🚨 Errores del día (0)" — confirma que el cron está vivo.
 ```
 
-7. **Subworkflow respuesta Dusan:** procesa mensaje del Dusan con comandos `APROBAR|CORREGIR|DESCARTAR|VER` y mueve borradores a `procesos_empresa` (con `validado_por='Dusan'`, `validado_at=NOW()`).
+#### Sección 5 — Subworkflow respuesta Dusan
+
+Procesa mensajes entrantes del Dusan con comandos:
+- `APROBAR [N]` → mueve borrador N a `procesos_empresa` (`validado_por='Dusan'`, `validado_at=NOW()`)
+- `CORREGIR [N]: [nuevo texto]` → guarda versión Dusan en `procesos_empresa`
+- `DESCARTAR [N]` → marca `procesos_borrador.estado='descartado'`
+- `VER [N]` → responde con el borrador completo
+- `DETALLE [N]` → responde con el detalle completo del caso de error N
 
 ### D. Cronograma sugerido
 
@@ -210,8 +267,8 @@ VER 4 — te muestro el borrador completo
 |---|---|---|
 | Dom 26-abr | SQL tablas + RLS (1h) | Pablo |
 | Lun 27-abr | Modificar workflow Diego v4.2 (4h) + tests | Pablo + Dusan |
-| Mar 28-abr | Workflow Diego-Curador (3h) | Pablo |
-| Mié 29-abr | Pruebas con los 8 contactos activos | Dusan + Pablo |
+| Mar 28-abr | Workflow Diego-Curador (Curaduría + Auditoría integrada, 4h). Activa cron 02:00 AM mismo día → primer WA llega 29-abr 02:00 con datos del 28 | Pablo |
+| Mié 29-abr | Pruebas con los 8 contactos activos. Dusan recibe 2 mensajes Diego-Curador (29 y 30 a las 02:00) ANTES del lanzamiento para detectar bugs en frío | Dusan + Pablo |
 | Jue 30-abr | LANZAMIENTO + Dusan envía mensaje M2 al grupo | Dusan |
 
 ---
@@ -228,9 +285,9 @@ VER 4 — te muestro el borrador completo
 ## Pendientes explícitos
 
 1. **Dusan:** decidir si el mensaje M2 se envía el 30-abr (día lanzamiento) o antes.
-2. **Dusan:** subir este .md al repo `dusanarancibia-cpu/reciclean-sistema` en `/docs/diego-v4.2-spec.md` para que Pablo lo encuentre.
-3. **Pablo (26-abr):** leer este documento antes de empezar.
-4. **Auditoría diaria 1.B:** quedó diferida. Puede integrarse al workflow `Diego-Curador` el 28-abr (enviar en el mismo WA 02:00 la sección "Errores del día": mensajes sin respuesta, contactos no whitelistados, HTTP errors, tiempos > 30s).
+2. ✅ **Dusan:** spec subido al repo `dusanarancibia-cpu/reciclean-sistema` en `/docs/diego-v4.2-spec.md` (commit `3ae2aa3` el 20-abr 22:45).
+3. **Pablo (26-abr):** leer este documento antes de empezar. URL: https://github.com/dusanarancibia-cpu/reciclean-sistema/blob/main/docs/diego-v4.2-spec.md
+4. ✅ **Auditoría diaria 1.B:** integrada al workflow `Diego-Curador` (Sección C — versión actualizada 20-abr).
 
 ---
 
@@ -247,5 +304,6 @@ Si esta sesión se cierra y retomas en móvil, Claude.ai, ChatGPT u otra:
 
 ## Commits / URLs afectadas
 
-- Ninguno todavía. No se tocó producción ni código.
-- Este archivo es el único artefacto creado en esta sesión.
+- Repo `dusanarancibia-cpu/reciclean-sistema`, commit `3ae2aa3` (20-abr 22:45): `docs: spec Diego v4.2 Modo Entrevista para Pablo (26-abr)` → `docs/diego-v4.2-spec.md`
+- Producción NO tocada. Tablas Supabase nuevas y workflow modifs son responsabilidad de Pablo desde 26-abr.
+- Memory entry: `project_diego_v4_2_modo_entrevista.md` agregado a MEMORY.md.
