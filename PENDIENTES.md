@@ -1,7 +1,7 @@
 # Pendientes — Sistema Reciclean-Farex
 
-> Ultima actualizacion: 2026-04-20 tarde (sesion movil Dusan)
-> Branch en curso: `claude/continue-diego-mobile-U0cgA`
+> Ultima actualizacion: 2026-04-21 (sesion Dusan + Claude Code)
+> Branch en curso: `claude/admiring-heisenberg-cBE8I`
 
 ## Como usar este archivo
 
@@ -15,16 +15,65 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
 
 ---
 
+## Resumen de avance — 20 y 21 de abril 2026
+
+### Que hizo Dusan (20-abr tarde/noche + 21-abr)
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| 1 | Creo la pagina `/diego-coordinar.html` — guia para pedirle a Diego que redacte mensajes al equipo | HECHO |
+| 2 | Tomo decisiones de diseno Diego v4.2 (10 decisiones LOCK en spec) | HECHO |
+| 3 | Aprobo texto final del anuncio "Diego Alonso" (nombre + homenaje) | HECHO |
+| 4 | Aprobo el merge del PR #5 (URLs cortas a main) | HECHO |
+| 5 | Documento 3 casos reales de bugs de Diego: Ingrid, Jair, Nicolas (20-abr) | HECHO |
+| 6 | Definio auditorias diarias D1-D4 para Diego-Curador | HECHO |
+| 7 | Reviso y ajusto guia de implementacion v4.2 (horario 08:00-10:00 + aviso grupo) | HECHO |
+| 8 | Sesion de revision de avance y actualizacion de plan (21-abr) | HECHO |
+
+### Que hizo Pablo
+
+Pablo esta de **vacaciones hasta el 26-abr**. No participo directamente
+en las sesiones del 20-21 de abril. Su proxima tarea asignada:
+- Implementar Diego v4.2 Modo Entrevista (spec listo en `docs/diego-v4.2-spec.md`)
+- Corregir bugs tecnicos de workflow (#4 variable sin renderizar, #9 URLs largas)
+
+### Que hizo Claude Code (asistente IA)
+
+| # | Tarea | Commits |
+|---|-------|---------|
+| 1 | Creo PENDIENTES.md con 6 tareas priorizadas | `efc5dcb` |
+| 2 | Documento 28 bugs de Diego desde transcripciones WhatsApp | `62f67ad`, `b03ad40`, `55e6d72`, `959e5e5` |
+| 3 | Escribio 3 casos de estudio reales (Jair, Ingrid, Nicolas) | en `casos-diego/` |
+| 4 | Cambio nombre "Diego" a "Diego Alonso" en las 6 paginas web | `cdfc2a4` |
+| 5 | Agrego redirects de URLs cortas en vercel.json (6 rutas) | `946b0d6` |
+| 6 | Redacto borradores de mensajes WhatsApp para difusion al equipo | `29bfa10`, `59843da` |
+| 7 | Creo spec completo Diego v4.2 Modo Entrevista (15 KB) | en `docs/diego-v4.2-spec.md` |
+| 8 | Creo guia paso-a-paso de implementacion para Dusan | en `docs/diego-v4.2-implementacion-21abr.md` |
+
+### Nivel de avance global
+
+| Area | Avance | Detalle |
+|------|--------|---------|
+| Documentacion de bugs | **100%** | 28 bugs identificados, 3 casos de estudio escritos |
+| Diseno Diego v4.2 | **100%** | Spec + guia implementacion + SQL + tests definidos |
+| Paginas web Diego | **100%** | 6 paginas creadas, nombre actualizado, URLs cortas configuradas |
+| Difusion al equipo (P3) | **70%** | Borradores listos, falta que Dusan decida cuando enviar |
+| Implementacion v4.2 en n8n | **0%** | Bloqueado: falta N8N_API_KEY + Pablo vuelve 26-abr |
+| Correccion de bugs (P5) | **0%** | Bloqueado: misma dependencia que v4.2 |
+| Humanizacion v4.4 (P6) | **0%** | Diferida hasta que P5 estabilice bugs |
+
+---
+
 ## Abiertas
 
 ### P1. Mergear PR de URLs cortas a `main`
-- **Estado:** en revision (push hecho, falta merge)
+- **Estado:** CERRADA (mergeado 20-abr noche)
 - **Branch:** `claude/continue-diego-mobile-U0cgA`
-- **Commit:** `946b0d6` — `feat(urls): agregar redirects de URLs cortas`
+- **Commit merge:** `76d5cb9` — PR #5 mergeado por Dusan
 - **Archivo:** `vercel.json` (6 redirects a paginas Diego)
-- **Proxima accion:** Dusan aprueba merge a `main` desde GitHub (o pide a
-  Claude que abra PR). Tras merge, Vercel despliega automatico y los
-  enlaces `reciclean-sistema.vercel.app/conoce-diego` etc. quedan vivos.
+- **Resultado:** URLs cortas activas en produccion:
+  `/conoce-diego`, `/coordinar-equipo`, `/preguntas`, `/ejemplos`,
+  `/dar-feedback`, `/videos-diego`
 
 ### P2. PATCH prompt Diego Alonso — flujo coordinacion equipo [CRITICO]
 - **Estado:** bloqueada
@@ -184,4 +233,5 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
 
 ## Cerradas
 
-*(ninguna aun)*
+### P1. Mergear PR de URLs cortas a `main` — CERRADA 20-abr
+- PR #5 mergeado (`76d5cb9`). 6 URLs cortas activas en produccion.
