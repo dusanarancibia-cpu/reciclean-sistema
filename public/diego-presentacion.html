@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diego Alonso — Presentación al equipo</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; max-width: 820px; margin: 0 auto; color: #1A1A14; line-height: 1.5; background: #fafafa; }
+h1 { font-size: 26px; color: #1A7A3C; margin-bottom: 2px; letter-spacing: 0.5px; }
+h2 { font-size: 16px; color: #1A1A14; margin: 22px 0 10px; padding-bottom: 4px; border-bottom: 2px solid #1A7A3C; }
+.subtitle { font-size: 13px; color: #666; }
+.tag { display: inline-block; background: #FDF5E4; color: #92650A; border: 1px solid #F0D890; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-top: 4px; }
+.hero { display: flex; align-items: center; gap: 18px; background: #fff; border-radius: 14px; padding: 20px; border: 1px solid #e5e5e5; margin-bottom: 20px; }
+.hero svg { width: 88px; height: 88px; flex-shrink: 0; }
+.section { background: #fff; border: 1px solid #e5e5e5; border-radius: 14px; padding: 18px 22px; margin-bottom: 16px; }
+.section h2 { margin-top: 0; }
+.list { list-style: none; padding: 0; }
+.list li { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0; font-size: 14px; }
+.list li::before { content: ""; width: 8px; height: 8px; background: #1A7A3C; border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+.steps { counter-reset: step; padding: 0; list-style: none; }
+.steps li { counter-increment: step; display: flex; gap: 12px; align-items: flex-start; margin: 10px 0; font-size: 14px; }
+.steps li::before { content: counter(step); background: #1A7A3C; color: #fff; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.rules li::before { background: #E67E22; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+.btn { background: #1A7A3C; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.btn:hover { background: #146030; }
+.btn.alt { background: #fff; color: #1A7A3C; border: 1.5px solid #1A7A3C; }
+.btn.alt:hover { background: #E8F5ED; }
+.variant { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; margin-bottom: 14px; overflow: hidden; }
+.variant-head { background: #f5f5f5; padding: 10px 16px; font-size: 12px; font-weight: 700; color: #1A7A3C; display: flex; justify-content: space-between; align-items: center; }
+.variant pre { padding: 14px 16px; white-space: pre-wrap; font-family: system-ui, -apple-system, sans-serif; font-size: 13px; line-height: 1.55; color: #222; }
+.copy-btn { background: #1A7A3C; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; }
+.copy-btn.ok { background: #2E7D32; }
+.footer { margin-top: 24px; padding: 16px; text-align: center; font-size: 12px; color: #777; border-top: 1px solid #e5e5e5; }
+canvas { display: none; }
+@media (max-width: 600px) {
+  body { padding: 14px; }
+  .hero { flex-direction: column; text-align: center; gap: 10px; padding: 16px; }
+  h1 { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#1A7A3C"/>
+        <stop offset="100%" stop-color="#2E9F5C"/>
+      </linearGradient>
+    </defs>
+    <circle cx="60" cy="60" r="56" fill="url(#g1)"/>
+    <g stroke="#fff" stroke-width="1.8" fill="#fff">
+      <line x1="40" y1="40" x2="60" y2="60" stroke-opacity="0.6"/>
+      <line x1="80" y1="40" x2="60" y2="60" stroke-opacity="0.6"/>
+      <line x1="35" y1="70" x2="60" y2="60" stroke-opacity="0.6"/>
+      <line x1="85" y1="75" x2="60" y2="60" stroke-opacity="0.6"/>
+      <line x1="60" y1="90" x2="60" y2="60" stroke-opacity="0.6"/>
+      <line x1="40" y1="40" x2="80" y2="40" stroke-opacity="0.35"/>
+      <line x1="35" y1="70" x2="85" y2="75" stroke-opacity="0.35"/>
+      <circle cx="60" cy="60" r="7"/>
+      <circle cx="40" cy="40" r="4.5"/>
+      <circle cx="80" cy="40" r="4.5"/>
+      <circle cx="35" cy="70" r="4.5"/>
+      <circle cx="85" cy="75" r="4.5"/>
+      <circle cx="60" cy="90" r="4.5"/>
+    </g>
+  </svg>
+  <div>
+    <h1>DIEGO ALONSO</h1>
+    <div class="subtitle">Agente Director — Asistente de IA por WhatsApp</div>
+    <div class="tag">Modo Aprendizaje</div>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="btn" onclick="descargarPNG()">Descargar PNG para WhatsApp</button>
+  <button class="btn alt" onclick="window.print()">Imprimir / Guardar PDF</button>
+  <a class="btn alt" href="/diego-faq.html" style="text-decoration:none; display:inline-flex; align-items:center;">Preguntas frecuentes</a>
+  <a class="btn alt" href="/diego-feedback.html" style="text-decoration:none; display:inline-flex; align-items:center;">Dar feedback</a>
+</div>
+
+<div class="section">
+  <h2>¿Qué es Diego Alonso?</h2>
+  <ul class="list">
+    <li>Escucha mensajes, audios, fotos y documentos</li>
+    <li>Responde preguntas sobre operaciones</li>
+    <li>Valida información y detecta anomalías</li>
+    <li>Disponible 24/7 en WhatsApp</li>
+  </ul>
+</div>
+
+<div class="section">
+  <h2>¿Cómo funciona?</h2>
+  <ol class="steps">
+    <li>Envía un mensaje a Diego Alonso por WhatsApp (+56 9 6192 6365)</li>
+    <li>Diego Alonso analiza y responde en segundos</li>
+    <li>Si tiene dudas, avisa a Dusan</li>
+    <li>Seguimos mejorando juntos</li>
+  </ol>
+</div>
+
+<div class="section">
+  <h2>Reglas clave</h2>
+  <ol class="steps rules">
+    <li>Es un asistente, no reemplaza decisiones humanas</li>
+    <li>Cualquier anomalía se reporta a Dusan</li>
+    <li>Prueba y da feedback — es muy valioso</li>
+    <li>Gradualmente irá aprendiendo del equipo</li>
+  </ol>
+</div>
+
+<h2 style="border:none; margin: 24px 0 12px;">Textos listos para WhatsApp</h2>
+
+<div class="variant">
+  <div class="variant-head">
+    <span>Variante 1 — Presentación + Invitación</span>
+    <button class="copy-btn" onclick="copiar(this, 'v1')">Copiar</button>
+  </div>
+  <pre id="v1">🤖 DIEGO — Agente Director
+
+Nuestro asistente de IA está en modo aprendizaje. Escucha mensajes, audios, fotos y documentos.
+
+✨ Pruébalo:
+• Envía una pregunta sobre operaciones
+• Comparte una foto o documento
+• Pide análisis de datos
+
+⚠️ Si ves algo raro, avisa a Dusan.
+
+Gracias por el feedback 🚀
+
+📖 Más info:
+reciclean-sistema.vercel.app/diego-presentacion.html
+❓ FAQ: reciclean-sistema.vercel.app/diego-faq.html
+💡 Ejemplos: reciclean-sistema.vercel.app/diego-ejemplos.html</pre>
+</div>
+
+<div class="variant">
+  <div class="variant-head">
+    <span>Variante 2 — Resumen ejecutivo</span>
+    <button class="copy-btn" onclick="copiar(this, 'v2')">Copiar</button>
+  </div>
+  <pre id="v2">📌 DIEGO EN 30 SEGUNDOS:
+
+1️⃣ Recibe: mensajes, audios, fotos, PDFs
+2️⃣ Analiza: procesos, números, anomalías
+3️⃣ Responde: en WhatsApp, 24/7
+4️⃣ Reporta: si hay dudas, a Dusan
+
+Esta es la fase de aprendizaje. Tu feedback = oro para mejorar 💪
+
+📖 Más info:
+reciclean-sistema.vercel.app/diego-presentacion.html
+❓ FAQ: reciclean-sistema.vercel.app/diego-faq.html
+💡 Ejemplos: reciclean-sistema.vercel.app/diego-ejemplos.html</pre>
+</div>
+
+<div class="variant">
+  <div class="variant-head">
+    <span>Variante 3 — Guía de uso</span>
+    <button class="copy-btn" onclick="copiar(this, 'v3')">Copiar</button>
+  </div>
+  <pre id="v3">CÓMO USAR DIEGO:
+
+✅ Puedes preguntarle sobre:
+• Procesos de reciclaje
+• Precios y márgenes
+• Datos de sucursales
+• Análisis de fotos/documentos
+
+🚫 Evita:
+• Información sensible sin Dusan
+• Decisiones sin validar
+
+💬 Reporta anomalías a Dusan directamente
+
+📖 Más info:
+reciclean-sistema.vercel.app/diego-presentacion.html
+❓ FAQ: reciclean-sistema.vercel.app/diego-faq.html
+💡 Ejemplos: reciclean-sistema.vercel.app/diego-ejemplos.html</pre>
+</div>
+
+<div class="footer">
+  ¿Preguntas? Escribe a Dusan · Grupo Reciclean-Farex · 20 abril 2026
+</div>
+
+<canvas id="canvas" width="1080" height="1920"></canvas>
+
+<script>
+function copiar(btn, id) {
+  const txt = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(txt).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copiado';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('ok'); }, 1800);
+  });
+}
+
+function descargarPNG() {
+  const c = document.getElementById('canvas');
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+
+  const fondo = ctx.createLinearGradient(0, 0, 0, H);
+  fondo.addColorStop(0, '#f8faf9');
+  fondo.addColorStop(1, '#edf5ef');
+  ctx.fillStyle = fondo;
+  ctx.fillRect(0, 0, W, H);
+
+  const heroY = 80, heroH = 340;
+  ctx.fillStyle = '#ffffff';
+  roundRect(ctx, 60, heroY, W - 120, heroH, 28, true, false);
+
+  dibujarAvatar(ctx, 160, heroY + 80, 180);
+
+  ctx.fillStyle = '#1A7A3C';
+  ctx.font = 'bold 96px system-ui, -apple-system, sans-serif';
+  ctx.textBaseline = 'top';
+  ctx.fillText('DIEGO', 380, heroY + 60);
+
+  ctx.fillStyle = '#444';
+  ctx.font = '34px system-ui, -apple-system, sans-serif';
+  ctx.fillText('Agente Director', 380, heroY + 170);
+
+  ctx.fillStyle = '#FDF5E4';
+  roundRect(ctx, 380, heroY + 230, 340, 56, 28, true, false);
+  ctx.fillStyle = '#92650A';
+  ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('MODO APRENDIZAJE', 550, heroY + 247);
+  ctx.textAlign = 'left';
+
+  let y = heroY + heroH + 50;
+  y = dibujarSeccion(ctx, 60, y, W - 120, '¿QUÉ ES DIEGO?', [
+    'Escucha mensajes, audios, fotos y documentos',
+    'Responde preguntas sobre operaciones',
+    'Valida información y detecta anomalías',
+    'Disponible 24/7 en WhatsApp'
+  ], 'bullet');
+
+  y += 30;
+  y = dibujarSeccion(ctx, 60, y, W - 120, '¿CÓMO FUNCIONA?', [
+    'Envía un mensaje a Diego Alonso por WhatsApp',
+    'Diego Alonso analiza y responde en segundos',
+    'Si tiene dudas, avisa a Dusan',
+    'Seguimos mejorando juntos'
+  ], 'number');
+
+  y += 30;
+  y = dibujarSeccion(ctx, 60, y, W - 120, 'REGLAS CLAVE', [
+    'Es un asistente, no reemplaza decisiones',
+    'Cualquier anomalía se reporta a Dusan',
+    'Prueba y da feedback (¡muy valioso!)',
+    'Gradualmente irá aprendiendo'
+  ], 'number-orange');
+
+  ctx.fillStyle = '#777';
+  ctx.font = '26px system-ui, -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('¿Preguntas? Escribe a Dusan', W / 2, H - 100);
+  ctx.fillStyle = '#999';
+  ctx.font = '22px system-ui, -apple-system, sans-serif';
+  ctx.fillText('Grupo Reciclean-Farex · 20 abril 2026', W / 2, H - 60);
+  ctx.textAlign = 'left';
+
+  c.toBlob((blob) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'diego-presentacion.png';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, 'image/png');
+}
+
+function dibujarAvatar(ctx, cx, cy, size) {
+  const r = size / 2;
+  const grad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+  grad.addColorStop(0, '#1A7A3C');
+  grad.addColorStop(1, '#2E9F5C');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fill();
+
+  const nodos = [
+    [cx - r*0.35, cy - r*0.35],
+    [cx + r*0.35, cy - r*0.35],
+    [cx - r*0.45, cy + r*0.2],
+    [cx + r*0.45, cy + r*0.25],
+    [cx, cy + r*0.55]
+  ];
+  ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+  ctx.lineWidth = 3;
+  nodos.forEach(([x, y]) => {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  });
+  ctx.fillStyle = '#fff';
+  nodos.forEach(([x, y]) => {
+    ctx.beginPath();
+    ctx.arc(x, y, 9, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.beginPath();
+  ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function dibujarSeccion(ctx, x, y, w, titulo, items, tipo) {
+  const padTop = 30, padSide = 40, lineH = 58, titleH = 80;
+  const h = titleH + items.length * lineH + padTop;
+
+  ctx.fillStyle = '#ffffff';
+  roundRect(ctx, x, y, w, h, 24, true, false);
+
+  ctx.fillStyle = '#1A7A3C';
+  ctx.fillRect(x + padSide, y + padTop, 8, 36);
+
+  ctx.fillStyle = '#1A1A14';
+  ctx.font = 'bold 36px system-ui, -apple-system, sans-serif';
+  ctx.fillText(titulo, x + padSide + 28, y + padTop + 2);
+
+  ctx.font = '28px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = '#333';
+  items.forEach((txt, i) => {
+    const iy = y + titleH + padTop + i * lineH;
+    if (tipo === 'bullet') {
+      ctx.fillStyle = '#1A7A3C';
+      ctx.beginPath();
+      ctx.arc(x + padSide + 10, iy + 16, 9, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      const color = tipo === 'number-orange' ? '#E67E22' : '#1A7A3C';
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x + padSide + 14, iy + 16, 18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(String(i + 1), x + padSide + 14, iy + 6);
+      ctx.textAlign = 'left';
+      ctx.font = '28px system-ui, -apple-system, sans-serif';
+    }
+    ctx.fillStyle = '#333';
+    ctx.fillText(txt, x + padSide + 50, iy + 4);
+  });
+
+  return y + h;
+}
+
+function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+  if (fill) ctx.fill();
+  if (stroke) ctx.stroke();
+}
+</script>
+
+</body>
+</html>
