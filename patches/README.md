@@ -123,19 +123,18 @@ Pone el workflow tal como estaba antes del PATCH.
 
 ---
 
-## Paso 7. Requerimiento Supabase (paralelo a P2)
+## Paso 7. Requerimiento Supabase (YA HECHO 2026-04-22)
 
-El anuncio one-shot necesita una columna en la tabla `contactos`:
+La columna `anuncio_diego_alonso_visto` ya existe en la tabla
+`contactos` (BOOLEAN DEFAULT FALSE). Creada via MCP desde sesion
+movil. Los 9 contactos activos estan en `false` y listos para recibir
+el anuncio.
 
-```sql
-ALTER TABLE contactos
-  ADD COLUMN IF NOT EXISTS anuncio_nombre_visto BOOLEAN DEFAULT FALSE;
-```
+NOTA: NO usar `anuncio_nombre_visto` (flag previo de Pablo para otro
+anuncio, tiene 7/9 contactos en true).
 
-Ejecutar via Supabase SQL editor con credencial service role.
-
-Ademas, en el workflow n8n hay que configurar:
-- Un nodo que consulte `anuncio_nombre_visto` antes de responder.
+En el workflow n8n hay que configurar:
+- Un nodo que consulte `anuncio_diego_alonso_visto` antes de responder.
 - Si es `false`: prepender el anuncio al mensaje y actualizar a `true`.
 - Si es `true`: responder normal sin anuncio.
 

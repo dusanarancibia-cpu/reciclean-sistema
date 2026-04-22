@@ -123,7 +123,10 @@ Usar estos numeros en los links wa.me:
 Este bloque debe ejecutarse **solo la primera vez** que cada persona
 escriba a Diego Alonso tras el patch. Requiere:
 
-1. Columna `anuncio_nombre_visto` en tabla `contactos` (default false).
+1. Columna `anuncio_diego_alonso_visto` en tabla `contactos` (default
+   false). YA CREADA en Supabase 2026-04-22 por sesion movil.
+   NOTA: no usar `anuncio_nombre_visto` (esa era un flag previo de
+   Pablo para otro anuncio, tiene 7/9 contactos en true).
 2. Nodo en workflow que verifique el flag ANTES de llamar a Claude.
 3. Si `false`: prepender el anuncio + marcar a `true`.
 4. Si `true`: responder normal.

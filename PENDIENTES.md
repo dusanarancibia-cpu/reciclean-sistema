@@ -48,9 +48,12 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
      >  vividos en Talca.
      >  Tambien, Diego Alonso habria sido mi nombre si Almendra hubiese
      >  sido hombre. 🫶"
-     - Requiere tracking en BD: agregar columna `anuncio_nombre_visto`
-       en tabla `contactos` (Supabase). Default false. Se marca true
-       tras enviar el anuncio.
+     - Tracking en BD: columna `anuncio_diego_alonso_visto` en tabla
+       `contactos` (Supabase). DEFAULT FALSE. CREADA 2026-04-22 desde
+       sesion movil. 9/9 contactos activos en false, listos para
+       recibir el anuncio.
+     - NO usar `anuncio_nombre_visto` (flag previo de Pablo, distinto
+       proposito, tiene 7/9 en true).
 - **Workflow:** n8n `PWxwI2oyCRejxG82`, nodo `claude-api`
 - **Que se agrega:** bloque "COORDINACION ENTRE EL EQUIPO" con matriz
   verde/naranja/rojo + plantilla universal de borrador + instruccion
