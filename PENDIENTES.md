@@ -1,7 +1,7 @@
 # Pendientes — Sistema Reciclean-Farex
 
-> Ultima actualizacion: 2026-04-20 tarde (sesion movil Dusan)
-> Branch en curso: `claude/continue-diego-mobile-U0cgA`
+> Ultima actualizacion: 2026-04-22 tarde (panel consultor + fix PDI)
+> Branch en curso: `claude/fix-pdi-critical-errors-8eN0j`
 
 ## Como usar este archivo
 
@@ -179,6 +179,55 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
   - Chistes de reciclaje
   - Dobles sentidos
   - Referencias culturales dudosas
+
+### P7. Cumplimiento legal v1 — corregir mapa por panel consultor [CRITICO]
+- **Estado:** abierta (docs creados, validaciones externas pendientes)
+- **Origen:** panel 3 consultores (22-abr) detecto 5 errores criticos,
+  5 omisiones, 4 supuestos cuestionables, 4 controles debiles.
+- **Docs creados en repo:**
+  - `docs/cumplimiento-legal-v1.md` — fuente de verdad para Diego
+    (RAG `procesos_empresa`). 11 secciones: PDI, romana SEC, retencion
+    IVA, mutual ACHS, REMA, REP, segregacion funciones, trazabilidad
+    pesaje-factura, autorizacion precios, turno noche, tension
+    formal/informal.
+  - `docs/checklist-prelanzamiento-30abr.md` — los 5 items que Dusan
+    DEBE validar personalmente antes del 30-abr.
+  - `docs/respuesta-panel-consultor.md` — respuesta punto por punto
+    al panel, incluye challenge de Seccion 8.
+- **Bloqueadores externos (validacion antes 30-abr):**
+  - Mutual ACHS afiliacion + numero adherente
+  - Calibracion SEC romana Cerrillos/Maipu/Talca (certificados)
+  - Proceso retencion IVA con contador externo
+  - Confirmar numero exacto Orden General PDI con asesor legal
+  - Validar si certificacion SEC aplica a operador de romana
+    (Jair consulta directo con SEC)
+- **Tareas tecnicas post-26-abr (Pablo):**
+  - Tabla `activos_calibracion` (sucursal, equipo, vencimientos)
+  - Tabla `arqueos_diarios` (doble firma operador + jefe turno)
+  - Campos `folio_factura` + `folio_acta_pdi` obligatorios en
+    tabla `pesajes`
+  - Vista `v_kpis_mensual` (7 KPIs benchmark industria)
+- **Proxima accion inmediata:** cargar el contenido de
+  `cumplimiento-legal-v1.md` a `procesos_empresa` cuando Pablo
+  cree las tablas (21-abr o 27-abr). Diego parte con base legal
+  desde dia 1, NO aprende procesos ilegales desde el equipo.
+
+### P8. Patch Diego v4.2 — bloque CUMPLIMIENTO OBLIGATORIO
+- **Estado:** lista para ejecutar (falta hostname n8n + OK diff)
+- **N8N_API_KEY:** recibida 22-abr (en memoria, NO en repo).
+  Rotar despues de esta sesion.
+- **Que se agrega al system prompt:**
+  - Bloque "CUMPLIMIENTO OBLIGATORIO" con las 11 reglas de
+    `cumplimiento-legal-v1.md`
+  - Regla dura: Diego NO canonice procesos que contradigan el
+    doc, aunque el equipo los ensene en entrevistas v4.2
+  - Si detecta contradiccion -> `revision_legal_requerida=true`
+    -> Diego-Curador NO promueve borrador sin OK Dusan
+- **Se puede combinar con P2 (coordinacion equipo) + P5 (v4.3
+  bugs) en un solo PUT** para minimizar downtime.
+- **Proxima accion:** Dusan da hostname n8n (IP o dominio) ->
+  Claude hace GET + backup -> muestra diff -> Dusan OK -> PUT
+  -> smoke test.
 
 ---
 
