@@ -6,7 +6,13 @@
 >
 > **Autor original del contexto:** Dusan Arancibia
 > **Fecha de creacion:** 2026-04-22
-> **Version:** v1.0
+> **Version:** v1.1 (alineado con skill `protocolo-datos-unificado`)
+>
+> ⚠️ **Alineacion con la skill de datos:** Los items estructurales y repetitivos de este
+> esquema (objetivos, reglas LOCK, decisiones, stakeholders, KPIs) deben vivir en tablas
+> Supabase, NO embebidos en estos `.md`. Los `.md` quedan como narrativa (identidad, estilo,
+> rol, rutinas). Ver `ALINEACION-SKILL.md` para el detalle del mapeo y las 5 tablas
+> adicionales propuestas para la skill en `tablas/tablas-skill-adicionales.sql`.
 
 ---
 
@@ -29,21 +35,28 @@ Dusan necesita lo mismo para si mismo. Razones:
 ```
 esquema-dusan/
   README.md                        # este archivo — entrada principal
-  01-identidad.md                  # quien soy, como me defino
-  02-rol-y-responsabilidades.md    # que hago, de que me hago cargo
-  03-objetivos-y-vision.md         # que busco, que quiero mostrar, que quiero ver
-  04-rutinas.md                    # patrones diarios / semanales / mensuales
-  05-condiciones-y-reglas.md       # limites, preferencias, valores (LOCK)
-  06-stakeholders.md               # con quien me relaciono
-  07-kpis-y-metricas.md            # que quiero monitorear (panel personal)
-  08-decisiones-lock.md            # decisiones confirmadas que no se re-discuten
+  ALINEACION-SKILL.md              # diagnostico de alineacion + plan de migracion a tablas
+  01-identidad.md                  # NARRATIVA: quien soy, como me defino
+  02-rol-y-responsabilidades.md    # NARRATIVA: que hago, de que me hago cargo
+  03-objetivos-y-vision.md         # NARRATIVA + semillas para tabla `objetivos`
+  04-rutinas.md                    # NARRATIVA: patrones diarios / semanales / mensuales
+  05-condiciones-y-reglas.md       # NARRATIVA + semillas para `decisiones_lock` (reglas R.*)
+  06-stakeholders.md               # NARRATIVA + semillas para `contactos` (ya existe)
+  07-kpis-y-metricas.md            # NARRATIVA + semillas para tabla `kpis`
+  08-decisiones-lock.md            # NARRATIVA + semillas para `decisiones_lock` (T.*, E.*, P.*)
+  09-comprension-y-logros.md       # snapshot auditable Bloques A/B/C/D con %
   tablas/
-    esquema-sql.sql                # tablas Supabase para asistente-de-Dusan
-  casos-dusan/                     # casos reales a los que Dusan se enfrento (espejo de casos-diego/)
+    esquema-sql.sql                # DEPRECADO — apuntador a SQL de la skill
+    tablas-skill-adicionales.sql   # 5 tablas nuevas para la skill (objetivos, kpis, kpi_mediciones, sesiones_trabajo, preguntas_abiertas)
+  casos-dusan/                     # casos reales (cuando existan, migrar a tabla `casos_asistente`)
     .gitkeep
   rutinas/                         # checklists reutilizables (pre-vuelo, cierre de dia, etc.)
     .gitkeep
 ```
+
+**Regla operativa tras la skill:** los `.md` explican *por que* y *como*; las tablas Supabase
+guardan *cada fila*. Si agregas una decision nueva, va a la tabla `decisiones_lock`, no al
+`.md`. El `.md` explica el sistema, no lo duplica.
 
 ---
 
