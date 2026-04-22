@@ -267,7 +267,121 @@ CREATE TABLE conocimiento_documentos (
 
 **SQL completo:** `sql/20260422_clasificacion_acceso_diego.sql`.
 
-### 3.10. `sesiones_claude` — registro de sesiones de trabajo con Claude Code
+### 3.10. `empresas` — Grupo + Reciclean + Farex
+
+**Origen:** hoy son flags `farex`/`reciclean` en `materiales`. No hay tabla raiz.
+
+```sql
+CREATE TABLE empresas (
+  id BIGSERIAL PRIMARY KEY,
+  codigo TEXT UNIQUE NOT NULL,         -- 'grupo','reciclean','farex'
+  nombre TEXT NOT NULL,
+  descripcion TEXT,
+  sucursales_codigos TEXT[],
+  iva_regla TEXT,                       -- 'retencion_19','sin_iva'
+  dominio TEXT,                         -- 'reciclean.cl','farex.cl'
+  color_hex TEXT,
+  activo BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+Seeds: `grupo` + `reciclean` (4 sucursales) + `farex` (2 sucursales, IVA 19%).
+
+### 3.11. `areas` — Direccion, Tech, Comercial, Operaciones, Admin, Permisologia, RRHH
+
+```sql
+CREATE TABLE areas (
+  id BIGSERIAL PRIMARY KEY,
+  codigo TEXT UNIQUE NOT NULL,
+  nombre TEXT NOT NULL,
+  descripcion TEXT,
+  responsable_phone TEXT,
+  color_hex TEXT,
+  activo BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+7 seeds con responsable y color.
+
+### 3.12. `objetivos` — general / particular, por grupo / empresa / area
+
+```sql
+CREATE TABLE objetivos (
+  id BIGSERIAL PRIMARY KEY,
+  codigo TEXT UNIQUE NOT NULL,
+  tipo TEXT CHECK (tipo IN ('general','particular')) NOT NULL,
+  alcance TEXT CHECK (alcance IN ('grupo','empresa','area')) NOT NULL,
+  empresa_id BIGINT REFERENCES empresas(id),
+  area_id BIGINT REFERENCES areas(id),
+  titulo TEXT NOT NULL,
+  descripcion TEXT,
+  periodo TEXT,
+  meta_cuantitativa TEXT,
+  prioridad TEXT CHECK (prioridad IN ('critica','alta','media','baja')),
+  estado TEXT CHECK (estado IN ('propuesto','activo','en_pausa','cumplido','descartado')),
+  objetivo_padre_id BIGINT REFERENCES objetivos(id),  -- particular -> general
+  porcentaje_avance INT CHECK (porcentaje_avance BETWEEN 0 AND 100),
+  fecha_inicio DATE,
+  fecha_objetivo DATE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  closed_at TIMESTAMPTZ
+);
+```
+
+Seeds propuestos (18): 4 generales `G-01..G-04` + 5 empresa `REC-0x`/`FAR-0x` + 9 area `TECH/COM/OPS/ADM/PER/DIR/RRHH`. Todos encadenados via `objetivo_padre_id`.
+
+### 3.13. `kpis` — indicadores cuantitativos por objetivo
+
+```sql
+CREATE TABLE kpis (
+  id BIGSERIAL PRIMARY KEY,
+  objetivo_id BIGINT REFERENCES objetivos(id) NOT NULL,
+  codigo TEXT,
+  nombre TEXT NOT NULL,
+  unidad TEXT,                         -- '%','bugs','cotizaciones/semana'
+  meta_valor NUMERIC,
+  valor_actual NUMERIC,
+  frecuencia_medicion TEXT,
+  fuente_medicion TEXT,                -- 'supabase:SELECT COUNT(*) ...' o 'manual'
+  ultima_medicion TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### 3.14. ALTER `tareas` + vistas `v_tareas_evolucion` y `v_objetivos_estado`
+
+```sql
+-- Enganche de tareas con empresa/area/objetivo
+ALTER TABLE tareas ADD COLUMN empresa_id BIGINT REFERENCES empresas(id);
+ALTER TABLE tareas ADD COLUMN area_id BIGINT REFERENCES areas(id);
+ALTER TABLE tareas ADD COLUMN objetivo_id BIGINT REFERENCES objetivos(id);
+ALTER TABLE tareas ADD COLUMN porcentaje_avance INT DEFAULT 0;
+```
+
+**Vista `v_tareas_evolucion`** — una fila por tarea, con columnas:
+
+| Columna | Descripcion |
+|---|---|
+| `codigo` | P1, P2... |
+| `titulo` | resumen |
+| `pct` | '80%' |
+| `barra` | `########--` (10 bloques) |
+| `color` | `verde`/`amarillo`/`rojo`/`naranja`/`azul` (mapear a CSS) |
+| `prioridad` | critica/alta/media/baja/diferida |
+| `peso` | 1..5 (para ordenar) |
+| `estado` | abierta/bloqueada/en_revision/cerrada |
+| `objetivo_codigo` + `objetivo_titulo` + `objetivo_padre_codigo` | encadenamiento |
+| `area` / `empresa` | contexto organizacional |
+| `proxima_accion` / `bloqueador` / `branch` | operacional |
+
+Ordenada por estado (abiertas primero) -> peso prioridad -> codigo.
+
+**Vista `v_objetivos_estado`** — una fila por objetivo con: `tareas_abiertas`, `tareas_bloqueadas`, `tareas_cerradas`, `pct_avance_tareas` (promedio), `pct_declarado` (manual), `empresa`, `area`, `objetivo_padre`. Detecta desalineacion (objetivo con 0 tareas = sin bajada, o 50% declarado vs 10% real).
+
+### 3.15. `sesiones_claude` — registro de sesiones de trabajo con Claude Code
 
 **Origen:** hoy son archivos `CONTINUAR_SESION_DIEGO.txt` tipo "prompt de continuidad".
 
@@ -276,7 +390,7 @@ CREATE TABLE sesiones_claude (
   id BIGSERIAL PRIMARY KEY,
   fecha DATE NOT NULL,
   usuario TEXT NOT NULL,         -- dusan, pablo
-  modo TEXT,                     -- 'desktop', 'movil', 'web'
+  modo TEXT,                     -- 'desktop','movil','web'
   branch TEXT,
   commits_sha TEXT[],
   pr_numero INT,
@@ -315,4 +429,7 @@ Archivos que **NO** migran (son narrativa, no tabla):
 - Antes de registrar info: `grep -l "<palabra_clave>" TABLAS.md`.
 - Para ver columnas de una tabla existente: Supabase Dashboard > Database > Tables.
 - Para ver SQL de una tabla propuesta: buscar en seccion 3 de este archivo.
-- SQL de creacion consolidado (7 tablas propuestas): `.claude/skills/protocolo-datos-unificado/sql/20260422_tablas_base_protocolo.sql`.
+- SQL de creacion consolidado:
+  - `sql/20260422_tablas_base_protocolo.sql` (7 tablas operacion: tareas, bugs, casos, plantillas, patches, decisiones, credenciales).
+  - `sql/20260422_clasificacion_acceso_diego.sql` (2 tablas + vista: clasificacion_informacion, conocimiento_documentos, v_diego_puede_leer).
+  - `sql/20260422_empresa_objetivos_evolucion.sql` (4 tablas + ALTER tareas + 2 vistas: empresas, areas, objetivos, kpis, v_tareas_evolucion, v_objetivos_estado).
