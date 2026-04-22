@@ -85,13 +85,39 @@ Total Supabase: **84 tablas** + **11 vistas**.
 
 ---
 
-## Progreso diario (baseline)
+## Progreso diario
 
-| Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
-|---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec | Hito del día |
+|---|---|---|---|---|---|---|---|
+| **22-abr-2026** (baseline AM) | 68 | 15.9% | 0 | 1 | 4 | 63 | — |
+| **22-abr-2026** (cierre PM) | 68 | 17.4% | 0 | 1 | 4 | 63 | Tracker completo: status.html + agregar-tema.html + 8 PRs |
 
-> _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+> _Claude captura snapshot diario. Este bloque muestra evolución día a día._
+
+---
+
+## Bitácora 22-abr-2026
+
+### Dusan (8 PRs mergeados)
+1. Creó STATUS.md con las primeras 4 iniciativas (PR #6)
+2. Expandió a 11 columnas con departamentos y responsables (PR #7)
+3. Incorporó I-06 Ecosistema integrado desde chat Gemini (PR #8)
+4. Agregó I-07 Evaluación de diagramas + Mermaid (PR #9)
+5. Escaneó sesiones anteriores → detectó 50 tareas → armó 17 padres + 43 subtareas + formulario web (PR #10)
+6. Creó status.html como visor web en vivo (PR #11)
+7. Expandió a 25 iniciativas + snapshots diarios + directorio de tablas (PR #12)
+8. Reconstruyó status.html con 68 tareas, ordenamiento y filtros (PR #13)
+
+### Pablo (1 commit, rama herramientas)
+1. Script PowerShell para generar prompts de handoff entre sesiones (ahorra ~3 min por cambio de máquina)
+
+### Iniciativas que avanzaron hoy
+| Código | Antes | Después | Qué movió la aguja |
+|---|---|---|---|
+| I-04 Tracker temas | 30% | **90%** | status.html + agregar-tema + 68 tareas cargadas |
+| I-07 Eval diagramas | 0% | **10%** | Evaluó ECharts vs React Flow, eligió ECharts |
+| I-01 Mapa BD+FKs | 20% | **30%** | Directorio de tablas Supabase mapeado (84 tablas + 11 vistas) |
+| I-06 Ecosistema int. | 0% | **15%** | Formalizada como iniciativa desde chat externo |
 
 ---
 
