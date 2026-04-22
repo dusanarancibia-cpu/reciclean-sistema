@@ -3,217 +3,306 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📊 STATUS · Reciclean-Farex</title>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<title>Reciclean · Panel de Temas</title>
 <style>
-  :root {
-    --bg: #0f172a;
-    --panel: #1e293b;
-    --accent: #22c55e;
-    --text: #f1f5f9;
-    --muted: #94a3b8;
-    --border: #334155;
-    --link: #60a5fa;
-    --hover: #2d3e52;
-  }
-  * { box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    margin: 0;
-    padding: 20px;
-    line-height: 1.5;
-  }
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  .topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding: 12px 16px;
-    background: var(--panel);
-    border-radius: 8px;
-  }
-  .topbar h1 {
-    margin: 0;
-    font-size: 20px;
-  }
-  .topbar .actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .btn {
-    padding: 8px 14px;
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    white-space: nowrap;
-  }
-  .btn:hover { opacity: 0.9; }
-  .btn-secondary { background: #475569; }
-  .btn-wa { background: #25d366; }
-  .loading {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--muted);
-  }
-  #content {
-    background: var(--panel);
-    padding: 24px 28px;
-    border-radius: 8px;
-    overflow-x: auto;
-  }
-  #content h1 { font-size: 24px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-  #content h2 { font-size: 19px; margin-top: 24px; color: var(--accent); }
-  #content h3 { font-size: 16px; margin-top: 18px; color: #fbbf24; }
-  #content table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 12px 0;
-    font-size: 13px;
-  }
-  #content th, #content td {
-    border: 1px solid var(--border);
-    padding: 8px 10px;
-    text-align: left;
-  }
-  #content th {
-    background: #0b1222;
-    font-weight: 600;
-  }
-  #content tr:hover { background: var(--hover); }
-  #content code {
-    background: #0b1222;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 12px;
-  }
-  #content pre {
-    background: #0b1222;
-    padding: 12px;
-    border-radius: 6px;
-    overflow-x: auto;
-  }
-  #content a { color: var(--link); text-decoration: none; }
-  #content a:hover { text-decoration: underline; }
-  #content blockquote {
-    border-left: 3px solid var(--accent);
-    padding-left: 12px;
-    color: var(--muted);
-    margin: 12px 0;
-  }
-  #content hr {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 24px 0;
-  }
-  .error {
-    background: #7f1d1d;
-    padding: 16px;
-    border-radius: 8px;
-    color: #fecaca;
-  }
-  .meta {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 16px;
-    text-align: center;
-  }
-  @media (max-width: 640px) {
-    body { padding: 10px; }
-    #content { padding: 16px; font-size: 14px; }
-    #content table { font-size: 11px; }
-    #content th, #content td { padding: 6px 4px; }
-    .topbar h1 { font-size: 16px; }
-  }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f1117;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;min-height:100vh}
+h1{font-size:1.2rem;font-weight:700;color:#f8fafc}
+header{padding:14px 16px 0;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+#stats{display:flex;gap:8px;flex-wrap:wrap}
+.stat{background:#1e2330;border-radius:6px;padding:4px 10px;font-size:11px;color:#94a3b8}
+.stat strong{color:#f8fafc}
+#filtros{background:#151923;border-bottom:1px solid #2d3748;padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#filtros input[type=text]{background:#1e2330;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:5px 10px;font-size:12px;width:200px;outline:none}
+#filtros input[type=text]:focus{border-color:#4a90d9}
+#filtros select{background:#1e2330;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;cursor:pointer}
+#filtros label{display:flex;align-items:center;gap:5px;font-size:12px;color:#94a3b8;cursor:pointer;white-space:nowrap}
+#filtros input[type=checkbox]{accent-color:#4a90d9;cursor:pointer}
+#filtros button{background:#1e2330;border:1px solid #2d3748;color:#94a3b8;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;transition:all .15s}
+#filtros button:hover{background:#2d3748;color:#e2e8f0}
+#filtros button.active{background:#1a3a5c;border-color:#4a90d9;color:#7ec8e3}
+#conteo{margin-left:auto;font-size:11px;color:#64748b}
+.wrap-table{overflow-x:auto;padding:0 0 50px}
+table{width:100%;border-collapse:collapse;min-width:900px}
+thead th{background:#1a1f2e;color:#94a3b8;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;text-align:left;border-bottom:2px solid #2d3748;white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0;z-index:2}
+thead th:hover{background:#1e2737;color:#e2e8f0}
+thead th .si{margin-left:4px;opacity:.4;font-size:10px}
+thead th.sa .si::after{content:'▲';opacity:1}
+thead th.sd .si::after{content:'▼';opacity:1}
+thead th:not(.sa):not(.sd) .si::after{content:'⇅'}
+tbody tr{border-bottom:1px solid #1e2330;transition:background .1s}
+tbody tr:hover{background:#1a1f2e}
+tbody tr.pr td:first-child{cursor:pointer}
+tbody tr.sr{display:none}
+tbody tr.sr.vis{display:table-row}
+tbody tr.sr td{background:#0d1018}
+tbody tr.sr td:first-child{padding-left:28px;color:#64748b}
+td{padding:7px 10px;vertical-align:middle;max-width:250px}
+.cod{font-family:monospace;font-size:12px;font-weight:600;white-space:nowrap}
+.cod.pc{color:#7ec8e3}
+.cod.sc{color:#64748b}
+.pw{display:flex;align-items:center;gap:6px;min-width:70px}
+.pb{flex:1;height:4px;background:#1e2330;border-radius:2px;overflow:hidden;min-width:30px}
+.pf{height:100%;border-radius:2px}
+.pn{font-size:11px;color:#94a3b8;white-space:nowrap;min-width:28px;text-align:right}
+.ab{display:inline-block;background:#1e2330;border-radius:4px;padding:2px 6px;font-size:10px;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis}
+.resp{font-size:12px;color:#cbd5e1;white-space:nowrap}
+.tema{font-weight:500;color:#f1f5f9}
+.sr .tema{color:#94a3b8}
+.ti{font-size:11px;color:#64748b;white-space:nowrap}
+.ej{font-size:14px;text-align:center}
+.dep{font-size:10px;color:#64748b;font-family:monospace}
+.del{font-size:11px;color:#94a3b8}
+.banda{font-size:11px;white-space:nowrap;padding:2px 6px;border-radius:4px;display:inline-block}
+.bd{background:#2d2508;color:#fbbf24}
+.bs{background:#0f1f3d;color:#60a5fa}
+.bb{background:#2d1a08;color:#fb923c}
+.bv{background:#082d2d;color:#2dd4bf}
+.br{background:#1f0f3d;color:#a78bfa}
+.bx{background:#082d0d;color:#4ade80}
+.sig{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#64748b;cursor:help}
+.fl{font-size:11px;white-space:nowrap;color:#94a3b8}
+.fl.v{color:#f87171}
+.fl.p{color:#fbbf24}
+.ri{text-align:center;font-size:13px}
+.ti2{font-size:10px;margin-right:4px;transition:transform .2s;display:inline-block}
+.expanded .ti2{transform:rotate(90deg)}
+footer{text-align:center;padding:10px;font-size:11px;color:#4a5568;border-top:1px solid #1e2330;position:fixed;bottom:0;width:100%;background:#0f1117}
+footer a{color:#4a90d9;text-decoration:none}
+@media(max-width:700px){td:nth-child(8),td:nth-child(9),th:nth-child(8),th:nth-child(9),td:nth-child(6),th:nth-child(6){display:none}}
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="topbar">
-    <h1>📊 STATUS · Reciclean-Farex</h1>
-    <div class="actions">
-      <a class="btn" href="agregar-tema.html">+ Agregar tema</a>
-      <button class="btn btn-secondary" onclick="location.reload()">🔄 Refrescar</button>
-      <a class="btn btn-wa" href="https://wa.me/56961926365?text=status" target="_blank">📱 Diego</a>
-    </div>
-  </div>
-
-  <div class="loading" id="loading">Cargando status desde GitHub…</div>
-  <div id="content" style="display:none"></div>
-  <div class="meta" id="meta"></div>
+<header>
+  <h1>🗂️ Panel de Temas — Reciclean-Farex</h1>
+  <div id="stats"></div>
+</header>
+<div id="filtros">
+  <input type="text" id="buscar" placeholder="🔍 Buscar código, tema, responsable…">
+  <select id="fA"><option value="">Todas las áreas</option></select>
+  <select id="fR"><option value="">Todos los responsables</option></select>
+  <select id="fB"><option value="">Todas las bandas</option></select>
+  <label><input type="checkbox" id="fE"> Solo 🔥 ejecutar ahora</label>
+  <button id="btnS">👁️ Ver sub-tareas</button>
+  <span id="conteo"></span>
 </div>
-
+<div class="wrap-table">
+<table id="tabla">
+<thead><tr>
+  <th data-c="c">Código<span class="si"></span></th>
+  <th data-c="pct">%<span class="si"></span></th>
+  <th data-c="a">Área<span class="si"></span></th>
+  <th data-c="r">Responsable<span class="si"></span></th>
+  <th data-c="t">Tema<span class="si"></span></th>
+  <th data-c="ti">Tiempo<span class="si"></span></th>
+  <th data-c="e">▶️<span class="si"></span></th>
+  <th data-c="dep">Depende<span class="si"></span></th>
+  <th data-c="del">Delegar<span class="si"></span></th>
+  <th data-c="b">Banda<span class="si"></span></th>
+  <th data-c="sig">Sig. Acción<span class="si"></span></th>
+  <th data-c="fl">F. Límite<span class="si"></span></th>
+  <th data-c="ruta">📁<span class="si"></span></th>
+</tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+<footer>
+  Datos: 22-abr-2026 · 68 temas &nbsp;|&nbsp;
+  <a href="/agregar-tema.html">+ Agregar tema</a> &nbsp;|&nbsp;
+  Fuente: Supabase <code>temas_en_progreso</code>
+</footer>
 <script>
-  const RAW_URL = 'https://raw.githubusercontent.com/dusanarancibia-cpu/reciclean-sistema/main/STATUS.md';
+const T=[
+{c:'I-01',p:null,pct:30,a:'Tecnología',r:'Claude',t:'Mapa BD + FKs',ti:'1h',e:false,dep:[],del:null,b:'spec',sig:'Mapear FKs reales via information_schema + diagrama ER + decidir RLS',ruta:null,fl:'2026-04-29'},
+{c:'I-02',p:null,pct:10,a:'Gerencia General',r:'Dusan',t:'Viz informes',ti:'2sem',e:false,dep:['I-03'],del:'Ingrid',b:'diseno',sig:'Decidir consumidor/herramienta según matriz CEO/supervisor/comercial',ruta:null,fl:'2026-05-15'},
+{c:'I-03',p:null,pct:20,a:'Tecnología',r:'Dusan',t:'Eval BI tools',ti:'2h',e:false,dep:[],del:'Pablo',b:'spec',sig:'Contrastar con contexto Reciclean real (Pablo vacaciones hasta 26-abr)',ruta:['Cesar - Order/07_Archivo_y_Respaldos/admin_panel_v83.html'],fl:'2026-05-10'},
+{c:'I-04',p:null,pct:90,a:'Gerencia General',r:'Claude',t:'Tracker temas',ti:'30min',e:true,dep:[],del:'Pablo',b:'revision',sig:'Dusan prueba flujo PC/web/móvil y valida. Pablo wirea n8n Diego post 26-abr.',ruta:null,fl:'2026-04-30'},
+{c:'I-05',p:null,pct:30,a:'Tecnología',r:'Claude',t:'Panel temas',ti:'3h',e:false,dep:['I-04'],del:'Pablo',b:'spec',sig:'Build /public/status.html con JS interactivo. Post 26-abr migrar a API live.',ruta:null,fl:'2026-05-10'},
+{c:'I-06',p:null,pct:15,a:'Gerencia General',r:'Dusan',t:'Ecosistema int.',ti:'1sem',e:false,dep:[],del:'Pablo',b:'diseno',sig:'Aceptar Mermaid ya. Post 30-abr evaluar consolidar I-02/I-03.',ruta:['Plan Ecosistema Digital/Ecosistema_Digital_Reciclean_Farex_v2.pptx'],fl:'2026-05-20'},
+{c:'I-07',p:null,pct:10,a:'Tecnología',r:'Claude',t:'Eval diagramas',ti:'30min',e:false,dep:['I-05','I-06'],del:null,b:'diseno',sig:'Integrar Apache ECharts en I-05. Deferir D2/Kroki para evaluar si Mermaid queda corto.',ruta:null,fl:'2026-05-20'},
+{c:'I-08',p:null,pct:10,a:'Tecnología',r:'Dusan',t:'Rotación keys',ti:'20min',e:true,dep:[],del:'Pablo',b:'diseno',sig:'Rotar K3 en console.anthropic.com + Meta token en developers.facebook.com',ruta:null,fl:'2026-04-22'},
+{c:'I-08.1',p:'I-08',pct:20,a:'Tecnología',r:'Dusan',t:'Rotar K3 Anthrop',ti:'10min',e:true,dep:[],del:null,b:'spec',sig:'Ir a console.anthropic.com, generar K4, copiar, parar ejecución',ruta:null,fl:'2026-04-22'},
+{c:'I-08.2',p:'I-08',pct:20,a:'Tecnología',r:'Dusan',t:'Rotar Meta token',ti:'10min',e:true,dep:[],del:null,b:'spec',sig:'Dashboard Meta > App > Access Token > Generate',ruta:null,fl:'2026-04-22'},
+{c:'I-09',p:null,pct:15,a:'Tecnología',r:'Pablo',t:'Infra VPS + hub',ti:'2d',e:false,dep:['I-08'],del:'Pablo',b:'diseno',sig:'Contratar DO hoy. Pablo ejecuta scripts 26-27 abr.',ruta:null,fl:'2026-04-28'},
+{c:'I-09.1',p:'I-09',pct:0,a:'Gerencia General',r:'Dusan',t:'Contratar DO $6',ti:'20min',e:false,dep:[],del:null,b:'diseno',sig:'digitalocean.com/create > Droplet $6 Ubuntu 22.04 + DNS',ruta:null,fl:'2026-04-22'},
+{c:'I-09.2',p:'I-09',pct:10,a:'Tecnología',r:'Dusan',t:'Push repo hub',ti:'30min',e:false,dep:[],del:null,b:'diseno',sig:'Dusan autoriza + Claude Code ejecuta gh repo create + push',ruta:null,fl:'2026-04-22'},
+{c:'I-09.3',p:'I-09',pct:0,a:'Tecnología',r:'Pablo',t:'Deploy VPS script',ti:'1h',e:false,dep:[],del:null,b:'diseno',sig:'SSH VPS post I-09.1 operativo + I-09.2 repo disponible',ruta:null,fl:'2026-04-27'},
+{c:'I-09.4',p:'I-09',pct:0,a:'Tecnología',r:'Pablo',t:'Env vars VPS',ti:'30min',e:false,dep:[],del:null,b:'diseno',sig:'Editar /opt/n8n/.env + docker compose restart',ruta:null,fl:'2026-04-27'},
+{c:'I-09.5',p:'I-09',pct:0,a:'Tecnología',r:'Pablo',t:'Import workflows',ti:'1h',e:false,dep:[],del:null,b:'diseno',sig:'n8n UI > Import from file + verificar credenciales',ruta:null,fl:'2026-04-28'},
+{c:'I-09.6',p:'I-09',pct:0,a:'Tecnología',r:'Pablo',t:'Migrar webhook Meta',ti:'15min',e:false,dep:[],del:null,b:'diseno',sig:'developers.facebook.com > WhatsApp > Config webhook URL',ruta:null,fl:'2026-04-28'},
+{c:'I-09.7',p:'I-09',pct:0,a:'Tecnología',r:'Pablo+Dusan',t:'Paralelo v3.3/v4',ti:'2d',e:false,dep:[],del:null,b:'diseno',sig:'Validar ambos workflows responden correctamente',ruta:null,fl:'2026-04-30'},
+{c:'I-10',p:null,pct:40,a:'Comercial',r:'Dusan',t:'Sprint ventas',ti:'2sem',e:true,dep:[],del:null,b:'build',sig:'Check-in urgente: progreso real vs planeado.',ruta:null,fl:'2026-04-28'},
+{c:'I-10.1',p:'I-10',pct:20,a:'Comercial',r:'Dusan',t:'Lista 50 prospec',ti:'3h',e:true,dep:[],del:null,b:'spec',sig:'Revisar si ya existe parcial. Completar a 50.',ruta:null,fl:'2026-04-22'},
+{c:'I-10.2',p:'I-10',pct:0,a:'Comercial',r:'Dusan',t:'Enviar 30 msgs WA',ti:'2h',e:true,dep:[],del:null,b:'diseno',sig:'Redactar template + ejecutar envío',ruta:null,fl:'2026-04-23'},
+{c:'I-10.3',p:'I-10',pct:0,a:'Comercial',r:'Dusan',t:'5 demos Diego',ti:'5h',e:false,dep:[],del:null,b:'diseno',sig:'Agendar demos via WA + ejecutar',ruta:null,fl:'2026-04-25'},
+{c:'I-10.4',p:'I-10',pct:0,a:'Comercial',r:'Dusan',t:'Propuestas $300',ti:'1h',e:false,dep:[],del:null,b:'diseno',sig:'Template propuesta + personalización por prospecto',ruta:null,fl:'2026-04-23'},
+{c:'I-10.5',p:'I-10',pct:0,a:'Comercial',r:'Dusan',t:'Cierre cliente #1',ti:'3h',e:false,dep:[],del:null,b:'diseno',sig:'Llamar + resolver objeciones + firmar',ruta:null,fl:'2026-04-26'},
+{c:'I-10.6',p:'I-10',pct:0,a:'Comercial',r:'Dusan+cliente',t:'Testimonial video',ti:'2h',e:false,dep:[],del:null,b:'diseno',sig:'Grabar video testimonial post-implementación',ruta:null,fl:'2026-04-28'},
+{c:'I-10.7',p:'I-10',pct:0,a:'Comercial',r:'Dusan',t:'Amplificar video',ti:'1h',e:false,dep:[],del:null,b:'diseno',sig:'Broadcast video via WA',ruta:null,fl:'2026-04-29'},
+{c:'I-11',p:null,pct:50,a:'Tecnología',r:'Pablo',t:'ACI deploy',ti:'1sem',e:false,dep:['I-09'],del:'Pablo',b:'build',sig:'Pablo configura post 26-abr. Ingrid completa teléfonos. Cristian prueba Talca.',ruta:['Cesar - Order/02_Asistente_Comercial_Integrado/specs/SPEC_v3_FINAL.docx'],fl:'2026-05-05'},
+{c:'I-11.1',p:'I-11',pct:30,a:'Operaciones',r:'Ingrid',t:'Teléfonos provs',ti:'3h',e:false,dep:[],del:null,b:'spec',sig:'Revisar tabla proveedores + completar contactos',ruta:null,fl:'2026-04-25'},
+{c:'I-11.2',p:'I-11',pct:0,a:'Tecnología',r:'Pablo',t:'Config ANTHROPIC',ti:'15min',e:false,dep:[],del:null,b:'diseno',sig:'supabase.com/dashboard > project > Settings > Secrets',ruta:null,fl:'2026-04-27'},
+{c:'I-11.3',p:'I-11',pct:0,a:'Tecnología',r:'Pablo',t:'Push ACI GitHub',ti:'30min',e:false,dep:[],del:null,b:'diseno',sig:'git push post review Pablo',ruta:null,fl:'2026-04-27'},
+{c:'I-11.4',p:'I-11',pct:0,a:'Operaciones',r:'Cristian+Ingrid',t:'Pruebas Talca',ti:'1d',e:false,dep:[],del:null,b:'diseno',sig:'Cristian prueba in situ + reporta bugs a Pablo',ruta:null,fl:'2026-04-29'},
+{c:'I-11.5',p:'I-11',pct:0,a:'Comercial',r:'Pablo+Dusan',t:'Config Make.com',ti:'2h',e:false,dep:[],del:null,b:'diseno',sig:'Contratar Make.com + crear workflow email nurturing',ruta:null,fl:'2026-05-05'},
+{c:'I-12',p:null,pct:30,a:'Gerencia General',r:'Dusan',t:'Diego v5.0 live',ti:'2sem',e:true,dep:['I-09'],del:null,b:'spec',sig:'Sesión 1 Pablo 26-abr (backup+SQL). Cargar 5 respuestas oro 29-abr.',ruta:['Plan Ecosistema Digital/Observaciones para Diego Agente/INDICE_MAESTRO.md'],fl:'2026-04-30'},
+{c:'I-12.1',p:'I-12',pct:0,a:'Tecnología',r:'Pablo',t:'Sesión Pablo 1',ti:'2h',e:false,dep:[],del:null,b:'diseno',sig:'pg_dump + deploy SQL v2 con caveats aplicados',ruta:null,fl:'2026-04-26'},
+{c:'I-12.2',p:'I-12',pct:0,a:'Tecnología',r:'Pablo',t:'Sesión Pablo 2',ti:'2h',e:false,dep:[],del:null,b:'diseno',sig:'Aplicar fixes del manifiesto Partes 4-7',ruta:null,fl:'2026-04-27'},
+{c:'I-12.3',p:'I-12',pct:0,a:'Tecnología',r:'Pablo',t:'Sesión Pablo 3',ti:'2h',e:false,dep:[],del:null,b:'diseno',sig:'Cron 02:00 AM Curador + tests E2E',ruta:null,fl:'2026-04-28'},
+{c:'I-12.4',p:'I-12',pct:0,a:'Gerencia General',r:'Dusan',t:'Respuestas oro',ti:'1h',e:false,dep:[],del:null,b:'diseno',sig:'Redactar 5 respuestas modelo + insert manual',ruta:null,fl:'2026-04-29'},
+{c:'I-12.5',p:'I-12',pct:0,a:'Gerencia General',r:'Dusan+Pablo',t:'Lanzamiento oficial',ti:'30min',e:true,dep:[],del:null,b:'diseno',sig:'Abrir whitelist + anunciar en grupo',ruta:null,fl:'2026-04-30'},
+{c:'I-12.6',p:'I-12',pct:20,a:'Gerencia General',r:'Dusan',t:'Mensaje M2 equipo',ti:'30min',e:false,dep:[],del:null,b:'spec',sig:'Ya borrador en repo. Ajustar + enviar 30-abr',ruta:null,fl:'2026-04-30'},
+{c:'I-12.7',p:'I-12',pct:0,a:'Recursos Humanos',r:'Dusan',t:'Onboarding sup',ti:'5d',e:false,dep:[],del:null,b:'diseno',sig:'Agendar sesiones 1-a-1 o grupales',ruta:null,fl:'2026-05-08'},
+{c:'I-13',p:null,pct:5,a:'Tecnología',r:'Pablo',t:'Deuda técnica',ti:'3sem',e:false,dep:['I-12'],del:null,b:'diseno',sig:'Priorizar post 30-abr. Memory y verify_token son críticos pre-lanzamiento.',ruta:null,fl:'2026-05-20'},
+{c:'I-13.1',p:'I-13',pct:0,a:'Tecnología',r:'Pablo',t:'Memoria conv',ti:'4h',e:false,dep:[],del:null,b:'diseno',sig:'Patch antes lanzamiento 30-abr (crítico)',ruta:null,fl:'2026-04-29'},
+{c:'I-13.2',p:'I-13',pct:0,a:'Tecnología',r:'Pablo',t:'Verify token robust',ti:'1h',e:false,dep:[],del:null,b:'diseno',sig:'Deploy antes 30-abr (seguridad)',ruta:null,fl:'2026-04-29'},
+{c:'I-13.3',p:'I-13',pct:0,a:'Tecnología',r:'Pablo',t:'Monitoreo uptime',ti:'30min',e:false,dep:[],del:null,b:'diseno',sig:'Registrar endpoint n8n.reciclean.cl/healthz',ruta:null,fl:'2026-05-05'},
+{c:'I-13.4',p:'I-13',pct:0,a:'Tecnología',r:'Pablo',t:'Fallback humano',ti:'3h',e:false,dep:[],del:null,b:'diseno',sig:'IF Diego confidence < X > enrutar a experto',ruta:null,fl:'2026-05-10'},
+{c:'I-13.5',p:'I-13',pct:0,a:'Tecnología',r:'Pablo',t:'Enforcement tareas',ti:'2h',e:false,dep:[],del:null,b:'diseno',sig:'n8n cron + WA reminder',ruta:null,fl:'2026-05-10'},
+{c:'I-13.6',p:'I-13',pct:0,a:'Tecnología',r:'Pablo',t:'Alertas proactivas',ti:'1d',e:false,dep:[],del:null,b:'diseno',sig:'Queries scheduled + notificaciones WA',ruta:null,fl:'2026-05-15'},
+{c:'I-13.7',p:'I-13',pct:0,a:'Tecnología',r:'Pablo',t:'KPIs automáticos',ti:'4h',e:false,dep:[],del:null,b:'diseno',sig:'SQL aggregations + insert weekly',ruta:null,fl:'2026-05-15'},
+{c:'I-13.8',p:'I-13',pct:0,a:'Tecnología',r:'Pablo',t:'Agente Comercial v1',ti:'2sem',e:false,dep:[],del:null,b:'diseno',sig:'Spec diseñado en I-11 ACI. Aquí la implementación completa.',ruta:null,fl:'2026-05-20'},
+{c:'I-13.9',p:'I-13',pct:0,a:'Comercial',r:'Pablo',t:'Agente Marketing',ti:'1sem',e:false,dep:[],del:null,b:'diseno',sig:'Integrar con Make.com + Canva + Buffer',ruta:null,fl:'2026-05-25'},
+{c:'I-13.10',p:'I-13',pct:0,a:'Tecnología',r:'Cesar',t:'Fix farex SSL',ti:'2h',e:false,dep:[],del:null,b:'diseno',sig:'Debug SSL cert + deduplicar script tag',ruta:null,fl:'2026-05-05'},
+{c:'I-13.11',p:'I-13',pct:0,a:'Tecnología',r:'Claude+Pablo',t:'GG briefing patch',ti:'2h',e:false,dep:[],del:null,b:'diseno',sig:'Query + format + send WA',ruta:null,fl:'2026-05-05'},
+{c:'I-14',p:null,pct:10,a:'Tecnología',r:'Dusan',t:'Blindaje Diego',ti:'1h',e:false,dep:[],del:null,b:'diseno',sig:'Encontrar plástico SIM + reintentar 2FA Meta.',ruta:null,fl:null},
+{c:'I-14.1',p:'I-14',pct:0,a:'Tecnología',r:'Dusan',t:'PUK SIM chip',ti:'30min',e:false,dep:[],del:null,b:'diseno',sig:'Revisar cajas en oficina',ruta:null,fl:null},
+{c:'I-14.2',p:'I-14',pct:0,a:'Tecnología',r:'Dusan',t:'2FA Meta reintento',ti:'15min',e:false,dep:[],del:null,b:'diseno',sig:'Reintento + registrar backup codes',ruta:null,fl:null},
+{c:'I-15',p:null,pct:0,a:'Finanzas y Administración',r:'Dusan',t:'Notion Plus',ti:'30min',e:false,dep:[],del:null,b:'diseno',sig:'Contratar + setup workspace antes de 26-abr.',ruta:null,fl:'2026-04-25'},
+{c:'I-16',p:null,pct:0,a:'Tecnología',r:'Pablo',t:'Diego v5.1',ti:'2sem',e:false,dep:['I-12'],del:null,b:'diseno',sig:'Esperar 1-2 semanas de prod Diego v5.0 para acumular feedback real.',ruta:null,fl:'2026-05-15'},
+{c:'I-17',p:null,pct:20,a:'Tecnología',r:'Claude',t:'Docs Mermaid+EC',ti:'2h',e:false,dep:['I-05'],del:null,b:'spec',sig:'Cuando I-05 arranque build, integrar ECharts. Mermaid disponible en chat hoy.',ruta:null,fl:null},
+{c:'I-17.1',p:'I-17',pct:50,a:'Tecnología',r:'Claude',t:'Mermaid arquit',ti:'1h',e:false,dep:[],del:null,b:'build',sig:'Generar en próxima sesión cuando Dusan pida doc visual',ruta:null,fl:null},
+{c:'I-17.2',p:'I-17',pct:0,a:'Tecnología',r:'Claude',t:'ECharts en I-05',ti:'2h',e:false,dep:[],del:null,b:'diseno',sig:'Solo cuando I-05 entre en build, no antes',ruta:null,fl:null},
+{c:'I-18',p:null,pct:0,a:'Comercial',r:'Dusan',t:'Contrato Resimple',ti:'1h',e:false,dep:[],del:'Ingrid',b:'diseno',sig:'Abrir PDF + decidir renovación/cierre + hablar con Resimple',ruta:['Comercial/Clientes/Resimple/10-2025 Contrato Resimple.pdf'],fl:'2026-05-10'},
+{c:'I-19',p:null,pct:30,a:'Gerencia General',r:'Dusan',t:'Plan 2026-2030',ti:'2h',e:false,dep:[],del:null,b:'spec',sig:'Revisar Plan_Operativo_v2_FINAL + cruzar con I-10, I-12',ruta:['Plan Ecosistema Digital/Reciclean_2026_2030.pptx'],fl:'2026-04-30'},
+{c:'I-20',p:null,pct:10,a:'Comercial',r:'Dusan',t:'Propuestas activas',ti:'1sem',e:false,dep:[],del:'Ingrid',b:'diseno',sig:'Abrir cada PDF + identificar status + decidir seguimiento',ruta:['Comercial/Propuestas activas/'],fl:'2026-05-15'},
+{c:'I-21',p:null,pct:20,a:'Operaciones',r:'Dusan',t:'Puerto Montt ops',ti:'1mes',e:false,dep:[],del:'Nicolas',b:'spec',sig:'Revisar estado permisos + roadmap apertura + Nicolás coordina in situ',ruta:['Patrimonio/Empresa Puerto Montt/Galpon/Diseño de galpon.pptx'],fl:'2026-06-30'},
+{c:'I-22',p:null,pct:25,a:'Tecnología',r:'Dusan',t:'Guía Chatbot',ti:'2sem',e:false,dep:['I-12'],del:'Pablo',b:'spec',sig:'Revisar guia_chatbot + decidir deploy post 30-abr',ruta:['Claude Code/ChatBot/produccion/Guia_Chatbot_Reciclean.pptx'],fl:null},
+{c:'I-23',p:null,pct:15,a:'Gerencia General',r:'Dusan',t:'Monday implement',ti:'3h',e:false,dep:[],del:null,b:'diseno',sig:'Decidir Monday vs tracker interno post 30-abr',ruta:['Claude Code/Documentacion/Monday_Guia_Implementacion_Reciclean.pptx'],fl:null},
+{c:'I-24',p:null,pct:20,a:'Recursos Humanos',r:'Dusan',t:'Descripción cargos',ti:'2h',e:false,dep:[],del:'Ingrid',b:'spec',sig:'Consolidar descripciones 3 cargos + aprobar con equipo',ruta:['equipo-procesos/Cesar Mora/Descripcion de cargo/Descripción Asistente Comercial.docx'],fl:null},
+{c:'I-25',p:null,pct:30,a:'Legal y Compliance',r:'Dusan',t:'Permisos Talca',ti:'3h',e:false,dep:[],del:'Ingrid',b:'spec',sig:'Revisar vigencia cada permiso + fechas renovación',ruta:['Permisos y Resoluciones/Permisos de Talca/20230710142 Resolucion Exenta SEA.pdf'],fl:null}
+];
+const BL={diseno:'💡 Diseño',spec:'📋 Spec',build:'🔨 Build',validado:'🧪 Validado',revision:'🔍 Revisión',superado:'✅ Superado'};
+const BC={diseno:'bd',spec:'bs',build:'bb',validado:'bv',revision:'br',superado:'bx'};
+const PC=p=>p>=80?'#4ade80':p>=60?'#2dd4bf':p>=40?'#fb923c':p>=20?'#fbbf24':'#f87171';
+const TOD='2026-04-22';
+let sC=null,sA=true,showS=false,fT='',fAr='',fRs='',fBn='',fEj=false;
 
-  mermaid.initialize({
-    theme: 'dark',
-    startOnLoad: false,
-    securityLevel: 'loose',
-    themeVariables: {
-      background: '#1e293b',
-      primaryColor: '#22c55e',
-      primaryTextColor: '#f1f5f9',
-      primaryBorderColor: '#334155',
-      lineColor: '#94a3b8'
-    }
+function bldSel(){
+  const a=[...new Set(T.filter(t=>!t.p).map(t=>t.a))].sort();
+  const r=[...new Set(T.map(t=>t.r))].sort();
+  const b=['diseno','spec','build','validado','revision','superado'];
+  const sl=(id,v,lb)=>{const s=document.getElementById(id);v.forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=lb?BL[x]:x;s.appendChild(o);});};
+  sl('fA',a,false);sl('fR',r,false);sl('fB',b,true);
+}
+
+function kids(pc){return T.filter(t=>t.p===pc);}
+
+function match(t){
+  const tx=fT.toLowerCase();
+  if(tx&&![t.c,t.t,t.r,t.a,t.sig||'',t.b].some(v=>v&&v.toLowerCase().includes(tx)))return false;
+  if(fAr&&t.a!==fAr)return false;
+  if(fRs&&t.r!==fRs)return false;
+  if(fBn&&t.b!==fBn)return false;
+  if(fEj&&!t.e)return false;
+  return true;
+}
+
+function bar(pct){
+  return `<div class="pw"><div class="pb"><div class="pf" style="width:${pct}%;background:${PC(pct)}"></div></div><span class="pn">${pct}%</span></div>`;
+}
+
+function fld(fl){
+  if(!fl)return '<span class="fl">—</span>';
+  const d=new Date(fl),df=Math.round((d-new Date(TOD))/86400000);
+  const lb=`${d.getDate()}-${'ene,feb,mar,abr,may,jun,jul,ago,sep,oct,nov,dic'.split(',')[d.getMonth()]}`;
+  if(df<0)return `<span class="fl v" title="Vencida hace ${-df}d">⚠️ ${lb}</span>`;
+  if(df<=3)return `<span class="fl p" title="${df}d restantes">⏰ ${lb}</span>`;
+  return `<span class="fl">${lb}</span>`;
+}
+
+function sv(t,c){
+  if(c==='c')return t.c;if(c==='pct')return t.pct;if(c==='a')return t.a||'';
+  if(c==='r')return t.r||'';if(c==='t')return t.t||'';if(c==='ti')return t.ti||'';
+  if(c==='e')return t.e?1:0;if(c==='dep')return(t.dep||[]).join();
+  if(c==='del')return t.del||'';if(c==='b')return t.b||'';
+  if(c==='sig')return t.sig||'';if(c==='fl')return t.fl||'9999';
+  if(c==='ruta')return t.ruta?1:0;return '';
+}
+
+function rStats(){
+  const par=T.filter(t=>!t.p);
+  const avg=Math.round(par.reduce((s,t)=>s+t.pct,0)/par.length);
+  document.getElementById('stats').innerHTML=`
+    <span class="stat">Total <strong>${T.length}</strong></span>
+    <span class="stat">Iniciativas <strong>${par.length}</strong></span>
+    <span class="stat">🔥 Ejecutar <strong>${T.filter(t=>t.e).length}</strong></span>
+    <span class="stat">🔗 Con deps <strong>${par.filter(t=>t.dep&&t.dep.length>0).length}</strong></span>
+    <span class="stat">Avance <strong>${avg}%</strong></span>`;
+}
+
+function row(t,isSub){
+  const ch=isSub?[]:kids(t.c);
+  const hasC=ch.length>0;
+  const tog=hasC?`<span class="ti2">▶</span>`:'<span style="width:14px;display:inline-block"></span>';
+  const dh=(t.dep&&t.dep.length)?`<span class="dep">${t.dep.join(', ')}</span>`:'<span class="dep">—</span>';
+  const rh=t.ruta&&t.ruta.length?`<span title="${t.ruta.join('\n')}">📁</span>`:'';
+  const sh=t.sig?`<span class="sig" title="${t.sig.replace(/"/g,'&quot;')}">${t.sig}</span>`:'';
+  const bh=`<span class="banda ${BC[t.b]||''}">${BL[t.b]||t.b}</span>`;
+  const cod=isSub?`<span class="cod sc">${t.c}</span>`:`<span class="cod pc">${tog}${t.c}</span>`;
+  return `<td>${cod}</td><td>${bar(t.pct)}</td><td><span class="ab" title="${t.a}">${t.a}</span></td><td><span class="resp">${t.r||'—'}</span></td><td><span class="tema">${t.t}</span></td><td><span class="ti">${t.ti||'—'}</span></td><td class="ej">${t.e?'🔥':'⏸️'}</td><td>${dh}</td><td><span class="del">${t.del||'—'}</span></td><td>${bh}</td><td>${sh}</td><td>${fld(t.fl)}</td><td class="ri">${rh}</td>`;
+}
+
+function render(){
+  rStats();
+  let par=T.filter(t=>!t.p);
+  if(sC){par.sort((a,b)=>{const av=sv(a,sC),bv=sv(b,sC);if(av<bv)return sA?-1:1;if(av>bv)return sA?1:-1;return 0;});}
+  const tb=document.getElementById('tbody');
+  tb.innerHTML='';
+  let vis=0;
+  par.forEach(parent=>{
+    const ch=kids(parent.c);
+    if(!match(parent)&&!ch.some(k=>match(k)))return;
+    vis++;
+    const tr=document.createElement('tr');
+    tr.className='pr'+(ch.length?' ex':'');
+    tr.dataset.p=parent.c;
+    if(ch.length&&showS)tr.classList.add('expanded');
+    tr.innerHTML=row(parent,false);
+    if(ch.length){tr.addEventListener('click',()=>{tr.classList.toggle('expanded');tb.querySelectorAll(`tr[data-s="${parent.c}"]`).forEach(r=>r.classList.toggle('vis'));});}
+    tb.appendChild(tr);
+    ch.forEach(kid=>{
+      if(!match(kid)&&!match(parent))return;
+      const kr=document.createElement('tr');
+      kr.className='sr'+(showS?' vis':'');
+      kr.dataset.s=parent.c;
+      kr.innerHTML=row(kid,true);
+      tb.appendChild(kr);
+    });
   });
+  document.getElementById('conteo').textContent=`${vis} iniciativas · ${T.filter(t=>t.p).length} sub-tareas`;
+}
 
-  async function loadStatus() {
-    try {
-      const resp = await fetch(RAW_URL + '?t=' + Date.now());
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      const md = await resp.text();
-
-      // Render markdown
-      const html = marked.parse(md);
-      const content = document.getElementById('content');
-      content.innerHTML = html;
-
-      // Render Mermaid blocks
-      const mermaidBlocks = content.querySelectorAll('pre > code.language-mermaid, code.language-mermaid');
-      for (let i = 0; i < mermaidBlocks.length; i++) {
-        const block = mermaidBlocks[i];
-        const code = block.textContent;
-        const id = 'mermaid-' + i;
-        const div = document.createElement('div');
-        div.className = 'mermaid';
-        div.id = id;
-        div.textContent = code;
-        const pre = block.parentElement;
-        if (pre && pre.tagName === 'PRE') {
-          pre.replaceWith(div);
-        } else {
-          block.replaceWith(div);
-        }
-      }
-      await mermaid.run({ querySelector: '.mermaid' });
-
-      document.getElementById('loading').style.display = 'none';
-      content.style.display = 'block';
-      document.getElementById('meta').textContent = 'Fuente: STATUS.md en GitHub · cargado ' + new Date().toLocaleString('es-CL');
-    } catch (err) {
-      document.getElementById('loading').innerHTML =
-        '<div class="error">Error cargando status: ' + err.message +
-        '<br><br>Intenta <a href="' + RAW_URL + '" style="color:#fecaca">ver raw directamente</a>.</div>';
-    }
-  }
-
-  loadStatus();
+document.querySelectorAll('thead th[data-c]').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const c=th.dataset.c;
+    if(sC===c){sA=!sA;}else{sC=c;sA=true;}
+    document.querySelectorAll('thead th').forEach(h=>h.classList.remove('sa','sd'));
+    th.classList.add(sA?'sa':'sd');
+    render();
+  });
+});
+document.getElementById('buscar').addEventListener('input',e=>{fT=e.target.value;render();});
+document.getElementById('fA').addEventListener('change',e=>{fAr=e.target.value;render();});
+document.getElementById('fR').addEventListener('change',e=>{fRs=e.target.value;render();});
+document.getElementById('fB').addEventListener('change',e=>{fBn=e.target.value;render();});
+document.getElementById('fE').addEventListener('change',e=>{fEj=e.target.checked;render();});
+document.getElementById('btnS').addEventListener('click',function(){
+  showS=!showS;this.classList.toggle('active',showS);
+  this.textContent=showS?'👁️ Ocultar sub-tareas':'👁️ Ver sub-tareas';
+  render();
+});
+bldSel();render();
 </script>
 </body>
 </html>
