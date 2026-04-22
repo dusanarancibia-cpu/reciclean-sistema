@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pendientes Reciclean-Farex — 22 abril 2026</title>
+<style>
+  @media print { body { margin: 0; } }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; color: #1a1a1a; max-width: 800px; margin: 0 auto; padding: 24px; font-size: 13px; line-height: 1.4; }
+  .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #2563eb; padding-bottom: 10px; margin-bottom: 16px; }
+  .header h1 { font-size: 18px; color: #2563eb; }
+  .header .date { font-size: 12px; color: #666; text-align: right; }
+  .legend { display: flex; gap: 16px; margin-bottom: 14px; font-size: 11px; color: #555; flex-wrap: wrap; }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .dot.green { background: #22c55e; }
+  .dot.yellow { background: #eab308; }
+  .dot.red { background: #ef4444; }
+  .dot.gray { background: #9ca3af; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+  th { background: #2563eb; color: white; padding: 7px 8px; text-align: left; font-size: 11px; font-weight: 600; }
+  td { padding: 6px 8px; border-bottom: 1px solid #e5e7eb; vertical-align: top; font-size: 12px; }
+  tr:nth-child(even) { background: #f8fafc; }
+  .bar-container { width: 100%; background: #e5e7eb; border-radius: 4px; height: 16px; position: relative; }
+  .bar { height: 16px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: 700; }
+  .bar.high { background: #22c55e; }
+  .bar.mid { background: #eab308; color: #1a1a1a; }
+  .bar.low { background: #ef4444; }
+  .bar.zero { background: #9ca3af; }
+  .tag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+  .tag.dusan { background: #dbeafe; color: #1d4ed8; }
+  .tag.pablo { background: #fef3c7; color: #92400e; }
+  .tag.ambos { background: #ede9fe; color: #6d28d9; }
+  .tag.critico { background: #fecaca; color: #991b1b; }
+  .tag.bloqueado { background: #fee2e2; color: #b91c1c; }
+  .tag.listo { background: #d1fae5; color: #065f46; }
+  .tag.diferida { background: #f3f4f6; color: #6b7280; }
+  .estado { font-weight: 600; }
+  .reasignar { font-size: 10px; color: #6b7280; display: block; margin-top: 2px; }
+  .footer { border-top: 2px solid #e5e7eb; padding-top: 10px; display: flex; justify-content: space-between; font-size: 11px; color: #666; }
+  .nota { background: #fffbeb; border-left: 3px solid #eab308; padding: 8px 12px; margin-bottom: 14px; font-size: 11px; }
+  h2 { font-size: 14px; color: #1e40af; margin-bottom: 8px; }
+  .section { margin-bottom: 14px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Pendientes Sistema Reciclean-Farex</h1>
+  <div class="date">
+    22 de abril 2026<br>
+    <strong>Para:</strong> Dusan &amp; Pablo
+  </div>
+</div>
+
+<div class="legend">
+  <span><span class="dot green"></span> 70%+ Avanzado</span>
+  <span><span class="dot yellow"></span> 30-69% En progreso</span>
+  <span><span class="dot red"></span> &lt;30% Inicial</span>
+  <span><span class="dot gray"></span> Diferida / sin empezar</span>
+  <span><span class="tag dusan">D</span> Dusan</span>
+  <span><span class="tag pablo">P</span> Pablo</span>
+  <span><span class="tag ambos">D+P</span> Ambos</span>
+</div>
+
+<div class="nota">
+  <strong>Bloqueo principal:</strong> Falta la llave <code>N8N_API_KEY</code> que Dusan debe entregar a Pablo. Sin ella, las tareas P2 y P5 no pueden avanzar.
+</div>
+
+<div class="section">
+<h2>Tareas Diego Alonso (chatbot WhatsApp)</h2>
+<table>
+  <tr>
+    <th style="width:5%">#</th>
+    <th style="width:28%">Tarea</th>
+    <th style="width:10%">Quien</th>
+    <th style="width:15%">Avance</th>
+    <th style="width:10%">Estado</th>
+    <th style="width:16%">Fecha est.</th>
+    <th style="width:16%">Que falta</th>
+  </tr>
+  <tr>
+    <td>P1</td>
+    <td><strong>Aprobar merge URLs cortas</strong><br>Links como /conoce-diego queden activos en la web</td>
+    <td><span class="tag dusan">D</span><br><span class="reasignar">Reasignar: Pablo</span></td>
+    <td><div class="bar-container"><div class="bar high" style="width:90%">90%</div></div></td>
+    <td><span class="tag listo">Listo p/ merge</span></td>
+    <td>23 abr</td>
+    <td>1 click en GitHub para aprobar</td>
+  </tr>
+  <tr>
+    <td>P2</td>
+    <td><strong>Parche critico: Diego no miente</strong><br>Que Diego diga "no puedo enviar" en vez de inventar que aviso a alguien <span class="tag critico">CRITICO</span></td>
+    <td><span class="tag ambos">D+P</span><br><span class="reasignar">Reasignar: solo Pablo</span></td>
+    <td><div class="bar-container"><div class="bar low" style="width:30%">30%</div></div></td>
+    <td><span class="tag bloqueado">Bloqueado</span></td>
+    <td>28 abr</td>
+    <td>Dusan entrega N8N_API_KEY, Pablo aplica parche</td>
+  </tr>
+  <tr>
+    <td>P3</td>
+    <td><strong>Mandar pagina /coordinar al equipo</strong><br>WhatsApp al equipo con el link de como pedir cosas a Diego</td>
+    <td><span class="tag dusan">D</span><br><span class="reasignar">Reasignar: Pablo</span></td>
+    <td><div class="bar-container"><div class="bar mid" style="width:60%">60%</div></div></td>
+    <td>Mensajes listos</td>
+    <td>25 abr</td>
+    <td>Dusan decide cuando mandar los 3 mensajes por WA</td>
+  </tr>
+  <tr>
+    <td>P5</td>
+    <td><strong>Corregir 28 bugs de Diego</strong><br>Loops de saludo, menus que no entiende, se contradice, etc.</td>
+    <td><span class="tag pablo">P</span><br><span class="reasignar">Reasignar: Dusan+Pablo</span></td>
+    <td><div class="bar-container"><div class="bar low" style="width:25%">25%</div></div></td>
+    <td><span class="tag bloqueado">Bloqueado</span></td>
+    <td>2 may</td>
+    <td>Requiere N8N_API_KEY (misma que P2). Pablo refactoriza prompt</td>
+  </tr>
+  <tr>
+    <td>P6</td>
+    <td><strong>Hacer a Diego mas humano</strong><br>Que salude con calidez, comente el clima, cierre bonito</td>
+    <td><span class="tag pablo">P</span><br><span class="reasignar">Reasignar: Dusan</span></td>
+    <td><div class="bar-container"><div class="bar zero" style="width:10%">10%</div></div></td>
+    <td><span class="tag diferida">Diferida</span></td>
+    <td>15 may</td>
+    <td>Espera que P5 este listo. Primero honestidad, despues calidez</td>
+  </tr>
+  <tr>
+    <td>P4</td>
+    <td><strong>Monitoreo semanal de Diego</strong><br>Revisar cada viernes como se porto Diego con el equipo</td>
+    <td><span class="tag dusan">D</span><br><span class="reasignar">Reasignar: Pablo</span></td>
+    <td><div class="bar-container"><div class="bar low" style="width:20%">20%</div></div></td>
+    <td>Pendiente</td>
+    <td>Recurrente</td>
+    <td>Definir rutina: query Supabase cada viernes</td>
+  </tr>
+</table>
+</div>
+
+<div class="section">
+<h2>Diego v4.2 — Modo Entrevista (proyecto grande)</h2>
+<table>
+  <tr>
+    <th style="width:5%">#</th>
+    <th style="width:28%">Tarea</th>
+    <th style="width:10%">Quien</th>
+    <th style="width:15%">Avance</th>
+    <th style="width:10%">Estado</th>
+    <th style="width:16%">Fecha est.</th>
+    <th style="width:16%">Que falta</th>
+  </tr>
+  <tr>
+    <td>V1</td>
+    <td><strong>Crear 5 tablas en Supabase</strong><br>Base de datos para que Diego aprenda del equipo</td>
+    <td><span class="tag pablo">P</span><br><span class="reasignar">Reasignar: Dusan (guia lista)</span></td>
+    <td><div class="bar-container"><div class="bar mid" style="width:50%">50%</div></div></td>
+    <td>SQL listo, falta ejecutar</td>
+    <td>26 abr</td>
+    <td>Copiar SQL y ejecutar en Supabase (15 min)</td>
+  </tr>
+  <tr>
+    <td>V2</td>
+    <td><strong>Modificar workflow Diego en n8n</strong><br>Agregar nodos para detectar vacios y modo entrevista</td>
+    <td><span class="tag pablo">P</span><br><span class="reasignar">Reasignar: —</span></td>
+    <td><div class="bar-container"><div class="bar low" style="width:15%">15%</div></div></td>
+    <td>Diseñado</td>
+    <td>27 abr</td>
+    <td>Pablo arma nodos en n8n (4 horas trabajo)</td>
+  </tr>
+  <tr>
+    <td>V3</td>
+    <td><strong>Armar Diego-Curador</strong><br>Bot nocturno que procesa lo aprendido y avisa a Dusan</td>
+    <td><span class="tag pablo">P</span><br><span class="reasignar">Reasignar: —</span></td>
+    <td><div class="bar-container"><div class="bar low" style="width:10%">10%</div></div></td>
+    <td>Diseñado</td>
+    <td>28 abr</td>
+    <td>Workflow nuevo en n8n (4 horas trabajo)</td>
+  </tr>
+  <tr>
+    <td>V4</td>
+    <td><strong>Pruebas y lanzamiento</strong><br>6 tests con WA propio + switch a LIVE</td>
+    <td><span class="tag ambos">D+P</span><br><span class="reasignar">Reasignar: —</span></td>
+    <td><div class="bar-container"><div class="bar zero" style="width:0%">0%</div></div></td>
+    <td>Espera V2+V3</td>
+    <td>29-30 abr</td>
+    <td>Probar, activar, mandar mensaje M2 al grupo</td>
+  </tr>
+</table>
+</div>
+
+<div class="section">
+<h2>Sistema de Precios (panel web)</h2>
+<table>
+  <tr>
+    <th style="width:5%">#</th>
+    <th style="width:28%">Tarea</th>
+    <th style="width:10%">Quien</th>
+    <th style="width:15%">Avance</th>
+    <th style="width:10%">Estado</th>
+    <th style="width:16%">Fecha est.</th>
+    <th style="width:16%">Que falta</th>
+  </tr>
+  <tr>
+    <td>S1</td>
+    <td><strong>v91 — Version movil</strong><br>Que el panel se vea bien en celular</td>
+    <td><span class="tag pablo">P</span><br><span class="reasignar">Reasignar: —</span></td>
+    <td><div class="bar-container"><div class="bar zero" style="width:5%">5%</div></div></td>
+    <td>No empezado</td>
+    <td>15 may</td>
+    <td>Responsive CSS para las 8 pestanas del panel</td>
+  </tr>
+  <tr>
+    <td>S2</td>
+    <td><strong>Dashboard de indicadores</strong><br>Numeros clave del negocio en una pantalla</td>
+    <td><span class="tag ambos">D+P</span><br><span class="reasignar">Reasignar: —</span></td>
+    <td><div class="bar-container"><div class="bar zero" style="width:0%">0%</div></div></td>
+    <td>Fase 2</td>
+    <td>Jun 2026</td>
+    <td>Definir KPIs, disenar, implementar</td>
+  </tr>
+  <tr>
+    <td>S3</td>
+    <td><strong>CRM de proveedores</strong><br>Registro de proveedores y seguimiento</td>
+    <td><span class="tag ambos">D+P</span><br><span class="reasignar">Reasignar: —</span></td>
+    <td><div class="bar-container"><div class="bar zero" style="width:0%">0%</div></div></td>
+    <td>Fase 2</td>
+    <td>Jun 2026</td>
+    <td>Disenar modelo de datos + interfaz</td>
+  </tr>
+</table>
+</div>
+
+<div class="footer">
+  <div>
+    <strong>Produccion:</strong> v90 (7 abr 2026) — reciclean-sistema.vercel.app<br>
+    <strong>Accion inmediata:</strong> Dusan entrega N8N_API_KEY a Pablo para desbloquear P2 y P5
+  </div>
+  <div style="text-align:right">
+    Generado: 22 abr 2026<br>
+    Grupo Reciclean-Farex
+  </div>
+</div>
+
+</body>
+</html>
