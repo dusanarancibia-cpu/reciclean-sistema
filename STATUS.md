@@ -1,7 +1,7 @@
 # STATUS — Reciclean-Farex Sistema
 
 > **Snapshot de `temas_en_progreso` (Supabase).** Respuesta canónica a "status / cómo vamos / detalle".
-> **Última regeneración:** 22-abr-2026 12:22
+> **Última regeneración:** 22-abr-2026 12:50
 
 ---
 
@@ -26,8 +26,6 @@ vuelve a fetchear y dame la tabla actualizada.
 | 🔍 Revisión | 80-99% | Peer review / QA |
 | ✅ Superado | 100% | Live + revisión superada |
 
-**Regla dura:** 100% requiere revisión y validación externa superada + 0 pendientes.
-
 ---
 
 ## Temas activos (11 columnas)
@@ -37,10 +35,11 @@ vuelve a fetchear y dame la tabla actualizada.
 | **I-04** | 90% | Gerencia General | Claude | Tracker temas | 30min | 🔥 Sí | — | Pablo | 0% | 🔍 Revisión · Pablo wirea n8n post 26-abr |
 | **I-05** | 30% | Tecnología | Claude | Panel temas | 3h | ⏸️ | I-04 | Pablo | 0% | 📋 Spec · Esperando green light para build |
 | **I-03** | 20% | Tecnología | Dusan | Eval BI tools | 2h | ⏸️ | — | Pablo | 0% | 📋 Spec · Contrastar con contexto Reciclean |
+| **I-06** | 15% | Gerencia General | Dusan | Ecosistema int. | 1sem | ⏸️ | — | Pablo | 0% | 💡 Diseño · Overlap con I-02/I-03 — decidir consolidar post 30-abr |
 | **I-01** | 30% | Tecnología | Claude | Mapa BD + FKs | 1h | ⏸️ | — | — | — | 📋 Spec · Mapear FKs + ER + RLS |
 | **I-02** | 10% | Gerencia General | Dusan | Viz informes | 2sem | ⏸️ | I-03 | Ingrid | 0% | 💡 Diseño · Decidir consumidor/herramienta |
 
-**Total:** 5 activos · 0 superados · 2 con bloqueadores (I-04, I-05 indirectamente por depender de I-04)
+**Total:** 6 activos · 0 superados · 3 con bloqueadores (I-04, I-05, I-06)
 
 ---
 
@@ -60,16 +59,16 @@ vuelve a fetchear y dame la tabla actualizada.
 | 10 | **% ocup.** | Ocupación actual del candidato a delegado |
 | 11 | **Banda · Siguiente** | Estado visual + próxima acción o bloqueador |
 
-### Fórmula de % ocupación
+---
 
-`# temas activos asignados × 10%`. Ej: 3 tareas = 30%, 5 = 50%. Simple, se refina después.
+## Temas capturados desde chats externos (regla 3A)
 
-### Flag Delegar (activación)
+| Código | Chat externo | Fecha |
+|---|---|---|
+| I-03 | Gemini — Eval 9 herramientas BI | 22-abr 10:56 |
+| I-06 | Gemini — Ecosistema integrado con Diego | 22-abr 12:40 |
 
-Cuando `delegar_activo = TRUE`:
-
-- **Hasta 26-abr (Pablo vacaciones):** Claude genera `mailto:` + `wa.me` pre-cargados. Tú clickeas y se envían.
-- **Post 26-abr:** Supabase trigger → edge function → SendGrid (email) + Meta Cloud API (WA). Envío automático.
+Archivos respaldados en `7_backup-prompts/sesiones/`.
 
 ---
 
@@ -85,6 +84,7 @@ Cuando `delegar_activo = TRUE`:
 |---|---|
 | PC Claude Code | Pregunta "status" → consulta `v_status_consolidado` |
 | Claude.ai web / mobile | Fetchea raw URL de este archivo |
+| GitHub rendered (bookmark) | [github.com/.../blob/main/STATUS.md](https://github.com/dusanarancibia-cpu/reciclean-sistema/blob/main/STATUS.md) |
 | WhatsApp Diego | Pregunta "status" — activo post 26-abr (Pablo wirea) |
 | Dashboard interactivo | `reciclean-sistema.vercel.app/status.html` — **build pendiente (I-05)** |
 | Supabase Studio | `SELECT * FROM v_status_consolidado;` |
