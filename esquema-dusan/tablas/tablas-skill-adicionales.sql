@@ -127,13 +127,70 @@ CREATE INDEX IF NOT EXISTS idx_preguntas_urgencia ON preguntas_abiertas(urgencia
 ALTER TABLE preguntas_abiertas ENABLE ROW LEVEL SECURITY;
 
 -- ----------------------------------------------------------------
+-- 13. documentos  (catalogo de .md / .txt narrativos del repo)
+-- ----------------------------------------------------------------
+-- Proposito: dar visibilidad de todo archivo narrativo que NO es codigo
+-- y que complementa alguna tabla. Cada fila apunta a un archivo + tabla
+-- espejo si aplica, para navegacion bidireccional.
+-- ----------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS documentos (
+  id BIGSERIAL PRIMARY KEY,
+  path TEXT UNIQUE NOT NULL,                                       -- 'esquema-dusan/01-identidad.md'
+  titulo TEXT NOT NULL,
+  categoria TEXT CHECK (categoria IN ('esquema','spec','guia','caso','mensaje','pendientes','readme','brief','skill','historico')) DEFAULT 'esquema',
+  proposito TEXT,                                                  -- 1 frase de para que sirve
+  es_narrativa BOOLEAN DEFAULT true,                               -- true = contexto, no datos
+  tabla_espejo TEXT,                                               -- nombre de tabla que contiene filas relacionadas (ej. 'objetivos')
+  autor TEXT DEFAULT 'Dusan',
+  version TEXT,                                                    -- 'v1.1'
+  ultima_revision DATE,
+  activo BOOLEAN DEFAULT true,
+  notas TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_documentos_categoria ON documentos(categoria);
+CREATE INDEX IF NOT EXISTS idx_documentos_activo ON documentos(activo);
+CREATE INDEX IF NOT EXISTS idx_documentos_tabla_espejo ON documentos(tabla_espejo);
+ALTER TABLE documentos ENABLE ROW LEVEL SECURITY;
+
+-- ----------------------------------------------------------------
+-- Seed inicial — registra los .md existentes de esquema-dusan/
+-- (opcional, ejecutar tras crear las tablas para poblar el catalogo)
+-- ----------------------------------------------------------------
+/*
+INSERT INTO documentos (path, titulo, categoria, proposito, es_narrativa, tabla_espejo, version, ultima_revision) VALUES
+  ('esquema-dusan/README.md',                        'Esquema Dusan — entrada',             'esquema', 'Brief maestro + mapa de carpeta',                           true,  NULL,                 'v1.1', '2026-04-22'),
+  ('esquema-dusan/ALINEACION-SKILL.md',              'Alineacion con skill datos',          'skill',   'Diagnostico de duplicados y plan de migracion',             true,  NULL,                 'v1.0', '2026-04-22'),
+  ('esquema-dusan/TABLAS-SKILL-RESUMEN.md',          'Tablas skill — vista consolidada',    'skill',   'Las 12 tablas del protocolo + FKs',                         true,  NULL,                 'v1.0', '2026-04-22'),
+  ('esquema-dusan/01-identidad.md',                  'Identidad: quien es Dusan',           'esquema', 'Persona, valores, estilo, frase ancla',                     true,  NULL,                 'v1.0', '2026-04-22'),
+  ('esquema-dusan/02-rol-y-responsabilidades.md',    'Rol y responsabilidades',             'esquema', 'Que hace, que delega, por capa',                            true,  NULL,                 'v1.0', '2026-04-22'),
+  ('esquema-dusan/03-objetivos-y-vision.md',         'Objetivos y vision',                  'esquema', 'O1-O12 con horizontes',                                      true,  'objetivos',          'v1.0', '2026-04-22'),
+  ('esquema-dusan/04-rutinas.md',                    'Rutinas',                             'esquema', 'Patrones diarios/semanales/mensuales/trimestrales',         true,  'sesiones_trabajo',   'v1.0', '2026-04-22'),
+  ('esquema-dusan/05-condiciones-y-reglas.md',       'Condiciones y reglas LOCK',           'esquema', 'Reglas R.PUB/R.TEC/R.EMP/R.DIE/R.IA',                       true,  'decisiones_lock',    'v1.0', '2026-04-22'),
+  ('esquema-dusan/06-stakeholders.md',               'Stakeholders',                        'esquema', 'Circulo interno, equipo, clientes, partners',               true,  'contactos',          'v1.0', '2026-04-22'),
+  ('esquema-dusan/07-kpis-y-metricas.md',            'KPIs y metricas',                     'esquema', 'Tablero personal con umbrales',                             true,  'kpis',               'v1.0', '2026-04-22'),
+  ('esquema-dusan/08-decisiones-lock.md',            'Decisiones LOCK',                     'esquema', 'Historial T/E/P + codigos C3..D4.a',                        true,  'decisiones_lock',    'v1.0', '2026-04-22'),
+  ('esquema-dusan/09-comprension-y-logros.md',       'Comprension y logros (A/B/C/D + %)',  'esquema', 'Tablero auditable del estado de la relacion Dusan<->Claude', true, NULL,                 'v1.0', '2026-04-22'),
+  ('CLAUDE.md',                                      'Instrucciones proyecto',              'readme',  'Contexto del proyecto para Claude',                          true,  NULL,                 NULL,   '2026-04-22'),
+  ('PENDIENTES.md',                                  'Pendientes (pre-migracion)',          'pendientes','Historico, post-migracion queda como narrativa',           true,  'tareas',             NULL,   '2026-04-20'),
+  ('CONTINUAR_SESION_DIEGO.txt',                     'Continuidad sesion movil',            'brief',   'Prompt para retomar en otra IA',                             true,  NULL,                 NULL,   '2026-04-22'),
+  ('docs/diego-v4.2-spec.md',                        'Spec Diego v4.2 Modo Entrevista',     'spec',    'Diseno entregado a Pablo',                                   true,  'decisiones_lock',    'v4.2', '2026-04-20'),
+  ('docs/diego-v4.2-implementacion-21abr.md',        'Guia implementacion 21-abr 08-10h',   'guia',    'Paso a paso para Dusan ejecute',                             true,  NULL,                 'v1.1', '2026-04-21'),
+  ('casos-diego/20260420-ingrid.md',                 'Caso Ingrid — 2h 35msgs sin resolver','caso',    'Evidencia P2 CRITICO',                                       true,  'casos_asistente',    NULL,   '2026-04-20'),
+  ('casos-diego/20260420-jair.md',                   'Caso Jair — mentira FC 9026',         'caso',    'Evidencia P2',                                               true,  'casos_asistente',    NULL,   '2026-04-20'),
+  ('casos-diego/20260420-nicolas.md',                'Caso Nicolas — contradiccion cobre',  'caso',    'Evidencia P2',                                               true,  'casos_asistente',    NULL,   '2026-04-20'),
+  ('mensajes-equipo/difusion-coordinar-equipo.md',   'Difusion coordinar-equipo',           'mensaje', '8 variantes personalizadas',                                 true,  'plantillas_mensajes',NULL,   '2026-04-20');
+*/
+
+-- ----------------------------------------------------------------
 -- Validacion
 -- ----------------------------------------------------------------
 SELECT table_name
 FROM information_schema.tables
 WHERE table_schema = 'public'
   AND table_name IN (
-    'objetivos','kpis','kpi_mediciones','sesiones_trabajo','preguntas_abiertas'
+    'objetivos','kpis','kpi_mediciones','sesiones_trabajo','preguntas_abiertas','documentos'
   )
 ORDER BY table_name;
--- Resultado esperado: 5 filas.
+-- Resultado esperado: 6 filas.
