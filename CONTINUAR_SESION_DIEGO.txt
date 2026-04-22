@@ -278,19 +278,119 @@ Commits principales de esta sesion:
 - 959e5e5 docs: bugs 25-28 y caso Nicolas
 
 ================================================================
-PROXIMA ACCION SUGERIDA AL RETOMAR
+EVENTOS FINALES DE LA SESION MOVIL (actualizado 2026-04-22)
 ================================================================
 
-Orden recomendado:
-1. Verificar si PR #5 ya fue mergeado. Si no, mergearlo.
-2. Si Dusan trae la N8N_API_KEY: empezar P2 inmediatamente
-   (backup -> diff -> OK -> PUT -> smoke test). Esto
-   desbloquea a Diego Alonso para el equipo YA.
-3. Aprovechar el mismo PUT para aplicar P5 (bugs 1-28).
-4. Ayudar a Dusan a enviar los 8 mensajes del equipo.
-5. Agregar columna `anuncio_nombre_visto` en Supabase y
-   configurar nodo para enviar anuncio one-shot.
-6. P4 (monitoreo semanal) puede esperar al primer viernes.
-7. P6 (humanizacion) postergada.
+- Dusan entrego la N8N_API_KEY en el chat.
+- Intento directo de GET al workflow desde el sandbox movil fallo
+  con HTTP 403 "Host not in allowlist". El sandbox de Claude Code
+  on the web NO permite llamadas a n8n.reciclean.cl. Por eso el
+  PATCH P2 debe aplicarse desde PC o desde un entorno local con
+  acceso a la VPS.
+- Se creo el kit `patches/` con todo listo:
+  - patches/README.md (guia paso a paso)
+  - patches/diego-alonso-v43-bloques.md (texto exacto del PATCH)
+  - patches/backup-workflow.sh (backup via curl)
+  - patches/aplicar-patch.sh (jq + curl PUT)
+  - patches/rollback-workflow.sh (rollback con confirmacion)
+  - patches/.gitignore (no commitear backups)
+- Supabase: la columna `anuncio_diego_alonso_visto` fue CREADA
+  via MCP desde la sesion movil. 9/9 contactos activos en false,
+  listos para recibir el anuncio one-shot.
+  IMPORTANTE: NO usar `anuncio_nombre_visto` (flag previo de Pablo
+  para otro proposito, tiene 7/9 contactos en true).
+- PR #5 abierto, pendiente de merge por Dusan.
+
+Commits finales de la sesion movil:
+- 5b138bb feat(patches): kit listo para aplicar Diego Alonso v4.3
+- b28cae7 feat(supabase): agregar columna anuncio_diego_alonso_visto
+
+================================================================
+PROXIMA ACCION SUGERIDA AL RETOMAR (en PC)
+================================================================
+
+Orden recomendado para Claude Code PC:
+
+1. Asegurar que la branch esta al dia:
+   git fetch origin
+   git checkout claude/continue-diego-mobile-U0cgA
+   git pull
+
+2. Leer:
+   - CLAUDE.md
+   - CONTINUAR_SESION_DIEGO.txt (este archivo)
+   - PENDIENTES.md
+   - patches/README.md
+   - patches/diego-alonso-v43-bloques.md
+
+3. Pedir a Dusan la N8N_API_KEY (la tiene, la entrego hoy en movil).
+   Exportarla:
+     export N8N_API_KEY='<key>'
+     export N8N_URL='https://n8n.reciclean.cl'
+     export WORKFLOW_ID='PWxwI2oyCRejxG82'
+
+4. Ejecutar backup:
+   bash patches/backup-workflow.sh
+   -> guarda en patches/backups/workflow_YYYYMMDD_HHMMSS.json
+
+5. Extraer prompt actual:
+   LATEST=$(ls -t patches/backups/workflow_*.json | head -1)
+   jq -r '.nodes[] | select(.name == "claude-api") | .parameters.systemMessage' \
+     "$LATEST" > patches/backups/prompt_actual.txt
+
+6. Construir prompt nuevo (Claude Code PC hace el merge):
+   - Tomar prompt_actual.txt como base
+   - Aplicar los 3 alcances de P2 + reglas anti-bug (bloques en
+     diego-alonso-v43-bloques.md)
+   - Guardar en patches/backups/prompt_nuevo.txt
+   - Mostrar diff a Dusan
+   - Esperar OK explicito
+
+7. Aplicar PATCH:
+   bash patches/aplicar-patch.sh patches/backups/prompt_nuevo.txt
+
+8. Smoke test desde WhatsApp de Dusan:
+   - "Diego, test v4.3" -> debe responder como "Diego Alonso" y
+     prepender el anuncio one-shot
+   - "Diego, necesito que Andrea coordine un camion para carton
+     Talca-Santiago" -> debe entregar borrador + link wa.me, NO
+     decir "le aviso a Andrea"
+
+9. Si smoke test OK:
+   - Marcar P2 como cerrada en PENDIENTES.md
+   - Seguir con P5 (iteracion bugs) o mergear PR #5
+
+10. Si smoke test falla:
+   - bash patches/rollback-workflow.sh <backup>
+   - Debug offline con logs
+
+11. Mergear PR #5 si sigue abierto (solo documentacion + URLs cortas,
+    no toca Diego LIVE). Confirma activacion de URLs cortas en
+    produccion.
+
+12. Ayudar a Dusan a enviar los 8 mensajes del equipo desde su
+    WhatsApp (estan en mensajes-equipo/difusion-coordinar-equipo.md).
+
+13. P4 (monitoreo semanal) y P6 (humanizacion) postergados.
+
+================================================================
+RESTRICCIONES DEL SANDBOX MOVIL (para referencia futura)
+================================================================
+
+Lo que el sandbox de Claude Code on the web SI permite:
+- GitHub (MCP): PRs, commits, issues, merge
+- Supabase (MCP): SQL, migraciones
+- Vercel (MCP), Google Calendar, Canva, Gamma
+- curl a github.com, dominios publicos estandar
+
+Lo que NO permite:
+- Llamadas HTTP a n8n.reciclean.cl (host no en allowlist)
+- Acceso al disco local de Dusan (ni directorio hermano `Claude Code/`)
+- Envio de WhatsApp
+- Computer Use
+
+Por eso en sesion movil avanzamos todo lo que pudo hacerse con
+GitHub + Supabase, y dejamos listo el kit `patches/` para que el PC
+(o el propio Dusan) aplique el PATCH via VPS.
 
 ================================================================
