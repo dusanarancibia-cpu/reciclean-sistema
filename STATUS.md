@@ -1,87 +1,104 @@
 # STATUS — Reciclean-Farex Sistema
 
-> **Snapshot textual de la tabla `temas_en_progreso` en Supabase.**
-> Este archivo es la respuesta canónica a "¿cómo vamos? / status / qué tenemos en curso".
-> **Última regeneración:** 22-abr-2026 11:40
+> **Snapshot de `temas_en_progreso` (Supabase).** Respuesta canónica a "status / cómo vamos / detalle".
+> **Última regeneración:** 22-abr-2026 12:22
 
 ---
 
-## Cómo usarlo desde otra IA (Claude.ai, Gemini, ChatGPT)
-
-Pega este prompt al inicio del chat o úsalo on demand:
+## Uso desde otra IA (Claude.ai, Gemini, ChatGPT)
 
 ```
 Fetchea https://raw.githubusercontent.com/dusanarancibia-cpu/reciclean-sistema/main/STATUS.md
-y devuélveme el contenido formateado. Cada vez que te diga "status" o "cómo vamos",
-vuelve a fetchear y muéstrame la tabla actualizada.
+y muéstrame el contenido. Cada vez que te diga "status" o "cómo vamos",
+vuelve a fetchear y dame la tabla actualizada.
 ```
 
 ---
 
-## Leyenda de bandas (rúbrica %)
+## Leyenda bandas (rúbrica %)
 
 | Banda | Rango | Significa |
 |---|---|---|
-| 💡 Diseño | 0-19% | Idea planteada, sin spec formal |
-| 📋 Spec | 20-39% | Documento/propuesta escrito |
-| 🔨 Build | 40-59% | En implementación activa |
-| 🧪 Validado técnico | 60-79% | Pasa smoke tests / funciona en dev |
-| 🔍 Revisión | 80-99% | Peer review / QA / aprobación Dusan |
-| ✅ Superado | 100% | Live en prod, revisión y validación superada |
+| 💡 Diseño | 0-19% | Idea planteada |
+| 📋 Spec | 20-39% | Documento/propuesta |
+| 🔨 Build | 40-59% | Implementación activa |
+| 🧪 Validado | 60-79% | Pasa smoke tests |
+| 🔍 Revisión | 80-99% | Peer review / QA |
+| ✅ Superado | 100% | Live + revisión superada |
 
 **Regla dura:** 100% requiere revisión y validación externa superada + 0 pendientes.
 
 ---
 
-## Temas activos (ordenados por bloqueadores + %)
+## Temas activos (11 columnas)
 
-| Código | Título | % | Banda | Owner | Siguiente acción / bloqueador |
-|---|---|---|---|---|---|
-| **I-04** | Capa tracking iniciativas — tabla `temas_en_progreso` | **90%** | 🔍 Revisión | Claude | ⚠️ Pendiente validación cross-surface por Dusan + wireado n8n por Pablo post 26-abr |
-| **I-03** | Evaluación 9 herramientas BI — chat externo Gemini | **20%** | 📋 Spec | Dusan | ⚠️ Análisis Gemini genérico, no considera restricciones proyecto |
-| **I-01** | Inventario 84 tablas Supabase + mapa relaciones | **30%** | 📋 Spec | Dusan | Mapear FKs reales + diagrama ER + decidir RLS de tablas particionadas |
-| **I-02** | Diseño visual de informes (capa reportería) | **10%** | 💡 Diseño | Dusan | Decidir consumidor/herramienta según matriz (CEO / supervisor / comercial) |
+| Código | % | Depto | Responsable | Tema (≤15) | Tiempo | ▶️ | Depende | Delegar a | % ocup. | Banda · Siguiente |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **I-04** | 90% | Gerencia General | Claude | Tracker temas | 30min | 🔥 Sí | — | Pablo | 0% | 🔍 Revisión · Pablo wirea n8n post 26-abr |
+| **I-05** | 30% | Tecnología | Claude | Panel temas | 3h | ⏸️ | I-04 | Pablo | 0% | 📋 Spec · Esperando green light para build |
+| **I-03** | 20% | Tecnología | Dusan | Eval BI tools | 2h | ⏸️ | — | Pablo | 0% | 📋 Spec · Contrastar con contexto Reciclean |
+| **I-01** | 30% | Tecnología | Claude | Mapa BD + FKs | 1h | ⏸️ | — | — | — | 📋 Spec · Mapear FKs + ER + RLS |
+| **I-02** | 10% | Gerencia General | Dusan | Viz informes | 2sem | ⏸️ | I-03 | Ingrid | 0% | 💡 Diseño · Decidir consumidor/herramienta |
+
+**Total:** 5 activos · 0 superados · 2 con bloqueadores (I-04, I-05 indirectamente por depender de I-04)
 
 ---
 
-## Temas bloqueados (atención inmediata)
+## Explicación de columnas
 
-| Código | Bloqueador | Desbloqueo estimado |
+| # | Columna | Contenido |
 |---|---|---|
-| I-04 | Pablo wirea nodo n8n Diego para write access | 26-abr (regreso Pablo) |
-| I-03 | Falta contrastar análisis externo contra contexto Reciclean | Pendiente decisión Dusan A/B/C/D/E/Z |
+| 1 | **Código** | ID único (I-NN) |
+| 2 | **%** | Grado de avance (0-100) |
+| 3 | **Depto** | Departamento responsable (10 definidos) |
+| 4 | **Responsable línea** | Persona que ejecuta ESTA tarea |
+| 5 | **Tema (≤15)** | Nombre corto |
+| 6 | **Tiempo** | Estimado para terminar |
+| 7 | **▶️** | 🔥 Sí = ejecutar ahora · ⏸️ = espera · ✅ = hecha |
+| 8 | **Depende** | Códigos de tareas previas requeridas |
+| 9 | **Delegar a** | Candidato para aliviar al responsable |
+| 10 | **% ocup.** | Ocupación actual del candidato a delegado |
+| 11 | **Banda · Siguiente** | Estado visual + próxima acción o bloqueador |
+
+### Fórmula de % ocupación
+
+`# temas activos asignados × 10%`. Ej: 3 tareas = 30%, 5 = 50%. Simple, se refina después.
+
+### Flag Delegar (activación)
+
+Cuando `delegar_activo = TRUE`:
+
+- **Hasta 26-abr (Pablo vacaciones):** Claude genera `mailto:` + `wa.me` pre-cargados. Tú clickeas y se envían.
+- **Post 26-abr:** Supabase trigger → edge function → SendGrid (email) + Meta Cloud API (WA). Envío automático.
 
 ---
 
-## Cómo consultar este status desde otras superficies
+## Departamentos definidos (10)
+
+1. Gerencia General · 2. Operaciones · 3. Comercial · 4. Abastecimiento · 5. Logística · 6. Finanzas y Administración · 7. Tecnología · 8. Recursos Humanos · 9. Legal y Compliance · 10. Sostenibilidad
+
+---
+
+## Cómo consultar desde cualquier superficie
 
 | Superficie | Método |
 |---|---|
-| **PC Claude Code** | Pregunta "status" — consulta `v_status_consolidado` automáticamente |
-| **Claude.ai web / Mobile app** | Fetchea el raw URL de este archivo (arriba el prompt) |
-| **WhatsApp Diego** | Escribe "status" — Diego queryea `v_status_consolidado` (activo post 26-abr) |
-| **Supabase Studio** | `SELECT * FROM v_status_consolidado;` |
-
----
-
-## Cómo se actualiza
-
-- **Claude Code** (Supabase MCP): cuando Dusan trabaja un tema desde PC
-- **Diego** (n8n → Supabase): vía agente WhatsApp, activo post 26-abr
-- **Manual**: Dusan vía Supabase Studio si necesita corrección puntual
-
-Cada UPDATE actualiza `fecha_ultimo_update` automáticamente (trigger `trg_temas_touch`).
+| PC Claude Code | Pregunta "status" → consulta `v_status_consolidado` |
+| Claude.ai web / mobile | Fetchea raw URL de este archivo |
+| WhatsApp Diego | Pregunta "status" — activo post 26-abr (Pablo wirea) |
+| Dashboard interactivo | `reciclean-sistema.vercel.app/status.html` — **build pendiente (I-05)** |
+| Supabase Studio | `SELECT * FROM v_status_consolidado;` |
 
 ---
 
 ## Fuente de verdad
 
 **Tabla:** `public.temas_en_progreso`
+**Vistas:** `v_status_consolidado` (display) · `v_delegaciones_propuestas` (para panel HTML) · `v_temas_activos` · `v_temas_bloqueados`
 **Proyecto Supabase:** `eknmtsrtfkzroxnovfqn`
-**Vista canónica:** `public.v_status_consolidado`
 
-Si este archivo y la tabla divergen, **la tabla manda**. Regenera este archivo consultando la vista.
+Si este archivo y la tabla divergen, la tabla manda.
 
 ---
 
-_Repo público sin datos sensibles. Si un tema futuro incluye info confidencial (márgenes, clientes, salarios), NO se publica aquí — se mueve a endpoint autenticado post 26-abr cuando Pablo monte la edge function Vercel._
+_Repo público sin datos sensibles. Contenido comercial/salarios/márgenes nunca se publica aquí — se mueve a endpoint autenticado post 26-abr con edge function Vercel._
