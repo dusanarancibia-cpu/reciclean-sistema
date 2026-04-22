@@ -152,3 +152,8 @@ Existe un directorio `Claude Code/` al mismo nivel que este repo con:
 - Al modificar logica: editar `public/js/*.js`
 - "empresa" en contexto de materiales = flags `farex`/`reciclean` en `mats`
 - Skill disponible: `reciclean-farex-comercial` para actualizacion de precios
+- Skill disponible: `protocolo-datos-unificado` (en `.claude/skills/`) — se
+  activa automaticamente al registrar info estructural (tareas, bugs, casos,
+  mensajes, patches). Catalogo de tablas Supabase + herramientas + protocolos
+  + plan de migracion archivos->tablas. Leer `SKILL.md` + `TABLAS.md` al
+  iniciar sesion.
