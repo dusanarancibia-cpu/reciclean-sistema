@@ -381,15 +381,82 @@ Ordenada por estado (abiertas primero) -> peso prioridad -> codigo.
 
 **Vista `v_objetivos_estado`** — una fila por objetivo con: `tareas_abiertas`, `tareas_bloqueadas`, `tareas_cerradas`, `pct_avance_tareas` (promedio), `pct_declarado` (manual), `empresa`, `area`, `objetivo_padre`. Detecta desalineacion (objetivo con 0 tareas = sin bajada, o 50% declarado vs 10% real).
 
-### 3.15. `sesiones_claude` — registro de sesiones de trabajo con Claude Code
+### 3.15. `reels_inspiracion` — biblioteca de reels / contenido externo
 
-**Origen:** hoy son archivos `CONTINUAR_SESION_DIEGO.txt` tipo "prompt de continuidad".
+**Origen:** reels, videos o posts externos que nos ensenan algo aplicable. Con transcripcion y matriz "donde se podria usar".
+
+```sql
+CREATE TABLE reels_inspiracion (
+  id BIGSERIAL PRIMARY KEY,
+  nombre_tema TEXT NOT NULL,              -- max 2 palabras
+  url TEXT,
+  plataforma TEXT CHECK (plataforma IN ('instagram','tiktok','youtube','x','linkedin','whatsapp','otro')),
+  autor_handle TEXT,
+  autor_nombre TEXT,
+  duracion_seg INT,
+  fecha_publicacion DATE,
+  transcripcion TEXT,
+  resumen TEXT,
+  idea_central TEXT,
+  incorporada TEXT CHECK (incorporada IN ('pendiente_evaluar','evaluando','adoptada','parcial','descartada')) DEFAULT 'pendiente_evaluar',
+  como_se_incorporo TEXT,
+  incorporada_fecha DATE,
+  -- LUGARES del sistema (boolean por cada uno)
+  aplica_panel_admin          BOOLEAN DEFAULT false,
+  aplica_asistente            BOOLEAN DEFAULT false,
+  aplica_diego_alonso         BOOLEAN DEFAULT false,
+  aplica_widgets_publicos     BOOLEAN DEFAULT false,
+  aplica_sitio_reciclean      BOOLEAN DEFAULT false,
+  aplica_sitio_farex          BOOLEAN DEFAULT false,
+  aplica_rrss_automaticas     BOOLEAN DEFAULT false,
+  aplica_chatbot_whatsapp     BOOLEAN DEFAULT false,
+  aplica_cotizaciones         BOOLEAN DEFAULT false,
+  aplica_onboarding_equipo    BOOLEAN DEFAULT false,
+  aplica_auditoria            BOOLEAN DEFAULT false,
+  aplica_comunicacion_interna BOOLEAN DEFAULT false,
+  aplica_presentacion_externa BOOLEAN DEFAULT false,
+  aplica_fichas_gmb           BOOLEAN DEFAULT false,
+  -- FK a taxonomia
+  tarea_ids BIGINT[],
+  objetivo_ids BIGINT[],
+  area_ids BIGINT[],
+  empresa_ids BIGINT[],
+  -- Extras
+  tono TEXT,                              -- educativo|humoristico|emotivo|tecnico|ventas
+  formato TEXT,                           -- tutorial|testimonio|comparativa|storytelling|ugc
+  duplicable BOOLEAN DEFAULT false,       -- se puede replicar con Canva+Buffer?
+  costo_estimado_replica TEXT,            -- bajo|medio|alto
+  prioridad_implementacion TEXT CHECK (prioridad_implementacion IN ('critica','alta','media','baja')) DEFAULT 'media',
+  clasificacion_id BIGINT REFERENCES clasificacion_informacion(id),
+  cargado_por TEXT,
+  notas TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+**Vistas incluidas:**
+- `v_reels_por_evaluar` — pendientes/evaluando ordenados por prioridad.
+- `v_reels_adoptados` — los ya implementados, cuenta tareas y objetivos vinculados.
+- `v_reels_por_lugar` — resumen: cuantos reels por cada lugar del sistema y cuantos ya adoptados.
+
+**Uso tipico:**
+1. Ves un reel interesante -> INSERT con nombre_tema + url + transcripcion + marcar aplicaciones.
+2. Estado inicial `incorporada='pendiente_evaluar'`.
+3. Cuando decidis implementarlo -> UPDATE `incorporada='evaluando'` + crear tarea + linkear `tarea_ids`.
+4. Cuando esta en produccion -> `incorporada='adoptada'` + `como_se_incorporo` + `incorporada_fecha`.
+
+**SQL:** `sql/20260422_reels_inspiracion.sql`.
+
+### 3.16. `sesiones_claude` — registro de sesiones de trabajo con Claude Code
+
+**Origen:** hoy son archivos `CONTINUAR_SESION_*.txt` tipo "prompt de continuidad".
 
 ```sql
 CREATE TABLE sesiones_claude (
   id BIGSERIAL PRIMARY KEY,
   fecha DATE NOT NULL,
-  usuario TEXT NOT NULL,         -- dusan, pablo
+  usuario TEXT NOT NULL,
   modo TEXT,                     -- 'desktop','movil','web'
   branch TEXT,
   commits_sha TEXT[],
@@ -433,3 +500,4 @@ Archivos que **NO** migran (son narrativa, no tabla):
   - `sql/20260422_tablas_base_protocolo.sql` (7 tablas operacion: tareas, bugs, casos, plantillas, patches, decisiones, credenciales).
   - `sql/20260422_clasificacion_acceso_diego.sql` (2 tablas + vista: clasificacion_informacion, conocimiento_documentos, v_diego_puede_leer).
   - `sql/20260422_empresa_objetivos_evolucion.sql` (4 tablas + ALTER tareas + 2 vistas: empresas, areas, objetivos, kpis, v_tareas_evolucion, v_objetivos_estado).
+  - `sql/20260422_reels_inspiracion.sql` (1 tabla + 3 vistas: reels_inspiracion, v_reels_por_evaluar, v_reels_adoptados, v_reels_por_lugar).
