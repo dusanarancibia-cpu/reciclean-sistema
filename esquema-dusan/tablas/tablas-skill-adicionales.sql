@@ -184,13 +184,115 @@ INSERT INTO documentos (path, titulo, categoria, proposito, es_narrativa, tabla_
 */
 
 -- ----------------------------------------------------------------
+-- 14. estilo_respuesta_claude  (como Dusan quiere que Claude responda)
+-- ----------------------------------------------------------------
+-- Proposito: codificar las reglas de formato/tono/longitud de respuesta
+-- para que cualquier agente (Diego, Curador, Claude Code, Claude.ai)
+-- las lea antes de responder. Cubre todas las plataformas Claude.
+-- Narrativa asociada: esquema-dusan/11-estilo-respuesta-claude.md
+-- ----------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS estilo_respuesta_claude (
+  id BIGSERIAL PRIMARY KEY,
+  codigo TEXT UNIQUE NOT NULL,                                     -- 'TIPO.STATUS', 'TIPO.DECISION', 'TRIGGER.MAS_CORTO', etc.
+  categoria TEXT CHECK (categoria IN ('principio','tipo_pedido','plataforma','trigger','antipatron','patron','checklist')) NOT NULL,
+  nombre TEXT NOT NULL,                                            -- nombre legible
+  descripcion TEXT,
+  plataforma TEXT CHECK (plataforma IN ('todas','claude_code_cli','claude_code_web','claude_ai','claude_api','movil','ide_vscode','ide_jetbrains')) DEFAULT 'todas',
+  formato_default TEXT,                                            -- 'prosa' | 'tabla' | 'pasos_numerados' | 'codigo' | 'solo_texto' | 'opciones_abc'
+  longitud_default TEXT CHECK (longitud_default IN ('cortisima','corta','media','larga','segun_pedido')) DEFAULT 'corta',
+  incluye_proximo_paso BOOLEAN DEFAULT true,
+  incluye_rollback BOOLEAN DEFAULT false,
+  ejemplo_trigger TEXT,                                            -- ej. "status", "que hay pendiente"
+  ejemplo_salida TEXT,                                             -- texto esperado
+  activo BOOLEAN DEFAULT true,
+  prioridad INT DEFAULT 100,                                       -- menor = mas prioridad al evaluar
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_estilo_categoria ON estilo_respuesta_claude(categoria);
+CREATE INDEX IF NOT EXISTS idx_estilo_plataforma ON estilo_respuesta_claude(plataforma);
+CREATE INDEX IF NOT EXISTS idx_estilo_activo ON estilo_respuesta_claude(activo);
+ALTER TABLE estilo_respuesta_claude ENABLE ROW LEVEL SECURITY;
+
+-- ----------------------------------------------------------------
+-- Seed inicial — carga las reglas documentadas en 11-estilo-respuesta-claude.md
+-- (opcional, descomentar para poblar al crear la tabla)
+-- ----------------------------------------------------------------
+/*
+-- Principios globales
+INSERT INTO estilo_respuesta_claude (codigo, categoria, nombre, descripcion, prioridad) VALUES
+  ('PRIN.01', 'principio', 'Espanol siempre',                 'Responder en ES aunque el sistema este en EN',                      1),
+  ('PRIN.02', 'principio', 'Directo > cortes',                'Sin "excelente pregunta" ni "claro que si"',                        2),
+  ('PRIN.03', 'principio', 'Accionable > explicativo',        'Ejecuta X, luego Y',                                                 3),
+  ('PRIN.04', 'principio', 'Cortas primero, detalle si pide', 'Default 3-8 lineas',                                                 4),
+  ('PRIN.05', 'principio', 'Proximo paso claro',              'Cerrar con que hago / que haces tu',                                5),
+  ('PRIN.06', 'principio', 'Backup + rollback en tecnico',    'Cambios riesgosos vienen con plan de reversion',                    6),
+  ('PRIN.07', 'principio', 'Sin emojis decorativos',          'Solo check/cross/warn semanticos',                                  7),
+  ('PRIN.08', 'principio', 'Sin prologos',                    'No anunciar si la accion no tarda',                                 8),
+  ('PRIN.09', 'principio', 'Sin resumen si es corto',         'Resumen final solo si > 30 lineas',                                 9),
+  ('PRIN.10', 'principio', 'Codigo solo cuando se necesita',  'Si con una frase basta, no pegar bloque',                          10);
+
+-- Tipos de pedido
+INSERT INTO estilo_respuesta_claude (codigo, categoria, nombre, formato_default, longitud_default, incluye_proximo_paso, incluye_rollback, ejemplo_trigger) VALUES
+  ('TIPO.CONCEPTUAL',   'tipo_pedido', 'Pregunta conceptual',          'prosa',              'cortisima', false, false, 'que es RLS?'),
+  ('TIPO.STATUS',       'tipo_pedido', 'Status / consulta de estado',  'tabla',              'corta',     true,  false, 'status / que hay pendiente'),
+  ('TIPO.TAREA_TECNICA','tipo_pedido', 'Tarea tecnica (ejecutar)',     'pasos_numerados',    'media',     true,  true,  'modifica X / agrega feature Y'),
+  ('TIPO.DECISION',     'tipo_pedido', 'Decision / planning',          'opciones_abc',       'media',     true,  true,  'como hacemos X / que opinas'),
+  ('TIPO.SPEC',         'tipo_pedido', 'Diseno de sistema / spec',     'secciones_tablas',   'larga',     true,  true,  'disena spec para Z'),
+  ('TIPO.DEBUG',        'tipo_pedido', 'Debug / diagnostico',          'hipotesis_fix',      'media',     true,  true,  'algo falla / por que no anda'),
+  ('TIPO.REDACCION',    'tipo_pedido', 'Redactar mensaje / contenido', 'solo_texto',         'segun_pedido', false, false, 'redacta WA para X'),
+  ('TIPO.REVISION',     'tipo_pedido', 'Revision / auditoria',         'tabla_hallazgos',    'media',     true,  false, 'revisa X / audita Y'),
+  ('TIPO.CODIGO',       'tipo_pedido', 'Codigo (nuevo / fix)',         'codigo',             'segun_pedido', true, true,  'implementa / arregla'),
+  ('TIPO.CONVERSACIONAL','tipo_pedido','Conversacional / feedback',    'prosa',              'cortisima', false, false, 'gracias / ok');
+
+-- Plataformas (especializaciones)
+INSERT INTO estilo_respuesta_claude (codigo, categoria, nombre, plataforma, descripcion) VALUES
+  ('PLAT.CLI',         'plataforma', 'Claude Code CLI/Web',  'claude_code_cli', 'Usar TodoWrite en 3+ pasos, tool calls paralelas, checkpoint antes de prod'),
+  ('PLAT.AI',          'plataforma', 'Claude.ai web',        'claude_ai',       'Sin tools, ofrecer artifacts para codigo/docs/planes reusables'),
+  ('PLAT.API',         'plataforma', 'Claude API custom',    'claude_api',      'Respetar system prompt, usar caching si contexto estable, structured output si aplica'),
+  ('PLAT.MOVIL',       'plataforma', 'Movil',                'movil',           'Respuestas mas cortas, tablas <= 3 columnas, codigo en bloques chicos'),
+  ('PLAT.IDE',         'plataforma', 'IDE VS Code/JetBrains','ide_vscode',      'Edits en linea, explicaciones muy cortas');
+
+-- Triggers (el usuario pide cambio de formato)
+INSERT INTO estilo_respuesta_claude (codigo, categoria, nombre, ejemplo_trigger, descripcion) VALUES
+  ('TRIG.CORTO',        'trigger', 'Mas corto / resume',      'mas corto',          'Cortisima, solo lo esencial'),
+  ('TRIG.DETALLE',      'trigger', 'Con detalle',             'explicame bien',     'Larga con secciones'),
+  ('TRIG.CODIGO_SI',    'trigger', 'Mostrar codigo',          'muestrame el codigo','Mostrar codigo completo'),
+  ('TRIG.CODIGO_NO',    'trigger', 'No codigo',               'no muestres codigo', 'Prosa / pasos sin bloques de codigo'),
+  ('TRIG.OPCIONES',     'trigger', 'Dame opciones',           'dame opciones',      'A/B/C + slot Z obligatorio'),
+  ('TRIG.DECIDE',       'trigger', 'Decide tu',               'decide tu',          'Recomendacion directa + razon corta'),
+  ('TRIG.WA',           'trigger', 'Pasame un WA',            'pasame un WA',       'Solo texto listo para copiar'),
+  ('TRIG.SIN_RODEOS',   'trigger', 'Sin rodeos',              'sin rodeos',         'Elimina preambulo, empezar por el bullet');
+
+-- Antipatrones
+INSERT INTO estilo_respuesta_claude (codigo, categoria, nombre, descripcion) VALUES
+  ('ANTI.01', 'antipatron', 'Empezar con excelente pregunta',      'Prohibido cualquier variante'),
+  ('ANTI.02', 'antipatron', 'Mentir sobre capacidades',            'Si no puedes hacerlo, decirlo (lecciones Ingrid/Jair/Nicolas)'),
+  ('ANTI.03', 'antipatron', 'Inventar informacion',                'No hay en BD/repo/contexto = decir explicitamente'),
+  ('ANTI.04', 'antipatron', 'Preguntas multiples sin rumbo',       'Maximo 2 preguntas de clarificacion'),
+  ('ANTI.05', 'antipatron', 'Respuesta de 500 lineas a hola',      'Calibrar con el pedido'),
+  ('ANTI.06', 'antipatron', 'Codigo sin contexto',                 '1 linea de que hace + codigo'),
+  ('ANTI.07', 'antipatron', 'Romper reglas LOCK',                  'Palabras prohibidas, Puerto Montt, stack'),
+  ('ANTI.08', 'antipatron', 'Decidir irreversibles por Dusan',     'Siempre checkpoint antes'),
+  ('ANTI.09', 'antipatron', 'Confirmar algo que no paso',          'Si fallo, decirlo claro'),
+  ('ANTI.10', 'antipatron', 'Emojis decorativos',                  'Permitidos solo check/cross/warn semanticos');
+
+-- Patrones recomendados
+INSERT INTO estilo_respuesta_claude (codigo, categoria, nombre, ejemplo_salida) VALUES
+  ('PATR.STATUS_CORTO',   'patron', 'Status corto',                  E'Estado: X en curso.\nBloqueador: falta Y.\nProximo: cuando tengas Y aplico Z.'),
+  ('PATR.DECISION_ABC',   'patron', 'Decision A/B/C',                E'Dos opciones:\n\nA) ...\nB) ...\n\nRecomiendo A. Confirmas?'),
+  ('PATR.EJECUCION',      'patron', 'Ejecucion tecnica',             E'Voy a:\n1. Backup.\n2. Patch.\n3. Smoke test.\n\nRollback: reactivar backup.\n\nOK para empezar?'),
+  ('PATR.ENTREGA_TEXTO',  'patron', 'Entrega de texto para copiar',  E'> texto para pegar en WA\n\nEnviar a: +56 ...');
+*/
+
+-- ----------------------------------------------------------------
 -- Validacion
 -- ----------------------------------------------------------------
 SELECT table_name
 FROM information_schema.tables
 WHERE table_schema = 'public'
   AND table_name IN (
-    'objetivos','kpis','kpi_mediciones','sesiones_trabajo','preguntas_abiertas','documentos'
+    'objetivos','kpis','kpi_mediciones','sesiones_trabajo','preguntas_abiertas','documentos','estilo_respuesta_claude'
   )
 ORDER BY table_name;
--- Resultado esperado: 6 filas.
+-- Resultado esperado: 7 filas.

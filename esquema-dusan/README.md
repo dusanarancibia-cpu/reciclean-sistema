@@ -45,9 +45,11 @@ esquema-dusan/
   07-kpis-y-metricas.md            # NARRATIVA + semillas para tabla `kpis`
   08-decisiones-lock.md            # NARRATIVA + semillas para `decisiones_lock` (T.*, E.*, P.*)
   09-comprension-y-logros.md       # snapshot auditable Bloques A/B/C/D con %
+  10-escalabilidad-repo.md         # analisis mono-repo vs multi-repo + plan en 3 fases
+  11-estilo-respuesta-claude.md    # como Claude entrega info en todas las plataformas
   tablas/
     esquema-sql.sql                # DEPRECADO — apuntador a SQL de la skill
-    tablas-skill-adicionales.sql   # 5 tablas nuevas para la skill (objetivos, kpis, kpi_mediciones, sesiones_trabajo, preguntas_abiertas)
+    tablas-skill-adicionales.sql   # 7 tablas nuevas: objetivos, kpis, kpi_mediciones, sesiones_trabajo, preguntas_abiertas, documentos, estilo_respuesta_claude
   casos-dusan/                     # casos reales (cuando existan, migrar a tabla `casos_asistente`)
     .gitkeep
   rutinas/                         # checklists reutilizables (pre-vuelo, cierre de dia, etc.)

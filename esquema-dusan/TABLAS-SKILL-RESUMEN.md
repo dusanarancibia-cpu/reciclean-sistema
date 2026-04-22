@@ -1,9 +1,9 @@
 # Tablas del protocolo unificado — vista consolidada
 
 > Resumen de todas las tablas que resultan cuando se fusiona el SQL base de la skill
-> `protocolo-datos-unificado` con las 6 tablas adicionales propuestas por este esquema.
+> `protocolo-datos-unificado` con las 7 tablas adicionales propuestas por este esquema.
 >
-> **Total: 13 tablas nuevas** sobre las 19 ya existentes en Supabase (materiales, precios,
+> **Total: 14 tablas nuevas** sobre las 19 ya existentes en Supabase (materiales, precios,
 > clientes_compradores, etc.) + 5 en creacion de Diego v4.2 (procesos_empresa, etc.).
 >
 > Fuente de verdad: Supabase `eknmtsrtfkzroxnovfqn`. Fecha de corte: 2026-04-22.
@@ -14,7 +14,7 @@
 
 ---
 
-## Tabla maestra — 13 tablas del protocolo unificado
+## Tabla maestra — 14 tablas del protocolo unificado
 
 | # | Tabla                      | Origen  | Columnas clave                                                          | Reemplaza archivo                                   | `md_asociado` (narrativa que la explica) |
 |---|----------------------------|---------|-------------------------------------------------------------------------|-----------------------------------------------------|------------------------------------------|
@@ -31,6 +31,7 @@
 | 11| `sesiones_trabajo`         | esquema-dusan | titulo, tipo, inicio, fin, usuario, objetivo, resultado, aviso_grupo_enviado | (registro sesiones — no existia)          | `esquema-dusan/04-rutinas.md`            |
 | 12| `preguntas_abiertas`       | esquema-dusan | pregunta, bloqueada_por, urgencia, resuelta, decision_codigo     | (decisiones pendientes — no existia)                | `esquema-dusan/08-decisiones-lock.md` (se consolida aqui tras resolver) |
 | 13| **`documentos`**           | esquema-dusan | path, titulo, categoria, proposito, tabla_espejo, ultima_revision, activo | (catalogo de .md/.txt narrativos)                 | `esquema-dusan/README.md` + este resumen |
+| 14| **`estilo_respuesta_claude`** | esquema-dusan | codigo, categoria, plataforma, formato_default, longitud_default, incluye_proximo_paso/rollback | (reglas de como Claude responde)                 | `esquema-dusan/11-estilo-respuesta-claude.md` |
 
 ---
 
@@ -66,7 +67,7 @@ Esto permite:
 - **`decisiones_lock`** → una tabla para TODAS las decisiones LOCK (Diego v4.2 C3/M2/... + esquema-dusan T/E/P/R + reglas R.PUB/R.TEC/R.DIE/R.IA).
 - **`credenciales_requeridas`** → tracker de que falta tener a mano (N8N_API_KEY, GITHUB_PAT, etc.) y que desbloquea cada una.
 
-### Tablas esquema-dusan (6 propuestas)
+### Tablas esquema-dusan (7 propuestas)
 
 - **`objetivos`** → query "que objetivos tengo pendientes a 30d / 3-6m / 6-12m". Fase 2/3/4 clara.
 - **`kpis`** → catalogo del tablero personal con umbrales verde/amarillo/rojo.
@@ -74,6 +75,7 @@ Esto permite:
 - **`sesiones_trabajo`** → auditar cuantas sesiones de implementacion LIVE hubo, si se respeto la regla "aviso al grupo" (campo `aviso_grupo_enviado`), metrica P.03 de decisiones_lock.
 - **`preguntas_abiertas`** → decisiones aun no tomadas con deadline. Cuando se resuelve, `decision_codigo` apunta a la fila de `decisiones_lock` que consolido.
 - **`documentos`** → catalogo maestro de todo archivo narrativo (.md / .txt) con su tabla espejo si aplica. Es la "vista de existencia" que dice donde vive cada narrativa y que tabla la complementa.
+- **`estilo_respuesta_claude`** → codifica como Dusan quiere que Claude entregue informacion en TODAS las plataformas (CLI, Web, Claude.ai, API, movil, IDE). Permite que cualquier agente lea estas reglas antes de responder. Categorias: principio, tipo_pedido, plataforma, trigger, antipatron, patron, checklist.
 
 ---
 
