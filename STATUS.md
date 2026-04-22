@@ -1,141 +1,101 @@
 # STATUS — Reciclean-Farex Sistema
 
 > **Snapshot de `temas_en_progreso` (Supabase).** Respuesta canónica a "status / cómo vamos / detalle".
-> **Última regeneración:** 22-abr-2026 13:32 · **60 filas** (17 parents + 43 sub-tareas)
+> **Última regeneración:** 22-abr-2026 14:15 · **68 filas** (25 parents + 43 sub-tareas)
 
 ---
 
-## Agregar nuevo tema
+## Accesos rápidos
 
-👉 **[reciclean-sistema.vercel.app/agregar-tema.html](https://reciclean-sistema.vercel.app/agregar-tema.html)** — formulario móvil-friendly. Escribes nombre del tema, elige "WhatsApp a Diego" / "Email" / "Copy", Claude completa los campos faltantes.
-
----
-
-## Tareas padre (17 iniciativas)
-
-| Código | % | Depto | Responsable | Tema (≤15) | Tiempo | ▶️ | Fecha lím. | Delegar a | Banda · Siguiente |
-|---|---|---|---|---|---|---|---|---|---|
-| **I-08** | 10% | Tecnología | Dusan | Rotación keys | 20min | 🔥 | **22-abr** | Pablo | 💡 Diseño · URGENTE HOY. K3+Meta expuestos |
-| **I-15** | 0% | Finanzas y Admin | Dusan | Notion Plus | 30min | ⏸️ | **25-abr** | — | 💡 Diseño · Contratar + workspace |
-| **I-10** | 40% | Comercial | Dusan | Sprint ventas | 2sem | 🔥 | **28-abr** | — | 🔨 Build · **ATRASADO** |
-| **I-09** | 15% | Tecnología | Pablo | Infra VPS + hub | 2d | ⏸️ | **28-abr** | Pablo | 📋 Spec · Bloq requiere I-08 + DO |
-| **I-12** | 30% | Gerencia General | Dusan | Diego v5.0 live | 2sem | 🔥 | **🚀 30-abr** | — | 📋 Spec · Calendario 5d comprimido |
-| **I-04** | 90% | Gerencia General | Claude | Tracker temas | 30min | 🔥 Sí | **30-abr** | Pablo | 🔍 Revisión · Pablo wirea n8n post 26-abr |
-| **I-11** | 50% | Tecnología | Pablo | ACI deploy | 1sem | ⏸️ | **5-may** | Pablo | 🔨 Build · Requires I-09 VPS |
-| **I-05** | 30% | Tecnología | Claude | Panel temas | 3h | ⏸️ | **10-may** | Pablo | 📋 Spec · Esperando green light build |
-| **I-03** | 20% | Tecnología | Dusan | Eval BI tools | 2h | ⏸️ | **10-may** | Pablo | 📋 Spec · Contrastar contexto |
-| **I-16** | 0% | Tecnología | Pablo | Diego v5.1 | 2sem | ⏸️ | **15-may** | — | 💡 Diseño · Post v5.0 estable |
-| **I-02** | 10% | Gerencia General | Dusan | Viz informes | 2sem | ⏸️ | **15-may** | Ingrid | 💡 Diseño · Decidir consumidor |
-| **I-13** | 5% | Tecnología | Pablo | Deuda técnica | 3sem | ⏸️ | **20-may** | — | 💡 Diseño · 11 sub-tareas post 30-abr |
-| **I-06** | 15% | Gerencia General | Dusan | Ecosistema int. | 1sem | ⏸️ | **20-may** | Pablo | 💡 Diseño · Overlap I-02/I-03 |
-| **I-07** | 10% | Tecnología | Claude | Eval diagramas | 30min | ⏸️ | **20-may** | — | 💡 Diseño · ECharts aceptado para I-05 |
-| **I-01** | 30% | Tecnología | Claude | Mapa BD + FKs | 1h | ⏸️ | **29-abr** | — | 📋 Spec · Mapear FKs + ER + RLS |
-| **I-14** | 10% | Tecnología | Dusan | Blindaje Diego | 1h | ⏸️ | — | — | 💡 Diseño · PUK SIM + 2FA Meta |
-| **I-17** | 20% | Tecnología | Claude | Docs Mermaid+EC | 2h | ⏸️ | — | — | 💡 Diseño · Post I-05 build |
+| Acción | URL |
+|---|---|
+| 📊 Ver status (mobile+PC) | [reciclean-sistema.vercel.app/status.html](https://reciclean-sistema.vercel.app/status.html) |
+| + Agregar tema nuevo | [reciclean-sistema.vercel.app/agregar-tema.html](https://reciclean-sistema.vercel.app/agregar-tema.html) |
+| GitHub rendered | [github.com/.../STATUS.md](https://github.com/dusanarancibia-cpu/reciclean-sistema/blob/main/STATUS.md) |
 
 ---
 
-## Sub-tareas por parent
+## Tareas padre (25 iniciativas) — ordenadas por fecha y prioridad
 
-### I-08 Rotación keys · 🔥 HOY
-
-| Sub | Tema | Responsable | Tiempo | Fecha | ▶️ |
-|---|---|---|---|---|---|
-| I-08.1 | Rotar K3 Anthropic | Dusan | 10min | 22-abr | 🔥 |
-| I-08.2 | Rotar Meta token | Dusan | 10min | 22-abr | 🔥 |
-
-### I-09 Infra VPS + hub · 26-28 abr
-
-| Sub | Tema | Responsable | Tiempo | Fecha | ▶️ |
-|---|---|---|---|---|---|
-| I-09.1 | Contratar DO $6 | Dusan | 20min | 22-abr | ⏸️ |
-| I-09.2 | Push repo hub | Dusan | 30min | 22-abr | ⏸️ |
-| I-09.3 | Deploy VPS script | Pablo | 1h | 27-abr | ⏸️ |
-| I-09.4 | Env vars VPS | Pablo | 30min | 27-abr | ⏸️ |
-| I-09.5 | Import workflows | Pablo | 1h | 28-abr | ⏸️ |
-| I-09.6 | Migrar webhook Meta | Pablo | 15min | 28-abr | ⏸️ |
-| I-09.7 | Paralelo v3.3/v4 | Pablo+Dusan | 2d | 30-abr | ⏸️ |
-
-### I-10 Sprint ventas · ATRASADO
-
-| Sub | Tema | Responsable | Tiempo | Fecha | ▶️ |
-|---|---|---|---|---|---|
-| I-10.1 | Lista 50 prospectos | Dusan | 3h | 22-abr | 🔥 |
-| I-10.2 | Enviar 30 msgs WA | Dusan | 2h | 23-abr | 🔥 |
-| I-10.3 | 5 demos Diego | Dusan | 5h | 25-abr | ⏸️ |
-| I-10.4 | Propuestas $300 | Dusan | 1h | 23-abr | ⏸️ |
-| I-10.5 | Cierre cliente #1 | Dusan | 3h | 26-abr | ⏸️ |
-| I-10.6 | Testimonial video | Dusan+cliente | 2h | 28-abr | ⏸️ |
-| I-10.7 | Amplificar video | Dusan | 1h | 29-abr | ⏸️ |
-
-### I-11 ACI deploy · post 26-abr
-
-| Sub | Tema | Responsable | Tiempo | Fecha | ▶️ |
-|---|---|---|---|---|---|
-| I-11.1 | Teléfonos proveedores | Ingrid | 3h | 25-abr | ⏸️ |
-| I-11.2 | Config ANTHROPIC_KEY | Pablo | 15min | 27-abr | ⏸️ |
-| I-11.3 | Push ACI GitHub | Pablo | 30min | 27-abr | ⏸️ |
-| I-11.4 | Pruebas Talca | Cristian+Ingrid | 1d | 29-abr | ⏸️ |
-| I-11.5 | Config Make.com | Pablo+Dusan | 2h | 5-may | ⏸️ |
-
-### I-12 Diego v5.0 live · 🚀 30-abr
-
-| Sub | Tema | Responsable | Tiempo | Fecha | ▶️ |
-|---|---|---|---|---|---|
-| I-12.1 | Sesión Pablo 1 (backup+SQL) | Pablo | 2h | 26-abr | ⏸️ |
-| I-12.2 | Sesión Pablo 2 (prompt+GCal) | Pablo | 2h | 27-abr | ⏸️ |
-| I-12.3 | Sesión Pablo 3 (Curador+tests) | Pablo | 2h | 28-abr | ⏸️ |
-| I-12.4 | Respuestas oro (5) | Dusan | 1h | 29-abr | ⏸️ |
-| I-12.5 | 🚀 Lanzamiento oficial | Dusan+Pablo | 30min | 30-abr | 🔥 |
-| I-12.6 | Mensaje M2 equipo | Dusan | 30min | 30-abr | ⏸️ |
-| I-12.7 | Onboarding supervisores | Dusan | 5d | 8-may | ⏸️ |
-
-### I-13 Deuda técnica · post 30-abr
-
-| Sub | Tema | Responsable | Tiempo | Fecha | ▶️ |
-|---|---|---|---|---|---|
-| I-13.1 | Memoria conversacional | Pablo | 4h | 29-abr | ⏸️ |
-| I-13.2 | Verify token robust | Pablo | 1h | 29-abr | ⏸️ |
-| I-13.3 | Monitoreo uptime | Pablo | 30min | 5-may | ⏸️ |
-| I-13.4 | Fallback humano | Pablo | 3h | 10-may | ⏸️ |
-| I-13.5 | Enforcement tareas | Pablo | 2h | 10-may | ⏸️ |
-| I-13.6 | Alertas proactivas | Pablo | 1d | 15-may | ⏸️ |
-| I-13.7 | KPIs automáticos | Pablo | 4h | 15-may | ⏸️ |
-| I-13.8 | Agente Comercial v1 | Pablo | 2sem | 20-may | ⏸️ |
-| I-13.9 | Agente Marketing | Pablo | 1sem | 25-may | ⏸️ |
-| I-13.10 | Fix chatbot farex SSL | Cesar | 2h | 5-may | ⏸️ |
-| I-13.11 | GG briefing patch | Claude+Pablo | 2h | 5-may | ⏸️ |
-
-### I-14 Blindaje Diego · sin fecha
-
-| Sub | Tema | Responsable | Tiempo | Fecha | ▶️ |
-|---|---|---|---|---|---|
-| I-14.1 | PUK SIM chip | Dusan | 30min | — | ⏸️ |
-| I-14.2 | 2FA Meta reintento | Dusan | 15min | — | ⏸️ |
-
-### I-17 Docs Mermaid+ECharts · cuando I-05 arranque
-
-| Sub | Tema | Responsable | Tiempo | Fecha | ▶️ |
-|---|---|---|---|---|---|
-| I-17.1 | Mermaid arquitectura | Claude | 1h | — | ⏸️ |
-| I-17.2 | ECharts en I-05 | Claude | 2h | — | ⏸️ |
-
-> I-15 (Notion Plus) y I-16 (Diego v5.1) no tienen sub-tareas — son ejecuciones puntuales.
+| Código | % | Depto | Responsable | Tema (≤15) | Tiempo | Fecha lím. | Ruta archivo principal | Banda · Siguiente |
+|---|---|---|---|---|---|---|---|---|
+| **I-08** | 10% | Tecnología | Dusan | Rotación keys | 20min | **22-abr 🔥** | — | 💡 URGENTE K3+Meta |
+| **I-15** | 0% | Finanzas y A. | Dusan | Notion Plus | 30min | **25-abr** | — | 💡 Contratar workspace |
+| **I-01** | 30% | Tecnología | Claude | Mapa BD + FKs | 1h | **29-abr** | — | 📋 Mapear FKs+ER+RLS |
+| **I-10** | 40% | Comercial | Dusan | Sprint ventas | 2sem | **28-abr ⚠️** | — | 🔨 ATRASADO |
+| **I-09** | 15% | Tecnología | Pablo | Infra VPS + hub | 2d | **28-abr** | — | 📋 Requires I-08 + DO |
+| **I-12** | 30% | Gerencia General | Dusan | Diego v5.0 live | 2sem | **🚀 30-abr** | `Plan Ecosistema Digital/Observaciones para Diego Agente/` | 📋 Lanzamiento oficial |
+| **I-04** | 90% | Gerencia General | Claude | Tracker temas | 30min | **30-abr** | — | 🔍 Pablo wirea n8n |
+| **I-19** | 30% | Gerencia General | Dusan | Plan 2026-2030 | 2h | **30-abr** | `Plan Ecosistema Digital/Plan_Operativo_v2_FINAL_Lunes_2026-04-21.pptx` | 📋 Alinear con I-10, I-12 |
+| **I-11** | 50% | Tecnología | Pablo | ACI deploy | 1sem | **5-may** | `Cesar - Order/02_Asistente_Comercial_Integrado/.../SPEC_v3_FINAL...docx` | 🔨 Requires I-09 VPS |
+| **I-18** | 0% | Comercial | Dusan | Contrato Resimple | 1h | **10-may** | `Comercial/.../Resimple/10-2025 Contrato Resimple...aspx` | 💡 Revisar vigencia 2026 |
+| **I-05** | 30% | Tecnología | Claude | Panel temas | 3h | **10-may** | — | 📋 Esperando green light build |
+| **I-03** | 20% | Tecnología | Dusan | Eval BI tools | 2h | **10-may** | `Cesar - Order/07_Archivo_y_Respaldos/Respaldos/admin_panel_v83.html` | 📋 Contrastar contexto |
+| **I-16** | 0% | Tecnología | Pablo | Diego v5.1 | 2sem | **15-may** | — | 💡 Post v5.0 estable |
+| **I-02** | 10% | Gerencia General | Dusan | Viz informes | 2sem | **15-may** | — | 💡 Decidir consumidor |
+| **I-20** | 10% | Comercial | Dusan | Propuestas activas | 1sem | **15-may** | `Comercial/.../[8 PDFs de propuestas]` | 💡 Revisar 8 propuestas |
+| **I-13** | 5% | Tecnología | Pablo | Deuda técnica | 3sem | **20-may** | — | 💡 11 subtareas post 30-abr |
+| **I-06** | 15% | Gerencia General | Dusan | Ecosistema int. | 1sem | **20-may** | `Plan Ecosistema Digital/Ecosistema_Digital_Reciclean_Farex_v2.pptx` | 💡 Overlap I-02/I-03 |
+| **I-07** | 10% | Tecnología | Claude | Eval diagramas | 30min | **20-may** | — | 💡 ECharts para I-05 |
+| **I-21** | 20% | Operaciones | Dusan | Puerto Montt ops | 1mes | **30-jun** | `Patrimonio/Empresa Puerto Montt/` | 💡 Permisos SAG + roadmap |
+| **I-14** | 10% | Tecnología | Dusan | Blindaje Diego | 1h | — | — | 💡 PUK SIM + 2FA Meta |
+| **I-17** | 20% | Tecnología | Claude | Docs Mermaid+EC | 2h | — | — | 💡 Post I-05 build |
+| **I-22** | 25% | Tecnología | Dusan | Guia Chatbot | 2sem | — | `Claude Code/ChatBot/produccion/Guia_Chatbot_Reciclean.pptx` | 💡 Deploy post 30-abr |
+| **I-23** | 15% | Gerencia General | Dusan | Monday implement | 3h | — | `Claude Code/Documentacion/Monday_Guia_Implementacion_Reciclean_v2.pptx` | 💡 Decidir Monday vs tracker |
+| **I-24** | 20% | Recursos Humanos | Dusan | Descripcion cargos | 2h | — | `equipo-procesos/.../Descripción de cargo Asistente Comercial.docx` | 💡 Consolidar 3 cargos |
+| **I-25** | 30% | Legal y Compliance | Dusan | Permisos Talca | 3h | — | `Permisos y Resoluciones/Permisos de Talca/` | 💡 Revisar vigencia |
 
 ---
 
-## Renombrar tareas (robusto)
+## Semana crítica (22-30 abr)
 
-Cualquier tarea o sub-tarea se puede renombrar:
-
-- **Desde Claude Code:** escribe "renombra I-NN a [nuevo nombre ≤15]" → UPDATE en Supabase → trigger `trg_temas_nombre_historico` preserva historial en columna `nombre_historico` (JSONB array)
-- **Código inmutable:** `codigo` (I-NN) nunca cambia, así que predecesores y parent_codigo siguen funcionando
-- **Auditoría:** `SELECT * FROM v_renames_historial WHERE codigo='I-NN';` muestra todas las veces que se renombró con fecha y responsable
-- **Scoped:** el rename afecta SOLO esa fila, no busca-y-reemplaza en todo el tracker
+| Día | Quién | Qué urge |
+|---|---|---|
+| **Hoy 22-abr** | Dusan | Rotar K3 + Meta (I-08) · Contratar DO (I-09.1) · Notion (I-15) |
+| 23-abr | Dusan | Enviar 30 msgs WA (I-10.2) · Lista 50 prospectos (I-10.1) |
+| 25-abr | Dusan | Demos Diego (I-10.3) · Ingrid completa teléfonos (I-11.1) |
+| 26-abr | Pablo regresa | Sesión 1 backup+SQL (I-12.1) · Cierre cliente #1 (I-10.5) |
+| 27-abr | Pablo | Sesión 2 prompt+GCal (I-12.2) · VPS deploy (I-09.3) |
+| 28-abr | Pablo | Sesión 3 Curador+tests (I-12.3) · Import workflows (I-09.5) |
+| 29-abr | Dusan | Respuestas oro (I-12.4) · Memoria conv (I-13.1) |
+| **30-abr 🚀** | Dusan+Pablo | **LANZAMIENTO Diego v5.0** (I-12.5) |
 
 ---
 
-## Leyenda bandas + columnas
+## Directorio de tablas Supabase (conectadas al tracker)
+
+| Tabla / Vista | Propósito | Iniciativas que la usan |
+|---|---|---|
+| `temas_en_progreso` | Source of truth iniciativas | Todas |
+| `v_status_consolidado` | Query canónica "status" | Todas |
+| `v_temas_jerarquia` | Parent-hijo visualización | I-04 |
+| `v_renames_historial` | Audit de renames | Auditoría |
+| `v_directorio_tablas` | Meta-tabla de tablas | I-01 |
+| `v_progreso_temporal` | Evolución % por día | Gráfico avance |
+| `v_progreso_diario_global` | Agregado diario | Gráfico avance |
+| `temas_snapshot_diario` | Capturas % por fecha | Gráfico avance |
+| `usuarios_autorizados` | Whitelist + delegación | I-04, I-11, I-12 |
+| `conversaciones` | Buffer WA Diego (803 rows) | I-12 |
+| `memoria_diego` | Facts + episodios Diego | I-12, I-13 |
+| `precios` (246) · `materiales` (95) · `proveedores` (73) | Catálogo comercial | I-03, I-11, I-20 |
+| `metas_comerciales` (116) | KPIs comercial | I-02, I-10 |
+| `procesos_empresa` | SOPs validados | I-23, I-24 |
+
+Total Supabase: **84 tablas** + **11 vistas**.
+
+---
+
+## Progreso diario (baseline)
+
+| Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
+|---|---|---|---|---|---|---|
+| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+
+> _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+
+---
+
+## Leyenda bandas
 
 | Banda | Rango |
 |---|---|
@@ -146,8 +106,13 @@ Cualquier tarea o sub-tarea se puede renombrar:
 | 🔍 Revisión | 80-99% |
 | ✅ Superado | 100% |
 
-**11 columnas:** Código · % · Depto · Responsable · Tema (≤15) · Tiempo · ▶️ · Depende · Delegar a · % ocup. · Banda·Siguiente
-**3 columnas adicionales en schema:** Fecha límite · Parent código · Nombre histórico
+---
+
+## Renombrar tareas (robusto)
+
+- Desde Claude Code: "renombra I-NN a [≤15 chars]" → UPDATE con trigger que auditía
+- `codigo` inmutable → referencias no se rompen
+- Historial en `v_renames_historial`
 
 ---
 
@@ -157,28 +122,14 @@ Cualquier tarea o sub-tarea se puede renombrar:
 
 ---
 
-## Cómo consultar desde cualquier superficie
-
-| Superficie | Método |
-|---|---|
-| PC Claude Code | Pregunta "status" → consulta `v_status_consolidado` |
-| GitHub rendered (bookmark) | [github.com/.../STATUS.md](https://github.com/dusanarancibia-cpu/reciclean-sistema/blob/main/STATUS.md) — Mermaid ✓ |
-| Claude.ai / mobile | Fetchea raw URL |
-| Agregar tema | [reciclean-sistema.vercel.app/agregar-tema.html](https://reciclean-sistema.vercel.app/agregar-tema.html) |
-| WhatsApp Diego | Pregunta "status" — activo post 26-abr |
-| Dashboard interactivo | `reciclean-sistema.vercel.app/status.html` — **build pendiente I-05** |
-| Supabase Studio | `SELECT * FROM v_status_consolidado;` |
-
----
-
 ## Fuente de verdad
 
-- **Tabla:** `public.temas_en_progreso` (17 parents + 43 sub-tareas = 60 filas)
-- **Vistas:** `v_status_consolidado` · `v_temas_jerarquia` · `v_temas_activos` · `v_temas_bloqueados` · `v_delegaciones_propuestas` · `v_renames_historial`
+- **Tabla:** `public.temas_en_progreso` (25 parents + 43 subs = 68 filas)
+- **Vistas:** `v_status_consolidado` · `v_temas_jerarquia` · `v_directorio_tablas` · `v_progreso_temporal` · `v_progreso_diario_global` · `v_renames_historial` · `v_temas_activos` · `v_temas_bloqueados` · `v_delegaciones_propuestas`
 - **Proyecto Supabase:** `eknmtsrtfkzroxnovfqn`
 
-Si este archivo y la tabla divergen, **la tabla manda**.
+Si este archivo y la tabla divergen, la tabla manda.
 
 ---
 
-_Repo público. Contenido comercial sensible nunca va aquí — se sirve post 26-abr vía edge function Vercel con service_role en env._
+_Repo público. Contenido comercial sensible va en rutas locales OneDrive, solo path referenciado aquí. Archivos nunca publicados en repo._
