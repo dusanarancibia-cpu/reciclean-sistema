@@ -208,7 +208,66 @@ CREATE TABLE credenciales_requeridas (
 );
 ```
 
-### 3.8. `sesiones_claude` — registro de sesiones de trabajo con Claude Code
+### 3.8. `clasificacion_informacion` — niveles de acceso (Diego SI / Diego NO)
+
+**Origen:** principio "Diego solo accede a lo que sirve para operacion. Lo reservado NO". Hoy disperso en CLAUDE.md y memoria.
+
+```sql
+CREATE TABLE clasificacion_informacion (
+  id BIGSERIAL PRIMARY KEY,
+  codigo TEXT UNIQUE NOT NULL,         -- 'publico','operativo','restringido','confidencial'
+  nombre TEXT NOT NULL,
+  descripcion TEXT,
+  diego_puede_leer BOOLEAN DEFAULT false,
+  diego_puede_compartir BOOLEAN DEFAULT false,
+  roles_acceso TEXT[],
+  ejemplo TEXT,
+  color_hex TEXT,
+  orden INT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+**4 niveles seed:**
+
+| Codigo | Diego lee | Diego comparte | Ejemplo |
+|---|---|---|---|
+| `publico` | si | si | Precios publicados, telefono comercial |
+| `operativo` | si | no | Procesos, contactos equipo, FAQs internas |
+| `restringido` | no | no | Margenes, costos, datos clientes |
+| `confidencial` | no | no | Sueldos, despidos, conflictos, estrategia |
+
+### 3.9. `conocimiento_documentos` — inventario de info que entra al sistema
+
+**Origen:** carpetas/archivos/tablas que entran al sistema. Indica que es, como se clasifica, si Diego lo lee, si esta indexado en RAG.
+
+```sql
+CREATE TABLE conocimiento_documentos (
+  id BIGSERIAL PRIMARY KEY,
+  origen_tipo TEXT CHECK (origen_tipo IN ('archivo','carpeta','tabla','vista','url','mensaje','workflow')) NOT NULL,
+  origen_path TEXT,                    -- 'casos-diego/', 'PENDIENTES.md', 'tabla:precios'
+  titulo TEXT NOT NULL,
+  resumen TEXT,
+  categoria_tematica TEXT,             -- 'precios','operacion','rrhh','finanzas','permisologia','incidente_asistente','difusion','spec_tecnico','sesion_claude'
+  clasificacion_id BIGINT REFERENCES clasificacion_informacion(id) NOT NULL,
+  fuente_carga TEXT,
+  fecha_carga DATE NOT NULL DEFAULT CURRENT_DATE,
+  visible_para_diego BOOLEAN DEFAULT false,   -- override puntual
+  indexado_rag BOOLEAN DEFAULT false,         -- esta en procesos_empresa?
+  rol_aplicable TEXT[],
+  notas TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+**Vista derivada:** `v_diego_puede_leer` filtra solo lo autorizado para Diego.
+
+**Seeds incluidos en migracion:** carpetas nuevas del 20-abr (`casos-diego/`, `mensajes-equipo/`, `docs/`) + archivos clave + tablas operativas existentes (`precios`, `precios_cliente`, `contactos`).
+
+**SQL completo:** `sql/20260422_clasificacion_acceso_diego.sql`.
+
+### 3.10. `sesiones_claude` — registro de sesiones de trabajo con Claude Code
 
 **Origen:** hoy son archivos `CONTINUAR_SESION_DIEGO.txt` tipo "prompt de continuidad".
 

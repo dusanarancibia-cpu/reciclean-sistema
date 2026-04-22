@@ -21,6 +21,16 @@ Se activa sin que el usuario lo pida, en estos gatillos:
 
 > Antes de crear un archivo o agregar una seccion repetitiva a un `.md`, preguntar: **¿esto son filas de una tabla?** Si la respuesta es si y la tabla no existe, iniciar el proceso de creacion (ver `PROTOCOLOS.md` seccion "Crear tabla nueva"). Mientras la tabla no exista, anotar en el `.md` correspondiente **con la estructura de la futura tabla** (columnas explicitas) para migrar despues sin perdida.
 
+## Principio de minimo necesario (Diego)
+
+> Diego (asistente IA del equipo) **solo accede a info que sirve para la operacion**. Lo reservado, NO. Cada documento, carpeta o tabla que entra al sistema se clasifica en uno de 4 niveles (`publico`, `operativo`, `restringido`, `confidencial`) y se registra en `conocimiento_documentos`. La vista `v_diego_puede_leer` filtra lo que Diego SI puede consultar via RAG.
+
+Reglas operativas:
+- Toda info nueva (archivo, carpeta, tabla, URL externa) -> INSERT en `conocimiento_documentos` con su `clasificacion_id`.
+- Default seguro: si no se sabe clasificar, va como `restringido` (Diego no lo ve).
+- Para indexar algo en RAG (`procesos_empresa`), antes verificar `v_diego_puede_leer`.
+- Override puntual con `visible_para_diego=true` solo con OK explicito de Dusan + nota en `notas`.
+
 ## Flujo de decision (obligatorio)
 
 Cuando el usuario reporta algo para registrar:
