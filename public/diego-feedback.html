@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diego Alonso — Dar feedback</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; max-width: 640px; margin: 0 auto; color: #1A1A14; line-height: 1.5; background: #fafafa; }
+h1 { font-size: 24px; color: #1A7A3C; margin-bottom: 4px; }
+.subtitle { font-size: 13px; color: #666; margin-bottom: 20px; }
+.card { background: #fff; border: 1px solid #e5e5e5; border-radius: 14px; padding: 22px; margin-bottom: 16px; }
+label { display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px; margin-top: 14px; }
+label:first-child { margin-top: 0; }
+input[type=text], select, textarea { width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; background: #fff; transition: border-color 0.15s; }
+input[type=text]:focus, select:focus, textarea:focus { outline: none; border-color: #1A7A3C; }
+textarea { resize: vertical; min-height: 100px; }
+.radio-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.radio-chip { position: relative; }
+.radio-chip input { position: absolute; opacity: 0; }
+.radio-chip label { display: inline-block; padding: 8px 16px; border: 1.5px solid #ddd; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 600; color: #666; margin: 0; transition: all 0.15s; }
+.radio-chip input:checked + label { background: #1A7A3C; color: #fff; border-color: #1A7A3C; }
+.btn-row { display: flex; gap: 10px; margin-top: 20px; }
+.btn { flex: 1; background: #1A7A3C; color: #fff; border: none; padding: 14px 20px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
+.btn:hover { opacity: 0.9; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.alt { background: #fff; color: #1A7A3C; border: 1.5px solid #1A7A3C; flex: 0 0 auto; padding: 14px 20px; }
+.info { background: #E8F5ED; border: 1px solid #B8DFC7; color: #1A7A3C; padding: 12px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 16px; }
+.preview { background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; padding: 12px 14px; margin-top: 12px; font-size: 13px; white-space: pre-wrap; color: #444; max-height: 160px; overflow-y: auto; display: none; }
+.preview.show { display: block; }
+.footer { margin-top: 16px; text-align: center; font-size: 12px; color: #777; }
+.back { display: inline-block; margin-bottom: 14px; color: #1A7A3C; text-decoration: none; font-size: 13px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<a href="/diego-presentacion.html" class="back">← Volver a presentación</a>
+
+<h1>Feedback sobre Diego Alonso</h1>
+<div class="subtitle">Tu opinión ayuda a que Diego Alonso mejore cada día</div>
+
+<div class="info">
+  Al enviar, se abre WhatsApp con el mensaje pre-armado para Diego Alonso. Queda registrado automáticamente.
+</div>
+
+<div class="card">
+  <label for="nombre">Tu nombre</label>
+  <input type="text" id="nombre" placeholder="Ej: Juan Mendoza" oninput="actualizar()">
+
+  <label for="sucursal">Sucursal</label>
+  <select id="sucursal" onchange="actualizar()">
+    <option value="">Selecciona una opción</option>
+    <option>Cerrillos</option>
+    <option>Maipú</option>
+    <option>Talca</option>
+    <option>Puerto Montt</option>
+    <option>Remoto / Oficina</option>
+  </select>
+
+  <label>Tipo de feedback</label>
+  <div class="radio-group">
+    <span class="radio-chip"><input type="radio" name="tipo" id="t1" value="Anomalía" onchange="actualizar()"><label for="t1">Anomalía</label></span>
+    <span class="radio-chip"><input type="radio" name="tipo" id="t2" value="Sugerencia" onchange="actualizar()"><label for="t2">Sugerencia</label></span>
+    <span class="radio-chip"><input type="radio" name="tipo" id="t3" value="Pregunta" onchange="actualizar()"><label for="t3">Pregunta</label></span>
+    <span class="radio-chip"><input type="radio" name="tipo" id="t4" value="Positivo" onchange="actualizar()"><label for="t4">Positivo</label></span>
+  </div>
+
+  <label for="mensaje">Cuéntanos</label>
+  <textarea id="mensaje" placeholder="Describe lo que viste, lo que esperabas, o la idea que tienes..." oninput="actualizar()"></textarea>
+
+  <div class="preview" id="preview"></div>
+
+  <div class="btn-row">
+    <button class="btn" id="enviar" onclick="enviar()" disabled>Enviar por WhatsApp</button>
+    <button class="btn alt" onclick="togglePreview()" id="previewBtn">Ver mensaje</button>
+  </div>
+</div>
+
+<div class="footer">
+  Grupo Reciclean-Farex · Modo Aprendizaje
+</div>
+
+<script>
+const DIEGO_PHONE = '56961926365';
+
+function construirMensaje() {
+  const nombre = document.getElementById('nombre').value.trim();
+  const sucursal = document.getElementById('sucursal').value;
+  const tipo = document.querySelector('input[name=tipo]:checked')?.value;
+  const mensaje = document.getElementById('mensaje').value.trim();
+
+  const partes = ['[FEEDBACK]'];
+  if (tipo) partes.push(`Tipo: ${tipo}`);
+  if (nombre) partes.push(`De: ${nombre}`);
+  if (sucursal) partes.push(`Sucursal: ${sucursal}`);
+  if (mensaje) partes.push('', mensaje);
+
+  return partes.join('\n');
+}
+
+function completo() {
+  return document.getElementById('nombre').value.trim()
+      && document.getElementById('sucursal').value
+      && document.querySelector('input[name=tipo]:checked')
+      && document.getElementById('mensaje').value.trim().length >= 10;
+}
+
+function actualizar() {
+  document.getElementById('enviar').disabled = !completo();
+  const preview = document.getElementById('preview');
+  if (preview.classList.contains('show')) {
+    preview.textContent = construirMensaje();
+  }
+}
+
+function togglePreview() {
+  const preview = document.getElementById('preview');
+  const btn = document.getElementById('previewBtn');
+  preview.classList.toggle('show');
+  if (preview.classList.contains('show')) {
+    preview.textContent = construirMensaje();
+    btn.textContent = 'Ocultar';
+  } else {
+    btn.textContent = 'Ver mensaje';
+  }
+}
+
+function enviar() {
+  if (!completo()) return;
+  const msg = encodeURIComponent(construirMensaje());
+  const url = `https://wa.me/${DIEGO_PHONE}?text=${msg}`;
+  window.open(url, '_blank');
+}
+</script>
+
+</body>
+</html>
