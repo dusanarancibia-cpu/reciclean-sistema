@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>GOTAS · Don Rigoberto</title>
+    <title>GOTAS - Don Rigoberto</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -19,7 +19,7 @@
             max-width: 700px;
             width: 100%;
             background: #1e3a2f;
-            border-radius: 2.5rem;
+            border-radius: 3rem;
             padding: 1.5rem;
             box-shadow: 0 20px 35px rgba(0,0,0,0.3);
         }
@@ -29,17 +29,17 @@
             color: #FFD966;
             margin-bottom: 0.2rem;
         }
-        .nombre {
+        .sub {
             text-align: center;
-            font-size: 1.5rem;
             color: #cfe3cf;
+            font-size: 1.2rem;
             margin-bottom: 1.5rem;
         }
         .card {
             background: #FFF8E7;
             border-radius: 2rem;
             padding: 1.2rem;
-            margin-bottom: 1.8rem;
+            margin-bottom: 1.5rem;
             cursor: pointer;
             transition: 0.1s;
             border: 2px solid #FFB347;
@@ -54,49 +54,58 @@
             color: #B45309;
             display: flex;
             align-items: center;
-            gap: 0.7rem;
+            gap: 0.5rem;
             margin-bottom: 1rem;
             border-bottom: 2px solid #FFD966;
             padding-bottom: 0.3rem;
         }
-        .med-item {
-            background: #fff3e0;
-            border-radius: 1.5rem;
-            padding: 0.6rem 1rem;
-            margin-bottom: 0.8rem;
+        .horario-row {
             display: flex;
-            align-items: center;
             flex-wrap: wrap;
-            justify-content: space-between;
+            gap: 0.8rem;
+            margin: 1rem 0;
+            background: #FEF3D6;
+            border-radius: 1.5rem;
+            padding: 0.8rem;
         }
-        .med-nombre {
-            font-weight: 700;
-            font-size: 1.2rem;
-            background: #FFE0B5;
-            padding: 0.2rem 0.7rem;
-            border-radius: 2rem;
+        .bloque {
+            flex: 1;
+            background: white;
+            border-radius: 1.2rem;
+            padding: 0.6rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .hora {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: #FFD966;
             display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .medicamento {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e4620;
+            margin: 0.3rem 0;
         }
         .dosis {
             font-size: 2rem;
-            font-weight: 800;
-            margin: 0 0.3rem;
-            color: #1e5a2e;
+            letter-spacing: 5px;
+            margin: 0.2rem 0;
         }
         .ojo {
-            font-size: 1.6rem;
+            font-size: 1.2rem;
+            background: #E8F0E8;
+            border-radius: 1rem;
+            padding: 0.2rem;
         }
-        .horario {
-            font-size: 1.3rem;
-            background: #F4B942;
-            padding: 0.2rem 0.8rem;
-            border-radius: 2rem;
-            font-weight: bold;
-        }
-        .audio-pequeno {
+        .audio-container {
             display: flex;
             justify-content: center;
-            margin-top: 0.8rem;
+            margin-top: 1rem;
         }
         audio {
             width: 50%;
@@ -106,100 +115,86 @@
         .footer-card {
             font-size: 0.8rem;
             text-align: center;
-            color: #8ba88a;
             margin-top: 0.5rem;
+            color: #8aa88a;
         }
-        .farmacia-dato {
-            font-size: 1.4rem;
-            background: #FFE0B5;
-            padding: 0.6rem;
-            border-radius: 1.5rem;
-            margin: 0.5rem 0;
+        footer {
             text-align: center;
-        }
-        .fecha-limite {
-            background: #F4B942;
-            color: #1e3a2f;
-            font-size: 1.5rem;
-            padding: 0.5rem;
-            border-radius: 2rem;
-            text-align: center;
-            font-weight: bold;
+            color: #cfe3cf;
+            margin-top: 1rem;
+            font-size: 0.9rem;
         }
         @media (max-width: 550px) {
             .container { padding: 1rem; }
             h1 { font-size: 2.2rem; }
             .titulo-card { font-size: 1.4rem; }
-            .med-nombre { font-size: 1rem; }
+            .hora { font-size: 1.4rem; }
             .dosis { font-size: 1.5rem; }
-            .ojo { font-size: 1.2rem; }
-            .horario { font-size: 1rem; }
-            .farmacia-dato { font-size: 1.1rem; }
-            .fecha-limite { font-size: 1.2rem; }
             audio { width: 70%; }
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>💧 GOTAS OCULARES</h1>
-    <div class="nombre">Don Rigoberto · 78 años · Glaucoma</div>
+    <h1>💧 GOTAS</h1>
+    <div class="sub">Don Rigoberto · Glaucoma</div>
 
-    <!-- Tarjeta 1: Instrucciones completas (audio v1) -->
+    <!-- Tarjeta 1: Instrucciones completas (Audio v1) -->
     <div class="card" onclick="document.getElementById('audioCompleto').play()">
         <div class="titulo-card">
-            📋 INSTRUCCIONES DIARIAS
+            📋 INSTRUCCIONES
         </div>
-
-        <div class="med-item">
-            <span class="med-nombre">💊 BRIMONIDINA</span>
-            <span class="dosis">💧 1 GOTA</span>
-            <span class="ojo">🧿 OJO IZQUIERDO</span>
-            <span class="horario">⏰ CADA 12 HRS</span>
+        <div class="horario-row">
+            <div class="bloque">
+                <div class="hora">🌅 MAÑANA</div>
+                <div class="hora" style="font-size:1rem; background:#E8E8E8;">9:00 AM</div>
+                <div class="medicamento">Brimonidina</div>
+                <div class="dosis">💧 1 GOTA</div>
+                <div class="ojo">👁️ OJO IZQUIERDO</div>
+                <div class="medicamento">Dorzolamida</div>
+                <div class="dosis">💧 1 GOTA</div>
+                <div class="ojo">👁️ OJO IZQUIERDO</div>
+                <div class="medicamento">Timolol</div>
+                <div class="dosis">💧 1 GOTA</div>
+                <div class="ojo">👁️ AMBOS OJOS</div>
+            </div>
+            <div class="bloque">
+                <div class="hora">🌙 NOCHE</div>
+                <div class="hora" style="font-size:1rem; background:#E8E8E8;">20:00 HRS</div>
+                <div class="medicamento">Latanoprost</div>
+                <div class="dosis">💧 1 GOTA</div>
+                <div class="ojo">👁️ AMBOS OJOS</div>
+                <div class="medicamento">Brimonidina</div>
+                <div class="dosis">💧 1 GOTA</div>
+                <div class="ojo">👁️ OJO IZQUIERDO</div>
+                <div class="medicamento">Dorzolamida</div>
+                <div class="dosis">💧 1 GOTA</div>
+                <div class="ojo">👁️ OJO IZQUIERDO</div>
+                <div class="medicamento">Timolol</div>
+                <div class="dosis">💧 1 GOTA</div>
+                <div class="ojo">👁️ AMBOS OJOS</div>
+            </div>
         </div>
-        <div class="med-item">
-            <span class="med-nombre">💊 DORZOLAMIDA</span>
-            <span class="dosis">💧 1 GOTA</span>
-            <span class="ojo">🧿 OJO IZQUIERDO</span>
-            <span class="horario">⏰ CADA 12 HRS</span>
-        </div>
-        <div class="med-item">
-            <span class="med-nombre">💊 LATANOPROST</span>
-            <span class="dosis">💧 1 GOTA</span>
-            <span class="ojo">👁️ AMBOS OJOS</span>
-            <span class="horario">⏰ CADA 24 HRS (20:00)</span>
-        </div>
-        <div class="med-item">
-            <span class="med-nombre">💊 TIMOLOL</span>
-            <span class="dosis">💧 1 GOTA</span>
-            <span class="ojo">👁️ AMBOS OJOS</span>
-            <span class="horario">⏰ CADA 12 HRS</span>
-        </div>
-
-        <div class="audio-pequeno">
+        <div class="audio-container">
             <audio id="audioCompleto" controls preload="metadata">
                 <source src="audio_instrucciones_v1_2026-04-23.ogg" type="audio/ogg">
             </audio>
         </div>
-        <div class="footer-card">🔊 Toca la tarjeta o el botón para oír</div>
+        <div class="footer-card">🔊 Toca la tarjeta o el botón</div>
     </div>
 
-    <!-- Tarjeta 2: Recordatorio farmacia (audio v2) -->
+    <!-- Tarjeta 2: Recordatorio Farmacia (Audio v2) -->
     <div class="card" onclick="document.getElementById('audioRecordatorio').play()">
         <div class="titulo-card">
             💊 FARMACIA
         </div>
-        <div class="farmacia-dato">
-            🏥 <strong>Farmacia Central</strong><br>
-            📍 Av. Siempreviva 123
+        <div style="background:#FFE0B5; border-radius: 1.5rem; padding: 0.8rem; margin: 0.5rem 0; text-align:center;">
+            <div style="font-size: 1.5rem; font-weight:bold;">🏥 Farmacia Asesor Laboratorios</div>
+            <div>📍 Camino de Boza, Módulos 43-46</div>
+            <div style="font-size:1.2rem; margin-top:0.5rem;">🗓️ <strong>VIERNES 25 ABRIL 2026</strong></div>
+            <div>🆔 Llevar carnet y receta</div>
         </div>
-        <div class="fecha-limite">
-            🗓️ VIERNES 25 ABRIL 2026
-        </div>
-        <div class="farmacia-dato" style="font-size:1.1rem;">
-            🆔 Llevar carnet y receta médica
-        </div>
-        <div class="audio-pequeno">
+        <div class="audio-container">
             <audio id="audioRecordatorio" controls preload="metadata">
                 <source src="audio_instrucciones_v2_2026-04-23.ogg" type="audio/ogg">
             </audio>
@@ -207,7 +202,7 @@
         <div class="footer-card">🔊 Toca la tarjeta o el botón</div>
     </div>
 
-    <footer style="text-align: center; color: #cfe3cf; font-size: 0.8rem; margin-top: 0.5rem;">Presiona cualquier tarjeta para escuchar las indicaciones completas</footer>
+    <footer>Presiona cualquier tarjeta para escuchar las instrucciones</footer>
 </div>
 <script>
     document.querySelectorAll('audio').forEach(audio => {
