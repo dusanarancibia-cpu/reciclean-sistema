@@ -1,7 +1,7 @@
 # STATUS — Reciclean-Farex Sistema
 
 > **Snapshot de `temas_en_progreso` (Supabase).** Respuesta canónica a "status / cómo vamos / detalle".
-> **Última regeneración:** 22-abr-2026 14:15 · **68 filas** (25 parents + 43 sub-tareas)
+> **Última regeneración:** 23-abr-2026 · **68 filas** (25 parents + 43 sub-tareas)
 
 ---
 
@@ -24,14 +24,14 @@
 | **I-01** | 30% | Tecnología | Claude | Mapa BD + FKs | 1h | **29-abr** | — | 📋 Mapear FKs+ER+RLS |
 | **I-10** | 40% | Comercial | Dusan | Sprint ventas | 2sem | **28-abr ⚠️** | — | 🔨 ATRASADO |
 | **I-09** | 15% | Tecnología | Pablo | Infra VPS + hub | 2d | **28-abr** | — | 📋 Requires I-08 + DO |
-| **I-12** | 30% | Gerencia General | Dusan | Diego v5.0 live | 2sem | **🚀 30-abr** | `Plan Ecosistema Digital/Observaciones para Diego Agente/` | 📋 Lanzamiento oficial |
+| **I-12** | ~~0%~~ | Gerencia General | Dusan | ~~Diego v5.0~~ CANCELADO | — | ~~30-abr~~ | — | Absorbido en I-16 v5.1 |
 | **I-04** | 90% | Gerencia General | Claude | Tracker temas | 30min | **30-abr** | — | 🔍 Pablo wirea n8n |
 | **I-19** | 30% | Gerencia General | Dusan | Plan 2026-2030 | 2h | **30-abr** | `Plan Ecosistema Digital/Plan_Operativo_v2_FINAL_Lunes_2026-04-21.pptx` | 📋 Alinear con I-10, I-12 |
 | **I-11** | 50% | Tecnología | Pablo | ACI deploy | 1sem | **5-may** | `Cesar - Order/02_Asistente_Comercial_Integrado/.../SPEC_v3_FINAL...docx` | 🔨 Requires I-09 VPS |
 | **I-18** | 0% | Comercial | Dusan | Contrato Resimple | 1h | **10-may** | `Comercial/.../Resimple/10-2025 Contrato Resimple...aspx` | 💡 Revisar vigencia 2026 |
 | **I-05** | 30% | Tecnología | Claude | Panel temas | 3h | **10-may** | — | 📋 Esperando green light build |
 | **I-03** | 20% | Tecnología | Dusan | Eval BI tools | 2h | **10-may** | `Cesar - Order/07_Archivo_y_Respaldos/Respaldos/admin_panel_v83.html` | 📋 Contrastar contexto |
-| **I-16** | 0% | Tecnología | Pablo | Diego v5.1 | 2sem | **15-may** | — | 💡 Post v5.0 estable |
+| **I-16** | 35% | Tecnología | Pablo | Diego v5.1 LIVE | 2sem | **15-may** | — | 📋 Sesión 1 Pablo 26-abr |
 | **I-02** | 10% | Gerencia General | Dusan | Viz informes | 2sem | **15-may** | — | 💡 Decidir consumidor |
 | **I-20** | 10% | Comercial | Dusan | Propuestas activas | 1sem | **15-may** | `Comercial/.../[8 PDFs de propuestas]` | 💡 Revisar 8 propuestas |
 | **I-13** | 5% | Tecnología | Pablo | Deuda técnica | 3sem | **20-may** | — | 💡 11 subtareas post 30-abr |
@@ -51,14 +51,14 @@
 
 | Día | Quién | Qué urge |
 |---|---|---|
-| **Hoy 22-abr** | Dusan | Rotar K3 + Meta (I-08) · Contratar DO (I-09.1) · Notion (I-15) |
-| 23-abr | Dusan | Enviar 30 msgs WA (I-10.2) · Lista 50 prospectos (I-10.1) |
+| 22-abr | Dusan | Rotar K3 + Meta (I-08) · Contratar DO (I-09.1) · Notion (I-15) |
+| **✅ 23-abr** | Dusan | Canceló I-12 v5.0 → absorbido en I-16 v5.1 · PWA app-papa · Sprint ventas pendiente |
 | 25-abr | Dusan | Demos Diego (I-10.3) · Ingrid completa teléfonos (I-11.1) |
-| 26-abr | Pablo regresa | Sesión 1 backup+SQL (I-12.1) · Cierre cliente #1 (I-10.5) |
-| 27-abr | Pablo | Sesión 2 prompt+GCal (I-12.2) · VPS deploy (I-09.3) |
-| 28-abr | Pablo | Sesión 3 Curador+tests (I-12.3) · Import workflows (I-09.5) |
-| 29-abr | Dusan | Respuestas oro (I-12.4) · Memoria conv (I-13.1) |
-| **30-abr 🚀** | Dusan+Pablo | **LANZAMIENTO Diego v5.0** (I-12.5) |
+| 26-abr | Pablo regresa | Sesión 1 arch v5.1 (I-16) · Cierre cliente #1 (I-10.5) |
+| 27-abr | Pablo | VPS deploy (I-09.3) · Validación peer IA (I-16) |
+| 28-abr | Pablo | Import workflows (I-09.5) · Smoke tests (I-16) |
+| 29-abr | Dusan+Pablo | Respuestas oro · Memoria conv (I-13.1) |
+| **30-abr 🚀** | Dusan+Pablo | **LANZAMIENTO Diego v5.1** (I-16) |
 
 ---
 
@@ -89,9 +89,10 @@ Total Supabase: **84 tablas** + **11 vistas**.
 
 | Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
 |---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| 22-abr-2026 (baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **23-abr-2026** | 68 | 10.4% | 0 | 1 | 3 | 64 |
 
-> _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+> _Nota 23-abr: % promedio baja porque I-12 (Diego v5.0) se canceló (30%→0%) y su trabajo se absorbió en I-16 (Diego v5.1, 0%→35%). Neto real: avance positivo._
 
 ---
 
