@@ -16,7 +16,7 @@
             padding: 1rem;
         }
         .container {
-            max-width: 700px;
+            max-width: 750px;
             width: 100%;
             background: #1e3a2f;
             border-radius: 3rem;
@@ -40,13 +40,7 @@
             border-radius: 2rem;
             padding: 1.2rem;
             margin-bottom: 1.5rem;
-            cursor: pointer;
-            transition: 0.1s;
             border: 2px solid #FFB347;
-        }
-        .card:hover {
-            background: #FFF0CC;
-            transform: scale(1.01);
         }
         .titulo-card {
             font-size: 1.8rem;
@@ -62,19 +56,15 @@
         .horario-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.8rem;
+            gap: 1rem;
             margin: 1rem 0;
-            background: #FEF3D6;
-            border-radius: 1.5rem;
-            padding: 0.8rem;
         }
         .bloque {
             flex: 1;
             background: white;
-            border-radius: 1.2rem;
-            padding: 0.6rem;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-radius: 1.5rem;
+            padding: 0.8rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         .hora {
             font-size: 1.8rem;
@@ -85,38 +75,64 @@
             border-radius: 2rem;
             margin-bottom: 0.5rem;
         }
-        .medicamento {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1e4620;
-            margin: 0.3rem 0;
-        }
-        .dosis {
-            font-size: 2rem;
-            letter-spacing: 5px;
-            margin: 0.2rem 0;
-        }
-        .ojo {
-            font-size: 1.2rem;
-            background: #E8F0E8;
+        .hora-texto {
+            font-size: 1rem;
+            background: #E8E8E8;
+            display: inline-block;
+            padding: 0.1rem 0.8rem;
             border-radius: 1rem;
-            padding: 0.2rem;
+            margin-left: 0.5rem;
         }
-        .audio-container {
+        .med-item {
+            margin: 0.8rem 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+        .med-nombre {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e4620;
+        }
+        .med-indicacion {
+            font-size: 1rem;
+            color: #3a5e3a;
+            margin-top: 0.2rem;
+        }
+        .audio-btn {
             display: flex;
             justify-content: center;
             margin-top: 1rem;
         }
-        audio {
-            width: 50%;
-            min-width: 180px;
-            border-radius: 2rem;
+        .play-btn {
+            background: #FFB347;
+            border: none;
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            font-size: 2.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.1s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            color: #1e3a2f;
         }
+        .play-btn.playing {
+            background: #e67e22;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .play-btn:active { transform: scale(0.95); }
         .footer-card {
-            font-size: 0.8rem;
             text-align: center;
-            margin-top: 0.5rem;
+            font-size: 0.8rem;
             color: #8aa88a;
+            margin-top: 0.5rem;
         }
         footer {
             text-align: center;
@@ -128,9 +144,8 @@
             .container { padding: 1rem; }
             h1 { font-size: 2.2rem; }
             .titulo-card { font-size: 1.4rem; }
-            .hora { font-size: 1.4rem; }
-            .dosis { font-size: 1.5rem; }
-            audio { width: 70%; }
+            .med-nombre { font-size: 1.2rem; }
+            .play-btn { width: 60px; height: 60px; font-size: 2rem; }
         }
     </style>
 </head>
@@ -139,75 +154,112 @@
     <h1>💧 GOTAS</h1>
     <div class="sub">Don Rigoberto · Glaucoma</div>
 
-    <!-- Tarjeta 1: Instrucciones completas (Audio v1) -->
-    <div class="card" onclick="document.getElementById('audioCompleto').play()">
-        <div class="titulo-card">
-            📋 INSTRUCCIONES
-        </div>
+    <div class="card">
+        <div class="titulo-card">📋 INSTRUCCIONES</div>
         <div class="horario-row">
             <div class="bloque">
-                <div class="hora">🌅 MAÑANA</div>
-                <div class="hora" style="font-size:1rem; background:#E8E8E8;">9:00 AM</div>
-                <div class="medicamento">Brimonidina</div>
-                <div class="dosis">💧 1 GOTA</div>
-                <div class="ojo">👁️ OJO IZQUIERDO</div>
-                <div class="medicamento">Dorzolamida</div>
-                <div class="dosis">💧 1 GOTA</div>
-                <div class="ojo">👁️ OJO IZQUIERDO</div>
-                <div class="medicamento">Timolol</div>
-                <div class="dosis">💧 1 GOTA</div>
-                <div class="ojo">👁️ AMBOS OJOS</div>
+                <div class="hora">🌅 MAÑANA <span class="hora-texto">9:00 AM</span></div>
+                <div class="med-item">
+                    <div class="med-nombre">BRIMONIDINA 0.2%</div>
+                    <div class="med-indicacion">💧 1 gota · Ojo izquierdo</div>
+                </div>
+                <div class="med-item">
+                    <div class="med-nombre">DORZOLAMIDA 2%</div>
+                    <div class="med-indicacion">💧 1 gota · Ojo izquierdo</div>
+                </div>
+                <div class="med-item">
+                    <div class="med-nombre">TIMOLOL 0.5%</div>
+                    <div class="med-indicacion">💧 1 gota · Ambos ojos</div>
+                </div>
             </div>
             <div class="bloque">
-                <div class="hora">🌙 NOCHE</div>
-                <div class="hora" style="font-size:1rem; background:#E8E8E8;">20:00 HRS</div>
-                <div class="medicamento">Latanoprost</div>
-                <div class="dosis">💧 1 GOTA</div>
-                <div class="ojo">👁️ AMBOS OJOS</div>
-                <div class="medicamento">Brimonidina</div>
-                <div class="dosis">💧 1 GOTA</div>
-                <div class="ojo">👁️ OJO IZQUIERDO</div>
-                <div class="medicamento">Dorzolamida</div>
-                <div class="dosis">💧 1 GOTA</div>
-                <div class="ojo">👁️ OJO IZQUIERDO</div>
-                <div class="medicamento">Timolol</div>
-                <div class="dosis">💧 1 GOTA</div>
-                <div class="ojo">👁️ AMBOS OJOS</div>
+                <div class="hora">🌙 NOCHE <span class="hora-texto">20:00 HRS</span></div>
+                <div class="med-item">
+                    <div class="med-nombre">LATANOPROST 0.005%</div>
+                    <div class="med-indicacion">💧 1 gota · Ambos ojos (solo noche)</div>
+                </div>
+                <div class="med-item">
+                    <div class="med-nombre">BRIMONIDINA 0.2%</div>
+                    <div class="med-indicacion">💧 1 gota · Ojo izquierdo</div>
+                </div>
+                <div class="med-item">
+                    <div class="med-nombre">DORZOLAMIDA 2%</div>
+                    <div class="med-indicacion">💧 1 gota · Ojo izquierdo</div>
+                </div>
+                <div class="med-item">
+                    <div class="med-nombre">TIMOLOL 0.5%</div>
+                    <div class="med-indicacion">💧 1 gota · Ambos ojos</div>
+                </div>
             </div>
         </div>
-        <div class="audio-container">
-            <audio id="audioCompleto" controls preload="metadata">
-                <source src="audio_instrucciones_v1_2026-04-23.ogg" type="audio/ogg">
-            </audio>
+        <div class="audio-btn">
+            <button id="playBtn1" class="play-btn" aria-label="Reproducir instrucciones">▶️</button>
         </div>
-        <div class="footer-card">🔊 Toca la tarjeta o el botón</div>
+        <audio id="audio1" preload="metadata" style="display:none;">
+            <source src="audio_instrucciones_v1_2026-04-23.ogg" type="audio/ogg">
+        </audio>
+        <div class="footer-card">🔊 Presiona el botón cuadrado para oír las instrucciones</div>
     </div>
 
-    <!-- Tarjeta 2: Recordatorio Farmacia (Audio v2) -->
-    <div class="card" onclick="document.getElementById('audioRecordatorio').play()">
-        <div class="titulo-card">
-            💊 FARMACIA
-        </div>
+    <div class="card">
+        <div class="titulo-card">💊 FARMACIA</div>
         <div style="background:#FFE0B5; border-radius: 1.5rem; padding: 0.8rem; margin: 0.5rem 0; text-align:center;">
-            <div style="font-size: 1.5rem; font-weight:bold;">🏥 Farmacia Asesor Laboratorios</div>
+            <div style="font-size: 1.6rem; font-weight:bold;">🏥 Asesor Laboratorios</div>
             <div>📍 Camino de Boza, Módulos 43-46</div>
             <div style="font-size:1.2rem; margin-top:0.5rem;">🗓️ <strong>VIERNES 25 ABRIL 2026</strong></div>
-            <div>🆔 Llevar carnet y receta</div>
+            <div>🆔 Llevar carnet y receta médica</div>
         </div>
-        <div class="audio-container">
-            <audio id="audioRecordatorio" controls preload="metadata">
-                <source src="audio_instrucciones_v2_2026-04-23.ogg" type="audio/ogg">
-            </audio>
+        <div class="audio-btn">
+            <button id="playBtn2" class="play-btn" aria-label="Reproducir recordatorio">▶️</button>
         </div>
-        <div class="footer-card">🔊 Toca la tarjeta o el botón</div>
+        <audio id="audio2" preload="metadata" style="display:none;">
+            <source src="audio_instrucciones_v2_2026-04-23.ogg" type="audio/ogg">
+        </audio>
+        <div class="footer-card">🔊 Presiona el botón cuadrado para oír el recordatorio</div>
     </div>
 
-    <footer>Presiona cualquier tarjeta para escuchar las instrucciones</footer>
+    <footer>Presiona el botón ⬛ para escuchar · Pausa con el mismo botón</footer>
 </div>
 <script>
-    document.querySelectorAll('audio').forEach(audio => {
-        audio.addEventListener('click', (e) => e.stopPropagation());
-    });
+    function initAudio(buttonId, audioId) {
+        const btn = document.getElementById(buttonId);
+        const audio = document.getElementById(audioId);
+        if (!btn || !audio) return;
+
+        const updateIcon = () => {
+            if (audio.paused) {
+                btn.innerHTML = '▶️';
+                btn.classList.remove('playing');
+            } else {
+                btn.innerHTML = '⏸️';
+                btn.classList.add('playing');
+            }
+        };
+
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (audio.paused) {
+                ['audio1','audio2'].forEach(id => {
+                    if (id !== audioId) {
+                        const other = document.getElementById(id);
+                        if (other && !other.paused) { other.pause(); }
+                    }
+                });
+                audio.play();
+            } else {
+                audio.pause();
+            }
+            updateIcon();
+        });
+
+        audio.addEventListener('play', updateIcon);
+        audio.addEventListener('pause', updateIcon);
+        audio.addEventListener('ended', () => { audio.currentTime = 0; updateIcon(); });
+        updateIcon();
+    }
+
+    initAudio('playBtn1', 'audio1');
+    initAudio('playBtn2', 'audio2');
 </script>
 </body>
 </html>
