@@ -90,8 +90,8 @@
         }
         .med-brimo { background: #E6F3FF; }
         .med-dorzo { background: #FFF0E6; }
-        .med-timo  { background: #E6FFE6; }
-        .med-lata  { background: #FFE6F0; }
+        .med-timo { background: #E6FFE6; }
+        .med-lata { background: #FFE6F0; }
         .med-nombre {
             font-size: 1.5rem;
             font-weight: 700;
@@ -100,24 +100,24 @@
             padding: 0.1rem 0.5rem;
             border-radius: 1rem;
         }
+        .med-porcentaje {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #5a5a5a;
+            margin-left: 0.2rem;
+        }
         .med-indicacion {
             font-size: 1.2rem;
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
+            gap: 0.3rem;
+            flex-wrap: nowrap;
             margin-top: 0.3rem;
         }
-        .gota-izq {
-            order: 1;
-        }
-        .gota-der {
-            order: 3;
-        }
-        .texto-gota {
-            order: 2;
-        }
+        .gota-izq { order: 1; }
+        .gota-der { order: 3; }
+        .texto-gota { order: 2; }
         .audio-btn {
             display: flex;
             justify-content: center;
@@ -126,10 +126,10 @@
         .play-btn {
             background: #FFB347;
             border: none;
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             border-radius: 20px;
-            font-size: 2.8rem;
+            font-size: 2.5rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -168,8 +168,14 @@
             .titulo-card { font-size: 1.4rem; }
             .med-nombre { font-size: 1.2rem; }
             .med-indicacion { font-size: 1rem; }
-            .play-btn { width: 70px; height: 70px; font-size: 2.5rem; }
+            .play-btn { width: 60px; height: 60px; font-size: 2rem; }
             .hora { font-size: 1.4rem; }
+        }
+        @media (max-width: 480px) {
+            .med-indicacion {
+                flex-wrap: wrap;
+                justify-content: flex-start;
+            }
         }
     </style>
 </head>
@@ -186,24 +192,24 @@
             <div class="bloque">
                 <div class="hora">🌅 MAÑANA <span class="hora-texto">9:00 AM</span></div>
                 <div class="med-item med-brimo">
-                    <div class="med-nombre">a. BRIMONIDINA 0.2%</div>
+                    <div class="med-nombre">BRIMONIDINA <span class="med-porcentaje">0.2%</span></div>
                     <div class="med-indicacion">
                         <span class="gota-izq">💧</span>
-                        <span class="texto-gota">1 gota · Ojo izquierdo</span>
+                        <span class="texto-gota">Ojo izquierdo</span>
                     </div>
                 </div>
                 <div class="med-item med-dorzo">
-                    <div class="med-nombre">b. DORZOLAMIDA 2%</div>
+                    <div class="med-nombre">DORZOLAMIDA <span class="med-porcentaje">2%</span></div>
                     <div class="med-indicacion">
                         <span class="gota-izq">💧</span>
-                        <span class="texto-gota">1 gota · Ojo izquierdo</span>
+                        <span class="texto-gota">Ojo izquierdo</span>
                     </div>
                 </div>
                 <div class="med-item med-timo">
-                    <div class="med-nombre">c. TIMOLOL 0.5%</div>
+                    <div class="med-nombre">TIMOLOL <span class="med-porcentaje">0.5%</span></div>
                     <div class="med-indicacion">
                         <span class="gota-izq">💧</span>
-                        <span class="texto-gota">1 gota · Ambos ojos</span>
+                        <span class="texto-gota">Ambos ojos</span>
                         <span class="gota-der">💧</span>
                     </div>
                 </div>
@@ -211,32 +217,32 @@
             <div class="bloque">
                 <div class="hora">🌙 NOCHE <span class="hora-texto">20:00 HRS</span></div>
                 <div class="med-item med-brimo">
-                    <div class="med-nombre">a. BRIMONIDINA 0.2%</div>
+                    <div class="med-nombre">BRIMONIDINA <span class="med-porcentaje">0.2%</span></div>
                     <div class="med-indicacion">
                         <span class="gota-izq">💧</span>
-                        <span class="texto-gota">1 gota · Ojo izquierdo</span>
+                        <span class="texto-gota">Ojo izquierdo</span>
                     </div>
                 </div>
                 <div class="med-item med-dorzo">
-                    <div class="med-nombre">b. DORZOLAMIDA 2%</div>
+                    <div class="med-nombre">DORZOLAMIDA <span class="med-porcentaje">2%</span></div>
                     <div class="med-indicacion">
                         <span class="gota-izq">💧</span>
-                        <span class="texto-gota">1 gota · Ojo izquierdo</span>
+                        <span class="texto-gota">Ojo izquierdo</span>
                     </div>
                 </div>
                 <div class="med-item med-timo">
-                    <div class="med-nombre">c. TIMOLOL 0.5%</div>
+                    <div class="med-nombre">TIMOLOL <span class="med-porcentaje">0.5%</span></div>
                     <div class="med-indicacion">
                         <span class="gota-izq">💧</span>
-                        <span class="texto-gota">1 gota · Ambos ojos</span>
+                        <span class="texto-gota">Ambos ojos</span>
                         <span class="gota-der">💧</span>
                     </div>
                 </div>
                 <div class="med-item med-lata">
-                    <div class="med-nombre">d. LATANOPROST 0.005%</div>
+                    <div class="med-nombre">LATANOPROST <span class="med-porcentaje">0.005%</span></div>
                     <div class="med-indicacion">
                         <span class="gota-izq">💧</span>
-                        <span class="texto-gota">1 gota · Ambos ojos (solo noche)</span>
+                        <span class="texto-gota">Ambos ojos</span>
                         <span class="gota-der">💧</span>
                     </div>
                 </div>
