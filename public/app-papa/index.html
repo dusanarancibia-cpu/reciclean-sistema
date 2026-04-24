@@ -16,7 +16,7 @@
             padding: 1rem;
         }
         .container {
-            max-width: 750px;
+            max-width: 800px;
             width: 100%;
             background: #1e3a2f;
             border-radius: 3rem;
@@ -56,14 +56,14 @@
         .horario-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 1.5rem;
             margin: 1rem 0;
         }
         .bloque {
             flex: 1;
             background: white;
             border-radius: 1.5rem;
-            padding: 0.8rem;
+            padding: 1rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         .hora {
@@ -73,7 +73,7 @@
             display: inline-block;
             padding: 0.2rem 1rem;
             border-radius: 2rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
         }
         .hora-texto {
             font-size: 1rem;
@@ -84,19 +84,39 @@
             margin-left: 0.5rem;
         }
         .med-item {
-            margin: 0.8rem 0;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 0.5rem;
+            margin: 1rem 0;
+            padding: 0.5rem;
+            border-radius: 1rem;
         }
+        .med-brimo { background: #E6F3FF; }
+        .med-dorzo { background: #FFF0E6; }
+        .med-timo  { background: #E6FFE6; }
+        .med-lata  { background: #FFE6F0; }
         .med-nombre {
             font-size: 1.5rem;
             font-weight: 700;
-            color: #1e4620;
+            margin-bottom: 0.3rem;
+            display: inline-block;
+            padding: 0.1rem 0.5rem;
+            border-radius: 1rem;
         }
         .med-indicacion {
-            font-size: 1rem;
-            color: #3a5e3a;
-            margin-top: 0.2rem;
+            font-size: 1.2rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.3rem;
+        }
+        .gota-izq {
+            order: 1;
+        }
+        .gota-der {
+            order: 3;
+        }
+        .texto-gota {
+            order: 2;
         }
         .audio-btn {
             display: flex;
@@ -106,10 +126,10 @@
         .play-btn {
             background: #FFB347;
             border: none;
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 80px;
             border-radius: 20px;
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -127,7 +147,9 @@
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
-        .play-btn:active { transform: scale(0.95); }
+        .play-btn:active {
+            transform: scale(0.95);
+        }
         .footer-card {
             text-align: center;
             font-size: 0.8rem;
@@ -140,12 +162,14 @@
             margin-top: 1rem;
             font-size: 0.9rem;
         }
-        @media (max-width: 550px) {
+        @media (max-width: 600px) {
             .container { padding: 1rem; }
             h1 { font-size: 2.2rem; }
             .titulo-card { font-size: 1.4rem; }
             .med-nombre { font-size: 1.2rem; }
-            .play-btn { width: 60px; height: 60px; font-size: 2rem; }
+            .med-indicacion { font-size: 1rem; }
+            .play-btn { width: 70px; height: 70px; font-size: 2.5rem; }
+            .hora { font-size: 1.4rem; }
         }
     </style>
 </head>
@@ -155,40 +179,66 @@
     <div class="sub">Don Rigoberto · Glaucoma</div>
 
     <div class="card">
-        <div class="titulo-card">📋 INSTRUCCIONES</div>
+        <div class="titulo-card">
+            📋 INSTRUCCIONES
+        </div>
         <div class="horario-row">
             <div class="bloque">
                 <div class="hora">🌅 MAÑANA <span class="hora-texto">9:00 AM</span></div>
-                <div class="med-item">
-                    <div class="med-nombre">BRIMONIDINA 0.2%</div>
-                    <div class="med-indicacion">💧 1 gota · Ojo izquierdo</div>
+                <div class="med-item med-brimo">
+                    <div class="med-nombre">a. BRIMONIDINA 0.2%</div>
+                    <div class="med-indicacion">
+                        <span class="gota-izq">💧</span>
+                        <span class="texto-gota">1 gota · Ojo izquierdo</span>
+                    </div>
                 </div>
-                <div class="med-item">
-                    <div class="med-nombre">DORZOLAMIDA 2%</div>
-                    <div class="med-indicacion">💧 1 gota · Ojo izquierdo</div>
+                <div class="med-item med-dorzo">
+                    <div class="med-nombre">b. DORZOLAMIDA 2%</div>
+                    <div class="med-indicacion">
+                        <span class="gota-izq">💧</span>
+                        <span class="texto-gota">1 gota · Ojo izquierdo</span>
+                    </div>
                 </div>
-                <div class="med-item">
-                    <div class="med-nombre">TIMOLOL 0.5%</div>
-                    <div class="med-indicacion">💧 1 gota · Ambos ojos</div>
+                <div class="med-item med-timo">
+                    <div class="med-nombre">c. TIMOLOL 0.5%</div>
+                    <div class="med-indicacion">
+                        <span class="gota-izq">💧</span>
+                        <span class="texto-gota">1 gota · Ambos ojos</span>
+                        <span class="gota-der">💧</span>
+                    </div>
                 </div>
             </div>
             <div class="bloque">
                 <div class="hora">🌙 NOCHE <span class="hora-texto">20:00 HRS</span></div>
-                <div class="med-item">
-                    <div class="med-nombre">LATANOPROST 0.005%</div>
-                    <div class="med-indicacion">💧 1 gota · Ambos ojos (solo noche)</div>
+                <div class="med-item med-brimo">
+                    <div class="med-nombre">a. BRIMONIDINA 0.2%</div>
+                    <div class="med-indicacion">
+                        <span class="gota-izq">💧</span>
+                        <span class="texto-gota">1 gota · Ojo izquierdo</span>
+                    </div>
                 </div>
-                <div class="med-item">
-                    <div class="med-nombre">BRIMONIDINA 0.2%</div>
-                    <div class="med-indicacion">💧 1 gota · Ojo izquierdo</div>
+                <div class="med-item med-dorzo">
+                    <div class="med-nombre">b. DORZOLAMIDA 2%</div>
+                    <div class="med-indicacion">
+                        <span class="gota-izq">💧</span>
+                        <span class="texto-gota">1 gota · Ojo izquierdo</span>
+                    </div>
                 </div>
-                <div class="med-item">
-                    <div class="med-nombre">DORZOLAMIDA 2%</div>
-                    <div class="med-indicacion">💧 1 gota · Ojo izquierdo</div>
+                <div class="med-item med-timo">
+                    <div class="med-nombre">c. TIMOLOL 0.5%</div>
+                    <div class="med-indicacion">
+                        <span class="gota-izq">💧</span>
+                        <span class="texto-gota">1 gota · Ambos ojos</span>
+                        <span class="gota-der">💧</span>
+                    </div>
                 </div>
-                <div class="med-item">
-                    <div class="med-nombre">TIMOLOL 0.5%</div>
-                    <div class="med-indicacion">💧 1 gota · Ambos ojos</div>
+                <div class="med-item med-lata">
+                    <div class="med-nombre">d. LATANOPROST 0.005%</div>
+                    <div class="med-indicacion">
+                        <span class="gota-izq">💧</span>
+                        <span class="texto-gota">1 gota · Ambos ojos (solo noche)</span>
+                        <span class="gota-der">💧</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -202,7 +252,9 @@
     </div>
 
     <div class="card">
-        <div class="titulo-card">💊 FARMACIA</div>
+        <div class="titulo-card">
+            💊 FARMACIA
+        </div>
         <div style="background:#FFE0B5; border-radius: 1.5rem; padding: 0.8rem; margin: 0.5rem 0; text-align:center;">
             <div style="font-size: 1.6rem; font-weight:bold;">🏥 Asesor Laboratorios</div>
             <div>📍 Camino de Boza, Módulos 43-46</div>
@@ -220,6 +272,7 @@
 
     <footer>Presiona el botón ⬛ para escuchar · Pausa con el mismo botón</footer>
 </div>
+
 <script>
     function initAudio(buttonId, audioId) {
         const btn = document.getElementById(buttonId);
@@ -239,12 +292,16 @@
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             if (audio.paused) {
-                ['audio1','audio2'].forEach(id => {
-                    if (id !== audioId) {
-                        const other = document.getElementById(id);
-                        if (other && !other.paused) { other.pause(); }
-                    }
-                });
+                if (audioId === 'audio1' && document.getElementById('audio2') && !document.getElementById('audio2').paused) {
+                    document.getElementById('audio2').pause();
+                    const btn2 = document.getElementById('playBtn2');
+                    if (btn2) { btn2.innerHTML = '▶️'; btn2.classList.remove('playing'); }
+                }
+                if (audioId === 'audio2' && document.getElementById('audio1') && !document.getElementById('audio1').paused) {
+                    document.getElementById('audio1').pause();
+                    const btn1 = document.getElementById('playBtn1');
+                    if (btn1) { btn1.innerHTML = '▶️'; btn1.classList.remove('playing'); }
+                }
                 audio.play();
             } else {
                 audio.pause();
@@ -254,7 +311,10 @@
 
         audio.addEventListener('play', updateIcon);
         audio.addEventListener('pause', updateIcon);
-        audio.addEventListener('ended', () => { audio.currentTime = 0; updateIcon(); });
+        audio.addEventListener('ended', () => {
+            audio.pause();
+            updateIcon();
+        });
         updateIcon();
     }
 
