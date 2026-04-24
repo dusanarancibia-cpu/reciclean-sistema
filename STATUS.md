@@ -1,7 +1,7 @@
 # STATUS — Reciclean-Farex Sistema
 
 > **Snapshot de `temas_en_progreso` (Supabase).** Respuesta canónica a "status / cómo vamos / detalle".
-> **Última regeneración:** 22-abr-2026 14:15 · **68 filas** (25 parents + 43 sub-tareas)
+> **Última regeneración:** 24-abr-2026 · **68 filas** (25 parents + 43 sub-tareas)
 
 ---
 
@@ -25,7 +25,7 @@
 | **I-10** | 40% | Comercial | Dusan | Sprint ventas | 2sem | **28-abr ⚠️** | — | 🔨 ATRASADO |
 | **I-09** | 15% | Tecnología | Pablo | Infra VPS + hub | 2d | **28-abr** | — | 📋 Requires I-08 + DO |
 | **I-12** | 30% | Gerencia General | Dusan | Diego v5.0 live | 2sem | **🚀 30-abr** | `Plan Ecosistema Digital/Observaciones para Diego Agente/` | 📋 Lanzamiento oficial |
-| **I-04** | 90% | Gerencia General | Claude | Tracker temas | 30min | **30-abr** | — | 🔍 Pablo wirea n8n |
+| **I-04** | 95% | Gerencia General | Claude | Tracker temas | 30min | **30-abr** | `STATUS.md` + `public/status.html` | 🔍 Falta wiring n8n (Pablo 26-abr) |
 | **I-19** | 30% | Gerencia General | Dusan | Plan 2026-2030 | 2h | **30-abr** | `Plan Ecosistema Digital/Plan_Operativo_v2_FINAL_Lunes_2026-04-21.pptx` | 📋 Alinear con I-10, I-12 |
 | **I-11** | 50% | Tecnología | Pablo | ACI deploy | 1sem | **5-may** | `Cesar - Order/02_Asistente_Comercial_Integrado/.../SPEC_v3_FINAL...docx` | 🔨 Requires I-09 VPS |
 | **I-18** | 0% | Comercial | Dusan | Contrato Resimple | 1h | **10-may** | `Comercial/.../Resimple/10-2025 Contrato Resimple...aspx` | 💡 Revisar vigencia 2026 |
@@ -49,16 +49,17 @@
 
 ## Semana crítica (22-30 abr)
 
-| Día | Quién | Qué urge |
-|---|---|---|
-| **Hoy 22-abr** | Dusan | Rotar K3 + Meta (I-08) · Contratar DO (I-09.1) · Notion (I-15) |
-| 23-abr | Dusan | Enviar 30 msgs WA (I-10.2) · Lista 50 prospectos (I-10.1) |
-| 25-abr | Dusan | Demos Diego (I-10.3) · Ingrid completa teléfonos (I-11.1) |
-| 26-abr | Pablo regresa | Sesión 1 backup+SQL (I-12.1) · Cierre cliente #1 (I-10.5) |
-| 27-abr | Pablo | Sesión 2 prompt+GCal (I-12.2) · VPS deploy (I-09.3) |
-| 28-abr | Pablo | Sesión 3 Curador+tests (I-12.3) · Import workflows (I-09.5) |
-| 29-abr | Dusan | Respuestas oro (I-12.4) · Memoria conv (I-13.1) |
-| **30-abr 🚀** | Dusan+Pablo | **LANZAMIENTO Diego v5.0** (I-12.5) |
+| Día | Quién | Qué urge | Estado |
+|---|---|---|---|
+| ~~22-abr~~ | Dusan | Rotar K3 + Meta (I-08) · Contratar DO (I-09.1) · Notion (I-15) | Tracker creado (I-04 avanzó a 95%) |
+| ~~23-abr~~ | Dusan | Enviar 30 msgs WA (I-10.2) · Lista 50 prospectos (I-10.1) | App-papa personal completada |
+| **24-abr (hoy)** | Dusan | Revisión avance · Preparar demos Diego (I-10.3) | En curso |
+| 25-abr | Dusan | Demos Diego (I-10.3) · Ingrid completa teléfonos (I-11.1) | Pendiente |
+| 26-abr | Pablo regresa | Sesión 1 backup+SQL (I-12.1) · Cierre cliente #1 (I-10.5) | Pendiente |
+| 27-abr | Pablo | Sesión 2 prompt+GCal (I-12.2) · VPS deploy (I-09.3) | Pendiente |
+| 28-abr | Pablo | Sesión 3 Curador+tests (I-12.3) · Import workflows (I-09.5) | Pendiente |
+| 29-abr | Dusan | Respuestas oro (I-12.4) · Memoria conv (I-13.1) | Pendiente |
+| **30-abr 🚀** | Dusan+Pablo | **LANZAMIENTO Diego v5.0** (I-12.5) | Pendiente |
 
 ---
 
@@ -85,13 +86,15 @@ Total Supabase: **84 tablas** + **11 vistas**.
 
 ---
 
-## Progreso diario (baseline)
+## Progreso diario
 
-| Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
-|---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec | Nota del día |
+|---|---|---|---|---|---|---|---|
+| **22-abr** (baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 | Tracker creado, 8 PRs mergeados |
+| **23-abr** | 68 | 15.9% | 0 | 1 | 4 | 63 | Dusan en app-papa (personal), sin cambios al sistema |
+| **24-abr** | 68 | 16.3% | 0 | 1 | 4 | 63 | Revisión de avance semanal. Pablo regresa 26-abr |
 
-> _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+> _Claude captura snapshot diario. La tabla manda es `temas_en_progreso` en Supabase._
 
 ---
 
