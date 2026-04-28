@@ -1,7 +1,8 @@
 # Pendientes — Sistema Reciclean-Farex
 
-> Ultima actualizacion: 2026-04-20 tarde (sesion movil Dusan)
-> Branch en curso: `claude/continue-diego-mobile-U0cgA`
+> Ultima actualizacion: 2026-04-28 (reprioritizacion v5.0 vs v5.1)
+> Branch en curso: `claude/analyze-project-root-TALgp`
+> Cambio: P2+P6 → v5.1 (15-may) | P5 → v5.0 (30-abr)
 
 ## Como usar este archivo
 
@@ -26,10 +27,11 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
   Claude que abra PR). Tras merge, Vercel despliega automatico y los
   enlaces `reciclean-sistema.vercel.app/conoce-diego` etc. quedan vivos.
 
-### P2. PATCH prompt Diego Alonso — flujo coordinacion equipo [CRITICO]
-- **Estado:** bloqueada
-- **Prioridad:** CRITICA - esta destruyendo la confianza del equipo con
-  Diego Alonso. Evidencia acumulada:
+### P2. PATCH prompt Diego Alonso — flujo coordinacion equipo [POSTERGADO a v5.1]
+- **Estado:** bloqueada → POSTERGADA (decision 28-abr)
+- **Versión:** v5.1 (15-may), NO v5.0
+- **Razón:** Enfoque v5.0 en P5 (fix bugs). Diego Alonso + coordinación → v5.1.
+- **Evidencia de critica (20-abr pero ahora v5.1):** Esta destruyendo la confianza del equipo. Evidencia acumulada:
   - Caso Andrea 20-abr: pidio "avisale a Dusan", Diego dijo "listo, ya
     le aviso" pero NO puede enviar a terceros. Mentira sistemica.
   - Caso Ingrid 20-abr: 2 horas y 35+ mensajes para pedir un camion,
@@ -73,8 +75,9 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
 - **Proxima accion:** revisar tabla `conversaciones` en Supabase, analizar
   patrones, proponer ajustes al prompt si hay [CALIBRAR] repetidos.
 
-### P5. Iteracion prompt Diego v4.3 (bugs detectados 20-abr tarde)
-- **Estado:** bloqueada (misma razon que P2: falta `N8N_API_KEY`)
+### P5. Iteracion prompt Diego v4.3 (bugs detectados 20-abr tarde) [CRITICO para v5.0]
+- **Estado:** bloqueada (falta `N8N_API_KEY`) → **PRIORIDAD: v5.0 (30-abr)**
+- **Versión objetivo:** v5.0 (lanzamiento 30-abr)
 - **Origen:** analisis de transcripcion WhatsApp 14-20 abr.
 - **Bugs detectados (10):**
   1. **Loops de bienvenida** - Diego vuelve a saludar aunque la conversacion
@@ -158,8 +161,8 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
   - D) Documentar en prompt que Diego transcribe/describe audios .opus (fix 8).
 - Aplicar despues de P2 (misma API key n8n).
 
-### P6. Humanizacion Diego Alonso v4.4 (calidez + comentarios ligeros)
-- **Estado:** diferida - esperar que P5 v4.3 estabilice bugs basicos
+### P6. Humanizacion Diego Alonso v4.4 (calidez + comentarios ligeros) [v5.1]
+- **Estado:** diferida → POSTERGADA a v5.1 (junto con P2)
 - **Razon del diferimiento:** si Diego miente sobre "avisar a Dusan" y
   encima tira chistes, el equipo se frustra mas. Primero honestidad,
   despues calidez.
