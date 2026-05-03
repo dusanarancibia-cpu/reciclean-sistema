@@ -1,0 +1,458 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                ║
+║     MONDAY.COM + EXPLORADOR DE ARCHIVOS — ESTRUCTURA ALINEADA POR SILOS      ║
+║                                                                                ║
+║                  Cada departamento tiene su tablero + carpeta                 ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                         ESTRUCTURA DE SILOS                                   ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃                                                                               ┃
+┃  RECICLEAN-FAREX (10 Departamentos / Silos)                                 ┃
+┃  ├─────────────────────────────────────────────────────────────────┐        ┃
+┃  │                                                                 │        ┃
+┃  │  1️⃣  GERENCIA GENERAL (Dusan)                                  │        ┃
+┃  │      Monday: [GG] Iniciativas Estratégicas                    │        ┃
+┃  │      Carpeta: 01_GERENCIA_GENERAL/                            │        ┃
+┃  │      Iniciativas: I-19 (Plan), I-21 (Puerto Montt), I-25      │        ┃
+┃  │                                                                 │        ┃
+┃  ├─────────────────────────────────────────────────────────────────┤        ┃
+┃  │                                                                 │        ┃
+┃  │  2️⃣  TECNOLOGÍA (Pablo + Claude) ⭐ MÁS GRANDE               │        ┃
+┃  │      Monday: [TECH] Iniciativas de Tecnología                │        ┃
+┃  │      Carpeta: 02_TECNOLOGIA/                                  │        ┃
+┃  │      ├─ BD_y_Arquitectura/        (I-01)                      │        ┃
+┃  │      ├─ Agente_Diego/             (I-12, I-16, P2, P5, P6)   │        ┃
+┃  │      ├─ Infraestructura/          (I-09)                      │        ┃
+┃  │      ├─ Tracker_Temas/            (I-04)                      │        ┃
+┃  │      ├─ Documentacion/            (I-17)                      │        ┃
+┃  │      ├─ Tareas_Diarias/           (reporting)                 │        ┃
+┃  │      └─ Deuda_Tecnica/            (I-13)                      │        ┃
+┃  │      Iniciativas: 10 total (I-01, I-04, I-05, I-07, I-09,    │        ┃
+┃  │                         I-12, I-13, I-16, I-17, I-23)         │        ┃
+┃  │                                                                 │        ┃
+┃  ├─────────────────────────────────────────────────────────────────┤        ┃
+┃  │                                                                 │        ┃
+┃  │  3️⃣  COMERCIAL (Dusan + Equipo Ventas)                        │        ┃
+┃  │      Monday: [COMM] Iniciativas Comerciales                  │        ┃
+┃  │      Carpeta: 03_COMERCIAL/                                   │        ┃
+┃  │      ├─ Sprint_Ventas_Q2/         (I-10)                      │        ┃
+┃  │      ├─ Asistente_Comercial/      (I-11)                      │        ┃
+┃  │      ├─ Contratos/                (I-18)                      │        ┃
+┃  │      ├─ Propuestas/               (I-20)                      │        ┃
+┃  │      └─ Guia_Chatbot/             (I-22)                      │        ┃
+┃  │      Iniciativas: 5 (I-10, I-11, I-18, I-20, I-22)           │        ┃
+┃  │                                                                 │        ┃
+┃  ├─────────────────────────────────────────────────────────────────┤        ┃
+┃  │                                                                 │        ┃
+┃  │  4️⃣  OPERACIONES (Equipo Logística)                           │        ┃
+┃  │      Monday: [OPS] Iniciativas Operacionales                 │        ┃
+┃  │      Carpeta: 04_OPERACIONES/                                 │        ┃
+┃  │      └─ Puerto_Montt/             (I-21)                      │        ┃
+┃  │      Iniciativas: 1 (I-21)                                    │        ┃
+┃  │                                                                 │        ┃
+┃  ├─────────────────────────────────────────────────────────────────┤        ┃
+┃  │                                                                 │        ┃
+┃  │  5️⃣  ABASTECIMIENTO                                           │        ┃
+┃  │      Monday: [ABAST] (vacío por ahora)                       │        ┃
+┃  │      Carpeta: 05_ABASTECIMIENTO/                              │        ┃
+┃  │      Iniciativas: 0 (reserved para futuro)                    │        ┃
+┃  │                                                                 │        ┃
+┃  ├─────────────────────────────────────────────────────────────────┤        ┃
+┃  │                                                                 │        ┃
+┃  │  6️⃣  LOGÍSTICA                                                 │        ┃
+┃  │      Monday: [LOG] (vacío por ahora)                         │        ┃
+┃  │      Carpeta: 06_LOGISTICA/                                   │        ┃
+┃  │      Iniciativas: 0 (reserved para futuro)                    │        ┃
+┃  │                                                                 │        ┃
+┃  ├─────────────────────────────────────────────────────────────────┤        ┃
+┃  │                                                                 │        ┃
+┃  │  7️⃣  FINANZAS Y ADMINISTRACIÓN (Admin)                        │        ┃
+┃  │      Monday: [FIN] Iniciativas Administrativas               │        ┃
+┃  │      Carpeta: 07_FINANZAS_ADMIN/                              │        ┃
+┃  │      └─ Notion_Setup/             (I-15)                      │        ┃
+┃  │      Iniciativas: 1 (I-15)                                    │        ┃
+┃  │                                                                 │        ┃
+┃  ├─────────────────────────────────────────────────────────────────┤        ┃
+┃  │                                                                 │        ┃
+┃  │  8️⃣  RECURSOS HUMANOS (RH)                                    │        ┃
+┃  │      Monday: [RH] Iniciativas RH                             │        ┃
+┃  │      Carpeta: 08_RECURSOS_HUMANOS/                            │        ┃
+┃  │      └─ Descripciones_Cargo/      (I-24)                      │        ┃
+┃  │      Iniciativas: 1 (I-24)                                    │        ┃
+┃  │                                                                 │        ┃
+┃  ├─────────────────────────────────────────────────────────────────┤        ┃
+┃  │                                                                 │        ┃
+┃  │  9️⃣  LEGAL Y COMPLIANCE                                       │        ┃
+┃  │      Monday: [LEGAL] Iniciativas Legales                     │        ┃
+┃  │      Carpeta: 09_LEGAL_COMPLIANCE/                            │        ┃
+┃  │      └─ Permisos_Talca/           (I-25)                      │        ┃
+┃  │      Iniciativas: 1 (I-25)                                    │        ┃
+┃  │                                                                 │        ┃
+┃  ├─────────────────────────────────────────────────────────────────┤        ┃
+┃  │                                                                 │        ┃
+┃  │  🔟 SOSTENIBILIDAD                                            │        ┃
+┃  │      Monday: [SOST] (vacío por ahora)                       │        ┃
+┃  │      Carpeta: 10_SOSTENIBILIDAD/                              │        ┃
+┃  │      Iniciativas: 0 (reserved para futuro)                    │        ┃
+┃  │                                                                 │        ┃
+┃  └─────────────────────────────────────────────────────────────────┘        ┃
+┃                                                                               ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                       MONDAY.COM WORKSPACE LAYOUT
+
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           MONDAY.COM WORKSPACE                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  📊 TABLERO CENTRAL (MAESTRO)                                          │
+│  │                                                                     │
+│  │  Contiene: Todas las 25 iniciativas padre + 5 tareas              │
+│  │  Vistas:   "Por Depto", "Por Prioridad", "Hoy", "Bloqueadas"      │
+│  │  Acceso:   Todos (Dusan admin, Pablo editor, Claude editor)      │
+│  │                                                                     │
+│  │  📌 Ejemplo: I-08, I-12, I-23, etc. (todas visibles aquí)         │
+│  │                                                                     │
+│  └─────────────────────────────────────────────────────────────────────┘
+│
+│
+│  📂 CARPETA: SILOS DEPARTAMENTALES
+│  │
+│  ├─ 📋 [GG] GERENCIA GENERAL
+│  │  │
+│  │  └─ Contiene: I-19, I-21, I-25 (solo iniciativas GG)
+│  │     Vistas: "Por Prioridad", "Hoy", "Bloqueadas"
+│  │     Acceso: Dusan (editor), otros (viewers)
+│  │
+│  ├─ 📋 [TECH] TECNOLOGÍA ⭐
+│  │  │
+│  │  └─ Contiene: I-01, I-04, I-05, I-07, I-09, I-12, I-13, I-16, I-17, I-23
+│  │     + P1, P2, P5 (tareas TECH)
+│  │     Vistas: "Hoy", "Por Responsable", "BD vs Agente vs Infra", "Bloqueadas"
+│  │     Acceso: Claude (editor), Pablo (editor), Dusan (viewer)
+│  │
+│  ├─ 📋 [COMM] COMERCIAL
+│  │  │
+│  │  └─ Contiene: I-10, I-11, I-18, I-20, I-22 + P3
+│  │     Vistas: "Sprint Ventas", "Contratos", "Chatbot"
+│  │     Acceso: Dusan (editor), equipo ventas (commenters)
+│  │
+│  ├─ 📋 [OPS] OPERACIONES
+│  │  │
+│  │  └─ Contiene: I-21
+│  │     Acceso: Dusan (editor)
+│  │
+│  ├─ 📋 [FIN] FINANZAS
+│  │  │
+│  │  └─ Contiene: I-15
+│  │     Acceso: Admin (editor)
+│  │
+│  ├─ 📋 [RH] RECURSOS HUMANOS
+│  │  │
+│  │  └─ Contiene: I-24
+│  │     Acceso: RH (editor)
+│  │
+│  ├─ 📋 [LEGAL] LEGAL & COMPLIANCE
+│  │  │
+│  │  └─ Contiene: I-25
+│  │     Acceso: Dusan (editor)
+│  │
+│  └─ 📋 [ABAST], [LOG], [SOST] (vacíos, para crecer)
+│
+│
+│  💡 TABLERO: IDEAS NUEVAS (CENTRAL)
+│  │
+│  │  Contiene: Ideas de todos los departamentos
+│  │  Dusan revisa diariamente a las 10 AM
+│  │  Si se aprueba → se asigna a silo correspondiente
+│  │  Acceso: Todos (contribuyen ideas)
+│  │
+│
+│  📅 TABLERO: TAREAS DIARIAS DEL EQUIPO (CENTRAL)
+│
+│     Contiene: Qué hace cada quién hoy
+│     Actualización: Mañana + tarde
+│     Acceso: Todos (reportan avances)
+│
+└─────────────────────────────────────────────────────────────────────────
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                    EXPLORADOR DE ARCHIVOS ESTRUCTURA
+
+═══════════════════════════════════════════════════════════════════════════════
+
+RECICLEAN-FAREX/
+│
+├─ 📂 01_GERENCIA_GENERAL/           ←─────→ [GG] tablero Monday
+│  ├─ 2026_Plan_Estrategico/
+│  │  ├─ Plan_2026-2030_v1.pptx      (para I-19)
+│  │  └─ Observaciones_externas/
+│  ├─ Decisiones_Dusan/
+│  │  └─ Aprobaciones/
+│  └─ KPIs_corporativos/
+│
+├─ 📂 02_TECNOLOGIA/                 ←─────→ [TECH] tablero Monday
+│  ├─ BD_y_Arquitectura/
+│  │  ├─ Mapa_BD_ER.mmd              (para I-01)
+│  │  ├─ Foreign_Keys_v3.sql
+│  │  └─ Migrations/
+│  │     ├─ v1_initial/
+│  │     ├─ v2_erratas/ (APLICADA)
+│  │     └─ v3_diego_mediciones/
+│  ├─ Agente_Diego/
+│  │  ├─ Manifiesto/
+│  │  │  ├─ Diego_Alonso_v1.md       (para I-12, I-16)
+│  │  │  └─ Arquitectura_Datos.md
+│  │  ├─ Prompts/
+│  │  │  ├─ v5.0.0_base.txt
+│  │  │  ├─ v5.1.0_patches/
+│  │  │  └─ v4.3_bugs_fixes/          (para P5)
+│  │  └─ Validaciones/
+│  │     └─ Casos_v5.1.0/
+│  ├─ Infraestructura/
+│  │  ├─ VPS/
+│  │  │  └─ Specs_DigitalOcean.txt   (para I-09)
+│  │  ├─ n8n_workflows/
+│  │  │  └─ Agente_Director/
+│  │  └─ Supabase/
+│  │     └─ Schema_diagram.png
+│  ├─ Tracker_Temas/
+│  │  ├─ STATUS.md                   (para I-04)
+│  │  └─ PENDIENTES.md
+│  ├─ Documentacion/
+│  │  ├─ API_specs/
+│  │  ├─ Mermaid_diagrams/           (para I-17)
+│  │  └─ ECharts_configs/            (para I-05, I-07)
+│  └─ Tareas_Diarias/
+│     └─ 2026_05/
+│
+├─ 📂 03_COMERCIAL/                  ←─────→ [COMM] tablero Monday
+│  ├─ Sprint_Ventas_Q2/
+│  │  ├─ Prospecto_50_list.xlsx      (para I-10)
+│  │  └─ Demos/
+│  ├─ Asistente_Comercial/
+│  │  └─ SPEC_v3_FINAL.docx          (para I-11)
+│  ├─ Contratos/
+│  │  └─ Resimple/
+│  │     └─ 2025_Contrato.pdf        (para I-18)
+│  ├─ Propuestas/
+│  │  └─ 8_propuestas_activas/       (para I-20)
+│  └─ Guia_Chatbot/
+│     └─ Guia_ChatBot_v1.pptx        (para I-22)
+│
+├─ 📂 04_OPERACIONES/                ←─────→ [OPS] tablero Monday
+│  └─ Puerto_Montt/
+│     ├─ Permisos_SAG/               (para I-21)
+│     └─ Roadmap_operacional/
+│
+├─ 📂 05_ABASTECIMIENTO/             ← [ABAST] tablero (vacío)
+│  └─ (vacío, para futuro)
+│
+├─ 📂 06_LOGISTICA/                  ← [LOG] tablero (vacío)
+│  └─ (vacío, para futuro)
+│
+├─ 📂 07_FINANZAS_ADMIN/             ←─────→ [FIN] tablero Monday
+│  └─ Notion_Setup/
+│     ├─ Workspace_config/           (para I-15)
+│     └─ Templates/
+│
+├─ 📂 08_RECURSOS_HUMANOS/           ←─────→ [RH] tablero Monday
+│  └─ Descripciones_Cargo/
+│     └─ Asistente_Comercial.docx    (para I-24)
+│
+├─ 📂 09_LEGAL_COMPLIANCE/           ←─────→ [LEGAL] tablero Monday
+│  └─ Permisos_Talca/
+│     └─ Vigencia_2026/              (para I-25)
+│
+├─ 📂 10_SOSTENIBILIDAD/             ← [SOST] tablero (vacío)
+│  └─ (vacío, para futuro)
+│
+├─ 📂 SHARED/
+│  ├─ Brand_guidelines/
+│  ├─ Templates/
+│  └─ Comunicados/
+│
+└─ 📂 MONDAY_ORGANIZATION/
+   ├─ MONDAY_ESTRUCTURA_MAESTRO.md
+   ├─ MONDAY_SILOS_POR_DEPARTAMENTO.md
+   ├─ MONDAY_IMPORTAR_37_TEMAS.csv
+   └─ (otros archivos de configuración)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                        FLUJO: ARCHIVO ↔ MONDAY
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Escenario: Actualizar el Mapa BD (I-01)
+
+PASO 1: Alguien edita archivo físico
+    02_TECNOLOGIA/BD_y_Arquitectura/Mapa_BD_ER.mmd
+        ↓
+PASO 2: Reporta en Monday tablero [TECH]
+    ├─ Iniciativa: I-01
+    ├─ % Completado: 30% → 45%
+    ├─ Siguiente Acción: "Foreign keys mapeadas, falta crear triggers"
+    └─ Link Documento: 02_TECNOLOGIA/BD_y_Arquitectura/
+        ↓
+PASO 3: Sistema notifica (automático)
+    ├─ Notificación a Claude: "I-01 actualizada (45%)"
+    ├─ Slack: "#tech ✅ Mapa BD progresa: 45%"
+    └─ Supabase: Sincroniza automáticamente
+        ↓
+PASO 4: Equipo ve cambios en Monday
+    ├─ Vista [TECH] Hoy: I-01 mostrado como actualizado
+    ├─ % visual actualizado
+    └─ Comentarios: Equipo puede reaccionar
+
+PASO 5: Cuando completo (% = 100%)
+    I-01 se marca VERDE en Monday
+    └─ Automáticamente crea sub-tareas de siguientes: I-04, I-09, etc.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                    PERMISOS POR SILO (EJEMPLO)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+[MAESTRO] Dashboard Central:
+├─ Dusan: ADMIN (todo acceso, can create/edit/delete)
+├─ Pablo: EDITOR (create items, edit, can't delete)
+├─ Claude: EDITOR (create items, edit, can't delete)
+└─ Equipo (futuro): VIEWER (solo lectura)
+
+[TECH] Tablero:
+├─ Claude: EDITOR (owner de TECH, puede crear sub-tareas)
+├─ Pablo: EDITOR (responsable VPS + ACI)
+├─ Dusan: VIEWER (supervisa, no edita)
+└─ Otros: NO ACCESS
+
+[COMM] Tablero:
+├─ Dusan: EDITOR (owner de COMM)
+├─ Equipo ventas: COMMENTER (comentan bloqueadores)
+└─ Otros: VIEWER
+
+[GG] Tablero:
+├─ Dusan: EDITOR
+└─ Otros: VIEWER
+
+[ABAST], [LOG], [SOST], [FIN], [RH], [LEGAL]:
+├─ Responsable silo: EDITOR
+└─ Otros: VIEWER
+
+IDEAS NUEVAS:
+├─ Todos: COMMENTERS (proponen ideas)
+├─ Dusan: EDITOR (aprueba/rechaza)
+└─ Otros: VIEWERS
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                    VENTAJAS DE ESTRUCTURA SILO
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ VISUAL
+   Equipo TECH ve [TECH] primero (sus iniciativas)
+   Equipo COMM ve [COMM] primero (sus iniciativas)
+   Dusan ve [MAESTRO] (todas)
+
+✅ PERMISOS GRANULARES
+   TECH puede editar [TECH], no [COMM]
+   COMM puede editar [COMM], no [TECH]
+   Reduce "ediciones accidentales"
+
+✅ REPORTES POR SILO
+   "% promedio TECH: 35%" diferente de "% COMM: 42%"
+   Dusan ve qué silo está más atrasado
+
+✅ ESCALABILIDAD
+   Si crece empresa: agregar [PROD], [LOGISTICA], etc. es trivial
+   Estructura ya existe, copiar template
+
+✅ CARPETAS ALINEADAS
+   Documentos físicos = organización Monday
+   Menos confusión ("¿dónde está la spec del ACI?")
+   Respuesta clara: "03_COMERCIAL/Asistente_Comercial/SPEC_v3.docx"
+
+✅ BÚSQUEDA RÁPIDA
+   TECH: "necesito mapa BD" → [TECH] tablero → I-01
+   COMM: "necesito propuestas" → [COMM] tablero → I-20
+   No scrollear por 37 iniciativas
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                        IMPLEMENTACIÓN ROADMAP
+
+═══════════════════════════════════════════════════════════════════════════════
+
+FASE 1: Base (semana 5-10 mayo)
+├─ Crear Monday con [MAESTRO] central + Ideas nuevas + Tareas diarias
+├─ Crear carpetas raíz (01_GG, 02_TECH, 03_COMM, etc.)
+└─ Cargar CSV con 37 temas en [MAESTRO]
+
+FASE 2: Silos Específicos (semana 1-2 junio)
+├─ Duplicar [MAESTRO] → crear [GG], [TECH], [COMM], [OPS], [FIN], [RH], [LEGAL]
+├─ Filtrar iniciativas: [TECH] muestra solo I-01, I-04, etc.
+├─ Configurar permisos por silo
+└─ Entrenar cada equipo en su tablero
+
+FASE 3: Automatizaciones Avanzadas (junio+)
+├─ Notificación si [TECH] tiene bloqueador > 2 días
+├─ Reportes semanales por depto: "% completado TECH vs COMM"
+├─ Webhook Supabase: cambios en temas_en_progreso → actualiza Monday
+└─ Dashboard: burn-down chart por silo
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                        TAMAÑO ESPERADO POR SILO
+
+═══════════════════════════════════════════════════════════════════════════════
+
+[GG]:       3 iniciativas
+[TECH]:    10 iniciativas ⭐ (más grande, mucho trabajo)
+[COMM]:     5 iniciativas
+[OPS]:      1 iniciativa
+[FIN]:      1 iniciativa
+[RH]:       1 iniciativa
+[LEGAL]:    1 iniciativa
+[ABAST]:    0 (reserved)
+[LOG]:      0 (reserved)
+[SOST]:     0 (reserved)
+
+TOTAL:     30 filas (25 iniciativas padre + 5 tareas)
+           ~43 sub-tareas distribuidas
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                            CONCLUSIÓN
+
+═══════════════════════════════════════════════════════════════════════════════
+
+La estructura de silos permite:
+
+✓ Cada equipo ve sus iniciativas primero (menos ruido)
+✓ Carpetas físicas = organización Monday (consistencia)
+✓ Permisos por silo (TECH edita [TECH], no [COMM])
+✓ Reportes por departamento (% completado diferente por silo)
+✓ Escalable: agregar silos es trivial
+✓ Centralizado: [MAESTRO] siempre tiene visión completa (para Dusan)
+
+El resultado es una estructura clara, profesional, y fácil de navegar
+tanto en Monday como en el explorador de archivos.
+
+╚════════════════════════════════════════════════════════════════════════════════╝
