@@ -1,0 +1,275 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                ║
+║          📊 MONDAY.COM - ESTRUCTURA PARA ORGANIZAR 37 TEMAS                     ║
+║                                                                                ║
+║              Control de Ejecución + Prioridades + Comunicación                 ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│  📚 DOCUMENTACIÓN CREADA (5 ARCHIVOS)                                          │
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│  1️⃣  README_MONDAY_ORGANIZATION.md                                           │
+│      └─ Resumen ejecutivo (15 min lectura)                                    │
+│      └─ Mapa de 4 documentos principales                                      │
+│      └─ Beneficios: antes vs después                                          │
+│      └─ Calendario implementación                                             │
+│                                                                                │
+│  2️⃣  MONDAY_ESTRUCTURA_MAESTRO.md ⭐ EMPIEZA AQUÍ                           │
+│      └─ Diseño conceptual completo (20 min lectura)                           │
+│      └─ 3 Tableros con 17 columnas cada uno                                   │
+│      └─ Mapeo: 25 iniciativas + 5 tareas → 30 filas importables              │
+│      └─ 7 vistas predefinidas (Hoy, Por Prioridad, Bloqueadas, etc.)        │
+│      └─ 6 automatizaciones (notificaciones, resumen diario)                   │
+│      └─ Métricas de seguimiento                                              │
+│                                                                                │
+│  3️⃣  MONDAY_GUIA_IMPLEMENTACION.md                                            │
+│      └─ Paso a paso técnico (8 partes detalladas)                             │
+│      └─ Tiempo: 3-4 horas primera vez                                         │
+│      └─ Instrucciones exactas para cada columna, vista, automatización        │
+│      └─ Troubleshooting incluido                                              │
+│      └─ Capacitación del equipo (demos)                                       │
+│      └─ Integración opcional Supabase+n8n                                     │
+│                                                                                │
+│  4️⃣  MONDAY_GUIA_RAPIDA.md                                                    │
+│      └─ Referencia de 1 página (consulta diaria)                              │
+│      └─ Qué hacer cada mañana (Dusan + Pablo)                                 │
+│      └─ Cómo ver estado en 30 segundos                                        │
+│      └─ Protocolos: agregar idea, reportar bloqueador, completar tarea       │
+│      └─ Notificaciones explicadas                                             │
+│      └─ Campos importantes (% Completado, Siguiente Acción, Bloqueador)      │
+│                                                                                │
+│  5️⃣  MONDAY_IMPORTAR_37_TEMAS.csv                                            │
+│      └─ Archivo importable directamente a Monday                              │
+│      └─ 30 filas: 25 iniciativas (I-01 a I-25) + 5 tareas (P1-P6)           │
+│      └─ Columnas mapeadas: Código, Nombre, % Completado, Responsable, etc.  │
+│      └─ Listo para Paso 3.1 de la guía de implementación                     │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│  📊 ESTRUCTURA DE 3 TABLEROS                                                  │
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│  TABLERO 1: [MAESTRO] Iniciativas & Temas                                    │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │ Código │ Nombre (≤50) │ % Completo │ Responsable │ Prioridad │ Vence  │ │
+│  ├─────────────────────────────────────────────────────────────────────────┤ │
+│  │ I-01   │ Mapa BD      │ 30%        │ Claude      │ 🔵 Alta   │ 29-abr │ │
+│  │ I-12   │ Diego v5.0   │ 30%        │ Dusan       │ 🔴 CRÍTICO│ 30-abr │ │
+│  │ I-23   │ Monday.com   │ 0%         │ Claude      │ 🟢 Media  │ 10-may │ │
+│  │ ...    │ ...          │ ...        │ ...         │ ...       │ ...    │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│   └─ 25 Iniciativas padre (I-01 a I-25)                                      │
+│   └─ 5 Tareas especiales (P1 a P6: Mergear PR, Patch Diego, etc.)           │
+│   └─ ~43 Sub-tareas (creadas dentro de iniciativas)                          │
+│   └─ Vistas: Hoy, Por Prioridad, Por Responsable, Bloqueadas, Calendario... │
+│                                                                                │
+│  TABLERO 2: Tareas Diarias del Equipo                                        │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │ Fecha  │ Persona │ Tarea    │ Horas │ Estado    │ Progreso │ Bloqueador│ │
+│  ├─────────────────────────────────────────────────────────────────────────┤ │
+│  │ 5-may  │ Claude  │ I-23.1   │ 1.5   │ 🟠 En cur │ 50%      │ None     │ │
+│  │ 5-may  │ Pablo   │ I-09     │ 4     │ 🟠 En cur │ 40%      │ Keys     │ │
+│  │ 5-may  │ Dusan   │ I-15     │ 0.5   │ 🔴 Bloq.  │ 0%       │ Crédito  │ │
+│  │ ...    │ ...     │ ...      │ ...   │ ...       │ ...      │ ...      │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│   └─ Daily standup: quién hace qué, qué progreso                             │
+│   └─ Vistas: Hoy, Por Persona, Bloqueadas ahora, Completadas hoy            │
+│   └─ Actualización: mañana + tarde (5 min cada vez)                          │
+│                                                                                │
+│  TABLERO 3: Ideas Nuevas & Roadmap                                           │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │ Idea           │ Quién  │ Impacto │ Esfuerzo │ ¿Merece I-NN? │ Estado  │ │
+│  ├─────────────────────────────────────────────────────────────────────────┤ │
+│  │ Dashboard BI   │ Dusan  │ Alto    │ 1w+      │ Sí → I-05.3   │ 👍 OK   │ │
+│  │ Fix Diego bugs │ Jair   │ Alto    │ 3d       │ Sí → P5.2     │ 👍 OK   │ │
+│  │ API docs       │ Pablo  │ Medio   │ 1w       │ No → I-13.5   │ 🔍 Rev. │ │
+│  │ Slider precios │ Jair   │ Bajo    │ 1d       │ No → I-11.4   │ 📝 Nuev │ │
+│  │ ...            │ ...    │ ...     │ ...      │ ...           │ ...     │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│   └─ Inbox de ideas: captura, evaluación, asignación a iniciativa            │
+│   └─ Vistas: Nuevas esta semana, Aprobadas pendientes, Alto impacto          │
+│   └─ Revisión: Dusan diariamente 10 AM                                        │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│  📋 MAPEO: 37 TEMAS → 30 FILAS IMPORTABLES                                   │
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│  INICIATIVAS PADRE (25):                                                      │
+│  ├─ I-01 a I-07   : Tecnología base (BD, BI, Tracker, Docs)                  │
+│  ├─ I-08 a I-12   : Críticas & urgentes (Keys, VPS, Diego v5.0)             │
+│  ├─ I-13 a I-22   : Post-lanzamiento (Deuda técnica, Cargos, Chatbot)       │
+│  ├─ I-23          : 👈 HOY - Implementación Monday (Nuestro proyecto)        │
+│  └─ I-24 a I-25   : Largo plazo (Puerto Montt, Permisos)                     │
+│                                                                                │
+│  TAREAS ESPECIALES (5):                                                        │
+│  ├─ P1 : Mergear PR URLs cortas                                              │
+│  ├─ P2 : PATCH Diego coordinación equipo (CRÍTICO)                           │
+│  ├─ P3 : Difundir página /coordinar-equipo                                   │
+│  ├─ P4 : Monitoreo semanal Diego                                             │
+│  ├─ P5 : Iteración v4.3 - 26 bugs (CRÍTICO)                                  │
+│  └─ P6 : Humanización Diego v4.4                                             │
+│                                                                                │
+│  SUB-TAREAS (generadas dentro de iniciativas):                                │
+│  ├─ I-23.1 : Crear 3 tableros base                                            │
+│  ├─ I-23.2 : Cargar 37 temas (CSV)                                            │
+│  ├─ I-23.3 : Configurar automatizaciones                                      │
+│  ├─ I-23.4 : Entrenar equipo (demos)                                          │
+│  ├─ I-23.5 : Integración Supabase+n8n                                         │
+│  └─ ... (más en otras iniciativas)                                            │
+│                                                                                │
+│  DISTRIBUCIÓN POR PRIORIDAD:                                                 │
+│  ├─ 🔴 CRÍTICA  : 4 (I-08, I-12, P2, P5)                                     │
+│  ├─ 🔵 Alta     : 7 (I-01, I-04, I-09, I-10, I-11, I-19, P1)                │
+│  ├─ 🟢 Media    : 14 (I-02, I-03, I-05, I-06, I-14, I-15, I-18, I-22, I-23, │
+│  │                    I-24, P3, P4, P6)                                       │
+│  └─ 🔵 Baja     : 8 (I-07, I-13, I-16, I-17, I-20, I-21, I-25)              │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│  ⚙️ AUTOMATIZACIONES (6)                                                      │
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│  1. "Tarea vence HOY"                                                         │
+│     └─ Trigger: Fecha Límite = TODAY                                          │
+│     └─ Notificación: Responsable + Dusan a las 8 AM                          │
+│     └─ Mensaje: "⏰ {Tarea} VENCE HOY. Siguiente: {Acción}"                 │
+│                                                                                │
+│  2. "Tarea vence en 2 días"                                                   │
+│     └─ Trigger: Fecha Límite = TODAY + 2                                      │
+│     └─ Notificación: Responsable a las 4 PM (amarillo)                       │
+│     └─ Mensaje: "⚠️ {Tarea} vence en 2 días"                                 │
+│                                                                                │
+│  3. "Bloqueada > 3 días"                                                      │
+│     └─ Trigger: Bloqueador NOT EMPTY + (Hoy - Última actualización) > 3d     │
+│     └─ Notificación: Responsable + responsable del bloqueador                │
+│     └─ Mensaje: "🔴 {Tarea} bloqueada desde {fecha}"                        │
+│                                                                                │
+│  4. "Sub-tarea completada"                                                    │
+│     └─ Trigger: Sub-tarea % = 100%                                            │
+│     └─ Action: Actualizar % padre automático                                  │
+│     └─ Notificación: Equipo                                                   │
+│                                                                                │
+│  5. "Idea aprobada sin asignar"                                               │
+│     └─ Trigger: Tablero 3, Estado = Aprobada + (Ahora - cambio) > 1d        │
+│     └─ Notificación: Dusan a las 10 AM                                        │
+│     └─ Mensaje: "👍 Idea '{idea}' aprobada. ¿A quién la asigno?"           │
+│                                                                                │
+│  6. "Resumen diario" ⭐                                                       │
+│     └─ Trigger: Lunes-viernes a las 8 AM + 5:30 PM                          │
+│     └─ Action: Post a Slack o email                                           │
+│     └─ Contenido:                                                             │
+│        ├─ 8 AM: "Tareas de hoy (X personas, Y tareas)"                       │
+│        │        - Desglose por persona                                        │
+│        │        - Tareas vencidas                                             │
+│        │        - Bloqueadores activos                                        │
+│        │        - Link a vista "Hoy"                                          │
+│        └─ 5:30 PM: "Cierre de día:"                                          │
+│                    - Completadas (verde)                                      │
+│                    - En curso (amarillo)                                      │
+│                    - Bloqueadas (rojo)                                        │
+│                    - % avance diario                                          │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│  📅 CALENDARIO IMPLEMENTACIÓN (5-9 MAYO)                                      │
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│  🔵 LUNES 5-6 MAY                                                              │
+│  ├─ I-23.1 Crear 3 tableros base (Claude)                    ~1.5h           │
+│  ├─ I-23.2 Cargar 37 temas vía CSV (Claude)                  ~1.5h           │
+│  └─ Dusan: Revisar estructura en Monday                       ~30min          │
+│                                                                                │
+│  🟢 MIÉRCOLES 6-7 MAY                                                          │
+│  ├─ I-23.3 Configurar automatizaciones (Claude)              ~1h             │
+│  ├─ Test: crear tarea test → ver si dispara notificación                     │
+│  └─ Ajustes según feedback                                                    │
+│                                                                                │
+│  🟡 JUEVES 8-9 MAY                                                             │
+│  ├─ I-23.4 Entrenar equipo (Dusan + Claude)                  ~1h             │
+│  │  ├─ Demo 15 min: Dusan en Tablero 1 (vista Hoy, bloqueadores)           │
+│  │  ├─ Demo 15 min: Pablo en Tablero 2 (reportar avances)                   │
+│  │  └─ Crear "Guía Rápida" en Slack / Google Docs                           │
+│  └─ Equipo comienza a usar Monday (soft launch)                              │
+│                                                                                │
+│  🔴 VIERNES 9-10 MAY                                                           │
+│  ├─ I-23.5 Integración Supabase+n8n (Pablo + Claude)         ~1.5h           │
+│  ├─ Sincronización Supabase temas_en_progreso ↔ Monday                       │
+│  └─ Webhook Monday → notificaciones a Slack                                  │
+│                                                                                │
+│  ✅ SÁBADO 10 MAY                                                              │
+│  ├─ Monday.com OPERATIVO 100%                                                │
+│  ├─ Primer resumen automático enviado                                        │
+│  ├─ Equipo acostumbrado                                                      │
+│  └─ Post-mortem: qué ajustar para semana siguiente                           │
+│                                                                                │
+│  ⏱️  TIEMPO TOTAL: ~6 horas (distribuidas en 5 días)                         │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│  ✨ BENEFICIOS ESPERADOS                                                      │
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│  ANTES (SIN MONDAY):                        DESPUÉS (CON MONDAY):            │
+│  ├─ 30 min: leer 3-4 documentos             ├─ 2 min: abrir Monday "Hoy"    │
+│  ├─ Dusan no sabe qué bloquea a Pablo       ├─ Notificación inmediata       │
+│  ├─ Ideas se pierden en chats               ├─ Ideas → Tablero 3 (24h)     │
+│  ├─ Bloqueadores = comunicación lenta       ├─ Bloqueadores = auto-notify   │
+│  ├─ No sabe quién hace qué                  ├─ Visibilidad en tiempo real   │
+│  ├─ % completado manual (Supabase)          ├─ % automático con sub-tareas  │
+│  └─ Reportes = excel manual                 └─ Reportes automáticos (Slack)│
+│                                                                                │
+│  IMPACTO:                                                                     │
+│  ✓ Reducción de contexto-switching: -25 min/día                              │
+│  ✓ Resolución de bloqueadores: 3x más rápido                                 │
+│  ✓ Ideas capturadas: 100% (antes ~30%)                                       │
+│  ✓ Visibilidad equipo: 100% (antes ~60%)                                     │
+│  ✓ Reportes sin manual: 5 reportes/semana automáticos                        │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│  🚀 CÓMO EMPEZAR HOY                                                          │
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│  1. Lee README_MONDAY_ORGANIZATION.md (15 min)                               │
+│     └─ Entiende qué es, por qué, cuándo                                      │
+│                                                                                │
+│  2. Lee MONDAY_ESTRUCTURA_MAESTRO.md (20 min)                                │
+│     └─ Entiende los 3 tableros, columnas, vistas, automatizaciones          │
+│                                                                                │
+│  3. Lee MONDAY_GUIA_RAPIDA.md (5 min)                                        │
+│     └─ Memoriza qué hacer cada mañana                                        │
+│                                                                                │
+│  4. Decide: ¿Empezamos 5 de mayo? (SÍ/NO)                                    │
+│                                                                                │
+│  5. Si SÍ: Claude comienza implementación según                              │
+│     MONDAY_GUIA_IMPLEMENTACION.md (3-4 horas)                                │
+│                                                                                │
+│  6. Si SÍ: Sábado 10-may = Monday en vivo ✅                                  │
+│                                                                                │
+│  Archivos están en: /reciclean-sistema/                                       │
+│  ├─ README_MONDAY_ORGANIZATION.md                                            │
+│  ├─ MONDAY_ESTRUCTURA_MAESTRO.md                                             │
+│  ├─ MONDAY_GUIA_IMPLEMENTACION.md                                            │
+│  ├─ MONDAY_GUIA_RAPIDA.md                                                    │
+│  └─ MONDAY_IMPORTAR_37_TEMAS.csv                                             │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                ║
+║  ✅ COMPLETADO: Estructura maestra lista para implementación                  ║
+║                                                                                ║
+║  📍 Estado: Branch `claude/organize-monday-projects-Psc7D` (committed)        ║
+║                                                                                ║
+║  🎯 Próximo: Implementar en Monday.com (5-10 mayo)                           ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝
