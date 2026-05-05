@@ -1,11 +1,19 @@
 # Sistema Comercial Reciclean-Farex
 
+## ⭐ DOCUMENTO MAESTRO — leer antes que nada
+
+**Diagnóstico Organizacional Grupo Arancibia-Pinto v1** (05-may-2026)
+Ubicación: `../reciclean-manifiesto-diego/Bitacora_Estrategica_Grupo/2026-05/2026-05-05_Diagnostico_Organizacional_Grupo_v1.md`
+
+Contiene la fotografía completa del grupo: 9 empresas, 14 personas, 5 sistemas descolgados, 46 hallazgos, 33 acciones priorizadas, riesgos por tier. Este documento sustituye cualquier asunción anterior sobre Reciclean-Farex.
+
 ## Contexto del usuario
 
-**Dusan Arancibia** — Gerente General de Grupo Reciclean-Farex (reciclaje de materiales).
-**Pablo** — Desarrollador que trabaja con Claude Code en este sistema.
-- 4 sucursales: Cerrillos, Maipu, Talca, Puerto Montt
-- 14 personas en el equipo
+**Dusan Arancibia** — CEO Grupo Arancibia-Pinto (8 empresas activas: Reciclean, Farex, Ubergreen, Inmobiliaria Beto, Transporte 5R, Transportes Diego, Importadora/Exportadora Farex, SERCOT 50%).
+**Pablo Arancibia** — Hijo de Dusan, Sistemas + ejecuta pagos del grupo.
+**Dyana Pinto** — Esposa de Dusan, dueña operativa de SERCOT (50%), asesoría tributaria del grupo.
+- 4 sucursales: Cerrillos, Maipu, Talca, Puerto Montt (PM bloqueada por SEREMI)
+- 14 personas en el equipo + 3 externos clave (Dyana, Connie SERCOT, Reinaldo programador)
 - Comunicacion siempre en **espanol**
 
 ## Que es este sistema
