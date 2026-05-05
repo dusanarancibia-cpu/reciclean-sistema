@@ -1,7 +1,7 @@
 # STATUS — Reciclean-Farex Sistema
 
 > **Snapshot de `temas_en_progreso` (Supabase).** Respuesta canónica a "status / cómo vamos / detalle".
-> **Última regeneración:** 22-abr-2026 14:15 · **68 filas** (25 parents + 43 sub-tareas)
+> **Última regeneración:** 05-may-2026 · **68 filas** (25 parents + 43 sub-tareas)
 
 ---
 
@@ -26,7 +26,7 @@
 | **I-09** | 15% | Tecnología | Pablo | Infra VPS + hub | 2d | **28-abr** | — | 📋 Requires I-08 + DO |
 | **I-12** | 30% | Gerencia General | Dusan | Diego v5.0 live | 2sem | **🚀 30-abr** | `Plan Ecosistema Digital/Observaciones para Diego Agente/` | 📋 Lanzamiento oficial |
 | **I-04** | 90% | Gerencia General | Claude | Tracker temas | 30min | **30-abr** | — | 🔍 Pablo wirea n8n |
-| **I-19** | 30% | Gerencia General | Dusan | Plan 2026-2030 | 2h | **30-abr** | `Plan Ecosistema Digital/Plan_Operativo_v2_FINAL_Lunes_2026-04-21.pptx` | 📋 Alinear con I-10, I-12 |
+| **I-19** | 45% | Gerencia General | Dusan | Plan 2026-2030 | 2h | **30-abr** | `Plan Ecosistema Digital/Plan_Operativo_v2_FINAL_Lunes_2026-04-21.pptx` | 🔨 46 hallazgos + 33 acciones priorizadas |
 | **I-11** | 50% | Tecnología | Pablo | ACI deploy | 1sem | **5-may** | `Cesar - Order/02_Asistente_Comercial_Integrado/.../SPEC_v3_FINAL...docx` | 🔨 Requires I-09 VPS |
 | **I-18** | 0% | Comercial | Dusan | Contrato Resimple | 1h | **10-may** | `Comercial/.../Resimple/10-2025 Contrato Resimple...aspx` | 💡 Revisar vigencia 2026 |
 | **I-05** | 30% | Tecnología | Claude | Panel temas | 3h | **10-may** | — | 📋 Esperando green light build |
@@ -35,14 +35,14 @@
 | **I-02** | 10% | Gerencia General | Dusan | Viz informes | 2sem | **15-may** | — | 💡 Decidir consumidor |
 | **I-20** | 10% | Comercial | Dusan | Propuestas activas | 1sem | **15-may** | `Comercial/.../[8 PDFs de propuestas]` | 💡 Revisar 8 propuestas |
 | **I-13** | 5% | Tecnología | Pablo | Deuda técnica | 3sem | **20-may** | — | 💡 11 subtareas post 30-abr |
-| **I-06** | 15% | Gerencia General | Dusan | Ecosistema int. | 1sem | **20-may** | `Plan Ecosistema Digital/Ecosistema_Digital_Reciclean_Farex_v2.pptx` | 💡 Overlap I-02/I-03 |
+| **I-06** | 30% | Gerencia General | Dusan | Ecosistema int. | 1sem | **20-may** | `Plan Ecosistema Digital/Ecosistema_Digital_Reciclean_Farex_v2.pptx` | 📋 Diagnóstico mapeó 8 empresas + 5 sistemas |
 | **I-07** | 10% | Tecnología | Claude | Eval diagramas | 30min | **20-may** | — | 💡 ECharts para I-05 |
 | **I-21** | 20% | Operaciones | Dusan | Puerto Montt ops | 1mes | **30-jun** | `Patrimonio/Empresa Puerto Montt/` | 💡 Permisos SAG + roadmap |
 | **I-14** | 10% | Tecnología | Dusan | Blindaje Diego | 1h | — | — | 💡 PUK SIM + 2FA Meta |
 | **I-17** | 20% | Tecnología | Claude | Docs Mermaid+EC | 2h | — | — | 💡 Post I-05 build |
 | **I-22** | 25% | Tecnología | Dusan | Guia Chatbot | 2sem | — | `Claude Code/ChatBot/produccion/Guia_Chatbot_Reciclean.pptx` | 💡 Deploy post 30-abr |
 | **I-23** | 15% | Gerencia General | Dusan | Monday implement | 3h | — | `Claude Code/Documentacion/Monday_Guia_Implementacion_Reciclean_v2.pptx` | 💡 Decidir Monday vs tracker |
-| **I-24** | 20% | Recursos Humanos | Dusan | Descripcion cargos | 2h | — | `equipo-procesos/.../Descripción de cargo Asistente Comercial.docx` | 💡 Consolidar 3 cargos |
+| **I-24** | 30% | Recursos Humanos | Dusan | Descripcion cargos | 2h | — | `equipo-procesos/.../Descripción de cargo Asistente Comercial.docx` | 📋 14 personas + roles mapeados en diagnóstico |
 | **I-25** | 30% | Legal y Compliance | Dusan | Permisos Talca | 3h | — | `Permisos y Resoluciones/Permisos de Talca/` | 💡 Revisar vigencia |
 
 ---
@@ -89,9 +89,10 @@ Total Supabase: **84 tablas** + **11 vistas**.
 
 | Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
 |---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **22-abr-2026** (baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **05-may-2026** | 68 | 16.8% | 0 | 1 | 4 | 63 |
 
-> _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+> _Snapshot diario guardado en `temas_snapshot_diario`. I-06 +15pp, I-19 +15pp, I-24 +10pp._
 
 ---
 
@@ -129,6 +130,33 @@ Total Supabase: **84 tablas** + **11 vistas**.
 - **Proyecto Supabase:** `eknmtsrtfkzroxnovfqn`
 
 Si este archivo y la tabla divergen, la tabla manda.
+
+---
+
+## Bitacora diaria
+
+### 05-may-2026 — Diagnostico Organizacional del Grupo
+
+**Resumen en palabras sencillas:**
+Hoy se creo el primer documento que fotografía completa al Grupo Arancibia-Pinto tal como es: 8 empresas activas, 14 personas, quien hace que, que sistemas usan (y cuales estan descolgados), que problemas existen y que hacer primero. Es como sacarle una radiografia al grupo entero y dejarla escrita para que cualquier decision futura parta de datos reales, no de memoria.
+
+**Que hizo Dusan:**
+1. Levanto el Diagnostico Organizacional v1 — el documento maestro del grupo con 46 hallazgos concretos y 33 acciones priorizadas por riesgo (tier 1 a 3)
+2. Mapeo las 9 empresas del grupo con sus relaciones (Reciclean, Farex, Ubergreen, Inmobiliaria Beto, Transporte 5R, Transportes Diego, Import/Export Farex, SERCOT 50%)
+3. Identifico los 5 sistemas tecnologicos descolgados que necesitan integracion
+4. Actualizo el CLAUDE.md del sistema para que toda sesion futura de IA lea primero el diagnostico (PR #16 creado y mergeado)
+5. Definio los 3 nodos externos clave: Dyana (SERCOT/tributaria), Connie (SERCOT operativa), Reinaldo (programador externo)
+
+**Que hizo Pablo:**
+- Sin actividad registrada hoy en este repositorio. Las tareas de Pablo (I-09 Infra VPS, I-11 ACI deploy, I-16 Diego v5.1) continuan en su estado previo.
+
+**Iniciativas que avanzaron:**
+
+| Codigo | Titulo | Antes | Ahora | Por que subio |
+|--------|--------|-------|-------|---------------|
+| I-06 | Ecosistema int. | 15% | 30% | El diagnostico mapeo las 8 empresas y 5 sistemas descolgados |
+| I-19 | Plan 2026-2030 | 30% | 45% | 46 hallazgos + 33 acciones priorizadas = base del plan estrategico |
+| I-24 | Descripcion cargos | 20% | 30% | 14 personas con roles definidos en el diagnostico |
 
 ---
 
