@@ -2,10 +2,22 @@
 
 ## ⭐ DOCUMENTO MAESTRO — leer antes que nada
 
-**Diagnóstico Organizacional Grupo Arancibia-Pinto v1** (05-may-2026)
-Ubicación: `../reciclean-manifiesto-diego/Bitacora_Estrategica_Grupo/2026-05/2026-05-05_Diagnostico_Organizacional_Grupo_v1.md`
+**Diagnóstico Organizacional Grupo Arancibia-Pinto v2** (05-may-2026 · 2da sesión)
+Ubicación: `../reciclean-manifiesto-diego/Bitacora_Estrategica_Grupo/2026-05/2026-05-05_Diagnostico_Organizacional_Grupo_v2.md`
+Formatos disponibles: md · txt · docx · pdf · pptx (13 slides)
 
-Contiene la fotografía completa del grupo: 9 empresas, 14 personas, 5 sistemas descolgados, 46 hallazgos, 33 acciones priorizadas, riesgos por tier. Este documento sustituye cualquier asunción anterior sobre Reciclean-Farex.
+Contiene la fotografía completa del grupo:
+- 9 empresas + brazo digital DOSI
+- 13 personas + 4 nodos externos
+- 13 sistemas descolgados mapeados (S1-S13)
+- 88 hallazgos · 60 acciones · 20 flags · 11 decisiones selladas
+- Sección DOSI integrada con auditoría Manus
+
+**v2 reemplaza a v1.** Sustituye cualquier asunción anterior sobre Reciclean-Farex.
+
+Carpetas relacionadas:
+- `../reciclean-manifiesto-diego/Proyectos/DOSI_2si/` — proyecto DOSI completo (MVP listo, lanzamiento 19-may-2026)
+- `../reciclean-manifiesto-diego/Bitacora_Estrategica_Grupo/2026-05/` — documento maestro 5 formatos
 
 ## Contexto del usuario
 
