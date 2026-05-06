@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Entrevista A2 — Grupo Arancibia-Pinto</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.png">
+<style>
+:root {
+  --verde: #2d7a3e;
+  --verde-claro: #e8f5e9;
+  --verde-oscuro: #1b5e20;
+  --gris-bg: #f5f7f5;
+  --gris-claro: #e0e0e0;
+  --gris-medio: #757575;
+  --gris-oscuro: #333;
+  --rojo: #c62828;
+  --amarillo: #f9a825;
+  --azul-info: #1976d2;
+  --azul-claro: #e3f2fd;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--gris-bg);
+  color: var(--gris-oscuro);
+  line-height: 1.5;
+  min-height: 100vh;
+  padding: 0;
+}
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.header {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.header h1 {
+  font-size: 18px;
+  color: var(--verde-oscuro);
+  margin-bottom: 4px;
+}
+.header .subtitle {
+  font-size: 13px;
+  color: var(--gris-medio);
+}
+.progress-bar {
+  height: 6px;
+  background: var(--gris-claro);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--verde);
+  transition: width 0.3s;
+}
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--gris-medio);
+  margin-top: 6px;
+}
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin-bottom: 16px;
+}
+.card h2 {
+  font-size: 20px;
+  color: var(--verde-oscuro);
+  margin-bottom: 16px;
+}
+.silo-label {
+  display: inline-block;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--verde-claro);
+  color: var(--verde-oscuro);
+  margin-bottom: 12px;
+}
+.question {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: 16px;
+  color: var(--gris-oscuro);
+}
+.example-btn {
+  background: none;
+  border: 1px dashed var(--azul-info);
+  color: var(--azul-info);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.example-btn:hover { background: var(--azul-claro); }
+.example-box {
+  background: var(--azul-claro);
+  border-left: 3px solid var(--azul-info);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--gris-oscuro);
+  margin-bottom: 16px;
+  display: none;
+  font-style: italic;
+}
+.example-box.show { display: block; }
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--gris-bg);
+  border: 2px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.option:hover { border-color: var(--verde); }
+.option.selected {
+  background: var(--verde-claro);
+  border-color: var(--verde);
+}
+.option input { margin-top: 2px; cursor: pointer; }
+.option label { cursor: pointer; flex: 1; font-size: 15px; }
+.option input[type="text"] {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--gris-claro);
+  border-radius: 6px;
+  font-size: 14px;
+  margin-top: 4px;
+}
+textarea, input[type="text"], input[type="number"] {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--gris-claro);
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  resize: vertical;
+}
+textarea { min-height: 120px; }
+textarea:focus, input:focus { outline: none; border-color: var(--verde); }
+.suggest-box {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--gris-claro);
+}
+.suggest-box label {
+  display: block;
+  font-size: 13px;
+  color: var(--gris-medio);
+  margin-bottom: 6px;
+}
+.audio-controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.btn-audio {
+  background: white;
+  border: 2px solid var(--verde);
+  color: var(--verde-oscuro);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-audio.recording {
+  background: var(--rojo);
+  color: white;
+  border-color: var(--rojo);
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.audio-status {
+  font-size: 13px;
+  color: var(--gris-medio);
+  margin-top: 8px;
+}
+.upload-zone {
+  margin-top: 12px;
+  border: 2px dashed var(--gris-claro);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+.upload-zone:hover { border-color: var(--verde); background: var(--gris-bg); }
+.upload-zone input { display: none; }
+.upload-zone p { color: var(--gris-medio); font-size: 14px; }
+.upload-zone .file-name {
+  margin-top: 8px;
+  font-weight: 500;
+  color: var(--verde-oscuro);
+}
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+}
+.btn {
+  padding: 14px 24px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+}
+.btn-primary {
+  background: var(--verde);
+  color: white;
+  flex: 1;
+}
+.btn-primary:hover { background: var(--verde-oscuro); }
+.btn-primary:disabled { background: var(--gris-claro); cursor: not-allowed; }
+.btn-secondary {
+  background: white;
+  color: var(--gris-oscuro);
+  border: 2px solid var(--gris-claro);
+}
+.btn-secondary:hover { background: var(--gris-bg); }
+.btn-large {
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+}
+.consent-box {
+  background: var(--gris-bg);
+  border-radius: 10px;
+  padding: 18px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.consent-box ol { padding-left: 20px; margin: 12px 0; }
+.consent-box li { margin-bottom: 10px; }
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 16px 0;
+  padding: 14px;
+  background: var(--verde-claro);
+  border-radius: 10px;
+}
+.checkbox-row input { margin-top: 3px; }
+.checkbox-row label { font-size: 14px; cursor: pointer; }
+.pause-banner {
+  background: var(--amarillo);
+  color: white;
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-size: 14px;
+  display: none;
+}
+.pause-banner.show { display: block; }
+.welcome-message {
+  background: var(--verde-claro);
+  border-left: 4px solid var(--verde);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  font-style: italic;
+}
+.success-screen {
+  text-align: center;
+  padding: 40px 20px;
+}
+.success-screen h2 {
+  color: var(--verde);
+  font-size: 28px;
+  margin-bottom: 16px;
+}
+.success-screen .checkmark {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+.error-msg {
+  background: #ffebee;
+  color: var(--rojo);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-top: 12px;
+  display: none;
+}
+.error-msg.show { display: block; }
+.save-indicator {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background: var(--verde);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 100;
+}
+.save-indicator.show { opacity: 1; }
+.privacy-note {
+  font-size: 12px;
+  color: var(--gris-medio);
+  margin-top: 8px;
+  font-style: italic;
+}
+@media (max-width: 600px) {
+  .container { padding: 12px; }
+  .card { padding: 18px; }
+  .question { font-size: 16px; }
+  .actions { flex-direction: column-reverse; }
+  .btn { width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="app"></div>
+</div>
+<div class="save-indicator" id="saveIndicator">💾 Guardado</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+// ============================================================
+// CONFIGURACIÓN SUPABASE
+// ============================================================
+const SUPABASE_URL = 'https://eknmtsrtfkzroxnovfqn.supabase.co';
+const SUPABASE_ANON_KEY = window.__SB_KEY__ || '';
+const supabase = SUPABASE_ANON_KEY ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+// ============================================================
+// PERSONAS Y CLAVES INDIVIDUALES
+// ============================================================
+const PERSONAS = {
+  'AND-2026-AR42': { id: 'andrea', nombre: 'Andrea', rol: 'andrea', cuestionario: 'andrea_v4' },
+  'PAB-2026-PA50': { id: 'pablo', nombre: 'Pablo', rol: 'pablo', cuestionario: 'pablo_v1' },
+  'CES-2026-CM30': { id: 'cesar', nombre: 'Cesar', rol: 'cesar', cuestionario: 'cesar_v1' },
+  'JUM-2026-JM15': { id: 'juan_mendoza', nombre: 'Juan', rol: 'operativo_terreno', cuestionario: 'operativo_v1' },
+  'ING-2026-IC15': { id: 'ingrid', nombre: 'Ingrid', rol: 'operativo_terreno', cuestionario: 'operativo_v1' },
+  'NIC-2026-NA15': { id: 'nicolas', nombre: 'Nicolás', rol: 'operativo_terreno', cuestionario: 'operativo_v1' },
+  'CRM-2026-CM15': { id: 'cristian_m', nombre: 'Cristián', rol: 'operativo_terreno', cuestionario: 'operativo_v1' },
+  'AND-2026-AB15': { id: 'andres', nombre: 'Andrés', rol: 'operativo_terreno', cuestionario: 'operativo_v1' },
+  'CRV-2026-CV15': { id: 'cristian_v', nombre: 'Cristian', rol: 'operativo_terreno', cuestionario: 'operativo_v1' },
+  'VIC-2026-VT15': { id: 'victor', nombre: 'Víctor', rol: 'operativo_terreno', cuestionario: 'operativo_v1' },
+  'CAR-2026-CI15': { id: 'carlos', nombre: 'Carlos', rol: 'operativo_terreno', cuestionario: 'operativo_v1' },
+  'JAI-2026-JS15': { id: 'jair', nombre: 'Jair', rol: 'operativo_terreno', cuestionario: 'operativo_v1' }
+};
+
+// ============================================================
+// CONSENTIMIENTO INFORMADO
+// ============================================================
+const CONSENTIMIENTO = `
+Yo, [NOMBRE_PERSONA], dependiente del Grupo Arancibia-Pinto, declaro que:
+<ol>
+<li>He sido informada/o que mi empleador, en el marco de un proyecto de levantamiento de procesos y mejora operativa, me invita a responder un cuestionario en modalidad texto, audio y carga de archivos.</li>
+<li>La participación es <strong>voluntaria</strong>. Mi negativa total o parcial a responder no acarrea sanción, descuento, ni afecta mi continuidad laboral, evaluación de desempeño ni remuneración, conforme al artículo 5 del Código del Trabajo.</li>
+<li>Las respuestas se almacenarán en plataforma Supabase con cifrado AES-256, con fines exclusivos de mejora de procesos, durante un plazo máximo de doce meses, tras lo cual serán eliminadas o anonimizadas.</li>
+<li>Tengo derecho de acceso, rectificación, cancelación y oposición sobre mis datos (Art. 12 Ley 19.628 y los derechos ARCO+ de la Ley 21.719 desde el 1 de diciembre de 2026).</li>
+<li>Las respuestas <strong>no constituyen confesión laboral</strong> ni se utilizarán como antecedente disciplinario, en sumario interno, ni en juicio laboral en mi contra. La empresa renuncia expresamente a invocarlas con esos fines.</li>
+<li>Los datos personales de terceros (clientes, proveedores) que pudiera mencionar serán tratados conforme a la normativa vigente; me abstendré de adjuntar documentos que contengan datos sensibles de terceros sin disociar.</li>
+<li>He leído, comprendido y acepto las condiciones anteriores.</li>
+</ol>
+`;
+
+const MENSAJE_CEO = `Gracias por darte el tiempo. Esto NO es una evaluación de tu desempeño. NO se va a usar para sancionar ni descontar nada. Es para que el grupo entienda lo que cargas y empiece a aliviarte. Las respuestas las leo solo yo. Si hay algo que prefieres NO escribir aquí pero sí decírmelo en persona, en el cierre de cada sección te voy a dar esa opción. Tómate todo el tiempo que necesites. Puedes pausar y volver mañana. Cuando termines, en máximo 15 días tenemos una reunión 1:1 para revisar juntos qué se va a aliviar primero. — Dusan`;
+
+// ============================================================
+// BANCO DE PREGUNTAS — ANDREA v4 FINAL (53 preguntas)
+// ============================================================
+const PREGUNTAS_ANDREA = [
+  // SILO 7 — TÚ EN ESTE TRABAJO (al inicio, 10 preguntas)
+  { id: 'S7-P1', silo: '🟦 TÚ EN ESTE TRABAJO', pregunta: '¿Qué parte de tu trabajo te hace sentir orgullosa al final del día?', tipo: 'textaudio', ejemplo: 'Algo concreto que cuando llegas a tu casa piensas "esto lo hice bien hoy".' },
+  { id: 'S7-P2', silo: '🟦 TÚ EN ESTE TRABAJO', pregunta: 'En una semana típica, ¿cuántas veces revisas WhatsApp del trabajo fuera de tu horario, incluyendo fines de semana?', tipo: 'unica', opciones: ['Casi nunca, separo bien', '1 a 3 veces por semana', 'Casi todos los días', 'Todo el día, también fin de semana', 'Otro'], ejemplo: 'No es para juzgar — es para entender la carga real.' },
+  { id: 'S7-P3', silo: '🟦 TÚ EN ESTE TRABAJO', pregunta: '¿Cuándo fue la última vez que tomaste vacaciones reales sin ser contactada por trabajo?', tipo: 'unica', opciones: ['Este año, sin que me llamaran', 'Este año, pero me contactaron al menos una vez', 'Hace más de un año', 'No recuerdo la última vez', 'Nunca he tomado vacaciones realmente desconectada'], ejemplo: 'Vacaciones reales = sin abrir WhatsApp del trabajo.' },
+  { id: 'S7-P4', silo: '🟦 TÚ EN ESTE TRABAJO', pregunta: 'Cuando Dusan te pide algo y Pablo te pide otra cosa el mismo día, ¿cómo decides cuál hacer primero?', tipo: 'unica_comentario', opciones: ['Lo de Dusan primero, siempre', 'Lo de Pablo primero, siempre', 'Lo más urgente, sin importar quién lo pide', 'Pregunto a alguno cuál tiene prioridad', 'Lo resuelvo sola intentando hacer las dos', 'Otro'], ejemplo: 'No es para enfrentarlos — es para saber si necesitas que se coordinen mejor entre ellos.' },
+  { id: 'S7-P5', silo: '🟦 TÚ EN ESTE TRABAJO', pregunta: 'Si pudieras eliminar UNA tarea de tu día sin culpa, ¿cuál sería y por qué no la has eliminado todavía?', tipo: 'textaudio', ejemplo: 'Esa tarea que cuando la haces piensas "esto no debería estar haciendo yo" o "esto debería estar automatizado".' },
+  { id: 'S7-P6', silo: '🟦 TÚ EN ESTE TRABAJO', pregunta: '¿Te imaginas trabajando en el grupo Arancibia-Pinto en 5 años?', tipo: 'unica_comentario', opciones: ['Sí, haciendo lo mismo que hoy', 'Sí, creciendo a otro rol', 'Sí, pero solo si cambian algunas cosas', 'No estoy segura', 'Probablemente no', 'Otro'], ejemplo: 'Si sí, ¿haciendo qué? Si no, ¿qué tendría que cambiar para que sí?' },
+  { id: 'S7-P7', silo: '🟦 TÚ EN ESTE TRABAJO', pregunta: '¿Hay algo en tu salud (sueño, ansiedad, dolores físicos, ánimo) que sientas que está conectado con la carga de trabajo actual?', tipo: 'unica_comentario', opciones: ['No, mi salud está bien', 'A veces, pero manejable', 'Sí, hay cosas que me preocupan', 'Prefiero no responder esta pregunta', 'Prefiero hablarlo en la reunión 1:1, no escribirlo'], ejemplo: 'Esta pregunta es opcional. Si prefieres no escribirlo, marca D o E.' },
+  { id: 'S7-P8', silo: '🟦 TÚ EN ESTE TRABAJO', pregunta: '¿Sientes que tu esfuerzo es visto y reconocido por la familia dueña?', tipo: 'unica_comentario', opciones: ['Sí, claramente', 'Sí, pero podría ser más explícito', 'No mucho, aunque tampoco me quejo', 'No, me siento invisible muchas veces', 'Prefiero hablarlo en la reunión 1:1'], ejemplo: 'Es para entender la dimensión humana, no para decisiones de sueldo.' },
+  { id: 'S7-P9', silo: '🟦 TÚ EN ESTE TRABAJO', pregunta: '¿Hay algo que NO pondrías en este cuestionario pero SÍ se lo dirías a Dusan en persona?', tipo: 'unica_comentario', opciones: ['No, todo lo que dije aquí es lo que pienso', 'Sí, hay algo que prefiero hablarlo cara a cara', 'Sí, hay algo que prefiero contarle a un externo', 'Otro'], ejemplo: 'Esta meta-pregunta nos ayuda a saber si el cuestionario captura la realidad o solo lo seguro.' },
+  { id: 'S7-P10', silo: '🟦 TÚ EN ESTE TRABAJO', pregunta: '¿Qué te haría pensar seriamente en renunciar al grupo?', tipo: 'textaudio', ejemplo: 'No te estoy preguntando si te quieres ir, sino qué condiciones serían intolerables. Sirve para prevenirlas.' },
+
+  // SILO 1 — COMUNICACIÓN ENTRANTE (13 preguntas)
+  { id: 'S1-P1', silo: '🔵 COMUNICACIÓN', pregunta: '¿En qué dispositivos corporativos asignados por la empresa tienes acceso a WhatsApp Business para uso laboral?', tipo: 'multiple', opciones: ['Celular de la empresa Asistente', 'Celular de la empresa Comercial', 'WhatsApp Web en mi PC corporativo', 'App de escritorio en PC corporativo', 'Tablet corporativa', 'Otro'], ejemplo: 'Marca cada dispositivo corporativo donde tengas el WhatsApp del trabajo abierto.' },
+  { id: 'S1-P2', silo: '🔵 COMUNICACIÓN', pregunta: '¿Cuántos números de teléfono distintos de WhatsApp Business manejas en el trabajo?', tipo: 'unica_comentario', opciones: ['1', '2', '3', '4', 'Más de 4'], ejemplo: 'Cuenta cuántos números corporativos diferentes recibes mensajes en un día normal.' },
+  { id: 'S1-P3', silo: '🔵 COMUNICACIÓN', pregunta: 'En una semana típica con el volumen actual de chats, ¿cuántos mensajes alcanzan a quedarse sin respuesta antes de que el sistema te permita volver a ellos?', tipo: 'unica', opciones: ['Casi ninguno, alcanzo a todo', 'Entre 1 y 5 por semana', 'Entre 5 y 15 por semana', 'Más de 15 por semana', 'Depende mucho de la semana'], ejemplo: 'No es por culpa tuya — es por la dispersión del sistema actual. La pregunta mide el sistema, no a ti.' },
+  { id: 'S1-P4', silo: '🔵 COMUNICACIÓN', pregunta: 'En un día normal, ¿cuántos chats activos manejas entre todos los WhatsApp?', tipo: 'unica', opciones: ['Menos de 5', '5 a 15', '15 a 40', '40 a 80', 'Más de 80'], ejemplo: 'Cuenta los chats donde hubo mensajes el día de ayer.' },
+  { id: 'S1-P5', silo: '🔵 COMUNICACIÓN', pregunta: 'En tu última jornada laboral, ¿cuántos minutos pasaron en promedio entre que un cliente escribió por WhatsApp y le respondiste tú o el bot?', tipo: 'unica', opciones: ['Menos de 2 minutos', '2 a 10 minutos', '10 a 30 minutos', '30 minutos a 2 horas', 'Más de 2 horas', 'No lo sé / no lo he medido'], ejemplo: 'Es estimación, no necesita ser exacto.' },
+  { id: 'S1-P6', silo: '🔵 COMUNICACIÓN', pregunta: '¿Qué herramienta de chatbot estás usando hoy?', tipo: 'unica', opciones: ['Chatigo', 'WhatsApp Business directo', 'Otro', 'No lo sé exacto', 'No estoy usando chatbot'], ejemplo: 'Es el programa que responde automáticamente al cliente cuando escribe por primera vez.' },
+  { id: 'S1-P7', silo: '🔵 COMUNICACIÓN', pregunta: '¿Qué tipo de cosas hace el chatbot por ti?', tipo: 'multiple', opciones: ['Saluda', 'Pregunta material', 'Da precios', 'Pide dirección', 'Pasa a humano', 'Otro'], ejemplo: 'Cuando un cliente escribe "¿cuánto pagan el cartón?", ¿qué responde el chatbot solo?' },
+  { id: 'S1-P8', silo: '🔵 COMUNICACIÓN', pregunta: '¿Quién cambia o agrega respuestas al chatbot cuando hace falta?', tipo: 'unica', opciones: ['Yo misma', 'Pablo', 'Cesar', 'Externo', 'Nadie', 'No lo sé'], ejemplo: 'No es para señalar a nadie. Es para saber si hay dueño formal del sistema.' },
+  { id: 'S1-P9', silo: '🔵 COMUNICACIÓN', pregunta: '¿Cuántas conversaciones de cada 10 resuelve el chatbot solo, sin que tú intervengas? (0 al 10)', tipo: 'numero', min: 0, max: 10, permitir_no_se: true, ejemplo: 'Si tienes que adivinar, adivina. Si no quieres adivinar, marca "no lo he medido".' },
+  { id: 'S1-P10', silo: '🔵 COMUNICACIÓN', pregunta: 'Cuéntame paso a paso qué pasa desde que un cliente escribe al WhatsApp hasta que la conversación termina (lo que pasa de verdad, no lo ideal)', tipo: 'textaudio', ejemplo: 'Imagina cliente escribiendo "¿retiran cartón en Maipú?". Cuéntalo paso 1, paso 2, paso 3, etc.' },
+  { id: 'S1-P11', silo: '🔵 COMUNICACIÓN', pregunta: 'Cuando el chatbot no responde lo que el cliente quiere, ¿qué pasa?', tipo: 'unica', opciones: ['Aviso y entro yo', 'El cliente queda esperando', 'Va a otra persona', 'A veces se pierde', 'Otro'], ejemplo: 'Cliente pregunta algo raro o específico que el bot no tiene.' },
+  { id: 'S1-P12', silo: '🔵 COMUNICACIÓN', pregunta: '¿Con qué frecuencia tienes que completar manualmente lo que el chatbot dejó incompleto?', tipo: 'unica', opciones: ['Diariamente', 'Semanalmente', 'Pocas veces al mes', 'Funciona bien, casi nunca', 'No sé qué falla'], ejemplo: 'Completar lo que el bot dejó a medias — es continuidad, no error tuyo.' },
+  { id: 'S1-P13', silo: '🔵 COMUNICACIÓN', pregunta: '¿Qué buzones de correo electrónico revisas todos los días?', tipo: 'multiple', opciones: ['comercial@gestionrepchile.cl', 'recepcion01@gestionrepchile.cl', 'servicios@gestionrepchile.cl', 'sistema@gestionrepchile.cl', 'Otros corporativos'], ejemplo: 'Marca cada correo corporativo en el que entras al menos una vez al día.' },
+
+  // SILO 2 — COMERCIAL (11 preguntas)
+  { id: 'S2-P1', silo: '🟢 COMERCIAL', pregunta: 'Cuéntanos un caso reciente donde el sistema actual no permitió hacer el seguimiento que el cliente necesitaba.', tipo: 'textaudio', ejemplo: 'No buscamos culpables, buscamos dónde se rompe el proceso. Puede ser un caso pequeño o uno grande.' },
+  { id: 'S2-P2', silo: '🟢 COMERCIAL', pregunta: 'Cuando llega un cliente nuevo, cuéntame paso a paso cómo lo registras en CRM Impulsa', tipo: 'textaudio', ejemplo: 'Imagina cliente nuevo escribiendo. Cuéntame qué información le pides, dónde la metes, qué dejas en blanco.' },
+  { id: 'S2-P3', silo: '🟢 COMERCIAL', pregunta: '¿Hay clientes que NO entran a Impulsa?', tipo: 'unica', opciones: ['Todos entran', 'A veces no', 'Bastantes fuera', 'Mayoría fuera', 'No estoy segura, nunca lo he auditado'], ejemplo: 'Clientes pequeños o por canal raro. Si no estás segura, marca la última.' },
+  { id: 'S2-P4', silo: '🟢 COMERCIAL', pregunta: 'Cuando le das un precio a un cliente, ¿dónde queda guardada esa cotización?', tipo: 'multiple', opciones: ['Impulsa', 'Excel', 'WhatsApp', 'Correo', 'En mi cabeza', 'Otro'], ejemplo: 'Le dijiste "$150 el kilo". ¿Dónde queda anotado?' },
+  { id: 'S2-P5', silo: '🟢 COMERCIAL', pregunta: 'Cuando un cliente pide una cotización que se hizo hace 3 meses, ¿cuál es el camino más rápido HOY para recuperarla?', tipo: 'unica', opciones: ['Buscar en Impulsa por su nombre', 'Buscar en mi Excel', 'Buscar en WhatsApp', 'Preguntar a alguien', 'Es más rápido rehacerla que buscarla', 'Otro'], ejemplo: 'La opción "es más rápido rehacerla" es válida y muchas veces es la realidad.' },
+  { id: 'S2-P6', silo: '🟢 COMERCIAL', pregunta: '¿Hay información del cliente que SOLO está en Impulsa y no aparece en otro sistema?', tipo: 'unica', opciones: ['Sí, varias cosas', 'Algunas', 'Todo duplicado', 'No estoy segura, nunca lo he auditado'], ejemplo: 'Notas que escribiste en Impulsa que solo viven ahí.' },
+  { id: 'S2-P7', silo: '🟢 COMERCIAL', pregunta: '¿Cuántas cotizaciones generaste la última semana?', tipo: 'unica', opciones: ['Menos de 5', '5 a 15', '15 a 30', '30 a 50', 'Más de 50'], ejemplo: 'Cuenta del último viernes hacia atrás 7 días.' },
+  { id: 'S2-P8', silo: '🟢 COMERCIAL', pregunta: 'De cada 10 cotizaciones que envías, ¿cuántas terminan en venta cerrada?', tipo: 'unica', opciones: ['0-2 de 10', '3-4 de 10', '5-6 de 10', '7-8 de 10', '9-10 de 10', 'No lo mido'], ejemplo: 'Si no lo has medido, marca "No lo mido". Es información valiosa saber que no se mide hoy.' },
+  { id: 'S2-P9', silo: '🟢 COMERCIAL', pregunta: 'Cuando se cierra una venta, ¿cuál es lo PRIMERO que haces?', tipo: 'multiple', opciones: ['Aviso a Pablo', 'Aviso al chofer', 'Aviso a la sucursal', 'Marco en Impulsa', 'Marco en Excel', 'Mando a hacer factura', 'Otro'], ejemplo: 'Marca todas las acciones inmediatas.' },
+  { id: 'S2-P10', silo: '🟢 COMERCIAL', pregunta: '¿Hay clientes que quedaron "cotizando" hace meses y nunca cerraron?', tipo: 'unica', opciones: ['Sí, muchos', 'Sí, los retomo', 'Algunos pocos', 'No, todos cierran o se descartan', 'No sé cuántos'], ejemplo: 'Cotizaciones viejas a las que nunca volviste.' },
+  { id: 'S2-P11', silo: '🟢 COMERCIAL', pregunta: '¿Quién más en la empresa, además de ti, atiende clientes directamente?', tipo: 'multiple', opciones: ['Pablo', 'Nicolás', 'Choferes', 'Sucursales', 'Dusan', 'Dyana', 'Solo yo', 'Otro'], ejemplo: 'Cualquiera que reciba contacto de cliente sin pasarte el caso.' },
+
+  // SILO 3 — ADMIN/DATOS (9 preguntas)
+  { id: 'S3-P1', silo: '🟡 ADMINISTRACIÓN Y DATOS', pregunta: 'Si tomaras 30 días corridos sin contacto laboral, ¿qué 3 procesos hoy dependen de información que está en tu cabeza y aún no ha sido documentada?', tipo: 'textaudio', ejemplo: 'Lo que la empresa no podría hacer porque la documentación no existe, no porque tú seas indispensable.' },
+  { id: 'S3-P2', silo: '🟡 ADMINISTRACIÓN Y DATOS', pregunta: 'Si tú no vienes mañana, ¿cuántas horas tomaría que otra persona del equipo cierre una cotización completa de un cliente nuevo?', tipo: 'unica', opciones: ['Menos de 1 hora', '1 a 4 horas', '4 horas a 1 día', 'Más de 1 día', 'Imposible sin mí'], ejemplo: 'Pensando objetivamente, cuántas horas le tomaría a alguien sin tu conocimiento.' },
+  { id: 'S3-P3', silo: '🟡 ADMINISTRACIÓN Y DATOS', pregunta: 'El Excel que usas como apoyo, ¿qué columnas tiene? Describe en términos generales.', tipo: 'textarea', ejemplo: 'Describe qué tipo de información gestionas en ese Excel. NO subas el archivo con datos personales de clientes.' },
+  { id: 'S3-P4', silo: '🟡 ADMINISTRACIÓN Y DATOS', pregunta: '¿Dónde guardas ese Excel?', tipo: 'unica', opciones: ['En OneDrive de la empresa', 'En SharePoint del grupo', 'En mi computador del trabajo (sin respaldo automático)', 'Otro'], ejemplo: 'Si guardas en otros lados que no aparecen aquí, indícalo en "Otro".' },
+  { id: 'S3-P5', silo: '🟡 ADMINISTRACIÓN Y DATOS', pregunta: '¿Cada cuánto actualizas ese Excel?', tipo: 'unica', opciones: ['Diariamente', 'Semanalmente', 'Mensualmente', 'Cuando alguien lo pide', 'Casi nunca'], ejemplo: '¿Es un archivo vivo o solo lo abres cuando necesitas?' },
+  { id: 'S3-P6', silo: '🟡 ADMINISTRACIÓN Y DATOS', pregunta: 'Si mañana ese Excel desaparece, ¿qué tareas tuyas se caen?', tipo: 'textaudio', ejemplo: 'Lista las 3 más importantes.' },
+  { id: 'S3-P7', silo: '🟡 ADMINISTRACIÓN Y DATOS', pregunta: '¿Qué información laboral identificas que actualmente NO está respaldada en sistemas corporativos?', tipo: 'unica_comentario', opciones: ['Bastante información importante', 'Algunas cosas pero no críticas', 'Casi nada, todo está respaldado', 'No estoy segura, nunca lo he auditado'], ejemplo: 'La idea NO es auditarte. Es asegurar que si algo se pierde, la empresa lo recupere.' },
+  { id: 'S3-P8', silo: '🟡 ADMINISTRACIÓN Y DATOS', pregunta: '¿Qué temas repites en explicaciones a colegas y deberían estar documentados (FAQs, manuales)?', tipo: 'multiple', opciones: ['Cómo funciona Impulsa', 'Cómo se programa un retiro', 'Cómo se cotiza un material nuevo', 'Cómo manejar reclamos típicos', 'Cómo emitir factura/boleta', 'Otro'], ejemplo: 'Temas que repites cada semana porque no quedaron documentados.' },
+  { id: 'S3-P9', silo: '🟡 ADMINISTRACIÓN Y DATOS', pregunta: 'Si tuvieras un asistente que aprendiera todo lo que tú haces, ¿qué le enseñarías PRIMERO para que te aliviane?', tipo: 'textaudio', ejemplo: 'Lo que más te aliviaría delegar.' },
+
+  // SILO 4 — LOGÍSTICA (4 preguntas)
+  { id: 'S4-P1', silo: '🟠 LOGÍSTICA', pregunta: 'Cuéntame paso a paso cómo programas un retiro de material', tipo: 'textaudio', ejemplo: 'Desde que el cliente pide el retiro hasta que el chofer llega al lugar.' },
+  { id: 'S4-P2', silo: '🟠 LOGÍSTICA', pregunta: '¿Cómo confirmas que un retiro efectivamente se hizo?', tipo: 'unica', opciones: ['El chofer me avisa por WhatsApp', 'Lo veo en el sistema de pesaje', 'Lo veo en facturacion.cl', 'El cliente me lo confirma', 'No siempre se confirma', 'Otro'], ejemplo: 'El chofer salió a las 9. ¿Cómo te enteras tú a las 11 si ya pasó o no?' },
+  { id: 'S4-P3', silo: '🟠 LOGÍSTICA', pregunta: 'Cuando un retiro falla, ¿qué tan claro está hoy el canal por el que el equipo debería enterarse?', tipo: 'unica', opciones: ['Muy claro, todos sabemos', 'Más o menos', 'No hay canal definido, depende de cada uno', 'Generalmente no se entera nadie', 'Otro'], ejemplo: 'No es para responsabilizarte por la falla de comunicación.' },
+  { id: 'S4-P4', silo: '🟠 LOGÍSTICA', pregunta: 'Si el chofer trae menos kilos de los acordados con el cliente, ¿quién lo detecta y cómo se resuelve?', tipo: 'unica_comentario', opciones: ['Yo lo detecto en pesaje', 'Sucursal', 'Pablo', 'El cliente reclama', 'Casi no se detecta', 'Otro'], ejemplo: 'Cliente dijo 500kg, chofer trajo 320. ¿Quién se da cuenta?' },
+
+  // SILO 5 — TECNOLOGÍA (4 preguntas)
+  { id: 'S5-P1', silo: '🟣 TECNOLOGÍA', pregunta: '¿En cuáles de estos sistemas corporativos tienes usuario y clave hoy?', tipo: 'multiple', opciones: ['CRM Impulsa', 'facturacion.cl', 'Chatigo', 'Microsoft 365', 'Monday', 'Sistema de pesaje', 'Otros sistemas operativos'], ejemplo: 'Marca todos en los que entras con tu propia cuenta.' },
+  { id: 'S5-P2', silo: '🟣 TECNOLOGÍA', pregunta: '¿Cuántas veces al día tienes que volver a ingresar usuario y contraseña en algún sistema?', tipo: 'unica', opciones: ['0-2 veces', '3-5 veces', '6-10 veces', 'Más de 10 veces', 'No llevo cuenta'], ejemplo: 'Aproximado. Mide la fricción de acceso.' },
+  { id: 'S5-P3', silo: '🟣 TECNOLOGÍA', pregunta: '¿Sientes que los accesos a los sistemas corporativos están bien organizados?', tipo: 'unica_comentario', opciones: ['Sí, todo claro', 'En general sí, hay temas menores', 'Hay desorden, debería revisarse', 'Hay desorden grave', 'Prefiero hablarlo en la 1:1'], ejemplo: 'Sin entrar en detalles de claves específicas.' },
+  { id: 'S5-P4', silo: '🟣 TECNOLOGÍA', pregunta: '¿Qué sistema corporativo te frustra más en tu día a día y por qué?', tipo: 'unica_comentario', opciones: ['WhatsApp', 'Impulsa', 'facturacion.cl', 'Excel', 'Correo', 'Chatbot', 'No es ningún sistema en particular, es la falta de integración entre ellos', 'Otro'], ejemplo: 'El que cuando lo abres ya sabes que vas a perder tiempo.', requiere_comentario: true },
+
+  // SILO 6 — DATOS PERSONALES (2 preguntas)
+  { id: 'S6-P1', silo: '🔴 DATOS PERSONALES', pregunta: 'Describe el flujo de validación documental del cliente cuando lo ingresas al sistema', tipo: 'textaudio', ejemplo: 'Qué pasos sigues con el RUT, dirección, contacto antes de aceptar al cliente.' },
+  { id: 'S6-P2', silo: '🔴 DATOS PERSONALES', pregunta: 'En los últimos 3 meses, ¿cuántas veces necesitaste recuperar una conversación o registro con un cliente y NO lo encontraste rápido?', tipo: 'unica', opciones: ['0 veces', '1-2 veces', '3-5 veces', 'Más de 5 veces', 'Nunca lo he intentado'], ejemplo: 'Cualquier registro: WhatsApp, correo, nota, factura.' },
+
+  // CIERRE (3 preguntas)
+  { id: 'C1', silo: '✨ CIERRE', pregunta: '¿Cómo te sentiste respondiendo este cuestionario?', tipo: 'unica_comentario', opciones: ['Bien, me hizo pensar', 'Cansada pero me sirvió', 'Incómoda con algunas preguntas', 'Hubiera preferido conversarlo en persona', 'Otro'], ejemplo: 'Tu respuesta nos ayuda a mejorar el cuestionario.' },
+  { id: 'C2', silo: '✨ CIERRE', pregunta: '¿Hay algo que NO te preguntamos y crees que es importante que Dusan sepa?', tipo: 'textaudio', ejemplo: 'Lo que sea — desde un dato técnico hasta algo personal del trabajo.' },
+  { id: 'C3', silo: '✨ CIERRE', pregunta: '¿Qué esperas que pase con tus respuestas? ¿Qué te decepcionaría que pasara (o que NO pasara)?', tipo: 'textaudio', ejemplo: 'Tu expectativa es importante para que el compromiso 1:1 te sirva.' }
+];
+
+// ============================================================
+// LÓGICA DE LA APLICACIÓN
+// ============================================================
+let estado = {
+  persona: null,
+  preguntas: [],
+  indiceActual: 0,
+  respuestas: {},
+  consentimientoAceptado: false,
+  inicioSesion: null,
+  tiempoPorPregunta: []
+};
+
+const app = document.getElementById('app');
+const saveIndicator = document.getElementById('saveIndicator');
+
+function mostrarGuardado() {
+  saveIndicator.classList.add('show');
+  setTimeout(() => saveIndicator.classList.remove('show'), 1500);
+}
+
+function guardarLocal() {
+  if (!estado.persona) return;
+  const key = `entrevista_${estado.persona.id}`;
+  localStorage.setItem(key, JSON.stringify({
+    indiceActual: estado.indiceActual,
+    respuestas: estado.respuestas,
+    consentimientoAceptado: estado.consentimientoAceptado,
+    inicioSesion: estado.inicioSesion
+  }));
+  mostrarGuardado();
+}
+
+function cargarLocal(personaId) {
+  const key = `entrevista_${personaId}`;
+  const data = localStorage.getItem(key);
+  return data ? JSON.parse(data) : null;
+}
+
+async function guardarSupabase() {
+  if (!supabase || !estado.persona) return;
+  try {
+    await supabase.from('entrevista_respuestas').upsert({
+      persona_id: estado.persona.id,
+      cuestionario: estado.persona.cuestionario,
+      respuestas: estado.respuestas,
+      indice_actual: estado.indiceActual,
+      ultima_actualizacion: new Date().toISOString()
+    }, { onConflict: 'persona_id' });
+  } catch (e) {
+    console.warn('Supabase guardado falló, usando local:', e);
+  }
+}
+
+setInterval(() => {
+  if (estado.persona && estado.consentimientoAceptado) {
+    guardarLocal();
+    guardarSupabase();
+  }
+}, 30000);
+
+// PANTALLA: LOGIN
+function renderLogin() {
+  app.innerHTML = `
+    <div class="header">
+      <h1>Entrevista A2 — Grupo Arancibia-Pinto</h1>
+      <div class="subtitle">Levantamiento de procesos · Mayo 2026</div>
+    </div>
+    <div class="card">
+      <h2>Ingresa tu clave personal</h2>
+      <p style="margin-bottom: 16px; color: var(--gris-medio); font-size: 14px;">Tu clave es individual e intransferible. La recibiste por WhatsApp.</p>
+      <input type="text" id="claveInput" placeholder="Ejemplo: AND-2026-AR42" autocomplete="off" autocapitalize="characters" style="font-family: monospace; font-size: 16px; letter-spacing: 1px;">
+      <div class="error-msg" id="errorLogin">Clave no válida. Revísala con quien te la envió.</div>
+      <div class="actions" style="margin-top: 20px;">
+        <button class="btn btn-primary btn-large" id="btnEntrar">Entrar</button>
+      </div>
+      <p class="privacy-note">🔒 Tus respuestas se guardan cifradas. Solo Dusan Arancibia tiene acceso de lectura.</p>
+    </div>
+  `;
+  document.getElementById('btnEntrar').addEventListener('click', procesarLogin);
+  document.getElementById('claveInput').addEventListener('keyup', e => {
+    if (e.key === 'Enter') procesarLogin();
+  });
+}
+
+function procesarLogin() {
+  const clave = document.getElementById('claveInput').value.trim().toUpperCase();
+  const persona = PERSONAS[clave];
+  const errorMsg = document.getElementById('errorLogin');
+  if (!persona) {
+    errorMsg.classList.add('show');
+    return;
+  }
+  estado.persona = persona;
+  estado.preguntas = persona.cuestionario === 'andrea_v4' ? PREGUNTAS_ANDREA : PREGUNTAS_ANDREA;
+  // Cargar progreso si existe
+  const guardado = cargarLocal(persona.id);
+  if (guardado) {
+    estado.indiceActual = guardado.indiceActual || 0;
+    estado.respuestas = guardado.respuestas || {};
+    estado.consentimientoAceptado = guardado.consentimientoAceptado || false;
+    estado.inicioSesion = guardado.inicioSesion || new Date().toISOString();
+  } else {
+    estado.inicioSesion = new Date().toISOString();
+  }
+  if (!estado.consentimientoAceptado) {
+    renderConsentimiento();
+  } else {
+    renderPregunta();
+  }
+}
+
+// PANTALLA: CONSENTIMIENTO
+function renderConsentimiento() {
+  const consentimientoTexto = CONSENTIMIENTO.replace('[NOMBRE_PERSONA]', estado.persona.nombre);
+  app.innerHTML = `
+    <div class="header">
+      <h1>Antes de empezar — ${estado.persona.nombre}</h1>
+      <div class="subtitle">Consentimiento informado obligatorio</div>
+    </div>
+    <div class="card">
+      <div class="welcome-message">
+        ${MENSAJE_CEO}
+      </div>
+      <h2>Consentimiento informado</h2>
+      <div class="consent-box">${consentimientoTexto}</div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="aceptaConsentimiento">
+        <label for="aceptaConsentimiento">He leído, comprendido y acepto las condiciones del consentimiento informado.</label>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary btn-large" id="btnAceptarConsent" disabled>Comenzar el cuestionario</button>
+      </div>
+    </div>
+  `;
+  const checkbox = document.getElementById('aceptaConsentimiento');
+  const btn = document.getElementById('btnAceptarConsent');
+  checkbox.addEventListener('change', () => btn.disabled = !checkbox.checked);
+  btn.addEventListener('click', () => {
+    estado.consentimientoAceptado = true;
+    estado.indiceActual = 0;
+    guardarLocal();
+    guardarSupabase();
+    renderPregunta();
+  });
+}
+
+// PANTALLA: PREGUNTA
+function renderPregunta() {
+  const total = estado.preguntas.length;
+  const idx = estado.indiceActual;
+  if (idx >= total) {
+    renderFin();
+    return;
+  }
+  const p = estado.preguntas[idx];
+  const respuestaPrevia = estado.respuestas[p.id] || {};
+  const tiempoEstimadoTotal = total * 1.5;
+  const tiempoTranscurrido = idx * 1.5;
+  const tiempoRestante = Math.max(1, Math.round(tiempoEstimadoTotal - tiempoTranscurrido));
+  const progreso = Math.round((idx / total) * 100);
+
+  let mostrarPausa = idx > 0 && idx % 14 === 0 && !respuestaPrevia._pausaMostrada;
+
+  app.innerHTML = `
+    <div class="header">
+      <h1>Hola ${estado.persona.nombre} 👋</h1>
+      <div class="subtitle">Pregunta ${idx + 1} de ${total} · ~${tiempoRestante} min restantes</div>
+      <div class="progress-bar"><div class="progress-fill" style="width: ${progreso}%"></div></div>
+      <div class="progress-info"><span>${progreso}%</span><span>Auto-guardado activo 💾</span></div>
+    </div>
+    ${mostrarPausa ? `<div class="pause-banner show">🛑 Llevas ${idx} preguntas. ¿Tomar 5 minutos antes de seguir? Tus respuestas están guardadas — puedes volver cuando quieras.</div>` : ''}
+    <div class="card">
+      <span class="silo-label">${p.silo}</span>
+      <div class="question">${p.pregunta}</div>
+      <button class="example-btn" onclick="document.getElementById('exampleBox').classList.toggle('show')">💡 Quiero un ejemplo</button>
+      <div class="example-box" id="exampleBox">${p.ejemplo}</div>
+      <div id="opcionesContainer">${renderOpciones(p, respuestaPrevia)}</div>
+      ${(p.tipo === 'textaudio' || p.tipo === 'textarea') ? '' : `
+      <div class="suggest-box">
+        <label>💬 ¿Quieres agregar algo? (opcional)</label>
+        <textarea id="comentarioInput" placeholder="Escribe aquí o aprieta el micrófono 🎤" rows="2">${respuestaPrevia.comentario || ''}</textarea>
+      </div>`}
+      <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept="image/*,.pdf,.xlsx,.xls,.csv,.txt">
+        <p>📎 Subir archivo si quieres mostrar algo (opcional)</p>
+        <div class="file-name" id="fileName">${respuestaPrevia.archivo || ''}</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-secondary" id="btnAnterior" ${idx === 0 ? 'disabled style="opacity:0.4"' : ''}>⬅ Anterior</button>
+        <button class="btn btn-primary" id="btnSiguiente">${idx === total - 1 ? 'Finalizar ✓' : 'Siguiente ➡'}</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('btnAnterior').addEventListener('click', () => {
+    guardarRespuesta();
+    if (idx > 0) {
+      estado.indiceActual--;
+      renderPregunta();
+    }
+  });
+  document.getElementById('btnSiguiente').addEventListener('click', () => {
+    guardarRespuesta();
+    estado.indiceActual++;
+    guardarLocal();
+    guardarSupabase();
+    renderPregunta();
+  });
+  document.getElementById('fileInput').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (file) {
+      document.getElementById('fileName').textContent = file.name;
+      // upload a Supabase Storage acá si conectado
+      if (!estado.respuestas[p.id]) estado.respuestas[p.id] = {};
+      estado.respuestas[p.id].archivo = file.name;
+      estado.respuestas[p.id]._fileObj = file;
+    }
+  });
+  conectarOpciones(p);
+  conectarAudio(p);
+}
+
+function renderOpciones(p, respuestaPrevia) {
+  if (p.tipo === 'unica' || p.tipo === 'unica_comentario') {
+    return `<div class="options">${p.opciones.map((op, i) => `
+      <label class="option ${respuestaPrevia.valor === op ? 'selected' : ''}">
+        <input type="radio" name="op" value="${op}" ${respuestaPrevia.valor === op ? 'checked' : ''}>
+        <span>${String.fromCharCode(65+i)}) ${op}</span>
+      </label>
+    `).join('')}</div>`;
+  }
+  if (p.tipo === 'multiple') {
+    const seleccionadas = respuestaPrevia.valor || [];
+    return `<div class="options">${p.opciones.map((op, i) => `
+      <label class="option ${seleccionadas.includes(op) ? 'selected' : ''}">
+        <input type="checkbox" name="op" value="${op}" ${seleccionadas.includes(op) ? 'checked' : ''}>
+        <span>${String.fromCharCode(65+i)}) ${op}</span>
+      </label>
+    `).join('')}</div>`;
+  }
+  if (p.tipo === 'numero') {
+    return `
+      <input type="number" id="numInput" min="${p.min}" max="${p.max}" value="${respuestaPrevia.valor || ''}" placeholder="Número del ${p.min} al ${p.max}">
+      ${p.permitir_no_se ? `
+      <label class="option" style="margin-top: 12px;">
+        <input type="checkbox" id="noSe" ${respuestaPrevia.no_se ? 'checked' : ''}>
+        <span>No lo he medido nunca</span>
+      </label>` : ''}
+    `;
+  }
+  if (p.tipo === 'textarea') {
+    return `<textarea id="textaInput" rows="4" placeholder="Escribe tu respuesta...">${respuestaPrevia.valor || ''}</textarea>`;
+  }
+  if (p.tipo === 'textaudio') {
+    return `
+      <textarea id="textaInput" rows="5" placeholder="Escribe tu respuesta o usa el micrófono...">${respuestaPrevia.valor || ''}</textarea>
+      <div class="audio-controls">
+        <button class="btn-audio" id="btnGrabar">🎤 Grabar audio</button>
+        <button class="btn-audio" id="btnReproducir" style="display:none">▶️ Escuchar grabación</button>
+      </div>
+      <div class="audio-status" id="audioStatus"></div>
+    `;
+  }
+  return '';
+}
+
+function conectarOpciones(p) {
+  if (p.tipo === 'unica' || p.tipo === 'unica_comentario') {
+    document.querySelectorAll('.option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        opt.querySelector('input').checked = true;
+      });
+    });
+  }
+  if (p.tipo === 'multiple') {
+    document.querySelectorAll('.option').forEach(opt => {
+      opt.addEventListener('click', e => {
+        if (e.target.tagName === 'INPUT') return;
+        const inp = opt.querySelector('input');
+        inp.checked = !inp.checked;
+        opt.classList.toggle('selected', inp.checked);
+      });
+    });
+  }
+}
+
+let mediaRecorder = null;
+let audioChunks = [];
+let audioBlob = null;
+
+function conectarAudio(p) {
+  if (p.tipo !== 'textaudio') return;
+  const btn = document.getElementById('btnGrabar');
+  const btnRep = document.getElementById('btnReproducir');
+  const status = document.getElementById('audioStatus');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      btn.classList.remove('recording');
+      btn.textContent = '🎤 Grabar de nuevo';
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        btnRep.style.display = 'inline-flex';
+        status.textContent = `✓ Audio grabado (${Math.round(audioBlob.size / 1024)} KB)`;
+        if (!estado.respuestas[p.id]) estado.respuestas[p.id] = {};
+        estado.respuestas[p.id]._audioBlob = audioBlob;
+        stream.getTracks().forEach(t => t.stop());
+      };
+      mediaRecorder.start();
+      btn.classList.add('recording');
+      btn.textContent = '⏹ Detener grabación';
+      status.textContent = 'Grabando...';
+    } catch (e) {
+      status.textContent = '❌ No se pudo acceder al micrófono. Permítelo en la configuración del navegador.';
+    }
+  });
+  btnRep.addEventListener('click', () => {
+    if (!audioBlob) return;
+    const url = URL.createObjectURL(audioBlob);
+    new Audio(url).play();
+  });
+}
+
+function guardarRespuesta() {
+  const p = estado.preguntas[estado.indiceActual];
+  if (!p) return;
+  if (!estado.respuestas[p.id]) estado.respuestas[p.id] = {};
+  if (p.tipo === 'unica' || p.tipo === 'unica_comentario') {
+    const sel = document.querySelector('input[name="op"]:checked');
+    estado.respuestas[p.id].valor = sel ? sel.value : null;
+  } else if (p.tipo === 'multiple') {
+    estado.respuestas[p.id].valor = Array.from(document.querySelectorAll('input[name="op"]:checked')).map(i => i.value);
+  } else if (p.tipo === 'numero') {
+    const num = document.getElementById('numInput').value;
+    const noSe = document.getElementById('noSe')?.checked;
+    estado.respuestas[p.id].valor = noSe ? null : (num !== '' ? parseInt(num) : null);
+    estado.respuestas[p.id].no_se = noSe;
+  } else if (p.tipo === 'textarea' || p.tipo === 'textaudio') {
+    estado.respuestas[p.id].valor = document.getElementById('textaInput')?.value || '';
+  }
+  const com = document.getElementById('comentarioInput');
+  if (com) estado.respuestas[p.id].comentario = com.value;
+  estado.respuestas[p.id]._timestamp = new Date().toISOString();
+}
+
+// PANTALLA: FIN
+function renderFin() {
+  const tiempoTotal = estado.inicioSesion ? Math.round((new Date() - new Date(estado.inicioSesion)) / 60000) : 0;
+  guardarLocal();
+  guardarSupabase();
+  app.innerHTML = `
+    <div class="card success-screen">
+      <div class="checkmark">✅</div>
+      <h2>Gracias, ${estado.persona.nombre}</h2>
+      <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+        Acabas de dedicar ${tiempoTotal > 0 ? tiempoTotal + ' minutos' : 'tu tiempo'} a algo que nadie te había pedido antes con esta profundidad: contar cómo sostienes el grupo.
+      </p>
+      <p style="font-size: 15px; line-height: 1.6; margin-bottom: 20px; color: var(--gris-medio);">
+        Lo que respondiste aquí no es una auditoría de tu desempeño — es un mapa para que dejes de cargar sola lo que es responsabilidad colectiva.
+      </p>
+      <div class="welcome-message" style="text-align: left;">
+        <strong>Compromiso:</strong> en un plazo máximo de <strong>15 días hábiles</strong> tendrás una reunión 1:1 con Dusan para revisar juntos qué se va a aliviar primero, qué se va a delegar, y qué inversión está dispuesto a hacer la empresa para que tu trabajo sea sostenible.
+        <br><br>
+        Tus respuestas no se van a archivar — se van a accionar.
+      </div>
+      <p style="font-size: 13px; color: var(--gris-medio); margin-top: 24px;">Puedes cerrar esta ventana. Tus respuestas ya están guardadas.</p>
+    </div>
+  `;
+}
+
+// ============================================================
+// INICIO
+// ============================================================
+renderLogin();
+window.addEventListener('beforeunload', () => {
+  if (estado.persona) guardarLocal();
+});
+</script>
+</body>
+</html>

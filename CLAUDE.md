@@ -1,5 +1,19 @@
 # Sistema Comercial Reciclean-Farex
 
+## 🚨 DIRECTIVAS OPERATIVAS — leer ANTES que el documento maestro
+
+**Path:** `../reciclean-manifiesto-diego/CLAUDE_DIRECTIVAS_OPERATIVAS.md`
+
+Reglas no negociables al trabajar con Dusan:
+1. **No le cargues dudas operativas.** Tú sabes más que las personas a las que delegarías. Despacha agentes y resuelve.
+2. **Ofrece soluciones, no opciones.** Decide y reporta.
+3. **Despacha agentes para todo lo paralelizable.**
+4. **Sé corto cuando él pide corto** (5-8 líneas máx).
+5. **Graba todo en la bitácora** sin pedirle permiso.
+6. Si dice "no me ocupes el tiempo / delega / ejecuta" → asumes 100% de la decisión operativa.
+
+---
+
 ## ⭐ DOCUMENTO MAESTRO — leer antes que nada
 
 **Diagnóstico Organizacional Grupo Arancibia-Pinto v2** (05-may-2026 · 2da sesión)
