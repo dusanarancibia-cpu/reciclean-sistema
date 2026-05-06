@@ -16,8 +16,13 @@ Contiene la fotografía completa del grupo:
 **v2 reemplaza a v1.** Sustituye cualquier asunción anterior sobre Reciclean-Farex.
 
 Carpetas relacionadas:
-- `../reciclean-manifiesto-diego/Proyectos/DOSI_2si/` — proyecto DOSI completo (MVP listo, lanzamiento 19-may-2026)
-- `../reciclean-manifiesto-diego/Bitacora_Estrategica_Grupo/2026-05/` — documento maestro 5 formatos
+- `../reciclean-manifiesto-diego/Proyectos/Ubergreen/` — Plan Integral v1 (apuesta a "millonario sin trabajar", 8 lentes sintetizados)
+- `../reciclean-manifiesto-diego/Proyectos/DOSI_2si/` — proyecto DOSI (MVP listo, beta privada 19-may-2026)
+- `../reciclean-manifiesto-diego/Bitacora_Estrategica_Grupo/2026-05/` — documento maestro grupo 5 formatos
+
+## Trayectoria del founder corregida
+
+**Dusan Arancibia: 31 años en industria reciclaje** (no 14 como decía mi memoria interna previa). Inició en Sorepa/CMPC en 1995 (depto comercial → Jefe Marketing y Comercial joven · directorio CMPC · análisis Perú · proyecto sorting CMPC). Cambio empresa industria abriendo 4 sucursales. 2012 independencia → Reciclean + Farex.
 
 ## Contexto del usuario
 
