@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel RDO — Reciclean-Farex</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .app-container { display: none; }
+    .login-container { display: flex; }
+    .audio-recorder { border: 1px solid #e5e7eb; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: #fff; }
+    .recording { background-color: #ffe4e4; }
+    .tab-btn.active { color: #2C5F2D; border-bottom: 2px solid #2C5F2D; }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Calibri, Arial; }
+  </style>
+</head>
+<body class="bg-stone-100 min-h-screen">
+
+<!-- LOGIN -->
+<div id="loginContainer" class="login-container min-h-screen items-center justify-center">
+  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+    <div class="flex items-center mb-6">
+      <img src="/assets/logos/grc-simbolo.png" alt="Grupo Reciclean-Farex"
+           class="h-12 w-auto"
+           onerror="this.onerror=null; this.src='https://reciclean-sistema.vercel.app/assets/logos/grc-simbolo.png';">
+      <div class="ml-3">
+        <h1 class="text-xl font-bold text-stone-800">Panel RDO</h1>
+        <p class="text-sm text-stone-500">Grupo Reciclean-Farex</p>
+      </div>
+    </div>
+    <h2 class="text-lg font-semibold mb-4 text-stone-700">Iniciar sesión</h2>
+    <input type="email" id="loginEmail" placeholder="tu.email@empresa.cl"
+           class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
+    <button onclick="login()" class="w-full bg-green-700 hover:bg-green-800 text-white p-3 rounded font-semibold transition">
+      Ingresar
+    </button>
+    <p class="text-xs text-stone-500 mt-4">Solo usuarios autorizados. Si no tienes acceso, contacta a Pablo o Dusan.</p>
+    <div id="loginError" class="hidden mt-3 text-sm text-red-600 bg-red-50 p-2 rounded"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appContainer" class="app-container">
+  <header class="bg-white shadow-sm px-6 py-3 flex justify-between items-center flex-wrap gap-2">
+    <div class="flex items-center gap-3">
+      <img src="/assets/logos/grc-simbolo.png" alt="Grupo Reciclean-Farex"
+           class="h-10 w-auto"
+           onerror="this.onerror=null; this.src='https://reciclean-sistema.vercel.app/assets/logos/grc-simbolo.png';">
+      <div class="flex flex-col">
+        <h1 class="text-lg font-bold text-stone-800 leading-tight">Panel RDO</h1>
+        <span class="text-xs text-stone-500">Grupo Reciclean-Farex</span>
+      </div>
+    </div>
+
+    <!-- Selector de área (silo) -->
+    <div id="siloSelectorContainer" class="hidden flex items-center gap-2">
+      <label class="text-sm text-stone-600 font-medium">Área:</label>
+      <select id="siloSelector"
+              class="border border-stone-300 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none bg-white">
+        <option value="">Cargando…</option>
+      </select>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <span id="userEmailDisplay" class="text-sm text-stone-600"></span>
+      <span id="userProfileDisplay" class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold uppercase"></span>
+      <button onclick="logout()" class="bg-stone-200 hover:bg-stone-300 text-stone-700 px-3 py-1 rounded text-sm">Salir</button>
+    </div>
+  </header>
+
+  <div id="newAudioNotification" class="hidden bg-amber-50 border-l-4 border-amber-500 p-3 mx-6 mt-4 rounded">
+    🎙️ <span class="font-semibold">Nuevo mensaje de Dusan sin escuchar.</span>
+    <a href="#" onclick="document.querySelector('button[data-tab=comunicados]').click(); return false;" class="underline text-amber-800 ml-2">Escuchar ahora</a>
+  </div>
+
+  <nav class="border-b border-stone-200 px-6 bg-white">
+    <div class="flex gap-2 overflow-x-auto">
+      <button data-tab="portada"     class="tab-btn py-3 px-3 text-stone-600 active">🏠 Portada</button>
+      <button data-tab="pesaje"      class="tab-btn py-3 px-3 text-stone-600">⚖️ Pesaje S1</button>
+      <button data-tab="facturacion" class="tab-btn py-3 px-3 text-stone-600">🧾 Facturación S5</button>
+      <button data-tab="dieguito"    class="tab-btn py-3 px-3 text-stone-600">📎 Dieguito</button>
+      <button data-tab="comunicados" class="tab-btn py-3 px-3 text-stone-600">🎧 Comunicados</button>
+      <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600">📈 RDO Resumen</button>
+      <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden">⚙️ Admin</button>
+    </div>
+  </nav>
+
+  <main class="p-6 max-w-6xl mx-auto">
+    <section id="tabPortada" class="tab-content">
+      <h2 class="text-2xl font-bold mb-4 text-stone-800">Bienvenido</h2>
+
+      <!-- Acceso rápido al ecosistema externo (Panel Admin / Asistente Comercial) -->
+      <div id="accesoRapido" class="hidden mb-4"></div>
+
+      <div id="portadaAudioPlayer" class="bg-white p-5 rounded-lg shadow-sm mb-4">
+        <p class="text-stone-500">Cargando mensajes destacados...</p>
+      </div>
+      <div class="bg-white p-5 rounded-lg shadow-sm">
+        <h3 class="font-bold text-stone-700 mb-2">Sistema integrado de reportes y comunicaciones</h3>
+        <p class="text-sm text-stone-600">Aquí puedes subir información operativa, ver mensajes del equipo y consultar el resumen diario.</p>
+      </div>
+    </section>
+
+    <section id="tabPesaje" class="tab-content hidden">
+      <h2 class="text-xl font-bold mb-3 text-stone-800">Subir Pesaje (Fuente S1)</h2>
+      <p class="text-sm text-stone-600 mb-4">Acepta CSV o JSON. El archivo se guarda en bruto en <code>staging.pesaje_s1</code> para revisión posterior.</p>
+      <div class="bg-white p-5 rounded-lg shadow-sm">
+        <input type="file" id="pesajeFile" accept=".csv,.json" class="mb-3 block">
+        <button onclick="uploadPesaje()" class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded">Subir a staging</button>
+        <div id="pesajeResult" class="mt-4 text-sm"></div>
+      </div>
+    </section>
+
+    <section id="tabFacturacion" class="tab-content hidden">
+      <h2 class="text-xl font-bold mb-3 text-stone-800">Subir Facturación (Fuente S5)</h2>
+      <p class="text-sm text-stone-600 mb-4">Acepta CSV o JSON. Se guarda en bruto en <code>staging.facturacion_s5</code>.</p>
+      <div class="bg-white p-5 rounded-lg shadow-sm">
+        <input type="file" id="facturacionFile" accept=".csv,.json" class="mb-3 block">
+        <button onclick="uploadFacturacion()" class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded">Subir a staging</button>
+        <div id="facturacionResult" class="mt-4 text-sm"></div>
+      </div>
+    </section>
+
+    <section id="tabDieguito" class="tab-content hidden">
+      <h2 class="text-xl font-bold mb-3 text-stone-800">Dieguito — Subir evidencia con contexto</h2>
+      <p class="text-sm text-stone-600 mb-4">Sube una imagen, PDF o archivo con su contexto. Se procesa automáticamente más adelante.</p>
+      <div class="bg-white p-5 rounded-lg shadow-sm">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+          <input type="text" id="dieguitoDe"     placeholder="DE (origen, persona)"   class="border border-stone-300 p-2 rounded">
+          <input type="text" id="dieguitoPara"   placeholder="PARA (destinatario)"    class="border border-stone-300 p-2 rounded">
+          <input type="text" id="dieguitoAsunto" placeholder="ASUNTO *"               class="border border-stone-300 p-2 rounded">
+          <input type="date" id="dieguitoFecha"                                       class="border border-stone-300 p-2 rounded">
+        </div>
+        <textarea id="dieguitoContexto" placeholder="Contexto adicional..." rows="3"
+                  class="w-full border border-stone-300 p-2 rounded mb-2"></textarea>
+        <input type="file" id="dieguitoArchivo" class="mb-3 block">
+        <button onclick="uploadEvidenciaDieguito()" class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded">Guardar evidencia</button>
+        <div id="dieguitoResult" class="mt-4 text-sm"></div>
+      </div>
+    </section>
+
+    <section id="tabComunicados" class="tab-content hidden">
+      <h2 class="text-2xl font-bold mb-4 text-stone-800">📢 Mensajes del equipo</h2>
+
+      <div id="grabadorSection" class="hidden audio-recorder">
+        <h3 class="font-bold text-lg text-stone-700 mb-3">🎙️ Grabar nuevo mensaje</h3>
+        <input type="text" id="audioTitulo" placeholder="Título (ej. Mensaje 8 mayo)"
+               class="w-full border border-stone-300 p-2 rounded mb-2">
+        <textarea id="audioTexto" placeholder="Texto corto / transcripción opcional" rows="2"
+                  class="w-full border border-stone-300 p-2 rounded mb-2"></textarea>
+        <div class="mb-3 flex gap-4 items-center">
+          <span class="font-semibold text-sm text-stone-700">Mostrar en:</span>
+          <label class="flex items-center gap-1"><input type="checkbox" value="portada" checked> Portada</label>
+          <label class="flex items-center gap-1"><input type="checkbox" value="comunicados" checked> Comunicados</label>
+        </div>
+        <div class="flex gap-2 mb-2">
+          <button id="startRecordBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">🎤 Empezar grabación</button>
+          <button id="stopRecordBtn"  class="bg-stone-600 text-white px-4 py-2 rounded hidden">⏹ Detener</button>
+          <button id="saveAudioBtn"   class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded hidden" disabled>💾 Guardar audio</button>
+          <button id="discardAudioBtn" class="bg-stone-300 hover:bg-stone-400 text-stone-700 px-4 py-2 rounded hidden">Descartar</button>
+        </div>
+        <audio id="audioPreview" controls class="mt-2 w-full hidden"></audio>
+        <div id="recordingStatus" class="text-sm mt-2 text-stone-600"></div>
+      </div>
+
+      <div id="listaAudios" class="space-y-3 mt-4">
+        <p class="text-stone-500">Cargando mensajes...</p>
+      </div>
+    </section>
+
+    <section id="tabRdo" class="tab-content hidden">
+      <h2 class="text-xl font-bold mb-3 text-stone-800">Resumen RDO Diario</h2>
+      <div class="bg-white p-5 rounded-lg shadow-sm">
+        <pre id="rdoResumen" class="whitespace-pre-wrap text-sm text-stone-700">Cargando...</pre>
+      </div>
+    </section>
+
+    <section id="tabAdmin" class="tab-content hidden">
+      <h2 class="text-xl font-bold mb-3 text-stone-800">Administración</h2>
+      <div class="bg-white p-5 rounded-lg shadow-sm">
+        <h3 class="font-bold text-stone-700 mb-3">Mensajes de audio</h3>
+        <div id="adminAudiosList" class="text-sm text-stone-500">Cargando...</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+// ====================== CONFIGURACIÓN ======================
+// REEMPLAZAR antes de usar:
+const SUPABASE_URL = "https://eknmtsrtfkzroxnovfqn.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbm10c3J0Zmt6cm94bm92ZnFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDY2ODgsImV4cCI6MjA5MDk4MjY4OH0.8Y4N0lw3DFN3Y8-R6ID7t_LAfgHWDM5N-oa4Ji9bncg";
+// ===========================================================
+
+let sb;
+let currentUser = null;
+let currentProfile = null;
+let mediaRecorder;
+let audioChunks = [];
+let recordedBlob = null;
+let recordedUrl = null;
+
+// ---------- SILOS (matriz Pablo 07-may-2026) ----------
+// Mapeo silo → pestañas que se muestran. Transversales (portada,
+// dieguito, comunicados) están siempre visibles para todos los silos.
+const TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados'];
+const MAPEO_SILO_PESTANAS = {
+  '01': ['facturacion'],
+  '02': ['pesaje'],
+  '03': ['pesaje'],
+  '04': ['pesaje', 'rdo'],
+  '05': [],
+  '06': ['admin', 'rdo'],
+  '07': ['facturacion', 'rdo'],
+  '08': [],
+  '09': [],
+  '10': ['pesaje', 'facturacion', 'rdo', 'admin'],
+  '11': [],
+};
+// Vista global: cuando Dusan + Pablo no eligen silo, ven TODO
+const TABS_GLOBALES = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'admin'];
+
+let silosVisibles = [];   // silos que el usuario puede ver según RLS
+let currentSilo = null;   // código del silo activo, o null = vista global
+const LS_KEY_SILO = 'rdo_silo_seleccionado';
+
+function initSupabase() {
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+// ---------- helpers ----------
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// CSV parser tolerante (maneja comas dentro de campos con comillas)
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length);
+  if (lines.length === 0) return [];
+  const parseLine = (line) => {
+    const out = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; continue; }
+      if (c === ',' && !inQ) { out.push(cur); cur = ''; continue; }
+      cur += c;
+    }
+    out.push(cur);
+    return out;
+  };
+  const headers = parseLine(lines[0]).map(h => h.trim());
+  return lines.slice(1).map(line => {
+    const vals = parseLine(line);
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (vals[i] || '').trim());
+    return obj;
+  });
+}
+
+async function parseFile(file) {
+  const text = await file.text();
+  if (file.name.toLowerCase().endsWith('.json')) return JSON.parse(text);
+  if (file.name.toLowerCase().endsWith('.csv'))  return parseCSV(text);
+  throw new Error("Formato no soportado. Usa CSV o JSON.");
+}
+
+function showResult(divId, ok, message) {
+  const div = document.getElementById(divId);
+  div.className = `mt-4 text-sm p-3 rounded ${ok ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`;
+  div.innerHTML = (ok ? '✅ ' : '❌ ') + escapeHtml(message);
+}
+
+// ---------- LOGIN ----------
+window.login = async function() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const errDiv = document.getElementById('loginError');
+  errDiv.classList.add('hidden');
+  if (!email) { errDiv.textContent = "Ingresa un email"; errDiv.classList.remove('hidden'); return; }
+
+  const { data, error } = await sb
+    .schema('panel')
+    .from('usuarios_autorizados')
+    .select('email, perfil, activo, nombre')   // incluir email canónico
+    .ilike('email', email)   // case-insensitive (Dusan vs dusan)
+    .maybeSingle();
+
+  if (error || !data || !data.activo) {
+    errDiv.textContent = "Usuario no autorizado o inactivo. Contacta a Pablo.";
+    errDiv.classList.remove('hidden');
+    return;
+  }
+
+  // Usar email CANÓNICO de la BD, no el del input (resuelve case-sensitive en queries posteriores)
+  currentUser = data.email;
+  currentProfile = data.perfil;
+  console.log('[Panel RDO] Login OK:', { email: currentUser, profile: currentProfile });
+  document.getElementById('userEmailDisplay').innerText = data.nombre || data.email;
+  document.getElementById('userProfileDisplay').innerText = currentProfile;
+
+  document.getElementById('loginContainer').style.display = 'none';
+  document.getElementById('appContainer').style.display = 'block';
+
+  if (currentProfile === 'dusan' || currentProfile === 'admin') {
+    document.getElementById('adminTab').classList.remove('hidden');
+    document.getElementById('grabadorSection').classList.remove('hidden');
+  }
+
+  await loadSilos();           // carga silos visibles + monta selector
+  applySiloTabs();             // filtra pestañas según silo + perfil
+  loadAccesoRapido();          // tarjeta de acceso al ecosistema externo
+  loadAudios();
+  loadPortadaAudio();
+  checkNewAudioNotification();
+  loadRdoResumen();
+
+  // Update ultimo_login (best-effort, no bloquea)
+  sb.schema('panel').from('usuarios_autorizados').update({ ultimo_login: new Date().toISOString() })
+    .eq('email', email).then(() => {});
+};
+
+// ---------- SILOS: carga + selector + filtrado de pestañas ----------
+async function loadSilos() {
+  const { data, error } = await sb
+    .schema('panel')
+    .from('v_panel_silos_visibles')
+    .select('codigo, nombre, rol_silo, origen_acceso')
+    .eq('email_usuario', currentUser);
+
+  const selector = document.getElementById('siloSelector');
+  const container = document.getElementById('siloSelectorContainer');
+
+  console.log('[Panel RDO] loadSilos query result:', { email: currentUser, count: data?.length, error });
+
+  if (error || !data) {
+    console.warn('[Panel RDO] No se pudieron cargar silos:', error?.message);
+    container.classList.add('hidden');
+    return;
+  }
+
+  // Deduplicar y ordenar por código
+  const visto = new Set();
+  silosVisibles = data
+    .filter(s => { if (visto.has(s.codigo)) return false; visto.add(s.codigo); return true; })
+    .sort((a, b) => a.codigo.localeCompare(b.codigo));
+
+  console.log('[Panel RDO] silosVisibles:', silosVisibles.map(s => `${s.codigo} (${s.origen_acceso})`));
+
+  if (silosVisibles.length === 0) {
+    console.warn('[Panel RDO] silosVisibles está vacío — el selector no se mostrará');
+    container.classList.add('hidden');
+    return;
+  }
+
+  container.classList.remove('hidden');
+  selector.innerHTML = '';
+
+  // Dusan + Pablo: opción "Vista global" arriba
+  const esBypass = silosVisibles.some(s => s.origen_acceso === 'bypass_global');
+  if (esBypass) {
+    const opt = document.createElement('option');
+    opt.value = '__global__';
+    opt.textContent = '🌐 Vista global (todos los silos)';
+    selector.appendChild(opt);
+  }
+
+  silosVisibles.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.codigo;
+    const prefijo = s.rol_silo === 'owner' ? '👑 ' : '';
+    opt.textContent = `${prefijo}${s.nombre}`;
+    selector.appendChild(opt);
+  });
+
+  // Restaurar último silo de localStorage o auto-seleccionar
+  const guardado = localStorage.getItem(LS_KEY_SILO);
+  if (guardado && (guardado === '__global__' ? esBypass : silosVisibles.some(s => s.codigo === guardado))) {
+    selector.value = guardado;
+    currentSilo = guardado === '__global__' ? null : guardado;
+  } else if (silosVisibles.length === 1 && !esBypass) {
+    selector.value = silosVisibles[0].codigo;
+    currentSilo = silosVisibles[0].codigo;
+  } else {
+    // Por defecto: vista global si es Dusan/Pablo, primer silo si no
+    selector.value = esBypass ? '__global__' : silosVisibles[0].codigo;
+    currentSilo = esBypass ? null : silosVisibles[0].codigo;
+  }
+
+  selector.addEventListener('change', () => {
+    const v = selector.value;
+    currentSilo = v === '__global__' ? null : v;
+    localStorage.setItem(LS_KEY_SILO, v);
+    applySiloTabs();
+  });
+}
+
+// ---------- ACCESO RÁPIDO al ecosistema externo ----------
+const ACCESOS_BYPASS_EMAILS = [
+  'gerencia@gestionrepchile.cl',
+  'Dusan.arancibia@gmail.com',
+  'recepcion01@gestionrepchile.cl'
+];
+
+function loadAccesoRapido() {
+  const div = document.getElementById('accesoRapido');
+  if (!div) return;
+  const esBypass = ACCESOS_BYPASS_EMAILS.includes(currentUser);
+  const url = esBypass
+    ? 'https://reciclean-sistema.vercel.app/login.html'
+    : 'https://reciclean-sistema.vercel.app/asistente.html';
+  const titulo = esBypass ? 'Panel Admin' : 'Asistente Comercial';
+  const desc = esBypass
+    ? 'Gestión de precios, alias, usuarios, erratas y publicación pública.'
+    : 'Consulta de precios vigentes por sucursal, cliente y material.';
+  const icono = esBypass ? '⚙️' : '💬';
+
+  div.innerHTML = `
+    <a href="${url}" target="_blank" rel="noopener"
+       class="block bg-gradient-to-r from-green-700 to-green-800 hover:from-green-800 hover:to-green-900 text-white p-5 rounded-lg shadow-sm transition group">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="text-3xl">${icono}</div>
+          <div>
+            <h3 class="font-bold text-lg">Abrir ${titulo}</h3>
+            <p class="text-sm text-green-100 mt-1">${desc}</p>
+          </div>
+        </div>
+        <span class="text-2xl group-hover:translate-x-1 transition">→</span>
+      </div>
+    </a>
+  `;
+  div.classList.remove('hidden');
+}
+
+function applySiloTabs() {
+  // Calcular pestañas habilitadas
+  let tabsHabilitadas;
+  if (currentSilo === null) {
+    // Vista global (Dusan/Pablo) → todas las pestañas
+    tabsHabilitadas = new Set(TABS_GLOBALES);
+  } else {
+    const tabsSilo = MAPEO_SILO_PESTANAS[currentSilo] || [];
+    tabsHabilitadas = new Set([...TABS_TRANSVERSALES, ...tabsSilo]);
+  }
+
+  // Admin solo se muestra para perfiles dusan/admin Y si está en tabsHabilitadas
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    const t = btn.getAttribute('data-tab');
+    let visible = tabsHabilitadas.has(t);
+    if (t === 'admin' && currentProfile !== 'dusan' && currentProfile !== 'admin') visible = false;
+    btn.style.display = visible ? '' : 'none';
+  });
+
+  // Si la pestaña activa quedó oculta, volver a Portada
+  const activa = document.querySelector('.tab-btn.active');
+  if (activa && activa.style.display === 'none') {
+    document.querySelector('button[data-tab="portada"]').click();
+  }
+}
+
+window.logout = function() {
+  currentUser = null; currentProfile = null;
+  document.getElementById('appContainer').style.display = 'none';
+  document.getElementById('loginContainer').style.display = 'flex';
+  document.getElementById('loginEmail').value = '';
+};
+
+// ---------- TABS ----------
+function setupTabs() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tabId = btn.getAttribute('data-tab');
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+      const target = document.getElementById('tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+      if (target) target.classList.remove('hidden');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (tabId === 'comunicados') loadAudios();
+      if (tabId === 'portada') loadPortadaAudio();
+      if (tabId === 'rdo') loadRdoResumen();
+      if (tabId === 'admin') loadAdminAudios();
+    });
+  });
+}
+
+// ---------- AUDIO RECORDER ----------
+function setupRecorder() {
+  const startBtn = document.getElementById('startRecordBtn');
+  const stopBtn  = document.getElementById('stopRecordBtn');
+  const saveBtn  = document.getElementById('saveAudioBtn');
+  const discardBtn = document.getElementById('discardAudioBtn');
+  const previewAudio = document.getElementById('audioPreview');
+  const status = document.getElementById('recordingStatus');
+
+  startBtn.onclick = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        recordedBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        recordedUrl = URL.createObjectURL(recordedBlob);
+        previewAudio.src = recordedUrl;
+        previewAudio.classList.remove('hidden');
+        saveBtn.disabled = false;
+        saveBtn.classList.remove('hidden');
+        discardBtn.classList.remove('hidden');
+        stopBtn.classList.add('hidden');
+        startBtn.classList.remove('hidden');
+        startBtn.textContent = '🎤 Re-grabar';
+        status.textContent = "Grabación lista. Escucha antes de guardar.";
+      };
+      mediaRecorder.start();
+      startBtn.classList.add('hidden');
+      stopBtn.classList.remove('hidden');
+      saveBtn.classList.add('hidden');
+      discardBtn.classList.add('hidden');
+      previewAudio.classList.add('hidden');
+      status.textContent = "🔴 Grabando...";
+    } catch (err) {
+      status.textContent = "❌ No se pudo acceder al micrófono: " + err.message;
+    }
+  };
+
+  stopBtn.onclick = () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach(t => t.stop());
+    }
+  };
+
+  discardBtn.onclick = () => {
+    recordedBlob = null;
+    if (recordedUrl) URL.revokeObjectURL(recordedUrl);
+    previewAudio.classList.add('hidden');
+    saveBtn.classList.add('hidden');
+    discardBtn.classList.add('hidden');
+    startBtn.textContent = '🎤 Empezar grabación';
+    status.textContent = "";
+  };
+
+  saveBtn.onclick = async () => {
+    if (!recordedBlob) return;
+    const titulo = document.getElementById('audioTitulo').value.trim();
+    if (!titulo) { alert("Escribe un título"); return; }
+    const texto = document.getElementById('audioTexto').value;
+    const zonas = Array.from(
+      document.querySelectorAll('#grabadorSection input[type="checkbox"]:checked')
+    ).map(cb => cb.value);
+
+    const fileName = `audio_${Date.now()}.webm`;
+    saveBtn.disabled = true;
+    saveBtn.textContent = '⏳ Subiendo...';
+
+    const { error: uploadError } = await sb.storage
+      .from('audio_mensajes').upload(fileName, recordedBlob, { contentType: 'audio/webm' });
+    if (uploadError) {
+      alert("Error subiendo audio: " + uploadError.message);
+      saveBtn.disabled = false; saveBtn.textContent = '💾 Guardar audio';
+      return;
+    }
+
+    const { data: pub } = sb.storage.from('audio_mensajes').getPublicUrl(fileName);
+    const { error: insertError } = await sb
+      .schema('panel')
+      .from('mensajes_audio')
+      .insert({
+        autor: currentUser, titulo, texto,
+        url_audio: pub.publicUrl,
+        zonas_visibles: zonas, activo: true
+      });
+
+    if (insertError) {
+      alert("Error guardando: " + insertError.message);
+      saveBtn.disabled = false; saveBtn.textContent = '💾 Guardar audio';
+      return;
+    }
+
+    alert("✅ Audio guardado");
+    document.getElementById('audioTitulo').value = '';
+    document.getElementById('audioTexto').value = '';
+    discardBtn.click();
+    saveBtn.textContent = '💾 Guardar audio';
+    loadAudios();
+    loadPortadaAudio();
+  };
+}
+
+// ---------- LOAD AUDIOS ----------
+async function loadAudios() {
+  const { data, error } = await sb
+    .schema('panel').from('mensajes_audio').select('*')
+    .eq('activo', true).order('fecha', { ascending: false });
+  const container = document.getElementById('listaAudios');
+  if (error) { container.innerHTML = `<p class="text-red-600">Error: ${escapeHtml(error.message)}</p>`; return; }
+  const filtered = (data || []).filter(a => a.zonas_visibles && a.zonas_visibles.includes('comunicados'));
+  if (filtered.length === 0) {
+    container.innerHTML = '<p class="text-stone-500">No hay mensajes en Comunicados.</p>';
+  } else {
+    container.innerHTML = filtered.map(a => `
+      <div class="border border-stone-200 p-4 rounded-lg bg-white shadow-sm">
+        <h3 class="font-bold text-stone-800">${escapeHtml(a.titulo)}</h3>
+        <p class="text-sm text-stone-600 mb-2">${escapeHtml(a.texto || '')}</p>
+        <audio controls src="${escapeHtml(a.url_audio)}" class="w-full"></audio>
+        <p class="text-xs text-stone-400 mt-2">${new Date(a.fecha).toLocaleString('es-CL')} — ${escapeHtml(a.autor)}</p>
+      </div>
+    `).join('');
+  }
+  if (data && data.length) {
+    localStorage.setItem('lastAudioSeen', new Date(data[0].fecha).getTime().toString());
+  }
+  document.getElementById('newAudioNotification').classList.add('hidden');
+}
+
+async function loadPortadaAudio() {
+  const { data, error } = await sb
+    .schema('panel').from('mensajes_audio').select('*')
+    .eq('activo', true)
+    .contains('zonas_visibles', ['portada'])
+    .order('fecha', { ascending: false }).limit(3);
+  const container = document.getElementById('portadaAudioPlayer');
+  if (error) { container.innerHTML = `<p class="text-red-600">Error: ${escapeHtml(error.message)}</p>`; return; }
+  if (!data || data.length === 0) {
+    container.innerHTML = '<p class="text-stone-500">No hay mensajes destacados.</p>';
+    return;
+  }
+  container.innerHTML = data.map(a => `
+    <div class="mb-3 pb-3 border-b border-stone-100 last:border-0 last:mb-0 last:pb-0">
+      <h3 class="font-semibold text-stone-800">🎙️ ${escapeHtml(a.titulo)}</h3>
+      <p class="text-sm text-stone-600 mb-2">${escapeHtml(a.texto || '')}</p>
+      <audio controls src="${escapeHtml(a.url_audio)}" class="w-full"></audio>
+    </div>
+  `).join('');
+}
+
+async function checkNewAudioNotification() {
+  const lastSeen = parseInt(localStorage.getItem('lastAudioSeen') || '0');
+  const { data } = await sb.schema('panel').from('mensajes_audio').select('fecha')
+    .eq('activo', true).order('fecha', { ascending: false }).limit(1);
+  if (data && data[0] && new Date(data[0].fecha).getTime() > lastSeen) {
+    document.getElementById('newAudioNotification').classList.remove('hidden');
+  }
+}
+
+// ---------- ADMIN: gestionar audios ----------
+async function loadAdminAudios() {
+  const { data, error } = await sb
+    .schema('panel').from('mensajes_audio').select('*')
+    .order('fecha', { ascending: false });
+  const div = document.getElementById('adminAudiosList');
+  if (error) { div.innerHTML = `<p class="text-red-600">${escapeHtml(error.message)}</p>`; return; }
+  if (!data || data.length === 0) { div.innerHTML = '<p>No hay audios.</p>'; return; }
+  div.innerHTML = `
+    <table class="w-full text-sm">
+      <thead><tr class="border-b text-stone-500">
+        <th class="text-left p-2">Título</th><th class="p-2">Autor</th>
+        <th class="p-2">Zonas</th><th class="p-2">Activo</th><th class="p-2">Fecha</th>
+      </tr></thead>
+      <tbody>
+      ${data.map(a => `
+        <tr class="border-b">
+          <td class="p-2 font-semibold">${escapeHtml(a.titulo)}</td>
+          <td class="p-2">${escapeHtml(a.autor)}</td>
+          <td class="p-2">${(a.zonas_visibles || []).map(z => `<span class="bg-stone-100 px-2 py-1 rounded text-xs mr-1">${escapeHtml(z)}</span>`).join('')}</td>
+          <td class="p-2">${a.activo ? '✅' : '🚫'}</td>
+          <td class="p-2 text-xs text-stone-400">${new Date(a.fecha).toLocaleDateString('es-CL')}</td>
+        </tr>
+      `).join('')}
+      </tbody>
+    </table>`;
+}
+
+// ---------- UPLOADS (S1, S5, Dieguito) ----------
+window.uploadPesaje = async function() {
+  const file = document.getElementById('pesajeFile').files[0];
+  if (!file) { showResult('pesajeResult', false, 'Selecciona un archivo'); return; }
+  try {
+    const data = await parseFile(file);
+    const { error } = await sb.schema('staging').from('pesaje_s1').insert({
+      raw_json: data, subido_por: currentUser
+    });
+    if (error) { showResult('pesajeResult', false, error.message); return; }
+    showResult('pesajeResult', true, `Subido. ${Array.isArray(data) ? data.length + ' filas' : '1 objeto'} en staging.pesaje_s1`);
+    document.getElementById('pesajeFile').value = '';
+  } catch (e) { showResult('pesajeResult', false, e.message); }
+};
+
+window.uploadFacturacion = async function() {
+  const file = document.getElementById('facturacionFile').files[0];
+  if (!file) { showResult('facturacionResult', false, 'Selecciona un archivo'); return; }
+  try {
+    const data = await parseFile(file);
+    const { error } = await sb.schema('staging').from('facturacion_s5').insert({
+      raw_json: data, subido_por: currentUser
+    });
+    if (error) { showResult('facturacionResult', false, error.message); return; }
+    showResult('facturacionResult', true, `Subido. ${Array.isArray(data) ? data.length + ' filas' : '1 objeto'} en staging.facturacion_s5`);
+    document.getElementById('facturacionFile').value = '';
+  } catch (e) { showResult('facturacionResult', false, e.message); }
+};
+
+window.uploadEvidenciaDieguito = async function() {
+  const de       = document.getElementById('dieguitoDe').value.trim();
+  const para     = document.getElementById('dieguitoPara').value.trim();
+  const asunto   = document.getElementById('dieguitoAsunto').value.trim();
+  const fecha    = document.getElementById('dieguitoFecha').value || null;
+  const contexto = document.getElementById('dieguitoContexto').value;
+  const archivo  = document.getElementById('dieguitoArchivo').files[0];
+
+  if (!asunto) { showResult('dieguitoResult', false, 'El campo ASUNTO es obligatorio'); return; }
+
+  let url = null, mime = null;
+  if (archivo) {
+    const fileName = `evidencia_${Date.now()}_${archivo.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    const { error: upErr } = await sb.storage.from('evidencias_dieguito').upload(fileName, archivo);
+    if (upErr) { showResult('dieguitoResult', false, 'Error subiendo archivo: ' + upErr.message); return; }
+    const { data: pub } = sb.storage.from('evidencias_dieguito').getPublicUrl(fileName);
+    url = pub.publicUrl;
+    mime = archivo.type;
+  }
+
+  const { error } = await sb.schema('staging').from('evidencias_dieguito').insert({
+    de, para, asunto, fecha, descripcion: contexto,
+    url_archivo: url, archivo_tipo: mime, subido_por: currentUser
+  });
+  if (error) { showResult('dieguitoResult', false, error.message); return; }
+
+  showResult('dieguitoResult', true, 'Evidencia guardada');
+  document.getElementById('dieguitoDe').value = '';
+  document.getElementById('dieguitoPara').value = '';
+  document.getElementById('dieguitoAsunto').value = '';
+  document.getElementById('dieguitoFecha').value = '';
+  document.getElementById('dieguitoContexto').value = '';
+  document.getElementById('dieguitoArchivo').value = '';
+};
+
+async function loadRdoResumen() {
+  const { data, error } = await sb.schema('curated').from('rdo_diario')
+    .select('fecha,total_kg_comprados,total_facturado,n_alertas_total,resumen_json')
+    .order('fecha', { ascending: false }).limit(1);
+  const div = document.getElementById('rdoResumen');
+  if (error) { div.innerText = "Sin datos aún (curated.rdo_diario vacía).\nLa pipeline DeepSeek poblará esta tabla a partir del 19-may."; return; }
+  if (!data || data.length === 0) { div.innerText = "Sin datos del día anterior. Pipeline en construcción."; return; }
+  const r = data[0];
+  div.innerText = `Fecha: ${r.fecha}
+Kilos comprados: ${r.total_kg_comprados || 0}
+Total facturado: $${r.total_facturado || 0}
+Alertas activas: ${r.n_alertas_total || 0}
+
+${JSON.stringify(r.resumen_json || {}, null, 2)}`;
+}
+
+// ---------- INIT ----------
+initSupabase();
+setupTabs();
+setupRecorder();
+document.getElementById('loginEmail').addEventListener('keypress', e => {
+  if (e.key === 'Enter') login();
+});
+</script>
+</body>
+</html>
