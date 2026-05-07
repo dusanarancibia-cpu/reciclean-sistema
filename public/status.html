@@ -107,7 +107,7 @@ footer a{color:#4a90d9;text-decoration:none}
 </table>
 </div>
 <footer>
-  Datos: 22-abr-2026 · 68 temas &nbsp;|&nbsp;
+  Datos: 07-may-2026 · 73 temas &nbsp;|&nbsp;
   <a href="/agregar-tema.html">+ Agregar tema</a> &nbsp;|&nbsp;
   Fuente: Supabase <code>temas_en_progreso</code>
 </footer>
@@ -118,7 +118,7 @@ const T=[
 {c:'I-03',p:null,pct:20,a:'Tecnología',r:'Dusan',t:'Eval BI tools',ti:'2h',e:false,dep:[],del:'Pablo',b:'spec',sig:'Contrastar con contexto Reciclean real (Pablo vacaciones hasta 26-abr)',ruta:['Cesar - Order/07_Archivo_y_Respaldos/admin_panel_v83.html'],fl:'2026-05-10'},
 {c:'I-04',p:null,pct:90,a:'Gerencia General',r:'Claude',t:'Tracker temas',ti:'30min',e:true,dep:[],del:'Pablo',b:'revision',sig:'Dusan prueba flujo PC/web/móvil y valida. Pablo wirea n8n Diego post 26-abr.',ruta:null,fl:'2026-04-30'},
 {c:'I-05',p:null,pct:30,a:'Tecnología',r:'Claude',t:'Panel temas',ti:'3h',e:false,dep:['I-04'],del:'Pablo',b:'spec',sig:'Build /public/status.html con JS interactivo. Post 26-abr migrar a API live.',ruta:null,fl:'2026-05-10'},
-{c:'I-06',p:null,pct:15,a:'Gerencia General',r:'Dusan',t:'Ecosistema int.',ti:'1sem',e:false,dep:[],del:'Pablo',b:'diseno',sig:'Aceptar Mermaid ya. Post 30-abr evaluar consolidar I-02/I-03.',ruta:['Plan Ecosistema Digital/Ecosistema_Digital_Reciclean_Farex_v2.pptx'],fl:'2026-05-20'},
+{c:'I-06',p:null,pct:30,a:'Gerencia General',r:'Dusan',t:'Ecosistema int.',ti:'1sem',e:false,dep:[],del:'Pablo',b:'spec',sig:'Panel RDO conecta áreas. Falta integrar dashboards y consolidar I-02/I-03.',ruta:['Plan Ecosistema Digital/Ecosistema_Digital_Reciclean_Farex_v2.pptx'],fl:'2026-05-20'},
 {c:'I-07',p:null,pct:10,a:'Tecnología',r:'Claude',t:'Eval diagramas',ti:'30min',e:false,dep:['I-05','I-06'],del:null,b:'diseno',sig:'Integrar Apache ECharts en I-05. Deferir D2/Kroki para evaluar si Mermaid queda corto.',ruta:null,fl:'2026-05-20'},
 {c:'I-08',p:null,pct:10,a:'Tecnología',r:'Dusan',t:'Rotación keys',ti:'20min',e:true,dep:[],del:'Pablo',b:'diseno',sig:'Rotar K3 en console.anthropic.com + Meta token en developers.facebook.com',ruta:null,fl:'2026-04-22'},
 {c:'I-08.1',p:'I-08',pct:20,a:'Tecnología',r:'Dusan',t:'Rotar K3 Anthrop',ti:'10min',e:true,dep:[],del:null,b:'spec',sig:'Ir a console.anthropic.com, generar K4, copiar, parar ejecución',ruta:null,fl:'2026-04-22'},
@@ -145,7 +145,7 @@ const T=[
 {c:'I-11.3',p:'I-11',pct:0,a:'Tecnología',r:'Pablo',t:'Push ACI GitHub',ti:'30min',e:false,dep:[],del:null,b:'diseno',sig:'git push post review Pablo',ruta:null,fl:'2026-04-27'},
 {c:'I-11.4',p:'I-11',pct:0,a:'Operaciones',r:'Cristian+Ingrid',t:'Pruebas Talca',ti:'1d',e:false,dep:[],del:null,b:'diseno',sig:'Cristian prueba in situ + reporta bugs a Pablo',ruta:null,fl:'2026-04-29'},
 {c:'I-11.5',p:'I-11',pct:0,a:'Comercial',r:'Pablo+Dusan',t:'Config Make.com',ti:'2h',e:false,dep:[],del:null,b:'diseno',sig:'Contratar Make.com + crear workflow email nurturing',ruta:null,fl:'2026-05-05'},
-{c:'I-12',p:null,pct:30,a:'Gerencia General',r:'Dusan',t:'Diego v5.0 live',ti:'2sem',e:true,dep:['I-09'],del:null,b:'spec',sig:'Sesión 1 Pablo 26-abr (backup+SQL). Cargar 5 respuestas oro 29-abr.',ruta:['Plan Ecosistema Digital/Observaciones para Diego Agente/INDICE_MAESTRO.md'],fl:'2026-04-30'},
+{c:'I-12',p:null,pct:35,a:'Gerencia General',r:'Dusan',t:'Diego v5.0 live',ti:'2sem',e:true,dep:['I-09'],del:null,b:'spec',sig:'Tab Erratas deployado (PR#14). n8n workflow corrupto (Issue #15 abierto). Restaurar desde VPS backup.',ruta:['Plan Ecosistema Digital/Observaciones para Diego Agente/INDICE_MAESTRO.md'],fl:'2026-05-15'},
 {c:'I-12.1',p:'I-12',pct:0,a:'Tecnología',r:'Pablo',t:'Sesión Pablo 1',ti:'2h',e:false,dep:[],del:null,b:'diseno',sig:'pg_dump + deploy SQL v2 con caveats aplicados',ruta:null,fl:'2026-04-26'},
 {c:'I-12.2',p:'I-12',pct:0,a:'Tecnología',r:'Pablo',t:'Sesión Pablo 2',ti:'2h',e:false,dep:[],del:null,b:'diseno',sig:'Aplicar fixes del manifiesto Partes 4-7',ruta:null,fl:'2026-04-27'},
 {c:'I-12.3',p:'I-12',pct:0,a:'Tecnología',r:'Pablo',t:'Sesión Pablo 3',ti:'2h',e:false,dep:[],del:null,b:'diseno',sig:'Cron 02:00 AM Curador + tests E2E',ruta:null,fl:'2026-04-28'},
@@ -180,12 +180,17 @@ const T=[
 {c:'I-22',p:null,pct:25,a:'Tecnología',r:'Dusan',t:'Guía Chatbot',ti:'2sem',e:false,dep:['I-12'],del:'Pablo',b:'spec',sig:'Revisar guia_chatbot + decidir deploy post 30-abr',ruta:['Claude Code/ChatBot/produccion/Guia_Chatbot_Reciclean.pptx'],fl:null},
 {c:'I-23',p:null,pct:15,a:'Gerencia General',r:'Dusan',t:'Monday implement',ti:'3h',e:false,dep:[],del:null,b:'diseno',sig:'Decidir Monday vs tracker interno post 30-abr',ruta:['Claude Code/Documentacion/Monday_Guia_Implementacion_Reciclean.pptx'],fl:null},
 {c:'I-24',p:null,pct:20,a:'Recursos Humanos',r:'Dusan',t:'Descripción cargos',ti:'2h',e:false,dep:[],del:'Ingrid',b:'spec',sig:'Consolidar descripciones 3 cargos + aprobar con equipo',ruta:['equipo-procesos/Cesar Mora/Descripcion de cargo/Descripción Asistente Comercial.docx'],fl:null},
-{c:'I-25',p:null,pct:30,a:'Legal y Compliance',r:'Dusan',t:'Permisos Talca',ti:'3h',e:false,dep:[],del:'Ingrid',b:'spec',sig:'Revisar vigencia cada permiso + fechas renovación',ruta:['Permisos y Resoluciones/Permisos de Talca/20230710142 Resolucion Exenta SEA.pdf'],fl:null}
+{c:'I-25',p:null,pct:30,a:'Legal y Compliance',r:'Dusan',t:'Permisos Talca',ti:'3h',e:false,dep:[],del:'Ingrid',b:'spec',sig:'Revisar vigencia cada permiso + fechas renovación',ruta:['Permisos y Resoluciones/Permisos de Talca/20230710142 Resolucion Exenta SEA.pdf'],fl:null},
+{c:'I-26',p:null,pct:60,a:'Tecnología',r:'Pablo',t:'Panel RDO operacional',ti:'1sem',e:true,dep:[],del:'Pablo',b:'build',sig:'Probar login + subida S1/S5 + audio con equipo real. Validar filtrado silos.',ruta:['public/panel-rdo.html'],fl:'2026-05-15'},
+{c:'I-26.1',p:'I-26',pct:100,a:'Tecnología',r:'Pablo',t:'Login + auth RDO',ti:'1h',e:false,dep:[],del:null,b:'superado',sig:'Completado 07-may. Login contra usuarios_autorizados.',ruta:null,fl:'2026-05-07'},
+{c:'I-26.2',p:'I-26',pct:100,a:'Tecnología',r:'Pablo',t:'Selector silo/área',ti:'1h',e:false,dep:[],del:null,b:'superado',sig:'Completado 07-may. Bypass Dusan+Pablo, filtrado pestañas por matriz.',ruta:null,fl:'2026-05-07'},
+{c:'I-26.3',p:'I-26',pct:80,a:'Tecnología',r:'Pablo',t:'Subida S1/S5/Dieguito',ti:'2h',e:true,dep:[],del:null,b:'validado',sig:'Falta probar con archivos reales del equipo en terreno.',ruta:null,fl:'2026-05-10'},
+{c:'I-26.4',p:'I-26',pct:70,a:'Tecnología',r:'Dusan',t:'Grabador audio RDO',ti:'1h',e:true,dep:[],del:null,b:'build',sig:'Funcional solo para perfiles dusan/admin. Falta test en móvil.',ruta:null,fl:'2026-05-10'}
 ];
 const BL={diseno:'💡 Diseño',spec:'📋 Spec',build:'🔨 Build',validado:'🧪 Validado',revision:'🔍 Revisión',superado:'✅ Superado'};
 const BC={diseno:'bd',spec:'bs',build:'bb',validado:'bv',revision:'br',superado:'bx'};
 const PC=p=>p>=80?'#4ade80':p>=60?'#2dd4bf':p>=40?'#fb923c':p>=20?'#fbbf24':'#f87171';
-const TOD='2026-04-22';
+const TOD='2026-05-07';
 let sC=null,sA=true,showS=false,fT='',fAr='',fRs='',fBn='',fEj=false;
 
 function bldSel(){
