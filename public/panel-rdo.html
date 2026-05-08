@@ -204,25 +204,24 @@ let audioChunks = [];
 let recordedBlob = null;
 let recordedUrl = null;
 
-// ---------- SILOS (matriz Pablo 07-may-2026) ----------
-// Mapeo silo → pestañas que se muestran. Transversales (portada,
-// dieguito, comunicados) están siempre visibles para todos los silos.
-const TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados'];
-const MAPEO_SILO_PESTANAS = {
-  '01': ['facturacion'],
-  '02': ['pesaje'],
-  '03': ['pesaje'],
-  '04': ['pesaje', 'rdo'],
-  '05': [],
-  '06': ['admin', 'rdo'],
-  '07': ['facturacion', 'rdo'],
-  '08': [],
-  '09': [],
-  '10': ['pesaje', 'facturacion', 'rdo', 'admin'],
-  '11': [],
-};
-// Vista global: cuando Dusan + Pablo no eligen silo, ven TODO
-const TABS_GLOBALES = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'admin'];
+// ---------- CONFIGURACIÓN data-driven ("cajas" de Dusan, refactor 08-may) ----------
+// Toda la configuración vive en las tablas panel.config_kv, panel.pestanas,
+// y panel.silo_pestanas en Supabase. Ver SQL 017 + memory rule_cajas_data_driven.md.
+//
+// FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
+// HTML no se rompe — el navbar aparece como en versión hardcoded.
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'admin'];
+const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados'];
+const FALLBACK_BYPASS_EMAILS = [
+  'gerencia@gestionrepchile.cl',
+  'Dusan.arancibia@gmail.com',
+  'recepcion01@gestionrepchile.cl'
+];
+
+// Variables que se llenan en loadConfigPanel():
+let CONFIG_PANEL = {};         // de panel.config_kv (key → valor jsonb)
+let PESTANAS_CATALOGO = [];    // de panel.pestanas (ordenado por orden)
+let MAPEO_SILOS = {};          // {silo_codigo: [pestana_codigo, ...]} computado de v_silo_pestanas_visibles
 
 let silosVisibles = [];   // silos que el usuario puede ver según RLS
 let currentSilo = null;   // código del silo activo, o null = vista global
@@ -316,6 +315,7 @@ window.login = async function() {
     document.getElementById('grabadorSection').classList.remove('hidden');
   }
 
+  await loadConfigPanel();     // carga "cajas" de configuración (refactor 08-may)
   await loadSilos();           // carga silos visibles + monta selector
   applySiloTabs();             // filtra pestañas según silo + perfil
   loadAccesoRapido();          // tarjeta de acceso al ecosistema externo
@@ -330,6 +330,59 @@ window.login = async function() {
 };
 
 // ---------- SILOS: carga + selector + filtrado de pestañas ----------
+// ---------- CONFIGURACIÓN data-driven (cargar las "cajas" desde BD) ----------
+async function loadConfigPanel() {
+  try {
+    const [cfgRes, pstRes, vizRes] = await Promise.all([
+      sb.schema('panel').from('config_kv').select('key, valor'),
+      sb.schema('panel').from('pestanas').select('codigo, nombre, icono, orden, es_transversal, requiere_perfil, activa').eq('activa', true).order('orden'),
+      sb.schema('panel').from('v_silo_pestanas_visibles').select('silo_codigo, pestana_codigo, orden').order('orden')
+    ]);
+
+    if (cfgRes.error) throw new Error('config_kv: ' + cfgRes.error.message);
+    if (pstRes.error) throw new Error('pestanas: ' + pstRes.error.message);
+    if (vizRes.error) throw new Error('v_silo_pestanas_visibles: ' + vizRes.error.message);
+
+    // Indexar config_kv como objeto plano: {key: valor}
+    CONFIG_PANEL = (cfgRes.data || []).reduce((acc, r) => { acc[r.key] = r.valor; return acc; }, {});
+
+    // Catálogo ordenado de pestañas
+    PESTANAS_CATALOGO = pstRes.data || [];
+
+    // Mapa silo → [pestañas]
+    MAPEO_SILOS = {};
+    (vizRes.data || []).forEach(r => {
+      if (!MAPEO_SILOS[r.silo_codigo]) MAPEO_SILOS[r.silo_codigo] = [];
+      MAPEO_SILOS[r.silo_codigo].push(r.pestana_codigo);
+    });
+
+    console.log('[Panel RDO] Config cargada desde cajas:', {
+      config_keys: Object.keys(CONFIG_PANEL),
+      pestanas: PESTANAS_CATALOGO.length,
+      silos_con_pestanas: Object.keys(MAPEO_SILOS).length
+    });
+  } catch (err) {
+    // FALLBACK: si las cajas fallan (red, RLS, tabla vacía), seguir con defaults
+    // hardcoded para que el panel NO se rompa. DeepSeek aprobó este patrón.
+    console.warn('[Panel RDO] loadConfigPanel falló, usando fallbacks:', err.message);
+    CONFIG_PANEL = {
+      bypass_emails: FALLBACK_BYPASS_EMAILS,
+      url_panel_admin: 'https://reciclean-sistema.vercel.app/login.html',
+      url_asistente_comercial: 'https://reciclean-sistema.vercel.app/asistente.html',
+      label_acceso_admin: { icono: '⚙️', titulo: 'Panel Admin', tooltip: 'Gestión' },
+      label_acceso_asistente: { icono: '💬', titulo: 'Asistente Comercial', tooltip: 'Consultar precios' }
+    };
+    PESTANAS_CATALOGO = FALLBACK_TABS_GLOBALES.map((c, i) => ({
+      codigo: c, nombre: c, icono: '', orden: (i + 1) * 10,
+      es_transversal: FALLBACK_TABS_TRANSVERSALES.includes(c),
+      requiere_perfil: c === 'admin' ? ['dusan', 'admin'] : null,
+      activa: true
+    }));
+    // Sin BD, MAPEO_SILOS queda vacío y applySiloTabs usa su rama "vista global"
+    MAPEO_SILOS = {};
+  }
+}
+
 async function loadSilos() {
   const { data, error } = await sb
     .schema('panel')
@@ -405,11 +458,8 @@ async function loadSilos() {
 }
 
 // ---------- ACCESO RÁPIDO al ecosistema externo ----------
-const ACCESOS_BYPASS_EMAILS = [
-  'gerencia@gestionrepchile.cl',
-  'Dusan.arancibia@gmail.com',
-  'recepcion01@gestionrepchile.cl'
-];
+// (la lista de bypass ahora vive en panel.config_kv → CONFIG_PANEL.bypass_emails;
+//  ver refactor "cajas" del 08-may. Fallback en FALLBACK_BYPASS_EMAILS arriba.)
 
 function loadAccesoRapido() {
   const link = document.getElementById('accesoRapidoHeader');
@@ -417,39 +467,45 @@ function loadAccesoRapido() {
   const tituloEl = document.getElementById('accesoRapidoTitulo');
   if (!link || !iconoEl || !tituloEl) return;
 
-  const esBypass = ACCESOS_BYPASS_EMAILS.includes(currentUser);
+  // Versión data-driven: lee CONFIG_PANEL (refactor 08-may)
+  const bypassEmails = CONFIG_PANEL.bypass_emails || FALLBACK_BYPASS_EMAILS;
+  const esBypass = bypassEmails.includes(currentUser);
+
+  const labelCfg = esBypass
+    ? (CONFIG_PANEL.label_acceso_admin     || { icono: '⚙️', titulo: 'Panel Admin',         tooltip: 'Gestión' })
+    : (CONFIG_PANEL.label_acceso_asistente || { icono: '💬', titulo: 'Asistente Comercial', tooltip: 'Consultar precios' });
+
   const url = esBypass
-    ? 'https://reciclean-sistema.vercel.app/login.html'
-    : 'https://reciclean-sistema.vercel.app/asistente.html';
-  const titulo = esBypass ? 'Panel Admin' : 'Asistente Comercial';
-  const icono = esBypass ? '⚙️' : '💬';
-  const tooltip = esBypass
-    ? 'Gestión de precios, alias, usuarios, erratas'
-    : 'Consultar precios vigentes';
+    ? (CONFIG_PANEL.url_panel_admin        || 'https://reciclean-sistema.vercel.app/login.html')
+    : (CONFIG_PANEL.url_asistente_comercial|| 'https://reciclean-sistema.vercel.app/asistente.html');
 
   link.href = url;
-  link.title = tooltip;
-  iconoEl.textContent = icono;
-  tituloEl.textContent = titulo;
+  link.title = labelCfg.tooltip || '';
+  iconoEl.textContent = labelCfg.icono || '🔗';
+  tituloEl.textContent = labelCfg.titulo || 'Acceso';
   link.classList.remove('hidden');
 }
 
 function applySiloTabs() {
-  // Calcular pestañas habilitadas
+  // Versión data-driven: lee de PESTANAS_CATALOGO + MAPEO_SILOS (refactor 08-may)
   let tabsHabilitadas;
   if (currentSilo === null) {
-    // Vista global (Dusan/Pablo) → todas las pestañas
-    tabsHabilitadas = new Set(TABS_GLOBALES);
+    // Vista global (Dusan/Pablo) → todas las pestañas activas del catálogo
+    tabsHabilitadas = new Set(PESTANAS_CATALOGO.map(p => p.codigo));
   } else {
-    const tabsSilo = MAPEO_SILO_PESTANAS[currentSilo] || [];
-    tabsHabilitadas = new Set([...TABS_TRANSVERSALES, ...tabsSilo]);
+    // Pestañas que el silo tiene asignadas (ya incluye transversales por la vista UNION ALL)
+    tabsHabilitadas = new Set(MAPEO_SILOS[currentSilo] || []);
   }
 
-  // Admin solo se muestra para perfiles dusan/admin Y si está en tabsHabilitadas
+  // Filtro adicional por perfil — usa requiere_perfil del catálogo
   document.querySelectorAll('.tab-btn').forEach(btn => {
     const t = btn.getAttribute('data-tab');
     let visible = tabsHabilitadas.has(t);
-    if (t === 'admin' && currentProfile !== 'dusan' && currentProfile !== 'admin') visible = false;
+    // Buscar definición de la pestaña en el catálogo
+    const pestanaDef = PESTANAS_CATALOGO.find(p => p.codigo === t);
+    if (pestanaDef?.requiere_perfil && Array.isArray(pestanaDef.requiere_perfil)) {
+      if (!pestanaDef.requiere_perfil.includes(currentProfile)) visible = false;
+    }
     btn.style.display = visible ? '' : 'none';
   });
 
