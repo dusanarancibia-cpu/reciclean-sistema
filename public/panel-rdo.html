@@ -63,6 +63,12 @@
     </div>
 
     <div class="flex items-center gap-3">
+      <!-- Acceso rápido al ecosistema externo (login.html / asistente.html) -->
+      <a id="accesoRapidoHeader" href="#" target="_blank" rel="noopener" class="hidden text-sm bg-green-700 hover:bg-green-800 text-white px-3 py-1.5 rounded font-medium transition flex items-center gap-1">
+        <span id="accesoRapidoIcono"></span>
+        <span id="accesoRapidoTitulo"></span>
+        <span class="opacity-75">→</span>
+      </a>
       <span id="userEmailDisplay" class="text-sm text-stone-600"></span>
       <span id="userProfileDisplay" class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold uppercase"></span>
       <button onclick="logout()" class="bg-stone-200 hover:bg-stone-300 text-stone-700 px-3 py-1 rounded text-sm">Salir</button>
@@ -89,9 +95,6 @@
   <main class="p-6 max-w-6xl mx-auto">
     <section id="tabPortada" class="tab-content">
       <h2 class="text-2xl font-bold mb-4 text-stone-800">Bienvenido</h2>
-
-      <!-- Acceso rápido al ecosistema externo (Panel Admin / Asistente Comercial) -->
-      <div id="accesoRapido" class="hidden mb-4"></div>
 
       <div id="portadaAudioPlayer" class="bg-white p-5 rounded-lg shadow-sm mb-4">
         <p class="text-stone-500">Cargando mensajes destacados...</p>
@@ -409,34 +412,26 @@ const ACCESOS_BYPASS_EMAILS = [
 ];
 
 function loadAccesoRapido() {
-  const div = document.getElementById('accesoRapido');
-  if (!div) return;
+  const link = document.getElementById('accesoRapidoHeader');
+  const iconoEl = document.getElementById('accesoRapidoIcono');
+  const tituloEl = document.getElementById('accesoRapidoTitulo');
+  if (!link || !iconoEl || !tituloEl) return;
+
   const esBypass = ACCESOS_BYPASS_EMAILS.includes(currentUser);
   const url = esBypass
     ? 'https://reciclean-sistema.vercel.app/login.html'
     : 'https://reciclean-sistema.vercel.app/asistente.html';
   const titulo = esBypass ? 'Panel Admin' : 'Asistente Comercial';
-  const desc = esBypass
-    ? 'Gestión de precios, alias, usuarios, erratas y publicación pública.'
-    : 'Consulta de precios vigentes por sucursal, cliente y material.';
   const icono = esBypass ? '⚙️' : '💬';
+  const tooltip = esBypass
+    ? 'Gestión de precios, alias, usuarios, erratas'
+    : 'Consultar precios vigentes';
 
-  div.innerHTML = `
-    <a href="${url}" target="_blank" rel="noopener"
-       class="block bg-gradient-to-r from-green-700 to-green-800 hover:from-green-800 hover:to-green-900 text-white p-5 rounded-lg shadow-sm transition group">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-4">
-          <div class="text-3xl">${icono}</div>
-          <div>
-            <h3 class="font-bold text-lg">Abrir ${titulo}</h3>
-            <p class="text-sm text-green-100 mt-1">${desc}</p>
-          </div>
-        </div>
-        <span class="text-2xl group-hover:translate-x-1 transition">→</span>
-      </div>
-    </a>
-  `;
-  div.classList.remove('hidden');
+  link.href = url;
+  link.title = tooltip;
+  iconoEl.textContent = icono;
+  tituloEl.textContent = titulo;
+  link.classList.remove('hidden');
 }
 
 function applySiloTabs() {
@@ -470,6 +465,9 @@ window.logout = function() {
   document.getElementById('appContainer').style.display = 'none';
   document.getElementById('loginContainer').style.display = 'flex';
   document.getElementById('loginEmail').value = '';
+  // Resetear UI de elementos dependientes de sesión
+  document.getElementById('accesoRapidoHeader')?.classList.add('hidden');
+  document.getElementById('siloSelectorContainer')?.classList.add('hidden');
 };
 
 // ---------- TABS ----------
