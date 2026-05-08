@@ -158,6 +158,21 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
   - D) Documentar en prompt que Diego transcribe/describe audios .opus (fix 8).
 - Aplicar despues de P2 (misma API key n8n).
 
+### P7. Reunion presencial con Vjera (CMPC)
+- **Estado:** abierta — coordinacion en curso
+- **Contacto:** Constanza, asistente de Vjera (CMPC)
+- **Modalidad:** presencial
+- **Contexto:** Vjera es contraparte en CMPC. Dusan tiene historia con
+  CMPC/Sorepa desde 1995 (depto comercial → Jefe Marketing y Comercial
+  joven · directorio CMPC · analisis Peru · proyecto sorting CMPC).
+  Sorepa es filial de CMPC dedicada a recoleccion de papel/carton
+  reciclado — overlap directo con Reciclean/Farex.
+- **Tema probable:** negocio reciclaje papel/carton, alianza, o
+  reactivacion de relacion comercial con CMPC/Sorepa.
+- **Proxima accion:** confirmar fecha, lugar y agenda con Constanza.
+- **Pendiente capturar:** cargo exacto de Vjera, area en CMPC, objetivo
+  concreto de la reunion.
+
 ### P6. Humanizacion Diego Alonso v4.4 (calidez + comentarios ligeros)
 - **Estado:** diferida - esperar que P5 v4.3 estabilice bugs basicos
 - **Razon del diferimiento:** si Diego miente sobre "avisar a Dusan" y
