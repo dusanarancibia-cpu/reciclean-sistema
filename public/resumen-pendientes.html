@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resumen Pendientes — Dusan &amp; Pablo</title>
+<style>
+@media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #1a1a2e; max-width: 850px; margin: 0 auto; padding: 24px 20px; font-size: 13px; line-height: 1.4; }
+h1 { font-size: 18px; text-align: center; margin-bottom: 2px; }
+.fecha { text-align: center; color: #666; font-size: 12px; margin-bottom: 16px; }
+.avance-global { display: flex; justify-content: center; gap: 24px; margin-bottom: 14px; padding: 8px 0; border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0; }
+.avance-global div { text-align: center; }
+.avance-global .num { font-size: 22px; font-weight: 700; }
+.avance-global .lbl { font-size: 10px; color: #666; text-transform: uppercase; }
+.seccion { margin-bottom: 14px; }
+.seccion h2 { font-size: 14px; padding: 5px 8px; border-radius: 4px; margin-bottom: 6px; }
+.seccion.dusan h2 { background: #1e3a5f; color: #fff; }
+.seccion.pablo h2 { background: #2d6a4f; color: #fff; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+th { background: #f1f5f9; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; padding: 4px 6px; text-align: left; border-bottom: 1px solid #cbd5e1; color: #475569; }
+td { padding: 4px 6px; border-bottom: 1px solid #e2e8f0; font-size: 12px; vertical-align: middle; }
+tr:hover { background: #f8fafc; }
+.cod { font-weight: 700; font-family: monospace; font-size: 11px; white-space: nowrap; }
+.barra { display: flex; align-items: center; gap: 4px; }
+.barra-bg { flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; min-width: 40px; }
+.barra-fg { height: 100%; border-radius: 4px; }
+.barra-n { font-size: 11px; font-weight: 600; min-width: 28px; text-align: right; }
+.atrasado { color: #dc2626; font-weight: 600; }
+.proximo { color: #d97706; }
+.ok { color: #16a34a; }
+.sinfecha { color: #94a3b8; font-style: italic; }
+.tag-reasignar { display: inline-block; background: #fef3c7; color: #92400e; font-size: 10px; padding: 1px 5px; border-radius: 3px; font-weight: 600; }
+.nota { font-size: 11px; color: #64748b; padding: 4px 6px; }
+.leyenda { display: flex; gap: 14px; justify-content: center; font-size: 10px; color: #64748b; margin-top: 10px; padding-top: 6px; border-top: 1px solid #e2e8f0; flex-wrap: wrap; }
+.leyenda span { display: flex; align-items: center; gap: 3px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.pie { text-align: center; font-size: 10px; color: #94a3b8; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Pendientes Reciclean-Farex</h1>
+<p class="fecha">8 de mayo 2026 &middot; Resumen para Dusan y Pablo</p>
+
+<div class="avance-global">
+  <div><div class="num">19</div><div class="lbl">Tareas activas</div></div>
+  <div><div class="num" style="color:#dc2626">5</div><div class="lbl">Atrasadas</div></div>
+  <div><div class="num" style="color:#d97706">6</div><div class="lbl">Esta quincena</div></div>
+  <div><div class="num">23%</div><div class="lbl">Avance promedio</div></div>
+</div>
+
+<!-- DUSAN -->
+<div class="seccion dusan">
+<h2>Dusan — 13 tareas pendientes (avance promedio 22%)</h2>
+<table>
+<thead>
+<tr><th>Cod.</th><th>Que hay que hacer</th><th style="width:110px">Avance</th><th>Plazo</th><th>Reasignar a</th></tr>
+</thead>
+<tbody>
+<tr>
+  <td class="cod">I-08</td>
+  <td>Cambiar claves API (Anthropic + Meta)</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:10%;background:#dc2626"></div></div><div class="barra-n">10%</div></div></td>
+  <td class="atrasado">22-abr</td>
+  <td><span class="tag-reasignar">Pablo</span></td>
+</tr>
+<tr>
+  <td class="cod">I-15</td>
+  <td>Contratar Notion workspace</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:0%;background:#dc2626"></div></div><div class="barra-n">0%</div></div></td>
+  <td class="atrasado">25-abr</td>
+  <td>—</td>
+</tr>
+<tr>
+  <td class="cod">I-10</td>
+  <td>Sprint ventas: 50 prospectos + 30 WA + demos</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:40%;background:#dc2626"></div></div><div class="barra-n">40%</div></div></td>
+  <td class="atrasado">28-abr</td>
+  <td>—</td>
+</tr>
+<tr>
+  <td class="cod">I-19</td>
+  <td>Plan estrategico 2026-2030</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:55%;background:#d97706"></div></div><div class="barra-n">55%</div></div></td>
+  <td class="atrasado">30-abr</td>
+  <td>—</td>
+</tr>
+<tr>
+  <td class="cod">I-18</td>
+  <td>Revisar contrato Resimple (renovar o cerrar)</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:0%;background:#d97706"></div></div><div class="barra-n">0%</div></div></td>
+  <td class="proximo">10-may</td>
+  <td><span class="tag-reasignar">Ingrid</span></td>
+</tr>
+<tr>
+  <td class="cod">I-03</td>
+  <td>Evaluar herramientas BI (reportes)</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:20%;background:#d97706"></div></div><div class="barra-n">20%</div></div></td>
+  <td class="proximo">10-may</td>
+  <td><span class="tag-reasignar">Pablo</span></td>
+</tr>
+<tr>
+  <td class="cod">I-02</td>
+  <td>Definir como ver informes (CEO, supervisor)</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:10%;background:#d97706"></div></div><div class="barra-n">10%</div></div></td>
+  <td class="proximo">15-may</td>
+  <td><span class="tag-reasignar">Ingrid</span></td>
+</tr>
+<tr>
+  <td class="cod">I-20</td>
+  <td>Revisar 8 propuestas comerciales activas</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:10%;background:#d97706"></div></div><div class="barra-n">10%</div></div></td>
+  <td class="proximo">15-may</td>
+  <td><span class="tag-reasignar">Ingrid</span></td>
+</tr>
+<tr>
+  <td class="cod">I-06</td>
+  <td>Conectar los 13 sistemas sueltos del grupo</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:55%;background:#d97706"></div></div><div class="barra-n">55%</div></div></td>
+  <td class="proximo">20-may</td>
+  <td><span class="tag-reasignar">Pablo</span></td>
+</tr>
+<tr>
+  <td class="cod">I-21</td>
+  <td>Abrir sucursal Puerto Montt (permisos SAG)</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:20%;background:#16a34a"></div></div><div class="barra-n">20%</div></div></td>
+  <td class="ok">30-jun</td>
+  <td><span class="tag-reasignar">Nicolas</span></td>
+</tr>
+<tr>
+  <td class="cod">I-14</td>
+  <td>Seguridad WhatsApp Diego (2FA + SIM)</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:10%;background:#94a3b8"></div></div><div class="barra-n">10%</div></div></td>
+  <td class="sinfecha">Sin fecha</td>
+  <td>—</td>
+</tr>
+<tr>
+  <td class="cod">I-22</td>
+  <td>Publicar guia del chatbot</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:25%;background:#94a3b8"></div></div><div class="barra-n">25%</div></div></td>
+  <td class="sinfecha">Sin fecha</td>
+  <td><span class="tag-reasignar">Pablo</span></td>
+</tr>
+<tr>
+  <td class="cod">I-23</td>
+  <td>Decidir Monday vs tracker propio</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:15%;background:#94a3b8"></div></div><div class="barra-n">15%</div></div></td>
+  <td class="sinfecha">Sin fecha</td>
+  <td>—</td>
+</tr>
+</tbody>
+</table>
+<p class="nota">Tareas compartidas: I-24 Descripcion cargos (40%, delegar Ingrid) &middot; I-25 Permisos Talca (30%, delegar Ingrid)</p>
+</div>
+
+<!-- PABLO -->
+<div class="seccion pablo">
+<h2>Pablo — 6 tareas pendientes (avance promedio 27%)</h2>
+<table>
+<thead>
+<tr><th>Cod.</th><th>Que hay que hacer</th><th style="width:110px">Avance</th><th>Plazo</th><th>Reasignar a</th></tr>
+</thead>
+<tbody>
+<tr>
+  <td class="cod">I-09</td>
+  <td>Montar servidor VPS (DigitalOcean)</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:15%;background:#dc2626"></div></div><div class="barra-n">15%</div></div></td>
+  <td class="atrasado">28-abr</td>
+  <td>—</td>
+</tr>
+<tr>
+  <td class="cod">I-11</td>
+  <td>Subir Asistente Comercial al servidor</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:50%;background:#dc2626"></div></div><div class="barra-n">50%</div></div></td>
+  <td class="atrasado">5-may</td>
+  <td>—</td>
+</tr>
+<tr>
+  <td class="cod">I-16</td>
+  <td>Diego v5.1 — lanzar version nueva</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:35%;background:#d97706"></div></div><div class="barra-n">35%</div></div></td>
+  <td class="proximo">15-may</td>
+  <td>—</td>
+</tr>
+<tr>
+  <td class="cod">I-13</td>
+  <td>Limpiar deuda tecnica (11 arreglos)</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:5%;background:#d97706"></div></div><div class="barra-n">5%</div></div></td>
+  <td class="proximo">20-may</td>
+  <td>—</td>
+</tr>
+<tr>
+  <td class="cod">I-04</td>
+  <td>Conectar tracker con n8n (automatizar)</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:90%;background:#16a34a"></div></div><div class="barra-n">90%</div></div></td>
+  <td class="ok">30-abr</td>
+  <td>—</td>
+</tr>
+<tr>
+  <td class="cod">I-24</td>
+  <td>Formalizar descripcion de 3 cargos</td>
+  <td><div class="barra"><div class="barra-bg"><div class="barra-fg" style="width:40%;background:#94a3b8"></div></div><div class="barra-n">40%</div></div></td>
+  <td class="sinfecha">Sin fecha</td>
+  <td><span class="tag-reasignar">Ingrid</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- LEYENDA Y PIE -->
+<div class="leyenda">
+  <span><span class="dot" style="background:#dc2626"></span> Atrasado (pasado el plazo)</span>
+  <span><span class="dot" style="background:#d97706"></span> Esta quincena (8-20 may)</span>
+  <span><span class="dot" style="background:#16a34a"></span> A tiempo</span>
+  <span><span class="dot" style="background:#94a3b8"></span> Sin fecha definida</span>
+  <span><span class="tag-reasignar">Nombre</span> Sugerencia de reasignacion</span>
+</div>
+
+<p class="pie">Generado el 8 de mayo 2026 desde Supabase &middot; reciclean-sistema.vercel.app/resumen-pendientes.html</p>
+
+</body>
+</html>
