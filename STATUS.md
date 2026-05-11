@@ -89,9 +89,31 @@ Total Supabase: **84 tablas** + **11 vistas**.
 
 | Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
 |---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **22-abr-2026** (baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **11-may-2026** | 68 | 11.7% | 0 | 1 | 6 | 61 |
 
-> _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+> _Nota 11-may: % promedio bajo porque I-12 pasó a "descartado" (0%) y se redistribuyó trabajo. Build subió de 4→6 tareas._
+
+---
+
+## Bitácora 11-may-2026
+
+### Pablo Arancibia
+1. **Panel RDO — acceso César Mora a 11 silos** (commit `48b0984`, 11:49 AM)
+   - Agregó `soporte@gestionrepchile.cl` (César) al fallback de emails autorizados en `panel-rdo.html`
+   - Sincronizado con cambios en BD: migraciones 018-019 en repo `reciclean-rdo` (tabla `panel.config_kv` + política RLS + vista `v_panel_silos_visibles`)
+   - Resultado: César ahora ve los 11 silos del panel de reportes aunque falle la query a Supabase
+
+### Dusan Arancibia
+1. **Revisión de avance general** — sesión con Claude Code para auditar estado de las 68 tareas y generar snapshot de progreso
+2. **Coordinación operativa** — dirección del trabajo de Pablo sobre panel RDO y accesos
+
+### Observaciones
+- 6 tareas en banda **build** (antes 4 en baseline 22-abr) — el trabajo avanza de diseño a construcción
+- I-06 (Ecosistema int.) subió de 15% → 55% gracias al Diagnóstico Organizacional v2 (5-may)
+- I-19 (Plan 2026-2030) subió de 30% → 55% con Plan Ubergreen v1
+- I-24 (Descripción cargos) subió de 20% → 40% con 13 personas mapeadas en diagnóstico v2
+- I-12 (Diego v5.0) marcado como **descartado** — se salta directo a v5.1 (I-16 al 35%)
 
 ---
 
