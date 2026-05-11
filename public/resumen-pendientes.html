@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pendientes Dusan + Pablo — 11 mayo 2026</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f5;
+    color: #222;
+    padding: 16px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 1.3rem;
+    text-align: center;
+    margin-bottom: 4px;
+    color: #1a5632;
+  }
+  .fecha {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 16px;
+  }
+  .seccion {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .seccion h2 {
+    font-size: 1rem;
+    color: #1a5632;
+    border-bottom: 2px solid #e8f5e9;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  th {
+    background: #e8f5e9;
+    text-align: left;
+    padding: 6px 8px;
+    font-weight: 600;
+    color: #2e7d32;
+  }
+  td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  .barra-container {
+    background: #e0e0e0;
+    border-radius: 4px;
+    height: 16px;
+    width: 100%;
+    min-width: 60px;
+    position: relative;
+  }
+  .barra {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+  .barra-texto {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 16px;
+    color: #333;
+  }
+  .verde { background: #4caf50; }
+  .amarillo { background: #ffc107; }
+  .rojo { background: #f44336; }
+  .gris { background: #9e9e9e; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #fff;
+  }
+  .badge-dusan { background: #1565c0; }
+  .badge-pablo { background: #6a1b9a; }
+  .badge-claude { background: #37474f; }
+  .estado-bloq { color: #d32f2f; font-weight: 600; }
+  .estado-abier { color: #ef6c00; font-weight: 600; }
+  .estado-avan { color: #2e7d32; font-weight: 600; }
+  .estado-difer { color: #757575; font-weight: 600; }
+  .nota {
+    font-size: 0.78rem;
+    color: #666;
+    margin-top: 10px;
+    line-height: 1.4;
+  }
+  .reasignar {
+    font-size: 0.72rem;
+    color: #1565c0;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .leyenda {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+    margin-top: 8px;
+    justify-content: center;
+  }
+  .leyenda span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .leyenda .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .footer {
+    text-align: center;
+    font-size: 0.72rem;
+    color: #999;
+    margin-top: 12px;
+  }
+  @media print {
+    body { padding: 0; background: #fff; }
+    .seccion { box-shadow: none; border: 1px solid #ddd; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Pendientes Dusan + Pablo</h1>
+<p class="fecha">11 de mayo 2026 — Grupo Reciclean-Farex</p>
+
+<div class="seccion">
+  <h2>Tareas de Dusan</h2>
+  <table>
+    <tr>
+      <th style="width:28%">Tarea</th>
+      <th style="width:18%">Avance</th>
+      <th style="width:20%">Que falta</th>
+      <th style="width:14%">Estado</th>
+      <th style="width:12%">Plazo est.</th>
+      <th style="width:8%"></th>
+    </tr>
+    <tr>
+      <td><strong>Rotar llaves API</strong><br><small>K3 + Meta (I-08)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra rojo" style="width:10%"></div>
+          <span class="barra-texto">10%</span>
+        </div>
+      </td>
+      <td>Entrar a consolas y cambiar claves</td>
+      <td><span class="estado-bloq">Atrasado</span></td>
+      <td>14 may</td>
+      <td><span class="reasignar" title="Puede reasignarse a Pablo">Pablo?</span></td>
+    </tr>
+    <tr>
+      <td><strong>PATCH Diego Alonso</strong><br><small>Prompt critico (P2)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra rojo" style="width:5%"></div>
+          <span class="barra-texto">5%</span>
+        </div>
+      </td>
+      <td>Entregar N8N_API_KEY para desbloquear</td>
+      <td><span class="estado-bloq">Bloqueado</span></td>
+      <td>16 may</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Sprint ventas</strong><br><small>30 msgs WA + demos (I-10)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra amarillo" style="width:40%"></div>
+          <span class="barra-texto">40%</span>
+        </div>
+      </td>
+      <td>Enviar mensajes, cerrar 1er cliente</td>
+      <td><span class="estado-abier">En curso</span></td>
+      <td>20 may</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Difundir Diego al equipo</strong><br><small>8 msgs WhatsApp (P3)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra amarillo" style="width:30%"></div>
+          <span class="barra-texto">30%</span>
+        </div>
+      </td>
+      <td>Enviar los 8 mensajes preparados</td>
+      <td><span class="estado-abier">Lista</span></td>
+      <td>13 may</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Mergear PR #5</strong><br><small>URLs cortas (P1)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra verde" style="width:90%"></div>
+          <span class="barra-texto">90%</span>
+        </div>
+      </td>
+      <td>Click en "Merge" en GitHub</td>
+      <td><span class="estado-avan">Listo p/ merge</span></td>
+      <td>12 may</td>
+      <td><span class="reasignar" title="Puede reasignarse a Pablo">Pablo?</span></td>
+    </tr>
+    <tr>
+      <td><strong>Plan 2026-2030</strong><br><small>Alinear ecosistema (I-19)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra amarillo" style="width:30%"></div>
+          <span class="barra-texto">30%</span>
+        </div>
+      </td>
+      <td>Definir prioridades con I-10, I-12</td>
+      <td><span class="estado-abier">En curso</span></td>
+      <td>25 may</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Contrato Resimple</strong><br><small>Revisar vigencia (I-18)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra gris" style="width:0%"></div>
+          <span class="barra-texto">0%</span>
+        </div>
+      </td>
+      <td>Revisar contrato 2026</td>
+      <td><span class="estado-abier">Sin iniciar</span></td>
+      <td>20 may</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Propuestas activas</strong><br><small>8 PDFs pendientes (I-20)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra gris" style="width:10%"></div>
+          <span class="barra-texto">10%</span>
+        </div>
+      </td>
+      <td>Revisar y responder propuestas</td>
+      <td><span class="estado-abier">En curso</span></td>
+      <td>25 may</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Puerto Montt ops</strong><br><small>Permisos SAG (I-21)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra amarillo" style="width:20%"></div>
+          <span class="barra-texto">20%</span>
+        </div>
+      </td>
+      <td>Seguir tramites con SEREMI</td>
+      <td><span class="estado-abier">En curso</span></td>
+      <td>30 jun</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Blindaje Diego</strong><br><small>SIM + 2FA (I-14)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra gris" style="width:10%"></div>
+          <span class="barra-texto">10%</span>
+        </div>
+      </td>
+      <td>PUK SIM + activar 2FA Meta</td>
+      <td><span class="estado-abier">Pendiente</span></td>
+      <td>20 may</td>
+      <td><span class="reasignar" title="Puede reasignarse a Pablo">Pablo?</span></td>
+    </tr>
+  </table>
+</div>
+
+<div class="seccion">
+  <h2>Tareas de Pablo</h2>
+  <table>
+    <tr>
+      <th style="width:28%">Tarea</th>
+      <th style="width:18%">Avance</th>
+      <th style="width:20%">Que falta</th>
+      <th style="width:14%">Estado</th>
+      <th style="width:12%">Plazo est.</th>
+      <th style="width:8%"></th>
+    </tr>
+    <tr>
+      <td><strong>Infra VPS + hub</strong><br><small>DigitalOcean (I-09)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra gris" style="width:15%"></div>
+          <span class="barra-texto">15%</span>
+        </div>
+      </td>
+      <td>Contratar DO, deploy VPS</td>
+      <td><span class="estado-bloq">Espera I-08</span></td>
+      <td>20 may</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>ACI deploy</strong><br><small>Asistente Comercial (I-11)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra amarillo" style="width:50%"></div>
+          <span class="barra-texto">50%</span>
+        </div>
+      </td>
+      <td>Necesita VPS listo (I-09)</td>
+      <td><span class="estado-abier">En build</span></td>
+      <td>25 may</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Diego v5.1</strong><br><small>Post v5.0 estable (I-16)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra gris" style="width:0%"></div>
+          <span class="barra-texto">0%</span>
+        </div>
+      </td>
+      <td>Esperar que v5.0 este estable</td>
+      <td><span class="estado-difer">Diferida</span></td>
+      <td>30 may</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Deuda tecnica</strong><br><small>11 subtareas (I-13)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra gris" style="width:5%"></div>
+          <span class="barra-texto">5%</span>
+        </div>
+      </td>
+      <td>Limpiar codigo y BD</td>
+      <td><span class="estado-abier">Pendiente</span></td>
+      <td>5 jun</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Bugs Diego v4.3</strong><br><small>28 bugs prompt (P5)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra rojo" style="width:5%"></div>
+          <span class="barra-texto">5%</span>
+        </div>
+      </td>
+      <td>Aplicar junto con P2 (N8N_API_KEY)</td>
+      <td><span class="estado-bloq">Bloqueado</span></td>
+      <td>18 may</td>
+      <td><span class="reasignar" title="Dusan tiene la llave">Dusan?</span></td>
+    </tr>
+  </table>
+</div>
+
+<div class="seccion">
+  <h2>Tareas de Claude (automaticas)</h2>
+  <table>
+    <tr>
+      <th style="width:28%">Tarea</th>
+      <th style="width:18%">Avance</th>
+      <th style="width:20%">Que falta</th>
+      <th style="width:14%">Estado</th>
+      <th style="width:12%">Plazo est.</th>
+      <th style="width:8%"></th>
+    </tr>
+    <tr>
+      <td><strong>Mapa BD + FKs</strong><br><small>Documentar BD (I-01)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra amarillo" style="width:30%"></div>
+          <span class="barra-texto">30%</span>
+        </div>
+      </td>
+      <td>Mapear FKs, ER, RLS</td>
+      <td><span class="estado-abier">En curso</span></td>
+      <td>18 may</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Tracker temas</strong><br><small>Panel status (I-04)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra verde" style="width:90%"></div>
+          <span class="barra-texto">90%</span>
+        </div>
+      </td>
+      <td>Pablo conecta n8n</td>
+      <td><span class="estado-avan">Casi listo</span></td>
+      <td>15 may</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Panel temas</strong><br><small>Build front (I-05)</small></td>
+      <td>
+        <div class="barra-container">
+          <div class="barra amarillo" style="width:30%"></div>
+          <span class="barra-texto">30%</span>
+        </div>
+      </td>
+      <td>Esperando OK para construir</td>
+      <td><span class="estado-abier">Pendiente</span></td>
+      <td>20 may</td>
+      <td></td>
+    </tr>
+  </table>
+</div>
+
+<div class="seccion">
+  <h2>Resumen rapido</h2>
+  <table>
+    <tr>
+      <th>Quien</th>
+      <th>Total tareas</th>
+      <th>Bloqueadas</th>
+      <th>Avance promedio</th>
+    </tr>
+    <tr>
+      <td><span class="badge badge-dusan">Dusan</span></td>
+      <td>10</td>
+      <td>2 (necesita N8N_API_KEY)</td>
+      <td>
+        <div class="barra-container">
+          <div class="barra amarillo" style="width:25%"></div>
+          <span class="barra-texto">25%</span>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-pablo">Pablo</span></td>
+      <td>5</td>
+      <td>2 (depende de I-08 y N8N_KEY)</td>
+      <td>
+        <div class="barra-container">
+          <div class="barra gris" style="width:15%"></div>
+          <span class="barra-texto">15%</span>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-claude">Claude</span></td>
+      <td>3</td>
+      <td>0</td>
+      <td>
+        <div class="barra-container">
+          <div class="barra amarillo" style="width:50%"></div>
+          <span class="barra-texto">50%</span>
+        </div>
+      </td>
+    </tr>
+  </table>
+  <p class="nota">
+    <strong>Cuello de botella principal:</strong> La llave N8N_API_KEY. Sin ella no se puede arreglar a Diego Alonso ni los 28 bugs. Dusan la tiene que entregar para desbloquear 4 tareas criticas.
+  </p>
+</div>
+
+<div class="seccion" style="background: #fff3e0;">
+  <h2>3 acciones urgentes esta semana</h2>
+  <table>
+    <tr><td style="width:5%; font-weight:bold; color:#e65100;">1</td><td><strong>Dusan:</strong> Entregar N8N_API_KEY para parchear a Diego Alonso (desbloquea P2 + P5)</td></tr>
+    <tr><td style="font-weight:bold; color:#e65100;">2</td><td><strong>Dusan:</strong> Mergear PR #5 en GitHub (1 click) para activar URLs cortas</td></tr>
+    <tr><td style="font-weight:bold; color:#e65100;">3</td><td><strong>Dusan:</strong> Enviar los 8 mensajes de difusion Diego al equipo (ya redactados)</td></tr>
+  </table>
+</div>
+
+<div class="leyenda">
+  <span><span class="dot" style="background:#4caf50"></span> 60%+ Bien</span>
+  <span><span class="dot" style="background:#ffc107"></span> 20-59% En curso</span>
+  <span><span class="dot" style="background:#f44336"></span> &lt;20% Atrasado</span>
+  <span><span class="dot" style="background:#9e9e9e"></span> Sin iniciar / Diferida</span>
+</div>
+
+<p class="footer">
+  Generado el 11 de mayo 2026 — Sistema Reciclean-Farex<br>
+  Para reasignar una tarea, avisar a Dusan o Pablo por WhatsApp
+</p>
+
+</body>
+</html>
