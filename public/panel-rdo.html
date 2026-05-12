@@ -88,6 +88,8 @@
       <button data-tab="dieguito"    class="tab-btn py-3 px-3 text-stone-600">📎 Dieguito</button>
       <button data-tab="comunicados" class="tab-btn py-3 px-3 text-stone-600">🎧 Comunicados</button>
       <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600">📈 RDO Resumen</button>
+      <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600">💼 Negocios</button>
+      <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600">📋 Cotizador</button>
       <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden">⚙️ Admin</button>
     </div>
   </nav>
@@ -179,6 +181,208 @@
       </div>
     </section>
 
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA NEGOCIOS
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabNegocios" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">💼 Negocios en curso</h2>
+        <button onclick="abrirNuevoNegocio()"
+                class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded text-sm font-semibold">
+          + Nuevo negocio
+        </button>
+      </div>
+
+      <!-- Filtros -->
+      <div class="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-wrap gap-3 items-end">
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Estado</label>
+          <select id="negEstado" onchange="loadNegocios()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todos</option>
+            <option value="recibida">Recibida</option>
+            <option value="en_evaluacion">En evaluación</option>
+            <option value="respondida">Respondida</option>
+            <option value="activada">Activada</option>
+            <option value="monitoreo">Monitoreo</option>
+            <option value="ganada">Ganada</option>
+            <option value="perdida">Perdida</option>
+            <option value="descartada">Descartada</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Tipo</label>
+          <select id="negTipo" onchange="loadNegocios()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todos</option>
+            <option value="accion">Acción</option>
+            <option value="idea">Idea</option>
+            <option value="necesidad">Necesidad</option>
+            <option value="cotizacion">Cotización</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Buscar</label>
+          <input type="text" id="negBuscar" placeholder="Título o cliente…"
+                 oninput="loadNegociosBuscar(this.value)"
+                 class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none w-48">
+        </div>
+        <button onclick="loadNegocios()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+
+      <!-- Tabla -->
+      <div class="bg-white rounded-lg shadow-sm overflow-x-auto">
+        <div id="negociosTabla" class="text-sm text-stone-500 p-5">Cargando...</div>
+      </div>
+
+      <!-- Panel de timeline (expandible al hacer click en fila) -->
+      <div id="negocioTimeline" class="hidden mt-4 bg-white rounded-lg shadow-sm p-5">
+        <div class="flex justify-between items-center mb-3">
+          <h3 id="negocioTimelineTitle" class="font-bold text-stone-800"></h3>
+          <button onclick="cerrarTimeline()" class="text-stone-400 hover:text-stone-700 text-xl leading-none">×</button>
+        </div>
+        <div id="negocioTimelineContenido" class="text-sm text-stone-500">Cargando...</div>
+        <div class="mt-4 pt-3 border-t border-stone-100">
+          <button onclick="cotizarDesdeNegocio()"
+                  class="bg-green-700 hover:bg-green-800 text-white px-3 py-1.5 rounded text-sm mr-2">
+            📋 Cotizar este negocio
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA COTIZADOR
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabCotizador" class="tab-content hidden">
+      <h2 class="text-xl font-bold mb-4 text-stone-800">📋 Cotizador</h2>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        <!-- Columna izquierda: formulario -->
+        <div class="lg:col-span-2 space-y-4">
+
+          <!-- Datos principales -->
+          <div class="bg-white p-5 rounded-lg shadow-sm">
+            <h3 class="font-semibold text-stone-700 mb-3">Datos del negocio</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+              <div class="md:col-span-2">
+                <label class="block text-xs text-stone-500 mb-1">Título de la cotización *</label>
+                <input type="text" id="cotTitulo" placeholder="Ej: Retiro mensual CMPC Cerrillos"
+                       oninput="cotRecalcular()"
+                       class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
+              </div>
+
+              <div>
+                <label class="block text-xs text-stone-500 mb-1">Cliente *</label>
+                <input type="text" id="cotClienteBuscar" placeholder="Buscar por nombre o RUT…"
+                       oninput="buscarClienteCotizador(this.value)"
+                       class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
+                <div id="cotClienteSugerencias"
+                     class="hidden border border-stone-200 rounded mt-1 bg-white shadow-md z-10 max-h-40 overflow-y-auto"></div>
+                <input type="hidden" id="cotClienteId">
+                <span id="cotClienteSeleccionado" class="text-xs text-green-700 font-semibold mt-1 block"></span>
+              </div>
+
+              <div>
+                <label class="block text-xs text-stone-500 mb-1">Sucursal *</label>
+                <select id="cotSucursal"
+                        class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
+                  <option value="">Seleccionar…</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs text-stone-500 mb-1">Servicio *</label>
+                <select id="cotServicio" onchange="cotRecalcular()"
+                        class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
+                  <option value="">Seleccionar…</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs text-stone-500 mb-1">Tarifa UF base</label>
+                <select id="cotTarifa" onchange="cotRecalcular()"
+                        class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
+                  <option value="">Sin tarifa fija</option>
+                </select>
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-xs text-stone-500 mb-1">Notas / contexto</label>
+                <textarea id="cotNotas" rows="2" placeholder="Contexto adicional…"
+                          class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Líneas de cotización -->
+          <div class="bg-white p-5 rounded-lg shadow-sm">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="font-semibold text-stone-700">Líneas de cotización</h3>
+              <button onclick="agregarLineaCot()"
+                      class="text-sm bg-stone-100 hover:bg-stone-200 px-3 py-1 rounded text-stone-700">
+                + Agregar línea
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b text-stone-500 text-xs">
+                    <th class="text-left py-2 pr-2">Descripción</th>
+                    <th class="text-right py-2 px-2 w-20">Cantidad</th>
+                    <th class="text-right py-2 px-2 w-24">Precio UF</th>
+                    <th class="text-right py-2 px-2 w-20">Desc. %</th>
+                    <th class="text-right py-2 px-2 w-24">Subtotal UF</th>
+                    <th class="py-2 w-8"></th>
+                  </tr>
+                </thead>
+                <tbody id="cotLineas"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna derecha: resumen + validaciones -->
+        <div class="space-y-4">
+          <div class="bg-white p-5 rounded-lg shadow-sm">
+            <h3 class="font-semibold text-stone-700 mb-3">Resumen</h3>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-stone-500">Total UF</span>
+                <span id="cotTotalUF" class="font-bold text-stone-800 text-lg">0,0000</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-stone-500">Descuento prom.</span>
+                <span id="cotDescProm" class="font-semibold">0,0%</span>
+              </div>
+              <div class="flex justify-between items-center pt-2 border-t border-stone-100">
+                <span class="text-stone-500">Piso descuento</span>
+                <span id="cotPisoStatus" class="text-xs font-semibold px-2 py-1 rounded">—</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-stone-500">Margen estimado</span>
+                <span id="cotMargenStatus" class="text-xs font-semibold px-2 py-1 rounded">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pisos y márgenes (data de BD) -->
+          <div class="bg-stone-50 p-4 rounded-lg text-xs text-stone-500">
+            <p class="font-semibold text-stone-600 mb-2">Parámetros vigentes</p>
+            <div id="cotParamsVigentes">Cargando...</div>
+          </div>
+
+          <button onclick="guardarCotizacion()" id="cotGuardarBtn"
+                  class="w-full bg-green-700 hover:bg-green-800 text-white py-3 rounded font-semibold text-sm">
+            ✅ Guardar cotización
+          </button>
+          <div id="cotResultado" class="hidden text-sm p-3 rounded"></div>
+        </div>
+      </div>
+    </section>
+
     <section id="tabAdmin" class="tab-content hidden">
       <h2 class="text-xl font-bold mb-3 text-stone-800">Administración</h2>
       <div class="bg-white p-5 rounded-lg shadow-sm">
@@ -210,7 +414,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'admin'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'admin'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -541,6 +745,8 @@ function setupTabs() {
       if (tabId === 'portada') loadPortadaAudio();
       if (tabId === 'rdo') loadRdoResumen();
       if (tabId === 'admin') loadAdminAudios();
+      if (tabId === 'negocios')  loadNegocios();
+      if (tabId === 'cotizador') initCotizador();
     });
   });
 }
@@ -811,6 +1017,460 @@ Total facturado: $${r.total_facturado || 0}
 Alertas activas: ${r.n_alertas_total || 0}
 
 ${JSON.stringify(r.resumen_json || {}, null, 2)}`;
+}
+
+// ============================================================
+// PESTAÑA NEGOCIOS
+// ============================================================
+
+let _negocioTimelienId = null;  // oportunidad_id del timeline abierto
+
+let _negBuscarTimer = null;
+function loadNegociosBuscar(val) {
+  clearTimeout(_negBuscarTimer);
+  _negBuscarTimer = setTimeout(() => loadNegocios(val), 350);
+}
+
+async function loadNegocios(buscarOverride) {
+  const div = document.getElementById('negociosTabla');
+  div.innerHTML = '<p class="text-stone-400">Cargando…</p>';
+
+  const estado  = document.getElementById('negEstado')?.value  || '';
+  const tipo    = document.getElementById('negTipo')?.value    || '';
+  const buscar  = buscarOverride !== undefined
+    ? buscarOverride
+    : (document.getElementById('negBuscar')?.value || '');
+
+  let q = sb.schema('curated').from('oportunidades')
+    .select('oportunidad_id, tipo, titulo, estado, valor_estimado_uf, fecha_recepcion, fecha_cierre, responsable, cliente_id, cliente_nombre_libre, sucursal_id')
+    .order('fecha_recepcion', { ascending: false })
+    .limit(100);
+
+  if (estado) q = q.eq('estado', estado);
+  if (tipo)   q = q.eq('tipo', tipo);
+  if (buscar) q = q.or(`titulo.ilike.%${buscar}%,cliente_nombre_libre.ilike.%${buscar}%`);
+
+  const { data, error } = await q;
+
+  if (error) {
+    div.innerHTML = `<p class="text-red-600 p-4">Error cargando negocios: ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    div.innerHTML = '<p class="text-stone-400 p-4">No hay negocios con esos filtros.</p>';
+    return;
+  }
+
+  const estadoBadge = {
+    recibida: 'bg-stone-100 text-stone-600',
+    en_evaluacion: 'bg-yellow-100 text-yellow-700',
+    respondida: 'bg-blue-100 text-blue-700',
+    activada: 'bg-indigo-100 text-indigo-700',
+    monitoreo: 'bg-purple-100 text-purple-700',
+    ganada: 'bg-green-100 text-green-700',
+    perdida: 'bg-red-100 text-red-600',
+    estandarizada: 'bg-teal-100 text-teal-700',
+    descartada: 'bg-stone-100 text-stone-400',
+  };
+  const tipoBadge = {
+    accion: '⚡',
+    idea: '💡',
+    necesidad: '🔔',
+    cotizacion: '📋',
+  };
+
+  div.innerHTML = `
+    <table class="w-full text-sm min-w-max">
+      <thead>
+        <tr class="border-b text-stone-500 text-xs">
+          <th class="text-left py-2 px-3">Negocio</th>
+          <th class="py-2 px-2">Tipo</th>
+          <th class="text-left py-2 px-2">Cliente</th>
+          <th class="text-right py-2 px-2">UF est.</th>
+          <th class="py-2 px-2">Estado</th>
+          <th class="text-right py-2 px-2">Fecha</th>
+          <th class="py-2 px-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map(n => `
+          <tr class="border-b hover:bg-stone-50 cursor-pointer"
+              onclick="verTimeline('${escapeHtml(n.oportunidad_id)}', '${escapeHtml(n.titulo.replace(/'/g,"&#39;"))}')">
+            <td class="py-2 px-3 font-medium text-stone-800 max-w-xs truncate">${escapeHtml(n.titulo)}</td>
+            <td class="py-2 px-2 text-center">${escapeHtml(tipoBadge[n.tipo] || n.tipo)}</td>
+            <td class="py-2 px-2 text-stone-600 max-w-[140px] truncate">${escapeHtml(n.cliente_nombre_libre || n.cliente_id || '—')}</td>
+            <td class="py-2 px-2 text-right font-mono">${n.valor_estimado_uf != null ? Number(n.valor_estimado_uf).toFixed(2) + ' UF' : '—'}</td>
+            <td class="py-2 px-2 text-center">
+              <span class="text-xs px-2 py-0.5 rounded-full font-medium ${estadoBadge[n.estado] || 'bg-stone-100 text-stone-500'}">
+                ${escapeHtml(n.estado)}
+              </span>
+            </td>
+            <td class="py-2 px-2 text-right text-stone-400 text-xs">${new Date(n.fecha_recepcion).toLocaleDateString('es-CL')}</td>
+            <td class="py-2 px-2 text-center">
+              <button class="text-xs text-green-700 hover:underline"
+                      onclick="event.stopPropagation(); cotizarDesdeFilaNegocio('${escapeHtml(n.oportunidad_id)}', '${escapeHtml(n.titulo.replace(/'/g,"&#39;"))}', '${escapeHtml(n.cliente_id||'')}', '${escapeHtml(n.cliente_nombre_libre||'')}')">
+                📋
+              </button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <p class="text-xs text-stone-400 p-3">${data.length} negocio(s) encontrado(s)</p>`;
+}
+
+async function verTimeline(opId, titulo) {
+  _negocioTimelienId = opId;
+  const tl = document.getElementById('negocioTimeline');
+  const title = document.getElementById('negocioTimelineTitle');
+  const cont = document.getElementById('negocioTimelineContenido');
+  title.textContent = titulo;
+  cont.innerHTML = '<p class="text-stone-400">Cargando timeline…</p>';
+  tl.classList.remove('hidden');
+  tl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  const { data, error } = await sb.schema('curated').from('negocio_etapas')
+    .select('etapa, fecha, actor, observaciones')
+    .eq('oportunidad_id', opId)
+    .order('fecha', { ascending: true });
+
+  if (error) {
+    cont.innerHTML = `<p class="text-red-600">Error: ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    cont.innerHTML = '<p class="text-stone-400">Sin etapas registradas aún.</p>';
+    return;
+  }
+  cont.innerHTML = `
+    <ol class="relative border-l-2 border-green-200 pl-5 space-y-4">
+      ${data.map(e => `
+        <li class="relative">
+          <span class="absolute -left-[1.4rem] top-0.5 w-3 h-3 bg-green-600 rounded-full border-2 border-white"></span>
+          <p class="text-xs text-stone-400">${new Date(e.fecha).toLocaleString('es-CL')} · ${escapeHtml(e.actor || '—')}</p>
+          <p class="font-semibold text-stone-700 capitalize">${escapeHtml(e.etapa.replace(/_/g,' '))}</p>
+          ${e.observaciones ? `<p class="text-stone-500 text-xs">${escapeHtml(e.observaciones)}</p>` : ''}
+        </li>
+      `).join('')}
+    </ol>`;
+}
+
+function cerrarTimeline() {
+  document.getElementById('negocioTimeline').classList.add('hidden');
+  _negocioTimelienId = null;
+}
+
+function abrirNuevoNegocio() {
+  document.querySelector('button[data-tab="cotizador"]').click();
+  setTimeout(() => {
+    document.getElementById('cotTitulo').focus();
+  }, 200);
+}
+
+function cotizarDesdeNegocio() {
+  if (!_negocioTimelienId) return;
+  const titulo = document.getElementById('negocioTimelineTitle').textContent;
+  document.querySelector('button[data-tab="cotizador"]').click();
+  setTimeout(() => {
+    document.getElementById('cotTitulo').value = titulo;
+    document.getElementById('cotTitulo').focus();
+  }, 200);
+}
+
+function cotizarDesdeFilaNegocio(opId, titulo, clienteId, clienteNombre) {
+  document.querySelector('button[data-tab="cotizador"]').click();
+  setTimeout(() => {
+    document.getElementById('cotTitulo').value = titulo;
+    if (clienteId) {
+      document.getElementById('cotClienteId').value = clienteId;
+      document.getElementById('cotClienteSeleccionado').textContent = '✔ ' + (clienteNombre || clienteId);
+      document.getElementById('cotClienteBuscar').value = clienteNombre || clienteId;
+    }
+  }, 300);
+}
+
+// ============================================================
+// PESTAÑA COTIZADOR
+// ============================================================
+
+let _cotizadorIniciado = false;
+let _cotLineas = [];          // [{desc, qty, precioUF, descPct}]
+let _cotDescuentosPisos = []; // rows de vw_descuentos_pisos_vigente
+let _cotMargenMetas = [];     // rows de vw_margen_metas_vigente
+
+async function initCotizador() {
+  if (_cotizadorIniciado) return;
+  _cotizadorIniciado = true;
+
+  // Cargar catálogos en paralelo
+  const [sucRes, srvRes, tarRes, pisoRes, marRes] = await Promise.all([
+    sb.schema('curated').from('sucursales').select('sucursal_id, nombre').eq('activa', true).order('nombre'),
+    sb.schema('curated').from('servicios_catalogo').select('servicio_id, tipo, nombre').eq('activo', true).order('tipo').order('nombre'),
+    sb.schema('curated').from('vw_tarifas_uf_vigente').select('tarifa_id, nombre, monto_uf').order('nombre'),
+    sb.schema('curated').from('vw_descuentos_pisos_vigente').select('nivel_autorizacion, descuento_max_pct').order('descuento_max_pct'),
+    sb.schema('curated').from('vw_margen_metas_vigente').select('categoria_id, descripcion, margen_meta_pct, margen_minimo_pct').order('margen_meta_pct'),
+  ]);
+
+  // Sucursales
+  const selSuc = document.getElementById('cotSucursal');
+  (sucRes.data || []).forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.sucursal_id; o.textContent = s.nombre;
+    selSuc.appendChild(o);
+  });
+
+  // Servicios
+  const selSrv = document.getElementById('cotServicio');
+  (srvRes.data || []).forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.servicio_id;
+    o.textContent = `[${escapeHtml(s.tipo)}] ${escapeHtml(s.nombre)}`;
+    selSrv.appendChild(o);
+  });
+
+  // Tarifas
+  const selTar = document.getElementById('cotTarifa');
+  (tarRes.data || []).forEach(t => {
+    const o = document.createElement('option');
+    o.value = t.tarifa_id;
+    o.textContent = `${escapeHtml(t.nombre)} — ${Number(t.monto_uf).toFixed(4)} UF`;
+    selTar.appendChild(o);
+  });
+
+  // Pisos y márgenes en memoria
+  _cotDescuentosPisos = pisoRes.data || [];
+  _cotMargenMetas = marRes.data || [];
+
+  // Mostrar parámetros en sidebar
+  const paramsDiv = document.getElementById('cotParamsVigentes');
+  let html = '';
+  if (_cotDescuentosPisos.length) {
+    html += '<p class="font-medium text-stone-600 mt-1">Pisos descuento:</p>';
+    _cotDescuentosPisos.forEach(p => {
+      html += `<p class="flex justify-between"><span>${escapeHtml(p.nivel_autorizacion)}</span><span class="font-mono">≤${Number(p.descuento_max_pct).toFixed(1)}%</span></p>`;
+    });
+  }
+  if (_cotMargenMetas.length) {
+    html += '<p class="font-medium text-stone-600 mt-2">Márgenes meta:</p>';
+    _cotMargenMetas.forEach(m => {
+      html += `<p class="flex justify-between"><span>${escapeHtml(m.categoria_id)}</span><span class="font-mono">mín ${Number(m.margen_minimo_pct).toFixed(1)}%</span></p>`;
+    });
+  }
+  if (!html) html = '<p class="text-stone-400">Sin datos de cajas en BD todavía.</p>';
+  paramsDiv.innerHTML = html;
+
+  // Línea inicial vacía
+  if (_cotLineas.length === 0) agregarLineaCot();
+}
+
+function agregarLineaCot() {
+  const idx = _cotLineas.length;
+  _cotLineas.push({ desc: '', qty: 1, precioUF: 0, descPct: 0 });
+  renderLineasCot();
+}
+
+function eliminarLineaCot(idx) {
+  _cotLineas.splice(idx, 1);
+  renderLineasCot();
+  cotRecalcular();
+}
+
+function renderLineasCot() {
+  const tbody = document.getElementById('cotLineas');
+  tbody.innerHTML = _cotLineas.map((l, i) => `
+    <tr class="border-b border-stone-100">
+      <td class="py-1 pr-2">
+        <input type="text" value="${escapeHtml(l.desc)}" placeholder="Descripción…"
+               oninput="_cotLineas[${i}].desc = this.value"
+               class="w-full border border-stone-200 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none">
+      </td>
+      <td class="py-1 px-2">
+        <input type="number" value="${l.qty}" min="0.01" step="0.01"
+               oninput="_cotLineas[${i}].qty = parseFloat(this.value)||0; cotRecalcular()"
+               class="w-full border border-stone-200 rounded px-2 py-1 text-sm text-right focus:border-green-700 focus:outline-none">
+      </td>
+      <td class="py-1 px-2">
+        <input type="number" value="${l.precioUF}" min="0" step="0.0001"
+               oninput="_cotLineas[${i}].precioUF = parseFloat(this.value)||0; cotRecalcular()"
+               class="w-full border border-stone-200 rounded px-2 py-1 text-sm text-right focus:border-green-700 focus:outline-none">
+      </td>
+      <td class="py-1 px-2">
+        <input type="number" value="${l.descPct}" min="0" max="100" step="0.1"
+               oninput="_cotLineas[${i}].descPct = parseFloat(this.value)||0; cotRecalcular()"
+               class="w-full border border-stone-200 rounded px-2 py-1 text-sm text-right focus:border-green-700 focus:outline-none">
+      </td>
+      <td class="py-1 px-2 text-right font-mono text-stone-700">
+        ${(l.qty * l.precioUF * (1 - l.descPct / 100)).toFixed(4)}
+      </td>
+      <td class="py-1 px-2 text-center">
+        <button onclick="eliminarLineaCot(${i})" class="text-stone-300 hover:text-red-500 text-base leading-none">×</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function cotRecalcular() {
+  renderLineasCot();
+  const totalUF = _cotLineas.reduce((acc, l) => acc + l.qty * l.precioUF * (1 - l.descPct / 100), 0);
+  const brutoUF = _cotLineas.reduce((acc, l) => acc + l.qty * l.precioUF, 0);
+  const descProm = brutoUF > 0 ? (1 - totalUF / brutoUF) * 100 : 0;
+
+  document.getElementById('cotTotalUF').textContent = totalUF.toFixed(4) + ' UF';
+  document.getElementById('cotDescProm').textContent = descProm.toFixed(1) + '%';
+
+  // Validar piso descuento (nivel ejecutivo como referencia si hay datos)
+  const pisoEl = document.getElementById('cotPisoStatus');
+  if (_cotDescuentosPisos.length) {
+    const maxDesc = Math.max(..._cotDescuentosPisos.map(p => p.descuento_max_pct));
+    if (descProm <= maxDesc) {
+      pisoEl.textContent = '✅ OK';
+      pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-green-100 text-green-700';
+    } else {
+      pisoEl.textContent = `⚠ Excede ${maxDesc.toFixed(1)}%`;
+      pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-red-100 text-red-600';
+    }
+  } else {
+    pisoEl.textContent = '—';
+    pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-stone-100 text-stone-400';
+  }
+
+  // Validar margen (solo referencial con meta mínimo si hay datos)
+  const margenEl = document.getElementById('cotMargenStatus');
+  if (_cotMargenMetas.length && brutoUF > 0) {
+    const minMargen = Math.min(..._cotMargenMetas.map(m => m.margen_minimo_pct));
+    const margenEst = ((totalUF - brutoUF * 0.6) / totalUF) * 100; // estimación simple (60% costo)
+    if (margenEst >= minMargen) {
+      margenEl.textContent = `~${margenEst.toFixed(1)}% ✅`;
+      margenEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-green-100 text-green-700';
+    } else {
+      margenEl.textContent = `~${margenEst.toFixed(1)}% ⚠`;
+      margenEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-yellow-100 text-yellow-700';
+    }
+  } else {
+    margenEl.textContent = '—';
+    margenEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-stone-100 text-stone-400';
+  }
+}
+
+// Autocomplete cliente
+let _cotClienteTimer = null;
+async function buscarClienteCotizador(val) {
+  clearTimeout(_cotClienteTimer);
+  const sug = document.getElementById('cotClienteSugerencias');
+  if (val.trim().length < 2) { sug.classList.add('hidden'); return; }
+  _cotClienteTimer = setTimeout(async () => {
+    const { data } = await sb.schema('curated').from('clientes')
+      .select('cliente_id, razon_social, rut')
+      .or(`razon_social.ilike.%${val}%,rut.ilike.%${val}%`)
+      .eq('activo', true).limit(8);
+    if (!data || data.length === 0) { sug.classList.add('hidden'); return; }
+    sug.innerHTML = data.map(c =>
+      `<div class="px-3 py-2 hover:bg-green-50 cursor-pointer text-sm border-b border-stone-100 last:border-0"
+            onclick="seleccionarClienteCot('${escapeHtml(c.cliente_id)}','${escapeHtml(c.razon_social.replace(/'/g,"&#39;"))}')">
+         <span class="font-medium">${escapeHtml(c.razon_social)}</span>
+         <span class="text-stone-400 text-xs ml-2">${escapeHtml(c.rut || '')}</span>
+       </div>`
+    ).join('');
+    sug.classList.remove('hidden');
+  }, 300);
+}
+
+function seleccionarClienteCot(id, nombre) {
+  document.getElementById('cotClienteId').value = id;
+  document.getElementById('cotClienteBuscar').value = nombre;
+  document.getElementById('cotClienteSeleccionado').textContent = '✔ ' + nombre;
+  document.getElementById('cotClienteSugerencias').classList.add('hidden');
+}
+
+async function guardarCotizacion() {
+  const titulo   = document.getElementById('cotTitulo').value.trim();
+  const clienteId = document.getElementById('cotClienteId').value;
+  const clienteNombreLibre = document.getElementById('cotClienteBuscar').value.trim();
+  const sucursalId = document.getElementById('cotSucursal').value;
+  const servicioId = document.getElementById('cotServicio').value;
+  const notas    = document.getElementById('cotNotas').value.trim();
+  const resDiv   = document.getElementById('cotResultado');
+
+  if (!titulo) {
+    resDiv.className = 'text-sm p-3 rounded bg-red-50 text-red-700';
+    resDiv.textContent = '❌ El título es obligatorio.';
+    resDiv.classList.remove('hidden');
+    return;
+  }
+  if (!clienteId && !clienteNombreLibre) {
+    resDiv.className = 'text-sm p-3 rounded bg-red-50 text-red-700';
+    resDiv.textContent = '❌ Selecciona o escribe un cliente.';
+    resDiv.classList.remove('hidden');
+    return;
+  }
+  if (!sucursalId) {
+    resDiv.className = 'text-sm p-3 rounded bg-red-50 text-red-700';
+    resDiv.textContent = '❌ Selecciona una sucursal.';
+    resDiv.classList.remove('hidden');
+    return;
+  }
+  if (_cotLineas.length === 0 || _cotLineas.every(l => l.precioUF === 0)) {
+    resDiv.className = 'text-sm p-3 rounded bg-red-50 text-red-700';
+    resDiv.textContent = '❌ Agrega al menos una línea con precio > 0.';
+    resDiv.classList.remove('hidden');
+    return;
+  }
+
+  const totalUF = _cotLineas.reduce((acc, l) => acc + l.qty * l.precioUF * (1 - l.descPct / 100), 0);
+
+  const btn = document.getElementById('cotGuardarBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Guardando…';
+
+  const payload = {
+    tipo: 'cotizacion',
+    titulo,
+    estado: 'recibida',
+    responsable: currentUser,
+    valor_estimado_uf: totalUF,
+    created_by: currentUser,
+    updated_by: currentUser,
+    metadata: {
+      lineas: _cotLineas,
+      servicio_id: servicioId || null,
+      notas,
+    },
+  };
+
+  if (clienteId) {
+    payload.cliente_id = clienteId;
+  } else {
+    payload.cliente_nombre_libre = clienteNombreLibre;
+  }
+  if (sucursalId) payload.sucursal_id = sucursalId;
+
+  const { data, error } = await sb.schema('curated').from('oportunidades').insert(payload).select('oportunidad_id').single();
+
+  btn.disabled = false;
+  btn.textContent = '✅ Guardar cotización';
+
+  if (error) {
+    resDiv.className = 'text-sm p-3 rounded bg-red-50 text-red-700';
+    resDiv.textContent = '❌ Error: ' + error.message;
+    resDiv.classList.remove('hidden');
+    return;
+  }
+
+  resDiv.className = 'text-sm p-3 rounded bg-green-50 text-green-800';
+  resDiv.textContent = `✅ Cotización guardada (ID: ${data.oportunidad_id.slice(0,8)}…). Visible en pestaña Negocios.`;
+  resDiv.classList.remove('hidden');
+
+  // Reset formulario
+  document.getElementById('cotTitulo').value = '';
+  document.getElementById('cotClienteId').value = '';
+  document.getElementById('cotClienteBuscar').value = '';
+  document.getElementById('cotClienteSeleccionado').textContent = '';
+  document.getElementById('cotSucursal').value = '';
+  document.getElementById('cotServicio').value = '';
+  document.getElementById('cotNotas').value = '';
+  _cotLineas = [];
+  agregarLineaCot();
+  cotRecalcular();
 }
 
 // ---------- INIT ----------
