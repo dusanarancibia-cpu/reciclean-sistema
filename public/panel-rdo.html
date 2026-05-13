@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel RDO — Reciclean-Farex</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/tailwind.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     .app-container { display: none; }
@@ -13,6 +13,15 @@
     .recording { background-color: #ffe4e4; }
     .tab-btn.active { color: #2C5F2D; border-bottom: 2px solid #2C5F2D; }
     body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Calibri, Arial; }
+    /* ── Dieguito ── */
+    .dieg-dropzone { border: 2px dashed #d6d3d1; border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all .2s; background: #fafaf9; }
+    .dieg-dropzone.drag-over { border-color: #2C5F2D; background: #f0fdf4; }
+    .dieg-dropzone.has-file  { border-color: #2C5F2D; background: #f0fdf4; }
+    .dieg-chip { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:999px; font-size:0.78rem; font-weight:500; cursor:pointer; border:2px solid transparent; transition:all .15s; user-select:none; }
+    .dieg-chip.selected { border-color: currentColor; box-shadow: 0 0 0 2px rgba(0,0,0,.08); }
+    .dieg-chip.ai-suggested::after { content:'✦'; font-size:.65rem; opacity:.8; }
+    @keyframes pulse-rec { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .recording-pulse { animation: pulse-rec 1.2s ease-in-out infinite; }
   </style>
 </head>
 <body class="bg-stone-100 min-h-screen">
@@ -128,21 +137,63 @@
     </section>
 
     <section id="tabDieguito" class="tab-content hidden">
-      <h2 class="text-xl font-bold mb-3 text-stone-800">Dieguito — Subir evidencia con contexto</h2>
-      <p class="text-sm text-stone-600 mb-4">Sube una imagen, PDF o archivo con su contexto. Se procesa automáticamente más adelante.</p>
-      <div class="bg-white p-5 rounded-lg shadow-sm">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-          <input type="text" id="dieguitoDe"     placeholder="DE (origen, persona)"   class="border border-stone-300 p-2 rounded">
-          <input type="text" id="dieguitoPara"   placeholder="PARA (destinatario)"    class="border border-stone-300 p-2 rounded">
-          <input type="text" id="dieguitoAsunto" placeholder="ASUNTO *"               class="border border-stone-300 p-2 rounded">
-          <input type="date" id="dieguitoFecha"                                       class="border border-stone-300 p-2 rounded">
+      <h2 class="text-2xl font-bold mb-1 text-stone-800">📎 Dieguito</h2>
+      <p class="text-sm text-stone-500 mb-5">Tira lo que tengas — texto, nota de voz, foto, PDF. Dieguito saca las tareas con IA y las manda a quien corresponda.</p>
+
+      <!-- Captura -->
+      <div class="bg-white rounded-xl shadow-sm p-5 mb-5">
+
+        <!-- Grabador de voz -->
+        <div class="mb-4">
+          <div class="flex items-center gap-3 mb-2">
+            <button id="diegRecBtn" onclick="diegToggleRecording()"
+              class="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition">
+              🎙️ <span id="diegRecLabel">Grabar nota</span>
+            </button>
+            <span id="diegRecTimer" class="text-sm font-mono text-stone-500 hidden">00:00</span>
+            <span id="diegRecStatus" class="text-xs text-stone-400"></span>
+          </div>
+          <div id="diegRecPreview" class="hidden">
+            <audio id="diegAudioPlayer" controls class="w-full h-9 mt-1"></audio>
+          </div>
         </div>
-        <textarea id="dieguitoContexto" placeholder="Contexto adicional..." rows="3"
-                  class="w-full border border-stone-300 p-2 rounded mb-2"></textarea>
-        <input type="file" id="dieguitoArchivo" class="mb-3 block">
-        <button onclick="uploadEvidenciaDieguito()" class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded">Guardar evidencia</button>
-        <div id="dieguitoResult" class="mt-4 text-sm"></div>
+
+        <!-- Dropzone -->
+        <div id="diegDropzone" class="dieg-dropzone mb-4"
+             onclick="document.getElementById('diegFileInput').click()"
+             ondragover="event.preventDefault();this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="diegHandleDrop(event)">
+          <div id="diegDropLabel">
+            <p class="text-2xl mb-1">📁</p>
+            <p class="text-sm text-stone-500">Arrastra o haz click — imagen, PDF, audio, doc (máx 50 MB)</p>
+          </div>
+          <input type="file" id="diegFileInput" class="hidden" onchange="diegHandleFile(this.files[0])">
+        </div>
+
+        <!-- Textarea -->
+        <textarea id="diegTexto" rows="3" placeholder="O escribe/pega aquí. Dieguito sugiere destinos automáticamente…"
+          class="w-full border border-stone-300 rounded-lg p-3 text-sm focus:border-green-700 focus:outline-none resize-none mb-4"
+          oninput="diegAutoSuggest(this.value)"></textarea>
+
+        <!-- Chips de destinos -->
+        <div class="mb-4">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-semibold text-stone-500 uppercase tracking-wide">¿A quién va?</p>
+            <button onclick="diegLimpiarChips()" class="text-xs text-stone-400 hover:text-stone-600">Limpiar</button>
+          </div>
+          <div id="diegReasoning" class="text-xs italic text-stone-400 mb-2 hidden"></div>
+          <div id="diegChips" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <!-- Botón mandar -->
+        <button onclick="diegMandar()"
+          class="w-full bg-green-700 hover:bg-green-800 text-white py-3 rounded-lg font-semibold text-base transition">
+          📨 Mandar
+        </button>
+        <div id="diegResult" class="mt-3 text-sm"></div>
       </div>
+
     </section>
 
     <section id="tabComunicados" class="tab-content hidden">
@@ -747,6 +798,7 @@ function setupTabs() {
       if (tabId === 'admin') loadAdminAudios();
       if (tabId === 'negocios')  loadNegocios();
       if (tabId === 'cotizador') initCotizador();
+      if (tabId === 'dieguito')  initDieguito();
     });
   });
 }
@@ -968,39 +1020,305 @@ window.uploadFacturacion = async function() {
   } catch (e) { showResult('facturacionResult', false, e.message); }
 };
 
-window.uploadEvidenciaDieguito = async function() {
-  const de       = document.getElementById('dieguitoDe').value.trim();
-  const para     = document.getElementById('dieguitoPara').value.trim();
-  const asunto   = document.getElementById('dieguitoAsunto').value.trim();
-  const fecha    = document.getElementById('dieguitoFecha').value || null;
-  const contexto = document.getElementById('dieguitoContexto').value;
-  const archivo  = document.getElementById('dieguitoArchivo').files[0];
+// ============================================================
+// DIEGUITO — módulo completo (Sprint 2)
+// ============================================================
 
-  if (!asunto) { showResult('dieguitoResult', false, 'El campo ASUNTO es obligatorio'); return; }
+const DIEG_FN_URL = 'https://eknmtsrtfkzroxnovfqn.supabase.co/functions/v1/dieguito-process';
+const DIEG_ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbm10c3J0Zmt6cm94bm92ZnFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDY2ODgsImV4cCI6MjA5MDk4MjY4OH0.8Y4N0lw3DFN3Y8-R6ID7t_LAfgHWDM5N-oa4Ji9bncg';
 
-  let url = null, mime = null;
-  if (archivo) {
-    const fileName = `evidencia_${Date.now()}_${archivo.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const { error: upErr } = await sb.storage.from('evidencias_dieguito').upload(fileName, archivo);
-    if (upErr) { showResult('dieguitoResult', false, 'Error subiendo archivo: ' + upErr.message); return; }
-    const { data: pub } = sb.storage.from('evidencias_dieguito').getPublicUrl(fileName);
-    url = pub.publicUrl;
-    mime = archivo.type;
+// Color map slug → Tailwind bg + text classes
+const DIEG_COLOR = {
+  indigo:  { bg:'bg-indigo-100',  text:'text-indigo-700',  sel:'bg-indigo-600 text-white'  },
+  blue:    { bg:'bg-blue-100',    text:'text-blue-700',    sel:'bg-blue-600 text-white'    },
+  pink:    { bg:'bg-pink-100',    text:'text-pink-700',    sel:'bg-pink-600 text-white'    },
+  teal:    { bg:'bg-teal-100',    text:'text-teal-700',    sel:'bg-teal-600 text-white'    },
+  sky:     { bg:'bg-sky-100',     text:'text-sky-700',     sel:'bg-sky-600 text-white'     },
+  violet:  { bg:'bg-violet-100',  text:'text-violet-700',  sel:'bg-violet-600 text-white'  },
+  cyan:    { bg:'bg-cyan-100',    text:'text-cyan-700',    sel:'bg-cyan-600 text-white'    },
+  emerald: { bg:'bg-emerald-100', text:'text-emerald-700', sel:'bg-emerald-600 text-white' },
+  orange:  { bg:'bg-orange-100',  text:'text-orange-700',  sel:'bg-orange-600 text-white'  },
+  slate:   { bg:'bg-slate-100',   text:'text-slate-700',   sel:'bg-slate-600 text-white'   },
+  green:   { bg:'bg-green-100',   text:'text-green-700',   sel:'bg-green-600 text-white'   },
+  rose:    { bg:'bg-rose-100',    text:'text-rose-700',    sel:'bg-rose-600 text-white'    },
+  amber:   { bg:'bg-amber-100',   text:'text-amber-700',   sel:'bg-amber-600 text-white'   },
+  lime:    { bg:'bg-lime-100',    text:'text-lime-700',    sel:'bg-lime-600 text-white'    },
+  yellow:  { bg:'bg-yellow-100',  text:'text-yellow-700',  sel:'bg-yellow-600 text-white'  },
+  stone:   { bg:'bg-stone-100',   text:'text-stone-700',   sel:'bg-stone-600 text-white'   },
+  red:     { bg:'bg-red-100',     text:'text-red-700',     sel:'bg-red-600 text-white'     },
+  purple:  { bg:'bg-purple-100',  text:'text-purple-700',  sel:'bg-purple-600 text-white'  },
+};
+
+let _diegIniciado     = false;
+let _diegDestinos     = [];       // [{id, slug, label, kind, color}]
+let _diegSeleccionados = new Set(); // ids seleccionados
+let _diegAiSugeridos  = new Set(); // ids sugeridos por IA (esta sesión)
+let _diegSuggestTimer = null;
+let _diegArchivo      = null;     // File object del dropzone
+let _diegArchivoUrl   = null;     // URL pública después de subir
+let _diegRecording    = false;
+let _diegRecorder     = null;
+let _diegRecChunks    = [];
+let _diegRecBlob      = null;
+let _diegRecInterval  = null;
+let _diegRecSecs      = 0;
+
+// ── init ──────────────────────────────────────────────────────────────────────
+async function initDieguito() {
+  if (_diegIniciado) return;
+  _diegIniciado = true;
+
+  const { data, error } = await sb.schema('staging')
+    .from('dieguito_destinations')
+    .select('id,slug,label,kind,color')
+    .eq('active', true)
+    .order('sort_order');
+
+  if (error || !data) {
+    document.getElementById('diegChips').innerHTML =
+      `<p class="text-xs text-red-500">Error cargando destinos: ${escapeHtml(error?.message ?? 'desconocido')} — ¿Ejecutaste SQL 028?</p>`;
+    return;
+  }
+  _diegDestinos = data;
+
+  diegRenderChips();
+}
+
+// ── chips ─────────────────────────────────────────────────────────────────────
+const KIND_LABELS = { persona:'👤 Personas', silo:'🗂 Silos', area:'📂 Áreas', bitacora:'📓 Bitácoras' };
+
+function diegRenderChips() {
+  const container = document.getElementById('diegChips');
+  const groups = {};
+  for (const d of _diegDestinos) {
+    if (!groups[d.kind]) groups[d.kind] = [];
+    groups[d.kind].push(d);
+  }
+  const order = ['persona','silo','area','bitacora'];
+  let html = '';
+  for (const kind of order) {
+    if (!groups[kind]) continue;
+    html += `<div class="w-full mt-2 mb-1 text-xs font-semibold text-stone-400 uppercase tracking-wide">${KIND_LABELS[kind] || kind}</div>`;
+    for (const d of groups[kind]) {
+      const c = DIEG_COLOR[d.color] || DIEG_COLOR.slate;
+      const sel  = _diegSeleccionados.has(d.id);
+      const aiSug = _diegAiSugeridos.has(d.id);
+      html += `<span
+        id="diegChip_${d.id}"
+        onclick="diegToggleChip(${d.id})"
+        class="dieg-chip ${sel ? c.sel : c.bg+' '+c.text} ${aiSug ? 'ai-suggested' : ''}"
+        title="${aiSug ? 'Sugerido por Dieguito ✦' : ''}"
+      >${escapeHtml(d.label)}</span>`;
+    }
+  }
+  container.innerHTML = html;
+}
+
+window.diegToggleChip = function(id) {
+  if (_diegSeleccionados.has(id)) _diegSeleccionados.delete(id);
+  else _diegSeleccionados.add(id);
+  diegRenderChips();
+};
+
+window.diegLimpiarChips = function() {
+  _diegSeleccionados.clear();
+  _diegAiSugeridos.clear();
+  const r = document.getElementById('diegReasoning');
+  r.classList.add('hidden'); r.textContent = '';
+  diegRenderChips();
+};
+
+// ── auto-suggest ──────────────────────────────────────────────────────────────
+window.diegAutoSuggest = function(val) {
+  clearTimeout(_diegSuggestTimer);
+  if (val.trim().length < 15) return;
+  _diegSuggestTimer = setTimeout(async () => {
+    try {
+      const resp = await fetch(DIEG_FN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subido_por: currentUser, text: val, suggest_only: true })
+      });
+      if (!resp.ok) return;
+      const { ids, reasoning } = await resp.json();
+      if (!ids || ids.length === 0) return;
+      _diegAiSugeridos = new Set(ids);
+      if (_diegSeleccionados.size === 0) _diegSeleccionados = new Set(ids);
+      const r = document.getElementById('diegReasoning');
+      r.textContent = '✦ ' + (reasoning || '');
+      r.classList.remove('hidden');
+      diegRenderChips();
+    } catch { /* silencioso */ }
+  }, 700);
+};
+
+// ── grabador de voz ───────────────────────────────────────────────────────────
+window.diegToggleRecording = async function() {
+  if (_diegRecording) {
+    _diegRecorder.stop();
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+      ? 'audio/webm;codecs=opus'
+      : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
+    _diegRecorder  = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+    _diegRecChunks = [];
+    _diegRecording = true;
+    _diegRecSecs   = 0;
+
+    document.getElementById('diegRecLabel').textContent = 'Detener';
+    document.getElementById('diegRecBtn').classList.add('recording-pulse');
+    document.getElementById('diegRecTimer').classList.remove('hidden');
+    document.getElementById('diegRecStatus').textContent = 'Grabando…';
+
+    _diegRecInterval = setInterval(() => {
+      _diegRecSecs++;
+      const m = String(Math.floor(_diegRecSecs/60)).padStart(2,'0');
+      const s = String(_diegRecSecs%60).padStart(2,'0');
+      document.getElementById('diegRecTimer').textContent = `${m}:${s}`;
+    }, 1000);
+
+    _diegRecorder.ondataavailable = e => { if (e.data.size > 0) _diegRecChunks.push(e.data); };
+    _diegRecorder.onstop = () => {
+      clearInterval(_diegRecInterval);
+      _diegRecording = false;
+      document.getElementById('diegRecLabel').textContent = 'Grabar nota';
+      document.getElementById('diegRecBtn').classList.remove('recording-pulse');
+      document.getElementById('diegRecTimer').classList.add('hidden');
+      document.getElementById('diegRecStatus').textContent = '✔ Grabación lista';
+      stream.getTracks().forEach(t => t.stop());
+
+      const finalMime = mimeType || 'audio/webm';
+      _diegRecBlob = new Blob(_diegRecChunks, { type: finalMime });
+      const url = URL.createObjectURL(_diegRecBlob);
+      const player = document.getElementById('diegAudioPlayer');
+      player.src = url;
+      document.getElementById('diegRecPreview').classList.remove('hidden');
+    };
+    _diegRecorder.start();
+  } catch (e) {
+    document.getElementById('diegRecStatus').textContent = 'Error micrófono: ' + e.message;
+  }
+};
+
+// ── dropzone ──────────────────────────────────────────────────────────────────
+window.diegHandleDrop = function(e) {
+  e.preventDefault();
+  document.getElementById('diegDropzone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) diegHandleFile(file);
+};
+
+window.diegHandleFile = function(file) {
+  if (!file) return;
+  if (file.size > 52428800) {
+    alert('El archivo supera 50 MB. Usa uno más chico wn.');
+    return;
+  }
+  _diegArchivo = file;
+  const dz = document.getElementById('diegDropzone');
+  dz.classList.add('has-file');
+  document.getElementById('diegDropLabel').innerHTML =
+    `<p class="text-2xl mb-1">✅</p><p class="text-sm font-semibold text-green-700">${escapeHtml(file.name)}</p>
+     <p class="text-xs text-stone-400">${(file.size/1024).toFixed(0)} KB — ${file.type || 'desconocido'}</p>
+     <button onclick="event.stopPropagation();diegBorrarArchivo()" class="mt-2 text-xs text-red-400 hover:text-red-600">✕ Quitar</button>`;
+};
+
+window.diegBorrarArchivo = function() {
+  _diegArchivo = null;
+  _diegArchivoUrl = null;
+  document.getElementById('diegFileInput').value = '';
+  document.getElementById('diegDropzone').classList.remove('has-file');
+  document.getElementById('diegDropLabel').innerHTML =
+    `<p class="text-2xl mb-1">📁</p>
+     <p class="text-sm text-stone-500">Arrastra o haz click — imagen, PDF, audio, doc (máx 50 MB)</p>`;
+};
+
+// ── mandar ────────────────────────────────────────────────────────────────────
+window.diegMandar = async function() {
+  const texto   = document.getElementById('diegTexto').value.trim();
+  const archivo = _diegArchivo || (_diegRecBlob ? new File([_diegRecBlob], `nota_${Date.now()}.webm`, { type: _diegRecBlob.type }) : null);
+  const destIds = [..._diegSeleccionados];
+
+  if (!texto && !archivo) {
+    showResult('diegResult', false, 'Escribe algo, graba una nota o sube un archivo primero wn.');
+    return;
   }
 
-  const { error } = await sb.schema('staging').from('evidencias_dieguito').insert({
-    de, para, asunto, fecha, descripcion: contexto,
-    url_archivo: url, archivo_tipo: mime, subido_por: currentUser
-  });
-  if (error) { showResult('dieguitoResult', false, error.message); return; }
+  const btn = document.querySelector('[onclick="diegMandar()"]');
+  btn.disabled = true;
+  btn.textContent = '⏳ Dieguito pensando…';
+  showResult('diegResult', false, '');
 
-  showResult('dieguitoResult', true, 'Evidencia guardada');
-  document.getElementById('dieguitoDe').value = '';
-  document.getElementById('dieguitoPara').value = '';
-  document.getElementById('dieguitoAsunto').value = '';
-  document.getElementById('dieguitoFecha').value = '';
-  document.getElementById('dieguitoContexto').value = '';
-  document.getElementById('dieguitoArchivo').value = '';
+  try {
+    // 1. Subir archivo a Storage si existe
+    let fileBase64 = null, fileMime = null, fileName = null, fileUrl = null;
+    if (archivo) {
+      const storeName = `dieguito_${Date.now()}_${archivo.name.replace(/[^a-zA-Z0-9.-]/g,'_')}`;
+      const { error: upErr } = await sb.storage.from('evidencias_dieguito').upload(storeName, archivo);
+      if (!upErr) {
+        const { data: pub } = sb.storage.from('evidencias_dieguito').getPublicUrl(storeName);
+        fileUrl = pub.publicUrl;
+      }
+      // Convertir a base64 para la Edge Function
+      const buf = await archivo.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      let binary = '';
+      for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+      fileBase64 = btoa(binary);
+      fileMime   = archivo.type;
+      fileName   = archivo.name;
+    }
+
+    // 2. Llamar backend Node
+    const body = { subido_por: currentUser, text: texto || undefined, suggest_only: false };
+    if (fileBase64) { body.file_base64 = fileBase64; body.file_mime = fileMime; body.file_name = fileName; }
+    if (destIds.length > 0) body.destination_ids = destIds;
+
+    const fnResp = await fetch(DIEG_FN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    if (!fnResp.ok) {
+      const errText = await fnResp.text();
+      throw new Error(`API error ${fnResp.status}: ${errText}`);
+    }
+
+    // El backend ya hace los INSERTs — solo usamos la respuesta para feedback
+    const { tasks_created = [], destination_ids: aiDestIds = [], reasoning = '' } = await fnResp.json();
+
+    // 3. Destinos finales: los que el usuario eligió ∪ los que sugirió la IA si no eligió nada
+    const finalDestIds = destIds.length > 0 ? destIds : aiDestIds;
+    const tareasCreadas = tasks_created.length;
+
+    // 4. Feedback
+    const destLabels = finalDestIds
+      .map(id => _diegDestinos.find(d => d.id === id)?.label ?? id)
+      .join(', ');
+
+    showResult('diegResult', true,
+      `✔ ${tareasCreadas} tarea${tareasCreadas !== 1 ? 's' : ''} creada${tareasCreadas !== 1 ? 's' : ''} → ${destLabels || 'sin destino asignado'}`);
+
+    // 7. Limpiar formulario
+    document.getElementById('diegTexto').value = '';
+    diegBorrarArchivo();
+    _diegRecBlob = null;
+    document.getElementById('diegRecPreview').classList.add('hidden');
+    document.getElementById('diegRecStatus').textContent = '';
+    _diegSeleccionados.clear();
+    _diegAiSugeridos.clear();
+    document.getElementById('diegReasoning').classList.add('hidden');
+    diegRenderChips();
+  } catch (err) {
+    showResult('diegResult', false, 'Error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📨 Mandar';
+  }
 };
 
 async function loadRdoResumen() {
