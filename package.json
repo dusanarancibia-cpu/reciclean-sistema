@@ -5,11 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build:css": "tailwindcss -i ./public/tailwind.input.css -o ./public/tailwind.css --minify",
+    "build:css:watch": "tailwindcss -i ./public/tailwind.input.css -o ./public/tailwind.css --watch",
+    "build": "npm run build:css && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.101.1",
     "vite": "^8.0.3"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
   }
 }
