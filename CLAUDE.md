@@ -1,5 +1,19 @@
 # Sistema Comercial Reciclean-Farex
 
+## ⚠️ Este repo aloja DOS sistemas (leer antes de tocar nada)
+
+1. **Sistema Comercial** (descrito abajo) — gestión de precios materiales reciclables. Archivos: `index.html`, `asistente.html`, `login.html`, `public/js/*.js`.
+2. **Panel RDO** — desde 7-may-2026. **`public/panel-rdo.html` es la fuente de verdad ÚNICA**. El "espejo" en `reciclean-rdo/panel-html/` quedó archivado el 14-may-2026 tras desactualizarse en 1025 líneas. Ver sección "Panel RDO" más abajo.
+
+## ⚠️ Reglas operativas — TODOS los agentes IA leer primero
+
+1. **NUNCA pushear directo a `main` ni a `prod`** desde un agente IA. La rama `prod` está protegida y conectada a Vercel productivo; `main` es integración.
+2. **Toda sesión Replit** trabaja en su rama propia (`replit/<descripcion>`). Si no existe, crearla: `git checkout -b replit/<sprint>`. Vercel auto-genera preview deploy por rama.
+3. **Cambios a `public/panel-rdo.html`** requieren PR con checklist: bypass 4 lugares (`config_kv` + RLS + `v_panel_silos_visibles` + fallback HTML)? GRANTs `cesar_readonly` aplicados a tablas nuevas en `curated.*`? Mobile responsive verificado en preview?
+4. **El espejo a `reciclean-rdo` está MUERTO** desde 14-may-2026. NO copies `panel-rdo.html` a otro lugar. Fuente de verdad única: `public/panel-rdo.html`.
+5. **No tocar `package.json`, `vercel.json`, `vite.config.js`** sin aviso explícito a Pablo (sistemas@gestionrepchile.cl).
+6. **Bitácora diaria obligatoria** al cerrar el día: `reciclean-manifiesto-diego/docs/BITACORA-PARALELO-MAYO-2026.md`.
+
 ## ⭐ DOCUMENTO MAESTRO — leer antes que nada
 
 **Diagnóstico Organizacional Grupo Arancibia-Pinto v2** (05-may-2026 · 2da sesión)
