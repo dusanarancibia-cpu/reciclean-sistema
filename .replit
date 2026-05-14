@@ -1,0 +1,20 @@
+# Replit config — específico para clones laboratorio del Panel RDO.
+#
+# IMPORTANTE: este archivo SOLO existe en branches replit/* (replit/plan-pablo,
+# replit/plan-dusan). NO se mergea a main ni a prod — Vercel no necesita esto.
+#
+# Si alguna vez aparece en main, hay un error de merge — revertir.
+
+run = "npm run dev"
+entrypoint = "public/panel-rdo.html"
+
+# Mapeo de puertos: Vite escucha en localPort interno, Replit lo expone
+# como externalPort público. Sin esta sección, Replit no expone Vite
+# y el preview muestra "Run this app to see the results here".
+[[ports]]
+localPort = 5173
+externalPort = 80
+
+# Botón "Run" del Replit ejecuta el script dev:
+[deployment]
+run = ["sh", "-c", "npm run dev"]
