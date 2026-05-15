@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resumen Pendientes — Reciclean-Farex · 15 mayo 2026</title>
+<style>
+  @media print { body { font-size: 11px; } .no-print { display: none; } }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; padding: 24px; max-width: 900px; margin: 0 auto; line-height: 1.45; }
+  h1 { font-size: 20px; text-align: center; margin-bottom: 2px; }
+  .fecha { text-align: center; color: #666; font-size: 13px; margin-bottom: 16px; }
+  .leyenda { display: flex; gap: 16px; justify-content: center; margin-bottom: 14px; font-size: 12px; flex-wrap: wrap; }
+  .leyenda span { display: flex; align-items: center; gap: 4px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .dot-red { background: #e53e3e; }
+  .dot-yellow { background: #d69e2e; }
+  .dot-green { background: #38a169; }
+  .dot-gray { background: #a0aec0; }
+
+  .seccion { margin-bottom: 14px; }
+  .seccion h2 { font-size: 15px; background: #2d3748; color: white; padding: 5px 10px; border-radius: 4px; margin-bottom: 6px; }
+  .seccion h2.dusan { background: #2b6cb0; }
+  .seccion h2.pablo { background: #2f855a; }
+  .seccion h2.ambos { background: #744210; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 8px; }
+  th { background: #edf2f7; text-align: left; padding: 4px 6px; font-weight: 600; border-bottom: 2px solid #cbd5e0; }
+  td { padding: 4px 6px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:hover { background: #f7fafc; }
+
+  .pct-bar { width: 60px; height: 12px; background: #e2e8f0; border-radius: 6px; display: inline-block; vertical-align: middle; overflow: hidden; }
+  .pct-fill { height: 100%; border-radius: 6px; }
+  .fill-red { background: #e53e3e; }
+  .fill-yellow { background: #d69e2e; }
+  .fill-green { background: #38a169; }
+  .fill-blue { background: #3182ce; }
+
+  .estado { font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 3px; white-space: nowrap; }
+  .estado-atrasado { background: #fed7d7; color: #c53030; }
+  .estado-bloqueado { background: #fefcbf; color: #975a16; }
+  .estado-en-curso { background: #c6f6d5; color: #276749; }
+  .estado-pendiente { background: #e2e8f0; color: #4a5568; }
+  .estado-diferido { background: #e9d8fd; color: #553c9a; }
+
+  .reasignar { font-size: 11px; color: #3182ce; cursor: pointer; text-decoration: underline; }
+  select.mini { font-size: 11px; padding: 1px 4px; border: 1px solid #cbd5e0; border-radius: 3px; }
+
+  .footer { text-align: center; font-size: 11px; color: #718096; margin-top: 10px; border-top: 1px solid #e2e8f0; padding-top: 6px; }
+  .resumen-box { display: flex; justify-content: space-around; margin-bottom: 14px; text-align: center; }
+  .resumen-item { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 16px; min-width: 120px; }
+  .resumen-item .num { font-size: 22px; font-weight: 700; }
+  .resumen-item .label { font-size: 11px; color: #718096; }
+  .num-red { color: #e53e3e; }
+  .num-yellow { color: #d69e2e; }
+  .num-green { color: #38a169; }
+  .num-blue { color: #3182ce; }
+</style>
+</head>
+<body>
+
+<h1>Resumen de Pendientes — Reciclean / Farex</h1>
+<p class="fecha">15 de mayo 2026 &middot; Para: <strong>Dusan Arancibia</strong> y <strong>Pablo Arancibia</strong></p>
+
+<div class="leyenda">
+  <span><span class="dot dot-red"></span> Atrasado</span>
+  <span><span class="dot dot-yellow"></span> Bloqueado</span>
+  <span><span class="dot dot-green"></span> En curso</span>
+  <span><span class="dot dot-gray"></span> Pendiente / Diferido</span>
+</div>
+
+<div class="resumen-box">
+  <div class="resumen-item"><div class="num num-red">9</div><div class="label">Atrasadas</div></div>
+  <div class="resumen-item"><div class="num num-yellow">2</div><div class="label">Bloqueadas</div></div>
+  <div class="resumen-item"><div class="num num-green">5</div><div class="label">En curso</div></div>
+  <div class="resumen-item"><div class="num num-blue">15.9%</div><div class="label">Avance global</div></div>
+</div>
+
+<!-- ===== DUSAN ===== -->
+<div class="seccion">
+  <h2 class="dusan">Tareas de Dusan (12)</h2>
+  <table>
+    <tr><th style="width:60px">Codigo</th><th>Tarea</th><th style="width:55px">Avance</th><th style="width:65px">Estado</th><th style="width:85px">Fecha est.</th><th style="width:70px">Reasignar</th></tr>
+
+    <tr>
+      <td>I-08</td>
+      <td>Rotar claves de seguridad (K3 + Meta)</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-red" style="width:10%"></div></div> 10%</td>
+      <td><span class="estado estado-atrasado">Atrasado</span></td>
+      <td>20 mayo</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+    <tr>
+      <td>I-10</td>
+      <td>Sprint de ventas (50 contactos + demos)</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-yellow" style="width:40%"></div></div> 40%</td>
+      <td><span class="estado estado-atrasado">Atrasado</span></td>
+      <td>25 mayo</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+    <tr>
+      <td>I-12</td>
+      <td>Lanzar Diego v5.0 (chatbot oficial)</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-yellow" style="width:30%"></div></div> 30%</td>
+      <td><span class="estado estado-atrasado">Atrasado</span></td>
+      <td>30 mayo</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+    <tr>
+      <td>I-19</td>
+      <td>Plan estrategico 2026-2030</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-yellow" style="width:30%"></div></div> 30%</td>
+      <td><span class="estado estado-atrasado">Atrasado</span></td>
+      <td>30 mayo</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+    <tr>
+      <td>I-15</td>
+      <td>Contratar Notion (workspace equipo)</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-red" style="width:0%"></div></div> 0%</td>
+      <td><span class="estado estado-atrasado">Atrasado</span></td>
+      <td>20 mayo</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+    <tr>
+      <td>I-18</td>
+      <td>Revisar contrato Resimple</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-red" style="width:0%"></div></div> 0%</td>
+      <td><span class="estado estado-atrasado">Atrasado</span></td>
+      <td>22 mayo</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+    <tr>
+      <td>I-03</td>
+      <td>Evaluar herramientas de reportes (BI)</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-yellow" style="width:20%"></div></div> 20%</td>
+      <td><span class="estado estado-atrasado">Atrasado</span></td>
+      <td>25 mayo</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+    <tr>
+      <td>I-20</td>
+      <td>Revisar 8 propuestas comerciales activas</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-red" style="width:10%"></div></div> 10%</td>
+      <td><span class="estado estado-en-curso">En curso</span></td>
+      <td>25 mayo</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+    <tr>
+      <td>I-06</td>
+      <td>Definir ecosistema digital integrado</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-red" style="width:15%"></div></div> 15%</td>
+      <td><span class="estado estado-en-curso">En curso</span></td>
+      <td>30 mayo</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+    <tr>
+      <td>I-21</td>
+      <td>Operacion Puerto Montt (permisos SAG)</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-yellow" style="width:20%"></div></div> 20%</td>
+      <td><span class="estado estado-en-curso">En curso</span></td>
+      <td>30 junio</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+    <tr>
+      <td>I-14</td>
+      <td>Blindar celular Diego (PUK + 2FA)</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-red" style="width:10%"></div></div> 10%</td>
+      <td><span class="estado estado-pendiente">Pendiente</span></td>
+      <td>25 mayo</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+    <tr>
+      <td>I-25</td>
+      <td>Revisar vigencia permisos Talca</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-yellow" style="width:30%"></div></div> 30%</td>
+      <td><span class="estado estado-pendiente">Pendiente</span></td>
+      <td>30 mayo</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+  </table>
+</div>
+
+<!-- ===== PABLO ===== -->
+<div class="seccion">
+  <h2 class="pablo">Tareas de Pablo (4)</h2>
+  <table>
+    <tr><th style="width:60px">Codigo</th><th>Tarea</th><th style="width:55px">Avance</th><th style="width:65px">Estado</th><th style="width:85px">Fecha est.</th><th style="width:70px">Reasignar</th></tr>
+
+    <tr>
+      <td>I-09</td>
+      <td>Montar servidor VPS + mover servicios</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-red" style="width:15%"></div></div> 15%</td>
+      <td><span class="estado estado-atrasado">Atrasado</span></td>
+      <td>25 mayo</td>
+      <td><select class="mini no-print"><option>Pablo</option><option>Dusan</option></select></td>
+    </tr>
+    <tr>
+      <td>I-11</td>
+      <td>Subir Asistente Comercial al servidor</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-green" style="width:50%"></div></div> 50%</td>
+      <td><span class="estado estado-atrasado">Atrasado</span></td>
+      <td>30 mayo</td>
+      <td><select class="mini no-print"><option>Pablo</option><option>Dusan</option></select></td>
+    </tr>
+    <tr>
+      <td>I-16</td>
+      <td>Diego v5.1 (mejoras post-lanzamiento)</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-red" style="width:0%"></div></div> 0%</td>
+      <td><span class="estado estado-pendiente">Pendiente</span></td>
+      <td>15 junio</td>
+      <td><select class="mini no-print"><option>Pablo</option><option>Dusan</option></select></td>
+    </tr>
+    <tr>
+      <td>I-13</td>
+      <td>Limpiar deuda tecnica (11 arreglos)</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-red" style="width:5%"></div></div> 5%</td>
+      <td><span class="estado estado-en-curso">En curso</span></td>
+      <td>10 junio</td>
+      <td><select class="mini no-print"><option>Pablo</option><option>Dusan</option></select></td>
+    </tr>
+  </table>
+</div>
+
+<!-- ===== COMPARTIDAS / BLOQUEADAS ===== -->
+<div class="seccion">
+  <h2 class="ambos">Tareas compartidas o bloqueadas (6)</h2>
+  <table>
+    <tr><th style="width:60px">Codigo</th><th>Tarea</th><th style="width:55px">Avance</th><th style="width:65px">Estado</th><th style="width:85px">Fecha est.</th><th style="width:70px">Reasignar</th></tr>
+
+    <tr>
+      <td>P1</td>
+      <td>Aprobar y mergear PR #5 (URLs cortas)</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-green" style="width:90%"></div></div> 90%</td>
+      <td><span class="estado estado-en-curso">Revisar</span></td>
+      <td>16 mayo</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+    <tr>
+      <td>P2</td>
+      <td>Corregir prompt Diego (miente que avisa a Dusan)</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-red" style="width:10%"></div></div> 10%</td>
+      <td><span class="estado estado-bloqueado">Bloqueado</span></td>
+      <td>25 mayo *</td>
+      <td><select class="mini no-print"><option>Dusan+Pablo</option><option>Pablo</option><option>Dusan</option></select></td>
+    </tr>
+    <tr>
+      <td>P3</td>
+      <td>Enviar link /coordinar-equipo al equipo (8 msgs)</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-yellow" style="width:30%"></div></div> 30%</td>
+      <td><span class="estado estado-pendiente">Pendiente</span></td>
+      <td>20 mayo</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+    <tr>
+      <td>P5</td>
+      <td>Arreglar 28 bugs de Diego (loops, mentiras)</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-red" style="width:5%"></div></div> 5%</td>
+      <td><span class="estado estado-bloqueado">Bloqueado</span></td>
+      <td>5 junio *</td>
+      <td><select class="mini no-print"><option>Pablo</option><option>Dusan</option></select></td>
+    </tr>
+    <tr>
+      <td>P4</td>
+      <td>Revisar conversaciones Diego cada viernes</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-yellow" style="width:20%"></div></div> 20%</td>
+      <td><span class="estado estado-pendiente">Pendiente</span></td>
+      <td>Recurrente</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+    <tr>
+      <td>P6</td>
+      <td>Darle personalidad a Diego (chistes, calidez)</td>
+      <td><div class="pct-bar"><div class="pct-fill fill-red" style="width:0%"></div></div> 0%</td>
+      <td><span class="estado estado-diferido">Diferido</span></td>
+      <td>Despues de P5</td>
+      <td><select class="mini no-print"><option>Dusan</option><option>Pablo</option></select></td>
+    </tr>
+  </table>
+  <p style="font-size:11px; color:#975a16; margin-top:4px;">* Bloqueador: falta entregar la clave <strong>N8N_API_KEY</strong> para poder tocar el prompt de Diego.</p>
+</div>
+
+<div class="footer">
+  Generado el 15 mayo 2026 &middot; Fuente: STATUS.md + PENDIENTES.md (repo reciclean-sistema)<br>
+  Avance global: <strong>15.9%</strong> sobre 25 iniciativas + 6 tareas operativas &middot; 9 de 22 tareas estan atrasadas<br>
+  <strong>Para reasignar:</strong> use los selectores de la columna derecha (solo en pantalla, no imprime)
+</div>
+
+</body>
+</html>
