@@ -1443,11 +1443,8 @@ async function loadTopClientes() {
 async function loadEvolucionAnual() {
   const div = document.getElementById('evolucionAnual');
   if (!div) return;
-  const { data, error } = await sb.from('v_dte_clientes_panel')
-    .select('empresa,anno,tipo_libro,monto_total')
-    .gte('anno', 2022)
-    .in('tipo_libro', ['VENTA', 'COMPRA'])
-    .eq('ranking', 1)
+  const { data, error } = await sb.from('v_evolucion_anual')
+    .select('empresa,anno,tipo_libro,cant_docs,monto_total')
     .order('empresa').order('anno', { ascending: false }).order('tipo_libro');
   if (error || !data?.length) { div.innerHTML = ''; return; }
   const fmtM = n => n != null ? '$' + new Intl.NumberFormat('es-CL').format(Math.round(n / 1000000)) + 'M' : '—';
@@ -1455,15 +1452,17 @@ async function loadEvolucionAnual() {
   data.forEach(r => { if (!byEmpresa[r.empresa]) byEmpresa[r.empresa] = []; byEmpresa[r.empresa].push(r); });
   div.innerHTML = Object.entries(byEmpresa).map(([emp, rows]) => `
     <div class="bg-white rounded-lg p-3 shadow-sm mb-2">
-      <div class="text-xs font-semibold text-stone-500 mb-2">${escapeHtml(emp)} — CLIENTE #1 POR AÑO</div>
+      <div class="text-xs font-semibold text-stone-500 mb-2">${escapeHtml(emp)} — EVOLUCIÓN VENTAS / COMPRAS</div>
       <table class="w-full text-xs">
         <thead><tr class="text-stone-400 border-b">
-          <th class="text-left py-1">Año</th><th class="text-right">Libro</th><th class="text-right">Monto #1</th>
+          <th class="text-left py-1">Año</th><th class="text-right">Libro</th>
+          <th class="text-right">Docs</th><th class="text-right">Monto</th>
         </tr></thead>
         <tbody>${rows.map(r => `
           <tr class="border-b border-stone-50 hover:bg-stone-50">
-            <td class="py-1">${r.anno}</td>
-            <td class="text-right">${escapeHtml(r.tipo_libro)}</td>
+            <td class="py-1 font-medium">${r.anno}</td>
+            <td class="text-right ${r.tipo_libro === 'VENTA' ? 'text-green-700' : 'text-blue-700'}">${escapeHtml(r.tipo_libro)}</td>
+            <td class="text-right text-stone-500">${r.cant_docs}</td>
             <td class="text-right font-medium">${fmtM(r.monto_total)}</td>
           </tr>`).join('')}
         </tbody>
