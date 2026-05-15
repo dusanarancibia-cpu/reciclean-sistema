@@ -117,13 +117,18 @@
     </section>
 
     <section id="tabPesaje" class="tab-content hidden">
-      <h2 class="text-xl font-bold mb-3 text-stone-800">Subir Pesaje (Fuente S1)</h2>
-      <p class="text-sm text-stone-600 mb-4">Acepta CSV o JSON. El archivo se guarda en bruto en <code>staging.pesaje_s1</code> para revisión posterior.</p>
-      <div class="bg-white p-5 rounded-lg shadow-sm">
-        <input type="file" id="pesajeFile" accept=".csv,.json" class="mb-3 block">
-        <button onclick="uploadPesaje()" class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded">Subir a staging</button>
-        <div id="pesajeResult" class="mt-4 text-sm"></div>
-      </div>
+      <h2 class="text-xl font-bold mb-3 text-stone-800">⚖️ Pesajes S1</h2>
+      <div id="pesajeSucursal" class="mb-4"></div>
+      <div id="pesajeEvolucion" class="mb-4"></div>
+      <details class="bg-white rounded-lg shadow-sm">
+        <summary class="p-4 text-sm font-semibold text-stone-600 cursor-pointer">↑ Subir archivo CSV/JSON a staging</summary>
+        <div class="px-5 pb-5">
+          <p class="text-sm text-stone-500 mb-3">Se guarda en bruto en <code>staging.pesaje_s1</code>.</p>
+          <input type="file" id="pesajeFile" accept=".csv,.json" class="mb-3 block">
+          <button onclick="uploadPesaje()" class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded">Subir a staging</button>
+          <div id="pesajeResult" class="mt-4 text-sm"></div>
+        </div>
+      </details>
     </section>
 
     <section id="tabFacturacion" class="tab-content hidden">
@@ -226,10 +231,11 @@
     </section>
 
     <section id="tabRdo" class="tab-content hidden">
-      <h2 class="text-xl font-bold mb-3 text-stone-800">Resumen RDO Diario</h2>
-      <div class="bg-white p-5 rounded-lg shadow-sm">
-        <pre id="rdoResumen" class="whitespace-pre-wrap text-sm text-stone-700">Cargando...</pre>
-      </div>
+      <h2 class="text-xl font-bold mb-3 text-stone-800">📈 RDO Resumen</h2>
+      <div id="rdoResumen" class="mb-4"><p class="text-xs text-stone-400">Cargando...</p></div>
+      <div id="kpiAnual" class="mb-4"></div>
+      <div id="topClientes" class="mb-4"></div>
+      <div id="evolucionAnual" class="mb-4"></div>
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -579,6 +585,8 @@ window.login = async function() {
   loadPortadaAudio();
   checkNewAudioNotification();
   loadRdoResumen();
+  loadKpiAnual();
+  loadPesajesSucursal();
 
   // Update ultimo_login (best-effort, no bloquea)
   sb.schema('panel').from('usuarios_autorizados').update({ ultimo_login: new Date().toISOString() })
@@ -794,7 +802,8 @@ function setupTabs() {
       btn.classList.add('active');
       if (tabId === 'comunicados') loadAudios();
       if (tabId === 'portada') loadPortadaAudio();
-      if (tabId === 'rdo') loadRdoResumen();
+      if (tabId === 'rdo') { loadRdoResumen(); loadKpiAnual(); loadTopClientes(); loadEvolucionAnual(); }
+      if (tabId === 'pesaje') { loadPesajesSucursal(); loadPesajeEvolucion(); }
       if (tabId === 'admin') loadAdminAudios();
       if (tabId === 'negocios')  loadNegocios();
       if (tabId === 'cotizador') initCotizador();
@@ -1322,19 +1331,235 @@ window.diegMandar = async function() {
 };
 
 async function loadRdoResumen() {
-  const { data, error } = await sb.schema('curated').from('rdo_diario')
-    .select('fecha,total_kg_comprados,total_facturado,n_alertas_total,resumen_json')
-    .order('fecha', { ascending: false }).limit(1);
   const div = document.getElementById('rdoResumen');
-  if (error) { div.innerText = "Sin datos aún (curated.rdo_diario vacía).\nLa pipeline DeepSeek poblará esta tabla a partir del 19-may."; return; }
-  if (!data || data.length === 0) { div.innerText = "Sin datos del día anterior. Pipeline en construcción."; return; }
-  const r = data[0];
-  div.innerText = `Fecha: ${r.fecha}
-Kilos comprados: ${r.total_kg_comprados || 0}
-Total facturado: $${r.total_facturado || 0}
-Alertas activas: ${r.n_alertas_total || 0}
+  const { data, error } = await sb.from('v_rdo_resumen_mes').select('*').single();
+  if (error || !data) {
+    div.innerHTML = '<p class="text-xs text-stone-400">Sin datos de pesajes este mes.</p>';
+    return;
+  }
+  const fmt    = n => n != null ? new Intl.NumberFormat('es-CL').format(n) : '—';
+  const fmtM   = n => n != null ? '$' + new Intl.NumberFormat('es-CL').format(Math.round(n / 1000)) + 'K' : '—';
+  const fmtPct = p => p != null ? (p >= 0 ? '▲ +' : '▼ ') + Math.abs(p) + '%' : '';
+  const pctCls = p => p != null && p >= 0 ? 'text-green-600' : 'text-red-500';
 
-${JSON.stringify(r.resumen_json || {}, null, 2)}`;
+  div.innerHTML = `
+  <div class="grid grid-cols-3 gap-3 mb-3">
+    <div class="bg-white rounded-lg p-3 shadow-sm">
+      <div class="text-xs text-stone-500 mb-1">Facturado ${data.mes_nombre?.trim() || ''}</div>
+      <div class="text-xl font-bold text-stone-800">${fmtM(data.mes_facturado)}</div>
+      <div class="text-xs ${pctCls(data.var_facturado_pct)}">${fmtPct(data.var_facturado_pct)} vs mes ant.</div>
+    </div>
+    <div class="bg-white rounded-lg p-3 shadow-sm">
+      <div class="text-xs text-stone-500 mb-1">Compras (ton)</div>
+      <div class="text-xl font-bold text-stone-800">${data.mes_ton_compra ?? '—'} t</div>
+      <div class="text-xs ${pctCls(data.var_ton_pct)}">${fmtPct(data.var_ton_pct)} vs mes ant.</div>
+    </div>
+    <div class="bg-white rounded-lg p-3 shadow-sm">
+      <div class="text-xs text-stone-500 mb-1">Tickets</div>
+      <div class="text-xl font-bold text-stone-800">${fmt(data.mes_tickets)}</div>
+      <div class="text-xs text-stone-400">${data.mes_dias_activos ?? 0} días · ${data.mes_facturas ?? 0} facturas</div>
+    </div>
+  </div>
+  ${data.ultimo_dia_fecha ? `
+  <div class="bg-white rounded-lg p-3 shadow-sm mb-3">
+    <div class="text-xs font-semibold text-stone-500 mb-1">ÚLTIMO DÍA ACTIVO — ${data.ultimo_dia_fecha}</div>
+    <div class="flex gap-4 text-sm text-stone-700">
+      <span>${fmt(data.ultimo_dia_tickets)} tickets</span>
+      <span>${fmtM(data.ultimo_dia_facturado)}</span>
+      <span>${data.ultimo_dia_ton_compra ?? 0} ton</span>
+    </div>
+  </div>` : ''}
+  ${(data.top_materiales_mes || []).length ? `
+  <div class="bg-white rounded-lg p-3 shadow-sm">
+    <div class="text-xs font-semibold text-stone-500 mb-2">TOP MATERIALES ${data.mes_nombre?.split(' ')[0].toUpperCase() || ''}</div>
+    ${(data.top_materiales_mes).map(m => `
+      <div class="flex justify-between text-xs py-0.5">
+        <span class="text-stone-700">${escapeHtml(m.material)} <span class="text-stone-400">(${escapeHtml(m.tipo)})</span></span>
+        <span>${m.ton ?? 0} t · ${fmtM(m.monto)}</span>
+      </div>`).join('')}
+  </div>` : ''}
+  ${data.mes_alertas_total > 0 ? `
+  <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs mt-3">
+    <span class="font-semibold text-amber-700">⚠️ Alertas:</span>
+    <span class="text-amber-600 ml-1">${data.mes_alertas_alta} alta · ${data.mes_alertas_total} total</span>
+  </div>` : ''}`;
+}
+
+async function loadKpiAnual() {
+  const div = document.getElementById('kpiAnual');
+  if (!div) return;
+  const { data, error } = await sb.from('v_kpi_grupo_anual')
+    .select('anno,ventas_total,compras_total,margen_bruto')
+    .gte('anno', 2022)
+    .order('anno', { ascending: false });
+  if (error || !data?.length) { div.innerHTML = ''; return; }
+  const fmtM = n => n != null ? '$' + new Intl.NumberFormat('es-CL').format(Math.round(n / 1000000)) + 'M' : '—';
+  const pct  = (m, v) => v > 0 ? (m / v * 100).toFixed(1) + '%' : '—';
+  div.innerHTML = `
+  <div class="bg-white rounded-lg p-3 shadow-sm">
+    <div class="text-xs font-semibold text-stone-500 mb-2">EVOLUCIÓN ANUAL GRUPO</div>
+    <table class="w-full text-xs">
+      <thead><tr class="text-stone-400 border-b">
+        <th class="text-left py-1">Año</th><th class="text-right">Ventas</th>
+        <th class="text-right">Compras</th><th class="text-right">Margen</th><th class="text-right">%</th>
+      </tr></thead>
+      <tbody>${data.map(r => `
+        <tr class="border-b border-stone-50 hover:bg-stone-50">
+          <td class="py-1 font-medium">${r.anno}</td>
+          <td class="text-right">${fmtM(r.ventas_total)}</td>
+          <td class="text-right">${fmtM(r.compras_total)}</td>
+          <td class="text-right font-medium">${fmtM(r.margen_bruto)}</td>
+          <td class="text-right ${parseFloat(pct(r.margen_bruto, r.ventas_total)) >= 20 ? 'text-green-600' : 'text-amber-600'}">${pct(r.margen_bruto, r.ventas_total)}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+async function loadTopClientes() {
+  const div = document.getElementById('topClientes');
+  if (!div) return;
+  const { data, error } = await sb.from('v_dte_clientes_panel')
+    .select('empresa,anno,tipo_libro,ranking,razon_social,monto_total,pct_del_total,es_intercompania')
+    .eq('anno', new Date().getFullYear())
+    .eq('tipo_libro', 'VENTA')
+    .lte('ranking', 5)
+    .order('empresa').order('ranking');
+  if (error || !data?.length) { div.innerHTML = ''; return; }
+  const fmtM = n => n != null ? '$' + new Intl.NumberFormat('es-CL').format(Math.round(n / 1000000)) + 'M' : '—';
+  const byEmpresa = {};
+  data.forEach(r => { if (!byEmpresa[r.empresa]) byEmpresa[r.empresa] = []; byEmpresa[r.empresa].push(r); });
+  div.innerHTML = Object.entries(byEmpresa).map(([emp, rows]) => `
+    <div class="bg-white rounded-lg p-3 shadow-sm mb-2">
+      <div class="text-xs font-semibold text-stone-500 mb-2">${escapeHtml(emp)} — TOP CLIENTES ${rows[0].anno}</div>
+      ${rows.map(r => `
+        <div class="flex justify-between text-xs py-0.5 ${r.pct_del_total >= 30 ? 'text-amber-700 font-medium' : 'text-stone-700'}">
+          <span>#${r.ranking} ${escapeHtml(r.razon_social)}${r.es_intercompania ? ' <span class="text-stone-400">(IC)</span>' : ''}</span>
+          <span>${fmtM(r.monto_total)} · ${r.pct_del_total}%</span>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+async function loadEvolucionAnual() {
+  const div = document.getElementById('evolucionAnual');
+  if (!div) return;
+  const { data, error } = await sb.from('v_dte_clientes_panel')
+    .select('empresa,anno,tipo_libro,monto_total')
+    .gte('anno', 2022)
+    .in('tipo_libro', ['VENTA', 'COMPRA'])
+    .eq('ranking', 1)
+    .order('empresa').order('anno', { ascending: false }).order('tipo_libro');
+  if (error || !data?.length) { div.innerHTML = ''; return; }
+  const fmtM = n => n != null ? '$' + new Intl.NumberFormat('es-CL').format(Math.round(n / 1000000)) + 'M' : '—';
+  const byEmpresa = {};
+  data.forEach(r => { if (!byEmpresa[r.empresa]) byEmpresa[r.empresa] = []; byEmpresa[r.empresa].push(r); });
+  div.innerHTML = Object.entries(byEmpresa).map(([emp, rows]) => `
+    <div class="bg-white rounded-lg p-3 shadow-sm mb-2">
+      <div class="text-xs font-semibold text-stone-500 mb-2">${escapeHtml(emp)} — CLIENTE #1 POR AÑO</div>
+      <table class="w-full text-xs">
+        <thead><tr class="text-stone-400 border-b">
+          <th class="text-left py-1">Año</th><th class="text-right">Libro</th><th class="text-right">Monto #1</th>
+        </tr></thead>
+        <tbody>${rows.map(r => `
+          <tr class="border-b border-stone-50 hover:bg-stone-50">
+            <td class="py-1">${r.anno}</td>
+            <td class="text-right">${escapeHtml(r.tipo_libro)}</td>
+            <td class="text-right font-medium">${fmtM(r.monto_total)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`).join('');
+}
+
+async function loadPesajesSucursal() {
+  const div = document.getElementById('pesajeSucursal');
+  if (!div) return;
+  const { data, error } = await sb.from('v_pesajes_kpi_sucursal').select('*');
+  if (error || !data?.length) {
+    div.innerHTML = '<p class="text-xs text-stone-400">Sin datos de pesajes por sucursal.</p>';
+    return;
+  }
+  const anno = new Date().getFullYear();
+  const fmt  = n => n != null ? new Intl.NumberFormat('es-CL').format(n) : '—';
+  const fmtM = n => n != null ? '$' + new Intl.NumberFormat('es-CL').format(Math.round(n / 1000)) + 'K' : '—';
+  const sucursales = {};
+  data.forEach(r => {
+    if (!sucursales[r.sucursal]) sucursales[r.sucursal] = {};
+    sucursales[r.sucursal][r.tipo_servicio] = r;
+  });
+  const orden = ['Maipú', 'Talca', 'Cerrillos', 'Puerto Montt', 'Sin sucursal'];
+  const keys = Object.keys(sucursales).sort((a, b) => {
+    const ia = orden.indexOf(a), ib = orden.indexOf(b);
+    if (ia === -1 && ib === -1) return a.localeCompare(b);
+    if (ia === -1) return 1; if (ib === -1) return -1;
+    return ia - ib;
+  });
+  const cards = keys.map(suc => {
+    const compra = sucursales[suc]['COMPRA'];
+    const venta  = sucursales[suc]['VENTA'];
+    const esSinSuc = suc === 'Sin sucursal';
+    const badge = esSinSuc ? '<span class="ml-1 text-xs bg-amber-100 text-amber-700 px-1 rounded">sin asignar</span>' : '';
+    return `
+    <div class="bg-white rounded-lg p-3 shadow-sm ${esSinSuc ? 'border border-amber-200' : ''}">
+      <div class="text-xs font-semibold text-stone-600 mb-2">${escapeHtml(suc)}${badge}</div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <div class="text-xs text-stone-400">COMPRA</div>
+          <div class="text-sm font-bold text-blue-700">${compra ? fmtM(compra.monto_total) : '—'}</div>
+          <div class="text-xs text-stone-500">${compra ? fmt(compra.tickets) + ' tickets · ' + compra.toneladas + 't' : ''}</div>
+        </div>
+        <div>
+          <div class="text-xs text-stone-400">VENTA</div>
+          <div class="text-sm font-bold text-green-700">${venta ? fmtM(venta.monto_total) : '—'}</div>
+          <div class="text-xs text-stone-500">${venta ? fmt(venta.tickets) + ' tickets · ' + venta.toneladas + 't' : ''}</div>
+        </div>
+      </div>
+      ${compra?.ultimo_dia ? `<div class="text-xs text-stone-400 mt-1">último: ${compra.ultimo_dia}</div>` : ''}
+    </div>`;
+  }).join('');
+  div.innerHTML = `
+  <div class="text-xs font-semibold text-stone-500 mb-2">PESAJES POR SUCURSAL — YTD ${anno}</div>
+  <div class="grid grid-cols-2 gap-2 mb-2">${cards}</div>
+  ${esSinSucExists(data) ? '<div class="text-xs text-stone-400">* Sin sucursal: pesajes sin origen asignado — pendiente revisión.</div>' : ''}`;
+}
+
+function esSinSucExists(data) { return data.some(r => r.sucursal === 'Sin sucursal'); }
+
+async function loadPesajeEvolucion() {
+  const div = document.getElementById('pesajeEvolucion');
+  if (!div) return;
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  const desde = sixMonthsAgo.toISOString().slice(0, 7);
+  const { data, error } = await sb.from('v_pesajes_por_sucursal_mes')
+    .select('sucursal,mes_str,tipo_servicio,tickets,toneladas,monto_total')
+    .gte('mes_str', desde)
+    .eq('tipo_servicio', 'COMPRA')
+    .neq('sucursal', 'Sin sucursal')
+    .order('sucursal').order('mes_str', { ascending: false });
+  if (error || !data?.length) { div.innerHTML = ''; return; }
+  const fmtM = n => n != null ? '$' + new Intl.NumberFormat('es-CL').format(Math.round(n / 1000)) + 'K' : '—';
+  const bySuc = {};
+  data.forEach(r => { if (!bySuc[r.sucursal]) bySuc[r.sucursal] = []; bySuc[r.sucursal].push(r); });
+  div.innerHTML = `
+  <div class="text-xs font-semibold text-stone-500 mb-2">COMPRAS MENSUALES — ÚLTIMOS 6 MESES</div>
+  ${Object.entries(bySuc).map(([suc, rows]) => `
+    <div class="bg-white rounded-lg p-3 shadow-sm mb-2">
+      <div class="text-xs font-semibold text-stone-500 mb-2">${escapeHtml(suc)}</div>
+      <table class="w-full text-xs">
+        <thead><tr class="text-stone-400 border-b">
+          <th class="text-left py-1">Mes</th><th class="text-right">Tickets</th><th class="text-right">Ton</th><th class="text-right">Monto</th>
+        </tr></thead>
+        <tbody>${rows.map(r => `
+          <tr class="border-b border-stone-50 hover:bg-stone-50">
+            <td class="py-1">${r.mes_str}</td>
+            <td class="text-right text-stone-600">${r.tickets}</td>
+            <td class="text-right">${r.toneladas}t</td>
+            <td class="text-right font-medium">${fmtM(r.monto_total)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`).join('')}`;
 }
 
 // ============================================================
