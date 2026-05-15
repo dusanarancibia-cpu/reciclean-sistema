@@ -133,13 +133,18 @@
     </section>
 
     <section id="tabFacturacion" class="tab-content hidden">
-      <h2 class="text-xl font-bold mb-3 text-stone-800">Subir Facturación (Fuente S5)</h2>
-      <p class="text-sm text-stone-600 mb-4">Acepta CSV o JSON. Se guarda en bruto en <code>staging.facturacion_s5</code>.</p>
-      <div class="bg-white p-5 rounded-lg shadow-sm">
-        <input type="file" id="facturacionFile" accept=".csv,.json" class="mb-3 block">
-        <button onclick="uploadFacturacion()" class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded">Subir a staging</button>
-        <div id="facturacionResult" class="mt-4 text-sm"></div>
-      </div>
+      <h2 class="text-xl font-bold mb-3 text-stone-800">🧾 Facturación S5</h2>
+      <div id="facturacionCruceAlertas" class="mb-4"><p class="text-xs text-stone-400">Cargando cruce DTE-pesajes...</p></div>
+      <div id="facturacionTopClientes" class="mb-4"></div>
+      <details class="bg-white rounded-lg shadow-sm">
+        <summary class="p-4 text-sm font-semibold text-stone-600 cursor-pointer">↑ Subir archivo CSV/JSON a staging</summary>
+        <div class="px-5 pb-5">
+          <p class="text-sm text-stone-500 mb-3">Se guarda en bruto en <code>staging.facturacion_s5</code>.</p>
+          <input type="file" id="facturacionFile" accept=".csv,.json" class="mb-3 block">
+          <button onclick="uploadFacturacion()" class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded">Subir a staging</button>
+          <div id="facturacionResult" class="mt-4 text-sm"></div>
+        </div>
+      </details>
     </section>
 
     <section id="tabDieguito" class="tab-content hidden">
@@ -807,6 +812,7 @@ function setupTabs() {
       if (tabId === 'portada') { loadPortadaAudio(); loadAlertasPortada(); }
       if (tabId === 'rdo') { loadRdoResumen(); loadKpiAnual(); loadTopClientes(); loadEvolucionAnual(); loadAlertasRdo(); }
       if (tabId === 'pesaje') { loadPesajesSucursal(); loadPesajeEvolucion(); }
+      if (tabId === 'facturacion') { loadFacturacionCruceAlertas(); loadFacturacionTopClientes(); }
       if (tabId === 'admin') loadAdminAudios();
       if (tabId === 'negocios')  loadNegocios();
       if (tabId === 'cotizador') initCotizador();
@@ -1552,6 +1558,86 @@ async function loadAlertasRdo() {
         </table>
       </div>
     </div>`;
+}
+
+async function loadFacturacionCruceAlertas() {
+  const div = document.getElementById('facturacionCruceAlertas');
+  if (!div) return;
+  const { data, error } = await sb.from('v_alertas_facturacion')
+    .select('tipo_alerta,nombre,empresa_dte,pesajes,monto_pesajes,monto_dte,facturas_emitidas,diff_pct,estado_cruce')
+    .order('tipo_alerta');
+  if (error || !data?.length) {
+    div.innerHTML = '<div class="bg-green-50 border border-green-200 rounded-lg p-3 text-xs text-green-700">✅ Sin discrepancias DTE-pesajes este año.</div>';
+    return;
+  }
+  const criticos  = data.filter(a => a.tipo_alerta && a.tipo_alerta.startsWith('CRITICO')).length;
+  const alertas   = data.filter(a => a.tipo_alerta && a.tipo_alerta.startsWith('ALERTA')).length;
+  const fmtM = n => n != null ? '$' + new Intl.NumberFormat('es-CL').format(Math.round(Number(n) / 1000)) + 'K' : '—';
+  div.innerHTML = `
+    <div class="bg-white rounded-lg p-4 shadow-sm">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="font-semibold text-sm text-stone-700">Cruce DTE ↔ Pesajes 2026</span>
+        ${criticos > 0 ? `<span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">🔴 ${criticos} crítico${criticos !== 1 ? 's' : ''}</span>` : ''}
+        ${alertas  > 0 ? `<span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">⚠️ ${alertas} alerta${alertas !== 1 ? 's' : ''}</span>` : ''}
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead><tr class="text-stone-400 border-b text-left">
+            <th class="py-1 pr-2">Proveedor</th>
+            <th class="py-1 pr-2">Empresa</th>
+            <th class="py-1 pr-2 text-right">Pesajes $</th>
+            <th class="py-1 pr-2 text-right">DTE $</th>
+            <th class="py-1 pr-2 text-right">Diff%</th>
+            <th class="py-1">Alerta</th>
+          </tr></thead>
+          <tbody>
+            ${data.map(a => {
+              const esCritico = a.tipo_alerta && a.tipo_alerta.startsWith('CRITICO');
+              return `
+            <tr class="border-b border-stone-50 hover:bg-stone-50 ${esCritico ? 'bg-red-50' : 'bg-amber-50'}">
+              <td class="py-1 pr-2 font-medium text-stone-700 max-w-xs truncate" title="${escapeHtml(a.nombre || '')}">${escapeHtml((a.nombre || '').slice(0, 35))}${(a.nombre||'').length > 35 ? '…' : ''}</td>
+              <td class="py-1 pr-2 text-stone-500">${escapeHtml(a.empresa_dte || '—')}</td>
+              <td class="py-1 pr-2 text-right font-mono">${fmtM(a.monto_pesajes)}</td>
+              <td class="py-1 pr-2 text-right font-mono">${fmtM(a.monto_dte)}</td>
+              <td class="py-1 pr-2 text-right ${Math.abs(Number(a.diff_pct)) > 100 ? 'text-red-600 font-bold' : 'text-amber-600'}">${a.diff_pct != null ? a.diff_pct + '%' : '—'}</td>
+              <td class="py-1 text-xs ${esCritico ? 'text-red-600 font-semibold' : 'text-amber-700'}">${escapeHtml(a.tipo_alerta || '')}</td>
+            </tr>`;}).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+async function loadFacturacionTopClientes() {
+  const div = document.getElementById('facturacionTopClientes');
+  if (!div) return;
+  const anno = new Date().getFullYear();
+  const { data, error } = await sb.from('v_dte_clientes_panel')
+    .select('empresa,nombre,anno,tipo_libro,monto_total,cant_docs,ranking')
+    .eq('anno', anno).eq('tipo_libro', 'VENTA').lte('ranking', 8)
+    .order('empresa').order('ranking');
+  if (error || !data?.length) return;
+  const fmtM = n => n != null ? '$' + new Intl.NumberFormat('es-CL').format(Math.round(Number(n) / 1000000)) + 'M' : '—';
+  const byEmpresa = {};
+  data.forEach(r => { if (!byEmpresa[r.empresa]) byEmpresa[r.empresa] = []; byEmpresa[r.empresa].push(r); });
+  div.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+    ${Object.entries(byEmpresa).map(([emp, rows]) => `
+    <div class="bg-white rounded-lg p-3 shadow-sm">
+      <div class="text-xs font-semibold text-stone-500 mb-2">${escapeHtml(emp)} — Top clientes ${anno}</div>
+      <table class="w-full text-xs">
+        <thead><tr class="text-stone-400 border-b">
+          <th class="text-left py-1">Cliente</th><th class="text-right">Docs</th><th class="text-right">Monto</th>
+        </tr></thead>
+        <tbody>${rows.map(r => `
+          <tr class="border-b border-stone-50 hover:bg-stone-50">
+            <td class="py-1 text-stone-700 truncate max-w-xs" title="${escapeHtml(r.nombre||'')}">${escapeHtml((r.nombre||'').slice(0,28))}${(r.nombre||'').length>28?'…':''}</td>
+            <td class="text-right text-stone-500">${r.cant_docs}</td>
+            <td class="text-right font-medium text-green-700">${fmtM(r.monto_total)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`).join('')}
+  </div>`;
 }
 
 async function loadPesajesSucursal() {
