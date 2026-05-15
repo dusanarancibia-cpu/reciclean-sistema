@@ -6,6 +6,7 @@
   <title>Panel RDO — Reciclean-Farex</title>
   <link rel="stylesheet" href="/tailwind.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/page-logger.js"></script>
   <style>
     .app-container { display: none; }
     .login-container { display: flex; }
@@ -560,6 +561,7 @@ window.login = async function() {
   currentUser = data.email;
   currentProfile = data.perfil;
   console.log('[Panel RDO] Login OK:', { email: currentUser, profile: currentProfile });
+  if (typeof window.pageLog === 'function') window.pageLog('login', null, { perfil: currentProfile });
   document.getElementById('userEmailDisplay').innerText = data.nombre || data.email;
   document.getElementById('userProfileDisplay').innerText = currentProfile;
 
@@ -792,6 +794,7 @@ function setupTabs() {
       if (target) target.classList.remove('hidden');
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      if (typeof window.pageLog === 'function') window.pageLog('tab_change', tabId);
       if (tabId === 'comunicados') loadAudios();
       if (tabId === 'portada') loadPortadaAudio();
       if (tabId === 'rdo') loadRdoResumen();
