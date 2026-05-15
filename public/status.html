@@ -107,7 +107,7 @@ footer a{color:#4a90d9;text-decoration:none}
 </table>
 </div>
 <footer>
-  Datos: 22-abr-2026 · 68 temas &nbsp;|&nbsp;
+  Datos: 15-may-2026 · 77 temas &nbsp;|&nbsp;
   <a href="/agregar-tema.html">+ Agregar tema</a> &nbsp;|&nbsp;
   Fuente: Supabase <code>temas_en_progreso</code>
 </footer>
@@ -116,8 +116,8 @@ const T=[
 {c:'I-01',p:null,pct:30,a:'Tecnología',r:'Claude',t:'Mapa BD + FKs',ti:'1h',e:false,dep:[],del:null,b:'spec',sig:'Mapear FKs reales via information_schema + diagrama ER + decidir RLS',ruta:null,fl:'2026-04-29'},
 {c:'I-02',p:null,pct:10,a:'Gerencia General',r:'Dusan',t:'Viz informes',ti:'2sem',e:false,dep:['I-03'],del:'Ingrid',b:'diseno',sig:'Decidir consumidor/herramienta según matriz CEO/supervisor/comercial',ruta:null,fl:'2026-05-15'},
 {c:'I-03',p:null,pct:20,a:'Tecnología',r:'Dusan',t:'Eval BI tools',ti:'2h',e:false,dep:[],del:'Pablo',b:'spec',sig:'Contrastar con contexto Reciclean real (Pablo vacaciones hasta 26-abr)',ruta:['Cesar - Order/07_Archivo_y_Respaldos/admin_panel_v83.html'],fl:'2026-05-10'},
-{c:'I-04',p:null,pct:90,a:'Gerencia General',r:'Claude',t:'Tracker temas',ti:'30min',e:true,dep:[],del:'Pablo',b:'revision',sig:'Dusan prueba flujo PC/web/móvil y valida. Pablo wirea n8n Diego post 26-abr.',ruta:null,fl:'2026-04-30'},
-{c:'I-05',p:null,pct:30,a:'Tecnología',r:'Claude',t:'Panel temas',ti:'3h',e:false,dep:['I-04'],del:'Pablo',b:'spec',sig:'Build /public/status.html con JS interactivo. Post 26-abr migrar a API live.',ruta:null,fl:'2026-05-10'},
+{c:'I-04',p:null,pct:95,a:'Gerencia General',r:'Claude',t:'Tracker temas',ti:'30min',e:false,dep:[],del:'Pablo',b:'revision',sig:'Operativo. Pendiente migrar datos a API Supabase live.',ruta:null,fl:'2026-04-30'},
+{c:'I-05',p:null,pct:40,a:'Tecnología',r:'Claude',t:'Panel temas',ti:'3h',e:false,dep:['I-04'],del:'Pablo',b:'build',sig:'status.html funcionando con 68+ temas. Falta API live + actualización automática.',ruta:null,fl:'2026-05-10'},
 {c:'I-06',p:null,pct:15,a:'Gerencia General',r:'Dusan',t:'Ecosistema int.',ti:'1sem',e:false,dep:[],del:'Pablo',b:'diseno',sig:'Aceptar Mermaid ya. Post 30-abr evaluar consolidar I-02/I-03.',ruta:['Plan Ecosistema Digital/Ecosistema_Digital_Reciclean_Farex_v2.pptx'],fl:'2026-05-20'},
 {c:'I-07',p:null,pct:10,a:'Tecnología',r:'Claude',t:'Eval diagramas',ti:'30min',e:false,dep:['I-05','I-06'],del:null,b:'diseno',sig:'Integrar Apache ECharts en I-05. Deferir D2/Kroki para evaluar si Mermaid queda corto.',ruta:null,fl:'2026-05-20'},
 {c:'I-08',p:null,pct:10,a:'Tecnología',r:'Dusan',t:'Rotación keys',ti:'20min',e:true,dep:[],del:'Pablo',b:'diseno',sig:'Rotar K3 en console.anthropic.com + Meta token en developers.facebook.com',ruta:null,fl:'2026-04-22'},
@@ -153,7 +153,7 @@ const T=[
 {c:'I-12.5',p:'I-12',pct:0,a:'Gerencia General',r:'Dusan+Pablo',t:'Lanzamiento oficial',ti:'30min',e:true,dep:[],del:null,b:'diseno',sig:'Abrir whitelist + anunciar en grupo',ruta:null,fl:'2026-04-30'},
 {c:'I-12.6',p:'I-12',pct:20,a:'Gerencia General',r:'Dusan',t:'Mensaje M2 equipo',ti:'30min',e:false,dep:[],del:null,b:'spec',sig:'Ya borrador en repo. Ajustar + enviar 30-abr',ruta:null,fl:'2026-04-30'},
 {c:'I-12.7',p:'I-12',pct:0,a:'Recursos Humanos',r:'Dusan',t:'Onboarding sup',ti:'5d',e:false,dep:[],del:null,b:'diseno',sig:'Agendar sesiones 1-a-1 o grupales',ruta:null,fl:'2026-05-08'},
-{c:'I-13',p:null,pct:5,a:'Tecnología',r:'Pablo',t:'Deuda técnica',ti:'3sem',e:false,dep:['I-12'],del:null,b:'diseno',sig:'Priorizar post 30-abr. Memory y verify_token son críticos pre-lanzamiento.',ruta:null,fl:'2026-05-20'},
+{c:'I-13',p:null,pct:10,a:'Tecnología',r:'Pablo',t:'Deuda técnica',ti:'3sem',e:false,dep:['I-12'],del:null,b:'diseno',sig:'Tailwind fix aplicado. Pendiente: npm audit (2 vulns), memory conv, verify_token.',ruta:null,fl:'2026-05-20'},
 {c:'I-13.1',p:'I-13',pct:0,a:'Tecnología',r:'Pablo',t:'Memoria conv',ti:'4h',e:false,dep:[],del:null,b:'diseno',sig:'Patch antes lanzamiento 30-abr (crítico)',ruta:null,fl:'2026-04-29'},
 {c:'I-13.2',p:'I-13',pct:0,a:'Tecnología',r:'Pablo',t:'Verify token robust',ti:'1h',e:false,dep:[],del:null,b:'diseno',sig:'Deploy antes 30-abr (seguridad)',ruta:null,fl:'2026-04-29'},
 {c:'I-13.3',p:'I-13',pct:0,a:'Tecnología',r:'Pablo',t:'Monitoreo uptime',ti:'30min',e:false,dep:[],del:null,b:'diseno',sig:'Registrar endpoint n8n.reciclean.cl/healthz',ruta:null,fl:'2026-05-05'},
@@ -180,12 +180,21 @@ const T=[
 {c:'I-22',p:null,pct:25,a:'Tecnología',r:'Dusan',t:'Guía Chatbot',ti:'2sem',e:false,dep:['I-12'],del:'Pablo',b:'spec',sig:'Revisar guia_chatbot + decidir deploy post 30-abr',ruta:['Claude Code/ChatBot/produccion/Guia_Chatbot_Reciclean.pptx'],fl:null},
 {c:'I-23',p:null,pct:15,a:'Gerencia General',r:'Dusan',t:'Monday implement',ti:'3h',e:false,dep:[],del:null,b:'diseno',sig:'Decidir Monday vs tracker interno post 30-abr',ruta:['Claude Code/Documentacion/Monday_Guia_Implementacion_Reciclean.pptx'],fl:null},
 {c:'I-24',p:null,pct:20,a:'Recursos Humanos',r:'Dusan',t:'Descripción cargos',ti:'2h',e:false,dep:[],del:'Ingrid',b:'spec',sig:'Consolidar descripciones 3 cargos + aprobar con equipo',ruta:['equipo-procesos/Cesar Mora/Descripcion de cargo/Descripción Asistente Comercial.docx'],fl:null},
-{c:'I-25',p:null,pct:30,a:'Legal y Compliance',r:'Dusan',t:'Permisos Talca',ti:'3h',e:false,dep:[],del:'Ingrid',b:'spec',sig:'Revisar vigencia cada permiso + fechas renovación',ruta:['Permisos y Resoluciones/Permisos de Talca/20230710142 Resolucion Exenta SEA.pdf'],fl:null}
+{c:'I-25',p:null,pct:30,a:'Legal y Compliance',r:'Dusan',t:'Permisos Talca',ti:'3h',e:false,dep:[],del:'Ingrid',b:'spec',sig:'Revisar vigencia cada permiso + fechas renovación',ruta:['Permisos y Resoluciones/Permisos de Talca/20230710142 Resolucion Exenta SEA.pdf'],fl:null},
+{c:'P-01',p:null,pct:85,a:'Tecnología',r:'Dusan',t:'Panel RDO deploy',ti:'2sem',e:true,dep:[],del:'Pablo',b:'build',sig:'Productivo. Pendiente: npm audit + evaluar mover tailwind.css a .gitignore.',ruta:['public/panel-rdo.html'],fl:'2026-05-20'},
+{c:'P-01.1',p:'P-01',pct:100,a:'Tecnología',r:'Pablo',t:'Port Sprint 1',ti:'4h',e:false,dep:[],del:null,b:'superado',sig:'Pestañas Negocios + Cotizador portadas desde reciclean-rdo.',ruta:null,fl:'2026-05-12'},
+{c:'P-01.2',p:'P-01',pct:100,a:'Tecnología',r:'Pablo',t:'Port Sprint 2',ti:'4h',e:false,dep:[],del:null,b:'superado',sig:'Dieguito-Weón con IA portado desde reciclean-rdo.',ruta:null,fl:'2026-05-13'},
+{c:'P-01.3',p:'P-01',pct:100,a:'Tecnología',r:'Dusan',t:'Bypass Cesar',ti:'15min',e:false,dep:[],del:null,b:'superado',sig:'Cesar Mora agregado a FALLBACK_BYPASS_EMAILS. Ve 11 silos.',ruta:null,fl:'2026-05-11'},
+{c:'P-01.4',p:'P-01',pct:100,a:'Tecnología',r:'Pablo',t:'Fix Tailwind 503',ti:'2h',e:false,dep:[],del:null,b:'superado',sig:'Pipeline CSS configurado. tailwindcss@3.4.17 + build:css script.',ruta:null,fl:'2026-05-14'},
+{c:'P-01.5',p:'P-01',pct:100,a:'Gerencia General',r:'Dusan',t:'Reglas agentes IA',ti:'1h',e:false,dep:[],del:null,b:'superado',sig:'CLAUDE.md + PR template con checklist técnico. 6 reglas operativas.',ruta:null,fl:'2026-05-14'},
+{c:'P-01.6',p:'P-01',pct:100,a:'Tecnología',r:'Dusan',t:'Deploy prod',ti:'30min',e:false,dep:[],del:null,b:'superado',sig:'PR #23 main→prod mergeado. Panel operativo en Vercel.',ruta:null,fl:'2026-05-14'},
+{c:'P-01.7',p:'P-01',pct:0,a:'Tecnología',r:'Pablo',t:'npm audit fix',ti:'1h',e:true,dep:[],del:null,b:'diseno',sig:'2 vulnerabilidades pendientes (1 high, 1 moderate).',ruta:null,fl:'2026-05-20'},
+{c:'P-01.8',p:'P-01',pct:0,a:'Tecnología',r:'Pablo',t:'Migrador RDO',ti:'1h',e:false,dep:[],del:null,b:'diseno',sig:'PR #20 abierto. Pablo descarga instalador .bat y configura.',ruta:null,fl:'2026-05-20'}
 ];
 const BL={diseno:'💡 Diseño',spec:'📋 Spec',build:'🔨 Build',validado:'🧪 Validado',revision:'🔍 Revisión',superado:'✅ Superado'};
 const BC={diseno:'bd',spec:'bs',build:'bb',validado:'bv',revision:'br',superado:'bx'};
 const PC=p=>p>=80?'#4ade80':p>=60?'#2dd4bf':p>=40?'#fb923c':p>=20?'#fbbf24':'#f87171';
-const TOD='2026-04-22';
+const TOD='2026-05-15';
 let sC=null,sA=true,showS=false,fT='',fAr='',fRs='',fBn='',fEj=false;
 
 function bldSel(){
