@@ -110,6 +110,7 @@
       <div id="portadaAudioPlayer" class="bg-white p-5 rounded-lg shadow-sm mb-4">
         <p class="text-stone-500">Cargando mensajes destacados...</p>
       </div>
+      <div id="portadaAlertas" class="mb-4"></div>
       <div class="bg-white p-5 rounded-lg shadow-sm">
         <h3 class="font-bold text-stone-700 mb-2">Sistema integrado de reportes y comunicaciones</h3>
         <p class="text-sm text-stone-600">Aquí puedes subir información operativa, ver mensajes del equipo y consultar el resumen diario.</p>
@@ -236,6 +237,7 @@
       <div id="kpiAnual" class="mb-4"></div>
       <div id="topClientes" class="mb-4"></div>
       <div id="evolucionAnual" class="mb-4"></div>
+      <div id="rdoAlertas" class="mb-4"></div>
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -587,6 +589,7 @@ window.login = async function() {
   loadRdoResumen();
   loadKpiAnual();
   loadPesajesSucursal();
+  loadAlertasPortada();
 
   // Update ultimo_login (best-effort, no bloquea)
   sb.schema('panel').from('usuarios_autorizados').update({ ultimo_login: new Date().toISOString() })
@@ -801,8 +804,8 @@ function setupTabs() {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       if (tabId === 'comunicados') loadAudios();
-      if (tabId === 'portada') loadPortadaAudio();
-      if (tabId === 'rdo') { loadRdoResumen(); loadKpiAnual(); loadTopClientes(); loadEvolucionAnual(); }
+      if (tabId === 'portada') { loadPortadaAudio(); loadAlertasPortada(); }
+      if (tabId === 'rdo') { loadRdoResumen(); loadKpiAnual(); loadTopClientes(); loadEvolucionAnual(); loadAlertasRdo(); }
       if (tabId === 'pesaje') { loadPesajesSucursal(); loadPesajeEvolucion(); }
       if (tabId === 'admin') loadAdminAudios();
       if (tabId === 'negocios')  loadNegocios();
@@ -1468,6 +1471,87 @@ async function loadEvolucionAnual() {
         </tbody>
       </table>
     </div>`).join('');
+}
+
+async function loadAlertasPortada() {
+  const div = document.getElementById('portadaAlertas');
+  if (!div) return;
+  const { data, error } = await sb.from('v_alertas_panel')
+    .select('tipo_alerta,nivel,titulo,descripcion,fecha,valor')
+    .order('nivel');
+  if (error || !data?.length) return;
+  const rojos    = data.filter(a => a.nivel === 'rojo').length;
+  const amarillos = data.filter(a => a.nivel === 'amarillo').length;
+  const top5 = data.filter(a => a.nivel === 'rojo').slice(0, 5)
+    .concat(data.filter(a => a.nivel === 'amarillo').slice(0, Math.max(0, 5 - rojos)));
+  div.innerHTML = `
+    <div class="rounded-lg border ${rojos > 0 ? 'border-red-200 bg-red-50' : 'border-amber-200 bg-amber-50'} p-4">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="text-lg">${rojos > 0 ? '🔴' : '🟡'}</span>
+        <div class="flex-1">
+          <span class="font-semibold text-sm text-stone-800">Alertas activas: ${data.length} total</span>
+          <span class="ml-2 text-xs ${rojos > 0 ? 'text-red-600' : 'text-stone-500'}">${rojos} crítica${rojos !== 1 ? 's' : ''}</span>
+          ${amarillos > 0 ? `<span class="ml-1 text-xs text-amber-600">${amarillos} advertencia${amarillos !== 1 ? 's' : ''}</span>` : ''}
+        </div>
+        <button onclick="document.querySelector('[data-tab=rdo]').click()" class="text-xs text-stone-500 underline">Ver en RDO ↗</button>
+      </div>
+      <ul class="space-y-1">
+        ${top5.map(a => `
+        <li class="text-xs flex gap-2">
+          <span class="${a.nivel === 'rojo' ? 'text-red-500' : 'text-amber-500'}">●</span>
+          <span class="text-stone-700 truncate" title="${escapeHtml(a.descripcion || '')}">
+            <span class="font-medium">${escapeHtml(a.titulo || a.tipo_alerta)}</span>
+            ${a.descripcion ? ` — ${escapeHtml(a.descripcion.slice(0, 80))}` : ''}
+            ${a.valor ? `<span class="ml-1 font-mono text-stone-500">${escapeHtml(a.valor)}</span>` : ''}
+          </span>
+        </li>`).join('')}
+        ${data.length > 5 ? `<li class="text-xs text-stone-400 mt-1">... y ${data.length - 5} más</li>` : ''}
+      </ul>
+    </div>`;
+}
+
+async function loadAlertasRdo() {
+  const div = document.getElementById('rdoAlertas');
+  if (!div) return;
+  div.innerHTML = '<p class="text-xs text-stone-400">Cargando alertas...</p>';
+  const { data, error } = await sb.from('v_alertas_panel')
+    .select('tipo_alerta,nivel,titulo,descripcion,fecha,valor')
+    .order('nivel');
+  if (error || !data?.length) { div.innerHTML = ''; return; }
+  const rojos    = data.filter(a => a.nivel === 'rojo').length;
+  const amarillos = data.filter(a => a.nivel === 'amarillo').length;
+  const badge = n => n === 'rojo'
+    ? '<span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1"></span>'
+    : '<span class="inline-block w-2 h-2 rounded-full bg-amber-400 mr-1"></span>';
+  div.innerHTML = `
+    <div class="bg-white rounded-lg p-4 shadow-sm">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="font-semibold text-sm text-stone-700">⚠️ Alertas del sistema</span>
+        <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">${rojos} crítica${rojos !== 1 ? 's' : ''}</span>
+        ${amarillos > 0 ? `<span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">${amarillos} advertencia${amarillos !== 1 ? 's' : ''}</span>` : ''}
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead><tr class="text-stone-400 border-b text-left">
+            <th class="py-1 pr-2">Nivel</th>
+            <th class="py-1 pr-2">Tipo</th>
+            <th class="py-1 pr-2">Descripción</th>
+            <th class="py-1 pr-2">Valor</th>
+            <th class="py-1">Fecha</th>
+          </tr></thead>
+          <tbody>
+            ${data.map(a => `
+            <tr class="border-b border-stone-50 hover:bg-stone-50">
+              <td class="py-1 pr-2">${badge(a.nivel)}${a.nivel}</td>
+              <td class="py-1 pr-2 font-medium text-stone-600">${escapeHtml(a.tipo_alerta || '')}</td>
+              <td class="py-1 pr-2 text-stone-500 max-w-xs truncate" title="${escapeHtml(a.descripcion || '')}">${escapeHtml((a.descripcion || '').slice(0, 70))}${(a.descripcion || '').length > 70 ? '…' : ''}</td>
+              <td class="py-1 pr-2 font-mono text-stone-600">${escapeHtml(a.valor || '—')}</td>
+              <td class="py-1 text-stone-400">${a.fecha || '—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
 }
 
 async function loadPesajesSucursal() {
