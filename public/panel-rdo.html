@@ -1420,7 +1420,7 @@ async function loadKpiAnual() {
   if (!div) return;
   const { data, error } = await sb.from('v_kpi_grupo_anual')
     .select('anno,ventas_total,compras_total,margen_bruto')
-    .gte('anno', 2022)
+    .gte('anno', 2017)
     .order('anno', { ascending: false });
   if (error || !data?.length) { div.innerHTML = ''; return; }
   const fmtM = n => n != null ? '$' + new Intl.NumberFormat('es-CL').format(Math.round(n / 1000000)) + 'M' : '—';
