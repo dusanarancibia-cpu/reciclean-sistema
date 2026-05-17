@@ -293,6 +293,10 @@
                  oninput="loadNegociosBuscar(this.value)"
                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none w-48">
         </div>
+        <label class="flex items-center gap-1.5 text-xs text-stone-600 cursor-pointer pb-1.5">
+          <input type="checkbox" id="negSinSucursal" onchange="loadNegocios()" class="accent-green-700">
+          Solo sin sucursal
+        </label>
         <button onclick="loadNegocios()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
       </div>
 
@@ -497,6 +501,21 @@ let MAPEO_SILOS = {};          // {silo_codigo: [pestana_codigo, ...]} computado
 let silosVisibles = [];   // silos que el usuario puede ver según RLS
 let currentSilo = null;   // código del silo activo, o null = vista global
 const LS_KEY_SILO = 'rdo_silo_seleccionado';
+
+// Cache global de sucursales (D-DAT-04 — editor inline en tab Negocios)
+let _sucursalesCache = null;
+async function ensureSucursalesCache() {
+  if (_sucursalesCache) return _sucursalesCache;
+  const { data, error } = await sb.schema('curated').from('sucursales')
+    .select('sucursal_id, nombre').eq('activa', true).order('nombre');
+  if (error) {
+    console.warn('[D-DAT-04] No se pudo cargar sucursales:', error.message);
+    _sucursalesCache = [];
+  } else {
+    _sucursalesCache = data || [];
+  }
+  return _sucursalesCache;
+}
 
 function initSupabase() {
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1820,11 +1839,15 @@ async function loadNegocios(buscarOverride) {
   const div = document.getElementById('negociosTabla');
   div.innerHTML = '<p class="text-stone-400">Cargando…</p>';
 
-  const estado  = document.getElementById('negEstado')?.value  || '';
-  const tipo    = document.getElementById('negTipo')?.value    || '';
+  const estado        = document.getElementById('negEstado')?.value  || '';
+  const tipo          = document.getElementById('negTipo')?.value    || '';
+  const sinSucursal   = document.getElementById('negSinSucursal')?.checked === true;
   const buscar  = buscarOverride !== undefined
     ? buscarOverride
     : (document.getElementById('negBuscar')?.value || '');
+
+  // Cargar cache sucursales en paralelo con la query principal
+  const sucursalesP = ensureSucursalesCache();
 
   let q = sb.schema('curated').from('oportunidades')
     .select('oportunidad_id, tipo, titulo, estado, valor_estimado_uf, fecha_recepcion, fecha_cierre, responsable, cliente_id, cliente_nombre_libre, sucursal_id')
@@ -1833,9 +1856,10 @@ async function loadNegocios(buscarOverride) {
 
   if (estado) q = q.eq('estado', estado);
   if (tipo)   q = q.eq('tipo', tipo);
+  if (sinSucursal) q = q.is('sucursal_id', null);
   if (buscar) q = q.or(`titulo.ilike.%${buscar}%,cliente_nombre_libre.ilike.%${buscar}%`);
 
-  const { data, error } = await q;
+  const [{ data, error }, sucursales] = await Promise.all([q, sucursalesP]);
 
   if (error) {
     div.innerHTML = `<p class="text-red-600 p-4">Error cargando negocios: ${escapeHtml(error.message)}</p>`;
@@ -1864,6 +1888,10 @@ async function loadNegocios(buscarOverride) {
     cotizacion: '📋',
   };
 
+  const sucursalOpts = (sucursales || []).map(s =>
+    `<option value="${escapeHtml(s.sucursal_id)}">${escapeHtml(s.nombre)}</option>`
+  ).join('');
+
   div.innerHTML = `
     <table class="w-full text-sm min-w-max">
       <thead>
@@ -1873,12 +1901,20 @@ async function loadNegocios(buscarOverride) {
           <th class="text-left py-2 px-2">Cliente</th>
           <th class="text-right py-2 px-2">UF est.</th>
           <th class="py-2 px-2">Estado</th>
+          <th class="py-2 px-2">Sucursal</th>
           <th class="text-right py-2 px-2">Fecha</th>
           <th class="py-2 px-2"></th>
         </tr>
       </thead>
       <tbody>
-        ${data.map(n => `
+        ${data.map(n => {
+          const sucActual = n.sucursal_id || '';
+          const sinSuc = !sucActual;
+          const selectId = `selSuc_${n.oportunidad_id}`;
+          const optionsHtml = (sucursales || []).map(s =>
+            `<option value="${escapeHtml(s.sucursal_id)}" ${s.sucursal_id===sucActual?'selected':''}>${escapeHtml(s.nombre)}</option>`
+          ).join('');
+          return `
           <tr class="border-b hover:bg-stone-50 cursor-pointer"
               onclick="verTimeline('${escapeHtml(n.oportunidad_id)}', '${escapeHtml(n.titulo.replace(/'/g,"&#39;"))}')">
             <td class="py-2 px-3 font-medium text-stone-800 max-w-xs truncate">${escapeHtml(n.titulo)}</td>
@@ -1890,6 +1926,15 @@ async function loadNegocios(buscarOverride) {
                 ${escapeHtml(n.estado)}
               </span>
             </td>
+            <td class="py-2 px-2 text-center" onclick="event.stopPropagation()">
+              <select id="${selectId}"
+                      onchange="actualizarSucursalOportunidad('${escapeHtml(n.oportunidad_id)}', this.value, '${selectId}')"
+                      class="text-xs border rounded px-1.5 py-0.5 ${sinSuc ? 'border-amber-400 bg-amber-50 text-amber-800' : 'border-stone-300 bg-white text-stone-700'} focus:border-green-700 focus:outline-none">
+                <option value="" ${sinSuc?'selected':''}>${sinSuc ? '⚠ Asignar…' : '—'}</option>
+                ${optionsHtml}
+              </select>
+              <span id="${selectId}_msg" class="text-[10px] ml-1"></span>
+            </td>
             <td class="py-2 px-2 text-right text-stone-400 text-xs">${new Date(n.fecha_recepcion).toLocaleDateString('es-CL')}</td>
             <td class="py-2 px-2 text-center">
               <button class="text-xs text-green-700 hover:underline"
@@ -1897,11 +1942,49 @@ async function loadNegocios(buscarOverride) {
                 📋
               </button>
             </td>
-          </tr>
-        `).join('')}
+          </tr>`;
+        }).join('')}
       </tbody>
     </table>
-    <p class="text-xs text-stone-400 p-3">${data.length} negocio(s) encontrado(s)</p>`;
+    <p class="text-xs text-stone-400 p-3">${data.length} negocio(s) encontrado(s)${sinSucursal ? ' · filtro: sin sucursal' : ''}</p>`;
+}
+
+// D-DAT-04 — UPDATE inline de sucursal_id en oportunidades.
+// Requiere policy `anon_update_oportunidades_sucursal_validado` (mig 030).
+async function actualizarSucursalOportunidad(opId, sucursalId, selectId) {
+  const msgEl = document.getElementById(selectId + '_msg');
+  if (msgEl) { msgEl.textContent = '⏳'; msgEl.className = 'text-[10px] ml-1 text-stone-400'; }
+  const sel = document.getElementById(selectId);
+  if (sel) sel.disabled = true;
+
+  const payload = {
+    sucursal_id: sucursalId || null,
+    updated_by: currentUser,
+    updated_at: new Date().toISOString(),
+  };
+  const { error } = await sb.schema('curated').from('oportunidades')
+    .update(payload).eq('oportunidad_id', opId);
+
+  if (sel) sel.disabled = false;
+  if (error) {
+    console.error('[D-DAT-04] update sucursal failed:', error);
+    if (msgEl) { msgEl.textContent = '✗ ' + (error.message || 'error'); msgEl.className = 'text-[10px] ml-1 text-red-600'; }
+    return;
+  }
+  if (msgEl) {
+    msgEl.textContent = '✓';
+    msgEl.className = 'text-[10px] ml-1 text-green-600 font-bold';
+    setTimeout(() => { if (msgEl) msgEl.textContent = ''; }, 1500);
+  }
+  // Re-pintar el select según el nuevo estado (con/sin sucursal)
+  if (sel) {
+    const sinSuc = !sucursalId;
+    sel.className = 'text-xs border rounded px-1.5 py-0.5 ' +
+      (sinSuc ? 'border-amber-400 bg-amber-50 text-amber-800' : 'border-stone-300 bg-white text-stone-700') +
+      ' focus:border-green-700 focus:outline-none';
+    const opt0 = sel.querySelector('option[value=""]');
+    if (opt0) opt0.textContent = sinSuc ? '⚠ Asignar…' : '—';
+  }
 }
 
 async function verTimeline(opId, titulo) {
