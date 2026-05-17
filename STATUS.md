@@ -89,9 +89,52 @@ Total Supabase: **84 tablas** + **11 vistas**.
 
 | Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
 |---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **22-abr-2026** (baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **17-may-2026** | 68 | — | 0 | 2 | 5 | 61 |
 
 > _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+
+---
+
+## Bitacora 17-may-2026 — Resumen en palabras sencillas
+
+### Que se hizo hoy
+
+**En simple:** Se puso un "candado" al codigo de produccion para que nadie pueda subir cambios sin que Pablo los revise primero. Ademas, Pablo termino de construir el editor de sucursales en el Panel RDO para que Andrea pueda asignar las 18 oportunidades que no tenian sucursal.
+
+---
+
+### Tareas de Dusan (17-may)
+
+| # | Que hizo | Para que sirve | Estado |
+|---|----------|---------------|--------|
+| 1 | Creo archivo CODEOWNERS en GitHub | Ahora todo cambio que vaya a produccion necesita que Pablo lo apruebe. Es un seguro: nada se rompe sin segundo par de ojos. | Mergeado (PR #26) |
+| 2 | Firmo decision D-PROTEC-PROD-003 | Autorizo oficialmente la proteccion de la rama `prod`. | Firmada |
+| 3 | Pendiente: Invitar a Pablo como collaborator en GitHub | Sin esto, GitHub no puede pedirle revision a Pablo. | Pendiente manual |
+| 4 | Pendiente: Activar "Require review from Code Owners" en settings de rama `prod` | Sin esto el candado no funciona aunque el archivo exista. | Pendiente manual |
+
+### Tareas de Pablo (16-17 may)
+
+| # | Que hizo | Para que sirve | Estado |
+|---|----------|---------------|--------|
+| 1 | Construyo editor inline de sucursal en tab Negocios del Panel RDO | Andrea puede ver cuales oportunidades no tienen sucursal asignada (aparecen en amarillo) y asignarlas con un click desde el panel. | Mergeado (PR #24) |
+| 2 | Agrego filtro "Solo sin sucursal" | Un checkbox que filtra la tabla para ver solo las 18 oportunidades huerfanas. Facilita la limpieza de datos. | Mergeado |
+| 3 | Creo cache global de sucursales | Evita que el panel haga una consulta a Supabase cada vez que dibuja una fila. Carga una vez, reutiliza siempre. Mas rapido. | Mergeado |
+
+---
+
+### Nivel de avance actualizado
+
+| Iniciativa | Antes | Ahora | Motivo del cambio |
+|---|---|---|---|
+| **I-13** (Deuda tecnica) | 5% | 10% | CODEOWNERS implementado = proteccion basica de prod |
+| **I-09** (Infra + hub) | 15% | 20% | GitHub permissions en camino, falta activar branch protection |
+
+### Proximos pasos inmediatos
+
+1. **Dusan**: Invitar `@pablo-arancibia` como collaborator en GitHub y activar branch protection (10 min)
+2. **Pablo/Andrea**: Usar el nuevo filtro "Solo sin sucursal" para asignar las 18 oportunidades huerfanas
+3. **Ambos**: Verificar en preview deploy que el editor de sucursales funciona correctamente
 
 ---
 
