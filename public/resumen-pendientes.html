@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pendientes Reciclean-Farex — 17 mayo 2026</title>
+<style>
+  @media print { body { margin: 0; } }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 13px;
+    color: #1a1a1a;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    line-height: 1.4;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid #1a5c2e;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    font-size: 18px;
+    color: #1a5c2e;
+  }
+  .header .fecha {
+    font-size: 12px;
+    color: #666;
+  }
+  .dest {
+    background: #f0f7f2;
+    border-left: 4px solid #1a5c2e;
+    padding: 6px 12px;
+    margin-bottom: 14px;
+    font-size: 12px;
+  }
+  .dest strong { color: #1a5c2e; }
+  h2 {
+    font-size: 14px;
+    color: #1a5c2e;
+    margin: 12px 0 6px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 3px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+  th {
+    background: #1a5c2e;
+    color: #fff;
+    text-align: left;
+    padding: 5px 6px;
+    font-weight: 600;
+  }
+  td {
+    padding: 4px 6px;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: top;
+  }
+  tr:nth-child(even) { background: #f9f9f9; }
+  .pct {
+    font-weight: bold;
+    text-align: center;
+    min-width: 40px;
+  }
+  .pct-low { color: #c0392b; }
+  .pct-mid { color: #e67e22; }
+  .pct-ok { color: #27ae60; }
+  .estado {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .bloq { background: #fdecea; color: #c0392b; }
+  .abier { background: #fff3cd; color: #856404; }
+  .avanz { background: #d4edda; color: #155724; }
+  .difer { background: #e2e3e5; color: #383d41; }
+  .reasignar {
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .nota {
+    font-size: 11px;
+    color: #555;
+    margin-top: 6px;
+    padding: 6px 10px;
+    background: #fff8e1;
+    border-left: 3px solid #f9a825;
+  }
+  .footer {
+    margin-top: 12px;
+    font-size: 11px;
+    color: #888;
+    text-align: center;
+    border-top: 1px solid #ddd;
+    padding-top: 6px;
+  }
+  .leyenda {
+    display: flex;
+    gap: 14px;
+    font-size: 11px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .leyenda span { display: flex; align-items: center; gap: 3px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>PENDIENTES RECICLEAN-FAREX</h1>
+  <span class="fecha">17 de mayo 2026</span>
+</div>
+
+<div class="dest">
+  <strong>Para:</strong> Dusan Arancibia (CEO) &nbsp;|&nbsp; Pablo Arancibia (Sistemas)<br>
+  <strong>De:</strong> Asistente IA &nbsp;|&nbsp; <strong>Columna "Reasignar":</strong> marcar con el nombre de quien se hace cargo si cambia el responsable.
+</div>
+
+<div class="leyenda">
+  <span><span class="estado bloq">Bloqueada</span> necesita algo para avanzar</span>
+  <span><span class="estado abier">Abierta</span> se puede hacer ya</span>
+  <span><span class="estado avanz">Avanzada</span> mas del 50%</span>
+  <span><span class="estado difer">Diferida</span> en pausa a proposito</span>
+</div>
+
+<!-- ====== TAREAS DUSAN ====== -->
+<h2>TAREAS DE DUSAN</h2>
+<table>
+  <tr>
+    <th style="width:28%">Tarea</th>
+    <th style="width:8%">Avance</th>
+    <th style="width:9%">Estado</th>
+    <th style="width:26%">Que falta (en simple)</th>
+    <th style="width:14%">Fecha est.</th>
+    <th style="width:15%">Reasignar a</th>
+  </tr>
+  <tr>
+    <td><strong>Parche Diego Alonso</strong><br><small>P2 — Que no mienta al equipo</small></td>
+    <td class="pct pct-low">15%</td>
+    <td><span class="estado bloq">Bloqueada</span></td>
+    <td>Entregar la clave N8N_API_KEY para que se pueda aplicar el parche al chatbot</td>
+    <td>24 mayo</td>
+    <td class="reasignar"></td>
+  </tr>
+  <tr>
+    <td><strong>Sprint ventas</strong><br><small>I-10 — Cerrar clientes nuevos</small></td>
+    <td class="pct pct-mid">40%</td>
+    <td><span class="estado abier">Abierta</span></td>
+    <td>Retomar prospeccion: enviar mensajes WA, demos Diego, cerrar cliente #1</td>
+    <td>31 mayo</td>
+    <td class="reasignar"></td>
+  </tr>
+  <tr>
+    <td><strong>Difundir coordinacion</strong><br><small>P3 — Enviar link al equipo</small></td>
+    <td class="pct pct-low">20%</td>
+    <td><span class="estado abier">Abierta</span></td>
+    <td>Enviar los 8 mensajes WA personalizados desde tu celular</td>
+    <td>20 mayo</td>
+    <td class="reasignar"></td>
+  </tr>
+  <tr>
+    <td><strong>Rotacion de claves</strong><br><small>I-08 — Seguridad basica</small></td>
+    <td class="pct pct-low">10%</td>
+    <td><span class="estado bloq">Bloqueada</span></td>
+    <td>Cambiar claves K3 + Meta (lleva semanas atrasado)</td>
+    <td>20 mayo</td>
+    <td class="reasignar"></td>
+  </tr>
+  <tr>
+    <td><strong>Plan 2026-2030</strong><br><small>I-19 — Hoja de ruta del grupo</small></td>
+    <td class="pct pct-mid">30%</td>
+    <td><span class="estado abier">Abierta</span></td>
+    <td>Terminar el PPT, alinear con sprint ventas y Diego</td>
+    <td>30 mayo</td>
+    <td class="reasignar"></td>
+  </tr>
+  <tr>
+    <td><strong>Puerto Montt</strong><br><small>I-21 — Abrir sucursal</small></td>
+    <td class="pct pct-low">20%</td>
+    <td><span class="estado bloq">Bloqueada</span></td>
+    <td>Permisos SAG pendientes, no depende de nosotros</td>
+    <td>30 junio</td>
+    <td class="reasignar"></td>
+  </tr>
+  <tr>
+    <td><strong>Contrato Resimple</strong><br><small>I-18 — Revisar vigencia</small></td>
+    <td class="pct pct-low">0%</td>
+    <td><span class="estado abier">Abierta</span></td>
+    <td>Leer contrato y confirmar si sigue vigente para 2026</td>
+    <td>25 mayo</td>
+    <td class="reasignar"></td>
+  </tr>
+  <tr>
+    <td><strong>Propuestas comerciales</strong><br><small>I-20 — Revisar 8 propuestas</small></td>
+    <td class="pct pct-low">10%</td>
+    <td><span class="estado abier">Abierta</span></td>
+    <td>Revisar los 8 PDFs de propuestas activas y decidir</td>
+    <td>30 mayo</td>
+    <td class="reasignar"></td>
+  </tr>
+  <tr>
+    <td><strong>Descripcion de cargos</strong><br><small>I-24 — RRHH al dia</small></td>
+    <td class="pct pct-low">20%</td>
+    <td><span class="estado abier">Abierta</span></td>
+    <td>Consolidar los 3 cargos que faltan</td>
+    <td>15 junio</td>
+    <td class="reasignar"></td>
+  </tr>
+</table>
+
+<!-- ====== TAREAS PABLO ====== -->
+<h2>TAREAS DE PABLO</h2>
+<table>
+  <tr>
+    <th style="width:28%">Tarea</th>
+    <th style="width:8%">Avance</th>
+    <th style="width:9%">Estado</th>
+    <th style="width:26%">Que falta (en simple)</th>
+    <th style="width:14%">Fecha est.</th>
+    <th style="width:15%">Reasignar a</th>
+  </tr>
+  <tr>
+    <td><strong>Arreglar bugs Diego v4.3</strong><br><small>P5 — 28 errores detectados</small></td>
+    <td class="pct pct-low">10%</td>
+    <td><span class="estado bloq">Bloqueada</span></td>
+    <td>Necesita la clave N8N de Dusan. Corregir loops, mentiras, menus rotos</td>
+    <td>31 mayo</td>
+    <td class="reasignar"></td>
+  </tr>
+  <tr>
+    <td><strong>Asistente Comercial deploy</strong><br><small>I-11 — ACI en produccion</small></td>
+    <td class="pct pct-mid">50%</td>
+    <td><span class="estado avanz">Avanzada</span></td>
+    <td>Necesita que VPS (I-09) este listo primero</td>
+    <td>31 mayo</td>
+    <td class="reasignar"></td>
+  </tr>
+  <tr>
+    <td><strong>Infra VPS + hub</strong><br><small>I-09 — Servidor propio</small></td>
+    <td class="pct pct-low">15%</td>
+    <td><span class="estado bloq">Bloqueada</span></td>
+    <td>Necesita que Dusan rote claves (I-08) + contratar DigitalOcean</td>
+    <td>28 mayo</td>
+    <td class="reasignar"></td>
+  </tr>
+  <tr>
+    <td><strong>Diego v5.1</strong><br><small>I-16 — Mejoras post-lanzamiento</small></td>
+    <td class="pct pct-low">0%</td>
+    <td><span class="estado difer">Diferida</span></td>
+    <td>Esperar que v4.3 y v5.0 esten estables</td>
+    <td>15 junio</td>
+    <td class="reasignar"></td>
+  </tr>
+  <tr>
+    <td><strong>Deuda tecnica</strong><br><small>I-13 — Limpiar codigo acumulado</small></td>
+    <td class="pct pct-low">5%</td>
+    <td><span class="estado abier">Abierta</span></td>
+    <td>11 sub-tareas de limpieza, hacer cuando haya tiempo</td>
+    <td>15 junio</td>
+    <td class="reasignar"></td>
+  </tr>
+  <tr>
+    <td><strong>Mergear PR #5</strong><br><small>P1 — URLs cortas en produccion</small></td>
+    <td class="pct pct-mid">90%</td>
+    <td><span class="estado abier">Abierta</span></td>
+    <td>Solo falta darle click a "Merge" en GitHub</td>
+    <td>18 mayo</td>
+    <td class="reasignar"></td>
+  </tr>
+</table>
+
+<!-- ====== COMPARTIDAS ====== -->
+<h2>TAREAS COMPARTIDAS / IA</h2>
+<table>
+  <tr>
+    <th style="width:28%">Tarea</th>
+    <th style="width:8%">Avance</th>
+    <th style="width:9%">Estado</th>
+    <th style="width:26%">Que falta (en simple)</th>
+    <th style="width:14%">Fecha est.</th>
+    <th style="width:15%">Reasignar a</th>
+  </tr>
+  <tr>
+    <td><strong>Diego v5.0 en vivo</strong><br><small>I-12 — Lanzamiento oficial</small></td>
+    <td class="pct pct-mid">30%</td>
+    <td><span class="estado abier">Abierta</span></td>
+    <td>Dusan + Pablo: armar lanzamiento juntos. Atrasado 2+ semanas</td>
+    <td>31 mayo</td>
+    <td class="reasignar"></td>
+  </tr>
+  <tr>
+    <td><strong>Monitoreo semanal Diego</strong><br><small>P4 — Revisar cada viernes</small></td>
+    <td class="pct pct-low">10%</td>
+    <td><span class="estado abier">Abierta</span></td>
+    <td>Revisar conversaciones en Supabase, ajustar si hay problemas</td>
+    <td>Continuo</td>
+    <td class="reasignar"></td>
+  </tr>
+  <tr>
+    <td><strong>Humanizacion Diego v4.4</strong><br><small>P6 — Que sea mas amable</small></td>
+    <td class="pct pct-low">0%</td>
+    <td><span class="estado difer">Diferida</span></td>
+    <td>Primero arreglar los bugs (P5). Despues agregar calidez</td>
+    <td>Junio</td>
+    <td class="reasignar"></td>
+  </tr>
+</table>
+
+<div class="nota">
+  <strong>Cuello de botella principal:</strong> La clave N8N_API_KEY que tiene Dusan. Sin ella no se puede arreglar Diego (P2 + P5). Eso bloquea tambien el lanzamiento de v5.0 (I-12). Resolver esto primero desbloquea todo lo demas.
+</div>
+
+<div class="footer">
+  Reciclean-Farex &bull; Resumen generado el 17 mayo 2026 &bull; Fuente: PENDIENTES.md + STATUS.md &bull; Imprime esta hoja y marca con lapiz la columna "Reasignar a"
+</div>
+
+</body>
+</html>
