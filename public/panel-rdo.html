@@ -23,9 +23,18 @@
     .dieg-chip.ai-suggested::after { content:'✦'; font-size:.65rem; opacity:.8; }
     @keyframes pulse-rec { 0%,100%{opacity:1} 50%{opacity:.4} }
     .recording-pulse { animation: pulse-rec 1.2s ease-in-out infinite; }
+    /* D-OP-08 #3 — focus visible global (a11y keyboard nav).
+       Sobreescribe focus:outline-none de Tailwind. Outline verde Reciclean (#2C5F2D)
+       con offset para no chocar con focus:ring-* donde ya existe. */
+    :focus-visible { outline: 2px solid #2C5F2D !important; outline-offset: 2px; border-radius: 3px; }
+    :focus:not(:focus-visible) { outline: none; }
   </style>
 </head>
 <body class="bg-stone-100 min-h-screen">
+
+<!-- D-OP-08 #6 — Toast container (feedback no intrusivo top-right) -->
+<div id="toastStack" aria-live="polite" aria-atomic="true"
+     class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
 <!-- LOGIN -->
 <div id="loginContainer" class="login-container min-h-screen items-center justify-center">
@@ -530,6 +539,49 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+// D-OP-08 #6 — Toast top-right reusable + traductor de errores Supabase a humano.
+function showToast(msg, type) {
+  const stack = document.getElementById('toastStack');
+  if (!stack) { console.log('[toast]', type, msg); return; }
+  const colors = {
+    ok:    'bg-green-600 text-white',
+    error: 'bg-red-600 text-white',
+    info:  'bg-stone-700 text-white',
+  };
+  const cls = colors[type] || colors.info;
+  const el = document.createElement('div');
+  el.className = `${cls} text-sm px-4 py-2 rounded shadow-lg pointer-events-auto opacity-0 transition-opacity duration-200 max-w-xs`;
+  el.setAttribute('role', type === 'error' ? 'alert' : 'status');
+  el.textContent = msg;
+  stack.appendChild(el);
+  requestAnimationFrame(() => { el.style.opacity = '1'; });
+  setTimeout(() => {
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 220);
+  }, type === 'error' ? 5000 : 2500);
+}
+
+function humanizeSupabaseError(err) {
+  const raw = (err && (err.message || err.hint || err.details)) || '';
+  const code = err && err.code;
+  if (/permission denied|row-level security/i.test(raw)) {
+    return 'No tenés permisos para guardar este cambio. Avisá a Pablo.';
+  }
+  if (/duplicate key|already exists/i.test(raw) || code === '23505') {
+    return 'Ese valor ya existe. Revisá si lo cargaste antes.';
+  }
+  if (/foreign key|violates.*constraint/i.test(raw) || code === '23503') {
+    return 'Falta un dato relacionado (cliente, sucursal o similar).';
+  }
+  if (/network|fetch failed|Failed to fetch/i.test(raw)) {
+    return 'Sin conexión al servidor. Reintentá en unos segundos.';
+  }
+  if (/timeout/i.test(raw)) {
+    return 'El servidor tardó demasiado. Probá de nuevo.';
+  }
+  return 'No se pudo guardar. Probá de nuevo o avisá a Pablo.';
 }
 
 // CSV parser tolerante (maneja comas dentro de campos con comillas)
@@ -1933,7 +1985,7 @@ async function loadNegocios(buscarOverride) {
                 <option value="" ${sinSuc?'selected':''}>${sinSuc ? '⚠ Asignar…' : '—'}</option>
                 ${optionsHtml}
               </select>
-              <span id="${selectId}_msg" class="text-[10px] ml-1"></span>
+              <span id="${selectId}_msg" class="text-sm ml-1"></span>
             </td>
             <td class="py-2 px-2 text-right text-stone-400 text-xs">${new Date(n.fecha_recepcion).toLocaleDateString('es-CL')}</td>
             <td class="py-2 px-2 text-center">
@@ -1953,7 +2005,7 @@ async function loadNegocios(buscarOverride) {
 // Requiere policy `anon_update_oportunidades_sucursal_validado` (mig 030).
 async function actualizarSucursalOportunidad(opId, sucursalId, selectId) {
   const msgEl = document.getElementById(selectId + '_msg');
-  if (msgEl) { msgEl.textContent = '⏳'; msgEl.className = 'text-[10px] ml-1 text-stone-400'; }
+  if (msgEl) { msgEl.textContent = '⏳'; msgEl.className = 'text-sm ml-1 text-stone-400'; }
   const sel = document.getElementById(selectId);
   if (sel) sel.disabled = true;
 
@@ -1967,15 +2019,18 @@ async function actualizarSucursalOportunidad(opId, sucursalId, selectId) {
 
   if (sel) sel.disabled = false;
   if (error) {
+    // D-OP-08 #6 — log técnico a consola, mensaje humano al usuario.
     console.error('[D-DAT-04] update sucursal failed:', error);
-    if (msgEl) { msgEl.textContent = '✗ ' + (error.message || 'error'); msgEl.className = 'text-[10px] ml-1 text-red-600'; }
+    if (msgEl) { msgEl.textContent = '✗'; msgEl.className = 'text-sm ml-1 text-red-600 font-bold'; }
+    showToast(humanizeSupabaseError(error), 'error');
     return;
   }
   if (msgEl) {
     msgEl.textContent = '✓';
-    msgEl.className = 'text-[10px] ml-1 text-green-600 font-bold';
+    msgEl.className = 'text-sm ml-1 text-green-600 font-bold';
     setTimeout(() => { if (msgEl) msgEl.textContent = ''; }, 1500);
   }
+  showToast('Sucursal guardada', 'ok');
   // Re-pintar el select según el nuevo estado (con/sin sucursal)
   if (sel) {
     const sinSuc = !sucursalId;
@@ -1984,6 +2039,13 @@ async function actualizarSucursalOportunidad(opId, sucursalId, selectId) {
       ' focus:border-green-700 focus:outline-none';
     const opt0 = sel.querySelector('option[value=""]');
     if (opt0) opt0.textContent = sinSuc ? '⚠ Asignar…' : '—';
+  }
+
+  // D-OP-08 #2 — si el filtro "Solo sin sucursal" está activo y la fila ahora SÍ tiene sucursal,
+  // la fila debe desaparecer de la vista. Re-render la tabla con un pequeño delay para que
+  // Andrea vea el ✓ antes del refresco.
+  if (sucursalId && document.getElementById('negSinSucursal')?.checked === true) {
+    setTimeout(() => loadNegocios(), 600);
   }
 }
 
