@@ -111,6 +111,7 @@
       <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600">📋 Cotizador</button>
       <button data-tab="cierres"    class="tab-btn py-3 px-3 text-stone-600">📅 Cierres</button>
       <button data-tab="precios"    class="tab-btn py-3 px-3 text-stone-600">💲 Precios</button>
+      <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600">📑 OPERATIVOS</button>
       <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden">⚙️ Admin</button>
     </div>
   </nav>
@@ -463,6 +464,101 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA OPERATIVOS (D-OP-10 · bucket storage 'operativos' + curated.operativos_metadata)
+         Destranca Cony: deja WhatsApp → migra al panel para subir PDFs.
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabOperativos" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">📑 OPERATIVOS — PDFs por empresa/período</h2>
+        <button onclick="loadOperativosLista()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+
+      <!-- Subir PDF -->
+      <div class="bg-white p-5 rounded-lg shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-3">Subir PDF nuevo</h3>
+        <div class="flex flex-wrap gap-3 items-end">
+          <div>
+            <label class="block text-xs text-stone-500 mb-1">Empresa *</label>
+            <select id="opUpEmpresa"
+                    class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none min-w-[14rem]">
+              <option value="">— Seleccionar —</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-stone-500 mb-1">Año *</label>
+            <select id="opUpAnio"
+                    class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none w-24">
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-stone-500 mb-1">Mes *</label>
+            <select id="opUpMes"
+                    class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none w-36">
+              <option value="1">Enero</option><option value="2">Febrero</option>
+              <option value="3">Marzo</option><option value="4">Abril</option>
+              <option value="5">Mayo</option><option value="6">Junio</option>
+              <option value="7">Julio</option><option value="8">Agosto</option>
+              <option value="9">Septiembre</option><option value="10">Octubre</option>
+              <option value="11">Noviembre</option><option value="12">Diciembre</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-stone-500 mb-1">PDF *</label>
+            <input type="file" id="opUpFile" accept="application/pdf,.pdf"
+                   class="text-sm">
+          </div>
+          <button onclick="subirPDFOperativo()"
+                  class="bg-green-700 hover:bg-green-800 text-white px-4 py-1.5 rounded text-sm font-semibold transition">
+            ⬆ Subir PDF
+          </button>
+        </div>
+        <p class="text-xs text-stone-400 mt-2">Máx 50 MB. Solo PDF. Si subes 2 PDFs para la misma empresa+mes+filename, el segundo reemplaza al primero.</p>
+        <div id="opUpStatus" class="text-sm mt-2"></div>
+      </div>
+
+      <!-- Lista filtrable -->
+      <div class="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-wrap gap-3 items-end">
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Empresa</label>
+          <select id="opFiltroEmpresa" onchange="loadOperativosLista()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none min-w-[14rem]">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Año</label>
+          <select id="opFiltroAnio" onchange="loadOperativosLista()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none w-24">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Mes</label>
+          <select id="opFiltroMes" onchange="loadOperativosLista()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none w-36">
+            <option value="">Todos</option>
+            <option value="1">Enero</option><option value="2">Febrero</option>
+            <option value="3">Marzo</option><option value="4">Abril</option>
+            <option value="5">Mayo</option><option value="6">Junio</option>
+            <option value="7">Julio</option><option value="8">Agosto</option>
+            <option value="9">Septiembre</option><option value="10">Octubre</option>
+            <option value="11">Noviembre</option><option value="12">Diciembre</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tabla histórica -->
+      <div class="bg-white rounded-lg shadow-sm overflow-x-auto">
+        <div id="operativosTabla" class="text-sm text-stone-500 p-5">Cargando…</div>
+      </div>
+
+      <p class="text-xs text-stone-400 mt-3">
+        Fuente: <code>curated.operativos_metadata</code> + bucket <code>operativos</code> (privado, 50 MB max, PDF only).
+        El link "Ver PDF" genera una URL firmada con expiración 1 hora.
+      </p>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
          PESTAÑA COTIZADOR
     ═══════════════════════════════════════════════════════════ -->
     <section id="tabCotizador" class="tab-content hidden">
@@ -625,8 +721,8 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'admin'];
-const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'operativos', 'admin'];
+const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
   'Dusan.arancibia@gmail.com',
@@ -1025,6 +1121,7 @@ function setupTabs() {
       if (tabId === 'cotizador') initCotizador();
       if (tabId === 'cierres')   loadCierres();
       if (tabId === 'precios')   initPrecios();
+      if (tabId === 'operativos') initOperativos();
       if (tabId === 'dieguito')  initDieguito();
     });
   });
@@ -2722,6 +2819,207 @@ async function loadPrecios() {
       <tbody>${rowsHtml}</tbody>
     </table>
     <p class="text-xs text-stone-400 p-3">${rows.length} fila(s) · margen rojo &lt;30% · ámbar 30-50% · verde ≥50%</p>`;
+}
+
+// ============================================================
+// PESTAÑA OPERATIVOS (D-OP-10 — bucket 'operativos' + curated.operativos_metadata)
+// Destranca Cony: subir PDFs por empresa/período + lista histórica filtrable.
+// ============================================================
+
+let _operativosIniciado = false;
+let _operativosEmpresas = [];   // [{empresa_id, razon_social}]
+
+async function initOperativos() {
+  if (_operativosIniciado) {
+    loadOperativosLista();
+    return;
+  }
+  _operativosIniciado = true;
+
+  // Cargar empresas (catálogo común al upload y al filtro)
+  const empRes = await sb.schema('curated').from('empresas_grupo')
+    .select('empresa_id, razon_social').eq('activa', true).order('razon_social');
+  _operativosEmpresas = empRes.data || [];
+
+  const selUpEmp = document.getElementById('opUpEmpresa');
+  const selFiltEmp = document.getElementById('opFiltroEmpresa');
+  _operativosEmpresas.forEach(e => {
+    const o1 = document.createElement('option');
+    o1.value = e.empresa_id; o1.textContent = e.razon_social;
+    selUpEmp.appendChild(o1);
+    const o2 = document.createElement('option');
+    o2.value = e.empresa_id; o2.textContent = e.razon_social;
+    selFiltEmp.appendChild(o2);
+  });
+
+  // Años (actual ± 5)
+  const hoy = new Date();
+  const anioActual = hoy.getFullYear();
+  const selUpAnio = document.getElementById('opUpAnio');
+  const selFiltAnio = document.getElementById('opFiltroAnio');
+  for (let y = anioActual + 1; y >= anioActual - 5; y--) {
+    const o1 = document.createElement('option');
+    o1.value = y; o1.textContent = y;
+    if (y === anioActual) o1.selected = true;
+    selUpAnio.appendChild(o1);
+    const o2 = document.createElement('option');
+    o2.value = y; o2.textContent = y;
+    selFiltAnio.appendChild(o2);
+  }
+
+  // Mes por defecto = mes actual
+  document.getElementById('opUpMes').value = String(hoy.getMonth() + 1);
+
+  await loadOperativosLista();
+}
+
+async function loadOperativosLista() {
+  const div = document.getElementById('operativosTabla');
+  div.innerHTML = '<p class="text-stone-400">Cargando…</p>';
+
+  const fEmp = document.getElementById('opFiltroEmpresa')?.value || '';
+  const fAnio = document.getElementById('opFiltroAnio')?.value || '';
+  const fMes = document.getElementById('opFiltroMes')?.value || '';
+
+  let q = sb.schema('curated').from('operativos_metadata')
+    .select('operativo_id, filename, empresa_id, periodo_anio, periodo_mes, bucket_path, uploaded_by, uploaded_at, size_bytes')
+    .order('periodo_anio', { ascending: false })
+    .order('periodo_mes', { ascending: false })
+    .order('uploaded_at', { ascending: false });
+  if (fEmp)  q = q.eq('empresa_id', fEmp);
+  if (fAnio) q = q.eq('periodo_anio', Number(fAnio));
+  if (fMes)  q = q.eq('periodo_mes', Number(fMes));
+
+  const { data, error } = await q.limit(200);
+
+  if (error) {
+    console.error('[D-OP-10] loadOperativosLista error:', error);
+    div.innerHTML = `<div class="p-5"><p class="text-red-600 mb-2">No se pudo cargar la lista.</p>
+      <p class="text-xs text-stone-500">${escapeHtml(humanizeSupabaseError(error))}</p></div>`;
+    if (typeof showToast === 'function') showToast(humanizeSupabaseError(error), 'error');
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    div.innerHTML = `<div class="p-8 text-center">
+      <p class="text-stone-400 text-base mb-1">No hay PDFs cargados para este filtro.</p>
+      <p class="text-xs text-stone-400">Usá el formulario de arriba para subir el primero.</p>
+    </div>`;
+    return;
+  }
+
+  const empMap = new Map(_operativosEmpresas.map(e => [e.empresa_id, e.razon_social]));
+  const meses = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const fmtSize = b => {
+    if (!b) return '—';
+    const kb = Number(b) / 1024;
+    if (kb < 1024) return kb.toFixed(0) + ' KB';
+    return (kb / 1024).toFixed(1) + ' MB';
+  };
+
+  const rows = data.map(r => `<tr class="border-b border-stone-100 hover:bg-stone-50">
+    <td class="py-2 px-3 text-stone-700">${escapeHtml(empMap.get(r.empresa_id) || r.empresa_id)}</td>
+    <td class="py-2 px-3 text-stone-600">${meses[r.periodo_mes] || r.periodo_mes} ${r.periodo_anio}</td>
+    <td class="py-2 px-3 text-stone-700 font-medium">${escapeHtml(r.filename)}</td>
+    <td class="py-2 px-3 text-right text-stone-500 text-xs">${fmtSize(r.size_bytes)}</td>
+    <td class="py-2 px-3 text-stone-500 text-xs">${r.uploaded_at ? new Date(r.uploaded_at).toLocaleString('es-CL') : '—'}</td>
+    <td class="py-2 px-3 text-stone-500 text-xs">${escapeHtml(r.uploaded_by || '—')}</td>
+    <td class="py-2 px-3 text-center">
+      <button onclick="descargarPDFOperativo('${escapeHtml(r.bucket_path)}','${escapeHtml(r.filename)}')"
+              class="text-xs text-green-700 hover:underline">Ver PDF ↗</button>
+    </td>
+  </tr>`).join('');
+
+  div.innerHTML = `
+    <table class="min-w-full text-sm">
+      <thead class="bg-stone-50 text-stone-500 text-xs uppercase tracking-wide">
+        <tr>
+          <th class="py-2 px-3 text-left">Empresa</th>
+          <th class="py-2 px-3 text-left">Período</th>
+          <th class="py-2 px-3 text-left">Archivo</th>
+          <th class="py-2 px-3 text-right">Tamaño</th>
+          <th class="py-2 px-3 text-left">Subido</th>
+          <th class="py-2 px-3 text-left">Por</th>
+          <th class="py-2 px-3 text-center">Acción</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <p class="text-xs text-stone-400 p-3">${data.length} PDF(s) · más recientes primero · top 200</p>`;
+}
+
+async function subirPDFOperativo() {
+  const status = document.getElementById('opUpStatus');
+  const empresaId = document.getElementById('opUpEmpresa').value;
+  const anio = Number(document.getElementById('opUpAnio').value);
+  const mes = Number(document.getElementById('opUpMes').value);
+  const fileInput = document.getElementById('opUpFile');
+  const file = fileInput.files && fileInput.files[0];
+
+  // Validaciones
+  if (!empresaId) { status.innerHTML = '<span class="text-red-600">Seleccioná empresa.</span>'; return; }
+  if (!file)      { status.innerHTML = '<span class="text-red-600">Seleccioná un PDF.</span>'; return; }
+  if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+    status.innerHTML = '<span class="text-red-600">Solo se aceptan archivos PDF.</span>';
+    return;
+  }
+  if (file.size > 50 * 1024 * 1024) {
+    status.innerHTML = '<span class="text-red-600">El archivo supera 50 MB.</span>';
+    return;
+  }
+
+  status.innerHTML = '<span class="text-stone-500">⏳ Subiendo…</span>';
+
+  // Sanitizar filename y armar bucket_path determinista: empresa/anio/mes/<timestamp>_<filename>
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const ts = Date.now();
+  const bucketPath = `${empresaId}/${anio}/${String(mes).padStart(2,'0')}/${ts}_${safeName}`;
+
+  // 1) Upload al bucket
+  const upRes = await sb.storage.from('operativos').upload(bucketPath, file, {
+    contentType: 'application/pdf',
+    upsert: false,
+  });
+  if (upRes.error) {
+    console.error('[D-OP-10] upload PDF error:', upRes.error);
+    status.innerHTML = `<span class="text-red-600">✗ ${escapeHtml(humanizeSupabaseError(upRes.error))}</span>`;
+    if (typeof showToast === 'function') showToast(humanizeSupabaseError(upRes.error), 'error');
+    return;
+  }
+
+  // 2) INSERT metadata
+  const { error: insErr } = await sb.schema('curated').from('operativos_metadata').insert({
+    filename:     safeName,
+    empresa_id:   empresaId,
+    periodo_anio: anio,
+    periodo_mes:  mes,
+    bucket_path:  bucketPath,
+    uploaded_by:  currentUser,
+    mime_type:    'application/pdf',
+    size_bytes:   file.size,
+  });
+  if (insErr) {
+    console.error('[D-OP-10] insert metadata error:', insErr);
+    // No revertimos el upload — quedaría huérfano en el bucket. Mostrar al usuario.
+    status.innerHTML = `<span class="text-red-600">✗ PDF subido pero la metadata falló: ${escapeHtml(humanizeSupabaseError(insErr))}</span>`;
+    if (typeof showToast === 'function') showToast(humanizeSupabaseError(insErr), 'error');
+    return;
+  }
+
+  status.innerHTML = `<span class="text-green-700">✓ ${escapeHtml(safeName)} guardado.</span>`;
+  if (typeof showToast === 'function') showToast('PDF guardado', 'ok');
+  fileInput.value = '';
+  await loadOperativosLista();
+}
+
+async function descargarPDFOperativo(bucketPath, filename) {
+  const { data, error } = await sb.storage.from('operativos').createSignedUrl(bucketPath, 3600);
+  if (error || !data?.signedUrl) {
+    console.error('[D-OP-10] signed url error:', error);
+    if (typeof showToast === 'function') showToast(humanizeSupabaseError(error || { message: 'No se pudo abrir el PDF' }), 'error');
+    return;
+  }
+  window.open(data.signedUrl, '_blank');
 }
 
 // ============================================================
