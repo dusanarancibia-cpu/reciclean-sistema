@@ -100,6 +100,7 @@
       <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600">📈 RDO Resumen</button>
       <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600">💼 Negocios</button>
       <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600">📋 Cotizador</button>
+      <button data-tab="cierres"    class="tab-btn py-3 px-3 text-stone-600">📅 Cierres</button>
       <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden">⚙️ Admin</button>
     </div>
   </nav>
@@ -322,6 +323,60 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA CIERRES (D-OP-09 · D-DAT-05 lectura · mig 031)
+         Layout C: KPI mes actual + tabla maestra empresa×sucursal + drawer detalle diario
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabCierres" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">📅 Cierres diarios y mensuales</h2>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-stone-500" id="cierresUltActualizado">—</span>
+          <button onclick="loadCierres()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+        </div>
+      </div>
+
+      <!-- KPI bar mes actual (suma todas las empresas+sucursales) -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+          <p class="text-xs text-stone-500">Entrantes mes</p>
+          <p class="text-xl font-bold text-green-700" id="cierresKpiEntrantes">—</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+          <p class="text-xs text-stone-500">Salientes mes</p>
+          <p class="text-xl font-bold text-red-600" id="cierresKpiSalientes">—</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+          <p class="text-xs text-stone-500">Flujo neto mes</p>
+          <p class="text-xl font-bold" id="cierresKpiFlujoNeto">—</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+          <p class="text-xs text-stone-500">Margen promedio</p>
+          <p class="text-xl font-bold text-stone-700" id="cierresKpiMargen">—</p>
+        </div>
+      </div>
+
+      <!-- Tabla maestra: empresa × sucursal, mes actual -->
+      <div class="bg-white rounded-lg shadow-sm overflow-x-auto">
+        <div id="cierresTabla" class="text-sm text-stone-500 p-5">Cargando…</div>
+      </div>
+
+      <!-- Drawer detalle diario (se abre al hacer click en fila) -->
+      <div id="cierresDetalle" class="hidden mt-4 bg-white rounded-lg shadow-sm p-5">
+        <div class="flex justify-between items-center mb-3">
+          <h3 id="cierresDetalleTitle" class="font-bold text-stone-800"></h3>
+          <button onclick="cerrarCierresDetalle()" class="text-stone-400 hover:text-stone-700 text-xl leading-none">×</button>
+        </div>
+        <div id="cierresDetalleContenido" class="text-sm text-stone-500">Cargando…</div>
+      </div>
+
+      <!-- Placeholder cuando no hay cierres cargados todavía -->
+      <p class="text-xs text-stone-400 mt-3">
+        Fuente: <code>curated.vw_cierre_mes_actual</code> (mig 031). Datos cargados por Dyana vía planilla mensual.
+        Si la tabla aparece vacía, los cierres del mes aún no fueron procesados por el ETL nocturno.
+      </p>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
          PESTAÑA COTIZADOR
     ═══════════════════════════════════════════════════════════ -->
     <section id="tabCotizador" class="tab-content hidden">
@@ -484,8 +539,8 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'admin'];
-const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'admin'];
+const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
   'Dusan.arancibia@gmail.com',
@@ -839,6 +894,7 @@ function setupTabs() {
       if (tabId === 'admin') loadAdminAudios();
       if (tabId === 'negocios')  loadNegocios();
       if (tabId === 'cotizador') initCotizador();
+      if (tabId === 'cierres')   loadCierres();
       if (tabId === 'dieguito')  initDieguito();
     });
   });
@@ -2055,6 +2111,184 @@ function cotizarDesdeFilaNegocio(opId, titulo, clienteId, clienteNombre) {
       document.getElementById('cotClienteBuscar').value = clienteNombre || clienteId;
     }
   }, 300);
+}
+
+// ============================================================
+// PESTAÑA CIERRES (D-OP-09 — lectura curated.vw_cierre_mes_actual)
+// ============================================================
+
+function fmtCLP(n) {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return '—';
+  const v = Math.round(Number(n));
+  return '$' + v.toLocaleString('es-CL');
+}
+
+function fmtPct(n) {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return '—';
+  return Number(n).toFixed(1) + '%';
+}
+
+async function loadCierres() {
+  const div = document.getElementById('cierresTabla');
+  div.innerHTML = '<p class="text-stone-400">Cargando…</p>';
+
+  // Cache empresas+sucursales en paralelo con la query principal
+  const empresasP = sb.schema('curated').from('empresas_grupo').select('empresa_id, razon_social');
+  const sucursalesP = ensureSucursalesCache();
+
+  const { data, error } = await sb.schema('curated').from('vw_cierre_mes_actual')
+    .select('empresa_id, sucursal_id, entrantes_mes, salientes_mes, flujo_neto_mes, margen_promedio_mes, proyeccion_actualizada, ultimo_cierre_diario')
+    .order('empresa_id', { ascending: true })
+    .order('sucursal_id', { ascending: true, nullsFirst: true });
+
+  if (error) {
+    console.error('[D-OP-09] loadCierres error:', error);
+    div.innerHTML = `<div class="p-5"><p class="text-red-600 mb-2">No se pudo cargar los cierres del mes.</p>
+      <p class="text-xs text-stone-500">${escapeHtml(humanizeSupabaseError(error))}</p></div>`;
+    showToast(humanizeSupabaseError(error), 'error');
+    return;
+  }
+
+  const [empResp, sucArr] = await Promise.all([empresasP, sucursalesP]);
+  const empMap = new Map(((empResp && empResp.data) || []).map(e => [e.empresa_id, e.razon_social || e.empresa_id]));
+  const sucMap = new Map((sucArr || []).map(s => [s.sucursal_id, s.nombre || s.sucursal_id]));
+
+  // KPIs agregados del mes (suma todas las filas visibles)
+  const totales = (data || []).reduce((acc, r) => ({
+    entrantes: acc.entrantes + Number(r.entrantes_mes || 0),
+    salientes: acc.salientes + Number(r.salientes_mes || 0),
+    flujo:     acc.flujo     + Number(r.flujo_neto_mes || 0),
+    margenSum: acc.margenSum + (r.margen_promedio_mes != null ? Number(r.margen_promedio_mes) : 0),
+    margenN:   acc.margenN   + (r.margen_promedio_mes != null ? 1 : 0),
+  }), { entrantes: 0, salientes: 0, flujo: 0, margenSum: 0, margenN: 0 });
+
+  document.getElementById('cierresKpiEntrantes').textContent  = fmtCLP(totales.entrantes);
+  document.getElementById('cierresKpiSalientes').textContent  = fmtCLP(totales.salientes);
+  const flujoEl = document.getElementById('cierresKpiFlujoNeto');
+  flujoEl.textContent = fmtCLP(totales.flujo);
+  flujoEl.className = 'text-xl font-bold ' + (totales.flujo >= 0 ? 'text-green-700' : 'text-red-600');
+  document.getElementById('cierresKpiMargen').textContent = totales.margenN > 0
+    ? fmtPct(totales.margenSum / totales.margenN)
+    : '—';
+
+  const ultActualizadoMax = (data || [])
+    .map(r => r.ultimo_cierre_diario)
+    .filter(Boolean)
+    .sort()
+    .pop();
+  document.getElementById('cierresUltActualizado').textContent = ultActualizadoMax
+    ? 'Último cierre diario: ' + new Date(ultActualizadoMax).toLocaleDateString('es-CL')
+    : 'Sin cierres este mes';
+
+  if (!data || data.length === 0) {
+    div.innerHTML = `<div class="p-8 text-center">
+      <p class="text-stone-400 text-base mb-1">No hay cierres diarios cargados este mes.</p>
+      <p class="text-xs text-stone-400">Dyana arranca la planilla mensual el día 1 hábil. El ETL nocturno corre todos los días a las 23:55.</p>
+    </div>`;
+    return;
+  }
+
+  const rowsHtml = data.map(r => {
+    const empNom = empMap.get(r.empresa_id) || r.empresa_id;
+    const sucNom = r.sucursal_id ? (sucMap.get(r.sucursal_id) || r.sucursal_id) : '<span class="text-stone-400 italic">consolidado</span>';
+    const flujoCls = Number(r.flujo_neto_mes || 0) >= 0 ? 'text-green-700' : 'text-red-600';
+    return `<tr class="border-b border-stone-100 hover:bg-stone-50 cursor-pointer"
+              onclick="verCierresDetalle('${escapeHtml(r.empresa_id)}', ${r.sucursal_id ? `'${escapeHtml(r.sucursal_id)}'` : 'null'}, '${escapeHtml(empNom)}', ${r.sucursal_id ? `'${escapeHtml(sucNom)}'` : 'null'})">
+      <td class="py-2 px-3 font-semibold text-stone-700">${escapeHtml(empNom)}</td>
+      <td class="py-2 px-3 text-stone-600">${sucNom}</td>
+      <td class="py-2 px-3 text-right text-stone-700">${fmtCLP(r.entrantes_mes)}</td>
+      <td class="py-2 px-3 text-right text-stone-700">${fmtCLP(r.salientes_mes)}</td>
+      <td class="py-2 px-3 text-right font-bold ${flujoCls}">${fmtCLP(r.flujo_neto_mes)}</td>
+      <td class="py-2 px-3 text-right text-stone-600">${fmtPct(r.margen_promedio_mes)}</td>
+      <td class="py-2 px-3 text-right text-stone-400 text-xs">${r.ultimo_cierre_diario ? new Date(r.ultimo_cierre_diario).toLocaleDateString('es-CL') : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  div.innerHTML = `
+    <table class="min-w-full text-sm">
+      <thead class="bg-stone-50 text-stone-500 text-xs uppercase tracking-wide">
+        <tr>
+          <th class="py-2 px-3 text-left">Empresa</th>
+          <th class="py-2 px-3 text-left">Sucursal</th>
+          <th class="py-2 px-3 text-right">Entrantes</th>
+          <th class="py-2 px-3 text-right">Salientes</th>
+          <th class="py-2 px-3 text-right">Flujo neto</th>
+          <th class="py-2 px-3 text-right">Margen ø</th>
+          <th class="py-2 px-3 text-right">Últ. cierre D</th>
+        </tr>
+      </thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+    <p class="text-xs text-stone-400 p-3">${data.length} fila(s) · mes actual · click en una fila para ver el detalle diario</p>`;
+}
+
+async function verCierresDetalle(empresaId, sucursalId, empNom, sucNom) {
+  const drawer = document.getElementById('cierresDetalle');
+  const title  = document.getElementById('cierresDetalleTitle');
+  const cont   = document.getElementById('cierresDetalleContenido');
+  title.textContent = `${empNom}${sucNom ? ' · ' + sucNom : ' · consolidado'} — detalle diario`;
+  cont.innerHTML = '<p class="text-stone-400">Cargando…</p>';
+  drawer.classList.remove('hidden');
+  drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Cierres diarios del mes actual para esta empresa/sucursal
+  const firstOfMonth = new Date();
+  firstOfMonth.setDate(1);
+  const fechaDesde = firstOfMonth.toISOString().slice(0, 10);
+
+  let q = sb.schema('curated').from('cierres')
+    .select('fecha, saldo_caja_clp, saldo_banco_clp, saldo_total_clp, pagos_entrantes_clp, pagos_salientes_clp, flujo_neto_clp, margen_estimado_pct, proyeccion_mes_rolling_clp')
+    .eq('granularidad', 'D')
+    .eq('empresa_id', empresaId)
+    .gte('fecha', fechaDesde)
+    .order('fecha', { ascending: false });
+  q = sucursalId ? q.eq('sucursal_id', sucursalId) : q.is('sucursal_id', null);
+
+  const { data, error } = await q;
+  if (error) {
+    cont.innerHTML = `<p class="text-red-600">${escapeHtml(humanizeSupabaseError(error))}</p>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    cont.innerHTML = '<p class="text-stone-400">Sin cierres diarios cargados para este combo este mes.</p>';
+    return;
+  }
+
+  cont.innerHTML = `
+    <table class="min-w-full text-sm">
+      <thead class="bg-stone-50 text-stone-500 text-xs uppercase tracking-wide">
+        <tr>
+          <th class="py-2 px-3 text-left">Fecha</th>
+          <th class="py-2 px-3 text-right">Caja</th>
+          <th class="py-2 px-3 text-right">Banco</th>
+          <th class="py-2 px-3 text-right">Total</th>
+          <th class="py-2 px-3 text-right">Entrantes D</th>
+          <th class="py-2 px-3 text-right">Salientes D</th>
+          <th class="py-2 px-3 text-right">Flujo D</th>
+          <th class="py-2 px-3 text-right">Margen</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map(d => {
+          const flujoCls = Number(d.flujo_neto_clp || 0) >= 0 ? 'text-green-700' : 'text-red-600';
+          return `<tr class="border-b border-stone-100">
+            <td class="py-1.5 px-3 text-stone-700">${new Date(d.fecha).toLocaleDateString('es-CL')}</td>
+            <td class="py-1.5 px-3 text-right text-stone-600">${fmtCLP(d.saldo_caja_clp)}</td>
+            <td class="py-1.5 px-3 text-right text-stone-600">${fmtCLP(d.saldo_banco_clp)}</td>
+            <td class="py-1.5 px-3 text-right text-stone-700 font-semibold">${fmtCLP(d.saldo_total_clp)}</td>
+            <td class="py-1.5 px-3 text-right text-stone-600">${fmtCLP(d.pagos_entrantes_clp)}</td>
+            <td class="py-1.5 px-3 text-right text-stone-600">${fmtCLP(d.pagos_salientes_clp)}</td>
+            <td class="py-1.5 px-3 text-right ${flujoCls} font-semibold">${fmtCLP(d.flujo_neto_clp)}</td>
+            <td class="py-1.5 px-3 text-right text-stone-600">${fmtPct(d.margen_estimado_pct)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    <p class="text-xs text-stone-400 p-3">${data.length} día(s) cerrado(s) este mes · ordenado más reciente primero</p>`;
+}
+
+function cerrarCierresDetalle() {
+  document.getElementById('cierresDetalle').classList.add('hidden');
 }
 
 // ============================================================
