@@ -1,7 +1,7 @@
 # STATUS — Reciclean-Farex Sistema
 
 > **Snapshot de `temas_en_progreso` (Supabase).** Respuesta canónica a "status / cómo vamos / detalle".
-> **Última regeneración:** 22-abr-2026 14:15 · **68 filas** (25 parents + 43 sub-tareas)
+> **Última regeneración:** 18-may-2026 · **68 filas** (25 parents + 43 sub-tareas)
 
 ---
 
@@ -34,7 +34,7 @@
 | **I-16** | 0% | Tecnología | Pablo | Diego v5.1 | 2sem | **15-may** | — | 💡 Post v5.0 estable |
 | **I-02** | 10% | Gerencia General | Dusan | Viz informes | 2sem | **15-may** | — | 💡 Decidir consumidor |
 | **I-20** | 10% | Comercial | Dusan | Propuestas activas | 1sem | **15-may** | `Comercial/.../[8 PDFs de propuestas]` | 💡 Revisar 8 propuestas |
-| **I-13** | 5% | Tecnología | Pablo | Deuda técnica | 3sem | **20-may** | — | 💡 11 subtareas post 30-abr |
+| **I-13** | 10% | Tecnología | Pablo | Deuda técnica | 3sem | **20-may** | — | 📋 CODEOWNERS fix hecho 18-may |
 | **I-06** | 15% | Gerencia General | Dusan | Ecosistema int. | 1sem | **20-may** | `Plan Ecosistema Digital/Ecosistema_Digital_Reciclean_Farex_v2.pptx` | 💡 Overlap I-02/I-03 |
 | **I-07** | 10% | Tecnología | Claude | Eval diagramas | 30min | **20-may** | — | 💡 ECharts para I-05 |
 | **I-21** | 20% | Operaciones | Dusan | Puerto Montt ops | 1mes | **30-jun** | `Patrimonio/Empresa Puerto Montt/` | 💡 Permisos SAG + roadmap |
@@ -89,9 +89,35 @@ Total Supabase: **84 tablas** + **11 vistas**.
 
 | Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
 |---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **22-abr-2026** (baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **18-may-2026** | 68 | ~20% | 0 | 2 | 6 | 60 |
 
 > _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+
+---
+
+## Bitacora 18-may-2026 (domingo)
+
+### Dusan (CEO)
+- Reviso y aprobo 3 PRs en GitHub (#27, #28, #29) — control de calidad antes de subir a produccion.
+
+### Pablo (Sistemas)
+- **CODEOWNERS fix (PR #27):** corrigio handle GitHub (`arancibiapab01`). Desbloquea proteccion rama `prod` con "Require review from Code Owners".
+- **D-OP-08 Quick wins Andrea (PR #28):** 3 mejoras Panel RDO:
+  1. Auto-refresh tabla Negocios al asignar sucursal con filtro activo.
+  2. Focus visible (borde verde) para navegacion por teclado.
+  3. Toast de errores amigables en espanol + helper `humanizeSupabaseError()`.
+- **D-OP-09 Tab Cierres Dyana (PR #29):** nueva pestana "Cierres" en Panel RDO:
+  - 4 KPI cards mes actual (entrantes/salientes/flujo neto/margen).
+  - Tabla maestra empresa x sucursal con columnas mensuales.
+  - Drawer detalle con cierres diarios al click.
+  - Placeholder amable si no hay datos.
+
+### Metricas del dia
+- 6 commits (3 Pablo + 3 merges Dusan)
+- 305 lineas nuevas/modificadas
+- 2 archivos tocados (`panel-rdo.html`, `CODEOWNERS`)
+- 3 PRs mergeados a produccion
 
 ---
 
