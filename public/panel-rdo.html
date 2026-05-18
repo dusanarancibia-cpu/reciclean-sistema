@@ -50,6 +50,8 @@
     </div>
     <h2 class="text-lg font-semibold mb-4 text-stone-700">Iniciar sesión</h2>
     <input type="email" id="loginEmail" placeholder="tu.email@empresa.cl"
+           aria-label="Correo electrónico"
+           autocomplete="email"
            class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
     <button onclick="login()" class="w-full bg-green-700 hover:bg-green-800 text-white p-3 rounded font-semibold transition">
       Ingresar
@@ -137,7 +139,9 @@
         <summary class="p-4 text-sm font-semibold text-stone-600 cursor-pointer">↑ Subir archivo CSV/JSON a staging</summary>
         <div class="px-5 pb-5">
           <p class="text-sm text-stone-500 mb-3">Se guarda en bruto en <code>staging.pesaje_s1</code>.</p>
-          <input type="file" id="pesajeFile" accept=".csv,.json" class="mb-3 block">
+          <input type="file" id="pesajeFile" accept=".csv,.json"
+                 aria-label="Archivo CSV o JSON de pesajes para subir a staging"
+                 class="mb-3 block">
           <button onclick="uploadPesaje()" class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded">Subir a staging</button>
           <div id="pesajeResult" class="mt-4 text-sm"></div>
         </div>
@@ -152,7 +156,9 @@
         <summary class="p-4 text-sm font-semibold text-stone-600 cursor-pointer">↑ Subir archivo CSV/JSON a staging</summary>
         <div class="px-5 pb-5">
           <p class="text-sm text-stone-500 mb-3">Se guarda en bruto en <code>staging.facturacion_s5</code>.</p>
-          <input type="file" id="facturacionFile" accept=".csv,.json" class="mb-3 block">
+          <input type="file" id="facturacionFile" accept=".csv,.json"
+                 aria-label="Archivo CSV o JSON de facturación para subir a staging"
+                 class="mb-3 block">
           <button onclick="uploadFacturacion()" class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded">Subir a staging</button>
           <div id="facturacionResult" class="mt-4 text-sm"></div>
         </div>
@@ -191,11 +197,14 @@
             <p class="text-2xl mb-1">📁</p>
             <p class="text-sm text-stone-500">Arrastra o haz click — imagen, PDF, audio, doc (máx 50 MB)</p>
           </div>
-          <input type="file" id="diegFileInput" class="hidden" onchange="diegHandleFile(this.files[0])">
+          <input type="file" id="diegFileInput"
+                 aria-label="Subir archivo (imagen, PDF, audio o documento)"
+                 class="hidden" onchange="diegHandleFile(this.files[0])">
         </div>
 
         <!-- Textarea -->
         <textarea id="diegTexto" rows="3" placeholder="O escribe/pega aquí. Dieguito sugiere destinos automáticamente…"
+          aria-label="Texto del mensaje para Dieguito"
           class="w-full border border-stone-300 rounded-lg p-3 text-sm focus:border-green-700 focus:outline-none resize-none mb-4"
           oninput="diegAutoSuggest(this.value)"></textarea>
 
@@ -225,8 +234,10 @@
       <div id="grabadorSection" class="hidden audio-recorder">
         <h3 class="font-bold text-lg text-stone-700 mb-3">🎙️ Grabar nuevo mensaje</h3>
         <input type="text" id="audioTitulo" placeholder="Título (ej. Mensaje 8 mayo)"
+               aria-label="Título del mensaje de audio"
                class="w-full border border-stone-300 p-2 rounded mb-2">
         <textarea id="audioTexto" placeholder="Texto corto / transcripción opcional" rows="2"
+                  aria-label="Texto o transcripción opcional del audio"
                   class="w-full border border-stone-300 p-2 rounded mb-2"></textarea>
         <div class="mb-3 flex gap-4 items-center">
           <span class="font-semibold text-sm text-stone-700">Mostrar en:</span>
@@ -272,7 +283,7 @@
       <!-- Filtros -->
       <div class="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-wrap gap-3 items-end">
         <div>
-          <label class="block text-xs text-stone-500 mb-1">Estado</label>
+          <label for="negEstado" class="block text-xs text-stone-500 mb-1">Estado</label>
           <select id="negEstado" onchange="loadNegocios()"
                   class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
             <option value="">Todos</option>
@@ -287,7 +298,7 @@
           </select>
         </div>
         <div>
-          <label class="block text-xs text-stone-500 mb-1">Tipo</label>
+          <label for="negTipo" class="block text-xs text-stone-500 mb-1">Tipo</label>
           <select id="negTipo" onchange="loadNegocios()"
                   class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
             <option value="">Todos</option>
@@ -298,7 +309,7 @@
           </select>
         </div>
         <div>
-          <label class="block text-xs text-stone-500 mb-1">Buscar</label>
+          <label for="negBuscar" class="block text-xs text-stone-500 mb-1">Buscar</label>
           <input type="text" id="negBuscar" placeholder="Título o cliente…"
                  oninput="loadNegociosBuscar(this.value)"
                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none w-48">
@@ -319,7 +330,7 @@
       <div id="negocioTimeline" class="hidden mt-4 bg-white rounded-lg shadow-sm p-5">
         <div class="flex justify-between items-center mb-3">
           <h3 id="negocioTimelineTitle" class="font-bold text-stone-800"></h3>
-          <button onclick="cerrarTimeline()" class="text-stone-400 hover:text-stone-700 text-xl leading-none">×</button>
+          <button onclick="cerrarTimeline()" aria-label="Cerrar timeline" class="text-stone-400 hover:text-stone-700 text-xl leading-none">×</button>
         </div>
         <div id="negocioTimelineContenido" class="text-sm text-stone-500">Cargando...</div>
         <div class="mt-4 pt-3 border-t border-stone-100">
@@ -373,7 +384,7 @@
       <div id="cierresDetalle" class="hidden mt-4 bg-white rounded-lg shadow-sm p-5">
         <div class="flex justify-between items-center mb-3">
           <h3 id="cierresDetalleTitle" class="font-bold text-stone-800"></h3>
-          <button onclick="cerrarCierresDetalle()" class="text-stone-400 hover:text-stone-700 text-xl leading-none">×</button>
+          <button onclick="cerrarCierresDetalle()" aria-label="Cerrar detalle de cierres" class="text-stone-400 hover:text-stone-700 text-xl leading-none">×</button>
         </div>
         <div id="cierresDetalleContenido" class="text-sm text-stone-500">Cargando…</div>
       </div>
@@ -402,25 +413,27 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 
               <div class="md:col-span-2">
-                <label class="block text-xs text-stone-500 mb-1">Título de la cotización *</label>
+                <label for="cotTitulo" class="block text-xs text-stone-500 mb-1">Título de la cotización *</label>
                 <input type="text" id="cotTitulo" placeholder="Ej: Retiro mensual CMPC Cerrillos"
                        oninput="cotRecalcular()"
                        class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
               </div>
 
               <div>
-                <label class="block text-xs text-stone-500 mb-1">Cliente *</label>
+                <label for="cotClienteBuscar" class="block text-xs text-stone-500 mb-1">Cliente *</label>
                 <input type="text" id="cotClienteBuscar" placeholder="Buscar por nombre o RUT…"
                        oninput="buscarClienteCotizador(this.value)"
+                       autocomplete="off"
+                       aria-autocomplete="list" aria-controls="cotClienteSugerencias"
                        class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
-                <div id="cotClienteSugerencias"
+                <div id="cotClienteSugerencias" role="listbox" aria-label="Sugerencias de clientes"
                      class="hidden border border-stone-200 rounded mt-1 bg-white shadow-md z-10 max-h-40 overflow-y-auto"></div>
                 <input type="hidden" id="cotClienteId">
-                <span id="cotClienteSeleccionado" class="text-xs text-green-700 font-semibold mt-1 block"></span>
+                <span id="cotClienteSeleccionado" class="text-xs text-green-700 font-semibold mt-1 block" aria-live="polite"></span>
               </div>
 
               <div>
-                <label class="block text-xs text-stone-500 mb-1">Sucursal *</label>
+                <label for="cotSucursal" class="block text-xs text-stone-500 mb-1">Sucursal *</label>
                 <select id="cotSucursal"
                         class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
                   <option value="">Seleccionar…</option>
@@ -428,7 +441,7 @@
               </div>
 
               <div>
-                <label class="block text-xs text-stone-500 mb-1">Servicio *</label>
+                <label for="cotServicio" class="block text-xs text-stone-500 mb-1">Servicio *</label>
                 <select id="cotServicio" onchange="cotRecalcular()"
                         class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
                   <option value="">Seleccionar…</option>
@@ -436,7 +449,7 @@
               </div>
 
               <div>
-                <label class="block text-xs text-stone-500 mb-1">Tarifa UF base</label>
+                <label for="cotTarifa" class="block text-xs text-stone-500 mb-1">Tarifa UF base</label>
                 <select id="cotTarifa" onchange="cotRecalcular()"
                         class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
                   <option value="">Sin tarifa fija</option>
@@ -444,7 +457,7 @@
               </div>
 
               <div class="md:col-span-2">
-                <label class="block text-xs text-stone-500 mb-1">Notas / contexto</label>
+                <label for="cotNotas" class="block text-xs text-stone-500 mb-1">Notas / contexto</label>
                 <textarea id="cotNotas" rows="2" placeholder="Contexto adicional…"
                           class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none"></textarea>
               </div>
@@ -2037,6 +2050,7 @@ async function loadNegocios(buscarOverride) {
             <td class="py-2 px-2 text-center" onclick="event.stopPropagation()">
               <select id="${selectId}"
                       onchange="actualizarSucursalOportunidad('${escapeHtml(n.oportunidad_id)}', this.value, '${selectId}')"
+                      aria-label="Sucursal del negocio ${escapeHtml(n.titulo || n.oportunidad_id)}"
                       class="text-xs border rounded px-1.5 py-0.5 ${sinSuc ? 'border-amber-400 bg-amber-50 text-amber-800' : 'border-stone-300 bg-white text-stone-700'} focus:border-green-700 focus:outline-none">
                 <option value="" ${sinSuc?'selected':''}>${sinSuc ? '⚠ Asignar…' : '—'}</option>
                 ${optionsHtml}
@@ -2445,21 +2459,25 @@ function renderLineasCot() {
     <tr class="border-b border-stone-100">
       <td class="py-1 pr-2">
         <input type="text" value="${escapeHtml(l.desc)}" placeholder="Descripción…"
+               aria-label="Descripción de la línea ${i + 1}"
                oninput="_cotLineas[${i}].desc = this.value"
                class="w-full border border-stone-200 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none">
       </td>
       <td class="py-1 px-2">
         <input type="number" value="${l.qty}" min="0.01" step="0.01"
+               aria-label="Cantidad de la línea ${i + 1}"
                oninput="_cotLineas[${i}].qty = parseFloat(this.value)||0; cotRecalcular()"
                class="w-full border border-stone-200 rounded px-2 py-1 text-sm text-right focus:border-green-700 focus:outline-none">
       </td>
       <td class="py-1 px-2">
         <input type="number" value="${l.precioUF}" min="0" step="0.0001"
+               aria-label="Precio UF de la línea ${i + 1}"
                oninput="_cotLineas[${i}].precioUF = parseFloat(this.value)||0; cotRecalcular()"
                class="w-full border border-stone-200 rounded px-2 py-1 text-sm text-right focus:border-green-700 focus:outline-none">
       </td>
       <td class="py-1 px-2">
         <input type="number" value="${l.descPct}" min="0" max="100" step="0.1"
+               aria-label="Descuento porcentual de la línea ${i + 1}"
                oninput="_cotLineas[${i}].descPct = parseFloat(this.value)||0; cotRecalcular()"
                class="w-full border border-stone-200 rounded px-2 py-1 text-sm text-right focus:border-green-700 focus:outline-none">
       </td>
@@ -2467,7 +2485,9 @@ function renderLineasCot() {
         ${(l.qty * l.precioUF * (1 - l.descPct / 100)).toFixed(4)}
       </td>
       <td class="py-1 px-2 text-center">
-        <button onclick="eliminarLineaCot(${i})" class="text-stone-300 hover:text-red-500 text-base leading-none">×</button>
+        <button onclick="eliminarLineaCot(${i})"
+                aria-label="Eliminar línea ${i + 1}"
+                class="text-stone-300 hover:text-red-500 text-base leading-none">×</button>
       </td>
     </tr>
   `).join('');
