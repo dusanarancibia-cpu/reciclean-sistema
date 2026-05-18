@@ -199,6 +199,12 @@
           class="w-full border border-stone-300 rounded-lg p-3 text-sm focus:border-green-700 focus:outline-none resize-none mb-4"
           oninput="diegAutoSuggest(this.value)"></textarea>
 
+        <!-- D-OP-04-v2 Ola 1.1 — Etiquetas rápidas (chip Precio + top-20 clientes) -->
+        <div class="mb-3">
+          <p class="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Etiquetas rápidas</p>
+          <div id="diegEtiquetasRapidas" class="flex flex-wrap gap-1.5 items-center"></div>
+        </div>
+
         <!-- Chips de destinos -->
         <div class="mb-4">
           <div class="flex items-center justify-between mb-2">
@@ -1202,6 +1208,7 @@ let _diegIniciado     = false;
 let _diegDestinos     = [];       // [{id, slug, label, kind, color}]
 let _diegSeleccionados = new Set(); // ids seleccionados
 let _diegAiSugeridos  = new Set(); // ids sugeridos por IA (esta sesión)
+let _diegTopClientes  = [];       // D-OP-04-v2 Ola 1.1 — [{cliente_id, razon_social, categoria_id}]
 let _diegSuggestTimer = null;
 let _diegArchivo      = null;     // File object del dropzone
 let _diegArchivoUrl   = null;     // URL pública después de subir
@@ -1217,21 +1224,103 @@ async function initDieguito() {
   if (_diegIniciado) return;
   _diegIniciado = true;
 
-  const { data, error } = await sb.schema('staging')
+  // D-OP-04-v2 Ola 1.1 — cargar destinos + top-20 clientes en paralelo.
+  const destinosP = sb.schema('staging')
     .from('dieguito_destinations')
     .select('id,slug,label,kind,color')
     .eq('active', true)
     .order('sort_order');
 
-  if (error || !data) {
+  // Top clientes: vigentes ordenados por categoría (mejor → menos → poco → en_prueba → critica)
+  // y por contribucion si está presente. cap a 20.
+  const clientesP = sb.schema('curated')
+    .from('cartera_clientes_categoria')
+    .select('cliente_id, categoria_id, contribucion_uf_mes, vigente, clientes!inner(razon_social, activo)')
+    .eq('vigente', true)
+    .eq('clientes.activo', true)
+    .limit(20);
+
+  const [destinosRes, clientesRes] = await Promise.all([destinosP, clientesP]);
+
+  if (destinosRes.error || !destinosRes.data) {
     document.getElementById('diegChips').innerHTML =
-      `<p class="text-xs text-red-500">Error cargando destinos: ${escapeHtml(error?.message ?? 'desconocido')} — ¿Ejecutaste SQL 028?</p>`;
+      `<p class="text-xs text-red-500">Error cargando destinos: ${escapeHtml(destinosRes.error?.message ?? 'desconocido')} — ¿Ejecutaste SQL 028?</p>`;
     return;
   }
-  _diegDestinos = data;
+  _diegDestinos = destinosRes.data;
 
+  // Ordenar clientes por jerarquía de categoría y por contribución (cuando hay).
+  const ordenCategoria = { 'mejor': 1, 'menos': 2, 'poco': 3, 'en_prueba': 4, 'critica': 5 };
+  _diegTopClientes = (clientesRes.data || [])
+    .filter(c => c.clientes && c.clientes.razon_social)
+    .sort((a, b) => {
+      const ca = ordenCategoria[a.categoria_id] ?? 99;
+      const cb = ordenCategoria[b.categoria_id] ?? 99;
+      if (ca !== cb) return ca - cb;
+      const ua = a.contribucion_uf_mes ?? 0;
+      const ub = b.contribucion_uf_mes ?? 0;
+      if (ua !== ub) return ub - ua;
+      return a.clientes.razon_social.localeCompare(b.clientes.razon_social, 'es');
+    })
+    .slice(0, 20)
+    .map(c => ({
+      cliente_id: c.cliente_id,
+      razon_social: c.clientes.razon_social,
+      categoria_id: c.categoria_id || null
+    }));
+
+  diegRenderEtiquetasRapidas();
   diegRenderChips();
 }
+
+// D-OP-04-v2 Ola 1.1 — Etiquetas rápidas: chip "Precio" + chips top-20 clientes.
+// Inserta tag en el textarea para que Dieguito + Andrea identifiquen rápido si se
+// trata de un precio o de qué cliente viene el mensaje. Frontend-only (no toca BD).
+function diegRenderEtiquetasRapidas() {
+  const cont = document.getElementById('diegEtiquetasRapidas');
+  if (!cont) return;
+  const colorPorCategoria = {
+    'mejor': 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200',
+    'menos': 'bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-200',
+    'poco': 'bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200',
+    'en_prueba': 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200',
+    'critica': 'bg-red-100 text-red-800 border-red-200 hover:bg-red-200',
+  };
+  const chipsClientes = _diegTopClientes.map(c => {
+    const colorCls = colorPorCategoria[c.categoria_id] || 'bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200';
+    return `<button onclick="diegInsertarTag('@${escapeHtml(c.razon_social)}')"
+                    class="text-xs rounded-full border px-2 py-0.5 ${colorCls} transition"
+                    title="${escapeHtml(c.categoria_id || 'sin categoría')}">
+              @${escapeHtml(c.razon_social)}
+            </button>`;
+  }).join(' ');
+  cont.innerHTML = `
+    <button onclick="diegInsertarTag('[Precio]')"
+            class="text-xs rounded-full border border-green-300 bg-green-50 text-green-800 hover:bg-green-100 px-2.5 py-0.5 font-semibold transition"
+            title="Etiquetar este mensaje como propuesta de precio">
+      💰 Precio
+    </button>
+    ${_diegTopClientes.length > 0
+      ? `<span class="text-stone-300 mx-1">·</span>${chipsClientes}`
+      : '<span class="text-xs text-stone-400 ml-2">sin top clientes cargados</span>'}`;
+}
+
+// D-OP-04-v2 Ola 1.1 — inserta el tag al inicio del textarea (si no estaba ya).
+window.diegInsertarTag = function(tag) {
+  const ta = document.getElementById('diegTexto');
+  if (!ta) return;
+  const actual = ta.value || '';
+  if (actual.includes(tag)) {
+    // Si ya está, lo saca (toggle).
+    ta.value = actual.replace(new RegExp('\\s*' + tag.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&') + '\\s*', ''), ' ').trim();
+  } else {
+    // Lo prepende para que sea visible.
+    ta.value = tag + (actual ? ' ' + actual : '');
+  }
+  ta.focus();
+  // Re-disparar auto-suggest con el nuevo texto.
+  if (typeof window.diegAutoSuggest === 'function') window.diegAutoSuggest(ta.value);
+};
 
 // ── chips ─────────────────────────────────────────────────────────────────────
 const KIND_LABELS = { persona:'👤 Personas', silo:'🗂 Silos', area:'📂 Áreas', bitacora:'📓 Bitácoras' };
@@ -1641,6 +1730,25 @@ async function loadAlertasPortada() {
   const amarillos = data.filter(a => a.nivel === 'amarillo').length;
   const top5 = data.filter(a => a.nivel === 'rojo').slice(0, 5)
     .concat(data.filter(a => a.nivel === 'amarillo').slice(0, Math.max(0, 5 - rojos)));
+
+  // D-OP-04-v2 Ola 1.3 — chips clickeables por tipo_alerta para destrabar acción
+  // (antes el banner era informativo, ahora cada chip filtra la bandeja RDO).
+  const conteoTipos = data.reduce((acc, a) => {
+    acc[a.tipo_alerta] = (acc[a.tipo_alerta] || 0) + 1;
+    return acc;
+  }, {});
+  const chipsTipo = Object.entries(conteoTipos)
+    .sort((a, b) => b[1] - a[1])
+    .map(([tipo, n]) =>
+      `<button onclick="irABandejaConFiltro('${escapeHtml(tipo)}')"
+               class="inline-flex items-center gap-1 text-xs bg-white border border-stone-200 hover:border-green-700 hover:bg-green-50 rounded-full px-2.5 py-1 mr-1 mb-1 transition"
+               title="Ver las ${n} alertas de tipo ${escapeHtml(tipo)} en la bandeja">
+         <span class="font-mono text-stone-500">${n}</span>
+         <span class="font-medium text-stone-700">${escapeHtml(tipo)}</span>
+         <span class="text-stone-400">→</span>
+       </button>`
+    ).join('');
+
   div.innerHTML = `
     <div class="rounded-lg border ${rojos > 0 ? 'border-red-200 bg-red-50' : 'border-amber-200 bg-amber-50'} p-4">
       <div class="flex items-center gap-3 mb-3">
@@ -1650,8 +1758,9 @@ async function loadAlertasPortada() {
           <span class="ml-2 text-xs ${rojos > 0 ? 'text-red-600' : 'text-stone-500'}">${rojos} crítica${rojos !== 1 ? 's' : ''}</span>
           ${amarillos > 0 ? `<span class="ml-1 text-xs text-amber-600">${amarillos} advertencia${amarillos !== 1 ? 's' : ''}</span>` : ''}
         </div>
-        <button onclick="document.querySelector('[data-tab=rdo]').click()" class="text-xs text-stone-500 underline">Ver en RDO ↗</button>
+        <button onclick="irABandejaConFiltro(null)" class="text-xs text-stone-500 underline">Ver todas en RDO ↗</button>
       </div>
+      <div class="mb-3">${chipsTipo}</div>
       <ul class="space-y-1">
         ${top5.map(a => `
         <li class="text-xs flex gap-2">
@@ -1667,14 +1776,46 @@ async function loadAlertasPortada() {
     </div>`;
 }
 
+// D-OP-04-v2 Ola 1.3 — Filtro de la bandeja RDO desde la Portada.
+// Cuando es null: tabla RDO sin filtro. Cuando es un tipo_alerta: tabla filtrada
+// + chip "Filtrado: tipo · Limpiar" visible al inicio de la tabla.
+let _rdoAlertasFiltroTipo = null;
+
+function irABandejaConFiltro(tipoAlerta) {
+  _rdoAlertasFiltroTipo = tipoAlerta || null;
+  const btn = document.querySelector('button[data-tab="rdo"]');
+  if (btn) btn.click();
+}
+
+function limpiarFiltroBandejaRdo() {
+  _rdoAlertasFiltroTipo = null;
+  loadAlertasRdo();
+}
+
 async function loadAlertasRdo() {
   const div = document.getElementById('rdoAlertas');
   if (!div) return;
   div.innerHTML = '<p class="text-xs text-stone-400">Cargando alertas...</p>';
-  const { data, error } = await sb.from('v_alertas_panel')
+  let q = sb.from('v_alertas_panel')
     .select('tipo_alerta,nivel,titulo,descripcion,fecha,valor')
     .order('nivel');
-  if (error || !data?.length) { div.innerHTML = ''; return; }
+  // D-OP-04-v2 Ola 1.3 — filtro por tipo_alerta seteado desde Portada.
+  if (_rdoAlertasFiltroTipo) q = q.eq('tipo_alerta', _rdoAlertasFiltroTipo);
+  const { data, error } = await q;
+  if (error || !data?.length) {
+    div.innerHTML = _rdoAlertasFiltroTipo
+      ? `<div class="bg-white rounded-lg p-4 shadow-sm">
+           <div class="flex items-center gap-2 mb-2">
+             <span class="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">
+               Filtrado: <span class="font-medium">${escapeHtml(_rdoAlertasFiltroTipo)}</span>
+             </span>
+             <button onclick="limpiarFiltroBandejaRdo()" class="text-xs text-stone-500 underline">limpiar</button>
+           </div>
+           <p class="text-stone-400 text-sm">Sin alertas para este filtro.</p>
+         </div>`
+      : '';
+    return;
+  }
   const rojos    = data.filter(a => a.nivel === 'rojo').length;
   const amarillos = data.filter(a => a.nivel === 'amarillo').length;
   const badge = n => n === 'rojo'
@@ -1682,10 +1823,16 @@ async function loadAlertasRdo() {
     : '<span class="inline-block w-2 h-2 rounded-full bg-amber-400 mr-1"></span>';
   div.innerHTML = `
     <div class="bg-white rounded-lg p-4 shadow-sm">
-      <div class="flex items-center gap-3 mb-3">
+      <div class="flex items-center gap-3 mb-3 flex-wrap">
         <span class="font-semibold text-sm text-stone-700">⚠️ Alertas del sistema</span>
         <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">${rojos} crítica${rojos !== 1 ? 's' : ''}</span>
         ${amarillos > 0 ? `<span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">${amarillos} advertencia${amarillos !== 1 ? 's' : ''}</span>` : ''}
+        ${_rdoAlertasFiltroTipo
+          ? `<span class="ml-auto inline-flex items-center gap-2 text-xs bg-green-50 border border-green-200 text-green-800 px-2 py-0.5 rounded-full">
+               Filtrado: <span class="font-medium">${escapeHtml(_rdoAlertasFiltroTipo)}</span>
+               <button onclick="limpiarFiltroBandejaRdo()" class="underline hover:text-green-900">limpiar</button>
+             </span>`
+          : ''}
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-xs">
@@ -2473,6 +2620,17 @@ function renderLineasCot() {
   `).join('');
 }
 
+// D-OP-04-v2 Ola 1.4 — mapeo perfil del panel → nivel_autorizacion de mig 029.
+// La función f_validar_descuento espera: 'ceo' | 'jefe_comercial' | 'ejecutivo'.
+function nivelAutorizacionDePerfil(perfil) {
+  if (perfil === 'dusan' || perfil === 'admin') return 'ceo';
+  if (perfil === 'jefe_comercial') return 'jefe_comercial';
+  return 'ejecutivo';  // comercial, operaciones, externo, default → conservador
+}
+
+// Token incremental para descartar respuestas tardías de RPC f_validar_descuento.
+let _cotValidacionToken = 0;
+
 function cotRecalcular() {
   renderLineasCot();
   const totalUF = _cotLineas.reduce((acc, l) => acc + l.qty * l.precioUF * (1 - l.descPct / 100), 0);
@@ -2482,20 +2640,57 @@ function cotRecalcular() {
   document.getElementById('cotTotalUF').textContent = totalUF.toFixed(4) + ' UF';
   document.getElementById('cotDescProm').textContent = descProm.toFixed(1) + '%';
 
-  // Validar piso descuento (nivel ejecutivo como referencia si hay datos)
+  // D-OP-04-v2 Ola 1.4 — validación cruzada via curated.f_validar_descuento (mig 029 D-OP-06).
+  // Si hay cliente seleccionado: pide veredicto real por categoría del cliente + rol del usuario.
+  // Si no hay cliente: cae al cálculo global referencial (igual que antes).
   const pisoEl = document.getElementById('cotPisoStatus');
-  if (_cotDescuentosPisos.length) {
+  const clienteId = document.getElementById('cotClienteId')?.value;
+
+  if (clienteId && brutoUF > 0) {
+    const myToken = ++_cotValidacionToken;
+    pisoEl.textContent = '⏳';
+    pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-stone-100 text-stone-400';
+    pisoEl.title = 'Validando descuento vs categoría cliente…';
+
+    sb.schema('curated').rpc('f_validar_descuento', {
+      p_cliente_id: clienteId,
+      p_nivel_autorizacion: nivelAutorizacionDePerfil(currentProfile),
+      p_descuento_propuesto: Number(descProm.toFixed(2))
+    }).then(({ data, error }) => {
+      if (myToken !== _cotValidacionToken) return;  // respuesta vieja, descartar
+      if (error) {
+        console.error('[D-OP-04-v2 1.4] f_validar_descuento error:', error);
+        pisoEl.textContent = '⚠ sin validar';
+        pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-yellow-100 text-yellow-700';
+        pisoEl.title = humanizeSupabaseError(error);
+        return;
+      }
+      const r = data || {};
+      if (r.aprobado === true) {
+        pisoEl.textContent = `✅ OK · ${r.categoria || ''} ≤${(r.descuento_max_pct ?? 0)}%`;
+        pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-green-100 text-green-700';
+        pisoEl.title = r.mensaje || '';
+      } else {
+        pisoEl.textContent = `⚠ Excede tope ${r.descuento_max_pct ?? '?'}% · escalar a ${r.requiere_visto || 'ceo'}`;
+        pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-red-100 text-red-600';
+        pisoEl.title = r.mensaje || 'Descuento excede tope para la categoría del cliente.';
+      }
+    });
+  } else if (_cotDescuentosPisos.length) {
+    // Sin cliente: referencial con el max global de la matriz (comportamiento previo).
     const maxDesc = Math.max(..._cotDescuentosPisos.map(p => p.descuento_max_pct));
     if (descProm <= maxDesc) {
-      pisoEl.textContent = '✅ OK';
+      pisoEl.textContent = `✅ OK · referencia ≤${maxDesc.toFixed(1)}%`;
       pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-green-100 text-green-700';
     } else {
-      pisoEl.textContent = `⚠ Excede ${maxDesc.toFixed(1)}%`;
+      pisoEl.textContent = `⚠ Excede referencia ${maxDesc.toFixed(1)}%`;
       pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-red-100 text-red-600';
     }
+    pisoEl.title = 'Sin cliente seleccionado: validación referencial. Seleccione cliente para validación por categoría.';
   } else {
     pisoEl.textContent = '—';
     pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-stone-100 text-stone-400';
+    pisoEl.title = '';
   }
 
   // Validar margen (solo referencial con meta mínimo si hay datos)
@@ -2544,6 +2739,8 @@ function seleccionarClienteCot(id, nombre) {
   document.getElementById('cotClienteBuscar').value = nombre;
   document.getElementById('cotClienteSeleccionado').textContent = '✔ ' + nombre;
   document.getElementById('cotClienteSugerencias').classList.add('hidden');
+  // D-OP-04-v2 Ola 1.4 — re-disparar validación con cliente recién elegido.
+  if (typeof cotRecalcular === 'function') cotRecalcular();
 }
 
 async function guardarCotizacion() {
