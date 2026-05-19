@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-CL">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,9 +28,35 @@
        con offset para no chocar con focus:ring-* donde ya existe. */
     :focus-visible { outline: 2px solid #2C5F2D !important; outline-offset: 2px; border-radius: 3px; }
     :focus:not(:focus-visible) { outline: none; }
+    /* Skip-nav link (a11y) — visible solo cuando tiene focus. */
+    .skip-nav {
+      position: absolute; left: -9999px; top: 0;
+      background: #2C5F2D; color: #fff;
+      padding: 8px 14px; border-radius: 0 0 6px 0;
+      z-index: 10000; font-weight: 600; text-decoration: none;
+    }
+    .skip-nav:focus { left: 0; }
+    /* Mobile nav tabs — gradient fade derecha + chevron, indica que hay más a la derecha. */
+    .nav-tabs-wrapper { position: relative; }
+    .nav-tabs-wrapper::after {
+      content: ''; position: absolute; right: 0; top: 0; bottom: 0;
+      width: 32px; pointer-events: none;
+      background: linear-gradient(to left, rgba(255,255,255,1), rgba(255,255,255,0));
+    }
+    .nav-tabs-wrapper .chevron-more {
+      position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+      pointer-events: none; color: #2C5F2D; font-size: 1.1rem; opacity: 0.7;
+    }
+    @media (min-width: 768px) {
+      /* En desktop no hace falta el gradient porque los tabs caben. */
+      .nav-tabs-wrapper::after, .nav-tabs-wrapper .chevron-more { display: none; }
+    }
   </style>
 </head>
 <body class="bg-stone-100 min-h-screen">
+
+<!-- a11y skip-nav link (focus visible only) -->
+<a href="#mainContent" class="skip-nav">Saltar al contenido principal</a>
 
 <!-- D-OP-08 #6 — Toast container (feedback no intrusivo top-right) -->
 <div id="toastStack" aria-live="polite" aria-atomic="true"
@@ -99,24 +125,27 @@
     <a href="#" onclick="document.querySelector('button[data-tab=comunicados]').click(); return false;" class="underline text-amber-800 ml-2">Escuchar ahora</a>
   </div>
 
-  <nav class="border-b border-stone-200 px-6 bg-white">
-    <div class="flex gap-2 overflow-x-auto">
-      <button data-tab="portada"     class="tab-btn py-3 px-3 text-stone-600 active">🏠 Portada</button>
-      <button data-tab="pesaje"      class="tab-btn py-3 px-3 text-stone-600">⚖️ Pesaje S1</button>
-      <button data-tab="facturacion" class="tab-btn py-3 px-3 text-stone-600">🧾 Facturación S5</button>
-      <button data-tab="dieguito"    class="tab-btn py-3 px-3 text-stone-600">📎 Dieguito</button>
-      <button data-tab="comunicados" class="tab-btn py-3 px-3 text-stone-600">🎧 Comunicados</button>
-      <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600">📈 RDO Resumen</button>
-      <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600">💼 Negocios</button>
-      <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600">📋 Cotizador</button>
-      <button data-tab="cierres"    class="tab-btn py-3 px-3 text-stone-600">📅 Cierres</button>
-      <button data-tab="precios"    class="tab-btn py-3 px-3 text-stone-600">💲 Precios</button>
-      <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600">📑 OPERATIVOS</button>
-      <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden">⚙️ Admin</button>
+  <nav class="border-b border-stone-200 px-6 bg-white" aria-label="Pestañas del panel">
+    <div class="nav-tabs-wrapper">
+      <div class="flex gap-2 overflow-x-auto" role="tablist" aria-label="Pestañas del panel">
+        <button data-tab="portada"     class="tab-btn py-3 px-3 text-stone-600 active" role="tab" aria-selected="true"  aria-controls="tabPortada">🏠 Portada</button>
+        <button data-tab="pesaje"      class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabPesaje">⚖️ Pesaje S1</button>
+        <button data-tab="facturacion" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabFacturacion">🧾 Facturación S5</button>
+        <button data-tab="dieguito"    class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabDieguito">📎 Dieguito</button>
+        <button data-tab="comunicados" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabComunicados">🎧 Comunicados</button>
+        <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabRdo">📈 RDO Resumen</button>
+        <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
+        <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCotizador">📋 Cotizador</button>
+        <button data-tab="cierres"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCierres">📅 Cierres</button>
+        <button data-tab="precios"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabPrecios">💲 Precios</button>
+        <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
+        <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabAdmin">⚙️ Admin</button>
+      </div>
+      <span class="chevron-more" aria-hidden="true">›</span>
     </div>
   </nav>
 
-  <main class="p-6 max-w-6xl mx-auto">
+  <main id="mainContent" class="p-6 max-w-6xl mx-auto" tabindex="-1">
     <section id="tabPortada" class="tab-content">
       <h2 class="text-2xl font-bold mb-4 text-stone-800">Bienvenido</h2>
 
@@ -1108,8 +1137,12 @@ function setupTabs() {
       document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
       const target = document.getElementById('tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
       if (target) target.classList.remove('hidden');
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
       btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
       if (typeof window.pageLog === 'function') window.pageLog('tab_change', tabId);
       if (tabId === 'comunicados') loadAudios();
       if (tabId === 'portada') { loadPortadaAudio(); loadAlertasPortada(); }
@@ -2354,7 +2387,7 @@ async function loadNegocios(buscarOverride) {
               <select id="${selectId}"
                       onchange="actualizarSucursalOportunidad('${escapeHtml(n.oportunidad_id)}', this.value, '${selectId}')"
                       class="text-xs border rounded px-1.5 py-0.5 ${sinSuc ? 'border-amber-400 bg-amber-50 text-amber-800' : 'border-stone-300 bg-white text-stone-700'} focus:border-green-700 focus:outline-none">
-                <option value="" ${sinSuc?'selected':''}>${sinSuc ? '⚠ Asignar…' : '—'}</option>
+                <option value="" ${sinSuc?'selected':''} ${sinSuc?'':'disabled'}>${sinSuc ? '⚠ Asignar…' : '— (seleccionada)'}</option>
                 ${optionsHtml}
               </select>
               <span id="${selectId}_msg" class="text-sm ml-1"></span>
@@ -2410,7 +2443,13 @@ async function actualizarSucursalOportunidad(opId, sucursalId, selectId) {
       (sinSuc ? 'border-amber-400 bg-amber-50 text-amber-800' : 'border-stone-300 bg-white text-stone-700') +
       ' focus:border-green-700 focus:outline-none';
     const opt0 = sel.querySelector('option[value=""]');
-    if (opt0) opt0.textContent = sinSuc ? '⚠ Asignar…' : '—';
+    if (opt0) {
+      opt0.textContent = sinSuc ? '⚠ Asignar…' : '— (seleccionada)';
+      // a11y: la opción "—" deja de ser clickeable cuando ya hay sucursal asignada
+      // (evita desasignación accidental por click).
+      if (sinSuc) opt0.removeAttribute('disabled');
+      else opt0.setAttribute('disabled', '');
+    }
   }
 
   // D-OP-08 #2 — si el filtro "Solo sin sucursal" está activo y la fila ahora SÍ tiene sucursal,
