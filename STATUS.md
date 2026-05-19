@@ -1,7 +1,7 @@
 # STATUS — Reciclean-Farex Sistema
 
 > **Snapshot de `temas_en_progreso` (Supabase).** Respuesta canónica a "status / cómo vamos / detalle".
-> **Última regeneración:** 22-abr-2026 14:15 · **68 filas** (25 parents + 43 sub-tareas)
+> **Ultima regeneracion:** 19-may-2026 · **76 filas** (33 parents + 43 sub-tareas)
 
 ---
 
@@ -44,10 +44,80 @@
 | **I-23** | 15% | Gerencia General | Dusan | Monday implement | 3h | — | `Claude Code/Documentacion/Monday_Guia_Implementacion_Reciclean_v2.pptx` | 💡 Decidir Monday vs tracker |
 | **I-24** | 20% | Recursos Humanos | Dusan | Descripcion cargos | 2h | — | `equipo-procesos/.../Descripción de cargo Asistente Comercial.docx` | 💡 Consolidar 3 cargos |
 | **I-25** | 30% | Legal y Compliance | Dusan | Permisos Talca | 3h | — | `Permisos y Resoluciones/Permisos de Talca/` | 💡 Revisar vigencia |
+| **I-26** | 70% | Tecnologia | Pablo | Panel RDO | 3sem | **30-may** | `public/panel-rdo.html` | 🧪 8 PRs mergeados 18-19 may |
+| **I-27** | 100% | Tecnologia | Pablo | Proteccion prod | 2h | ✅ 18-may | `.github/CODEOWNERS` | ✅ CODEOWNERS + branch protection |
+| **I-28** | 100% | Tecnologia | Pablo | Quick wins Andrea | 1h | ✅ 18-may | `public/panel-rdo.html` | ✅ D-OP-08 auto-refresh+toast+focus |
+| **I-29** | 100% | Tecnologia | Pablo | Tab Cierres Dyana | 3h | ✅ 18-may | `public/panel-rdo.html` | ✅ D-OP-09 KPIs+tabla+drawer |
+| **I-30** | 100% | Tecnologia | Pablo | Precios vigentes | 4h | ✅ 18-may | `public/panel-rdo.html` | ✅ D-OP-04-v2 quick wins+tab |
+| **I-31** | 100% | Tecnologia | Pablo | Tab Operativos Cony | 3h | ✅ 18-may | `public/panel-rdo.html` | ✅ D-OP-10 uploader PDF+lista |
+| **I-32** | 100% | Tecnologia | Pablo | A11y Panel RDO | 2h | ✅ 19-may | `public/panel-rdo.html` | ✅ ARIA+labels+skip-nav+mobile |
 
 ---
 
-## Semana crítica (22-30 abr)
+## Resumen del dia 18-19 mayo 2026 — en palabras simples
+
+### Que se hizo (en palabras sencillas)
+
+**Se mergearon 8 Pull Requests al Panel RDO**, el tablero central donde el equipo ve todo lo que pasa en la empresa. Resumen:
+
+1. **Se arreglo la proteccion del codigo** (PR #27): La cuenta GitHub de Pablo quedo bien configurada. Ahora el puede revisar los cambios antes de que lleguen a produccion. Esto protege que nadie suba algo roto sin que Pablo lo vea primero.
+
+2. **Mejoras rapidas para Andrea** (PR #28): Tres arreglos chicos que facilitan el dia a dia de Andrea en el panel:
+   - Cuando asigna una sucursal a un negocio, la lista se actualiza sola (antes tenia que recargar la pagina).
+   - Los botones y campos ahora se ven con borde verde cuando los navega con teclado (para no perderse).
+   - Los mensajes de exito/error ahora salen como avisos arriba a la derecha (verdes = ok, rojos = problema).
+
+3. **Nueva pestana Cierres para Dyana** (PR #29): Dyana ahora puede ver los cierres del mes en el panel sin tener que abrir planillas Excel. Muestra 4 indicadores arriba (totales) y una tabla con cada empresa y sucursal. Al hacer click en una fila, ve el detalle dia por dia.
+
+4. **Mejoras al flujo de Precios** (PR #30): Tres mejoras para que el equipo comercial trabaje mejor:
+   - El cotizador ahora valida los descuentos de verdad (no deja poner descuentos mas altos de lo que el cliente tiene permitido).
+   - En la portada del panel, las alertas ahora son chips clickeables: click y va directo a ver esas alertas.
+   - El Dieguito (asistente IA interno) ahora tiene botones rapidos para etiquetar precios y clientes.
+
+5. **Nueva pestana Precios vigentes** (PR #31): Andrea y el equipo ahora ven una tabla con todos los precios activos, material por material y sucursal por sucursal. Tiene filtros, busqueda, y los margenes se pintan en colores: rojo = margen bajo (<30%), amarillo = medio, verde = bueno.
+
+6. **Nueva pestana Operativos para Cony** (PR #32): Cony ahora sube los PDFs operativos (resoluciones, permisos, documentos de empresa) directo al panel en vez de mandarlos por WhatsApp. Los PDFs quedan guardados en Supabase Storage, organizados por empresa, ano y mes. Cualquiera puede bajarlos despues.
+
+7. **Accesibilidad parte 1** (PR #33): El panel ahora funciona mejor para navegacion con teclado y lectores de pantalla. Incluye: idioma correcto (es-CL), boton para saltar al contenido, pestanas con roles ARIA, y en celular se ve un degradado que indica "hay mas pestanas a la derecha".
+
+8. **Accesibilidad parte 2** (PR #34): Se etiquetaron los 16 campos de formulario que no tenian etiqueta (el lector de pantalla decia "sin nombre") y los botones de cerrar (X) ahora dicen que hacen.
+
+---
+
+### Quien hizo que
+
+| Persona | Rol | Que hizo |
+|---|---|---|
+| **Pablo** | Desarrollo | Programo las 8 funcionalidades. Creo las ramas, escribio el codigo, abrio los PRs, aplico migraciones en Supabase. Trabajo del 18-may ~10:00 al 18-may ~18:00 (jornada completa). |
+| **Dusan** | Revision y merge | Reviso y aprobo los 8 PRs. Firmó las decisiones D-OP-08/09/10 en el sistema Mayordomo. Mergeo PR #27 a las 10:04, y los ultimos dos (PR #33 y #34) a las 08:56 del 19-may. |
+
+---
+
+### Impacto por persona del equipo
+
+| Persona | Que gana |
+|---|---|
+| **Andrea** | Auto-refresh en negocios, toasts de feedback, pestana Precios vigentes con colores de margen, focus visible en teclado |
+| **Dyana** | Pestana Cierres — ve los cierres del mes sin abrir Excel |
+| **Cony** | Pestana Operativos — sube PDFs directamente al panel, deja WhatsApp |
+| **Cesar** | Acceso de lectura a todas las tablas nuevas (grants cesar_readonly) |
+| **Todo el equipo** | Accesibilidad mejorada, errores en lenguaje humano, panel mas robusto en celular |
+
+---
+
+## Semana 19-23 mayo 2026
+
+| Dia | Quien | Que sigue |
+|---|---|---|
+| **Lun 19-may** | Dusan | Mergeo PRs #33-#34 (a11y). DOSI beta privada lanzamiento. |
+| **Mar 20-may** | Pablo | Pendiente: promover main->prod (D-PROMO-002) con los 8 PRs. |
+| **Mie 21-may** | Pablo | Originalmente D-OP-10 Cony (ya adelantado). Liberar para siguiente sprint. |
+| **Jue 22-may** | Equipo | Andrea testea Precios vigentes en terreno. Dyana usa Cierres. |
+| **Vie 23-may** | Dusan+Pablo | Review semanal: feedback Andrea/Dyana/Cony sobre las nuevas pestanas. |
+
+---
+
+## Semana critica (22-30 abr) — CERRADA
 
 | Día | Quién | Qué urge |
 |---|---|---|
@@ -85,13 +155,14 @@ Total Supabase: **84 tablas** + **11 vistas**.
 
 ---
 
-## Progreso diario (baseline)
+## Progreso diario
 
-| Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
+| Fecha | Temas totales | % promedio | Superados | En revision | En build | En diseno/spec |
 |---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| 22-abr-2026 (baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **19-may-2026** | 76 | 28.4% | 5 (I-27/28/29/30/31/32) | 1 (I-26) | 4 | 66 |
 
-> _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+> 19-may: +8 iniciativas Panel RDO. 5 cerradas al 100% en el mismo dia. I-26 (Panel RDO global) sube a 70% — quedan pendientes promover a prod, auth real, y refinamientos post-feedback.
 
 ---
 
