@@ -1,0 +1,151 @@
+═══════════════════════════════════════════════════════════════════
+PANEL RDO v4 — VISTA PREVIA PARA REVISIÓN
+═══════════════════════════════════════════════════════════════════
+De: Dusan (PC1)        Para: Pablo (PC2)        Fecha: 20-may-2026
+
+
+🔗 LINK PARA ABRIR EL PANEL (válido hasta 21-may 13:35 Chile)
+
+https://reciclean-sistema-git-repli-c53605-dusanarancibia-cpus-projects.vercel.app/panel-rdo-v4.html?_vercel_share=t3obMUeYdsP2AWVEQPp8i2VWI5K3rCnh
+
+→ Hacé click y abre directo, sin login (el token ?_vercel_share está embebido).
+→ Si te pide login a Vercel, el token expiró: pedile a PC1 uno nuevo.
+
+
+═══════════════════════════════════════════════════════════════════
+QUÉ ES ESTO
+═══════════════════════════════════════════════════════════════════
+
+Versión nueva del panel RDO con estética rediseñada (sidebar +
+KPI cards + charts + mapa + top 5) montada sobre la lógica real
+del panel actual (mismas vistas Supabase, mismo login, mismos tabs).
+
+Convive como SIDECAR — el panel actual (panel-rdo.html en prod)
+no se tocó. Si esto se aprueba, después se hace swap con un
+rename. Mientras tanto vive en la rama `replit/plan-dusan`.
+
+
+═══════════════════════════════════════════════════════════════════
+QUÉ FUNCIONA CON DATOS REALES (todo lo verificado hoy)
+═══════════════════════════════════════════════════════════════════
+
+✔ Login con tu email (gerencia@gestionrepchile.cl prellenado, perfil dusan).
+✔ Sidebar con 11 silos cargados de v_panel_silos_visibles.
+✔ 12 tabs originales preservados con su lógica intacta
+  (Pesaje S1, Facturación S5, Dieguito, Comunicados, RDO,
+   Negocios, Cotizador, Cierres, Precios, Operativos, Admin).
+
+KPIs del dashboard (4 cards):
+  • Pesajes:     386 tickets · 336 t YTD compras
+  • Facturación: $13M mayo · vs $17M abril · ▼23%
+  • RDO mes:     $14M · 117 t mes 2026-05
+  • Alertas:     93 totales (82 críticas + 11 amarillas)
+
+Sparklines de 7 días en cada KPI:
+  - Alimentados por la RPC nueva `panel.sparkline_kpis_7d()`
+  - Verde / azul / ámbar / rojo según card
+  - SVG inline con path + área 20% + polyline + circle final
+
+3 charts Chart.js:
+  - Pie composición ventas por empresa 2026 (Reciclean/Farex)
+  - Bar toneladas YTD por sucursal
+  - Line compras 12 meses
+
+Mapa Leaflet con 4 sucursales reales (Cerrillos, Maipú, Talca,
+Pto Montt en gris por SEREMI).
+
+Top 5 con datos reales:
+  - Clientes: #1 Envases Impresos $106M · #2 Sociedad Beto $100M ·
+              #3 Falabella $25M · #4 FPC Papeles $11M · #5 EECOL $5M
+  - Materiales: #1 Lata chatarra 137t · #2 Cartón 79t · #3 Stretch 25t
+  - Sucursales: por toneladas YTD
+
+UF real: $40.425 (API mindicador.cl con cache 12h en localStorage).
+
+Responsive validado en 360 / 768 / 1024 / 1440 px.
+
+
+═══════════════════════════════════════════════════════════════════
+PENDIENTES PARA VOS (PC2-Pablo)
+═══════════════════════════════════════════════════════════════════
+
+🔴 CRÍTICO — pipeline operativo:
+
+1. `staging.pesajes_prod` lleva 6 días sin ingest
+   (última fecha: 2026-05-14, hoy 2026-05-20).
+   Revisar por qué se cortó el pipeline.
+
+2. `staging.facturacion_s5` devuelve "permission denied" desde
+   el cliente anon. Ajustar RLS o crear vista pública.
+
+🟡 IMPORTANTE — features que destraban iteración 4:
+
+3. Crear vista `staging.dte_resumen_mensual` con granularidad mes
+   (hoy se usa proxy desde pesajes_prod, funciona pero impreciso).
+
+4. Edge Function `f_uf_hoy` server-side con cache 24h
+   (hoy se llama directo a mindicador.cl desde el cliente).
+
+5. Mapa Leaflet con bubble sizing dinámico por pesajes del mes.
+
+
+═══════════════════════════════════════════════════════════════════
+DOCS PARA CONSULTAR EN GITHUB (todos públicos, sin auth)
+═══════════════════════════════════════════════════════════════════
+
+📈 AVANCE del loop autónomo (3 iteraciones, T1-T5 cerradas):
+https://github.com/dusanarancibia-cpu/reciclean-sistema/blob/replit/plan-dusan/public/AVANCE-AUTONOMO.md
+
+📋 BLOQUEOS abiertos (B07, B08, B09 cerrado, etc.):
+https://github.com/dusanarancibia-cpu/reciclean-sistema/blob/replit/plan-dusan/public/BLOQUEOS.md
+
+🟡 PENDIENTES-DATOS (10 items P01-P10 con SQL propuesto):
+https://github.com/dusanarancibia-cpu/reciclean-sistema/blob/replit/plan-dusan/public/PENDIENTES-DATOS.md
+
+🔍 QUERIES de PC4 (5 queries validadas + RPC propuesto):
+https://github.com/dusanarancibia-cpu/reciclean-sistema/blob/replit/plan-dusan/public/QUERIES-PC4.md
+
+
+═══════════════════════════════════════════════════════════════════
+COMMITS EN replit/plan-dusan (6 desde 09:30 hoy)
+═══════════════════════════════════════════════════════════════════
+
+e997b27  docs: BLOQUEOS + PENDIENTES-DATOS
+e470c6e  docs: AVANCE-AUTONOMO v3 (log consolidado)
+8b92b48  v4 responsive: fix overflow horizontal 360/1024
+1695846  v4 dashboard: sparklines + KPI mes vs mes
+7707178  PC4 outputs: 5 queries validadas
+8881a3c  Panel RDO v4 - desarrollo visible para el equipo
+
+panel-rdo.html ORIGINAL no se tocó.
+main local 100% sincronizado con origin/main.
+
+
+═══════════════════════════════════════════════════════════════════
+PROCESO DE SWAP FINAL (cuando se apruebe)
+═══════════════════════════════════════════════════════════════════
+
+Cuando aprueben el v4, el swap a producción es:
+
+  git switch main
+  git pull origin main
+  cp public/panel-rdo.html public/panel-rdo.html.pre-v4.bak
+  git checkout origin/replit/plan-dusan -- public/panel-rdo-v4.html
+  mv public/panel-rdo-v4.html public/panel-rdo.html
+  git add public/panel-rdo.html public/panel-rdo.html.pre-v4.bak
+  git commit -m "swap: panel-rdo v3 → v4"
+  git push origin main   # via PR con review
+
+Hay 2 objetos Supabase nuevos creados hoy que el v4 usa
+(ya están en prod, no hay que migrarlos):
+
+  - panel.sparkline_kpis_7d()    (RPC para sparklines)
+  - public.v_kpi_grupo_mensual   (vista mensual proxy)
+
+
+═══════════════════════════════════════════════════════════════════
+DUDAS / CAMBIOS
+
+PC1-Dusan (Claude orquestador en el PC de Dusan) está activo.
+Diego v5.1.0 funcionando.
+═══════════════════════════════════════════════════════════════════
