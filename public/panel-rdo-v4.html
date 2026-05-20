@@ -4186,7 +4186,7 @@ async function v4InitCharts() {
 // 6) MAPA — sucursales reales del grupo
 // =========================================
 let v4MapInstance = null;
-function v4InitMap() {
+async function v4InitMap() {
   if (typeof L === 'undefined') return;
   if (v4MapInstance) return;
   const map = L.map('v4Map').setView([-36.0, -71.5], 5);
@@ -4194,24 +4194,55 @@ function v4InitMap() {
     attribution: '&copy; CartoDB',
     subdomains: 'abcd', maxZoom: 19
   }).addTo(map);
-  // Sucursales reales del grupo
-  const sucursales = [
-    { nombre: 'Cerrillos', lat: -33.5125, lng: -70.7186, color: '#059669', activa: true },
-    { nombre: 'Maipú',     lat: -33.4877, lng: -70.7567, color: '#059669', activa: true },
-    { nombre: 'Talca',     lat: -35.4264, lng: -71.6554, color: '#2563eb', activa: true },
-    { nombre: 'Pto Montt (bloqueada SEREMI)', lat: -41.4717, lng: -72.9369, color: '#94a3b8', activa: false },
-  ];
-  sucursales.forEach(s => {
-    L.circleMarker([s.lat, s.lng], {
-      radius: 9,
-      fillColor: s.color,
+
+  // Coordenadas reales de las 4 sucursales del grupo
+  const COORDS = {
+    'Cerrillos':    { lat: -33.5125, lng: -70.7186, color: '#059669' },
+    'Maipú':        { lat: -33.4877, lng: -70.7567, color: '#059669' },
+    'Talca':        { lat: -35.4264, lng: -71.6554, color: '#2563eb' },
+    'Puerto Montt': { lat: -41.4717, lng: -72.9369, color: '#94a3b8' }, // bloqueada SEREMI
+  };
+
+  // Cargar datos reales del mes vía staging.v_pesajes_mes_por_sucursal (Pablo dejó esta vista 20-may)
+  let datos = {}; // { sucursal: { toneladas_mes, monto_mes, tickets_mes } }
+  try {
+    if (typeof sb !== "undefined" && sb) {
+      const { data, error } = await sb.schema('staging').from('v_pesajes_mes_por_sucursal')
+        .select('sucursal, toneladas_mes, monto_mes, tickets_mes, mes_actual');
+      if (!error && data) {
+        data.forEach(r => { datos[r.sucursal] = r; });
+      }
+    }
+  } catch (e) { console.warn('[v4] mapa datos mes:', e?.message); }
+
+  // Bubble sizing: radius proporcional a sqrt(toneladas_mes) → área visual proporcional a toneladas
+  const maxTon = Math.max(...Object.values(datos).map(d => Number(d.toneladas_mes) || 0), 1);
+  const R_MIN = 6, R_MAX = 22;
+
+  Object.entries(COORDS).forEach(([nombre, cfg]) => {
+    const d = datos[nombre];
+    const ton = d ? Number(d.toneladas_mes) || 0 : 0;
+    const radius = ton > 0
+      ? R_MIN + (Math.sqrt(ton / maxTon) * (R_MAX - R_MIN))
+      : R_MIN;
+    const fillOpacity = ton > 0 ? 0.85 : 0.35;
+
+    const labelExtra = d
+      ? `<br>📦 ${ton.toFixed(1)} t · ${d.tickets_mes} tickets<br>💵 $${Math.round(d.monto_mes / 1e6).toLocaleString('es-CL')}M`
+      : (nombre === 'Puerto Montt' ? '<br>🔒 bloqueada SEREMI' : '<br>sin movimiento este mes');
+
+    L.circleMarker([cfg.lat, cfg.lng], {
+      radius: radius,
+      fillColor: cfg.color,
       color: '#fff',
       weight: 2,
-      fillOpacity: s.activa ? 0.85 : 0.45
-    }).bindTooltip(s.nombre, { permanent: false, direction: 'top', offset: [0,-8] }).addTo(map);
+      fillOpacity: fillOpacity
+    }).bindTooltip(`<b>${nombre}</b>${labelExtra}`, {
+      permanent: false, direction: 'top', offset: [0, -8], opacity: 0.95
+    }).addTo(map);
   });
+
   v4MapInstance = map;
-  // Recalcular tamaño cuando la portada se vuelve visible
   setTimeout(() => { try { map.invalidateSize(); } catch(e){} }, 200);
 }
 
