@@ -57,8 +57,21 @@
 
     /* Diego FAB */
     #diegoFab { position: fixed; bottom: 20px; right: 20px; z-index: 40; }
-    #diegoFab button { background: linear-gradient(135deg, #059669, #047857); color: #fff; width: 56px; height: 56px; border-radius: 50%; box-shadow: 0 4px 12px rgba(5,150,105,.4); font-size: 24px; border:none; cursor: pointer; transition: transform .15s; }
+    #diegoFab button { position: relative; background: linear-gradient(135deg, #059669, #047857); color: #fff; width: 56px; height: 56px; border-radius: 50%; box-shadow: 0 4px 12px rgba(5,150,105,.4); font-size: 24px; border:none; cursor: pointer; transition: transform .15s; }
     #diegoFab button:hover { transform: scale(1.08); }
+    /* Badge mensajes pendientes 6W */
+    #diegoBadge {
+      position: absolute; top: -4px; right: -4px;
+      min-width: 20px; height: 20px; padding: 0 5px;
+      background: #dc2626; color: #fff;
+      border: 2px solid #fff; border-radius: 999px;
+      font-size: 11px; font-weight: 700; line-height: 16px;
+      display: none; align-items: center; justify-content: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    #diegoBadge.visible { display: inline-flex; }
+    #diegoBadge.urgente { animation: diegoBadgePulse 1.6s ease-in-out infinite; }
+    @keyframes diegoBadgePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.18)} }
     #diegoChatWindow { position: fixed; bottom: 90px; right: 20px; width: 360px; max-width: calc(100vw - 40px); height: 480px; background: #fff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,.15); border: 1px solid #e2e8f0; display: none; flex-direction: column; z-index: 45; }
     #diegoChatWindow.open { display: flex; }
 
@@ -1008,7 +1021,10 @@
 
   <!-- ============== DIEGO FAB (flota global) ============== -->
   <div id="diegoFab">
-    <button onclick="v4ToggleDiegoChat()" title="Diego IA" aria-label="Abrir Diego IA">💬</button>
+    <button onclick="v4ToggleDiegoChat()" title="Diego IA" aria-label="Abrir Diego IA">
+      💬
+      <span id="diegoBadge" role="status" aria-live="polite" aria-label="Mensajes pendientes">0</span>
+    </button>
   </div>
   <div id="diegoChatWindow" aria-hidden="true">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e2e8f0;">
@@ -4356,6 +4372,42 @@ window.v4ToggleDiegoChat = function() {
   if (w) w.classList.toggle('open');
 };
 
+// Badge mensajes pendientes 6W (panel.v_diego_pendientes)
+async function v4LoadDiegoBadge() {
+  const badge = document.getElementById('diegoBadge');
+  if (!badge) return;
+  try {
+    if (typeof sb === "undefined" || !sb) return;
+    const { data, error } = await sb.schema('panel').from('v_diego_pendientes').select('total');
+    if (error) throw error;
+    const total = (data || []).reduce((acc, r) => acc + (Number(r.total) || 0), 0);
+    if (total > 0) {
+      badge.textContent = total > 99 ? '99+' : String(total);
+      badge.classList.add('visible');
+      if (total >= 5) badge.classList.add('urgente'); else badge.classList.remove('urgente');
+      badge.setAttribute('aria-label', `${total} mensajes pendientes en bandeja Diego`);
+      const btn = badge.closest('button');
+      if (btn) btn.title = `Diego IA — ${total} mensaje${total>1?'s':''} pendiente${total>1?'s':''} (6W)`;
+    } else {
+      badge.classList.remove('visible','urgente');
+      badge.setAttribute('aria-label', 'Sin mensajes pendientes');
+      const btn = badge.closest('button');
+      if (btn) btn.title = 'Diego IA';
+    }
+  } catch (e) {
+    console.warn('[v4] Diego badge fallo:', e?.message);
+    badge.classList.remove('visible','urgente');
+  }
+}
+// Refresh cada 60s mientras la pestaña esté visible
+let v4DiegoBadgeTimer = null;
+function v4StartDiegoBadgeTimer() {
+  if (v4DiegoBadgeTimer) clearInterval(v4DiegoBadgeTimer);
+  v4DiegoBadgeTimer = setInterval(() => {
+    if (!document.hidden) v4LoadDiegoBadge();
+  }, 60000);
+}
+
 // =========================================
 // 9) MENÚ CONTEXTUAL E360
 // =========================================
@@ -4385,6 +4437,8 @@ function v4OnAppReady() {
   v4InitCharts();
   v4InitMap();
   v4LoadTop('clientes');
+  v4LoadDiegoBadge();
+  v4StartDiegoBadgeTimer();
 }
 
 // Observa cuando appContainer pasa de display:none a display:block (login OK)
