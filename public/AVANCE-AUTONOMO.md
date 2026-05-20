@@ -1,7 +1,84 @@
 # AVANCE-AUTONOMO — Panel RDO v4 (loop 19-20 may 2026)
 
 > Loop autónomo de PC1-Dusan trabajando el dashboard v4.
-> 3 iteraciones en ~12 horas. Última actualización: **2026-05-20 11:40 Chile**.
+> 4 iteraciones + 3 ciclos autónomos en ~15 horas. Última actualización: **2026-05-20 13:15 Chile**.
+
+---
+
+# ITERACIÓN 4 — Loop autónomo continuo post handoff Pablo (FIN)
+
+> Activada por mandato Dusan 12:30 ("ARRANQUE AUTOMÁTICO REAL — trabajar en loop hasta PARAR").
+> Cerrada: 2026-05-20 13:15 (~45 min, 3 ciclos autónomos).
+
+## Ciclo 1 (12:30 → 12:45) · YA-1/2/3 + YA-4 + YA-5
+
+| Tarea | Estado |
+|---|---|
+| **YA-1** B09 main desincronizado | ya cerrada en T1 (commit prev) |
+| **YA-2** Sparklines 7 días | ya cerrada en T2 (commit 1695846) |
+| **YA-3** Vista mensual KPI Facturación | ya cerrada en T3 (commit 1695846) |
+| **YA-4** PC3 anomalías pesajes | ✅ Vista `staging.v_pesajes_anomalias` + resumen creadas. **264 anomalías** detectadas (225 kg≤0 críticas + 9 imposibles + 38 sin sucursal + 8 precio negativo + 1 sin monto). Asignada a PC3. |
+| **YA-5** PC4 estructura tesorería | ✅ Tabla `panel.tesoreria_kpis` + vista `v_tesoreria_ultimo` + RLS + seed row vacía. Asignada a PC4. |
+
+## Ciclo 1.5 — UF EF Pablo (12:35)
+
+- Migrado `v4LoadUF()`: ahora consume `https://eknmtsrtfkzroxnovfqn.supabase.co/functions/v1/f-uf-hoy` (Edge Function de Pablo con cache 24h server-side + self-healing).
+- Antes: cada cliente pegaba a `mindicador.cl` con cache 12h en su localStorage.
+- Tooltip enriquecido: `UF $40424.99 al 2026-05-20 · fuente: mindicador.cl`.
+- Commit `2a71241`.
+
+## Ciclo 2 (13:00 → 13:10) · Mapa bubble sizing
+
+- Ítem #9 de la cola cerrado.
+- `v4InitMap()` ahora carga `staging.v_pesajes_mes_por_sucursal` (vista de Pablo) y dimensiona radius proporcional a `sqrt(toneladas_mes / max)`.
+- Resultado verificado en agent-browser:
+  - Talca: **r=22** (91.7 t / 54 tickets / $10.4M)
+  - Maipú: **r=13** (19.8 t / 19 tickets / $3.4M)
+  - Cerrillos: **r=9** (3.3 t / 1 ticket / $98K)
+  - Puerto Montt: **r=6** (0 t · 🔒 bloqueada SEREMI)
+- Tooltips ahora muestran toneladas + tickets + monto del mes.
+- Commit `f134848`.
+
+## Ciclo 3 (13:10 → 13:15) · Documentación
+
+- Update COLA-TAREAS.md: items #8 + #9 marcados ✅ cerradas.
+- Update BITACORA-CIERRE.md: 2 entradas nuevas (ciclos loop-1 y loop-2).
+- Update AVANCE-AUTONOMO.md (este archivo) con iteración 4.
+- Commit `fc9e876`.
+
+## Objetos Supabase nuevos en esta iteración
+
+| Schema.objeto | Tipo | Origen | Resultado |
+|---|---|---|---|
+| `staging.v_pesajes_anomalias` | view | PC1 ciclo 1 (YA-4) | 264 filas marcadas anómalas con detector multi-criterio |
+| `staging.v_pesajes_anomalias_resumen` | view | PC1 ciclo 1 (YA-4) | Conteo por tipo de anomalía |
+| `panel.tesoreria_kpis` | table | PC1 ciclo 1 (YA-5) | Estructura 4 KPIs financieros + RLS + seed vacía |
+| `panel.v_tesoreria_ultimo` | view | PC1 ciclo 1 (YA-5) | Lectura del snapshot más reciente |
+
+## Commits a `replit/plan-dusan` en iteración 4 (3)
+
+```
+f134848  v4 mapa: bubble sizing dinamico desde staging.v_pesajes_mes_por_sucursal (Pablo)
+2a71241  v4 UF: migrar de mindicador.cl directo a Edge Function f-uf-hoy de Pablo
+(8b92b48, 1695846, 7707178, 8881a3c, e470c6e, e997b27, 6b11d40) anteriores
+```
+
+Total commits `replit/plan-dusan` del loop 19-20 may: **10**.
+
+## Estado mayordomo al cierre iteración 4
+
+| PC | Estado real (3 fuentes) | Tarea actual |
+|---|---|---|
+| PC1-Dusan | activo (3/3) | Loop autónomo — esperando próximo trigger |
+| PC2-Pablo | activo (2/3 — heartbeat stale pero commits <24h) | Espera merge Dusan de PRs #35-#39 |
+| PC3-Cámaras | activo (recién asignada YA-4) | Investigar 264 anomalías pesajes |
+| PC4-Desocupado | activo (recién asignada YA-5) | Documentar `tesoreria_kpis` + integrar al panel |
+
+## Pendiente para Dusan
+
+1. Smoke + merge de PRs #35, #36, #37, #38, #39 en `reciclean-sistema` (PR #35 crítico).
+2. Firmar 2 entregables PC4 en bandeja AM 21-may (D-2026-01 leasing + D-2026-02 carta Maipú).
+3. Decisión sobre Mig 044 Ley REP pausada (spec no existe).
 
 ---
 
