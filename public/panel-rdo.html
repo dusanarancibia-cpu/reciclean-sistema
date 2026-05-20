@@ -141,6 +141,7 @@
         <button data-tab="cierres"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCierres">📅 Cierres</button>
         <button data-tab="precios"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabPrecios">💲 Precios</button>
         <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
+        <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
         <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabAdmin">⚙️ Admin</button>
       </div>
       <span class="chevron-more" aria-hidden="true">›</span>
@@ -599,6 +600,130 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA RECONCILIACIÓN CRM ↔ RDO (D-OP-13)
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabReconciliacion" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">🔗 Reconciliación CRM Impulsa ↔ RDO</h2>
+        <button onclick="loadReconciliacion(1)" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+
+      <!-- KPI bar -->
+      <div id="recKpiBar" class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Total oportunidades</div>
+          <div id="recKpiTotal" class="text-2xl font-bold text-stone-800">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Auto-matched (RUT)</div>
+          <div id="recKpiAuto" class="text-2xl font-bold text-green-700">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Pendientes revisar</div>
+          <div id="recKpiPend" class="text-2xl font-bold text-amber-600">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Decididas manual</div>
+          <div id="recKpiDec" class="text-2xl font-bold text-blue-700">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Descartadas</div>
+          <div id="recKpiDesc" class="text-2xl font-bold text-stone-500">—</div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="bg-white p-3 rounded shadow-sm mb-4 flex flex-wrap gap-3 items-end">
+        <div>
+          <label for="recFiltroBucket" class="block text-xs text-stone-500 mb-1">Bucket</label>
+          <select id="recFiltroBucket" onchange="loadReconciliacion(1)"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todos</option>
+            <option value="pendiente_revisar">Pendiente revisar</option>
+            <option value="automatico_rut">Auto-matched (RUT)</option>
+            <option value="decidido_match">Decidido match</option>
+            <option value="decidido_descartar">Descartadas</option>
+            <option value="decidido_postponer">Postpuestas</option>
+          </select>
+        </div>
+        <div>
+          <label for="recFiltroEmbudo" class="block text-xs text-stone-500 mb-1">Embudo</label>
+          <select id="recFiltroEmbudo" onchange="loadReconciliacion(1)"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="flex-1 min-w-[12rem]">
+          <label for="recFiltroBuscar" class="block text-xs text-stone-500 mb-1">Buscar (cliente CRM, RUT, cliente RDO)</label>
+          <input id="recFiltroBuscar" type="text" placeholder="ej. SOTEX o 76300290"
+                 oninput="recDebouncedSearch()" aria-label="Buscar"
+                 class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+        </div>
+        <div class="text-xs text-stone-500 self-end pb-2">
+          <span id="recRangoTexto">—</span>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="bg-white rounded shadow-sm overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-stone-50 text-stone-600 text-left">
+            <tr>
+              <th class="px-3 py-2">CRM ID</th>
+              <th class="px-3 py-2">Cliente CRM</th>
+              <th class="px-3 py-2">RUT CRM</th>
+              <th class="px-3 py-2">Embudo</th>
+              <th class="px-3 py-2">Estado</th>
+              <th class="px-3 py-2 text-right">Monto</th>
+              <th class="px-3 py-2">Match RDO</th>
+              <th class="px-3 py-2">Bucket</th>
+              <th class="px-3 py-2">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="recTbody">
+            <tr><td colspan="9" class="px-3 py-4 text-center text-stone-400">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="flex justify-between items-center mt-3 text-sm">
+        <button id="recPagPrev" onclick="loadReconciliacion(recPaginaActual - 1)" class="px-3 py-1.5 bg-stone-200 rounded hover:bg-stone-300 disabled:opacity-50" disabled>← Anterior</button>
+        <div id="recPagInfo" class="text-stone-600">Página — de —</div>
+        <button id="recPagNext" onclick="loadReconciliacion(recPaginaActual + 1)" class="px-3 py-1.5 bg-stone-200 rounded hover:bg-stone-300 disabled:opacity-50">Siguiente →</button>
+      </div>
+
+      <!-- Popup "Marcar match" -->
+      <div id="recMatchModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg p-5 max-w-lg w-full">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-lg font-semibold text-stone-800">Marcar match manual</h3>
+            <button onclick="recCerrarMatchModal()" class="text-stone-500 hover:text-stone-800 text-xl" aria-label="Cerrar">×</button>
+          </div>
+          <div class="text-sm text-stone-600 mb-2">
+            Oportunidad CRM: <strong id="recMatchCrmId">—</strong>
+            <span class="text-stone-400 mx-2">·</span>
+            Cliente CRM: <strong id="recMatchCrmCliente">—</strong>
+          </div>
+          <div class="mb-3">
+            <label for="recMatchBuscar" class="block text-xs text-stone-500 mb-1">Buscar cliente RDO</label>
+            <input id="recMatchBuscar" type="text"
+                   placeholder="Ej. Sotex…"
+                   aria-label="Buscar cliente RDO"
+                   oninput="recBuscarClienteRdo()"
+                   class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+          </div>
+          <div id="recMatchSugerencias" class="border border-stone-200 rounded max-h-48 overflow-y-auto mb-3">
+            <div class="text-xs text-stone-400 p-2">Escribe al menos 2 caracteres para sugerencias.</div>
+          </div>
+          <div class="flex justify-end gap-2">
+            <button onclick="recCerrarMatchModal()" class="px-3 py-1.5 bg-stone-200 rounded hover:bg-stone-300 text-sm">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
          PESTAÑA COTIZADOR
     ═══════════════════════════════════════════════════════════ -->
     <section id="tabCotizador" class="tab-content hidden">
@@ -763,7 +888,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'operativos', 'admin'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'operativos', 'reconciliacion', 'admin'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -1168,6 +1293,7 @@ function setupTabs() {
       if (tabId === 'cierres')   loadCierres();
       if (tabId === 'precios')   initPrecios();
       if (tabId === 'operativos') initOperativos();
+      if (tabId === 'reconciliacion') initReconciliacion();
       if (tabId === 'dieguito')  initDieguito();
     });
   });
@@ -3414,6 +3540,210 @@ async function guardarCotizacion() {
   agregarLineaCot();
   cotRecalcular();
 }
+
+// ============================================================
+// TAB RECONCILIACIÓN CRM ↔ RDO (D-OP-13)
+// ============================================================
+const REC_PAGE_SIZE = 50;
+let recPaginaActual = 1;
+let recTotalFilas = 0;
+let recMatchCrmIdSel = null;
+let recSearchTimer = null;
+
+function recDebouncedSearch() {
+  clearTimeout(recSearchTimer);
+  recSearchTimer = setTimeout(() => loadReconciliacion(1), 350);
+}
+
+async function initReconciliacion() {
+  // Una sola vez: cargar embudos distintos al combo
+  if (!document.getElementById('recFiltroEmbudo').dataset.cargado) {
+    const { data: embudos } = await sb.schema('curated').from('vw_oportunidades_crm')
+      .select('embudo').not('embudo', 'is', null).limit(1000);
+    const set = [...new Set((embudos || []).map(e => e.embudo).filter(Boolean))].sort();
+    const sel = document.getElementById('recFiltroEmbudo');
+    set.forEach(e => { const opt = document.createElement('option'); opt.value = e; opt.textContent = e; sel.appendChild(opt); });
+    sel.dataset.cargado = '1';
+  }
+  await loadReconciliacionKpis();
+  await loadReconciliacion(1);
+}
+
+async function loadReconciliacionKpis() {
+  const { data, error } = await sb.schema('curated').rpc('reconciliacion_kpis');
+  if (error) { console.warn('[Reconciliación] KPI error:', error.message); return; }
+  const counts = {};
+  let total = 0;
+  (data || []).forEach(r => { counts[r.bucket] = Number(r.cant); total += Number(r.cant); });
+  document.getElementById('recKpiTotal').textContent = total.toLocaleString('es-CL');
+  document.getElementById('recKpiAuto').textContent = (counts['automatico_rut'] || 0).toLocaleString('es-CL');
+  document.getElementById('recKpiPend').textContent = (counts['pendiente_revisar'] || 0).toLocaleString('es-CL');
+  document.getElementById('recKpiDec').textContent  = (counts['decidido_match'] || 0).toLocaleString('es-CL');
+  document.getElementById('recKpiDesc').textContent = (counts['decidido_descartar'] || 0).toLocaleString('es-CL');
+}
+
+async function loadReconciliacion(pagina) {
+  pagina = Math.max(1, pagina | 0);
+  recPaginaActual = pagina;
+  const tbody = document.getElementById('recTbody');
+  tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-4 text-center text-stone-400">Cargando…</td></tr>';
+
+  const bucket = document.getElementById('recFiltroBucket').value;
+  const embudo = document.getElementById('recFiltroEmbudo').value;
+  const buscar = (document.getElementById('recFiltroBuscar').value || '').trim();
+  const from = (pagina - 1) * REC_PAGE_SIZE;
+  const to   = from + REC_PAGE_SIZE - 1;
+
+  let q = sb.schema('curated').from('vw_reconciliacion_buckets')
+    .select('*', { count: 'exact' })
+    .order('fecha_ingreso', { ascending: false, nullsFirst: false })
+    .range(from, to);
+
+  if (bucket) q = q.eq('bucket', bucket);
+  if (embudo) q = q.eq('embudo', embudo);
+  if (buscar) {
+    const s = buscar.replace(/'/g, "''");
+    q = q.or(`cliente_crm.ilike.%${s}%,rut_crm.ilike.%${s}%,cliente_nombre_rdo.ilike.%${s}%`);
+  }
+
+  const { data, error, count } = await q;
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="9" class="px-3 py-4 text-center text-red-600">Error: ${escapeHtml(error.message)}</td></tr>`;
+    return;
+  }
+  recTotalFilas = count || 0;
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-6 text-center text-stone-400">Sin filas para los filtros aplicados.</td></tr>';
+  } else {
+    tbody.innerHTML = data.map(renderRecFila).join('');
+  }
+
+  // Paginación
+  const totalPag = Math.max(1, Math.ceil(recTotalFilas / REC_PAGE_SIZE));
+  document.getElementById('recPagInfo').textContent = `Página ${pagina} de ${totalPag} (${recTotalFilas.toLocaleString('es-CL')} filas)`;
+  document.getElementById('recRangoTexto').textContent = `${from + 1}–${Math.min(to + 1, recTotalFilas)} de ${recTotalFilas.toLocaleString('es-CL')}`;
+  document.getElementById('recPagPrev').disabled = pagina <= 1;
+  document.getElementById('recPagNext').disabled = pagina >= totalPag;
+}
+
+function renderRecFila(f) {
+  const bucketColor = {
+    'automatico_rut':       'bg-green-100 text-green-800',
+    'pendiente_revisar':    'bg-amber-100 text-amber-800',
+    'decidido_match':       'bg-blue-100 text-blue-800',
+    'decidido_descartar':   'bg-stone-200 text-stone-600',
+    'decidido_postponer':   'bg-yellow-100 text-yellow-800',
+    'decidido_crear':       'bg-purple-100 text-purple-800',
+  }[f.bucket] || 'bg-stone-100 text-stone-700';
+
+  const matchTxt = f.cliente_nombre_rdo
+    ? `<span class="text-stone-700">${escapeHtml(f.cliente_nombre_rdo)}</span>`
+    : '<span class="text-stone-400">—</span>';
+
+  let acciones = '';
+  if (f.bucket === 'pendiente_revisar') {
+    acciones = `
+      <button onclick="recAbrirMatchModal('${escapeHtml(f.crm_id)}', ${JSON.stringify(f.cliente_crm || '').replace(/"/g, '&quot;')})" class="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded">Match</button>
+      <button onclick="recDescartar('${escapeHtml(f.crm_id)}')" class="text-xs px-2 py-1 bg-stone-300 hover:bg-stone-400 text-stone-800 rounded ml-1">Descartar</button>`;
+  } else if (f.bucket === 'automatico_rut') {
+    acciones = '<span class="text-xs text-stone-400">auto</span>';
+  } else if (f.bucket?.startsWith('decidido_')) {
+    acciones = `<button onclick="recRevertirDecision('${escapeHtml(f.crm_id)}')" class="text-xs px-2 py-1 bg-amber-200 hover:bg-amber-300 text-amber-900 rounded">Revertir</button>`;
+  }
+
+  const montoFmt = f.monto_raw ? f.monto_raw : '—';
+  return `
+    <tr class="border-t border-stone-100 hover:bg-stone-50">
+      <td class="px-3 py-2 font-mono text-xs">${escapeHtml(f.crm_id || '')}</td>
+      <td class="px-3 py-2">${escapeHtml(f.cliente_crm || '')}</td>
+      <td class="px-3 py-2 font-mono text-xs">${escapeHtml(f.rut_crm || '—')}</td>
+      <td class="px-3 py-2">${escapeHtml(f.embudo || '—')}</td>
+      <td class="px-3 py-2">${escapeHtml(f.estado || '—')}</td>
+      <td class="px-3 py-2 text-right">${escapeHtml(montoFmt)}</td>
+      <td class="px-3 py-2">${matchTxt}</td>
+      <td class="px-3 py-2"><span class="inline-block px-2 py-0.5 rounded text-xs ${bucketColor}">${escapeHtml(f.bucket || '?')}</span></td>
+      <td class="px-3 py-2 whitespace-nowrap">${acciones}</td>
+    </tr>
+  `;
+}
+
+window.recAbrirMatchModal = function(crmId, clienteCrm) {
+  recMatchCrmIdSel = crmId;
+  document.getElementById('recMatchCrmId').textContent = crmId;
+  document.getElementById('recMatchCrmCliente').textContent = clienteCrm || '—';
+  document.getElementById('recMatchBuscar').value = clienteCrm || '';
+  document.getElementById('recMatchSugerencias').innerHTML = '<div class="text-xs text-stone-400 p-2">Escribe al menos 2 caracteres para sugerencias.</div>';
+  document.getElementById('recMatchModal').classList.remove('hidden');
+  // Disparar búsqueda inicial si hay nombre
+  if ((clienteCrm || '').length >= 2) recBuscarClienteRdo();
+};
+
+window.recCerrarMatchModal = function() {
+  document.getElementById('recMatchModal').classList.add('hidden');
+  recMatchCrmIdSel = null;
+};
+
+window.recBuscarClienteRdo = async function() {
+  const txt = document.getElementById('recMatchBuscar').value.trim();
+  const cont = document.getElementById('recMatchSugerencias');
+  if (txt.length < 2) {
+    cont.innerHTML = '<div class="text-xs text-stone-400 p-2">Escribe al menos 2 caracteres para sugerencias.</div>';
+    return;
+  }
+  const { data, error } = await sb.schema('curated').rpc('sugerir_match_cliente', { p_nombre_crm: txt });
+  if (error) { cont.innerHTML = `<div class="text-xs text-red-600 p-2">Error: ${escapeHtml(error.message)}</div>`; return; }
+  if (!data || data.length === 0) {
+    cont.innerHTML = '<div class="text-xs text-stone-400 p-2">Sin coincidencias. Intenta otro nombre o crea el cliente desde Negocios.</div>';
+    return;
+  }
+  cont.innerHTML = data.map(s => `
+    <button onclick="recConfirmarMatch('${escapeHtml(s.cliente_id)}')"
+            class="w-full text-left px-3 py-2 hover:bg-blue-50 border-b border-stone-100 flex justify-between items-center">
+      <span><span class="font-medium">${escapeHtml(s.razon_social)}</span> <span class="text-xs text-stone-400 ml-2">(${escapeHtml(s.cliente_id)})</span></span>
+      <span class="text-xs text-stone-500">${(s.sim * 100).toFixed(0)}%</span>
+    </button>
+  `).join('');
+};
+
+window.recConfirmarMatch = async function(clienteIdRdo) {
+  if (!recMatchCrmIdSel) return;
+  const decididoPor = currentUser || 'desconocido';
+  const { error } = await sb.schema('curated').from('reconciliacion_decisiones')
+    .upsert({
+      crm_id: recMatchCrmIdSel,
+      decision: 'match',
+      cliente_id_rdo: clienteIdRdo,
+      decidido_por: decididoPor
+    }, { onConflict: 'crm_id' });
+  if (error) { alert('Error: ' + error.message); return; }
+  recCerrarMatchModal();
+  await loadReconciliacionKpis();
+  await loadReconciliacion(recPaginaActual);
+};
+
+window.recDescartar = async function(crmId) {
+  const razon = prompt('Razón del descarte (opcional):');
+  if (razon === null) return;
+  const decididoPor = currentUser || 'desconocido';
+  const { error } = await sb.schema('curated').from('reconciliacion_decisiones')
+    .upsert({
+      crm_id: crmId,
+      decision: 'descartar',
+      razon: razon || null,
+      decidido_por: decididoPor
+    }, { onConflict: 'crm_id' });
+  if (error) { alert('Error: ' + error.message); return; }
+  await loadReconciliacionKpis();
+  await loadReconciliacion(recPaginaActual);
+};
+
+window.recRevertirDecision = async function(crmId) {
+  if (!confirm('¿Revertir esta decisión? Volverá al bucket original.')) return;
+  const { error } = await sb.schema('curated').from('reconciliacion_decisiones').delete().eq('crm_id', crmId);
+  if (error) { alert('Error: ' + error.message); return; }
+  await loadReconciliacionKpis();
+  await loadReconciliacion(recPaginaActual);
+};
 
 // ---------- INIT ----------
 initSupabase();
