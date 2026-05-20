@@ -305,6 +305,7 @@
         <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Pesajes hoy</div>
         <div class="text-3xl font-bold text-slate-800 mt-1" id="v4KpiPesajesValor">—</div>
         <div class="text-[11px] text-slate-400 mt-0.5" id="v4KpiPesajesSub">sin dato</div>
+        <svg id="v4KpiPesajesSpark" class="mt-2 w-full" height="32" viewBox="0 0 160 32" preserveAspectRatio="none" aria-hidden="true"></svg>
       </div>
 
       <!-- KPI Facturación -->
@@ -316,6 +317,7 @@
         <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Facturación mes</div>
         <div class="text-3xl font-bold text-slate-800 mt-1" id="v4KpiFacturacionValor">—</div>
         <div class="text-[11px] text-slate-400 mt-0.5" id="v4KpiFacturacionSub">sin dato</div>
+        <svg id="v4KpiFacturacionSpark" class="mt-2 w-full" height="32" viewBox="0 0 160 32" preserveAspectRatio="none" aria-hidden="true"></svg>
       </div>
 
       <!-- KPI RDO -->
@@ -327,6 +329,7 @@
         <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">RDO mes</div>
         <div class="text-3xl font-bold text-slate-800 mt-1" id="v4KpiRdoValor">—</div>
         <div class="text-[11px] text-slate-400 mt-0.5" id="v4KpiRdoSub">sin dato</div>
+        <svg id="v4KpiRdoSpark" class="mt-2 w-full" height="32" viewBox="0 0 160 32" preserveAspectRatio="none" aria-hidden="true"></svg>
       </div>
 
       <!-- KPI Alertas -->
@@ -338,6 +341,7 @@
         <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Alertas activas</div>
         <div class="text-3xl font-bold text-slate-800 mt-1" id="v4KpiAlertasValor">—</div>
         <div class="text-[11px] text-slate-400 mt-0.5" id="v4KpiAlertasSub">sin dato</div>
+        <svg id="v4KpiAlertasSpark" class="mt-2 w-full" height="32" viewBox="0 0 160 32" preserveAspectRatio="none" aria-hidden="true"></svg>
       </div>
     </div>
   </div>
@@ -3902,35 +3906,42 @@ async function v4LoadKpiPesajes() {
 }
 
 async function v4LoadKpiFacturacion() {
-  // v_kpi_grupo_anual: ventas_total / compras_total / margen_bruto del año en curso
+  // v_kpi_grupo_mensual: ventas/compras/margen por mes (proxy desde pesajes_prod)
+  // KPI muestra mes en curso + comparación con mes anterior
   try {
     if (typeof sb === "undefined" || !sb) return;
-    const año = new Date().getFullYear();
-    const { data, error } = await sb.from('v_kpi_grupo_anual')
-      .select('anno, ventas_total, compras_total, margen_bruto')
-      .gte('anno', año - 1)
-      .order('anno', { ascending: false });
+    const now = new Date();
+    const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const mesPrev = new Date(now.getFullYear(), now.getMonth()-1, 1);
+    const mesPrevStr = `${mesPrev.getFullYear()}-${String(mesPrev.getMonth()+1).padStart(2,'0')}`;
+
+    const { data, error } = await sb.from('v_kpi_grupo_mensual')
+      .select('mes_str, ventas_total, compras_total, margen_bruto')
+      .in('mes_str', [mesActual, mesPrevStr]);
     if (error) throw error;
-    const actual = (data||[]).find(r => r.anno === año);
-    const prev   = (data||[]).find(r => r.anno === año - 1);
+
+    const actual = (data||[]).find(r => r.mes_str === mesActual);
+    const prev   = (data||[]).find(r => r.mes_str === mesPrevStr);
+
     const v = document.getElementById('v4KpiFacturacionValor');
     const s = document.getElementById('v4KpiFacturacionSub');
     const b = document.getElementById('v4KpiFacturacionBadge');
-    if (actual && actual.ventas_total != null) {
-      const millones = Math.round(actual.ventas_total / 1e6);
+
+    if (actual && actual.ventas_total) {
+      const millones = Math.round(Number(actual.ventas_total) / 1e6);
       if (v) v.textContent = '$' + millones.toLocaleString('es-CL') + 'M';
-      // Mostrar comparación honesta: YTD vs total año previo (siempre va a quedar abajo en H1)
-      if (s && prev && prev.ventas_total) {
-        const prevMillones = Math.round(prev.ventas_total / 1e6);
-        const pct = Math.round((actual.ventas_total / prev.ventas_total) * 100);
-        s.textContent = `ventas YTD ${año} · ${pct}% del total ${año - 1} ($${prevMillones.toLocaleString('es-CL')}M)`;
-      } else if (s) {
-        s.textContent = `ventas YTD ${año}`;
+      if (prev && prev.ventas_total) {
+        const prevMillones = Math.round(Number(prev.ventas_total) / 1e6);
+        const pct = ((Number(actual.ventas_total) - Number(prev.ventas_total)) / Number(prev.ventas_total)) * 100;
+        if (s) s.textContent = `ventas mes ${mesActual} · vs $${prevMillones.toLocaleString('es-CL')}M de ${mesPrevStr}`;
+        if (b) { const pb = v4FmtBadgePct(pct); b.textContent = pb.text; b.className = pb.cls; }
+      } else {
+        if (s) s.textContent = `ventas mes ${mesActual}`;
+        if (b) { b.textContent = 'real'; b.className = 'badge bg-emerald-100 text-emerald-700'; }
       }
-      if (b) { b.textContent = 'real'; b.className = 'badge bg-emerald-100 text-emerald-700'; }
     } else {
       if (v) v.textContent = '—';
-      if (s) s.textContent = 'sin DTE cargados ' + año;
+      if (s) s.textContent = `sin ventas ${mesActual}`;
       if (b) { b.textContent = 'vacío'; b.className = 'badge bg-slate-100 text-slate-500'; }
     }
   } catch (e) {
@@ -3996,6 +4007,53 @@ async function v4LoadKpiAlertas() {
   } catch (e) {
     console.warn('[v4] KPI Alertas fallo:', e?.message);
     const s = document.getElementById('v4KpiAlertasSub'); if (s) s.textContent = 'sin acceso · ver PENDIENTES';
+  }
+}
+
+// =========================================
+// 4b) SPARKLINES — 7 días vía panel.sparkline_kpis_7d()
+// =========================================
+function v4RenderSparkline(svgId, valores, color) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  const nums = (valores || []).map(v => Number(v) || 0);
+  const max = Math.max(...nums, 1);
+  const W = 160, H = 32, PAD = 2;
+  if (nums.length < 2) {
+    svg.innerHTML = `<text x="${W/2}" y="${H/2}" text-anchor="middle" font-size="9" fill="#cbd5e1">sin dato</text>`;
+    return;
+  }
+  const step = (W - 2*PAD) / (nums.length - 1);
+  const pts = nums.map((v, i) => {
+    const x = PAD + i * step;
+    const y = H - PAD - (max > 0 ? (v / max) * (H - 2*PAD) : 0);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const lastX = PAD + (nums.length - 1) * step;
+  const lastY = H - PAD - (max > 0 ? (nums[nums.length-1] / max) * (H - 2*PAD) : 0);
+  // Área bajo la línea (opacidad 20% como pauta visual)
+  const area = `M${pts[0]} L${pts.join(' L')} L${lastX.toFixed(1)},${(H-PAD).toFixed(1)} L${PAD},${(H-PAD).toFixed(1)} Z`;
+  svg.innerHTML = `
+    <path d="${area}" fill="${color}" fill-opacity="0.20" />
+    <polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="2.2" fill="${color}" />
+  `;
+}
+
+async function v4LoadSparklines() {
+  try {
+    if (typeof sb === "undefined" || !sb) return;
+    const { data, error } = await sb.schema('panel').rpc('sparkline_kpis_7d');
+    if (error) throw error;
+    if (!data) return;
+    // data viene como JSONB: { fecha_ref, dias[], pesajes[], toneladas[], monto[], alertas[] }
+    v4RenderSparkline('v4KpiPesajesSpark',     data.pesajes,   '#059669'); // verde Reciclean
+    v4RenderSparkline('v4KpiFacturacionSpark', data.monto,     '#2563eb'); // azul
+    v4RenderSparkline('v4KpiRdoSpark',         data.toneladas, '#d97706'); // ámbar
+    v4RenderSparkline('v4KpiAlertasSpark',     data.alertas,   '#dc2626'); // rojo
+    console.log('[v4] Sparklines OK, ref:', data.fecha_ref);
+  } catch (e) {
+    console.warn('[v4] Sparklines fallo:', e?.message);
   }
 }
 
@@ -4283,6 +4341,7 @@ function v4OnAppReady() {
   v4LoadKpiFacturacion();
   v4LoadKpiRdo();
   v4LoadKpiAlertas();
+  v4LoadSparklines();
   v4InitCharts();
   v4InitMap();
   v4LoadTop('clientes');
