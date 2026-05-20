@@ -1,7 +1,71 @@
 # AVANCE-AUTONOMO — Panel RDO v4 (loop 19-20 may 2026)
 
-> Loop autónomo de PC1-Dusan trabajando el dashboard v4.
-> Última actualización: **2026-05-20 14:50 Chile** (merge PRs Pablo).
+> Loop autónomo de PC1-Dusan.
+> Última actualización: **2026-05-20 15:40 Chile** (background, sin interrupciones).
+
+---
+
+# ITERACIÓN 6 — Frente A (confirmación) + Frente B (diagnóstico Diego)
+
+> Activada por mandato Dusan 15:30 ("2 frentes simultáneos · trabajá en background, no preguntes").
+
+## FRENTE A — Plan maestro + Puerto Montt (ya hechos, confirmados)
+
+### A1 · Plan maestro en 3 fuentes con SHA256 idéntico ✅
+- **GitHub** (`reciclean-rdo` rama `claude/spanish-greeting-h1phT`, `mayordomo/PLAN-MAESTRO-EJECUCION.md`): SHA256 `4fff83faabc1e08825a1a501ab421d694fb2c85fe01cfaae83083d09640a1097`
+- **Supabase** (`mayordomo.reglas_activas` clave `plan-maestro-v1.2`): mismo SHA256 (verificado via `digest()` pgcrypto, 3.711 chars).
+- **Local** (`C:\Users\dusan\.claude\memoria\plan-maestro.md`): mismo SHA256.
+
+Las 3 fuentes confirmadas idénticas byte-a-byte.
+
+### A2 · Puerto Montt propuestas en bandeja ✅
+- Archivo: `reciclean-rdo/mayordomo/PLAN-2026/puerto-montt-propuestas.md` (11.710 bytes, 194 líneas).
+- Cola: `mayordomo.cola_construccion.id = 796d9aa0-7b8b-4bb4-b692-03046c174302`, estado `built`, prioridad `critica`, `requiere_firma=true`.
+- BANDEJA-DUSAN-AM actualizada con entrada al tope para firma 21-may 7 AM.
+- Commits relacionados: `3f969bd` entregable + `adaf468` bandeja + `552356c` bitácora cierre.
+
+## FRENTE B — Diagnóstico EF Diego (panel.diego_bandeja)
+
+### B1 · Hallazgos del diagnóstico
+1. **NO hay error 401 actual.** La EF `dieguito-process` (única EF Dieguito que inserta a BD) escribe en `staging.dieguito_tasks`, NO en `panel.diego_bandeja`.
+2. **Patrón de dos clientes ya implementado correctamente:**
+   - Línea 65 `sbAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)` — para validar usuario en `panel.usuarios_autorizados`.
+   - Línea 76 `sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)` — para INSERTs en `staging.*` (bypassea RLS).
+3. **`panel.diego_bandeja` tiene RLS** habilitada con 3 policies:
+   - `diego_bandeja_read` SELECT → anon + authenticated.
+   - `diego_bandeja_write` INSERT → solo authenticated.
+   - `diego_bandeja_update` UPDATE → solo authenticated.
+4. **No hay policy para `service_role`** — innecesaria porque service_role bypassea RLS por default.
+
+### B2 · Conclusión
+La EF está sana hoy. Cuando se extienda para escribir en `panel.diego_bandeja`, **debe usar el cliente `sb` (service_role)** que ya existe en la función, NO `sbAnon`. Si por error futuro usa `sbAnon`, fallará con 401/403 — y ahí entra el protocolo de auto-reparación.
+
+### B3 · Tabla `mayordomo.incidentes` creada
+Schema:
+```
+id          SERIAL PK
+tipo        TEXT
+descripcion TEXT
+pc_afectado TEXT
+creado_en   TIMESTAMPTZ default now()
+resuelto_en TIMESTAMPTZ
+sha256      TEXT
+```
+
+Primer registro (`id=1`, tipo=`diagnostico_preventivo`): análisis completo del flujo Diego + conclusión + protocolo de reparación. SHA256 referenciado al plan maestro.
+
+### B4 · Protocolo de auto-reparación en `COMO-TRABAJAR.md`
+Sección nueva "Auto-reparación de mensajes Diego que fallan":
+1. Registro del incidente (template SQL).
+2. Diagnóstico estándar (qué cliente usa la EF + RLS de la tabla + policies).
+3. Reparación según diagnóstico (3 patrones típicos).
+4. Cierre del incidente con descripción.
+5. Patrón crítico: SIEMPRE dos clientes (anon para validar usuario, service_role para INSERTs reales). Referencia canónica `dieguito-process/index.ts` líneas 65 y 76.
+
+### Commits en `reciclean-rdo` durante iteración 6
+```
+5858c47  diego: protocolo auto-reparacion en COMO-TRABAJAR
+```
 
 ---
 
