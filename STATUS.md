@@ -1,7 +1,7 @@
 # STATUS — Reciclean-Farex Sistema
 
 > **Snapshot de `temas_en_progreso` (Supabase).** Respuesta canónica a "status / cómo vamos / detalle".
-> **Última regeneración:** 22-abr-2026 14:15 · **68 filas** (25 parents + 43 sub-tareas)
+> **Última regeneración:** 20-may-2026 21:30 · **68 filas** (25 parents + 43 sub-tareas)
 
 ---
 
@@ -47,18 +47,49 @@
 
 ---
 
-## Semana crítica (22-30 abr)
+## Resumen del dia — 20-may-2026
 
-| Día | Quién | Qué urge |
+> Dia intenso: 6 PRs mergeadas a main + promocion completa a produccion.
+> Panel RDO paso de 10 tabs a 15 tabs en un dia. Todo en produccion.
+
+### Que hizo Pablo (desarrollo)
+
+| Hora | PR | Que hizo en palabras simples |
 |---|---|---|
-| **Hoy 22-abr** | Dusan | Rotar K3 + Meta (I-08) · Contratar DO (I-09.1) · Notion (I-15) |
-| 23-abr | Dusan | Enviar 30 msgs WA (I-10.2) · Lista 50 prospectos (I-10.1) |
-| 25-abr | Dusan | Demos Diego (I-10.3) · Ingrid completa teléfonos (I-11.1) |
-| 26-abr | Pablo regresa | Sesión 1 backup+SQL (I-12.1) · Cierre cliente #1 (I-10.5) |
-| 27-abr | Pablo | Sesión 2 prompt+GCal (I-12.2) · VPS deploy (I-09.3) |
-| 28-abr | Pablo | Sesión 3 Curador+tests (I-12.3) · Import workflows (I-09.5) |
-| 29-abr | Dusan | Respuestas oro (I-12.4) · Memoria conv (I-13.1) |
-| **30-abr 🚀** | Dusan+Pablo | **LANZAMIENTO Diego v5.0** (I-12.5) |
+| 10:55 | #36 D-OP-13 | **Tab Reconciliacion CRM-RDO**: compara datos del CRM Impulsa contra el panel RDO para detectar diferencias. Herramienta de control para Andrea. |
+| 11:04 | #37 D-OP-11 | **Tab Cartera Andrea**: vista de clientes con detalle y cambio de categoria (A/B/C). Andrea puede ver su cartera completa y reclasificar clientes. |
+| 14:05 | #38 D-OP-12 | **Tab Oportunidades Kanban**: tablero visual tipo Kanban para seguimiento de oportunidades comerciales. Arrastra tarjetas entre columnas. |
+| 14:40 | #39 PC1-#1B | **Uploader CSV Pesajes**: boton en tab Admin para subir archivo CSV con pesajes desde Recicladmin. Valida datos, detecta duplicados, sube a Supabase. Edge function nueva `ingest-pesajes-csv`. |
+| (19-may) | #35 D-PANEL-AUTH-001 | **Login con email y clave**: sistema de autenticacion real — email+password, checkbox "recordarme", boton "olvide mi clave" con magic link. Base para que todo lo demas funcione con JWT. |
+
+### Que hizo Dusan (revision + integracion + produccion)
+
+| Hora | Accion | Que hizo en palabras simples |
+|---|---|---|
+| 13:48 | Merge #35, #36, #37 | **Reviso y aprobo 3 PRs de Pablo** de un tiron: login, reconciliacion CRM, cartera Andrea. Los paso a la rama principal. |
+| 14:21 | Merge #38 | **Aprobo el Kanban de oportunidades** de Pablo. |
+| 14:44 | Merge #39 | **Aprobo el uploader de pesajes CSV** de Pablo. |
+| 16:47 | PR #42 | **Creo el FAB de Diego**: boton flotante verde abajo-derecha en el panel. Al hacer clic abre una ventana de chat conectada a `panel.diego_bandeja` en Supabase. Chat en tiempo real con insert, lectura de ultimos 30 mensajes, y actualizacion automatica (Realtime). 139 lineas nuevas, sin tocar nada existente. |
+| 21:15 | PR #43 | **Promocion a produccion**: tomo todo lo que estaba en main (14 PRs acumuladas: auth, 5 tabs nuevas, FAB Diego, accesibilidad, codeowners) y lo paso a la rama `prod` que esta conectada a Vercel produccion. Decision explicita: "mergea a prod, asumo riesgo" sin preview previo. 2.544 lineas nuevas en produccion. |
+
+### Resultado neto del dia
+
+- **5 features nuevas** en produccion (auth, cartera, reconciliacion, kanban, pesajes CSV)
+- **1 feature interactiva** (FAB chat Diego en panel RDO)
+- **14 PRs acumuladas** promovidas a produccion de un golpe
+- **+2.544 lineas** de codigo nuevo en produccion
+- **0 bugs reportados** post-deploy (hasta cierre del dia)
+
+---
+
+## Semana 19-25 mayo (Panel RDO sprint)
+
+| Dia | Quien | Que se hizo / que viene |
+|---|---|---|
+| 19-may | Pablo | Auth frontend (#35) commiteado |
+| **20-may** | **Pablo+Dusan** | **5 PRs merged + FAB Diego + deploy a prod (14 PRs)** |
+| 21-may | Pendiente | Verificar FAB Diego en mobile + testear uploader CSV con datos reales |
+| 22-may | Pendiente | Coordinar con Cesar/Andrea proceso semanal carga pesajes CSV |
 
 ---
 
@@ -85,13 +116,14 @@ Total Supabase: **84 tablas** + **11 vistas**.
 
 ---
 
-## Progreso diario (baseline)
+## Progreso diario
 
 | Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
 |---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| 22-abr-2026 (baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **20-may-2026** | 68 | 28.5% | 0 | 3 | 8 | 57 |
 
-> _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+> Panel RDO: de ~6 tabs (18-may) a 15 tabs operativas hoy. Auth implementado, 5 tabs nuevas, FAB Diego, todo en produccion.
 
 ---
 
