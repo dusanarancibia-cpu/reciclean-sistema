@@ -76,6 +76,21 @@
       .v4-shell.sidebar-open .v4-overlay { display: block; }
       .v4-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 45; }
     }
+
+    /* Responsive guards: nada debe overflowear horizontalmente */
+    html, body { overflow-x: hidden; max-width: 100vw; }
+    .v4-shell, .v4-main { min-width: 0; max-width: 100%; }
+    .v4-main main { overflow-x: hidden; }
+    /* Tablas: scroll horizontal dentro del contenedor */
+    .v4-main table { display: block; overflow-x: auto; max-width: 100%; }
+    /* Topbar y banner amarillo: wrap libre, no fuerzan width */
+    .v4-topbar, .bg-amber-50 { flex-wrap: wrap; }
+    /* En mobile, ocultar elementos secundarios del topbar */
+    @media (max-width: 640px) {
+      #v4FechaActual, #v4UfValor { display: none !important; }
+      #v4FechaActual + span { display: none !important; }
+      #userEmailDisplay { display: none !important; }
+    }
     /* ── Dieguito ── */
     .dieg-dropzone { border: 2px dashed #d6d3d1; border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all .2s; background: #fafaf9; }
     .dieg-dropzone.drag-over { border-color: #2C5F2D; background: #f0fdf4; }
