@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-CL">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,9 +23,44 @@
     .dieg-chip.ai-suggested::after { content:'✦'; font-size:.65rem; opacity:.8; }
     @keyframes pulse-rec { 0%,100%{opacity:1} 50%{opacity:.4} }
     .recording-pulse { animation: pulse-rec 1.2s ease-in-out infinite; }
+    /* D-OP-08 #3 — focus visible global (a11y keyboard nav).
+       Sobreescribe focus:outline-none de Tailwind. Outline verde Reciclean (#2C5F2D)
+       con offset para no chocar con focus:ring-* donde ya existe. */
+    :focus-visible { outline: 2px solid #2C5F2D !important; outline-offset: 2px; border-radius: 3px; }
+    :focus:not(:focus-visible) { outline: none; }
+    /* Skip-nav link (a11y) — visible solo cuando tiene focus. */
+    .skip-nav {
+      position: absolute; left: -9999px; top: 0;
+      background: #2C5F2D; color: #fff;
+      padding: 8px 14px; border-radius: 0 0 6px 0;
+      z-index: 10000; font-weight: 600; text-decoration: none;
+    }
+    .skip-nav:focus { left: 0; }
+    /* Mobile nav tabs — gradient fade derecha + chevron, indica que hay más a la derecha. */
+    .nav-tabs-wrapper { position: relative; }
+    .nav-tabs-wrapper::after {
+      content: ''; position: absolute; right: 0; top: 0; bottom: 0;
+      width: 32px; pointer-events: none;
+      background: linear-gradient(to left, rgba(255,255,255,1), rgba(255,255,255,0));
+    }
+    .nav-tabs-wrapper .chevron-more {
+      position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+      pointer-events: none; color: #2C5F2D; font-size: 1.1rem; opacity: 0.7;
+    }
+    @media (min-width: 768px) {
+      /* En desktop no hace falta el gradient porque los tabs caben. */
+      .nav-tabs-wrapper::after, .nav-tabs-wrapper .chevron-more { display: none; }
+    }
   </style>
 </head>
 <body class="bg-stone-100 min-h-screen">
+
+<!-- a11y skip-nav link (focus visible only) -->
+<a href="#mainContent" class="skip-nav">Saltar al contenido principal</a>
+
+<!-- D-OP-08 #6 — Toast container (feedback no intrusivo top-right) -->
+<div id="toastStack" aria-live="polite" aria-atomic="true"
+     class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
 <!-- LOGIN -->
 <div id="loginContainer" class="login-container min-h-screen items-center justify-center">
@@ -39,14 +74,78 @@
         <p class="text-sm text-stone-500">Grupo Reciclean-Farex</p>
       </div>
     </div>
-    <h2 class="text-lg font-semibold mb-4 text-stone-700">Iniciar sesión</h2>
-    <input type="email" id="loginEmail" placeholder="tu.email@empresa.cl"
-           class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
-    <button onclick="login()" class="w-full bg-green-700 hover:bg-green-800 text-white p-3 rounded font-semibold transition">
-      Ingresar
-    </button>
-    <p class="text-xs text-stone-500 mt-4">Solo usuarios autorizados. Si no tienes acceso, contacta a Pablo o Dusan.</p>
-    <div id="loginError" class="hidden mt-3 text-sm text-red-600 bg-red-50 p-2 rounded"></div>
+    <!-- D-PANEL-AUTH-001 · 3 pantallas en el mismo container -->
+
+    <!-- (1) Pantalla principal: login -->
+    <div id="loginPaneSignin">
+      <h2 class="text-lg font-semibold mb-4 text-stone-700">Iniciar sesión</h2>
+      <label for="loginEmail" class="sr-only">Correo electrónico</label>
+      <input type="email" id="loginEmail" placeholder="tu.email@empresa.cl"
+             aria-label="Correo electrónico"
+             autocomplete="email"
+             class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
+      <label for="loginPassword" class="sr-only">Contraseña</label>
+      <input type="password" id="loginPassword" placeholder="Contraseña"
+             aria-label="Contraseña"
+             autocomplete="current-password"
+             class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
+      <div class="flex items-center justify-between mb-3 text-sm">
+        <label class="flex items-center gap-2 text-stone-600 cursor-pointer">
+          <input type="checkbox" id="loginRemember" checked
+                 class="rounded border-stone-300 text-green-700 focus:ring-green-600">
+          <span>Recordarme en este dispositivo</span>
+        </label>
+        <button type="button" onclick="showForgotPassword()"
+                class="text-green-700 hover:underline focus:outline-none">¿Olvidaste tu contraseña?</button>
+      </div>
+      <button onclick="login()" id="loginBtn"
+              class="w-full bg-green-700 hover:bg-green-800 text-white p-3 rounded font-semibold transition disabled:opacity-60">
+        Ingresar
+      </button>
+      <p class="text-xs text-stone-500 mt-4">Solo usuarios autorizados. Si es tu primer ingreso, usa "¿Olvidaste tu contraseña?" para recibir el link de acceso.</p>
+      <div id="loginError" class="hidden mt-3 text-sm text-red-600 bg-red-50 p-2 rounded"></div>
+    </div>
+
+    <!-- (2) Pantalla recuperar password -->
+    <div id="loginPaneForgot" class="hidden">
+      <h2 class="text-lg font-semibold mb-4 text-stone-700">Recuperar contraseña</h2>
+      <p class="text-sm text-stone-600 mb-3">Te enviamos un link al correo para que crees una nueva contraseña.</p>
+      <label for="forgotEmail" class="sr-only">Correo electrónico</label>
+      <input type="email" id="forgotEmail" placeholder="tu.email@empresa.cl"
+             aria-label="Correo electrónico"
+             autocomplete="email"
+             class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
+      <button onclick="forgotPassword()" id="forgotBtn"
+              class="w-full bg-green-700 hover:bg-green-800 text-white p-3 rounded font-semibold transition disabled:opacity-60">
+        Enviar link de recuperación
+      </button>
+      <button type="button" onclick="showSignin()"
+              class="w-full mt-2 text-stone-600 hover:text-stone-800 text-sm focus:outline-none">
+        ← Volver al login
+      </button>
+      <div id="forgotMsg" class="hidden mt-3 text-sm p-2 rounded"></div>
+    </div>
+
+    <!-- (3) Pantalla setear nueva password (post magic-link) -->
+    <div id="loginPaneReset" class="hidden">
+      <h2 class="text-lg font-semibold mb-4 text-stone-700">Crear contraseña nueva</h2>
+      <p class="text-sm text-stone-600 mb-3">Elegí una contraseña de al menos 8 caracteres.</p>
+      <label for="resetPassword1" class="sr-only">Nueva contraseña</label>
+      <input type="password" id="resetPassword1" placeholder="Nueva contraseña"
+             aria-label="Nueva contraseña"
+             autocomplete="new-password"
+             class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
+      <label for="resetPassword2" class="sr-only">Repetir contraseña</label>
+      <input type="password" id="resetPassword2" placeholder="Repetir contraseña"
+             aria-label="Repetir contraseña"
+             autocomplete="new-password"
+             class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
+      <button onclick="setNewPassword()" id="resetBtn"
+              class="w-full bg-green-700 hover:bg-green-800 text-white p-3 rounded font-semibold transition disabled:opacity-60">
+        Guardar contraseña
+      </button>
+      <div id="resetMsg" class="hidden mt-3 text-sm p-2 rounded"></div>
+    </div>
   </div>
 </div>
 
@@ -90,21 +189,30 @@
     <a href="#" onclick="document.querySelector('button[data-tab=comunicados]').click(); return false;" class="underline text-amber-800 ml-2">Escuchar ahora</a>
   </div>
 
-  <nav class="border-b border-stone-200 px-6 bg-white">
-    <div class="flex gap-2 overflow-x-auto">
-      <button data-tab="portada"     class="tab-btn py-3 px-3 text-stone-600 active">🏠 Portada</button>
-      <button data-tab="pesaje"      class="tab-btn py-3 px-3 text-stone-600">⚖️ Pesaje S1</button>
-      <button data-tab="facturacion" class="tab-btn py-3 px-3 text-stone-600">🧾 Facturación S5</button>
-      <button data-tab="dieguito"    class="tab-btn py-3 px-3 text-stone-600">📎 Dieguito</button>
-      <button data-tab="comunicados" class="tab-btn py-3 px-3 text-stone-600">🎧 Comunicados</button>
-      <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600">📈 RDO Resumen</button>
-      <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600">💼 Negocios</button>
-      <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600">📋 Cotizador</button>
-      <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden">⚙️ Admin</button>
+  <nav class="border-b border-stone-200 px-6 bg-white" aria-label="Pestañas del panel">
+    <div class="nav-tabs-wrapper">
+      <div class="flex gap-2 overflow-x-auto" role="tablist" aria-label="Pestañas del panel">
+        <button data-tab="portada"     class="tab-btn py-3 px-3 text-stone-600 active" role="tab" aria-selected="true"  aria-controls="tabPortada">🏠 Portada</button>
+        <button data-tab="pesaje"      class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabPesaje">⚖️ Pesaje S1</button>
+        <button data-tab="facturacion" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabFacturacion">🧾 Facturación S5</button>
+        <button data-tab="dieguito"    class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabDieguito">📎 Dieguito</button>
+        <button data-tab="comunicados" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabComunicados">🎧 Comunicados</button>
+        <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabRdo">📈 RDO Resumen</button>
+        <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
+        <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCotizador">📋 Cotizador</button>
+        <button data-tab="cierres"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCierres">📅 Cierres</button>
+        <button data-tab="precios"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabPrecios">💲 Precios</button>
+        <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
+        <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
+        <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
+        <button data-tab="oportunidades" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabOportunidades">🎯 Oportunidades</button>
+        <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabAdmin">⚙️ Admin</button>
+      </div>
+      <span class="chevron-more" aria-hidden="true">›</span>
     </div>
   </nav>
 
-  <main class="p-6 max-w-6xl mx-auto">
+  <main id="mainContent" class="p-6 max-w-6xl mx-auto" tabindex="-1">
     <section id="tabPortada" class="tab-content">
       <h2 class="text-2xl font-bold mb-4 text-stone-800">Bienvenido</h2>
 
@@ -127,7 +235,9 @@
         <summary class="p-4 text-sm font-semibold text-stone-600 cursor-pointer">↑ Subir archivo CSV/JSON a staging</summary>
         <div class="px-5 pb-5">
           <p class="text-sm text-stone-500 mb-3">Se guarda en bruto en <code>staging.pesaje_s1</code>.</p>
-          <input type="file" id="pesajeFile" accept=".csv,.json" class="mb-3 block">
+          <input type="file" id="pesajeFile" accept=".csv,.json"
+                 aria-label="Archivo CSV o JSON de pesajes para subir a staging"
+                 class="mb-3 block">
           <button onclick="uploadPesaje()" class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded">Subir a staging</button>
           <div id="pesajeResult" class="mt-4 text-sm"></div>
         </div>
@@ -142,7 +252,9 @@
         <summary class="p-4 text-sm font-semibold text-stone-600 cursor-pointer">↑ Subir archivo CSV/JSON a staging</summary>
         <div class="px-5 pb-5">
           <p class="text-sm text-stone-500 mb-3">Se guarda en bruto en <code>staging.facturacion_s5</code>.</p>
-          <input type="file" id="facturacionFile" accept=".csv,.json" class="mb-3 block">
+          <input type="file" id="facturacionFile" accept=".csv,.json"
+                 aria-label="Archivo CSV o JSON de facturación para subir a staging"
+                 class="mb-3 block">
           <button onclick="uploadFacturacion()" class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded">Subir a staging</button>
           <div id="facturacionResult" class="mt-4 text-sm"></div>
         </div>
@@ -181,13 +293,22 @@
             <p class="text-2xl mb-1">📁</p>
             <p class="text-sm text-stone-500">Arrastra o haz click — imagen, PDF, audio, doc (máx 50 MB)</p>
           </div>
-          <input type="file" id="diegFileInput" class="hidden" onchange="diegHandleFile(this.files[0])">
+          <input type="file" id="diegFileInput"
+                 aria-label="Subir archivo (imagen, PDF, audio o documento)"
+                 class="hidden" onchange="diegHandleFile(this.files[0])">
         </div>
 
         <!-- Textarea -->
         <textarea id="diegTexto" rows="3" placeholder="O escribe/pega aquí. Dieguito sugiere destinos automáticamente…"
+          aria-label="Texto del mensaje para Dieguito"
           class="w-full border border-stone-300 rounded-lg p-3 text-sm focus:border-green-700 focus:outline-none resize-none mb-4"
           oninput="diegAutoSuggest(this.value)"></textarea>
+
+        <!-- D-OP-04-v2 Ola 1.1 — Etiquetas rápidas (chip Precio + top-20 clientes) -->
+        <div class="mb-3">
+          <p class="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Etiquetas rápidas</p>
+          <div id="diegEtiquetasRapidas" class="flex flex-wrap gap-1.5 items-center"></div>
+        </div>
 
         <!-- Chips de destinos -->
         <div class="mb-4">
@@ -215,8 +336,10 @@
       <div id="grabadorSection" class="hidden audio-recorder">
         <h3 class="font-bold text-lg text-stone-700 mb-3">🎙️ Grabar nuevo mensaje</h3>
         <input type="text" id="audioTitulo" placeholder="Título (ej. Mensaje 8 mayo)"
+               aria-label="Título del mensaje de audio"
                class="w-full border border-stone-300 p-2 rounded mb-2">
         <textarea id="audioTexto" placeholder="Texto corto / transcripción opcional" rows="2"
+                  aria-label="Texto o transcripción opcional del audio"
                   class="w-full border border-stone-300 p-2 rounded mb-2"></textarea>
         <div class="mb-3 flex gap-4 items-center">
           <span class="font-semibold text-sm text-stone-700">Mostrar en:</span>
@@ -262,7 +385,7 @@
       <!-- Filtros -->
       <div class="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-wrap gap-3 items-end">
         <div>
-          <label class="block text-xs text-stone-500 mb-1">Estado</label>
+          <label for="negEstado" class="block text-xs text-stone-500 mb-1">Estado</label>
           <select id="negEstado" onchange="loadNegocios()"
                   class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
             <option value="">Todos</option>
@@ -277,7 +400,7 @@
           </select>
         </div>
         <div>
-          <label class="block text-xs text-stone-500 mb-1">Tipo</label>
+          <label for="negTipo" class="block text-xs text-stone-500 mb-1">Tipo</label>
           <select id="negTipo" onchange="loadNegocios()"
                   class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
             <option value="">Todos</option>
@@ -288,7 +411,7 @@
           </select>
         </div>
         <div>
-          <label class="block text-xs text-stone-500 mb-1">Buscar</label>
+          <label for="negBuscar" class="block text-xs text-stone-500 mb-1">Buscar</label>
           <input type="text" id="negBuscar" placeholder="Título o cliente…"
                  oninput="loadNegociosBuscar(this.value)"
                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none w-48">
@@ -309,7 +432,7 @@
       <div id="negocioTimeline" class="hidden mt-4 bg-white rounded-lg shadow-sm p-5">
         <div class="flex justify-between items-center mb-3">
           <h3 id="negocioTimelineTitle" class="font-bold text-stone-800"></h3>
-          <button onclick="cerrarTimeline()" class="text-stone-400 hover:text-stone-700 text-xl leading-none">×</button>
+          <button onclick="cerrarTimeline()" aria-label="Cerrar timeline" class="text-stone-400 hover:text-stone-700 text-xl leading-none">×</button>
         </div>
         <div id="negocioTimelineContenido" class="text-sm text-stone-500">Cargando...</div>
         <div class="mt-4 pt-3 border-t border-stone-100">
@@ -317,6 +440,508 @@
                   class="bg-green-700 hover:bg-green-800 text-white px-3 py-1.5 rounded text-sm mr-2">
             📋 Cotizar este negocio
           </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA CIERRES (D-OP-09 · D-DAT-05 lectura · mig 031)
+         Layout C: KPI mes actual + tabla maestra empresa×sucursal + drawer detalle diario
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabCierres" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">📅 Cierres diarios y mensuales</h2>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-stone-500" id="cierresUltActualizado">—</span>
+          <button onclick="loadCierres()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+        </div>
+      </div>
+
+      <!-- KPI bar mes actual (suma todas las empresas+sucursales) -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+          <p class="text-xs text-stone-500">Entrantes mes</p>
+          <p class="text-xl font-bold text-green-700" id="cierresKpiEntrantes">—</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+          <p class="text-xs text-stone-500">Salientes mes</p>
+          <p class="text-xl font-bold text-red-600" id="cierresKpiSalientes">—</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+          <p class="text-xs text-stone-500">Flujo neto mes</p>
+          <p class="text-xl font-bold" id="cierresKpiFlujoNeto">—</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+          <p class="text-xs text-stone-500">Margen promedio</p>
+          <p class="text-xl font-bold text-stone-700" id="cierresKpiMargen">—</p>
+        </div>
+      </div>
+
+      <!-- Tabla maestra: empresa × sucursal, mes actual -->
+      <div class="bg-white rounded-lg shadow-sm overflow-x-auto">
+        <div id="cierresTabla" class="text-sm text-stone-500 p-5">Cargando…</div>
+      </div>
+
+      <!-- Drawer detalle diario (se abre al hacer click en fila) -->
+      <div id="cierresDetalle" class="hidden mt-4 bg-white rounded-lg shadow-sm p-5">
+        <div class="flex justify-between items-center mb-3">
+          <h3 id="cierresDetalleTitle" class="font-bold text-stone-800"></h3>
+          <button onclick="cerrarCierresDetalle()" aria-label="Cerrar detalle de cierres" class="text-stone-400 hover:text-stone-700 text-xl leading-none">×</button>
+        </div>
+        <div id="cierresDetalleContenido" class="text-sm text-stone-500">Cargando…</div>
+      </div>
+
+      <!-- Placeholder cuando no hay cierres cargados todavía -->
+      <p class="text-xs text-stone-400 mt-3">
+        Fuente: <code>curated.vw_cierre_mes_actual</code> (mig 031). Datos cargados por Dyana vía planilla mensual.
+        Si la tabla aparece vacía, los cierres del mes aún no fueron procesados por el ETL nocturno.
+      </p>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA PRECIOS (D-OP-04-v2 Ola 1.2 · lectura curated.vw_materiales_sucursal_precios_vigente)
+         Andrea ve qué precio defender antes de negociar.
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabPrecios" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">💲 Precios vigentes</h2>
+        <button onclick="loadPrecios()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+
+      <!-- Filtros -->
+      <div class="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-wrap gap-3 items-end">
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Material</label>
+          <select id="precFiltroMaterial" onchange="loadPrecios()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none min-w-[12rem]">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Sucursal</label>
+          <select id="precFiltroSucursal" onchange="loadPrecios()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Buscar material</label>
+          <input type="text" id="precBuscar" placeholder="Nombre…"
+                 oninput="loadPreciosBuscar(this.value)"
+                 class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none w-48">
+        </div>
+        <label class="flex items-center gap-1.5 text-xs text-stone-600 cursor-pointer pb-1.5">
+          <input type="checkbox" id="precMargenBajo" onchange="loadPrecios()" class="accent-green-700">
+          Solo margen &lt; 30%
+        </label>
+      </div>
+
+      <!-- KPI bar (resumen del filtro activo) -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+          <p class="text-xs text-stone-500">Combinaciones</p>
+          <p class="text-xl font-bold text-stone-700" id="precKpiTotal">—</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+          <p class="text-xs text-stone-500">Materiales únicos</p>
+          <p class="text-xl font-bold text-stone-700" id="precKpiMateriales">—</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+          <p class="text-xs text-stone-500">Margen promedio</p>
+          <p class="text-xl font-bold text-stone-700" id="precKpiMargenProm">—</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+          <p class="text-xs text-stone-500">Margen &lt; 30%</p>
+          <p class="text-xl font-bold text-red-600" id="precKpiMargenBajo">—</p>
+        </div>
+      </div>
+
+      <!-- Tabla precios -->
+      <div class="bg-white rounded-lg shadow-sm overflow-x-auto">
+        <div id="preciosTabla" class="text-sm text-stone-500 p-5">Cargando…</div>
+      </div>
+
+      <p class="text-xs text-stone-400 mt-3">
+        Fuente: <code>curated.vw_materiales_sucursal_precios_vigente</code> (precios vigentes con <code>vigencia_hasta IS NULL</code>).
+        Margen calculado como <code>(precio_venta − precio_compra) / precio_venta</code>.
+        Filtro por cliente: pendiente Ola 2 (requiere <code>staging.precios_propuestos</code>).
+      </p>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA OPERATIVOS (D-OP-10 · bucket storage 'operativos' + curated.operativos_metadata)
+         Destranca Cony: deja WhatsApp → migra al panel para subir PDFs.
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabOperativos" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">📑 OPERATIVOS — PDFs por empresa/período</h2>
+        <button onclick="loadOperativosLista()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+
+      <!-- Subir PDF -->
+      <div class="bg-white p-5 rounded-lg shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-3">Subir PDF nuevo</h3>
+        <div class="flex flex-wrap gap-3 items-end">
+          <div>
+            <label class="block text-xs text-stone-500 mb-1">Empresa *</label>
+            <select id="opUpEmpresa"
+                    class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none min-w-[14rem]">
+              <option value="">— Seleccionar —</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-stone-500 mb-1">Año *</label>
+            <select id="opUpAnio"
+                    class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none w-24">
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-stone-500 mb-1">Mes *</label>
+            <select id="opUpMes"
+                    class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none w-36">
+              <option value="1">Enero</option><option value="2">Febrero</option>
+              <option value="3">Marzo</option><option value="4">Abril</option>
+              <option value="5">Mayo</option><option value="6">Junio</option>
+              <option value="7">Julio</option><option value="8">Agosto</option>
+              <option value="9">Septiembre</option><option value="10">Octubre</option>
+              <option value="11">Noviembre</option><option value="12">Diciembre</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-stone-500 mb-1">PDF *</label>
+            <input type="file" id="opUpFile" accept="application/pdf,.pdf"
+                   class="text-sm">
+          </div>
+          <button onclick="subirPDFOperativo()"
+                  class="bg-green-700 hover:bg-green-800 text-white px-4 py-1.5 rounded text-sm font-semibold transition">
+            ⬆ Subir PDF
+          </button>
+        </div>
+        <p class="text-xs text-stone-400 mt-2">Máx 50 MB. Solo PDF. Si subes 2 PDFs para la misma empresa+mes+filename, el segundo reemplaza al primero.</p>
+        <div id="opUpStatus" class="text-sm mt-2"></div>
+      </div>
+
+      <!-- Lista filtrable -->
+      <div class="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-wrap gap-3 items-end">
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Empresa</label>
+          <select id="opFiltroEmpresa" onchange="loadOperativosLista()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none min-w-[14rem]">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Año</label>
+          <select id="opFiltroAnio" onchange="loadOperativosLista()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none w-24">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Mes</label>
+          <select id="opFiltroMes" onchange="loadOperativosLista()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none w-36">
+            <option value="">Todos</option>
+            <option value="1">Enero</option><option value="2">Febrero</option>
+            <option value="3">Marzo</option><option value="4">Abril</option>
+            <option value="5">Mayo</option><option value="6">Junio</option>
+            <option value="7">Julio</option><option value="8">Agosto</option>
+            <option value="9">Septiembre</option><option value="10">Octubre</option>
+            <option value="11">Noviembre</option><option value="12">Diciembre</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tabla histórica -->
+      <div class="bg-white rounded-lg shadow-sm overflow-x-auto">
+        <div id="operativosTabla" class="text-sm text-stone-500 p-5">Cargando…</div>
+      </div>
+
+      <p class="text-xs text-stone-400 mt-3">
+        Fuente: <code>curated.operativos_metadata</code> + bucket <code>operativos</code> (privado, 50 MB max, PDF only).
+        El link "Ver PDF" genera una URL firmada con expiración 1 hora.
+      </p>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA RECONCILIACIÓN CRM ↔ RDO (D-OP-13)
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabReconciliacion" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">🔗 Reconciliación CRM Impulsa ↔ RDO</h2>
+        <button onclick="loadReconciliacion(1)" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+
+      <!-- KPI bar -->
+      <div id="recKpiBar" class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Total oportunidades</div>
+          <div id="recKpiTotal" class="text-2xl font-bold text-stone-800">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Auto-matched (RUT)</div>
+          <div id="recKpiAuto" class="text-2xl font-bold text-green-700">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Pendientes revisar</div>
+          <div id="recKpiPend" class="text-2xl font-bold text-amber-600">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Decididas manual</div>
+          <div id="recKpiDec" class="text-2xl font-bold text-blue-700">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Descartadas</div>
+          <div id="recKpiDesc" class="text-2xl font-bold text-stone-500">—</div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="bg-white p-3 rounded shadow-sm mb-4 flex flex-wrap gap-3 items-end">
+        <div>
+          <label for="recFiltroBucket" class="block text-xs text-stone-500 mb-1">Bucket</label>
+          <select id="recFiltroBucket" onchange="loadReconciliacion(1)"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todos</option>
+            <option value="pendiente_revisar">Pendiente revisar</option>
+            <option value="automatico_rut">Auto-matched (RUT)</option>
+            <option value="decidido_match">Decidido match</option>
+            <option value="decidido_descartar">Descartadas</option>
+            <option value="decidido_postponer">Postpuestas</option>
+          </select>
+        </div>
+        <div>
+          <label for="recFiltroEmbudo" class="block text-xs text-stone-500 mb-1">Embudo</label>
+          <select id="recFiltroEmbudo" onchange="loadReconciliacion(1)"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="flex-1 min-w-[12rem]">
+          <label for="recFiltroBuscar" class="block text-xs text-stone-500 mb-1">Buscar (cliente CRM, RUT, cliente RDO)</label>
+          <input id="recFiltroBuscar" type="text" placeholder="ej. SOTEX o 76300290"
+                 oninput="recDebouncedSearch()" aria-label="Buscar"
+                 class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+        </div>
+        <div class="text-xs text-stone-500 self-end pb-2">
+          <span id="recRangoTexto">—</span>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="bg-white rounded shadow-sm overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-stone-50 text-stone-600 text-left">
+            <tr>
+              <th class="px-3 py-2">CRM ID</th>
+              <th class="px-3 py-2">Cliente CRM</th>
+              <th class="px-3 py-2">RUT CRM</th>
+              <th class="px-3 py-2">Embudo</th>
+              <th class="px-3 py-2">Estado</th>
+              <th class="px-3 py-2 text-right">Monto</th>
+              <th class="px-3 py-2">Match RDO</th>
+              <th class="px-3 py-2">Bucket</th>
+              <th class="px-3 py-2">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="recTbody">
+            <tr><td colspan="9" class="px-3 py-4 text-center text-stone-400">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="flex justify-between items-center mt-3 text-sm">
+        <button id="recPagPrev" onclick="loadReconciliacion(recPaginaActual - 1)" class="px-3 py-1.5 bg-stone-200 rounded hover:bg-stone-300 disabled:opacity-50" disabled>← Anterior</button>
+        <div id="recPagInfo" class="text-stone-600">Página — de —</div>
+        <button id="recPagNext" onclick="loadReconciliacion(recPaginaActual + 1)" class="px-3 py-1.5 bg-stone-200 rounded hover:bg-stone-300 disabled:opacity-50">Siguiente →</button>
+      </div>
+
+      <!-- Popup "Marcar match" -->
+      <div id="recMatchModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg p-5 max-w-lg w-full">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-lg font-semibold text-stone-800">Marcar match manual</h3>
+            <button onclick="recCerrarMatchModal()" class="text-stone-500 hover:text-stone-800 text-xl" aria-label="Cerrar">×</button>
+          </div>
+          <div class="text-sm text-stone-600 mb-2">
+            Oportunidad CRM: <strong id="recMatchCrmId">—</strong>
+            <span class="text-stone-400 mx-2">·</span>
+            Cliente CRM: <strong id="recMatchCrmCliente">—</strong>
+          </div>
+          <div class="mb-3">
+            <label for="recMatchBuscar" class="block text-xs text-stone-500 mb-1">Buscar cliente RDO</label>
+            <input id="recMatchBuscar" type="text"
+                   placeholder="Ej. Sotex…"
+                   aria-label="Buscar cliente RDO"
+                   oninput="recBuscarClienteRdo()"
+                   class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+          </div>
+          <div id="recMatchSugerencias" class="border border-stone-200 rounded max-h-48 overflow-y-auto mb-3">
+            <div class="text-xs text-stone-400 p-2">Escribe al menos 2 caracteres para sugerencias.</div>
+          </div>
+          <div class="flex justify-end gap-2">
+            <button onclick="recCerrarMatchModal()" class="px-3 py-1.5 bg-stone-200 rounded hover:bg-stone-300 text-sm">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA CARTERA (D-OP-11) — Andrea cliente-detalle
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabCartera" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">👥 Cartera de clientes</h2>
+        <button onclick="loadCartera()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+
+      <!-- KPI bar por categoría -->
+      <div id="carKpiBar" class="flex flex-wrap gap-2 mb-4"></div>
+
+      <!-- Filtros -->
+      <div class="bg-white p-3 rounded shadow-sm mb-4 flex flex-wrap gap-3 items-end">
+        <div>
+          <label for="carFiltroCategoria" class="block text-xs text-stone-500 mb-1">Categoría</label>
+          <select id="carFiltroCategoria" onchange="loadCartera()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div>
+          <label for="carFiltroSucursal" class="block text-xs text-stone-500 mb-1">Sucursal</label>
+          <select id="carFiltroSucursal" onchange="loadCartera()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="flex-1 min-w-[12rem]">
+          <label for="carFiltroBuscar" class="block text-xs text-stone-500 mb-1">Buscar (razón social, RUT)</label>
+          <input id="carFiltroBuscar" type="text" placeholder="Ej. Reciklo"
+                 oninput="carDebouncedSearch()" aria-label="Buscar cliente"
+                 class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="bg-white rounded shadow-sm overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-stone-50 text-stone-600 text-left">
+            <tr>
+              <th class="px-3 py-2">Cliente</th>
+              <th class="px-3 py-2">RUT</th>
+              <th class="px-3 py-2">Sucursal</th>
+              <th class="px-3 py-2">Categoría</th>
+              <th class="px-3 py-2 text-right">Op. RDO</th>
+              <th class="px-3 py-2 text-right">Op. CRM</th>
+              <th class="px-3 py-2">Flags</th>
+            </tr>
+          </thead>
+          <tbody id="carTbody">
+            <tr><td colspan="7" class="px-3 py-4 text-center text-stone-400">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Drawer cliente -->
+      <div id="carDrawer" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+        <div class="bg-white w-full max-w-md h-full overflow-y-auto p-5">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h3 id="carDrawerTitulo" class="text-lg font-bold text-stone-800">—</h3>
+              <p id="carDrawerRut" class="text-xs text-stone-500 font-mono">—</p>
+            </div>
+            <button onclick="carCerrarDrawer()" class="text-stone-500 hover:text-stone-800 text-2xl leading-none" aria-label="Cerrar">×</button>
+          </div>
+
+          <div id="carDrawerTags" class="flex flex-wrap gap-2 mb-4"></div>
+
+          <div class="bg-stone-50 rounded p-3 mb-4">
+            <div class="text-xs text-stone-500 mb-1">Categoría actual</div>
+            <div id="carDrawerCatActual" class="font-medium text-stone-800 mb-2">—</div>
+            <div id="carDrawerCatMotivo" class="text-xs text-stone-600 mb-3"></div>
+            <label for="carDrawerCatSelect" class="block text-xs text-stone-500 mb-1">Cambiar a:</label>
+            <select id="carDrawerCatSelect"
+                    class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none mb-2">
+            </select>
+            <input id="carDrawerCatMotivoInput" type="text" placeholder="Motivo (opcional)"
+                   aria-label="Motivo del cambio"
+                   class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none mb-2">
+            <button id="carDrawerCatApplyBtn" onclick="carAplicarCategoria()"
+                    class="w-full bg-green-700 hover:bg-green-800 text-white text-sm py-1.5 rounded">
+              Aplicar
+            </button>
+            <div id="carDrawerCatMsg" class="hidden mt-2 text-xs p-2 rounded"></div>
+          </div>
+
+          <div class="mb-3">
+            <h4 class="text-sm font-semibold text-stone-700 mb-1">Oportunidades RDO</h4>
+            <div id="carDrawerOpRdo" class="text-xs text-stone-600">—</div>
+          </div>
+
+          <div>
+            <h4 class="text-sm font-semibold text-stone-700 mb-1">Oportunidades CRM Impulsa (top 5)</h4>
+            <div id="carDrawerOpCrm" class="text-xs text-stone-600">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA OPORTUNIDADES KANBAN (D-OP-12)
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabOportunidades" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">🎯 Oportunidades — Pipeline Kanban</h2>
+        <button onclick="loadOportunidadesKanban()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+
+      <div id="oppKanban" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+        <div class="text-stone-400 col-span-full text-center py-6">Cargando…</div>
+      </div>
+
+      <!-- Drawer oportunidad -->
+      <div id="oppDrawer" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+        <div class="bg-white w-full max-w-md h-full overflow-y-auto p-5">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h3 id="oppDrawerTitulo" class="text-lg font-bold text-stone-800">—</h3>
+              <p id="oppDrawerCliente" class="text-sm text-stone-600">—</p>
+            </div>
+            <button onclick="oppCerrarDrawer()" class="text-stone-500 hover:text-stone-800 text-2xl leading-none" aria-label="Cerrar">×</button>
+          </div>
+
+          <div id="oppDrawerTags" class="flex flex-wrap gap-2 mb-4"></div>
+
+          <div class="bg-stone-50 rounded p-3 mb-4">
+            <div class="text-xs text-stone-500 mb-1">Estado actual</div>
+            <div id="oppDrawerEstadoActual" class="font-medium text-stone-800 mb-2">—</div>
+            <label for="oppDrawerEstadoSelect" class="block text-xs text-stone-500 mb-1">Cambiar a:</label>
+            <select id="oppDrawerEstadoSelect"
+                    class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none mb-2">
+              <option value="recibida">Recibida</option>
+              <option value="en_evaluacion">En evaluación</option>
+              <option value="ganada">Ganada</option>
+              <option value="perdida">Perdida</option>
+            </select>
+            <button id="oppDrawerMoverBtn" onclick="oppMoverEstado()"
+                    class="w-full bg-green-700 hover:bg-green-800 text-white text-sm py-1.5 rounded">
+              Mover
+            </button>
+            <div id="oppDrawerMsg" class="hidden mt-2 text-xs p-2 rounded"></div>
+          </div>
+
+          <dl class="text-sm space-y-2">
+            <div><dt class="text-xs text-stone-500">Monto estimado</dt><dd id="oppDrawerMonto" class="font-medium">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Probabilidad</dt><dd id="oppDrawerProb">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Tipo / Origen</dt><dd id="oppDrawerTipo">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Responsable</dt><dd id="oppDrawerResp">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Sucursal</dt><dd id="oppDrawerSucursal">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Fecha recepción</dt><dd id="oppDrawerFechaRec">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Fecha cierre</dt><dd id="oppDrawerFechaCierre">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Viabilidad</dt><dd id="oppDrawerViabilidad">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Descripción</dt><dd id="oppDrawerDesc" class="whitespace-pre-line text-stone-700">—</dd></div>
+          </dl>
         </div>
       </div>
     </section>
@@ -338,25 +963,27 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 
               <div class="md:col-span-2">
-                <label class="block text-xs text-stone-500 mb-1">Título de la cotización *</label>
+                <label for="cotTitulo" class="block text-xs text-stone-500 mb-1">Título de la cotización *</label>
                 <input type="text" id="cotTitulo" placeholder="Ej: Retiro mensual CMPC Cerrillos"
                        oninput="cotRecalcular()"
                        class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
               </div>
 
               <div>
-                <label class="block text-xs text-stone-500 mb-1">Cliente *</label>
+                <label for="cotClienteBuscar" class="block text-xs text-stone-500 mb-1">Cliente *</label>
                 <input type="text" id="cotClienteBuscar" placeholder="Buscar por nombre o RUT…"
                        oninput="buscarClienteCotizador(this.value)"
+                       autocomplete="off"
+                       aria-autocomplete="list" aria-controls="cotClienteSugerencias"
                        class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
-                <div id="cotClienteSugerencias"
+                <div id="cotClienteSugerencias" role="listbox" aria-label="Sugerencias de clientes"
                      class="hidden border border-stone-200 rounded mt-1 bg-white shadow-md z-10 max-h-40 overflow-y-auto"></div>
                 <input type="hidden" id="cotClienteId">
-                <span id="cotClienteSeleccionado" class="text-xs text-green-700 font-semibold mt-1 block"></span>
+                <span id="cotClienteSeleccionado" class="text-xs text-green-700 font-semibold mt-1 block" aria-live="polite"></span>
               </div>
 
               <div>
-                <label class="block text-xs text-stone-500 mb-1">Sucursal *</label>
+                <label for="cotSucursal" class="block text-xs text-stone-500 mb-1">Sucursal *</label>
                 <select id="cotSucursal"
                         class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
                   <option value="">Seleccionar…</option>
@@ -364,7 +991,7 @@
               </div>
 
               <div>
-                <label class="block text-xs text-stone-500 mb-1">Servicio *</label>
+                <label for="cotServicio" class="block text-xs text-stone-500 mb-1">Servicio *</label>
                 <select id="cotServicio" onchange="cotRecalcular()"
                         class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
                   <option value="">Seleccionar…</option>
@@ -372,7 +999,7 @@
               </div>
 
               <div>
-                <label class="block text-xs text-stone-500 mb-1">Tarifa UF base</label>
+                <label for="cotTarifa" class="block text-xs text-stone-500 mb-1">Tarifa UF base</label>
                 <select id="cotTarifa" onchange="cotRecalcular()"
                         class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
                   <option value="">Sin tarifa fija</option>
@@ -380,7 +1007,7 @@
               </div>
 
               <div class="md:col-span-2">
-                <label class="block text-xs text-stone-500 mb-1">Notas / contexto</label>
+                <label for="cotNotas" class="block text-xs text-stone-500 mb-1">Notas / contexto</label>
                 <textarea id="cotNotas" rows="2" placeholder="Contexto adicional…"
                           class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none"></textarea>
               </div>
@@ -455,9 +1082,57 @@
 
     <section id="tabAdmin" class="tab-content hidden">
       <h2 class="text-xl font-bold mb-3 text-stone-800">Administración</h2>
-      <div class="bg-white p-5 rounded-lg shadow-sm">
+      <div class="bg-white p-5 rounded-lg shadow-sm mb-4">
         <h3 class="font-bold text-stone-700 mb-3">Mensajes de audio</h3>
         <div id="adminAudiosList" class="text-sm text-stone-500">Cargando...</div>
+      </div>
+
+      <!-- Uploader CSV pesajes (PC1-#1B) -->
+      <div class="bg-white p-5 rounded-lg shadow-sm">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <h3 class="font-bold text-stone-700">Cargar pesajes desde CSV</h3>
+            <p class="text-xs text-stone-500 mt-1">Export semanal de Recicladmin. Idempotente vía hash_sha256: subir el mismo CSV varias veces no duplica filas.</p>
+          </div>
+          <button onclick="ingPesajesToggleHelp()" class="text-xs text-green-700 hover:underline">¿Qué columnas tiene el CSV?</button>
+        </div>
+
+        <div id="ingPesajesHelp" class="hidden bg-stone-50 p-3 rounded text-xs text-stone-600 mb-3 font-mono whitespace-pre-line">Columnas esperadas (header row, en cualquier orden; el matcheo es case-insensitive):
+- empresa_id        (reciclean o farex) — REQUERIDA
+- sucursal          (texto, ej. Talca) — REQUERIDA
+- fecha             (YYYY-MM-DD o dd-mm-yyyy) — REQUERIDA
+- folio             (texto) — REQUERIDA
+- material_codigo   (texto) — REQUERIDA
+- tipo_servicio     (COMPRA / DONACION / etc.)
+- proveedor_rut, proveedor_nombre, tipo_contraparte
+- tipo_orig_sistema
+- kg_bruto, kg_tara, kg_neto (números con coma o punto decimal)
+- material_descripcion
+- precio_unitario, monto_total
+- dte_folio_ref
+- fuente (default upload_panel_csv)
+
+Tip: en Excel "Guardar como" → CSV UTF-8 (delimitado por comas).</div>
+
+        <div class="flex flex-wrap items-end gap-3 mb-3">
+          <div>
+            <label for="ingPesajesFile" class="block text-xs text-stone-500 mb-1">Archivo CSV</label>
+            <input type="file" id="ingPesajesFile" accept=".csv,text/csv"
+                   aria-label="Archivo CSV pesajes"
+                   class="text-sm">
+          </div>
+          <label class="flex items-center gap-2 text-sm text-stone-600 cursor-pointer">
+            <input type="checkbox" id="ingPesajesDryRun" class="rounded border-stone-300 text-green-700 focus:ring-green-600">
+            <span>Solo validar (no insertar)</span>
+          </label>
+          <button id="ingPesajesBtn" onclick="ingPesajesSubir()"
+                  class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded text-sm font-semibold disabled:opacity-60">
+            Subir
+          </button>
+        </div>
+
+        <div id="ingPesajesResultado" class="hidden text-sm p-3 rounded mb-3"></div>
+        <div id="ingPesajesErrores" class="hidden mt-2 bg-amber-50 p-3 rounded text-xs max-h-48 overflow-y-auto"></div>
       </div>
     </section>
   </main>
@@ -484,8 +1159,8 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'admin'];
-const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'admin'];
+const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
   'Dusan.arancibia@gmail.com',
@@ -532,6 +1207,49 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
+// D-OP-08 #6 — Toast top-right reusable + traductor de errores Supabase a humano.
+function showToast(msg, type) {
+  const stack = document.getElementById('toastStack');
+  if (!stack) { console.log('[toast]', type, msg); return; }
+  const colors = {
+    ok:    'bg-green-600 text-white',
+    error: 'bg-red-600 text-white',
+    info:  'bg-stone-700 text-white',
+  };
+  const cls = colors[type] || colors.info;
+  const el = document.createElement('div');
+  el.className = `${cls} text-sm px-4 py-2 rounded shadow-lg pointer-events-auto opacity-0 transition-opacity duration-200 max-w-xs`;
+  el.setAttribute('role', type === 'error' ? 'alert' : 'status');
+  el.textContent = msg;
+  stack.appendChild(el);
+  requestAnimationFrame(() => { el.style.opacity = '1'; });
+  setTimeout(() => {
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 220);
+  }, type === 'error' ? 5000 : 2500);
+}
+
+function humanizeSupabaseError(err) {
+  const raw = (err && (err.message || err.hint || err.details)) || '';
+  const code = err && err.code;
+  if (/permission denied|row-level security/i.test(raw)) {
+    return 'No tenés permisos para guardar este cambio. Avisá a Pablo.';
+  }
+  if (/duplicate key|already exists/i.test(raw) || code === '23505') {
+    return 'Ese valor ya existe. Revisá si lo cargaste antes.';
+  }
+  if (/foreign key|violates.*constraint/i.test(raw) || code === '23503') {
+    return 'Falta un dato relacionado (cliente, sucursal o similar).';
+  }
+  if (/network|fetch failed|Failed to fetch/i.test(raw)) {
+    return 'Sin conexión al servidor. Reintentá en unos segundos.';
+  }
+  if (/timeout/i.test(raw)) {
+    return 'El servidor tardó demasiado. Probá de nuevo.';
+  }
+  return 'No se pudo guardar. Probá de nuevo o avisá a Pablo.';
+}
+
 // CSV parser tolerante (maneja comas dentro de campos con comillas)
 function parseCSV(text) {
   const lines = text.split(/\r?\n/).filter(l => l.trim().length);
@@ -570,27 +1288,59 @@ function showResult(divId, ok, message) {
   div.innerHTML = (ok ? '✅ ' : '❌ ') + escapeHtml(message);
 }
 
-// ---------- LOGIN ----------
+// ---------- LOGIN (D-PANEL-AUTH-001 · email + password real) ----------
 window.login = async function() {
-  const email = document.getElementById('loginEmail').value.trim();
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value;
+  const remember = document.getElementById('loginRemember').checked;
   const errDiv = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
   errDiv.classList.add('hidden');
-  if (!email) { errDiv.textContent = "Ingresa un email"; errDiv.classList.remove('hidden'); return; }
+  if (!email || !password) {
+    errDiv.textContent = "Ingresá tu correo y contraseña.";
+    errDiv.classList.remove('hidden');
+    return;
+  }
+  btn.disabled = true; btn.textContent = 'Ingresando…';
 
-  const { data, error } = await sb
-    .schema('panel')
-    .from('usuarios_autorizados')
-    .select('email, perfil, activo, nombre')   // incluir email canónico
-    .ilike('email', email)   // case-insensitive (Dusan vs dusan)
-    .maybeSingle();
-
-  if (error || !data || !data.activo) {
-    errDiv.textContent = "Usuario no autorizado o inactivo. Contacta a Pablo.";
+  const { data: authData, error: authError } = await sb.auth.signInWithPassword({ email, password });
+  if (authError) {
+    btn.disabled = false; btn.textContent = 'Ingresar';
+    const msg = (authError.message || '').toLowerCase();
+    if (msg.includes('invalid')) errDiv.textContent = 'Correo o contraseña incorrectos. Si es tu primer ingreso usá "¿Olvidaste tu contraseña?".';
+    else errDiv.textContent = 'Error al ingresar: ' + authError.message;
     errDiv.classList.remove('hidden');
     return;
   }
 
-  // Usar email CANÓNICO de la BD, no el del input (resuelve case-sensitive en queries posteriores)
+  // Recordarme = false → al cerrar la pestaña hacemos signOut para que la sesión no persista.
+  localStorage.setItem('rdo_remember', remember ? '1' : '0');
+  if (!remember) {
+    window.addEventListener('beforeunload', () => { try { sb.auth.signOut(); } catch(e) {} });
+  }
+
+  await hydrateSessionAndEnter(authData.user);
+  btn.disabled = false; btn.textContent = 'Ingresar';
+};
+
+// ---------- HYDRATE: tras un signIn válido, sacar perfil de panel.usuarios_autorizados y entrar al panel
+async function hydrateSessionAndEnter(authUser) {
+  const errDiv = document.getElementById('loginError');
+  const email = (authUser?.email || '').toLowerCase();
+  const { data, error } = await sb
+    .schema('panel')
+    .from('usuarios_autorizados')
+    .select('email, perfil, activo, nombre')
+    .ilike('email', email)
+    .maybeSingle();
+
+  if (error || !data || !data.activo) {
+    await sb.auth.signOut();
+    errDiv.textContent = "Tu usuario auth existe pero no está activo en la whitelist. Contactá a Pablo o Dusan.";
+    errDiv.classList.remove('hidden');
+    return;
+  }
+
   currentUser = data.email;
   currentProfile = data.perfil;
   console.log('[Panel RDO] Login OK:', { email: currentUser, profile: currentProfile });
@@ -621,7 +1371,130 @@ window.login = async function() {
   // Update ultimo_login (best-effort, no bloquea)
   sb.schema('panel').from('usuarios_autorizados').update({ ultimo_login: new Date().toISOString() })
     .eq('email', email).then(() => {});
+}
+
+// ---------- D-PANEL-AUTH-001 · UI helpers (cambiar entre las 3 pantallas) ----------
+window.showSignin = function() {
+  document.getElementById('loginPaneSignin').classList.remove('hidden');
+  document.getElementById('loginPaneForgot').classList.add('hidden');
+  document.getElementById('loginPaneReset').classList.add('hidden');
+  document.getElementById('loginError').classList.add('hidden');
 };
+window.showForgotPassword = function() {
+  document.getElementById('loginPaneSignin').classList.add('hidden');
+  document.getElementById('loginPaneForgot').classList.remove('hidden');
+  document.getElementById('loginPaneReset').classList.add('hidden');
+  const sourceEmail = document.getElementById('loginEmail').value.trim();
+  if (sourceEmail) document.getElementById('forgotEmail').value = sourceEmail;
+  document.getElementById('forgotMsg').classList.add('hidden');
+};
+function showResetPanel() {
+  document.getElementById('loginContainer').style.display = 'flex';
+  document.getElementById('appContainer').style.display = 'none';
+  document.getElementById('loginPaneSignin').classList.add('hidden');
+  document.getElementById('loginPaneForgot').classList.add('hidden');
+  document.getElementById('loginPaneReset').classList.remove('hidden');
+  document.getElementById('resetMsg').classList.add('hidden');
+}
+
+// ---------- D-PANEL-AUTH-001 · Reset password (enviar link) ----------
+window.forgotPassword = async function() {
+  const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+  const msg = document.getElementById('forgotMsg');
+  const btn = document.getElementById('forgotBtn');
+  msg.classList.add('hidden');
+  if (!email) {
+    msg.className = 'mt-3 text-sm p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'Ingresá tu correo.';
+    msg.classList.remove('hidden');
+    return;
+  }
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/panel-rdo.html'
+  });
+  btn.disabled = false; btn.textContent = 'Enviar link de recuperación';
+  if (error) {
+    msg.className = 'mt-3 text-sm p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'Error: ' + error.message;
+  } else {
+    msg.className = 'mt-3 text-sm p-2 rounded bg-green-50 text-green-700';
+    msg.textContent = 'Listo. Te enviamos un link a ' + email + '. Revisá tu correo (puede tardar 1-2 min).';
+  }
+  msg.classList.remove('hidden');
+};
+
+// ---------- D-PANEL-AUTH-001 · Set new password (post magic-link) ----------
+window.setNewPassword = async function() {
+  const p1 = document.getElementById('resetPassword1').value;
+  const p2 = document.getElementById('resetPassword2').value;
+  const msg = document.getElementById('resetMsg');
+  const btn = document.getElementById('resetBtn');
+  msg.classList.add('hidden');
+  if (!p1 || p1.length < 8) {
+    msg.className = 'mt-3 text-sm p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+    msg.classList.remove('hidden'); return;
+  }
+  if (p1 !== p2) {
+    msg.className = 'mt-3 text-sm p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'Las contraseñas no coinciden.';
+    msg.classList.remove('hidden'); return;
+  }
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  const { data, error } = await sb.auth.updateUser({ password: p1 });
+  btn.disabled = false; btn.textContent = 'Guardar contraseña';
+  if (error) {
+    msg.className = 'mt-3 text-sm p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'Error: ' + error.message;
+    msg.classList.remove('hidden'); return;
+  }
+  msg.className = 'mt-3 text-sm p-2 rounded bg-green-50 text-green-700';
+  msg.textContent = 'Contraseña guardada. Entrando al panel…';
+  msg.classList.remove('hidden');
+  document.getElementById('resetPassword1').value = '';
+  document.getElementById('resetPassword2').value = '';
+  // Limpiar el hash de recovery de la URL
+  history.replaceState(null, '', window.location.pathname);
+  // Con la sesión activa post-updateUser, entramos directo
+  await hydrateSessionAndEnter(data.user);
+};
+
+// ---------- D-PANEL-AUTH-001 · Bootstrap: detectar sesión activa o recovery flow ----------
+async function bootstrapAuth() {
+  // Si el hash trae type=recovery, mostrar pantalla set new password
+  const hash = window.location.hash || '';
+  if (hash.includes('type=recovery')) {
+    showResetPanel();
+    // El SDK procesa el hash automáticamente y dispara PASSWORD_RECOVERY event
+    return;
+  }
+
+  // Si el usuario marcó "no recordarme" en una sesión previa, no auto-loguear
+  const rememberFlag = localStorage.getItem('rdo_remember');
+  if (rememberFlag === '0') {
+    await sb.auth.signOut();
+    showSignin();
+    return;
+  }
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    await hydrateSessionAndEnter(session.user);
+  } else {
+    showSignin();
+  }
+}
+
+// Listener global de auth (recovery, signout, refresh)
+function setupAuthListener() {
+  sb.auth.onAuthStateChange((event, session) => {
+    console.log('[Panel RDO] auth event:', event);
+    if (event === 'PASSWORD_RECOVERY') {
+      showResetPanel();
+    }
+  });
+}
 
 // ---------- SILOS: carga + selector + filtrado de pestañas ----------
 // ---------- CONFIGURACIÓN data-driven (cargar las "cajas" desde BD) ----------
@@ -810,14 +1683,18 @@ function applySiloTabs() {
   }
 }
 
-window.logout = function() {
+window.logout = async function() {
+  try { await sb.auth.signOut(); } catch(e) { console.warn('[Panel RDO] signOut error:', e); }
   currentUser = null; currentProfile = null;
-  document.getElementById('appContainer').style.display = 'none';
-  document.getElementById('loginContainer').style.display = 'flex';
-  document.getElementById('loginEmail').value = '';
   // Resetear UI de elementos dependientes de sesión
   document.getElementById('accesoRapidoHeader')?.classList.add('hidden');
   document.getElementById('siloSelectorContainer')?.classList.add('hidden');
+  // Limpiar campos del form
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('appContainer').style.display = 'none';
+  document.getElementById('loginContainer').style.display = 'flex';
+  showSignin();
 };
 
 // ---------- TABS ----------
@@ -828,8 +1705,12 @@ function setupTabs() {
       document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
       const target = document.getElementById('tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
       if (target) target.classList.remove('hidden');
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
       btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
       if (typeof window.pageLog === 'function') window.pageLog('tab_change', tabId);
       if (tabId === 'comunicados') loadAudios();
       if (tabId === 'portada') { loadPortadaAudio(); loadAlertasPortada(); }
@@ -839,6 +1720,12 @@ function setupTabs() {
       if (tabId === 'admin') loadAdminAudios();
       if (tabId === 'negocios')  loadNegocios();
       if (tabId === 'cotizador') initCotizador();
+      if (tabId === 'cierres')   loadCierres();
+      if (tabId === 'precios')   initPrecios();
+      if (tabId === 'operativos') initOperativos();
+      if (tabId === 'reconciliacion') initReconciliacion();
+      if (tabId === 'cartera')   initCartera();
+      if (tabId === 'oportunidades') initOportunidadesKanban();
       if (tabId === 'dieguito')  initDieguito();
     });
   });
@@ -1094,6 +1981,7 @@ let _diegIniciado     = false;
 let _diegDestinos     = [];       // [{id, slug, label, kind, color}]
 let _diegSeleccionados = new Set(); // ids seleccionados
 let _diegAiSugeridos  = new Set(); // ids sugeridos por IA (esta sesión)
+let _diegTopClientes  = [];       // D-OP-04-v2 Ola 1.1 — [{cliente_id, razon_social, categoria_id}]
 let _diegSuggestTimer = null;
 let _diegArchivo      = null;     // File object del dropzone
 let _diegArchivoUrl   = null;     // URL pública después de subir
@@ -1109,21 +1997,103 @@ async function initDieguito() {
   if (_diegIniciado) return;
   _diegIniciado = true;
 
-  const { data, error } = await sb.schema('staging')
+  // D-OP-04-v2 Ola 1.1 — cargar destinos + top-20 clientes en paralelo.
+  const destinosP = sb.schema('staging')
     .from('dieguito_destinations')
     .select('id,slug,label,kind,color')
     .eq('active', true)
     .order('sort_order');
 
-  if (error || !data) {
+  // Top clientes: vigentes ordenados por categoría (mejor → menos → poco → en_prueba → critica)
+  // y por contribucion si está presente. cap a 20.
+  const clientesP = sb.schema('curated')
+    .from('cartera_clientes_categoria')
+    .select('cliente_id, categoria_id, contribucion_uf_mes, vigente, clientes!inner(razon_social, activo)')
+    .eq('vigente', true)
+    .eq('clientes.activo', true)
+    .limit(20);
+
+  const [destinosRes, clientesRes] = await Promise.all([destinosP, clientesP]);
+
+  if (destinosRes.error || !destinosRes.data) {
     document.getElementById('diegChips').innerHTML =
-      `<p class="text-xs text-red-500">Error cargando destinos: ${escapeHtml(error?.message ?? 'desconocido')} — ¿Ejecutaste SQL 028?</p>`;
+      `<p class="text-xs text-red-500">Error cargando destinos: ${escapeHtml(destinosRes.error?.message ?? 'desconocido')} — ¿Ejecutaste SQL 028?</p>`;
     return;
   }
-  _diegDestinos = data;
+  _diegDestinos = destinosRes.data;
 
+  // Ordenar clientes por jerarquía de categoría y por contribución (cuando hay).
+  const ordenCategoria = { 'mejor': 1, 'menos': 2, 'poco': 3, 'en_prueba': 4, 'critica': 5 };
+  _diegTopClientes = (clientesRes.data || [])
+    .filter(c => c.clientes && c.clientes.razon_social)
+    .sort((a, b) => {
+      const ca = ordenCategoria[a.categoria_id] ?? 99;
+      const cb = ordenCategoria[b.categoria_id] ?? 99;
+      if (ca !== cb) return ca - cb;
+      const ua = a.contribucion_uf_mes ?? 0;
+      const ub = b.contribucion_uf_mes ?? 0;
+      if (ua !== ub) return ub - ua;
+      return a.clientes.razon_social.localeCompare(b.clientes.razon_social, 'es');
+    })
+    .slice(0, 20)
+    .map(c => ({
+      cliente_id: c.cliente_id,
+      razon_social: c.clientes.razon_social,
+      categoria_id: c.categoria_id || null
+    }));
+
+  diegRenderEtiquetasRapidas();
   diegRenderChips();
 }
+
+// D-OP-04-v2 Ola 1.1 — Etiquetas rápidas: chip "Precio" + chips top-20 clientes.
+// Inserta tag en el textarea para que Dieguito + Andrea identifiquen rápido si se
+// trata de un precio o de qué cliente viene el mensaje. Frontend-only (no toca BD).
+function diegRenderEtiquetasRapidas() {
+  const cont = document.getElementById('diegEtiquetasRapidas');
+  if (!cont) return;
+  const colorPorCategoria = {
+    'mejor': 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200',
+    'menos': 'bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-200',
+    'poco': 'bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200',
+    'en_prueba': 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200',
+    'critica': 'bg-red-100 text-red-800 border-red-200 hover:bg-red-200',
+  };
+  const chipsClientes = _diegTopClientes.map(c => {
+    const colorCls = colorPorCategoria[c.categoria_id] || 'bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200';
+    return `<button onclick="diegInsertarTag('@${escapeHtml(c.razon_social)}')"
+                    class="text-xs rounded-full border px-2 py-0.5 ${colorCls} transition"
+                    title="${escapeHtml(c.categoria_id || 'sin categoría')}">
+              @${escapeHtml(c.razon_social)}
+            </button>`;
+  }).join(' ');
+  cont.innerHTML = `
+    <button onclick="diegInsertarTag('[Precio]')"
+            class="text-xs rounded-full border border-green-300 bg-green-50 text-green-800 hover:bg-green-100 px-2.5 py-0.5 font-semibold transition"
+            title="Etiquetar este mensaje como propuesta de precio">
+      💰 Precio
+    </button>
+    ${_diegTopClientes.length > 0
+      ? `<span class="text-stone-300 mx-1">·</span>${chipsClientes}`
+      : '<span class="text-xs text-stone-400 ml-2">sin top clientes cargados</span>'}`;
+}
+
+// D-OP-04-v2 Ola 1.1 — inserta el tag al inicio del textarea (si no estaba ya).
+window.diegInsertarTag = function(tag) {
+  const ta = document.getElementById('diegTexto');
+  if (!ta) return;
+  const actual = ta.value || '';
+  if (actual.includes(tag)) {
+    // Si ya está, lo saca (toggle).
+    ta.value = actual.replace(new RegExp('\\s*' + tag.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&') + '\\s*', ''), ' ').trim();
+  } else {
+    // Lo prepende para que sea visible.
+    ta.value = tag + (actual ? ' ' + actual : '');
+  }
+  ta.focus();
+  // Re-disparar auto-suggest con el nuevo texto.
+  if (typeof window.diegAutoSuggest === 'function') window.diegAutoSuggest(ta.value);
+};
 
 // ── chips ─────────────────────────────────────────────────────────────────────
 const KIND_LABELS = { persona:'👤 Personas', silo:'🗂 Silos', area:'📂 Áreas', bitacora:'📓 Bitácoras' };
@@ -1533,6 +2503,25 @@ async function loadAlertasPortada() {
   const amarillos = data.filter(a => a.nivel === 'amarillo').length;
   const top5 = data.filter(a => a.nivel === 'rojo').slice(0, 5)
     .concat(data.filter(a => a.nivel === 'amarillo').slice(0, Math.max(0, 5 - rojos)));
+
+  // D-OP-04-v2 Ola 1.3 — chips clickeables por tipo_alerta para destrabar acción
+  // (antes el banner era informativo, ahora cada chip filtra la bandeja RDO).
+  const conteoTipos = data.reduce((acc, a) => {
+    acc[a.tipo_alerta] = (acc[a.tipo_alerta] || 0) + 1;
+    return acc;
+  }, {});
+  const chipsTipo = Object.entries(conteoTipos)
+    .sort((a, b) => b[1] - a[1])
+    .map(([tipo, n]) =>
+      `<button onclick="irABandejaConFiltro('${escapeHtml(tipo)}')"
+               class="inline-flex items-center gap-1 text-xs bg-white border border-stone-200 hover:border-green-700 hover:bg-green-50 rounded-full px-2.5 py-1 mr-1 mb-1 transition"
+               title="Ver las ${n} alertas de tipo ${escapeHtml(tipo)} en la bandeja">
+         <span class="font-mono text-stone-500">${n}</span>
+         <span class="font-medium text-stone-700">${escapeHtml(tipo)}</span>
+         <span class="text-stone-400">→</span>
+       </button>`
+    ).join('');
+
   div.innerHTML = `
     <div class="rounded-lg border ${rojos > 0 ? 'border-red-200 bg-red-50' : 'border-amber-200 bg-amber-50'} p-4">
       <div class="flex items-center gap-3 mb-3">
@@ -1542,8 +2531,9 @@ async function loadAlertasPortada() {
           <span class="ml-2 text-xs ${rojos > 0 ? 'text-red-600' : 'text-stone-500'}">${rojos} crítica${rojos !== 1 ? 's' : ''}</span>
           ${amarillos > 0 ? `<span class="ml-1 text-xs text-amber-600">${amarillos} advertencia${amarillos !== 1 ? 's' : ''}</span>` : ''}
         </div>
-        <button onclick="document.querySelector('[data-tab=rdo]').click()" class="text-xs text-stone-500 underline">Ver en RDO ↗</button>
+        <button onclick="irABandejaConFiltro(null)" class="text-xs text-stone-500 underline">Ver todas en RDO ↗</button>
       </div>
+      <div class="mb-3">${chipsTipo}</div>
       <ul class="space-y-1">
         ${top5.map(a => `
         <li class="text-xs flex gap-2">
@@ -1559,14 +2549,46 @@ async function loadAlertasPortada() {
     </div>`;
 }
 
+// D-OP-04-v2 Ola 1.3 — Filtro de la bandeja RDO desde la Portada.
+// Cuando es null: tabla RDO sin filtro. Cuando es un tipo_alerta: tabla filtrada
+// + chip "Filtrado: tipo · Limpiar" visible al inicio de la tabla.
+let _rdoAlertasFiltroTipo = null;
+
+function irABandejaConFiltro(tipoAlerta) {
+  _rdoAlertasFiltroTipo = tipoAlerta || null;
+  const btn = document.querySelector('button[data-tab="rdo"]');
+  if (btn) btn.click();
+}
+
+function limpiarFiltroBandejaRdo() {
+  _rdoAlertasFiltroTipo = null;
+  loadAlertasRdo();
+}
+
 async function loadAlertasRdo() {
   const div = document.getElementById('rdoAlertas');
   if (!div) return;
   div.innerHTML = '<p class="text-xs text-stone-400">Cargando alertas...</p>';
-  const { data, error } = await sb.from('v_alertas_panel')
+  let q = sb.from('v_alertas_panel')
     .select('tipo_alerta,nivel,titulo,descripcion,fecha,valor')
     .order('nivel');
-  if (error || !data?.length) { div.innerHTML = ''; return; }
+  // D-OP-04-v2 Ola 1.3 — filtro por tipo_alerta seteado desde Portada.
+  if (_rdoAlertasFiltroTipo) q = q.eq('tipo_alerta', _rdoAlertasFiltroTipo);
+  const { data, error } = await q;
+  if (error || !data?.length) {
+    div.innerHTML = _rdoAlertasFiltroTipo
+      ? `<div class="bg-white rounded-lg p-4 shadow-sm">
+           <div class="flex items-center gap-2 mb-2">
+             <span class="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">
+               Filtrado: <span class="font-medium">${escapeHtml(_rdoAlertasFiltroTipo)}</span>
+             </span>
+             <button onclick="limpiarFiltroBandejaRdo()" class="text-xs text-stone-500 underline">limpiar</button>
+           </div>
+           <p class="text-stone-400 text-sm">Sin alertas para este filtro.</p>
+         </div>`
+      : '';
+    return;
+  }
   const rojos    = data.filter(a => a.nivel === 'rojo').length;
   const amarillos = data.filter(a => a.nivel === 'amarillo').length;
   const badge = n => n === 'rojo'
@@ -1574,10 +2596,16 @@ async function loadAlertasRdo() {
     : '<span class="inline-block w-2 h-2 rounded-full bg-amber-400 mr-1"></span>';
   div.innerHTML = `
     <div class="bg-white rounded-lg p-4 shadow-sm">
-      <div class="flex items-center gap-3 mb-3">
+      <div class="flex items-center gap-3 mb-3 flex-wrap">
         <span class="font-semibold text-sm text-stone-700">⚠️ Alertas del sistema</span>
         <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">${rojos} crítica${rojos !== 1 ? 's' : ''}</span>
         ${amarillos > 0 ? `<span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">${amarillos} advertencia${amarillos !== 1 ? 's' : ''}</span>` : ''}
+        ${_rdoAlertasFiltroTipo
+          ? `<span class="ml-auto inline-flex items-center gap-2 text-xs bg-green-50 border border-green-200 text-green-800 px-2 py-0.5 rounded-full">
+               Filtrado: <span class="font-medium">${escapeHtml(_rdoAlertasFiltroTipo)}</span>
+               <button onclick="limpiarFiltroBandejaRdo()" class="underline hover:text-green-900">limpiar</button>
+             </span>`
+          : ''}
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-xs">
@@ -1929,11 +2957,12 @@ async function loadNegocios(buscarOverride) {
             <td class="py-2 px-2 text-center" onclick="event.stopPropagation()">
               <select id="${selectId}"
                       onchange="actualizarSucursalOportunidad('${escapeHtml(n.oportunidad_id)}', this.value, '${selectId}')"
+                      aria-label="Sucursal del negocio ${escapeHtml(n.titulo || n.oportunidad_id)}"
                       class="text-xs border rounded px-1.5 py-0.5 ${sinSuc ? 'border-amber-400 bg-amber-50 text-amber-800' : 'border-stone-300 bg-white text-stone-700'} focus:border-green-700 focus:outline-none">
-                <option value="" ${sinSuc?'selected':''}>${sinSuc ? '⚠ Asignar…' : '—'}</option>
+                <option value="" ${sinSuc?'selected':''} ${sinSuc?'':'disabled'}>${sinSuc ? '⚠ Asignar…' : '— (seleccionada)'}</option>
                 ${optionsHtml}
               </select>
-              <span id="${selectId}_msg" class="text-[10px] ml-1"></span>
+              <span id="${selectId}_msg" class="text-sm ml-1"></span>
             </td>
             <td class="py-2 px-2 text-right text-stone-400 text-xs">${new Date(n.fecha_recepcion).toLocaleDateString('es-CL')}</td>
             <td class="py-2 px-2 text-center">
@@ -1953,7 +2982,7 @@ async function loadNegocios(buscarOverride) {
 // Requiere policy `anon_update_oportunidades_sucursal_validado` (mig 030).
 async function actualizarSucursalOportunidad(opId, sucursalId, selectId) {
   const msgEl = document.getElementById(selectId + '_msg');
-  if (msgEl) { msgEl.textContent = '⏳'; msgEl.className = 'text-[10px] ml-1 text-stone-400'; }
+  if (msgEl) { msgEl.textContent = '⏳'; msgEl.className = 'text-sm ml-1 text-stone-400'; }
   const sel = document.getElementById(selectId);
   if (sel) sel.disabled = true;
 
@@ -1967,15 +2996,18 @@ async function actualizarSucursalOportunidad(opId, sucursalId, selectId) {
 
   if (sel) sel.disabled = false;
   if (error) {
+    // D-OP-08 #6 — log técnico a consola, mensaje humano al usuario.
     console.error('[D-DAT-04] update sucursal failed:', error);
-    if (msgEl) { msgEl.textContent = '✗ ' + (error.message || 'error'); msgEl.className = 'text-[10px] ml-1 text-red-600'; }
+    if (msgEl) { msgEl.textContent = '✗'; msgEl.className = 'text-sm ml-1 text-red-600 font-bold'; }
+    showToast(humanizeSupabaseError(error), 'error');
     return;
   }
   if (msgEl) {
     msgEl.textContent = '✓';
-    msgEl.className = 'text-[10px] ml-1 text-green-600 font-bold';
+    msgEl.className = 'text-sm ml-1 text-green-600 font-bold';
     setTimeout(() => { if (msgEl) msgEl.textContent = ''; }, 1500);
   }
+  showToast('Sucursal guardada', 'ok');
   // Re-pintar el select según el nuevo estado (con/sin sucursal)
   if (sel) {
     const sinSuc = !sucursalId;
@@ -1983,7 +3015,20 @@ async function actualizarSucursalOportunidad(opId, sucursalId, selectId) {
       (sinSuc ? 'border-amber-400 bg-amber-50 text-amber-800' : 'border-stone-300 bg-white text-stone-700') +
       ' focus:border-green-700 focus:outline-none';
     const opt0 = sel.querySelector('option[value=""]');
-    if (opt0) opt0.textContent = sinSuc ? '⚠ Asignar…' : '—';
+    if (opt0) {
+      opt0.textContent = sinSuc ? '⚠ Asignar…' : '— (seleccionada)';
+      // a11y: la opción "—" deja de ser clickeable cuando ya hay sucursal asignada
+      // (evita desasignación accidental por click).
+      if (sinSuc) opt0.removeAttribute('disabled');
+      else opt0.setAttribute('disabled', '');
+    }
+  }
+
+  // D-OP-08 #2 — si el filtro "Solo sin sucursal" está activo y la fila ahora SÍ tiene sucursal,
+  // la fila debe desaparecer de la vista. Re-render la tabla con un pequeño delay para que
+  // Andrea vea el ✓ antes del refresco.
+  if (sucursalId && document.getElementById('negSinSucursal')?.checked === true) {
+    setTimeout(() => loadNegocios(), 600);
   }
 }
 
@@ -2055,6 +3100,537 @@ function cotizarDesdeFilaNegocio(opId, titulo, clienteId, clienteNombre) {
       document.getElementById('cotClienteBuscar').value = clienteNombre || clienteId;
     }
   }, 300);
+}
+
+// ============================================================
+// PESTAÑA CIERRES (D-OP-09 — lectura curated.vw_cierre_mes_actual)
+// ============================================================
+
+function fmtCLP(n) {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return '—';
+  const v = Math.round(Number(n));
+  return '$' + v.toLocaleString('es-CL');
+}
+
+function fmtPct(n) {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return '—';
+  return Number(n).toFixed(1) + '%';
+}
+
+async function loadCierres() {
+  const div = document.getElementById('cierresTabla');
+  div.innerHTML = '<p class="text-stone-400">Cargando…</p>';
+
+  // Cache empresas+sucursales en paralelo con la query principal
+  const empresasP = sb.schema('curated').from('empresas_grupo').select('empresa_id, razon_social');
+  const sucursalesP = ensureSucursalesCache();
+
+  const { data, error } = await sb.schema('curated').from('vw_cierre_mes_actual')
+    .select('empresa_id, sucursal_id, entrantes_mes, salientes_mes, flujo_neto_mes, margen_promedio_mes, proyeccion_actualizada, ultimo_cierre_diario')
+    .order('empresa_id', { ascending: true })
+    .order('sucursal_id', { ascending: true, nullsFirst: true });
+
+  if (error) {
+    console.error('[D-OP-09] loadCierres error:', error);
+    div.innerHTML = `<div class="p-5"><p class="text-red-600 mb-2">No se pudo cargar los cierres del mes.</p>
+      <p class="text-xs text-stone-500">${escapeHtml(humanizeSupabaseError(error))}</p></div>`;
+    showToast(humanizeSupabaseError(error), 'error');
+    return;
+  }
+
+  const [empResp, sucArr] = await Promise.all([empresasP, sucursalesP]);
+  const empMap = new Map(((empResp && empResp.data) || []).map(e => [e.empresa_id, e.razon_social || e.empresa_id]));
+  const sucMap = new Map((sucArr || []).map(s => [s.sucursal_id, s.nombre || s.sucursal_id]));
+
+  // KPIs agregados del mes (suma todas las filas visibles)
+  const totales = (data || []).reduce((acc, r) => ({
+    entrantes: acc.entrantes + Number(r.entrantes_mes || 0),
+    salientes: acc.salientes + Number(r.salientes_mes || 0),
+    flujo:     acc.flujo     + Number(r.flujo_neto_mes || 0),
+    margenSum: acc.margenSum + (r.margen_promedio_mes != null ? Number(r.margen_promedio_mes) : 0),
+    margenN:   acc.margenN   + (r.margen_promedio_mes != null ? 1 : 0),
+  }), { entrantes: 0, salientes: 0, flujo: 0, margenSum: 0, margenN: 0 });
+
+  document.getElementById('cierresKpiEntrantes').textContent  = fmtCLP(totales.entrantes);
+  document.getElementById('cierresKpiSalientes').textContent  = fmtCLP(totales.salientes);
+  const flujoEl = document.getElementById('cierresKpiFlujoNeto');
+  flujoEl.textContent = fmtCLP(totales.flujo);
+  flujoEl.className = 'text-xl font-bold ' + (totales.flujo >= 0 ? 'text-green-700' : 'text-red-600');
+  document.getElementById('cierresKpiMargen').textContent = totales.margenN > 0
+    ? fmtPct(totales.margenSum / totales.margenN)
+    : '—';
+
+  const ultActualizadoMax = (data || [])
+    .map(r => r.ultimo_cierre_diario)
+    .filter(Boolean)
+    .sort()
+    .pop();
+  document.getElementById('cierresUltActualizado').textContent = ultActualizadoMax
+    ? 'Último cierre diario: ' + new Date(ultActualizadoMax).toLocaleDateString('es-CL')
+    : 'Sin cierres este mes';
+
+  if (!data || data.length === 0) {
+    div.innerHTML = `<div class="p-8 text-center">
+      <p class="text-stone-400 text-base mb-1">No hay cierres diarios cargados este mes.</p>
+      <p class="text-xs text-stone-400">Dyana arranca la planilla mensual el día 1 hábil. El ETL nocturno corre todos los días a las 23:55.</p>
+    </div>`;
+    return;
+  }
+
+  const rowsHtml = data.map(r => {
+    const empNom = empMap.get(r.empresa_id) || r.empresa_id;
+    const sucNom = r.sucursal_id ? (sucMap.get(r.sucursal_id) || r.sucursal_id) : '<span class="text-stone-400 italic">consolidado</span>';
+    const flujoCls = Number(r.flujo_neto_mes || 0) >= 0 ? 'text-green-700' : 'text-red-600';
+    return `<tr class="border-b border-stone-100 hover:bg-stone-50 cursor-pointer"
+              onclick="verCierresDetalle('${escapeHtml(r.empresa_id)}', ${r.sucursal_id ? `'${escapeHtml(r.sucursal_id)}'` : 'null'}, '${escapeHtml(empNom)}', ${r.sucursal_id ? `'${escapeHtml(sucNom)}'` : 'null'})">
+      <td class="py-2 px-3 font-semibold text-stone-700">${escapeHtml(empNom)}</td>
+      <td class="py-2 px-3 text-stone-600">${sucNom}</td>
+      <td class="py-2 px-3 text-right text-stone-700">${fmtCLP(r.entrantes_mes)}</td>
+      <td class="py-2 px-3 text-right text-stone-700">${fmtCLP(r.salientes_mes)}</td>
+      <td class="py-2 px-3 text-right font-bold ${flujoCls}">${fmtCLP(r.flujo_neto_mes)}</td>
+      <td class="py-2 px-3 text-right text-stone-600">${fmtPct(r.margen_promedio_mes)}</td>
+      <td class="py-2 px-3 text-right text-stone-400 text-xs">${r.ultimo_cierre_diario ? new Date(r.ultimo_cierre_diario).toLocaleDateString('es-CL') : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  div.innerHTML = `
+    <table class="min-w-full text-sm">
+      <thead class="bg-stone-50 text-stone-500 text-xs uppercase tracking-wide">
+        <tr>
+          <th class="py-2 px-3 text-left">Empresa</th>
+          <th class="py-2 px-3 text-left">Sucursal</th>
+          <th class="py-2 px-3 text-right">Entrantes</th>
+          <th class="py-2 px-3 text-right">Salientes</th>
+          <th class="py-2 px-3 text-right">Flujo neto</th>
+          <th class="py-2 px-3 text-right">Margen ø</th>
+          <th class="py-2 px-3 text-right">Últ. cierre D</th>
+        </tr>
+      </thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+    <p class="text-xs text-stone-400 p-3">${data.length} fila(s) · mes actual · click en una fila para ver el detalle diario</p>`;
+}
+
+async function verCierresDetalle(empresaId, sucursalId, empNom, sucNom) {
+  const drawer = document.getElementById('cierresDetalle');
+  const title  = document.getElementById('cierresDetalleTitle');
+  const cont   = document.getElementById('cierresDetalleContenido');
+  title.textContent = `${empNom}${sucNom ? ' · ' + sucNom : ' · consolidado'} — detalle diario`;
+  cont.innerHTML = '<p class="text-stone-400">Cargando…</p>';
+  drawer.classList.remove('hidden');
+  drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Cierres diarios del mes actual para esta empresa/sucursal
+  const firstOfMonth = new Date();
+  firstOfMonth.setDate(1);
+  const fechaDesde = firstOfMonth.toISOString().slice(0, 10);
+
+  let q = sb.schema('curated').from('cierres')
+    .select('fecha, saldo_caja_clp, saldo_banco_clp, saldo_total_clp, pagos_entrantes_clp, pagos_salientes_clp, flujo_neto_clp, margen_estimado_pct, proyeccion_mes_rolling_clp')
+    .eq('granularidad', 'D')
+    .eq('empresa_id', empresaId)
+    .gte('fecha', fechaDesde)
+    .order('fecha', { ascending: false });
+  q = sucursalId ? q.eq('sucursal_id', sucursalId) : q.is('sucursal_id', null);
+
+  const { data, error } = await q;
+  if (error) {
+    cont.innerHTML = `<p class="text-red-600">${escapeHtml(humanizeSupabaseError(error))}</p>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    cont.innerHTML = '<p class="text-stone-400">Sin cierres diarios cargados para este combo este mes.</p>';
+    return;
+  }
+
+  cont.innerHTML = `
+    <table class="min-w-full text-sm">
+      <thead class="bg-stone-50 text-stone-500 text-xs uppercase tracking-wide">
+        <tr>
+          <th class="py-2 px-3 text-left">Fecha</th>
+          <th class="py-2 px-3 text-right">Caja</th>
+          <th class="py-2 px-3 text-right">Banco</th>
+          <th class="py-2 px-3 text-right">Total</th>
+          <th class="py-2 px-3 text-right">Entrantes D</th>
+          <th class="py-2 px-3 text-right">Salientes D</th>
+          <th class="py-2 px-3 text-right">Flujo D</th>
+          <th class="py-2 px-3 text-right">Margen</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map(d => {
+          const flujoCls = Number(d.flujo_neto_clp || 0) >= 0 ? 'text-green-700' : 'text-red-600';
+          return `<tr class="border-b border-stone-100">
+            <td class="py-1.5 px-3 text-stone-700">${new Date(d.fecha).toLocaleDateString('es-CL')}</td>
+            <td class="py-1.5 px-3 text-right text-stone-600">${fmtCLP(d.saldo_caja_clp)}</td>
+            <td class="py-1.5 px-3 text-right text-stone-600">${fmtCLP(d.saldo_banco_clp)}</td>
+            <td class="py-1.5 px-3 text-right text-stone-700 font-semibold">${fmtCLP(d.saldo_total_clp)}</td>
+            <td class="py-1.5 px-3 text-right text-stone-600">${fmtCLP(d.pagos_entrantes_clp)}</td>
+            <td class="py-1.5 px-3 text-right text-stone-600">${fmtCLP(d.pagos_salientes_clp)}</td>
+            <td class="py-1.5 px-3 text-right ${flujoCls} font-semibold">${fmtCLP(d.flujo_neto_clp)}</td>
+            <td class="py-1.5 px-3 text-right text-stone-600">${fmtPct(d.margen_estimado_pct)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    <p class="text-xs text-stone-400 p-3">${data.length} día(s) cerrado(s) este mes · ordenado más reciente primero</p>`;
+}
+
+function cerrarCierresDetalle() {
+  document.getElementById('cierresDetalle').classList.add('hidden');
+}
+
+// ============================================================
+// PESTAÑA PRECIOS (D-OP-04-v2 Ola 1.2)
+// Lectura curated.vw_materiales_sucursal_precios_vigente.
+// Andrea consulta antes de negociar (qué precio defender).
+// ============================================================
+
+let _preciosIniciado = false;
+let _preciosCache = [];        // resultado crudo de la vista
+let _preciosBuscarTimer = null;
+
+async function initPrecios() {
+  if (_preciosIniciado) {
+    // re-render con cache si ya está montado
+    loadPrecios();
+    return;
+  }
+  _preciosIniciado = true;
+
+  // Cargar catálogos de filtros en paralelo
+  const [matRes, sucRes] = await Promise.all([
+    sb.schema('curated').from('materiales').select('material_id, nombre').eq('activo', true).order('nombre'),
+    sb.schema('curated').from('sucursales').select('sucursal_id, nombre').eq('activa', true).order('nombre'),
+  ]);
+
+  const selMat = document.getElementById('precFiltroMaterial');
+  (matRes.data || []).forEach(m => {
+    const o = document.createElement('option');
+    o.value = m.material_id; o.textContent = m.nombre;
+    selMat.appendChild(o);
+  });
+
+  const selSuc = document.getElementById('precFiltroSucursal');
+  (sucRes.data || []).forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.sucursal_id; o.textContent = s.nombre;
+    selSuc.appendChild(o);
+  });
+
+  await loadPrecios();
+}
+
+function loadPreciosBuscar(val) {
+  clearTimeout(_preciosBuscarTimer);
+  _preciosBuscarTimer = setTimeout(() => loadPrecios(), 300);
+}
+
+async function loadPrecios() {
+  const div = document.getElementById('preciosTabla');
+  div.innerHTML = '<p class="text-stone-400">Cargando…</p>';
+
+  const fmat = document.getElementById('precFiltroMaterial')?.value || '';
+  const fsuc = document.getElementById('precFiltroSucursal')?.value || '';
+  const buscar = (document.getElementById('precBuscar')?.value || '').trim().toLowerCase();
+  const margenBajoOnly = document.getElementById('precMargenBajo')?.checked === true;
+
+  // Cache de nombres material+sucursal en paralelo con la query principal
+  const matCacheP = sb.schema('curated').from('materiales').select('material_id, nombre');
+  const sucCacheP = sb.schema('curated').from('sucursales').select('sucursal_id, nombre');
+
+  let q = sb.schema('curated').from('vw_materiales_sucursal_precios_vigente')
+    .select('material_id, sucursal_id, vigencia_desde, vigencia_hasta, precio_compra_clp, precio_venta_clp, moneda, notas')
+    .is('vigencia_hasta', null);   // solo vigentes (sin cierre de vigencia)
+  if (fmat) q = q.eq('material_id', fmat);
+  if (fsuc) q = q.eq('sucursal_id', fsuc);
+
+  const { data, error } = await q.order('material_id').order('sucursal_id');
+
+  if (error) {
+    console.error('[D-OP-04-v2 1.2] loadPrecios error:', error);
+    div.innerHTML = `<div class="p-5"><p class="text-red-600 mb-2">No se pudo cargar los precios vigentes.</p>
+      <p class="text-xs text-stone-500">${escapeHtml(humanizeSupabaseError(error))}</p></div>`;
+    if (typeof showToast === 'function') showToast(humanizeSupabaseError(error), 'error');
+    return;
+  }
+
+  const [matCacheRes, sucCacheRes] = await Promise.all([matCacheP, sucCacheP]);
+  const matMap = new Map(((matCacheRes && matCacheRes.data) || []).map(m => [m.material_id, m.nombre || m.material_id]));
+  const sucMap = new Map(((sucCacheRes && sucCacheRes.data) || []).map(s => [s.sucursal_id, s.nombre || s.sucursal_id]));
+
+  // Enriquecer con nombre + margen calculado, aplicar filtros frontend.
+  let rows = (data || []).map(r => {
+    const matNom = matMap.get(r.material_id) || r.material_id;
+    const sucNom = sucMap.get(r.sucursal_id) || r.sucursal_id;
+    const compra = Number(r.precio_compra_clp);
+    const venta  = Number(r.precio_venta_clp);
+    const margenPct = (Number.isFinite(venta) && venta > 0) ? ((venta - compra) / venta) * 100 : null;
+    return { ...r, matNom, sucNom, margenPct };
+  });
+
+  if (buscar) rows = rows.filter(r => r.matNom.toLowerCase().includes(buscar));
+  if (margenBajoOnly) rows = rows.filter(r => r.margenPct !== null && r.margenPct < 30);
+
+  _preciosCache = rows;
+
+  // KPIs
+  document.getElementById('precKpiTotal').textContent = rows.length.toLocaleString('es-CL');
+  document.getElementById('precKpiMateriales').textContent = new Set(rows.map(r => r.material_id)).size.toLocaleString('es-CL');
+  const margenes = rows.map(r => r.margenPct).filter(m => m !== null);
+  document.getElementById('precKpiMargenProm').textContent = margenes.length
+    ? (margenes.reduce((a, b) => a + b, 0) / margenes.length).toFixed(1) + '%'
+    : '—';
+  document.getElementById('precKpiMargenBajo').textContent = rows.filter(r => r.margenPct !== null && r.margenPct < 30).length.toLocaleString('es-CL');
+
+  if (rows.length === 0) {
+    div.innerHTML = `<div class="p-8 text-center">
+      <p class="text-stone-400 text-base mb-1">Sin precios para este filtro.</p>
+      <p class="text-xs text-stone-400">Probá quitar filtros o revisá que la vista <code>vw_materiales_sucursal_precios_vigente</code> tenga datos vigentes.</p>
+    </div>`;
+    return;
+  }
+
+  const fmtCLP_n = n => (n === null || n === undefined || Number.isNaN(Number(n)))
+    ? '—'
+    : '$' + Math.round(Number(n)).toLocaleString('es-CL');
+
+  const rowsHtml = rows.map(r => {
+    const margenCls = r.margenPct === null
+      ? 'text-stone-400'
+      : r.margenPct < 30
+        ? 'text-red-600 font-bold'
+        : r.margenPct < 50
+          ? 'text-amber-700 font-semibold'
+          : 'text-green-700 font-semibold';
+    return `<tr class="border-b border-stone-100 hover:bg-stone-50">
+      <td class="py-2 px-3 font-medium text-stone-700">${escapeHtml(r.matNom)}</td>
+      <td class="py-2 px-3 text-stone-600">${escapeHtml(r.sucNom)}</td>
+      <td class="py-2 px-3 text-right text-stone-700">${fmtCLP_n(r.precio_compra_clp)}</td>
+      <td class="py-2 px-3 text-right text-stone-700">${fmtCLP_n(r.precio_venta_clp)}</td>
+      <td class="py-2 px-3 text-right ${margenCls}">${r.margenPct !== null ? r.margenPct.toFixed(1) + '%' : '—'}</td>
+      <td class="py-2 px-3 text-right text-stone-400 text-xs">${r.vigencia_desde ? new Date(r.vigencia_desde).toLocaleDateString('es-CL') : '—'}</td>
+      <td class="py-2 px-3 text-stone-500 text-xs">${escapeHtml(r.notas || '')}</td>
+    </tr>`;
+  }).join('');
+
+  div.innerHTML = `
+    <table class="min-w-full text-sm">
+      <thead class="bg-stone-50 text-stone-500 text-xs uppercase tracking-wide">
+        <tr>
+          <th class="py-2 px-3 text-left">Material</th>
+          <th class="py-2 px-3 text-left">Sucursal</th>
+          <th class="py-2 px-3 text-right">Compra (CLP)</th>
+          <th class="py-2 px-3 text-right">Venta (CLP)</th>
+          <th class="py-2 px-3 text-right">Margen</th>
+          <th class="py-2 px-3 text-right">Vigencia desde</th>
+          <th class="py-2 px-3 text-left">Notas</th>
+        </tr>
+      </thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+    <p class="text-xs text-stone-400 p-3">${rows.length} fila(s) · margen rojo &lt;30% · ámbar 30-50% · verde ≥50%</p>`;
+}
+
+// ============================================================
+// PESTAÑA OPERATIVOS (D-OP-10 — bucket 'operativos' + curated.operativos_metadata)
+// Destranca Cony: subir PDFs por empresa/período + lista histórica filtrable.
+// ============================================================
+
+let _operativosIniciado = false;
+let _operativosEmpresas = [];   // [{empresa_id, razon_social}]
+
+async function initOperativos() {
+  if (_operativosIniciado) {
+    loadOperativosLista();
+    return;
+  }
+  _operativosIniciado = true;
+
+  // Cargar empresas (catálogo común al upload y al filtro)
+  const empRes = await sb.schema('curated').from('empresas_grupo')
+    .select('empresa_id, razon_social').eq('activa', true).order('razon_social');
+  _operativosEmpresas = empRes.data || [];
+
+  const selUpEmp = document.getElementById('opUpEmpresa');
+  const selFiltEmp = document.getElementById('opFiltroEmpresa');
+  _operativosEmpresas.forEach(e => {
+    const o1 = document.createElement('option');
+    o1.value = e.empresa_id; o1.textContent = e.razon_social;
+    selUpEmp.appendChild(o1);
+    const o2 = document.createElement('option');
+    o2.value = e.empresa_id; o2.textContent = e.razon_social;
+    selFiltEmp.appendChild(o2);
+  });
+
+  // Años (actual ± 5)
+  const hoy = new Date();
+  const anioActual = hoy.getFullYear();
+  const selUpAnio = document.getElementById('opUpAnio');
+  const selFiltAnio = document.getElementById('opFiltroAnio');
+  for (let y = anioActual + 1; y >= anioActual - 5; y--) {
+    const o1 = document.createElement('option');
+    o1.value = y; o1.textContent = y;
+    if (y === anioActual) o1.selected = true;
+    selUpAnio.appendChild(o1);
+    const o2 = document.createElement('option');
+    o2.value = y; o2.textContent = y;
+    selFiltAnio.appendChild(o2);
+  }
+
+  // Mes por defecto = mes actual
+  document.getElementById('opUpMes').value = String(hoy.getMonth() + 1);
+
+  await loadOperativosLista();
+}
+
+async function loadOperativosLista() {
+  const div = document.getElementById('operativosTabla');
+  div.innerHTML = '<p class="text-stone-400">Cargando…</p>';
+
+  const fEmp = document.getElementById('opFiltroEmpresa')?.value || '';
+  const fAnio = document.getElementById('opFiltroAnio')?.value || '';
+  const fMes = document.getElementById('opFiltroMes')?.value || '';
+
+  let q = sb.schema('curated').from('operativos_metadata')
+    .select('operativo_id, filename, empresa_id, periodo_anio, periodo_mes, bucket_path, uploaded_by, uploaded_at, size_bytes')
+    .order('periodo_anio', { ascending: false })
+    .order('periodo_mes', { ascending: false })
+    .order('uploaded_at', { ascending: false });
+  if (fEmp)  q = q.eq('empresa_id', fEmp);
+  if (fAnio) q = q.eq('periodo_anio', Number(fAnio));
+  if (fMes)  q = q.eq('periodo_mes', Number(fMes));
+
+  const { data, error } = await q.limit(200);
+
+  if (error) {
+    console.error('[D-OP-10] loadOperativosLista error:', error);
+    div.innerHTML = `<div class="p-5"><p class="text-red-600 mb-2">No se pudo cargar la lista.</p>
+      <p class="text-xs text-stone-500">${escapeHtml(humanizeSupabaseError(error))}</p></div>`;
+    if (typeof showToast === 'function') showToast(humanizeSupabaseError(error), 'error');
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    div.innerHTML = `<div class="p-8 text-center">
+      <p class="text-stone-400 text-base mb-1">No hay PDFs cargados para este filtro.</p>
+      <p class="text-xs text-stone-400">Usá el formulario de arriba para subir el primero.</p>
+    </div>`;
+    return;
+  }
+
+  const empMap = new Map(_operativosEmpresas.map(e => [e.empresa_id, e.razon_social]));
+  const meses = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const fmtSize = b => {
+    if (!b) return '—';
+    const kb = Number(b) / 1024;
+    if (kb < 1024) return kb.toFixed(0) + ' KB';
+    return (kb / 1024).toFixed(1) + ' MB';
+  };
+
+  const rows = data.map(r => `<tr class="border-b border-stone-100 hover:bg-stone-50">
+    <td class="py-2 px-3 text-stone-700">${escapeHtml(empMap.get(r.empresa_id) || r.empresa_id)}</td>
+    <td class="py-2 px-3 text-stone-600">${meses[r.periodo_mes] || r.periodo_mes} ${r.periodo_anio}</td>
+    <td class="py-2 px-3 text-stone-700 font-medium">${escapeHtml(r.filename)}</td>
+    <td class="py-2 px-3 text-right text-stone-500 text-xs">${fmtSize(r.size_bytes)}</td>
+    <td class="py-2 px-3 text-stone-500 text-xs">${r.uploaded_at ? new Date(r.uploaded_at).toLocaleString('es-CL') : '—'}</td>
+    <td class="py-2 px-3 text-stone-500 text-xs">${escapeHtml(r.uploaded_by || '—')}</td>
+    <td class="py-2 px-3 text-center">
+      <button onclick="descargarPDFOperativo('${escapeHtml(r.bucket_path)}','${escapeHtml(r.filename)}')"
+              class="text-xs text-green-700 hover:underline">Ver PDF ↗</button>
+    </td>
+  </tr>`).join('');
+
+  div.innerHTML = `
+    <table class="min-w-full text-sm">
+      <thead class="bg-stone-50 text-stone-500 text-xs uppercase tracking-wide">
+        <tr>
+          <th class="py-2 px-3 text-left">Empresa</th>
+          <th class="py-2 px-3 text-left">Período</th>
+          <th class="py-2 px-3 text-left">Archivo</th>
+          <th class="py-2 px-3 text-right">Tamaño</th>
+          <th class="py-2 px-3 text-left">Subido</th>
+          <th class="py-2 px-3 text-left">Por</th>
+          <th class="py-2 px-3 text-center">Acción</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <p class="text-xs text-stone-400 p-3">${data.length} PDF(s) · más recientes primero · top 200</p>`;
+}
+
+async function subirPDFOperativo() {
+  const status = document.getElementById('opUpStatus');
+  const empresaId = document.getElementById('opUpEmpresa').value;
+  const anio = Number(document.getElementById('opUpAnio').value);
+  const mes = Number(document.getElementById('opUpMes').value);
+  const fileInput = document.getElementById('opUpFile');
+  const file = fileInput.files && fileInput.files[0];
+
+  // Validaciones
+  if (!empresaId) { status.innerHTML = '<span class="text-red-600">Seleccioná empresa.</span>'; return; }
+  if (!file)      { status.innerHTML = '<span class="text-red-600">Seleccioná un PDF.</span>'; return; }
+  if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+    status.innerHTML = '<span class="text-red-600">Solo se aceptan archivos PDF.</span>';
+    return;
+  }
+  if (file.size > 50 * 1024 * 1024) {
+    status.innerHTML = '<span class="text-red-600">El archivo supera 50 MB.</span>';
+    return;
+  }
+
+  status.innerHTML = '<span class="text-stone-500">⏳ Subiendo…</span>';
+
+  // Sanitizar filename y armar bucket_path determinista: empresa/anio/mes/<timestamp>_<filename>
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const ts = Date.now();
+  const bucketPath = `${empresaId}/${anio}/${String(mes).padStart(2,'0')}/${ts}_${safeName}`;
+
+  // 1) Upload al bucket
+  const upRes = await sb.storage.from('operativos').upload(bucketPath, file, {
+    contentType: 'application/pdf',
+    upsert: false,
+  });
+  if (upRes.error) {
+    console.error('[D-OP-10] upload PDF error:', upRes.error);
+    status.innerHTML = `<span class="text-red-600">✗ ${escapeHtml(humanizeSupabaseError(upRes.error))}</span>`;
+    if (typeof showToast === 'function') showToast(humanizeSupabaseError(upRes.error), 'error');
+    return;
+  }
+
+  // 2) INSERT metadata
+  const { error: insErr } = await sb.schema('curated').from('operativos_metadata').insert({
+    filename:     safeName,
+    empresa_id:   empresaId,
+    periodo_anio: anio,
+    periodo_mes:  mes,
+    bucket_path:  bucketPath,
+    uploaded_by:  currentUser,
+    mime_type:    'application/pdf',
+    size_bytes:   file.size,
+  });
+  if (insErr) {
+    console.error('[D-OP-10] insert metadata error:', insErr);
+    // No revertimos el upload — quedaría huérfano en el bucket. Mostrar al usuario.
+    status.innerHTML = `<span class="text-red-600">✗ PDF subido pero la metadata falló: ${escapeHtml(humanizeSupabaseError(insErr))}</span>`;
+    if (typeof showToast === 'function') showToast(humanizeSupabaseError(insErr), 'error');
+    return;
+  }
+
+  status.innerHTML = `<span class="text-green-700">✓ ${escapeHtml(safeName)} guardado.</span>`;
+  if (typeof showToast === 'function') showToast('PDF guardado', 'ok');
+  fileInput.value = '';
+  await loadOperativosLista();
+}
+
+async function descargarPDFOperativo(bucketPath, filename) {
+  const { data, error } = await sb.storage.from('operativos').createSignedUrl(bucketPath, 3600);
+  if (error || !data?.signedUrl) {
+    console.error('[D-OP-10] signed url error:', error);
+    if (typeof showToast === 'function') showToast(humanizeSupabaseError(error || { message: 'No se pudo abrir el PDF' }), 'error');
+    return;
+  }
+  window.open(data.signedUrl, '_blank');
 }
 
 // ============================================================
@@ -2149,21 +3725,25 @@ function renderLineasCot() {
     <tr class="border-b border-stone-100">
       <td class="py-1 pr-2">
         <input type="text" value="${escapeHtml(l.desc)}" placeholder="Descripción…"
+               aria-label="Descripción de la línea ${i + 1}"
                oninput="_cotLineas[${i}].desc = this.value"
                class="w-full border border-stone-200 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none">
       </td>
       <td class="py-1 px-2">
         <input type="number" value="${l.qty}" min="0.01" step="0.01"
+               aria-label="Cantidad de la línea ${i + 1}"
                oninput="_cotLineas[${i}].qty = parseFloat(this.value)||0; cotRecalcular()"
                class="w-full border border-stone-200 rounded px-2 py-1 text-sm text-right focus:border-green-700 focus:outline-none">
       </td>
       <td class="py-1 px-2">
         <input type="number" value="${l.precioUF}" min="0" step="0.0001"
+               aria-label="Precio UF de la línea ${i + 1}"
                oninput="_cotLineas[${i}].precioUF = parseFloat(this.value)||0; cotRecalcular()"
                class="w-full border border-stone-200 rounded px-2 py-1 text-sm text-right focus:border-green-700 focus:outline-none">
       </td>
       <td class="py-1 px-2">
         <input type="number" value="${l.descPct}" min="0" max="100" step="0.1"
+               aria-label="Descuento porcentual de la línea ${i + 1}"
                oninput="_cotLineas[${i}].descPct = parseFloat(this.value)||0; cotRecalcular()"
                class="w-full border border-stone-200 rounded px-2 py-1 text-sm text-right focus:border-green-700 focus:outline-none">
       </td>
@@ -2171,11 +3751,24 @@ function renderLineasCot() {
         ${(l.qty * l.precioUF * (1 - l.descPct / 100)).toFixed(4)}
       </td>
       <td class="py-1 px-2 text-center">
-        <button onclick="eliminarLineaCot(${i})" class="text-stone-300 hover:text-red-500 text-base leading-none">×</button>
+        <button onclick="eliminarLineaCot(${i})"
+                aria-label="Eliminar línea ${i + 1}"
+                class="text-stone-300 hover:text-red-500 text-base leading-none">×</button>
       </td>
     </tr>
   `).join('');
 }
+
+// D-OP-04-v2 Ola 1.4 — mapeo perfil del panel → nivel_autorizacion de mig 029.
+// La función f_validar_descuento espera: 'ceo' | 'jefe_comercial' | 'ejecutivo'.
+function nivelAutorizacionDePerfil(perfil) {
+  if (perfil === 'dusan' || perfil === 'admin') return 'ceo';
+  if (perfil === 'jefe_comercial') return 'jefe_comercial';
+  return 'ejecutivo';  // comercial, operaciones, externo, default → conservador
+}
+
+// Token incremental para descartar respuestas tardías de RPC f_validar_descuento.
+let _cotValidacionToken = 0;
 
 function cotRecalcular() {
   renderLineasCot();
@@ -2186,20 +3779,57 @@ function cotRecalcular() {
   document.getElementById('cotTotalUF').textContent = totalUF.toFixed(4) + ' UF';
   document.getElementById('cotDescProm').textContent = descProm.toFixed(1) + '%';
 
-  // Validar piso descuento (nivel ejecutivo como referencia si hay datos)
+  // D-OP-04-v2 Ola 1.4 — validación cruzada via curated.f_validar_descuento (mig 029 D-OP-06).
+  // Si hay cliente seleccionado: pide veredicto real por categoría del cliente + rol del usuario.
+  // Si no hay cliente: cae al cálculo global referencial (igual que antes).
   const pisoEl = document.getElementById('cotPisoStatus');
-  if (_cotDescuentosPisos.length) {
+  const clienteId = document.getElementById('cotClienteId')?.value;
+
+  if (clienteId && brutoUF > 0) {
+    const myToken = ++_cotValidacionToken;
+    pisoEl.textContent = '⏳';
+    pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-stone-100 text-stone-400';
+    pisoEl.title = 'Validando descuento vs categoría cliente…';
+
+    sb.schema('curated').rpc('f_validar_descuento', {
+      p_cliente_id: clienteId,
+      p_nivel_autorizacion: nivelAutorizacionDePerfil(currentProfile),
+      p_descuento_propuesto: Number(descProm.toFixed(2))
+    }).then(({ data, error }) => {
+      if (myToken !== _cotValidacionToken) return;  // respuesta vieja, descartar
+      if (error) {
+        console.error('[D-OP-04-v2 1.4] f_validar_descuento error:', error);
+        pisoEl.textContent = '⚠ sin validar';
+        pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-yellow-100 text-yellow-700';
+        pisoEl.title = humanizeSupabaseError(error);
+        return;
+      }
+      const r = data || {};
+      if (r.aprobado === true) {
+        pisoEl.textContent = `✅ OK · ${r.categoria || ''} ≤${(r.descuento_max_pct ?? 0)}%`;
+        pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-green-100 text-green-700';
+        pisoEl.title = r.mensaje || '';
+      } else {
+        pisoEl.textContent = `⚠ Excede tope ${r.descuento_max_pct ?? '?'}% · escalar a ${r.requiere_visto || 'ceo'}`;
+        pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-red-100 text-red-600';
+        pisoEl.title = r.mensaje || 'Descuento excede tope para la categoría del cliente.';
+      }
+    });
+  } else if (_cotDescuentosPisos.length) {
+    // Sin cliente: referencial con el max global de la matriz (comportamiento previo).
     const maxDesc = Math.max(..._cotDescuentosPisos.map(p => p.descuento_max_pct));
     if (descProm <= maxDesc) {
-      pisoEl.textContent = '✅ OK';
+      pisoEl.textContent = `✅ OK · referencia ≤${maxDesc.toFixed(1)}%`;
       pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-green-100 text-green-700';
     } else {
-      pisoEl.textContent = `⚠ Excede ${maxDesc.toFixed(1)}%`;
+      pisoEl.textContent = `⚠ Excede referencia ${maxDesc.toFixed(1)}%`;
       pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-red-100 text-red-600';
     }
+    pisoEl.title = 'Sin cliente seleccionado: validación referencial. Seleccione cliente para validación por categoría.';
   } else {
     pisoEl.textContent = '—';
     pisoEl.className = 'text-xs font-semibold px-2 py-1 rounded bg-stone-100 text-stone-400';
+    pisoEl.title = '';
   }
 
   // Validar margen (solo referencial con meta mínimo si hay datos)
@@ -2248,6 +3878,8 @@ function seleccionarClienteCot(id, nombre) {
   document.getElementById('cotClienteBuscar').value = nombre;
   document.getElementById('cotClienteSeleccionado').textContent = '✔ ' + nombre;
   document.getElementById('cotClienteSugerencias').classList.add('hidden');
+  // D-OP-04-v2 Ola 1.4 — re-disparar validación con cliente recién elegido.
+  if (typeof cotRecalcular === 'function') cotRecalcular();
 }
 
 async function guardarCotizacion() {
@@ -2341,13 +3973,821 @@ async function guardarCotizacion() {
   cotRecalcular();
 }
 
+// ============================================================
+// TAB RECONCILIACIÓN CRM ↔ RDO (D-OP-13)
+// ============================================================
+const REC_PAGE_SIZE = 50;
+let recPaginaActual = 1;
+let recTotalFilas = 0;
+let recMatchCrmIdSel = null;
+let recSearchTimer = null;
+
+function recDebouncedSearch() {
+  clearTimeout(recSearchTimer);
+  recSearchTimer = setTimeout(() => loadReconciliacion(1), 350);
+}
+
+async function initReconciliacion() {
+  // Una sola vez: cargar embudos distintos al combo
+  if (!document.getElementById('recFiltroEmbudo').dataset.cargado) {
+    const { data: embudos } = await sb.schema('curated').from('vw_oportunidades_crm')
+      .select('embudo').not('embudo', 'is', null).limit(1000);
+    const set = [...new Set((embudos || []).map(e => e.embudo).filter(Boolean))].sort();
+    const sel = document.getElementById('recFiltroEmbudo');
+    set.forEach(e => { const opt = document.createElement('option'); opt.value = e; opt.textContent = e; sel.appendChild(opt); });
+    sel.dataset.cargado = '1';
+  }
+  await loadReconciliacionKpis();
+  await loadReconciliacion(1);
+}
+
+async function loadReconciliacionKpis() {
+  const { data, error } = await sb.schema('curated').rpc('reconciliacion_kpis');
+  if (error) { console.warn('[Reconciliación] KPI error:', error.message); return; }
+  const counts = {};
+  let total = 0;
+  (data || []).forEach(r => { counts[r.bucket] = Number(r.cant); total += Number(r.cant); });
+  document.getElementById('recKpiTotal').textContent = total.toLocaleString('es-CL');
+  document.getElementById('recKpiAuto').textContent = (counts['automatico_rut'] || 0).toLocaleString('es-CL');
+  document.getElementById('recKpiPend').textContent = (counts['pendiente_revisar'] || 0).toLocaleString('es-CL');
+  document.getElementById('recKpiDec').textContent  = (counts['decidido_match'] || 0).toLocaleString('es-CL');
+  document.getElementById('recKpiDesc').textContent = (counts['decidido_descartar'] || 0).toLocaleString('es-CL');
+}
+
+async function loadReconciliacion(pagina) {
+  pagina = Math.max(1, pagina | 0);
+  recPaginaActual = pagina;
+  const tbody = document.getElementById('recTbody');
+  tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-4 text-center text-stone-400">Cargando…</td></tr>';
+
+  const bucket = document.getElementById('recFiltroBucket').value;
+  const embudo = document.getElementById('recFiltroEmbudo').value;
+  const buscar = (document.getElementById('recFiltroBuscar').value || '').trim();
+  const from = (pagina - 1) * REC_PAGE_SIZE;
+  const to   = from + REC_PAGE_SIZE - 1;
+
+  let q = sb.schema('curated').from('vw_reconciliacion_buckets')
+    .select('*', { count: 'exact' })
+    .order('fecha_ingreso', { ascending: false, nullsFirst: false })
+    .range(from, to);
+
+  if (bucket) q = q.eq('bucket', bucket);
+  if (embudo) q = q.eq('embudo', embudo);
+  if (buscar) {
+    const s = buscar.replace(/'/g, "''");
+    q = q.or(`cliente_crm.ilike.%${s}%,rut_crm.ilike.%${s}%,cliente_nombre_rdo.ilike.%${s}%`);
+  }
+
+  const { data, error, count } = await q;
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="9" class="px-3 py-4 text-center text-red-600">Error: ${escapeHtml(error.message)}</td></tr>`;
+    return;
+  }
+  recTotalFilas = count || 0;
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-6 text-center text-stone-400">Sin filas para los filtros aplicados.</td></tr>';
+  } else {
+    tbody.innerHTML = data.map(renderRecFila).join('');
+  }
+
+  // Paginación
+  const totalPag = Math.max(1, Math.ceil(recTotalFilas / REC_PAGE_SIZE));
+  document.getElementById('recPagInfo').textContent = `Página ${pagina} de ${totalPag} (${recTotalFilas.toLocaleString('es-CL')} filas)`;
+  document.getElementById('recRangoTexto').textContent = `${from + 1}–${Math.min(to + 1, recTotalFilas)} de ${recTotalFilas.toLocaleString('es-CL')}`;
+  document.getElementById('recPagPrev').disabled = pagina <= 1;
+  document.getElementById('recPagNext').disabled = pagina >= totalPag;
+}
+
+function renderRecFila(f) {
+  const bucketColor = {
+    'automatico_rut':       'bg-green-100 text-green-800',
+    'pendiente_revisar':    'bg-amber-100 text-amber-800',
+    'decidido_match':       'bg-blue-100 text-blue-800',
+    'decidido_descartar':   'bg-stone-200 text-stone-600',
+    'decidido_postponer':   'bg-yellow-100 text-yellow-800',
+    'decidido_crear':       'bg-purple-100 text-purple-800',
+  }[f.bucket] || 'bg-stone-100 text-stone-700';
+
+  const matchTxt = f.cliente_nombre_rdo
+    ? `<span class="text-stone-700">${escapeHtml(f.cliente_nombre_rdo)}</span>`
+    : '<span class="text-stone-400">—</span>';
+
+  let acciones = '';
+  if (f.bucket === 'pendiente_revisar') {
+    acciones = `
+      <button onclick="recAbrirMatchModal('${escapeHtml(f.crm_id)}', ${JSON.stringify(f.cliente_crm || '').replace(/"/g, '&quot;')})" class="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded">Match</button>
+      <button onclick="recDescartar('${escapeHtml(f.crm_id)}')" class="text-xs px-2 py-1 bg-stone-300 hover:bg-stone-400 text-stone-800 rounded ml-1">Descartar</button>`;
+  } else if (f.bucket === 'automatico_rut') {
+    acciones = '<span class="text-xs text-stone-400">auto</span>';
+  } else if (f.bucket?.startsWith('decidido_')) {
+    acciones = `<button onclick="recRevertirDecision('${escapeHtml(f.crm_id)}')" class="text-xs px-2 py-1 bg-amber-200 hover:bg-amber-300 text-amber-900 rounded">Revertir</button>`;
+  }
+
+  const montoFmt = f.monto_raw ? f.monto_raw : '—';
+  return `
+    <tr class="border-t border-stone-100 hover:bg-stone-50">
+      <td class="px-3 py-2 font-mono text-xs">${escapeHtml(f.crm_id || '')}</td>
+      <td class="px-3 py-2">${escapeHtml(f.cliente_crm || '')}</td>
+      <td class="px-3 py-2 font-mono text-xs">${escapeHtml(f.rut_crm || '—')}</td>
+      <td class="px-3 py-2">${escapeHtml(f.embudo || '—')}</td>
+      <td class="px-3 py-2">${escapeHtml(f.estado || '—')}</td>
+      <td class="px-3 py-2 text-right">${escapeHtml(montoFmt)}</td>
+      <td class="px-3 py-2">${matchTxt}</td>
+      <td class="px-3 py-2"><span class="inline-block px-2 py-0.5 rounded text-xs ${bucketColor}">${escapeHtml(f.bucket || '?')}</span></td>
+      <td class="px-3 py-2 whitespace-nowrap">${acciones}</td>
+    </tr>
+  `;
+}
+
+window.recAbrirMatchModal = function(crmId, clienteCrm) {
+  recMatchCrmIdSel = crmId;
+  document.getElementById('recMatchCrmId').textContent = crmId;
+  document.getElementById('recMatchCrmCliente').textContent = clienteCrm || '—';
+  document.getElementById('recMatchBuscar').value = clienteCrm || '';
+  document.getElementById('recMatchSugerencias').innerHTML = '<div class="text-xs text-stone-400 p-2">Escribe al menos 2 caracteres para sugerencias.</div>';
+  document.getElementById('recMatchModal').classList.remove('hidden');
+  // Disparar búsqueda inicial si hay nombre
+  if ((clienteCrm || '').length >= 2) recBuscarClienteRdo();
+};
+
+window.recCerrarMatchModal = function() {
+  document.getElementById('recMatchModal').classList.add('hidden');
+  recMatchCrmIdSel = null;
+};
+
+window.recBuscarClienteRdo = async function() {
+  const txt = document.getElementById('recMatchBuscar').value.trim();
+  const cont = document.getElementById('recMatchSugerencias');
+  if (txt.length < 2) {
+    cont.innerHTML = '<div class="text-xs text-stone-400 p-2">Escribe al menos 2 caracteres para sugerencias.</div>';
+    return;
+  }
+  const { data, error } = await sb.schema('curated').rpc('sugerir_match_cliente', { p_nombre_crm: txt });
+  if (error) { cont.innerHTML = `<div class="text-xs text-red-600 p-2">Error: ${escapeHtml(error.message)}</div>`; return; }
+  if (!data || data.length === 0) {
+    cont.innerHTML = '<div class="text-xs text-stone-400 p-2">Sin coincidencias. Intenta otro nombre o crea el cliente desde Negocios.</div>';
+    return;
+  }
+  cont.innerHTML = data.map(s => `
+    <button onclick="recConfirmarMatch('${escapeHtml(s.cliente_id)}')"
+            class="w-full text-left px-3 py-2 hover:bg-blue-50 border-b border-stone-100 flex justify-between items-center">
+      <span><span class="font-medium">${escapeHtml(s.razon_social)}</span> <span class="text-xs text-stone-400 ml-2">(${escapeHtml(s.cliente_id)})</span></span>
+      <span class="text-xs text-stone-500">${(s.sim * 100).toFixed(0)}%</span>
+    </button>
+  `).join('');
+};
+
+window.recConfirmarMatch = async function(clienteIdRdo) {
+  if (!recMatchCrmIdSel) return;
+  const decididoPor = currentUser || 'desconocido';
+  const { error } = await sb.schema('curated').from('reconciliacion_decisiones')
+    .upsert({
+      crm_id: recMatchCrmIdSel,
+      decision: 'match',
+      cliente_id_rdo: clienteIdRdo,
+      decidido_por: decididoPor
+    }, { onConflict: 'crm_id' });
+  if (error) { alert('Error: ' + error.message); return; }
+  recCerrarMatchModal();
+  await loadReconciliacionKpis();
+  await loadReconciliacion(recPaginaActual);
+};
+
+window.recDescartar = async function(crmId) {
+  const razon = prompt('Razón del descarte (opcional):');
+  if (razon === null) return;
+  const decididoPor = currentUser || 'desconocido';
+  const { error } = await sb.schema('curated').from('reconciliacion_decisiones')
+    .upsert({
+      crm_id: crmId,
+      decision: 'descartar',
+      razon: razon || null,
+      decidido_por: decididoPor
+    }, { onConflict: 'crm_id' });
+  if (error) { alert('Error: ' + error.message); return; }
+  await loadReconciliacionKpis();
+  await loadReconciliacion(recPaginaActual);
+};
+
+window.recRevertirDecision = async function(crmId) {
+  if (!confirm('¿Revertir esta decisión? Volverá al bucket original.')) return;
+  const { error } = await sb.schema('curated').from('reconciliacion_decisiones').delete().eq('crm_id', crmId);
+  if (error) { alert('Error: ' + error.message); return; }
+  await loadReconciliacionKpis();
+  await loadReconciliacion(recPaginaActual);
+};
+
+// ============================================================
+// TAB CARTERA (D-OP-11) — Andrea cliente-detalle
+// ============================================================
+let _cartCategorias = null;
+let _cartSucursales = null;
+let _cartDrawerClienteId = null;
+let _cartSearchTimer = null;
+
+function carDebouncedSearch() {
+  clearTimeout(_cartSearchTimer);
+  _cartSearchTimer = setTimeout(() => loadCartera(), 300);
+}
+
+async function initCartera() {
+  if (!_cartCategorias) {
+    const { data, error } = await sb.schema('curated').from('cartera_categorias')
+      .select('categoria_id, nombre, color_ui, orden, activa').order('orden');
+    if (error) console.warn('[Cartera] categorías error:', error.message);
+    _cartCategorias = (data || []).filter(c => c.activa);
+
+    const selFiltro = document.getElementById('carFiltroCategoria');
+    const selDrawer = document.getElementById('carDrawerCatSelect');
+    selFiltro.innerHTML = '<option value="">Todas</option><option value="sin_clasificar">Sin clasificar</option>'
+      + _cartCategorias.map(c => `<option value="${escapeHtml(c.categoria_id)}">${escapeHtml(c.nombre)}</option>`).join('');
+    selDrawer.innerHTML = '<option value="">(sin categoría)</option>'
+      + _cartCategorias.map(c => `<option value="${escapeHtml(c.categoria_id)}">${escapeHtml(c.nombre)}</option>`).join('');
+  }
+  if (!_cartSucursales) {
+    const sucs = await ensureSucursalesCache();
+    const selS = document.getElementById('carFiltroSucursal');
+    selS.innerHTML = '<option value="">Todas</option>'
+      + (sucs || []).map(s => `<option value="${escapeHtml(s.sucursal_id)}">${escapeHtml(s.nombre)}</option>`).join('');
+    _cartSucursales = sucs;
+  }
+  await loadCarteraKpis();
+  await loadCartera();
+}
+
+async function loadCarteraKpis() {
+  const { data, error } = await sb.schema('curated').rpc('cartera_kpis');
+  if (error) { console.warn('[Cartera] KPIs error:', error.message); return; }
+  const bar = document.getElementById('carKpiBar');
+  const colorMap = {
+    verde:   { bg: 'bg-green-100',  text: 'text-green-800' },
+    azul:    { bg: 'bg-blue-100',   text: 'text-blue-800' },
+    ambar:   { bg: 'bg-amber-100',  text: 'text-amber-800' },
+    naranja: { bg: 'bg-orange-100', text: 'text-orange-800' },
+    rojo:    { bg: 'bg-red-100',    text: 'text-red-800' },
+  };
+  bar.innerHTML = (data || []).map(c => {
+    const co = colorMap[c.color_ui] || { bg: 'bg-stone-200', text: 'text-stone-700' };
+    return `
+      <button onclick="document.getElementById('carFiltroCategoria').value='${escapeHtml(c.categoria_id)}'; loadCartera();"
+              class="${co.bg} ${co.text} px-3 py-2 rounded shadow-sm hover:opacity-80 text-left">
+        <div class="text-xs opacity-80">${escapeHtml(c.categoria_nombre)}</div>
+        <div class="text-xl font-bold">${Number(c.cant).toLocaleString('es-CL')}</div>
+      </button>`;
+  }).join('');
+}
+
+async function loadCartera() {
+  const tbody = document.getElementById('carTbody');
+  tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-stone-400">Cargando…</td></tr>';
+  const cat = document.getElementById('carFiltroCategoria').value;
+  const suc = document.getElementById('carFiltroSucursal').value;
+  const buscar = (document.getElementById('carFiltroBuscar').value || '').trim();
+
+  let q = sb.schema('curated').from('vw_cartera_detalle').select('*').order('razon_social');
+  if (cat === 'sin_clasificar') q = q.is('categoria_id', null);
+  else if (cat) q = q.eq('categoria_id', cat);
+  if (suc) q = q.eq('sucursal_principal', suc);
+  if (buscar) {
+    const s = buscar.replace(/'/g, "''");
+    q = q.or(`razon_social.ilike.%${s}%,rut.ilike.%${s}%`);
+  }
+  const { data, error } = await q;
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="7" class="px-3 py-4 text-center text-red-600">Error: ${escapeHtml(error.message)}</td></tr>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-6 text-center text-stone-400">Sin clientes para los filtros aplicados.</td></tr>';
+    return;
+  }
+
+  const sucMap = new Map((_cartSucursales || []).map(s => [s.sucursal_id, s.nombre]));
+  tbody.innerHTML = data.map(c => {
+    const sucNombre = c.sucursal_principal ? (sucMap.get(c.sucursal_principal) || c.sucursal_principal) : '—';
+    const catPill = c.categoria_id
+      ? `<span class="inline-block px-2 py-0.5 rounded text-xs ${carColorClass(c.categoria_color)}">${escapeHtml(c.categoria_nombre)}</span>`
+      : '<span class="inline-block px-2 py-0.5 rounded text-xs bg-stone-200 text-stone-600">Sin clasificar</span>';
+    const flags = [];
+    if (c.tiene_grua_horquilla) flags.push('<span title="Grúa horquilla">🚜</span>');
+    if (c.tiene_personal_carga) flags.push('<span title="Personal de carga">👷</span>');
+    if (c.external_id_crm) flags.push('<span title="Cruzado con CRM Impulsa">🔗</span>');
+    if (!c.activo) flags.push('<span title="Inactivo" class="text-red-600">⛔</span>');
+    return `
+      <tr class="border-t border-stone-100 hover:bg-stone-50 cursor-pointer" onclick="carAbrirDrawer('${escapeHtml(c.cliente_id)}')">
+        <td class="px-3 py-2"><span class="font-medium text-stone-800">${escapeHtml(c.razon_social || '—')}</span></td>
+        <td class="px-3 py-2 font-mono text-xs">${escapeHtml(c.rut || '—')}</td>
+        <td class="px-3 py-2">${escapeHtml(sucNombre)}</td>
+        <td class="px-3 py-2">${catPill}</td>
+        <td class="px-3 py-2 text-right">${c.opor_rdo_abiertas}/${c.opor_rdo_total}</td>
+        <td class="px-3 py-2 text-right">${c.opor_crm_matcheadas}</td>
+        <td class="px-3 py-2">${flags.join(' ') || ''}</td>
+      </tr>`;
+  }).join('');
+}
+
+function carColorClass(colorTag) {
+  const m = {
+    verde:   'bg-green-100 text-green-800',
+    azul:    'bg-blue-100 text-blue-800',
+    ambar:   'bg-amber-100 text-amber-800',
+    naranja: 'bg-orange-100 text-orange-800',
+    rojo:    'bg-red-100 text-red-800',
+  };
+  return m[colorTag] || 'bg-stone-200 text-stone-700';
+}
+
+window.carAbrirDrawer = async function(clienteId) {
+  _cartDrawerClienteId = clienteId;
+  document.getElementById('carDrawer').classList.remove('hidden');
+  document.getElementById('carDrawerCatMsg').classList.add('hidden');
+  document.getElementById('carDrawerTitulo').textContent = 'Cargando…';
+  document.getElementById('carDrawerRut').textContent = '—';
+  document.getElementById('carDrawerTags').innerHTML = '';
+  document.getElementById('carDrawerCatActual').textContent = '—';
+  document.getElementById('carDrawerCatMotivo').textContent = '';
+  document.getElementById('carDrawerOpRdo').textContent = 'Cargando…';
+  document.getElementById('carDrawerOpCrm').textContent = 'Cargando…';
+
+  const { data: c, error } = await sb.schema('curated').from('vw_cartera_detalle').select('*').eq('cliente_id', clienteId).maybeSingle();
+  if (error || !c) {
+    document.getElementById('carDrawerTitulo').textContent = 'Error cargando cliente';
+    return;
+  }
+
+  document.getElementById('carDrawerTitulo').textContent = c.razon_social || '—';
+  document.getElementById('carDrawerRut').textContent = c.rut || '(sin RUT)';
+
+  const tags = [];
+  if (c.tiene_grua_horquilla) tags.push('<span class="text-xs px-2 py-0.5 bg-stone-100 text-stone-700 rounded">🚜 Grúa horquilla</span>');
+  if (c.tiene_personal_carga) tags.push('<span class="text-xs px-2 py-0.5 bg-stone-100 text-stone-700 rounded">👷 Personal carga</span>');
+  if (c.external_id_crm) tags.push(`<span class="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded">🔗 CRM ${escapeHtml(c.external_id_crm)}</span>`);
+  if (!c.activo) tags.push('<span class="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded">⛔ Inactivo</span>');
+  document.getElementById('carDrawerTags').innerHTML = tags.join('');
+
+  if (c.categoria_id) {
+    document.getElementById('carDrawerCatActual').innerHTML = `<span class="inline-block px-2 py-0.5 rounded text-xs ${carColorClass(c.categoria_color)}">${escapeHtml(c.categoria_nombre)}</span> <span class="text-xs text-stone-500 ml-1">desde ${c.categoria_desde ? c.categoria_desde.slice(0,10) : '—'}</span>`;
+    document.getElementById('carDrawerCatMotivo').textContent = c.categoria_motivo || '';
+    document.getElementById('carDrawerCatSelect').value = c.categoria_id;
+  } else {
+    document.getElementById('carDrawerCatActual').innerHTML = '<span class="text-stone-500 text-sm">Sin clasificar</span>';
+    document.getElementById('carDrawerCatMotivo').textContent = '';
+    document.getElementById('carDrawerCatSelect').value = '';
+  }
+  document.getElementById('carDrawerCatMotivoInput').value = '';
+
+  // Oportunidades RDO
+  const { data: opRdo } = await sb.schema('curated').from('oportunidades')
+    .select('oportunidad_id, titulo, estado, valor_estimado_uf, fecha_recepcion')
+    .eq('cliente_id', clienteId).order('fecha_recepcion', { ascending: false }).limit(10);
+  document.getElementById('carDrawerOpRdo').innerHTML = (opRdo && opRdo.length)
+    ? opRdo.map(o => `<div class="border-b border-stone-100 py-1">
+        <span class="font-medium">${escapeHtml(o.titulo || o.oportunidad_id)}</span>
+        <span class="text-stone-400 ml-1">${escapeHtml(o.estado || '')}</span>
+        <span class="text-stone-500 float-right">${o.valor_estimado_uf ? Number(o.valor_estimado_uf).toLocaleString('es-CL') + ' UF' : ''}</span>
+      </div>`).join('')
+    : '<span class="text-stone-400">Sin oportunidades RDO.</span>';
+
+  // Oportunidades CRM
+  const { data: opCrm } = await sb.schema('curated').from('vw_oportunidades_crm')
+    .select('crm_id, cliente_nombre, estado, embudo, monto_raw, fecha_ingreso')
+    .eq('cliente_id_rdo', clienteId).order('fecha_ingreso', { ascending: false }).limit(5);
+  document.getElementById('carDrawerOpCrm').innerHTML = (opCrm && opCrm.length)
+    ? opCrm.map(o => `<div class="border-b border-stone-100 py-1">
+        <span class="font-mono text-xs text-stone-500">${escapeHtml(o.crm_id)}</span>
+        <span class="ml-2">${escapeHtml(o.embudo || '')}</span>
+        <span class="text-stone-400 ml-1">${escapeHtml(o.estado || '')}</span>
+        <span class="text-stone-500 float-right">${escapeHtml(o.monto_raw || '')}</span>
+      </div>`).join('')
+    : '<span class="text-stone-400">Sin oportunidades CRM cruzadas.</span>';
+};
+
+window.carCerrarDrawer = function() {
+  document.getElementById('carDrawer').classList.add('hidden');
+  _cartDrawerClienteId = null;
+};
+
+window.carAplicarCategoria = async function() {
+  if (!_cartDrawerClienteId) return;
+  const nuevaCat = document.getElementById('carDrawerCatSelect').value;
+  const motivo = document.getElementById('carDrawerCatMotivoInput').value.trim();
+  const decididoPor = currentUser || 'desconocido';
+  const msg = document.getElementById('carDrawerCatMsg');
+  const btn = document.getElementById('carDrawerCatApplyBtn');
+  msg.classList.add('hidden');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+
+  // 1. Cerrar vigente anterior (si existía)
+  const { error: e1 } = await sb.schema('curated').from('cartera_clientes_categoria')
+    .update({ vigente: false }).eq('cliente_id', _cartDrawerClienteId).eq('vigente', true);
+  if (e1) {
+    msg.className = 'mt-2 text-xs p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'Error cerrando categoría previa: ' + e1.message;
+    msg.classList.remove('hidden');
+    btn.disabled = false; btn.textContent = 'Aplicar';
+    return;
+  }
+  // 2. Insertar nueva si nuevaCat no vacío
+  if (nuevaCat) {
+    const { error: e2 } = await sb.schema('curated').from('cartera_clientes_categoria').insert({
+      cliente_id: _cartDrawerClienteId,
+      categoria_id: nuevaCat,
+      vigente: true,
+      motivo_asignacion: motivo || null,
+      asignado_por: decididoPor,
+      created_by: decididoPor,
+      updated_by: decididoPor
+    });
+    if (e2) {
+      msg.className = 'mt-2 text-xs p-2 rounded bg-red-50 text-red-700';
+      msg.textContent = 'Error asignando nueva categoría: ' + e2.message;
+      msg.classList.remove('hidden');
+      btn.disabled = false; btn.textContent = 'Aplicar';
+      return;
+    }
+  }
+
+  msg.className = 'mt-2 text-xs p-2 rounded bg-green-50 text-green-700';
+  msg.textContent = nuevaCat ? 'Categoría aplicada.' : 'Categoría removida.';
+  msg.classList.remove('hidden');
+  btn.disabled = false; btn.textContent = 'Aplicar';
+
+  await loadCarteraKpis();
+  await loadCartera();
+  // Refrescar drawer
+  if (_cartDrawerClienteId) await carAbrirDrawer(_cartDrawerClienteId);
+};
+
+// ============================================================
+// TAB OPORTUNIDADES KANBAN (D-OP-12)
+// ============================================================
+const OPP_ESTADOS = [
+  { id: 'recibida',      nombre: 'Recibida',      color: 'bg-stone-100' },
+  { id: 'en_evaluacion', nombre: 'En evaluación', color: 'bg-amber-50' },
+  { id: 'ganada',        nombre: 'Ganada',        color: 'bg-green-50' },
+  { id: 'perdida',       nombre: 'Perdida',       color: 'bg-red-50' },
+];
+let _oppDrawerId = null;
+let _oppSucursalesMap = null;
+
+async function initOportunidadesKanban() {
+  if (!_oppSucursalesMap) {
+    const sucs = await ensureSucursalesCache();
+    _oppSucursalesMap = new Map((sucs || []).map(s => [s.sucursal_id, s.nombre]));
+  }
+  await loadOportunidadesKanban();
+}
+
+async function loadOportunidadesKanban() {
+  const cont = document.getElementById('oppKanban');
+  cont.innerHTML = '<div class="text-stone-400 col-span-full text-center py-6">Cargando…</div>';
+
+  const [{ data: opps, error }, { data: kpis, error: e2 }] = await Promise.all([
+    sb.schema('curated').from('vw_oportunidades_kanban').select('*').order('fecha_recepcion', { ascending: false }),
+    sb.schema('curated').rpc('oportunidades_kanban_kpis')
+  ]);
+  if (error) { cont.innerHTML = `<div class="text-red-600 col-span-full">Error: ${escapeHtml(error.message)}</div>`; return; }
+
+  const porEstado = {};
+  OPP_ESTADOS.forEach(e => porEstado[e.id] = []);
+  (opps || []).forEach(o => {
+    if (!porEstado[o.estado]) porEstado[o.estado] = [];
+    porEstado[o.estado].push(o);
+  });
+  const kpisMap = new Map((kpis || []).map(k => [k.estado, k]));
+
+  cont.innerHTML = OPP_ESTADOS.map(e => {
+    const k = kpisMap.get(e.id);
+    const cant = k ? Number(k.cant) : 0;
+    const uf = k ? Number(k.uf_total) : 0;
+    const cards = (porEstado[e.id] || []).map(oppRenderCard).join('') || '<div class="text-xs text-stone-400 italic py-3 text-center">Sin oportunidades</div>';
+    return `
+      <div class="${e.color} rounded-lg p-3 min-h-[400px]">
+        <div class="flex justify-between items-baseline mb-2 pb-2 border-b border-stone-200">
+          <h3 class="font-semibold text-stone-800">${escapeHtml(e.nombre)}</h3>
+          <div class="text-xs text-stone-500">${cant} · ${uf.toLocaleString('es-CL', { maximumFractionDigits: 1 })} UF</div>
+        </div>
+        <div class="space-y-2">${cards}</div>
+      </div>`;
+  }).join('');
+}
+
+function oppRenderCard(o) {
+  const monto = o.valor_estimado_uf ? Number(o.valor_estimado_uf).toLocaleString('es-CL', { maximumFractionDigits: 1 }) + ' UF' : '';
+  const fechaRec = o.fecha_recepcion ? new Date(o.fecha_recepcion).toLocaleDateString('es-CL') : '';
+  return `
+    <div onclick="oppAbrirDrawer('${escapeHtml(o.oportunidad_id)}')"
+         class="bg-white rounded shadow-sm p-2 cursor-pointer hover:shadow-md transition">
+      <div class="font-medium text-sm text-stone-800 mb-1">${escapeHtml(o.titulo || '(sin título)')}</div>
+      <div class="text-xs text-stone-600 mb-1 truncate">${escapeHtml(o.cliente_nombre || '')}</div>
+      <div class="flex justify-between text-xs text-stone-500">
+        <span>${escapeHtml(monto)}</span>
+        <span>${escapeHtml(fechaRec)}</span>
+      </div>
+      ${o.responsable ? `<div class="text-xs text-stone-400 mt-1">👤 ${escapeHtml(o.responsable)}</div>` : ''}
+    </div>`;
+}
+
+window.oppAbrirDrawer = async function(oppId) {
+  _oppDrawerId = oppId;
+  document.getElementById('oppDrawer').classList.remove('hidden');
+  document.getElementById('oppDrawerMsg').classList.add('hidden');
+  ['oppDrawerTitulo','oppDrawerCliente','oppDrawerEstadoActual','oppDrawerMonto','oppDrawerProb','oppDrawerTipo','oppDrawerResp','oppDrawerSucursal','oppDrawerFechaRec','oppDrawerFechaCierre','oppDrawerViabilidad','oppDrawerDesc'].forEach(id => document.getElementById(id).textContent = '—');
+  document.getElementById('oppDrawerTags').innerHTML = '';
+
+  const { data: o, error } = await sb.schema('curated').from('vw_oportunidades_kanban').select('*').eq('oportunidad_id', oppId).maybeSingle();
+  if (error || !o) {
+    document.getElementById('oppDrawerTitulo').textContent = 'Error cargando oportunidad';
+    return;
+  }
+  document.getElementById('oppDrawerTitulo').textContent = o.titulo || '(sin título)';
+  document.getElementById('oppDrawerCliente').textContent = o.cliente_nombre + (o.cliente_rut ? ' · ' + o.cliente_rut : '');
+  document.getElementById('oppDrawerEstadoActual').textContent = (OPP_ESTADOS.find(e => e.id === o.estado) || {}).nombre || o.estado;
+  document.getElementById('oppDrawerEstadoSelect').value = o.estado;
+  document.getElementById('oppDrawerMonto').textContent = o.valor_estimado_uf ? Number(o.valor_estimado_uf).toLocaleString('es-CL', { maximumFractionDigits: 2 }) + ' UF' : '—';
+  document.getElementById('oppDrawerProb').textContent = o.probabilidad_pct != null ? o.probabilidad_pct + '%' : '—';
+  document.getElementById('oppDrawerTipo').textContent = [o.tipo, o.origen].filter(Boolean).join(' / ') || '—';
+  document.getElementById('oppDrawerResp').textContent = o.responsable || '—';
+  document.getElementById('oppDrawerSucursal').textContent = o.sucursal_id ? (_oppSucursalesMap.get(o.sucursal_id) || o.sucursal_id) : '—';
+  document.getElementById('oppDrawerFechaRec').textContent = o.fecha_recepcion ? new Date(o.fecha_recepcion).toLocaleDateString('es-CL') : '—';
+  document.getElementById('oppDrawerFechaCierre').textContent = o.fecha_cierre ? new Date(o.fecha_cierre).toLocaleDateString('es-CL') : '—';
+  document.getElementById('oppDrawerViabilidad').textContent = o.viabilidad_resultado || '—';
+  document.getElementById('oppDrawerDesc').textContent = o.descripcion || '—';
+
+  const tags = [];
+  if (o.viabilidad_resultado === 'viable') tags.push('<span class="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded">✓ viable</span>');
+  if (o.viabilidad_resultado === 'no_viable') tags.push('<span class="text-xs px-2 py-0.5 bg-red-100 text-red-800 rounded">✗ no viable</span>');
+  document.getElementById('oppDrawerTags').innerHTML = tags.join('');
+};
+
+window.oppCerrarDrawer = function() {
+  document.getElementById('oppDrawer').classList.add('hidden');
+  _oppDrawerId = null;
+};
+
+window.oppMoverEstado = async function() {
+  if (!_oppDrawerId) return;
+  const nuevoEstado = document.getElementById('oppDrawerEstadoSelect').value;
+  const msg = document.getElementById('oppDrawerMsg');
+  const btn = document.getElementById('oppDrawerMoverBtn');
+  msg.classList.add('hidden');
+  btn.disabled = true; btn.textContent = 'Moviendo…';
+
+  const { error } = await sb.schema('curated').from('oportunidades')
+    .update({ estado: nuevoEstado, updated_by: (currentUser || 'desconocido') })
+    .eq('oportunidad_id', _oppDrawerId);
+  btn.disabled = false; btn.textContent = 'Mover';
+
+  if (error) {
+    msg.className = 'mt-2 text-xs p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'Error: ' + error.message;
+    msg.classList.remove('hidden');
+    return;
+  }
+  msg.className = 'mt-2 text-xs p-2 rounded bg-green-50 text-green-700';
+  msg.textContent = 'Estado actualizado.';
+  msg.classList.remove('hidden');
+  await loadOportunidadesKanban();
+  if (_oppDrawerId) await oppAbrirDrawer(_oppDrawerId);
+};
+
+// ============================================================
+// UPLOADER CSV PESAJES (PC1-#1B · edge function ingest-pesajes-csv)
+// ============================================================
+window.ingPesajesToggleHelp = function() {
+  document.getElementById('ingPesajesHelp').classList.toggle('hidden');
+};
+
+window.ingPesajesSubir = async function() {
+  const fileInput = document.getElementById('ingPesajesFile');
+  const dryRun = document.getElementById('ingPesajesDryRun').checked;
+  const btn = document.getElementById('ingPesajesBtn');
+  const resDiv = document.getElementById('ingPesajesResultado');
+  const errDiv = document.getElementById('ingPesajesErrores');
+  resDiv.classList.add('hidden');
+  errDiv.classList.add('hidden');
+
+  if (!fileInput.files || fileInput.files.length === 0) {
+    resDiv.className = 'text-sm p-3 rounded bg-red-50 text-red-700';
+    resDiv.textContent = 'Seleccioná un archivo CSV.';
+    resDiv.classList.remove('hidden');
+    return;
+  }
+  if (!currentUser) {
+    resDiv.className = 'text-sm p-3 rounded bg-red-50 text-red-700';
+    resDiv.textContent = 'Sesión no iniciada — debe ingresar primero.';
+    resDiv.classList.remove('hidden');
+    return;
+  }
+
+  const file = fileInput.files[0];
+  btn.disabled = true; btn.textContent = dryRun ? 'Validando…' : 'Subiendo…';
+
+  try {
+    const csvText = await file.text();
+    const { data, error } = await sb.functions.invoke('ingest-pesajes-csv', {
+      body: { csvText, subido_por: currentUser, dryRun }
+    });
+    btn.disabled = false; btn.textContent = 'Subir';
+
+    if (error) {
+      resDiv.className = 'text-sm p-3 rounded bg-red-50 text-red-700';
+      resDiv.textContent = 'Error de red/función: ' + (error.message || JSON.stringify(error));
+      resDiv.classList.remove('hidden');
+      return;
+    }
+    if (data?.error) {
+      resDiv.className = 'text-sm p-3 rounded bg-red-50 text-red-700';
+      resDiv.textContent = 'Rechazado: ' + data.error + (data.detail ? ' — ' + data.detail : '');
+      resDiv.classList.remove('hidden');
+      return;
+    }
+
+    if (data?.dryRun) {
+      resDiv.className = 'text-sm p-3 rounded bg-blue-50 text-blue-800';
+      resDiv.innerHTML = `<strong>Validación OK (dryRun, no se insertó nada).</strong><br>
+        Recibidas: ${data.recibidas} · válidas: ${data.validas} · errores: ${data.errores?.length || 0}.`;
+      resDiv.classList.remove('hidden');
+    } else {
+      resDiv.className = 'text-sm p-3 rounded bg-green-50 text-green-800';
+      resDiv.innerHTML = `<strong>✓ Insertadas ${data.insertadas} filas nuevas.</strong><br>
+        Recibidas: ${data.recibidas} · válidas: ${data.validas} · ignoradas duplicadas: ${data.ignoradas} · errores: ${data.errores?.length || 0}.`;
+      resDiv.classList.remove('hidden');
+    }
+
+    if (data?.errores && data.errores.length > 0) {
+      errDiv.innerHTML = '<strong>Errores por fila:</strong><br>' +
+        data.errores.slice(0, 50).map(e => `Fila ${e.fila}: ${escapeHtml(e.razon)}`).join('<br>') +
+        (data.errores.length > 50 ? `<br><em>...y ${data.errores.length - 50} más.</em>` : '');
+      errDiv.classList.remove('hidden');
+    }
+  } catch (e) {
+    btn.disabled = false; btn.textContent = 'Subir';
+    resDiv.className = 'text-sm p-3 rounded bg-red-50 text-red-700';
+    resDiv.textContent = 'Error al leer el archivo: ' + e.message;
+    resDiv.classList.remove('hidden');
+  }
+};
+
 // ---------- INIT ----------
 initSupabase();
 setupTabs();
 setupRecorder();
+setupAuthListener();
+bootstrapAuth();
+
+// Enter handlers para los 3 paneles de auth
 document.getElementById('loginEmail').addEventListener('keypress', e => {
+  if (e.key === 'Enter') document.getElementById('loginPassword').focus();
+});
+document.getElementById('loginPassword').addEventListener('keypress', e => {
   if (e.key === 'Enter') login();
 });
+document.getElementById('forgotEmail').addEventListener('keypress', e => {
+  if (e.key === 'Enter') forgotPassword();
+});
+document.getElementById('resetPassword2').addEventListener('keypress', e => {
+  if (e.key === 'Enter') setNewPassword();
+});
+</script>
+
+<!-- ===== Diego FAB · chat conectado a panel.diego_bandeja ===== -->
+<style>
+  .diego-fab{position:fixed;right:24px;bottom:24px;width:60px;height:60px;background:linear-gradient(135deg,#059669,#047857);color:#fff;border-radius:50%;border:0;box-shadow:0 10px 25px -5px rgba(5,150,105,.45);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s ease;z-index:60}
+  .diego-fab:hover{transform:scale(1.08)}
+  .diego-fab-label{position:absolute;right:70px;top:50%;transform:translateY(-50%);background:#0f172a;color:#fff;padding:6px 12px;border-radius:8px;font-size:13px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s ease}
+  .diego-fab:hover .diego-fab-label{opacity:1}
+  .diego-chat{position:fixed;right:24px;bottom:96px;width:340px;max-width:calc(100vw - 32px);background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 16px 48px -12px rgba(15,23,42,.25);z-index:60;display:none;flex-direction:column;overflow:hidden}
+  .diego-chat.open{display:flex}
+  .diego-chat-h{background:linear-gradient(135deg,#059669,#047857);color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600}
+  .diego-chat-h button{background:none;border:0;color:#fff;cursor:pointer;font-size:16px;line-height:1}
+  .diego-chat-body{background:#f8fafc;padding:12px;max-height:360px;min-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+  .diego-msg{font-size:13px;padding:8px 12px;border-radius:12px;max-width:85%;line-height:1.35}
+  .diego-msg.mine{align-self:flex-end;background:#ecfdf5;color:#064e3b}
+  .diego-msg.theirs{align-self:flex-start;background:#fff;border:1px solid #e2e8f0;color:#0f172a}
+  .diego-msg-meta{font-size:10px;color:#94a3b8;margin-top:3px}
+  .diego-empty{color:#94a3b8;font-size:12px;text-align:center;padding:24px 8px}
+  .diego-chat-form{display:flex;gap:8px;padding:10px;border-top:1px solid #e2e8f0;background:#fff}
+  .diego-chat-form input{flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none}
+  .diego-chat-form input:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.15)}
+  .diego-chat-form button{background:#059669;color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer}
+  .diego-chat-form button:disabled{opacity:.5;cursor:not-allowed}
+</style>
+
+<button class="diego-fab" id="diegoFab" type="button" aria-label="Abrir chat Diego">
+  <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+  <span class="diego-fab-label">Pregúntale a Diego</span>
+</button>
+
+<div class="diego-chat" id="diegoChat" role="dialog" aria-label="Chat con Diego">
+  <div class="diego-chat-h">
+    <span>🤖 Diego — Bandeja</span>
+    <button type="button" id="diegoChatClose" aria-label="Cerrar chat">✕</button>
+  </div>
+  <div class="diego-chat-body" id="diegoChatBody">
+    <div class="diego-empty">Cargando bandeja…</div>
+  </div>
+  <form class="diego-chat-form" id="diegoChatForm" autocomplete="off">
+    <input type="text" id="diegoChatInput" placeholder="Escribe un mensaje a Diego…" maxlength="500" aria-label="Mensaje a Diego" />
+    <button type="submit" id="diegoChatSend">Enviar</button>
+  </form>
+</div>
+
+<script>
+(function () {
+  // Reutiliza el cliente global `sb` ya creado en initSupabase() —> mismo JWT del usuario.
+  function ready() { return typeof sb !== 'undefined' && sb && sb.schema; }
+
+  const fab = document.getElementById('diegoFab');
+  const win = document.getElementById('diegoChat');
+  const closeBtn = document.getElementById('diegoChatClose');
+  const body = document.getElementById('diegoChatBody');
+  const form = document.getElementById('diegoChatForm');
+  const input = document.getElementById('diegoChatInput');
+  const sendBtn = document.getElementById('diegoChatSend');
+
+  let realtimeCh = null;
+
+  function getRemitente() {
+    try {
+      const s = JSON.parse(localStorage.getItem('rf_session') || 'null');
+      return (s && (s.email || s.nombre)) || 'Panel RDO';
+    } catch { return 'Panel RDO'; }
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function fmtHora(iso) {
+    if (!iso) return '';
+    try {
+      return new Date(iso).toLocaleString('es-CL', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    } catch { return ''; }
+  }
+  function render(rows) {
+    if (!rows || rows.length === 0) {
+      body.innerHTML = '<div class="diego-empty">Sin mensajes todavía. Escribí abajo para empezar.</div>';
+      return;
+    }
+    const yo = getRemitente();
+    body.innerHTML = rows.slice().reverse().map(r => {
+      const mine = r.remitente === yo;
+      const cls = mine ? 'mine' : 'theirs';
+      const respLine = r.responsable ? ' · resp: ' + esc(r.responsable) : '';
+      const estLine = r.estado && r.estado !== 'pendiente' ? ' · ' + esc(r.estado) : '';
+      return '<div class="diego-msg ' + cls + '">' +
+               '<div>' + esc(r.mensaje) + '</div>' +
+               '<div class="diego-msg-meta">' + esc(r.remitente || 'anon') + ' · ' + fmtHora(r.creado_en) + respLine + estLine + '</div>' +
+             '</div>';
+    }).join('');
+    body.scrollTop = body.scrollHeight;
+  }
+  async function cargar() {
+    if (!ready()) {
+      body.innerHTML = '<div class="diego-empty">Cliente Supabase no disponible.</div>';
+      return;
+    }
+    const { data, error } = await sb.schema('panel').from('diego_bandeja')
+      .select('id,mensaje,remitente,responsable,estado,creado_en')
+      .order('creado_en', { ascending: false })
+      .limit(30);
+    if (error) {
+      body.innerHTML = '<div class="diego-empty">Error: ' + esc(error.message) + '</div>';
+      return;
+    }
+    render(data);
+  }
+  async function enviar(msg) {
+    if (!ready()) return { ok: false, err: 'sb no disponible' };
+    const { error } = await sb.schema('panel').from('diego_bandeja')
+      .insert({ mensaje: msg, remitente: getRemitente(), estado: 'pendiente' });
+    if (error) return { ok: false, err: error.message };
+    return { ok: true };
+  }
+  function suscribir() {
+    if (realtimeCh || !ready()) return;
+    realtimeCh = sb.channel('diego_bandeja_fab')
+      .on('postgres_changes', { event: '*', schema: 'panel', table: 'diego_bandeja' }, () => cargar())
+      .subscribe();
+  }
+
+  fab.addEventListener('click', () => {
+    win.classList.add('open');
+    cargar();
+    suscribir();
+    setTimeout(() => input.focus(), 50);
+  });
+  closeBtn.addEventListener('click', () => win.classList.remove('open'));
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = input.value.trim();
+    if (!msg) return;
+    sendBtn.disabled = true;
+    const { ok, err } = await enviar(msg);
+    sendBtn.disabled = false;
+    if (ok) { input.value = ''; cargar(); }
+    else { alert('No pude enviar: ' + err + (String(err).includes('401') || String(err).toLowerCase().includes('jwt') ? '\n(¿iniciaste sesión en el panel?)' : '')); }
+  });
+})();
 </script>
 </body>
 </html>
