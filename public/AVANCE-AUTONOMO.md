@@ -9,15 +9,22 @@
 
 > Activada por mandato Dusan 14:48 ("Mergear PRs #35-#39 de Pablo en GitHub").
 
-## Resultado: 3 mergeados, 2 con conflictos
+## Resultado: 4 mergeados, 1 con conflicto residual
 
 | PR | Tema | Estado | Commit merge |
 |---|---|---|---|
 | **#35** | D-PANEL-AUTH-001 frontend (auth real + password + reset) | ✅ **MERGED** | `8e11315b` |
 | **#36** | D-OP-13 Tab Reconciliación CRM↔RDO | ✅ **MERGED** | `b8637e04` |
-| **#37** | D-OP-11 Tab Cartera Andrea | ✅ **MERGED** (base cambiada `feature/d-op-13` → `main` antes del merge) |
-| **#38** | D-OP-12 Tab Kanban Oportunidades | ❌ **DIRTY** (conflicto post #37) — requiere rebase |
-| **#39** | PC1-#1B Uploader CSV pesajes | ❌ **DIRTY** (conflicto post #35) — requiere rebase |
+| **#37** | D-OP-11 Tab Cartera Andrea | ✅ **MERGED** (base cambiada `feature/d-op-13` → `main`) | `1f73aec9` |
+| **#38** | D-OP-12 Tab Kanban Oportunidades | ✅ **MERGED** (segundo intento, post-rebase de Pablo) | `aab5e1ce` |
+| **#39** | PC1-#1B Uploader CSV pesajes | ❌ **DIRTY** otra vez (conflicto post #38) — requiere 2º rebase | — |
+
+**Cronología:**
+- 17:48 — primer intento mergea #35, #36, #37 OK. #38 y #39 quedan DIRTY.
+- 18:00 — Pablo rebasea ambas ramas contra `main` con #35+#36+#37 y force-push: SHA `2065284` (#38) + `5f44529` (#39). Ambas vuelven a CLEAN MERGEABLE.
+- 18:30 — segundo intento: **#38 mergea OK** (`aab5e1ce`). **#39 vuelve a DIRTY** porque el merge de #38 cambió `main` y los dos PRs tocan `public/panel-rdo.html`.
+
+**Por qué pasa:** los PRs #38 y #39 modifican zonas próximas del mismo archivo. Cada vez que uno se mergea primero, el otro necesita un nuevo rebase. Es la última cadena que romper.
 
 ## Detalle del proceso
 
