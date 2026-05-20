@@ -4084,8 +4084,12 @@ function renderRecFila(f) {
   }
 
   const montoFmt = f.monto_raw ? f.monto_raw : '—';
+  // Si la oportunidad CRM está matcheada a un cliente RDO, exponer el cliente para el menú E360 (click-derecho)
+  const e360Attrs = f.cliente_id_rdo
+    ? `data-entity-type="cliente" data-entity-id="${escapeHtml(f.cliente_id_rdo)}" data-entity-nombre="${escapeHtml(f.cliente_nombre_rdo || '')}" title="Click-derecho: vínculos E360 del cliente RDO"`
+    : '';
   return `
-    <tr class="border-t border-stone-100 hover:bg-stone-50">
+    <tr class="border-t border-stone-100 hover:bg-stone-50" ${e360Attrs}>
       <td class="px-3 py-2 font-mono text-xs">${escapeHtml(f.crm_id || '')}</td>
       <td class="px-3 py-2">${escapeHtml(f.cliente_crm || '')}</td>
       <td class="px-3 py-2 font-mono text-xs">${escapeHtml(f.rut_crm || '—')}</td>
@@ -4274,7 +4278,10 @@ async function loadCartera() {
     if (c.external_id_crm) flags.push('<span title="Cruzado con CRM Impulsa">🔗</span>');
     if (!c.activo) flags.push('<span title="Inactivo" class="text-red-600">⛔</span>');
     return `
-      <tr class="border-t border-stone-100 hover:bg-stone-50 cursor-pointer" onclick="carAbrirDrawer('${escapeHtml(c.cliente_id)}')">
+      <tr class="border-t border-stone-100 hover:bg-stone-50 cursor-pointer"
+          data-entity-type="cliente" data-entity-id="${escapeHtml(c.cliente_id)}" data-entity-nombre="${escapeHtml(c.razon_social || '')}"
+          title="Click: detalle · Click-derecho: vínculos E360"
+          onclick="carAbrirDrawer('${escapeHtml(c.cliente_id)}')">
         <td class="px-3 py-2"><span class="font-medium text-stone-800">${escapeHtml(c.razon_social || '—')}</span></td>
         <td class="px-3 py-2 font-mono text-xs">${escapeHtml(c.rut || '—')}</td>
         <td class="px-3 py-2">${escapeHtml(sucNombre)}</td>
@@ -4477,6 +4484,8 @@ function oppRenderCard(o) {
   const fechaRec = o.fecha_recepcion ? new Date(o.fecha_recepcion).toLocaleDateString('es-CL') : '';
   return `
     <div onclick="oppAbrirDrawer('${escapeHtml(o.oportunidad_id)}')"
+         data-entity-type="oportunidad" data-entity-id="${escapeHtml(o.oportunidad_id)}" data-entity-nombre="${escapeHtml(o.titulo || '')}"
+         title="Click: detalle · Click-derecho: vínculos E360"
          class="bg-white rounded shadow-sm p-2 cursor-pointer hover:shadow-md transition">
       <div class="font-medium text-sm text-stone-800 mb-1">${escapeHtml(o.titulo || '(sin título)')}</div>
       <div class="text-xs text-stone-600 mb-1 truncate">${escapeHtml(o.cliente_nombre || '')}</div>
@@ -4650,5 +4659,8 @@ document.getElementById('resetPassword2').addEventListener('keypress', e => {
   if (e.key === 'Enter') setNewPassword();
 });
 </script>
+
+<!-- E360 context menu (D-MISMATCH Mig 035 frontend) -->
+<script src="/js/e360-context-menu.js"></script>
 </body>
 </html>
