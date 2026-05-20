@@ -1082,9 +1082,57 @@
 
     <section id="tabAdmin" class="tab-content hidden">
       <h2 class="text-xl font-bold mb-3 text-stone-800">Administración</h2>
-      <div class="bg-white p-5 rounded-lg shadow-sm">
+      <div class="bg-white p-5 rounded-lg shadow-sm mb-4">
         <h3 class="font-bold text-stone-700 mb-3">Mensajes de audio</h3>
         <div id="adminAudiosList" class="text-sm text-stone-500">Cargando...</div>
+      </div>
+
+      <!-- Uploader CSV pesajes (PC1-#1B) -->
+      <div class="bg-white p-5 rounded-lg shadow-sm">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <h3 class="font-bold text-stone-700">Cargar pesajes desde CSV</h3>
+            <p class="text-xs text-stone-500 mt-1">Export semanal de Recicladmin. Idempotente vía hash_sha256: subir el mismo CSV varias veces no duplica filas.</p>
+          </div>
+          <button onclick="ingPesajesToggleHelp()" class="text-xs text-green-700 hover:underline">¿Qué columnas tiene el CSV?</button>
+        </div>
+
+        <div id="ingPesajesHelp" class="hidden bg-stone-50 p-3 rounded text-xs text-stone-600 mb-3 font-mono whitespace-pre-line">Columnas esperadas (header row, en cualquier orden; el matcheo es case-insensitive):
+- empresa_id        (reciclean o farex) — REQUERIDA
+- sucursal          (texto, ej. Talca) — REQUERIDA
+- fecha             (YYYY-MM-DD o dd-mm-yyyy) — REQUERIDA
+- folio             (texto) — REQUERIDA
+- material_codigo   (texto) — REQUERIDA
+- tipo_servicio     (COMPRA / DONACION / etc.)
+- proveedor_rut, proveedor_nombre, tipo_contraparte
+- tipo_orig_sistema
+- kg_bruto, kg_tara, kg_neto (números con coma o punto decimal)
+- material_descripcion
+- precio_unitario, monto_total
+- dte_folio_ref
+- fuente (default upload_panel_csv)
+
+Tip: en Excel "Guardar como" → CSV UTF-8 (delimitado por comas).</div>
+
+        <div class="flex flex-wrap items-end gap-3 mb-3">
+          <div>
+            <label for="ingPesajesFile" class="block text-xs text-stone-500 mb-1">Archivo CSV</label>
+            <input type="file" id="ingPesajesFile" accept=".csv,text/csv"
+                   aria-label="Archivo CSV pesajes"
+                   class="text-sm">
+          </div>
+          <label class="flex items-center gap-2 text-sm text-stone-600 cursor-pointer">
+            <input type="checkbox" id="ingPesajesDryRun" class="rounded border-stone-300 text-green-700 focus:ring-green-600">
+            <span>Solo validar (no insertar)</span>
+          </label>
+          <button id="ingPesajesBtn" onclick="ingPesajesSubir()"
+                  class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded text-sm font-semibold disabled:opacity-60">
+            Subir
+          </button>
+        </div>
+
+        <div id="ingPesajesResultado" class="hidden text-sm p-3 rounded mb-3"></div>
+        <div id="ingPesajesErrores" class="hidden mt-2 bg-amber-50 p-3 rounded text-xs max-h-48 overflow-y-auto"></div>
       </div>
     </section>
   </main>
@@ -4501,6 +4549,84 @@ window.oppMoverEstado = async function() {
   msg.classList.remove('hidden');
   await loadOportunidadesKanban();
   if (_oppDrawerId) await oppAbrirDrawer(_oppDrawerId);
+};
+
+// ============================================================
+// UPLOADER CSV PESAJES (PC1-#1B · edge function ingest-pesajes-csv)
+// ============================================================
+window.ingPesajesToggleHelp = function() {
+  document.getElementById('ingPesajesHelp').classList.toggle('hidden');
+};
+
+window.ingPesajesSubir = async function() {
+  const fileInput = document.getElementById('ingPesajesFile');
+  const dryRun = document.getElementById('ingPesajesDryRun').checked;
+  const btn = document.getElementById('ingPesajesBtn');
+  const resDiv = document.getElementById('ingPesajesResultado');
+  const errDiv = document.getElementById('ingPesajesErrores');
+  resDiv.classList.add('hidden');
+  errDiv.classList.add('hidden');
+
+  if (!fileInput.files || fileInput.files.length === 0) {
+    resDiv.className = 'text-sm p-3 rounded bg-red-50 text-red-700';
+    resDiv.textContent = 'Seleccioná un archivo CSV.';
+    resDiv.classList.remove('hidden');
+    return;
+  }
+  if (!currentUser) {
+    resDiv.className = 'text-sm p-3 rounded bg-red-50 text-red-700';
+    resDiv.textContent = 'Sesión no iniciada — debe ingresar primero.';
+    resDiv.classList.remove('hidden');
+    return;
+  }
+
+  const file = fileInput.files[0];
+  btn.disabled = true; btn.textContent = dryRun ? 'Validando…' : 'Subiendo…';
+
+  try {
+    const csvText = await file.text();
+    const { data, error } = await sb.functions.invoke('ingest-pesajes-csv', {
+      body: { csvText, subido_por: currentUser, dryRun }
+    });
+    btn.disabled = false; btn.textContent = 'Subir';
+
+    if (error) {
+      resDiv.className = 'text-sm p-3 rounded bg-red-50 text-red-700';
+      resDiv.textContent = 'Error de red/función: ' + (error.message || JSON.stringify(error));
+      resDiv.classList.remove('hidden');
+      return;
+    }
+    if (data?.error) {
+      resDiv.className = 'text-sm p-3 rounded bg-red-50 text-red-700';
+      resDiv.textContent = 'Rechazado: ' + data.error + (data.detail ? ' — ' + data.detail : '');
+      resDiv.classList.remove('hidden');
+      return;
+    }
+
+    if (data?.dryRun) {
+      resDiv.className = 'text-sm p-3 rounded bg-blue-50 text-blue-800';
+      resDiv.innerHTML = `<strong>Validación OK (dryRun, no se insertó nada).</strong><br>
+        Recibidas: ${data.recibidas} · válidas: ${data.validas} · errores: ${data.errores?.length || 0}.`;
+      resDiv.classList.remove('hidden');
+    } else {
+      resDiv.className = 'text-sm p-3 rounded bg-green-50 text-green-800';
+      resDiv.innerHTML = `<strong>✓ Insertadas ${data.insertadas} filas nuevas.</strong><br>
+        Recibidas: ${data.recibidas} · válidas: ${data.validas} · ignoradas duplicadas: ${data.ignoradas} · errores: ${data.errores?.length || 0}.`;
+      resDiv.classList.remove('hidden');
+    }
+
+    if (data?.errores && data.errores.length > 0) {
+      errDiv.innerHTML = '<strong>Errores por fila:</strong><br>' +
+        data.errores.slice(0, 50).map(e => `Fila ${e.fila}: ${escapeHtml(e.razon)}`).join('<br>') +
+        (data.errores.length > 50 ? `<br><em>...y ${data.errores.length - 50} más.</em>` : '');
+      errDiv.classList.remove('hidden');
+    }
+  } catch (e) {
+    btn.disabled = false; btn.textContent = 'Subir';
+    resDiv.className = 'text-sm p-3 rounded bg-red-50 text-red-700';
+    resDiv.textContent = 'Error al leer el archivo: ' + e.message;
+    resDiv.classList.remove('hidden');
+  }
 };
 
 // ---------- INIT ----------
