@@ -1,7 +1,55 @@
 # AVANCE-AUTONOMO — Panel RDO v4 (loop 19-20 may 2026)
 
 > Loop autónomo de PC1-Dusan trabajando el dashboard v4.
-> 4 iteraciones + 3 ciclos autónomos en ~15 horas. Última actualización: **2026-05-20 13:15 Chile**.
+> Última actualización: **2026-05-20 14:50 Chile** (merge PRs Pablo).
+
+---
+
+# ITERACIÓN 5 — Merge PRs #35-#39 de Pablo (parcial)
+
+> Activada por mandato Dusan 14:48 ("Mergear PRs #35-#39 de Pablo en GitHub").
+
+## Resultado: 3 mergeados, 2 con conflictos
+
+| PR | Tema | Estado | Commit merge |
+|---|---|---|---|
+| **#35** | D-PANEL-AUTH-001 frontend (auth real + password + reset) | ✅ **MERGED** | `8e11315b` |
+| **#36** | D-OP-13 Tab Reconciliación CRM↔RDO | ✅ **MERGED** | `b8637e04` |
+| **#37** | D-OP-11 Tab Cartera Andrea | ✅ **MERGED** (base cambiada `feature/d-op-13` → `main` antes del merge) |
+| **#38** | D-OP-12 Tab Kanban Oportunidades | ❌ **DIRTY** (conflicto post #37) — requiere rebase |
+| **#39** | PC1-#1B Uploader CSV pesajes | ❌ **DIRTY** (conflicto post #35) — requiere rebase |
+
+## Detalle del proceso
+
+1. `gh pr list` confirmó los 5 en `CLEAN MERGEABLE`.
+2. #35 mergeado primero (crítico, desbloqueaba #39).
+3. #36 mergeado segundo (independiente).
+4. #37 estaba stacked (`baseRefName=feature/d-op-13-tab-reconciliacion`). Cambié base a `main` con `gh pr edit --base main`, luego mergeé.
+5. #38 y #39 fallaron con `GraphQL: Pull Request has merge conflicts`. Causa: ambos modifican `panel-rdo.html` en regiones que cambiaron tras merges previos (nav-tabs anchors compartidos + lógica auth).
+
+## Acción pendiente para Pablo
+
+Rebase de #38 y #39 sobre `main` actualizado, resolver conflictos en `panel-rdo.html` y force-push:
+
+```bash
+git fetch origin
+git checkout feature/d-op-12-kanban-oportunidades
+git rebase origin/main
+# resolver conflictos en public/panel-rdo.html
+git add public/panel-rdo.html && git rebase --continue
+git push --force-with-lease origin feature/d-op-12-kanban-oportunidades
+
+# Igual para feature/pc1-ingest-pesajes-csv
+```
+
+## Estado de `main` después de los 3 merges
+
+`main` ahora contiene:
+- Auth real (`#35`): login con password + reset magic-link.
+- Tab Reconciliación CRM (`#36`): 471 matches por RUT.
+- Tab Cartera Andrea (`#37`): cambio categoría 2-statement atomic.
+
+Vercel re-deployó automáticamente con los 3 merges.
 
 ---
 
