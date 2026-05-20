@@ -204,6 +204,7 @@
         <button data-tab="precios"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabPrecios">💲 Precios</button>
         <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
         <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
+        <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
         <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabAdmin">⚙️ Admin</button>
       </div>
       <span class="chevron-more" aria-hidden="true">›</span>
@@ -786,6 +787,106 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA CARTERA (D-OP-11) — Andrea cliente-detalle
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabCartera" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">👥 Cartera de clientes</h2>
+        <button onclick="loadCartera()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+
+      <!-- KPI bar por categoría -->
+      <div id="carKpiBar" class="flex flex-wrap gap-2 mb-4"></div>
+
+      <!-- Filtros -->
+      <div class="bg-white p-3 rounded shadow-sm mb-4 flex flex-wrap gap-3 items-end">
+        <div>
+          <label for="carFiltroCategoria" class="block text-xs text-stone-500 mb-1">Categoría</label>
+          <select id="carFiltroCategoria" onchange="loadCartera()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div>
+          <label for="carFiltroSucursal" class="block text-xs text-stone-500 mb-1">Sucursal</label>
+          <select id="carFiltroSucursal" onchange="loadCartera()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="flex-1 min-w-[12rem]">
+          <label for="carFiltroBuscar" class="block text-xs text-stone-500 mb-1">Buscar (razón social, RUT)</label>
+          <input id="carFiltroBuscar" type="text" placeholder="Ej. Reciklo"
+                 oninput="carDebouncedSearch()" aria-label="Buscar cliente"
+                 class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="bg-white rounded shadow-sm overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-stone-50 text-stone-600 text-left">
+            <tr>
+              <th class="px-3 py-2">Cliente</th>
+              <th class="px-3 py-2">RUT</th>
+              <th class="px-3 py-2">Sucursal</th>
+              <th class="px-3 py-2">Categoría</th>
+              <th class="px-3 py-2 text-right">Op. RDO</th>
+              <th class="px-3 py-2 text-right">Op. CRM</th>
+              <th class="px-3 py-2">Flags</th>
+            </tr>
+          </thead>
+          <tbody id="carTbody">
+            <tr><td colspan="7" class="px-3 py-4 text-center text-stone-400">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Drawer cliente -->
+      <div id="carDrawer" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+        <div class="bg-white w-full max-w-md h-full overflow-y-auto p-5">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h3 id="carDrawerTitulo" class="text-lg font-bold text-stone-800">—</h3>
+              <p id="carDrawerRut" class="text-xs text-stone-500 font-mono">—</p>
+            </div>
+            <button onclick="carCerrarDrawer()" class="text-stone-500 hover:text-stone-800 text-2xl leading-none" aria-label="Cerrar">×</button>
+          </div>
+
+          <div id="carDrawerTags" class="flex flex-wrap gap-2 mb-4"></div>
+
+          <div class="bg-stone-50 rounded p-3 mb-4">
+            <div class="text-xs text-stone-500 mb-1">Categoría actual</div>
+            <div id="carDrawerCatActual" class="font-medium text-stone-800 mb-2">—</div>
+            <div id="carDrawerCatMotivo" class="text-xs text-stone-600 mb-3"></div>
+            <label for="carDrawerCatSelect" class="block text-xs text-stone-500 mb-1">Cambiar a:</label>
+            <select id="carDrawerCatSelect"
+                    class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none mb-2">
+            </select>
+            <input id="carDrawerCatMotivoInput" type="text" placeholder="Motivo (opcional)"
+                   aria-label="Motivo del cambio"
+                   class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none mb-2">
+            <button id="carDrawerCatApplyBtn" onclick="carAplicarCategoria()"
+                    class="w-full bg-green-700 hover:bg-green-800 text-white text-sm py-1.5 rounded">
+              Aplicar
+            </button>
+            <div id="carDrawerCatMsg" class="hidden mt-2 text-xs p-2 rounded"></div>
+          </div>
+
+          <div class="mb-3">
+            <h4 class="text-sm font-semibold text-stone-700 mb-1">Oportunidades RDO</h4>
+            <div id="carDrawerOpRdo" class="text-xs text-stone-600">—</div>
+          </div>
+
+          <div>
+            <h4 class="text-sm font-semibold text-stone-700 mb-1">Oportunidades CRM Impulsa (top 5)</h4>
+            <div id="carDrawerOpCrm" class="text-xs text-stone-600">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
          PESTAÑA COTIZADOR
     ═══════════════════════════════════════════════════════════ -->
     <section id="tabCotizador" class="tab-content hidden">
@@ -950,7 +1051,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'operativos', 'reconciliacion', 'admin'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'operativos', 'reconciliacion', 'cartera', 'admin'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -1515,6 +1616,7 @@ function setupTabs() {
       if (tabId === 'precios')   initPrecios();
       if (tabId === 'operativos') initOperativos();
       if (tabId === 'reconciliacion') initReconciliacion();
+      if (tabId === 'cartera')   initCartera();
       if (tabId === 'dieguito')  initDieguito();
     });
   });
@@ -3964,6 +4066,247 @@ window.recRevertirDecision = async function(crmId) {
   if (error) { alert('Error: ' + error.message); return; }
   await loadReconciliacionKpis();
   await loadReconciliacion(recPaginaActual);
+};
+
+// ============================================================
+// TAB CARTERA (D-OP-11) — Andrea cliente-detalle
+// ============================================================
+let _cartCategorias = null;
+let _cartSucursales = null;
+let _cartDrawerClienteId = null;
+let _cartSearchTimer = null;
+
+function carDebouncedSearch() {
+  clearTimeout(_cartSearchTimer);
+  _cartSearchTimer = setTimeout(() => loadCartera(), 300);
+}
+
+async function initCartera() {
+  if (!_cartCategorias) {
+    const { data, error } = await sb.schema('curated').from('cartera_categorias')
+      .select('categoria_id, nombre, color_ui, orden, activa').order('orden');
+    if (error) console.warn('[Cartera] categorías error:', error.message);
+    _cartCategorias = (data || []).filter(c => c.activa);
+
+    const selFiltro = document.getElementById('carFiltroCategoria');
+    const selDrawer = document.getElementById('carDrawerCatSelect');
+    selFiltro.innerHTML = '<option value="">Todas</option><option value="sin_clasificar">Sin clasificar</option>'
+      + _cartCategorias.map(c => `<option value="${escapeHtml(c.categoria_id)}">${escapeHtml(c.nombre)}</option>`).join('');
+    selDrawer.innerHTML = '<option value="">(sin categoría)</option>'
+      + _cartCategorias.map(c => `<option value="${escapeHtml(c.categoria_id)}">${escapeHtml(c.nombre)}</option>`).join('');
+  }
+  if (!_cartSucursales) {
+    const sucs = await ensureSucursalesCache();
+    const selS = document.getElementById('carFiltroSucursal');
+    selS.innerHTML = '<option value="">Todas</option>'
+      + (sucs || []).map(s => `<option value="${escapeHtml(s.sucursal_id)}">${escapeHtml(s.nombre)}</option>`).join('');
+    _cartSucursales = sucs;
+  }
+  await loadCarteraKpis();
+  await loadCartera();
+}
+
+async function loadCarteraKpis() {
+  const { data, error } = await sb.schema('curated').rpc('cartera_kpis');
+  if (error) { console.warn('[Cartera] KPIs error:', error.message); return; }
+  const bar = document.getElementById('carKpiBar');
+  const colorMap = {
+    verde:   { bg: 'bg-green-100',  text: 'text-green-800' },
+    azul:    { bg: 'bg-blue-100',   text: 'text-blue-800' },
+    ambar:   { bg: 'bg-amber-100',  text: 'text-amber-800' },
+    naranja: { bg: 'bg-orange-100', text: 'text-orange-800' },
+    rojo:    { bg: 'bg-red-100',    text: 'text-red-800' },
+  };
+  bar.innerHTML = (data || []).map(c => {
+    const co = colorMap[c.color_ui] || { bg: 'bg-stone-200', text: 'text-stone-700' };
+    return `
+      <button onclick="document.getElementById('carFiltroCategoria').value='${escapeHtml(c.categoria_id)}'; loadCartera();"
+              class="${co.bg} ${co.text} px-3 py-2 rounded shadow-sm hover:opacity-80 text-left">
+        <div class="text-xs opacity-80">${escapeHtml(c.categoria_nombre)}</div>
+        <div class="text-xl font-bold">${Number(c.cant).toLocaleString('es-CL')}</div>
+      </button>`;
+  }).join('');
+}
+
+async function loadCartera() {
+  const tbody = document.getElementById('carTbody');
+  tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-stone-400">Cargando…</td></tr>';
+  const cat = document.getElementById('carFiltroCategoria').value;
+  const suc = document.getElementById('carFiltroSucursal').value;
+  const buscar = (document.getElementById('carFiltroBuscar').value || '').trim();
+
+  let q = sb.schema('curated').from('vw_cartera_detalle').select('*').order('razon_social');
+  if (cat === 'sin_clasificar') q = q.is('categoria_id', null);
+  else if (cat) q = q.eq('categoria_id', cat);
+  if (suc) q = q.eq('sucursal_principal', suc);
+  if (buscar) {
+    const s = buscar.replace(/'/g, "''");
+    q = q.or(`razon_social.ilike.%${s}%,rut.ilike.%${s}%`);
+  }
+  const { data, error } = await q;
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="7" class="px-3 py-4 text-center text-red-600">Error: ${escapeHtml(error.message)}</td></tr>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-6 text-center text-stone-400">Sin clientes para los filtros aplicados.</td></tr>';
+    return;
+  }
+
+  const sucMap = new Map((_cartSucursales || []).map(s => [s.sucursal_id, s.nombre]));
+  tbody.innerHTML = data.map(c => {
+    const sucNombre = c.sucursal_principal ? (sucMap.get(c.sucursal_principal) || c.sucursal_principal) : '—';
+    const catPill = c.categoria_id
+      ? `<span class="inline-block px-2 py-0.5 rounded text-xs ${carColorClass(c.categoria_color)}">${escapeHtml(c.categoria_nombre)}</span>`
+      : '<span class="inline-block px-2 py-0.5 rounded text-xs bg-stone-200 text-stone-600">Sin clasificar</span>';
+    const flags = [];
+    if (c.tiene_grua_horquilla) flags.push('<span title="Grúa horquilla">🚜</span>');
+    if (c.tiene_personal_carga) flags.push('<span title="Personal de carga">👷</span>');
+    if (c.external_id_crm) flags.push('<span title="Cruzado con CRM Impulsa">🔗</span>');
+    if (!c.activo) flags.push('<span title="Inactivo" class="text-red-600">⛔</span>');
+    return `
+      <tr class="border-t border-stone-100 hover:bg-stone-50 cursor-pointer" onclick="carAbrirDrawer('${escapeHtml(c.cliente_id)}')">
+        <td class="px-3 py-2"><span class="font-medium text-stone-800">${escapeHtml(c.razon_social || '—')}</span></td>
+        <td class="px-3 py-2 font-mono text-xs">${escapeHtml(c.rut || '—')}</td>
+        <td class="px-3 py-2">${escapeHtml(sucNombre)}</td>
+        <td class="px-3 py-2">${catPill}</td>
+        <td class="px-3 py-2 text-right">${c.opor_rdo_abiertas}/${c.opor_rdo_total}</td>
+        <td class="px-3 py-2 text-right">${c.opor_crm_matcheadas}</td>
+        <td class="px-3 py-2">${flags.join(' ') || ''}</td>
+      </tr>`;
+  }).join('');
+}
+
+function carColorClass(colorTag) {
+  const m = {
+    verde:   'bg-green-100 text-green-800',
+    azul:    'bg-blue-100 text-blue-800',
+    ambar:   'bg-amber-100 text-amber-800',
+    naranja: 'bg-orange-100 text-orange-800',
+    rojo:    'bg-red-100 text-red-800',
+  };
+  return m[colorTag] || 'bg-stone-200 text-stone-700';
+}
+
+window.carAbrirDrawer = async function(clienteId) {
+  _cartDrawerClienteId = clienteId;
+  document.getElementById('carDrawer').classList.remove('hidden');
+  document.getElementById('carDrawerCatMsg').classList.add('hidden');
+  document.getElementById('carDrawerTitulo').textContent = 'Cargando…';
+  document.getElementById('carDrawerRut').textContent = '—';
+  document.getElementById('carDrawerTags').innerHTML = '';
+  document.getElementById('carDrawerCatActual').textContent = '—';
+  document.getElementById('carDrawerCatMotivo').textContent = '';
+  document.getElementById('carDrawerOpRdo').textContent = 'Cargando…';
+  document.getElementById('carDrawerOpCrm').textContent = 'Cargando…';
+
+  const { data: c, error } = await sb.schema('curated').from('vw_cartera_detalle').select('*').eq('cliente_id', clienteId).maybeSingle();
+  if (error || !c) {
+    document.getElementById('carDrawerTitulo').textContent = 'Error cargando cliente';
+    return;
+  }
+
+  document.getElementById('carDrawerTitulo').textContent = c.razon_social || '—';
+  document.getElementById('carDrawerRut').textContent = c.rut || '(sin RUT)';
+
+  const tags = [];
+  if (c.tiene_grua_horquilla) tags.push('<span class="text-xs px-2 py-0.5 bg-stone-100 text-stone-700 rounded">🚜 Grúa horquilla</span>');
+  if (c.tiene_personal_carga) tags.push('<span class="text-xs px-2 py-0.5 bg-stone-100 text-stone-700 rounded">👷 Personal carga</span>');
+  if (c.external_id_crm) tags.push(`<span class="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded">🔗 CRM ${escapeHtml(c.external_id_crm)}</span>`);
+  if (!c.activo) tags.push('<span class="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded">⛔ Inactivo</span>');
+  document.getElementById('carDrawerTags').innerHTML = tags.join('');
+
+  if (c.categoria_id) {
+    document.getElementById('carDrawerCatActual').innerHTML = `<span class="inline-block px-2 py-0.5 rounded text-xs ${carColorClass(c.categoria_color)}">${escapeHtml(c.categoria_nombre)}</span> <span class="text-xs text-stone-500 ml-1">desde ${c.categoria_desde ? c.categoria_desde.slice(0,10) : '—'}</span>`;
+    document.getElementById('carDrawerCatMotivo').textContent = c.categoria_motivo || '';
+    document.getElementById('carDrawerCatSelect').value = c.categoria_id;
+  } else {
+    document.getElementById('carDrawerCatActual').innerHTML = '<span class="text-stone-500 text-sm">Sin clasificar</span>';
+    document.getElementById('carDrawerCatMotivo').textContent = '';
+    document.getElementById('carDrawerCatSelect').value = '';
+  }
+  document.getElementById('carDrawerCatMotivoInput').value = '';
+
+  // Oportunidades RDO
+  const { data: opRdo } = await sb.schema('curated').from('oportunidades')
+    .select('oportunidad_id, titulo, estado, valor_estimado_uf, fecha_recepcion')
+    .eq('cliente_id', clienteId).order('fecha_recepcion', { ascending: false }).limit(10);
+  document.getElementById('carDrawerOpRdo').innerHTML = (opRdo && opRdo.length)
+    ? opRdo.map(o => `<div class="border-b border-stone-100 py-1">
+        <span class="font-medium">${escapeHtml(o.titulo || o.oportunidad_id)}</span>
+        <span class="text-stone-400 ml-1">${escapeHtml(o.estado || '')}</span>
+        <span class="text-stone-500 float-right">${o.valor_estimado_uf ? Number(o.valor_estimado_uf).toLocaleString('es-CL') + ' UF' : ''}</span>
+      </div>`).join('')
+    : '<span class="text-stone-400">Sin oportunidades RDO.</span>';
+
+  // Oportunidades CRM
+  const { data: opCrm } = await sb.schema('curated').from('vw_oportunidades_crm')
+    .select('crm_id, cliente_nombre, estado, embudo, monto_raw, fecha_ingreso')
+    .eq('cliente_id_rdo', clienteId).order('fecha_ingreso', { ascending: false }).limit(5);
+  document.getElementById('carDrawerOpCrm').innerHTML = (opCrm && opCrm.length)
+    ? opCrm.map(o => `<div class="border-b border-stone-100 py-1">
+        <span class="font-mono text-xs text-stone-500">${escapeHtml(o.crm_id)}</span>
+        <span class="ml-2">${escapeHtml(o.embudo || '')}</span>
+        <span class="text-stone-400 ml-1">${escapeHtml(o.estado || '')}</span>
+        <span class="text-stone-500 float-right">${escapeHtml(o.monto_raw || '')}</span>
+      </div>`).join('')
+    : '<span class="text-stone-400">Sin oportunidades CRM cruzadas.</span>';
+};
+
+window.carCerrarDrawer = function() {
+  document.getElementById('carDrawer').classList.add('hidden');
+  _cartDrawerClienteId = null;
+};
+
+window.carAplicarCategoria = async function() {
+  if (!_cartDrawerClienteId) return;
+  const nuevaCat = document.getElementById('carDrawerCatSelect').value;
+  const motivo = document.getElementById('carDrawerCatMotivoInput').value.trim();
+  const decididoPor = currentUser || 'desconocido';
+  const msg = document.getElementById('carDrawerCatMsg');
+  const btn = document.getElementById('carDrawerCatApplyBtn');
+  msg.classList.add('hidden');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+
+  // 1. Cerrar vigente anterior (si existía)
+  const { error: e1 } = await sb.schema('curated').from('cartera_clientes_categoria')
+    .update({ vigente: false }).eq('cliente_id', _cartDrawerClienteId).eq('vigente', true);
+  if (e1) {
+    msg.className = 'mt-2 text-xs p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'Error cerrando categoría previa: ' + e1.message;
+    msg.classList.remove('hidden');
+    btn.disabled = false; btn.textContent = 'Aplicar';
+    return;
+  }
+  // 2. Insertar nueva si nuevaCat no vacío
+  if (nuevaCat) {
+    const { error: e2 } = await sb.schema('curated').from('cartera_clientes_categoria').insert({
+      cliente_id: _cartDrawerClienteId,
+      categoria_id: nuevaCat,
+      vigente: true,
+      motivo_asignacion: motivo || null,
+      asignado_por: decididoPor,
+      created_by: decididoPor,
+      updated_by: decididoPor
+    });
+    if (e2) {
+      msg.className = 'mt-2 text-xs p-2 rounded bg-red-50 text-red-700';
+      msg.textContent = 'Error asignando nueva categoría: ' + e2.message;
+      msg.classList.remove('hidden');
+      btn.disabled = false; btn.textContent = 'Aplicar';
+      return;
+    }
+  }
+
+  msg.className = 'mt-2 text-xs p-2 rounded bg-green-50 text-green-700';
+  msg.textContent = nuevaCat ? 'Categoría aplicada.' : 'Categoría removida.';
+  msg.classList.remove('hidden');
+  btn.disabled = false; btn.textContent = 'Aplicar';
+
+  await loadCarteraKpis();
+  await loadCartera();
+  // Refrescar drawer
+  if (_cartDrawerClienteId) await carAbrirDrawer(_cartDrawerClienteId);
 };
 
 // ---------- INIT ----------
