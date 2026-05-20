@@ -18,6 +18,19 @@
 
 ## Bloqueos surgidos durante el loop
 
+### B11 · Login Impulsa con password "4322" no aceptado — 20-may 17:30 (RESCATE BLOQUEADO)
+- **Síntoma:** PC1 (actuando como delegación temporal PC3, cola `129341cf`) intentó login a `app.sistemaimpulsa.com` con `gerencia@gestionrepchile.cl` + password `4322` provisto por Dusan en chat. URL sigue en `/login` post-click. Sin mensaje de error visible. Sin alerts en consola.
+- **Hipótesis:**
+  1. Password `4322` es parcial / PIN / sufijo, no el completo.
+  2. Plan CRECE venció (PENDIENTES.md decía "venció 21-may-2026", hoy 20-may podría estar ya bloqueado).
+  3. Cuenta bloqueada por intentos previos.
+- **Acciones tomadas:**
+  - Estructura local creada: `C:\Users\dusan\claude-sandbox\impulsa-documentos\` con `SIN_CLASIFICAR/`, template + `INDICE_GENERAL.md`.
+  - Mensaje Plan B redactado: `public/impulsa-mensaje-ejecutiva.txt` (pide extensión 48h u Opción B = ZIP completo).
+  - NO se creó bucket `impulsa-documentos` en Supabase Storage (se crea cuando haya archivos reales).
+- **Acción Dusan:** confirmar password completo o reenviar `impulsa-mensaje-ejecutiva.txt` a la ejecutiva Impulsa hoy mismo (mañana 21-may vence el plan).
+- **Backup parcial existente:** 15.080 filas estructuradas YA en `staging.crm_impulsa_*` (Pablo Mig 042). Lo que se pierde si no se rescatan adjuntos = los PDFs/JPGs originales como prueba documental, no el dato.
+
 ### B10 · Heartbeat de PC2-Pablo desactualizado (no es inactividad) — 20-may 10:40
 - **Síntoma:** PC2 solo tiene el latido seed inicial del 20-may 08:29 Chile en `panel.pc_heartbeat`. Hace 2.8h.
 - **NO es inactividad real:**

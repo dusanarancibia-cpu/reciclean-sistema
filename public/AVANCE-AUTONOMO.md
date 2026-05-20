@@ -1,7 +1,50 @@
 # AVANCE-AUTONOMO — Panel RDO v4 (loop 19-20 may 2026)
 
 > Loop autónomo de PC1-Dusan.
-> Última actualización: **2026-05-20 15:40 Chile** (background, sin interrupciones).
+> Última actualización: **2026-05-20 17:45 Chile** (merge PR #39 + estado PC3 rescate Impulsa).
+
+---
+
+# ITERACIÓN 7 — Merge PR #39 + Activación PC3 rescate Impulsa (PARCIAL)
+
+> Activada por mandato Dusan 17:30 ("DOS TAREAS EN PARALELO").
+
+## TAREA 1 — Merge PR #39 ✅
+
+| PR | Estado | Commit merge |
+|---|---|---|
+| **#39** uploader CSV pesajes | ✅ **MERGED** | `553eab9c` |
+
+Pablo hizo segundo rebase (commit `f73f7d8` en la rama feature) y mergeó él mismo en GitHub. Cuando intenté mergearlo otra vez, GitHub respondió "already merged". **Los 5 PRs de Pablo (#35-#39) están en `main`.** Vercel re-deployó automáticamente.
+
+## TAREA 2 — Supervisar PC3 (rescate Impulsa) — ESTADO REAL
+
+**PC3 NO está ejecutando.** Reporte honesto de la situación:
+
+### Estado de cada artefacto esperado
+| Artefacto | Estado |
+|---|---|
+| `public/impulsa-archivos-mapeo.txt` | ❌ NO existe (no se generó porque no hay login) |
+| `public/impulsa-indice-documentos.md` | ❌ NO existe |
+| `public/impulsa-mensaje-ejecutiva.txt` | ✅ creado por PC1 17:35 — listo para reenviar |
+| Bucket Supabase `impulsa-documentos` | ❌ NO existe (`storage.buckets` 0 rows con LIKE '%impulsa%') |
+| Archivos en Supabase Storage | 0 |
+| Estructura local `C:\Users\dusan\claude-sandbox\impulsa-documentos\` | ✅ creada (carpetas vacías) |
+
+### Bloqueo encontrado
+**B11 en BLOQUEOS.md** — Login `app.sistemaimpulsa.com` con email `gerencia@gestionrepchile.cl` + password `4322` provisto por Dusan: URL sigue en `/login` post-click. Sin error visible. Sin avance posible sin password correcto o respuesta de la ejecutiva.
+
+### Validación contra los 5 puntos del mandato (resultado: 0/5 cumplidos)
+1. ❌ Archivos en Storage: 0.
+2. ❌ 3+ clientes con 2+ tipos: 0 clientes cubiertos.
+3. ❌ Organización CLIENTE/TIPO/FECHA: estructura existe pero vacía.
+4. ❌ Índice con MD5: archivo no existe (no hay archivos a hashear).
+5. ✅ Mensaje a ejecutiva existe: `public/impulsa-mensaje-ejecutiva.txt` con Opción A (extensión 48h) + Opción B (ZIP completo).
+
+### Acción inmediata requerida de Dusan
+- **Opción 1:** confirmar password completo (si "4322" era parcial/PIN).
+- **Opción 2:** reenviar `impulsa-mensaje-ejecutiva.txt` a la ejecutiva Impulsa HOY (mañana 21-may vence el plan CRECE según PENDIENTES.md).
+- **Opción 3:** aceptar pérdida de los adjuntos y operar solo con las 15.080 filas estructuradas que YA están en `staging.crm_impulsa_*` (Mig 042 de Pablo, 19-may).
 
 ---
 
