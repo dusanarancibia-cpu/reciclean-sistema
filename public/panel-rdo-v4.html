@@ -3847,33 +3847,27 @@ setInterval(v4UpdateFecha, 60000);
 // 3) UF — API pública mindicador.cl con cache localStorage 24h
 // =========================================
 async function v4LoadUF() {
+  // Migrado 20-may PM a Edge Function f-uf-hoy de Pablo (cache 24h server-side + self-healing).
+  // Antes: fetch directo a mindicador.cl con cache 12h en localStorage (cada cliente pegaba a la API externa).
   const el = document.getElementById('v4UfValor');
   if (!el) return;
-  const CACHE_KEY = 'v4_uf_cache_v1';
   try {
-    const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-    const ageHrs = cached ? (Date.now() - cached.ts) / (1000 * 60 * 60) : Infinity;
-    if (cached && ageHrs < 12) {
-      el.textContent = '$' + new Intl.NumberFormat('es-CL').format(Math.round(cached.uf));
-      el.title = `UF al ${cached.fecha} (caché)`;
-      return;
-    }
-    const resp = await fetch('https://mindicador.cl/api/uf', { mode: 'cors' });
+    const resp = await fetch('https://eknmtsrtfkzroxnovfqn.supabase.co/functions/v1/f-uf-hoy', { mode: 'cors' });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const json = await resp.json();
-    const uf = json?.serie?.[0]?.valor;
-    const fecha = json?.serie?.[0]?.fecha?.slice(0,10);
-    if (uf) {
-      localStorage.setItem(CACHE_KEY, JSON.stringify({ uf, fecha, ts: Date.now() }));
-      el.textContent = '$' + new Intl.NumberFormat('es-CL').format(Math.round(uf));
-      el.title = `UF al ${fecha}`;
+    if (json?.ok && json?.valor_uf) {
+      el.textContent = '$' + new Intl.NumberFormat('es-CL').format(Math.round(json.valor_uf));
+      let title = `UF $${json.valor_uf} al ${json.fecha} · fuente: ${json.fuente || 'cache'}`;
+      if (json.dias_desfase > 0) title += ` (${json.dias_desfase}d desfase)`;
+      el.title = title;
     } else {
       el.textContent = '—';
+      el.title = 'EF f-uf-hoy devolvió sin valor';
     }
   } catch (e) {
-    console.warn('[v4] UF mindicador fallo:', e?.message);
+    console.warn('[v4] UF EF fallo:', e?.message);
     el.textContent = '—';
-    el.title = 'No se pudo obtener UF';
+    el.title = 'No se pudo obtener UF (EF f-uf-hoy)';
   }
 }
 v4LoadUF();
