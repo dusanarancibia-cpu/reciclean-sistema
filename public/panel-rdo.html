@@ -74,16 +74,78 @@
         <p class="text-sm text-stone-500">Grupo Reciclean-Farex</p>
       </div>
     </div>
-    <h2 class="text-lg font-semibold mb-4 text-stone-700">Iniciar sesión</h2>
-    <input type="email" id="loginEmail" placeholder="tu.email@empresa.cl"
-           aria-label="Correo electrónico"
-           autocomplete="email"
-           class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
-    <button onclick="login()" class="w-full bg-green-700 hover:bg-green-800 text-white p-3 rounded font-semibold transition">
-      Ingresar
-    </button>
-    <p class="text-xs text-stone-500 mt-4">Solo usuarios autorizados. Si no tienes acceso, contacta a Pablo o Dusan.</p>
-    <div id="loginError" class="hidden mt-3 text-sm text-red-600 bg-red-50 p-2 rounded"></div>
+    <!-- D-PANEL-AUTH-001 · 3 pantallas en el mismo container -->
+
+    <!-- (1) Pantalla principal: login -->
+    <div id="loginPaneSignin">
+      <h2 class="text-lg font-semibold mb-4 text-stone-700">Iniciar sesión</h2>
+      <label for="loginEmail" class="sr-only">Correo electrónico</label>
+      <input type="email" id="loginEmail" placeholder="tu.email@empresa.cl"
+             aria-label="Correo electrónico"
+             autocomplete="email"
+             class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
+      <label for="loginPassword" class="sr-only">Contraseña</label>
+      <input type="password" id="loginPassword" placeholder="Contraseña"
+             aria-label="Contraseña"
+             autocomplete="current-password"
+             class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
+      <div class="flex items-center justify-between mb-3 text-sm">
+        <label class="flex items-center gap-2 text-stone-600 cursor-pointer">
+          <input type="checkbox" id="loginRemember" checked
+                 class="rounded border-stone-300 text-green-700 focus:ring-green-600">
+          <span>Recordarme en este dispositivo</span>
+        </label>
+        <button type="button" onclick="showForgotPassword()"
+                class="text-green-700 hover:underline focus:outline-none">¿Olvidaste tu contraseña?</button>
+      </div>
+      <button onclick="login()" id="loginBtn"
+              class="w-full bg-green-700 hover:bg-green-800 text-white p-3 rounded font-semibold transition disabled:opacity-60">
+        Ingresar
+      </button>
+      <p class="text-xs text-stone-500 mt-4">Solo usuarios autorizados. Si es tu primer ingreso, usa "¿Olvidaste tu contraseña?" para recibir el link de acceso.</p>
+      <div id="loginError" class="hidden mt-3 text-sm text-red-600 bg-red-50 p-2 rounded"></div>
+    </div>
+
+    <!-- (2) Pantalla recuperar password -->
+    <div id="loginPaneForgot" class="hidden">
+      <h2 class="text-lg font-semibold mb-4 text-stone-700">Recuperar contraseña</h2>
+      <p class="text-sm text-stone-600 mb-3">Te enviamos un link al correo para que crees una nueva contraseña.</p>
+      <label for="forgotEmail" class="sr-only">Correo electrónico</label>
+      <input type="email" id="forgotEmail" placeholder="tu.email@empresa.cl"
+             aria-label="Correo electrónico"
+             autocomplete="email"
+             class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
+      <button onclick="forgotPassword()" id="forgotBtn"
+              class="w-full bg-green-700 hover:bg-green-800 text-white p-3 rounded font-semibold transition disabled:opacity-60">
+        Enviar link de recuperación
+      </button>
+      <button type="button" onclick="showSignin()"
+              class="w-full mt-2 text-stone-600 hover:text-stone-800 text-sm focus:outline-none">
+        ← Volver al login
+      </button>
+      <div id="forgotMsg" class="hidden mt-3 text-sm p-2 rounded"></div>
+    </div>
+
+    <!-- (3) Pantalla setear nueva password (post magic-link) -->
+    <div id="loginPaneReset" class="hidden">
+      <h2 class="text-lg font-semibold mb-4 text-stone-700">Crear contraseña nueva</h2>
+      <p class="text-sm text-stone-600 mb-3">Elegí una contraseña de al menos 8 caracteres.</p>
+      <label for="resetPassword1" class="sr-only">Nueva contraseña</label>
+      <input type="password" id="resetPassword1" placeholder="Nueva contraseña"
+             aria-label="Nueva contraseña"
+             autocomplete="new-password"
+             class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
+      <label for="resetPassword2" class="sr-only">Repetir contraseña</label>
+      <input type="password" id="resetPassword2" placeholder="Repetir contraseña"
+             aria-label="Repetir contraseña"
+             autocomplete="new-password"
+             class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
+      <button onclick="setNewPassword()" id="resetBtn"
+              class="w-full bg-green-700 hover:bg-green-800 text-white p-3 rounded font-semibold transition disabled:opacity-60">
+        Guardar contraseña
+      </button>
+      <div id="resetMsg" class="hidden mt-3 text-sm p-2 rounded"></div>
+    </div>
   </div>
 </div>
 
@@ -892,27 +954,59 @@ function showResult(divId, ok, message) {
   div.innerHTML = (ok ? '✅ ' : '❌ ') + escapeHtml(message);
 }
 
-// ---------- LOGIN ----------
+// ---------- LOGIN (D-PANEL-AUTH-001 · email + password real) ----------
 window.login = async function() {
-  const email = document.getElementById('loginEmail').value.trim();
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value;
+  const remember = document.getElementById('loginRemember').checked;
   const errDiv = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
   errDiv.classList.add('hidden');
-  if (!email) { errDiv.textContent = "Ingresa un email"; errDiv.classList.remove('hidden'); return; }
+  if (!email || !password) {
+    errDiv.textContent = "Ingresá tu correo y contraseña.";
+    errDiv.classList.remove('hidden');
+    return;
+  }
+  btn.disabled = true; btn.textContent = 'Ingresando…';
 
-  const { data, error } = await sb
-    .schema('panel')
-    .from('usuarios_autorizados')
-    .select('email, perfil, activo, nombre')   // incluir email canónico
-    .ilike('email', email)   // case-insensitive (Dusan vs dusan)
-    .maybeSingle();
-
-  if (error || !data || !data.activo) {
-    errDiv.textContent = "Usuario no autorizado o inactivo. Contacta a Pablo.";
+  const { data: authData, error: authError } = await sb.auth.signInWithPassword({ email, password });
+  if (authError) {
+    btn.disabled = false; btn.textContent = 'Ingresar';
+    const msg = (authError.message || '').toLowerCase();
+    if (msg.includes('invalid')) errDiv.textContent = 'Correo o contraseña incorrectos. Si es tu primer ingreso usá "¿Olvidaste tu contraseña?".';
+    else errDiv.textContent = 'Error al ingresar: ' + authError.message;
     errDiv.classList.remove('hidden');
     return;
   }
 
-  // Usar email CANÓNICO de la BD, no el del input (resuelve case-sensitive en queries posteriores)
+  // Recordarme = false → al cerrar la pestaña hacemos signOut para que la sesión no persista.
+  localStorage.setItem('rdo_remember', remember ? '1' : '0');
+  if (!remember) {
+    window.addEventListener('beforeunload', () => { try { sb.auth.signOut(); } catch(e) {} });
+  }
+
+  await hydrateSessionAndEnter(authData.user);
+  btn.disabled = false; btn.textContent = 'Ingresar';
+};
+
+// ---------- HYDRATE: tras un signIn válido, sacar perfil de panel.usuarios_autorizados y entrar al panel
+async function hydrateSessionAndEnter(authUser) {
+  const errDiv = document.getElementById('loginError');
+  const email = (authUser?.email || '').toLowerCase();
+  const { data, error } = await sb
+    .schema('panel')
+    .from('usuarios_autorizados')
+    .select('email, perfil, activo, nombre')
+    .ilike('email', email)
+    .maybeSingle();
+
+  if (error || !data || !data.activo) {
+    await sb.auth.signOut();
+    errDiv.textContent = "Tu usuario auth existe pero no está activo en la whitelist. Contactá a Pablo o Dusan.";
+    errDiv.classList.remove('hidden');
+    return;
+  }
+
   currentUser = data.email;
   currentProfile = data.perfil;
   console.log('[Panel RDO] Login OK:', { email: currentUser, profile: currentProfile });
@@ -943,7 +1037,130 @@ window.login = async function() {
   // Update ultimo_login (best-effort, no bloquea)
   sb.schema('panel').from('usuarios_autorizados').update({ ultimo_login: new Date().toISOString() })
     .eq('email', email).then(() => {});
+}
+
+// ---------- D-PANEL-AUTH-001 · UI helpers (cambiar entre las 3 pantallas) ----------
+window.showSignin = function() {
+  document.getElementById('loginPaneSignin').classList.remove('hidden');
+  document.getElementById('loginPaneForgot').classList.add('hidden');
+  document.getElementById('loginPaneReset').classList.add('hidden');
+  document.getElementById('loginError').classList.add('hidden');
 };
+window.showForgotPassword = function() {
+  document.getElementById('loginPaneSignin').classList.add('hidden');
+  document.getElementById('loginPaneForgot').classList.remove('hidden');
+  document.getElementById('loginPaneReset').classList.add('hidden');
+  const sourceEmail = document.getElementById('loginEmail').value.trim();
+  if (sourceEmail) document.getElementById('forgotEmail').value = sourceEmail;
+  document.getElementById('forgotMsg').classList.add('hidden');
+};
+function showResetPanel() {
+  document.getElementById('loginContainer').style.display = 'flex';
+  document.getElementById('appContainer').style.display = 'none';
+  document.getElementById('loginPaneSignin').classList.add('hidden');
+  document.getElementById('loginPaneForgot').classList.add('hidden');
+  document.getElementById('loginPaneReset').classList.remove('hidden');
+  document.getElementById('resetMsg').classList.add('hidden');
+}
+
+// ---------- D-PANEL-AUTH-001 · Reset password (enviar link) ----------
+window.forgotPassword = async function() {
+  const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+  const msg = document.getElementById('forgotMsg');
+  const btn = document.getElementById('forgotBtn');
+  msg.classList.add('hidden');
+  if (!email) {
+    msg.className = 'mt-3 text-sm p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'Ingresá tu correo.';
+    msg.classList.remove('hidden');
+    return;
+  }
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/panel-rdo.html'
+  });
+  btn.disabled = false; btn.textContent = 'Enviar link de recuperación';
+  if (error) {
+    msg.className = 'mt-3 text-sm p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'Error: ' + error.message;
+  } else {
+    msg.className = 'mt-3 text-sm p-2 rounded bg-green-50 text-green-700';
+    msg.textContent = 'Listo. Te enviamos un link a ' + email + '. Revisá tu correo (puede tardar 1-2 min).';
+  }
+  msg.classList.remove('hidden');
+};
+
+// ---------- D-PANEL-AUTH-001 · Set new password (post magic-link) ----------
+window.setNewPassword = async function() {
+  const p1 = document.getElementById('resetPassword1').value;
+  const p2 = document.getElementById('resetPassword2').value;
+  const msg = document.getElementById('resetMsg');
+  const btn = document.getElementById('resetBtn');
+  msg.classList.add('hidden');
+  if (!p1 || p1.length < 8) {
+    msg.className = 'mt-3 text-sm p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+    msg.classList.remove('hidden'); return;
+  }
+  if (p1 !== p2) {
+    msg.className = 'mt-3 text-sm p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'Las contraseñas no coinciden.';
+    msg.classList.remove('hidden'); return;
+  }
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  const { data, error } = await sb.auth.updateUser({ password: p1 });
+  btn.disabled = false; btn.textContent = 'Guardar contraseña';
+  if (error) {
+    msg.className = 'mt-3 text-sm p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'Error: ' + error.message;
+    msg.classList.remove('hidden'); return;
+  }
+  msg.className = 'mt-3 text-sm p-2 rounded bg-green-50 text-green-700';
+  msg.textContent = 'Contraseña guardada. Entrando al panel…';
+  msg.classList.remove('hidden');
+  document.getElementById('resetPassword1').value = '';
+  document.getElementById('resetPassword2').value = '';
+  // Limpiar el hash de recovery de la URL
+  history.replaceState(null, '', window.location.pathname);
+  // Con la sesión activa post-updateUser, entramos directo
+  await hydrateSessionAndEnter(data.user);
+};
+
+// ---------- D-PANEL-AUTH-001 · Bootstrap: detectar sesión activa o recovery flow ----------
+async function bootstrapAuth() {
+  // Si el hash trae type=recovery, mostrar pantalla set new password
+  const hash = window.location.hash || '';
+  if (hash.includes('type=recovery')) {
+    showResetPanel();
+    // El SDK procesa el hash automáticamente y dispara PASSWORD_RECOVERY event
+    return;
+  }
+
+  // Si el usuario marcó "no recordarme" en una sesión previa, no auto-loguear
+  const rememberFlag = localStorage.getItem('rdo_remember');
+  if (rememberFlag === '0') {
+    await sb.auth.signOut();
+    showSignin();
+    return;
+  }
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    await hydrateSessionAndEnter(session.user);
+  } else {
+    showSignin();
+  }
+}
+
+// Listener global de auth (recovery, signout, refresh)
+function setupAuthListener() {
+  sb.auth.onAuthStateChange((event, session) => {
+    console.log('[Panel RDO] auth event:', event);
+    if (event === 'PASSWORD_RECOVERY') {
+      showResetPanel();
+    }
+  });
+}
 
 // ---------- SILOS: carga + selector + filtrado de pestañas ----------
 // ---------- CONFIGURACIÓN data-driven (cargar las "cajas" desde BD) ----------
@@ -1132,14 +1349,18 @@ function applySiloTabs() {
   }
 }
 
-window.logout = function() {
+window.logout = async function() {
+  try { await sb.auth.signOut(); } catch(e) { console.warn('[Panel RDO] signOut error:', e); }
   currentUser = null; currentProfile = null;
-  document.getElementById('appContainer').style.display = 'none';
-  document.getElementById('loginContainer').style.display = 'flex';
-  document.getElementById('loginEmail').value = '';
   // Resetear UI de elementos dependientes de sesión
   document.getElementById('accesoRapidoHeader')?.classList.add('hidden');
   document.getElementById('siloSelectorContainer')?.classList.add('hidden');
+  // Limpiar campos del form
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('appContainer').style.display = 'none';
+  document.getElementById('loginContainer').style.display = 'flex';
+  showSignin();
 };
 
 // ---------- TABS ----------
@@ -3419,8 +3640,21 @@ async function guardarCotizacion() {
 initSupabase();
 setupTabs();
 setupRecorder();
+setupAuthListener();
+bootstrapAuth();
+
+// Enter handlers para los 3 paneles de auth
 document.getElementById('loginEmail').addEventListener('keypress', e => {
+  if (e.key === 'Enter') document.getElementById('loginPassword').focus();
+});
+document.getElementById('loginPassword').addEventListener('keypress', e => {
   if (e.key === 'Enter') login();
+});
+document.getElementById('forgotEmail').addEventListener('keypress', e => {
+  if (e.key === 'Enter') forgotPassword();
+});
+document.getElementById('resetPassword2').addEventListener('keypress', e => {
+  if (e.key === 'Enter') setNewPassword();
 });
 </script>
 </body>
