@@ -1265,7 +1265,23 @@
         <button onclick="loadCartera()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
       </div>
 
-      <!-- KPI bar por categoría -->
+      <!-- N2-3 · Resumen cobertura cartera (backend Pablo f_panel_cartera_cobertura) -->
+      <div id="v4CarteraCobertura" class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-4">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h3 class="text-sm font-bold text-emerald-800">📊 Cobertura de cartera</h3>
+            <p class="text-xs text-emerald-700 mt-0.5">Resumen vivo desde backend</p>
+          </div>
+          <div class="flex gap-3 text-sm">
+            <div class="text-center"><div class="text-xs text-emerald-700">Activos</div><div id="v4CarCobActivos" class="text-2xl font-bold text-emerald-800">—</div></div>
+            <div class="text-center"><div class="text-xs text-emerald-700">Categorizados</div><div id="v4CarCobCat" class="text-2xl font-bold text-emerald-800">—</div></div>
+            <div class="text-center"><div class="text-xs text-amber-700">Sin categoría</div><div id="v4CarCobSinCat" class="text-2xl font-bold text-amber-700">—</div></div>
+            <div class="text-center"><div class="text-xs text-blue-700">% cobertura</div><div id="v4CarCobPct" class="text-2xl font-bold text-blue-700">—</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI bar por categoría (existente — flujo loadCartera intacto) -->
       <div id="carKpiBar" class="flex flex-wrap gap-2 mb-4"></div>
 
       <!-- Filtros -->
@@ -1363,6 +1379,22 @@
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold text-stone-800">🎯 Oportunidades — Pipeline Kanban</h2>
         <button onclick="loadOportunidadesKanban()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+
+      <!-- N2-5 · Resumen oportunidades + flag fuzzy CRM (backend Pablo) -->
+      <div id="v4OppResumen" class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h3 class="text-sm font-bold text-blue-800">📊 Pipeline operativo</h3>
+            <p class="text-xs text-blue-700 mt-0.5">CRM ↔ RDO en tiempo real</p>
+          </div>
+          <div class="flex flex-wrap gap-3 text-sm">
+            <div class="text-center"><div class="text-xs text-blue-700">Opor RDO abiertas</div><div id="v4OppRdoAbiertas" class="text-2xl font-bold text-blue-800">—</div></div>
+            <div class="text-center"><div class="text-xs text-blue-700">CRM Impulsa</div><div id="v4OppCrmTotal" class="text-2xl font-bold text-blue-800">—</div></div>
+            <div class="text-center"><div class="text-xs text-emerald-700">Matcheadas RDO</div><div id="v4OppMatched" class="text-2xl font-bold text-emerald-700">—</div></div>
+            <div class="text-center"><div class="text-xs text-amber-700">Fuzzy sin reconciliar</div><div id="v4OppFuzzy" class="text-2xl font-bold text-amber-700">—</div></div>
+          </div>
+        </div>
       </div>
 
       <div id="oppKanban" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
@@ -4740,7 +4772,27 @@ function carDebouncedSearch() {
   _cartSearchTimer = setTimeout(() => loadCartera(), 300);
 }
 
+// N2-3 · Cargar resumen cobertura cartera (backend Pablo)
+async function _v4LoadCarteraCobertura() {
+  try {
+    if (typeof sb === 'undefined' || !sb?.rpc) return;
+    const { data, error } = await sb.rpc('f_panel_cartera_cobertura');
+    if (error || !data) return;
+    const activos = data?.total_clientes_activos ?? 0;
+    const cat = data?.con_categoria ?? 0;
+    const sinCat = data?.sin_categoria ?? 0;
+    const pct = activos > 0 ? Math.round(cat / activos * 100) : 0;
+    const setIf = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = txt; };
+    setIf('v4CarCobActivos', activos);
+    setIf('v4CarCobCat', cat);
+    setIf('v4CarCobSinCat', sinCat);
+    setIf('v4CarCobPct', pct + '%');
+  } catch(e) { console.warn('[v4-cartera-cob] fallo:', e); }
+}
+
 async function initCartera() {
+  // N2-3: cobertura cartera once por sesión
+  if (!window._v4CarCobLoaded) { window._v4CarCobLoaded = true; _v4LoadCarteraCobertura(); }
   if (!_cartCategorias) {
     const { data, error } = await sb.schema('curated').from('cartera_categorias')
       .select('categoria_id, nombre, color_ui, orden, activa').order('orden');
@@ -4980,7 +5032,31 @@ const OPP_ESTADOS = [
 let _oppDrawerId = null;
 let _oppSucursalesMap = null;
 
+// N2-5 · Resumen oportunidades pipeline (backend Pablo f_panel_health.crm)
+async function _v4LoadOppResumen() {
+  try {
+    if (typeof sb === 'undefined' || !sb?.rpc) return;
+    const { data, error } = await sb.rpc('f_panel_health');
+    if (error || !data) return;
+    const crmTotal = data?.crm?.oportunidades_total ?? 0;
+    const crmMatch = data?.crm?.matcheadas_rdo ?? 0;
+    const fuzzyRes = await sb.from('v_crm_match_sugerido').select('*', { count:'exact', head:true });
+    const fuzzyTot = fuzzyRes?.count ?? 0;
+    // RDO abiertas: count en curated.oportunidades con estado activo
+    const oppAbiertasRes = await sb.schema('curated').from('oportunidades').select('*', { count:'exact', head:true }).neq('estado', 'cerrada_perdida').neq('estado', 'cerrada_ganada');
+    const oppAbiertas = oppAbiertasRes?.count ?? 0;
+
+    const setIf = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = (txt ?? 0).toLocaleString('es-CL'); };
+    setIf('v4OppRdoAbiertas', oppAbiertas);
+    setIf('v4OppCrmTotal', crmTotal);
+    setIf('v4OppMatched', crmMatch);
+    setIf('v4OppFuzzy', fuzzyTot);
+  } catch(e) { console.warn('[v4-opp-resumen] fallo:', e); }
+}
+
 async function initOportunidadesKanban() {
+  // N2-5: resumen pipeline once por sesión
+  if (!window._v4OppResumenLoaded) { window._v4OppResumenLoaded = true; _v4LoadOppResumen(); }
   if (!_oppSucursalesMap) {
     const sucs = await ensureSucursalesCache();
     _oppSucursalesMap = new Map((sucs || []).map(s => [s.sucursal_id, s.nombre]));
