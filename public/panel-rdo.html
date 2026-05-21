@@ -599,76 +599,70 @@
           <div id="v4-topContent" class="grid grid-cols-2 lg:grid-cols-5 gap-3 text-sm"></div>
         </div>
 
-        <!-- v4-design F5 · Finanzas resumidas -->
+        <!-- v4-design F5+F17 · Métricas operativas mixto (real + tesorería pendiente Dyana) -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Saldo banco">
-            <div class="text-xs text-slate-500 uppercase font-semibold">Saldo Banco</div>
-            <div class="text-xl font-bold text-slate-800 mt-1">$89.2M</div>
-            <div class="text-xs text-slate-400 mt-0.5">🏦 Santander</div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Cola operativa">
+            <div class="text-xs text-slate-500 uppercase font-semibold">Cola Operativa</div>
+            <div id="v4-fin-cola-valor" class="text-xl font-bold text-slate-800 mt-1">—</div>
+            <div id="v4-fin-cola-sub" class="text-xs text-slate-400 mt-0.5">tareas pendientes</div>
           </div>
-          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Por cobrar">
-            <div class="text-xs text-slate-500 uppercase font-semibold">Por Cobrar</div>
-            <div class="text-xl font-bold text-orange-600 mt-1">$34.7M</div>
-            <div class="text-xs text-slate-400 mt-0.5">12 facturas</div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Alertas operativas">
+            <div class="text-xs text-slate-500 uppercase font-semibold">Alertas Operativas</div>
+            <div id="v4-fin-alertas-valor" class="text-xl font-bold text-orange-600 mt-1">—</div>
+            <div id="v4-fin-alertas-sub" class="text-xs text-slate-400 mt-0.5">precio + contraparte</div>
           </div>
-          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Pagos programados">
-            <div class="text-xs text-slate-500 uppercase font-semibold">Pagos Programados</div>
-            <div class="text-xl font-bold text-blue-600 mt-1">$22.1M</div>
-            <div class="text-xs text-slate-400 mt-0.5">Próx. 30 días</div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Salud PCs">
+            <div class="text-xs text-slate-500 uppercase font-semibold">Salud PCs</div>
+            <div id="v4-fin-pcs-valor" class="text-xl font-bold text-blue-600 mt-1">—</div>
+            <div id="v4-fin-pcs-sub" class="text-xs text-slate-400 mt-0.5">operativas hoy</div>
           </div>
-          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Inventario">
-            <div class="text-xs text-slate-500 uppercase font-semibold">Inventario</div>
-            <div class="text-xl font-bold text-slate-800 mt-1">$156.3M</div>
-            <div class="text-xs text-emerald-600 mt-0.5">↑ 5% vs mes anterior</div>
+          <div class="card-hover bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center" role="article" aria-label="Tesorería pendiente integrar">
+            <div class="text-xs text-amber-700 uppercase font-semibold">Tesorería</div>
+            <div class="text-xl font-bold text-amber-700 mt-1">—</div>
+            <div class="text-xs text-amber-600 mt-0.5">⚠️ pendiente integrar Dyana</div>
           </div>
         </div>
 
-        <!-- v4-design F5 · Riesgos + Oportunidades con Diego IA mock -->
+        <!-- v4-design F5+F16 · Riesgos + Oportunidades con datos reales -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div class="bg-red-50 border border-red-200 rounded-2xl p-5" role="article" aria-label="Alertas de riesgo">
             <div class="flex items-center gap-2 text-red-700 font-bold text-base">⚠️ Alertas de Riesgo</div>
-            <ul class="mt-3 space-y-2 text-sm text-red-800">
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-red-500 rounded-full"></span> Cuentas por cobrar vencidas: $12M (crítico)</li>
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-orange-500 rounded-full"></span> Margen neto bajó 2 pts vs trimestre anterior</li>
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-yellow-500 rounded-full"></span> Concentración: 3 clientes = 65% facturación</li>
+            <ul id="v4-riesgos-lista" class="mt-3 space-y-2 text-sm text-red-800">
+              <li class="text-xs text-slate-400">Cargando…</li>
             </ul>
-            <div class="mt-3 p-3 bg-white rounded-xl text-sm border border-slate-100">
-              <span class="font-bold">🤖 Diego IA:</span> Activar recordatorios automáticos. Evaluar diversificación de cartera.
+            <div id="v4-riesgos-diego" class="mt-3 p-3 bg-white rounded-xl text-sm border border-slate-100">
+              <span class="font-bold">🤖 Diego IA:</span> Esperando datos…
             </div>
           </div>
           <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5" role="article" aria-label="Oportunidades">
             <div class="flex items-center gap-2 text-emerald-700 font-bold text-base">📈 Oportunidades de Quiebre</div>
-            <ul class="mt-3 space-y-2 text-sm text-emerald-800">
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Licitación municipal abre en 15 días</li>
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Alza precio material reciclado +22%</li>
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Competidor redujo operaciones en zona sur</li>
+            <ul id="v4-oportunidades-lista" class="mt-3 space-y-2 text-sm text-emerald-800">
+              <li class="text-xs text-slate-400">Cargando…</li>
             </ul>
-            <div class="mt-3 p-3 bg-white rounded-xl text-sm border border-slate-100">
-              <span class="font-bold">🤖 Diego IA:</span> Preparar propuesta. Aumentar acopio. Expandir a zona sur.
+            <div id="v4-oportunidades-diego" class="mt-3 p-3 bg-white rounded-xl text-sm border border-slate-100">
+              <span class="font-bold">🤖 Diego IA:</span> Esperando datos…
             </div>
           </div>
         </div>
 
-        <!-- v4-design F5 · Desglose sucursales -->
+        <!-- v4-design F5+F15 · Desglose sucursales con datos reales -->
         <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Desglose por sucursales">
-          <h3 class="text-sm font-semibold text-slate-800 mb-3">🏢 Desglose por Sucursales</h3>
+          <h3 class="text-sm font-semibold text-slate-800 mb-1">🏢 Desglose por Sucursales</h3>
+          <p class="text-xs text-slate-400 mb-3">Movimiento últimos 90 días · datos vivos</p>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead class="text-slate-500 border-b border-slate-100">
                 <tr>
                   <th class="text-left py-2 font-medium">Sucursal</th>
-                  <th class="text-right py-2 font-medium">Ingresos</th>
-                  <th class="text-right py-2 font-medium">Costos</th>
-                  <th class="text-right py-2 font-medium">Margen</th>
-                  <th class="text-right py-2 font-medium">Inventario</th>
+                  <th class="text-right py-2 font-medium">Tickets</th>
+                  <th class="text-right py-2 font-medium">Toneladas</th>
+                  <th class="text-right py-2 font-medium">Monto</th>
+                  <th class="text-right py-2 font-medium">Proveedores</th>
                   <th class="text-right py-2 font-medium">Estado</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr class="border-b border-slate-50"><td class="py-2 font-medium text-slate-700">Planta Norte (Stgo)</td><td class="text-right">$58.2M</td><td class="text-right text-red-600">$38.1M</td><td class="text-right text-emerald-600">$20.1M</td><td class="text-right">$67.4M</td><td class="text-right"><span class="badge bg-emerald-100 text-emerald-700">OK</span></td></tr>
-                <tr class="border-b border-slate-50"><td class="py-2 font-medium text-slate-700">Planta Sur (Concep)</td><td class="text-right">$42.8M</td><td class="text-right text-red-600">$31.5M</td><td class="text-right text-emerald-600">$11.3M</td><td class="text-right">$43.2M</td><td class="text-right"><span class="badge bg-amber-100 text-amber-700">Revisar</span></td></tr>
-                <tr class="border-b border-slate-50"><td class="py-2 font-medium text-slate-700">C. Logístico (Valpo)</td><td class="text-right">$34.1M</td><td class="text-right text-red-600">$22.8M</td><td class="text-right text-emerald-600">$11.3M</td><td class="text-right">$38.9M</td><td class="text-right"><span class="badge bg-emerald-100 text-emerald-700">OK</span></td></tr>
-                <tr><td class="py-2 font-medium text-slate-700">Farex (Central)</td><td class="text-right">$7.4M</td><td class="text-right text-red-600">$5.9M</td><td class="text-right text-emerald-600">$1.5M</td><td class="text-right">$6.8M</td><td class="text-right"><span class="badge bg-red-100 text-red-700">Urgente</span></td></tr>
+              <tbody id="v4-sucursales-tbody">
+                <tr><td class="py-2 text-slate-400 text-center" colspan="6">Cargando datos…</td></tr>
               </tbody>
             </table>
           </div>
@@ -5487,6 +5481,111 @@ window.initV4Hero = function initV4Hero() {
           } catch(e) { console.warn('[v4-kpis] fallo:', e); }
         })();
       } catch(err) { console.warn('[v4-kpis] init fallo:', err); }
+
+      // F15 · Tabla desglose sucursales datos reales (RPC f_pesajes_por_sucursal)
+      try {
+        const tbody = document.getElementById('v4-sucursales-tbody');
+        if (tbody) {
+          (async () => {
+            try {
+              if (typeof sb === 'undefined' || !sb?.rpc) return;
+              const { data, error } = await sb.rpc('f_pesajes_por_sucursal', { p_desde: '2025-01-01', p_hasta: new Date().toISOString().slice(0,10) });
+              if (error || !data || data.length === 0) { tbody.innerHTML = '<tr><td class="py-2 text-slate-400 text-center" colspan="6">Sin datos</td></tr>'; return; }
+              const fmtM = (n) => { n = Number(n)||0; return n >= 1e6 ? `$${(n/1e6).toFixed(1)}M` : (n >= 1e3 ? `$${(n/1e3).toFixed(0)}K` : `$${n}`); };
+              const safe = (s) => (s||'—').toString().replace(/</g,'&lt;');
+              tbody.innerHTML = data.map(r => {
+                const ton = Number(r.toneladas) || 0;
+                const tickets = Number(r.tickets_mes) || 0;
+                let estado, badge;
+                if (tickets >= 50 && ton >= 50) { estado = 'OK'; badge = 'bg-emerald-100 text-emerald-700'; }
+                else if (tickets >= 5) { estado = 'Revisar'; badge = 'bg-amber-100 text-amber-700'; }
+                else { estado = 'Bajo'; badge = 'bg-red-100 text-red-700'; }
+                return `<tr class="border-b border-slate-50"><td class="py-2 font-medium text-slate-700">${safe(r.sucursal)}</td><td class="text-right">${tickets}</td><td class="text-right">${ton.toFixed(1)}t</td><td class="text-right">${fmtM(r.monto)}</td><td class="text-right">${Number(r.proveedores_unicos)||0}</td><td class="text-right"><span class="badge ${badge}">${estado}</span></td></tr>`;
+              }).join('');
+            } catch(e) { console.warn('[v4-sucursales] fallo:', e); }
+          })();
+        }
+      } catch(err) { console.warn('[v4-sucursales] init fallo:', err); }
+
+      // F16 · Riesgos + Oportunidades datos reales
+      try {
+        (async () => {
+          if (typeof sb === 'undefined' || !sb?.rpc) return;
+          try {
+            const [healthRes, fuzzyRes, anomRes] = await Promise.all([
+              sb.rpc('f_panel_health'),
+              sb.from('v_crm_match_sugerido').select('*', { count:'exact', head:true }),
+              sb.from('v_panel_pesajes_anomalias').select('id', { count:'exact', head:true })
+            ]);
+            const health = healthRes?.data || {};
+            const riesgos = document.getElementById('v4-riesgos-lista');
+            const oport   = document.getElementById('v4-oportunidades-lista');
+            const dRiesgos = document.getElementById('v4-riesgos-diego');
+            const dOport   = document.getElementById('v4-oportunidades-diego');
+
+            const alertasR = health?.alertas?.precio_tarifa_rojo ?? 0;
+            const alertasC = health?.alertas?.contraparte ?? 0;
+            const alertasS = health?.alertas?.cliente_sin_registro ?? 0;
+            const colaPend = health?.cola_construccion?.pendiente ?? 0;
+            const pesajesD = health?.data_freshness?.pesajes_prod_dias_atras ?? 0;
+            const anomTot  = anomRes?.count ?? 0;
+
+            if (riesgos) {
+              riesgos.innerHTML = `
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-red-500 rounded-full"></span> ${alertasR} alertas críticas de precio sin revisar</li>
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-orange-500 rounded-full"></span> ${alertasC} alertas de contraparte (cliente sin rut, etc.)</li>
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-yellow-500 rounded-full"></span> ${anomTot} anomalías de pesaje detectadas (kg=0, precio negativo, sin sucursal)</li>
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-amber-500 rounded-full"></span> Última carga pesajes hace ${pesajesD} días</li>
+              `;
+            }
+            if (dRiesgos) {
+              const accion = alertasR > 30 ? 'Revisar tab Precios urgente.' : (anomTot > 100 ? 'Auditar v_panel_pesajes_anomalias.' : 'Sin acción crítica hoy.');
+              dRiesgos.innerHTML = `<span class="font-bold">🤖 Diego IA:</span> ${accion}`;
+            }
+
+            const fuzzyTot = fuzzyRes?.count ?? 0;
+            const e360Tot  = health?.e360?.total_links ?? 0;
+            const crmOpor  = health?.crm?.oportunidades_total ?? 0;
+
+            if (oport) {
+              oport.innerHTML = `
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> ${fuzzyTot} sugerencias fuzzy CRM Impulsa↔RDO listas para reconciliar</li>
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> ${crmOpor.toLocaleString('es-CL')} oportunidades en CRM (cartera activa)</li>
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> ${e360Tot} links E360 ecosistema↔entidad operativa</li>
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> ${colaPend} tareas operativas listas para ejecutar</li>
+              `;
+            }
+            if (dOport) {
+              const accion = fuzzyTot > 100 ? 'Andrea revisa 23 alta-confianza (30 min cierra duplicados).' : 'Pipeline operativo balanceado.';
+              dOport.innerHTML = `<span class="font-bold">🤖 Diego IA:</span> ${accion}`;
+            }
+          } catch(e) { console.warn('[v4-riesgos-oport] fallo:', e); }
+        })();
+      } catch(err) { console.warn('[v4-riesgos-oport] init fallo:', err); }
+
+      // F17 · Cards finanzas (mix real + tesorería disclaimer)
+      try {
+        (async () => {
+          if (typeof sb === 'undefined' || !sb?.rpc) return;
+          try {
+            const { data: health } = await sb.rpc('f_panel_health');
+            const colaPend = health?.cola_construccion?.pendiente ?? 0;
+            const colaBuilt = health?.cola_construccion?.built ?? 0;
+            const alertasR = health?.alertas?.precio_tarifa_rojo ?? 0;
+            const alertasC = health?.alertas?.contraparte ?? 0;
+            const pcsTotal = (health?.pcs ?? []).length;
+            const pcsActivas = (health?.pcs ?? []).filter(p => p.health !== 'caida').length;
+
+            const setIf = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = txt; };
+            setIf('v4-fin-cola-valor', colaPend + colaBuilt);
+            setIf('v4-fin-cola-sub', `${colaPend} pend · ${colaBuilt} listas auditar`);
+            setIf('v4-fin-alertas-valor', alertasR + alertasC);
+            setIf('v4-fin-alertas-sub', `${alertasR} precio rojo · ${alertasC} contraparte`);
+            setIf('v4-fin-pcs-valor', `${pcsActivas}/${pcsTotal}`);
+            setIf('v4-fin-pcs-sub', pcsActivas === pcsTotal ? 'todas reportando' : `${pcsTotal - pcsActivas} caídas`);
+          } catch(e) { console.warn('[v4-finanzas-mixto] fallo:', e); }
+        })();
+      } catch(err) { console.warn('[v4-finanzas-mixto] init fallo:', err); }
 
       // F12 · Feed actividad reciente datos reales (RPC f_panel_actividad_reciente)
       try {
