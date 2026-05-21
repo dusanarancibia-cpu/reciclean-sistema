@@ -515,7 +515,32 @@
             </div>
           </div>
         </div>
-        <!-- (F4 inyectará gráficos + mapa aquí abajo; F5 Top5 + finanzas + riesgos + sucursales) -->
+        <!-- v4-design F4 · Gráficos Chart.js -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Composición de ingresos">
+            <h3 class="text-sm font-semibold text-slate-800 mb-1">🍩 Composición Ingresos</h3>
+            <p class="text-xs text-slate-400 mb-3">Por línea de negocio</p>
+            <canvas id="v4-pieChart" height="200" aria-label="Gráfico doughnut composición ingresos"></canvas>
+          </div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Ingresos vs Costos por sucursal">
+            <h3 class="text-sm font-semibold text-slate-800 mb-1">📊 Ingresos vs Costos</h3>
+            <p class="text-xs text-slate-400 mb-3">Por sucursal (millones)</p>
+            <canvas id="v4-barChart" height="200" aria-label="Gráfico barras ingresos vs costos"></canvas>
+          </div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Tendencia 12 meses">
+            <h3 class="text-sm font-semibold text-slate-800 mb-1">📈 Tendencia 12 meses</h3>
+            <p class="text-xs text-slate-400 mb-3">Crecimiento interanual</p>
+            <canvas id="v4-lineChart" height="200" aria-label="Gráfico línea tendencia anual"></canvas>
+          </div>
+        </div>
+
+        <!-- v4-design F4 · Mapa Leaflet sucursales -->
+        <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Cobertura geográfica">
+          <h3 class="text-sm font-semibold text-slate-800 mb-1">🗺️ Cobertura Geográfica</h3>
+          <p class="text-xs text-slate-400 mb-3">Sucursales y centros de acopio</p>
+          <div id="v4-map" style="height:280px; border-radius:12px;" class="z-0"></div>
+        </div>
+        <!-- (F5 Top5 + finanzas + riesgos + sucursales abajo) -->
       </div>
 
       <div class="bg-white p-5 rounded-lg shadow-sm">
@@ -5090,6 +5115,63 @@ window.initV4Hero = function initV4Hero() {
 
     // Silo ctx
     window.v4SyncSiloCtx && window.v4SyncSiloCtx();
+
+    // ===== F4: Charts + Mapa (one-shot, guard contra doble-init) =====
+    if (!window._v4ChartsReady) {
+      window._v4ChartsReady = true;
+      try {
+        if (typeof Chart !== 'undefined') {
+          const pieEl = document.getElementById('v4-pieChart');
+          if (pieEl) new Chart(pieEl, {
+            type: 'doughnut',
+            data: { labels: ['Reciclean','Farex','Gestión REP','Otros'], datasets: [{ data:[45,25,20,10], backgroundColor:['#059669','#ea580c','#2563eb','#94a3b8'], borderWidth:0 }] },
+            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } } }
+          });
+          const barEl = document.getElementById('v4-barChart');
+          if (barEl) new Chart(barEl, {
+            type: 'bar',
+            data: { labels: ['Planta N.','Planta S.','C. Log.','Farex'], datasets: [
+              { label:'Ingresos', data:[58,42,34,7], backgroundColor:'#059669', borderRadius:4 },
+              { label:'Costos',   data:[38,31,22,6], backgroundColor:'#fca5a5', borderRadius:4 }
+            ]},
+            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } }, scales:{ x:{ grid:{ display:false } }, y:{ grid:{ color:'#e5e7eb' } } } }
+          });
+          const lineEl = document.getElementById('v4-lineChart');
+          if (lineEl) new Chart(lineEl, {
+            type: 'line',
+            data: { labels: ['Jun','Jul','Ago','Sep','Oct','Nov','Dic','Ene','Feb','Mar','Abr','May'], datasets: [
+              { label:'Ingresos', data:[48,52,47,55,60,58,63,68,65,70,75,82], borderColor:'#059669', backgroundColor:'#05966920', fill:true, tension:0.4, pointRadius:2 },
+              { label:'Costos',   data:[35,38,34,40,42,40,44,46,43,48,50,53], borderColor:'#ea580c', backgroundColor:'transparent', tension:0.4, pointRadius:2 }
+            ]},
+            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } }, scales:{ x:{ grid:{ display:false } }, y:{ grid:{ color:'#e5e7eb' } } } }
+          });
+        } else {
+          console.warn('[v4-hero] Chart.js no disponible (CDN bloqueado).');
+        }
+      } catch(err) { console.warn('[v4-hero] charts init fallo:', err); }
+
+      try {
+        if (typeof L !== 'undefined') {
+          const mapEl = document.getElementById('v4-map');
+          if (mapEl) {
+            const map = L.map('v4-map').setView([-33.45, -70.65], 6);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; CartoDB' }).addTo(map);
+            [
+              { name:'Planta Norte (Stgo)',   lat:-33.42, lng:-70.65, color:'#059669' },
+              { name:'Planta Sur (Concep)',    lat:-36.82, lng:-73.05, color:'#2563eb' },
+              { name:'C. Logístico (Valpo)',   lat:-33.04, lng:-71.62, color:'#ea580c' },
+              { name:'Farex Central (Stgo)',   lat:-33.45, lng:-70.67, color:'#9333ea' }
+            ].forEach(s => {
+              L.circleMarker([s.lat, s.lng], { radius:10, fillColor:s.color, color:'white', weight:2, fillOpacity:0.85 }).bindPopup('<b>'+s.name+'</b>').addTo(map);
+            });
+            // Forzar invalidateSize en próximo tick (canvas display:none → visible)
+            setTimeout(() => map.invalidateSize(), 200);
+          }
+        } else {
+          console.warn('[v4-hero] Leaflet no disponible (CDN bloqueado).');
+        }
+      } catch(err) { console.warn('[v4-hero] map init fallo:', err); }
+    }
   } catch(e) { console.warn('[v4-hero] init fallo:', e); }
 };
 
