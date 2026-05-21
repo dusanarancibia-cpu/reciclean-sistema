@@ -5422,11 +5422,37 @@ window._v4TopData = {
     { name:'Pedro Silva',    value:'18 junio', icon:'🍰', bar:45 }
   ]
 };
-window.v4SwitchTop = function v4SwitchTop(category) {
-  const data = window._v4TopData[category] || window._v4TopData.clientes;
-  const cont = document.getElementById('v4-topContent');
-  if (!cont) return;
-  cont.innerHTML = data.map((item, i) => `
+// F9 · v4SwitchTop async: usa f_panel_top_n (RPC Pablo handoff db686c0) para
+// {clientes, proveedores, sucursales, materiales}; mock fallback para el resto.
+window._v4TopCache = window._v4TopCache || {};
+const _v4TopIcons = { clientes:'🥤', proveedores:'🛢️', sucursales:'🏢', materiales:'📦' };
+
+async function _v4FetchTopReal(category) {
+  if (typeof sb === 'undefined' || !sb?.rpc) return null;
+  if (window._v4TopCache[category]) return window._v4TopCache[category];
+  try {
+    const { data, error } = await sb.rpc('f_panel_top_n', { p_kind: category, p_limit: 5 });
+    if (error || !data || !Array.isArray(data) || data.length === 0) return null;
+    const maxMonto = Math.max(...data.map(r => Number(r.monto) || 0), 1);
+    const mapped = data.map((r, i) => {
+      const monto = Number(r.monto) || 0;
+      const ton = Number(r.toneladas) || 0;
+      const montoTxt = monto >= 1e6 ? `$${(monto/1e6).toFixed(1)}M` : (monto >= 1e3 ? `$${(monto/1e3).toFixed(0)}K` : `$${monto}`);
+      const tonTxt = ton > 0 ? ` · ${ton.toFixed(1)}t` : '';
+      return {
+        name: r.nombre || r.codigo || '—',
+        value: category === 'materiales' && ton > 0 ? `${ton.toFixed(1)}t${monto > 0 ? ' · ' + montoTxt : ''}` : montoTxt + (category === 'sucursales' && ton > 0 ? ' · ' + ton.toFixed(0) + 't' : ''),
+        icon: _v4TopIcons[category] || '⭐',
+        bar: Math.round(100 * (Number(r.monto)||0) / maxMonto)
+      };
+    });
+    window._v4TopCache[category] = mapped;
+    return mapped;
+  } catch(err) { console.warn('[v4-top5] f_panel_top_n fallo:', err); return null; }
+}
+
+function _v4RenderTop(data, container) {
+  container.innerHTML = data.map((item, i) => `
     <div class="bg-slate-50 rounded-xl p-3 flex flex-col items-center text-center gap-2">
       <span class="text-2xl" aria-hidden="true">${item.icon}</span>
       <div class="font-bold text-slate-800 text-sm">${(item.name||'').replace(/</g,'&lt;')}</div>
@@ -5435,7 +5461,12 @@ window.v4SwitchTop = function v4SwitchTop(category) {
       <span class="text-xs text-slate-400">#${i+1}</span>
     </div>
   `).join('');
-  // Estilo activo
+}
+
+window.v4SwitchTop = function v4SwitchTop(category) {
+  const cont = document.getElementById('v4-topContent');
+  if (!cont) return;
+  // Estilo activo (síncrono)
   document.querySelectorAll('.top-tab').forEach(b => {
     if (b.getAttribute('data-v4-top') === category) {
       b.classList.add('active','bg-emerald-700','text-white');
@@ -5445,6 +5476,24 @@ window.v4SwitchTop = function v4SwitchTop(category) {
       b.classList.add('bg-slate-200','text-slate-600');
     }
   });
+  // Categorías cubiertas por f_panel_top_n (RPC backend Pablo)
+  const REAL_KINDS = new Set(['clientes', 'proveedores', 'sucursales', 'materiales']);
+  if (REAL_KINDS.has(category)) {
+    cont.innerHTML = '<div class="col-span-full text-center text-xs text-slate-400 py-4">Cargando datos reales...</div>';
+    _v4FetchTopReal(category).then(realData => {
+      if (realData && realData.length > 0) {
+        _v4RenderTop(realData, cont);
+      } else {
+        // Fallback al mock si la RPC no respondió
+        const mock = window._v4TopData[category] || window._v4TopData.clientes;
+        _v4RenderTop(mock, cont);
+      }
+    });
+  } else {
+    // Categorías sin endpoint backend → mock estable
+    const data = window._v4TopData[category] || window._v4TopData.clientes;
+    _v4RenderTop(data, cont);
+  }
 };
 document.addEventListener('click', (e) => {
   const t = e.target.closest('[data-v4-top]');
