@@ -540,7 +540,96 @@
           <p class="text-xs text-slate-400 mb-3">Sucursales y centros de acopio</p>
           <div id="v4-map" style="height:280px; border-radius:12px;" class="z-0"></div>
         </div>
-        <!-- (F5 Top5 + finanzas + riesgos + sucursales abajo) -->
+        <!-- v4-design F5 · Top 5 dinámico -->
+        <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Top 5 dinámico">
+          <div class="flex flex-wrap gap-2 mb-4 items-center">
+            <span class="text-sm font-bold text-slate-700 mr-2">🏆 Top 5:</span>
+            <button class="top-tab active px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-700 text-white" type="button" data-v4-top="clientes">Clientes</button>
+            <button class="top-tab px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600" type="button" data-v4-top="proveedores">Proveedores</button>
+            <button class="top-tab px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600" type="button" data-v4-top="servicios">Servicios</button>
+            <button class="top-tab px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600" type="button" data-v4-top="sucursales">Sucursales</button>
+            <button class="top-tab px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600" type="button" data-v4-top="colaboradores">Colaboradores</button>
+            <button class="top-tab px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600" type="button" data-v4-top="acreedores">Acreedores</button>
+            <button class="top-tab px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600" type="button" data-v4-top="retiros">Retiros</button>
+            <button class="top-tab px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600" type="button" data-v4-top="cumpleanos">🎂 Cumpleaños</button>
+          </div>
+          <div id="v4-topContent" class="grid grid-cols-2 lg:grid-cols-5 gap-3 text-sm"></div>
+        </div>
+
+        <!-- v4-design F5 · Finanzas resumidas -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Saldo banco">
+            <div class="text-xs text-slate-500 uppercase font-semibold">Saldo Banco</div>
+            <div class="text-xl font-bold text-slate-800 mt-1">$89.2M</div>
+            <div class="text-xs text-slate-400 mt-0.5">🏦 Santander</div>
+          </div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Por cobrar">
+            <div class="text-xs text-slate-500 uppercase font-semibold">Por Cobrar</div>
+            <div class="text-xl font-bold text-orange-600 mt-1">$34.7M</div>
+            <div class="text-xs text-slate-400 mt-0.5">12 facturas</div>
+          </div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Pagos programados">
+            <div class="text-xs text-slate-500 uppercase font-semibold">Pagos Programados</div>
+            <div class="text-xl font-bold text-blue-600 mt-1">$22.1M</div>
+            <div class="text-xs text-slate-400 mt-0.5">Próx. 30 días</div>
+          </div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Inventario">
+            <div class="text-xs text-slate-500 uppercase font-semibold">Inventario</div>
+            <div class="text-xl font-bold text-slate-800 mt-1">$156.3M</div>
+            <div class="text-xs text-emerald-600 mt-0.5">↑ 5% vs mes anterior</div>
+          </div>
+        </div>
+
+        <!-- v4-design F5 · Riesgos + Oportunidades con Diego IA mock -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="bg-red-50 border border-red-200 rounded-2xl p-5" role="article" aria-label="Alertas de riesgo">
+            <div class="flex items-center gap-2 text-red-700 font-bold text-base">⚠️ Alertas de Riesgo</div>
+            <ul class="mt-3 space-y-2 text-sm text-red-800">
+              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-red-500 rounded-full"></span> Cuentas por cobrar vencidas: $12M (crítico)</li>
+              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-orange-500 rounded-full"></span> Margen neto bajó 2 pts vs trimestre anterior</li>
+              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-yellow-500 rounded-full"></span> Concentración: 3 clientes = 65% facturación</li>
+            </ul>
+            <div class="mt-3 p-3 bg-white rounded-xl text-sm border border-slate-100">
+              <span class="font-bold">🤖 Diego IA:</span> Activar recordatorios automáticos. Evaluar diversificación de cartera.
+            </div>
+          </div>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5" role="article" aria-label="Oportunidades">
+            <div class="flex items-center gap-2 text-emerald-700 font-bold text-base">📈 Oportunidades de Quiebre</div>
+            <ul class="mt-3 space-y-2 text-sm text-emerald-800">
+              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Licitación municipal abre en 15 días</li>
+              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Alza precio material reciclado +22%</li>
+              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Competidor redujo operaciones en zona sur</li>
+            </ul>
+            <div class="mt-3 p-3 bg-white rounded-xl text-sm border border-slate-100">
+              <span class="font-bold">🤖 Diego IA:</span> Preparar propuesta. Aumentar acopio. Expandir a zona sur.
+            </div>
+          </div>
+        </div>
+
+        <!-- v4-design F5 · Desglose sucursales -->
+        <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Desglose por sucursales">
+          <h3 class="text-sm font-semibold text-slate-800 mb-3">🏢 Desglose por Sucursales</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="text-slate-500 border-b border-slate-100">
+                <tr>
+                  <th class="text-left py-2 font-medium">Sucursal</th>
+                  <th class="text-right py-2 font-medium">Ingresos</th>
+                  <th class="text-right py-2 font-medium">Costos</th>
+                  <th class="text-right py-2 font-medium">Margen</th>
+                  <th class="text-right py-2 font-medium">Inventario</th>
+                  <th class="text-right py-2 font-medium">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-slate-50"><td class="py-2 font-medium text-slate-700">Planta Norte (Stgo)</td><td class="text-right">$58.2M</td><td class="text-right text-red-600">$38.1M</td><td class="text-right text-emerald-600">$20.1M</td><td class="text-right">$67.4M</td><td class="text-right"><span class="badge bg-emerald-100 text-emerald-700">OK</span></td></tr>
+                <tr class="border-b border-slate-50"><td class="py-2 font-medium text-slate-700">Planta Sur (Concep)</td><td class="text-right">$42.8M</td><td class="text-right text-red-600">$31.5M</td><td class="text-right text-emerald-600">$11.3M</td><td class="text-right">$43.2M</td><td class="text-right"><span class="badge bg-amber-100 text-amber-700">Revisar</span></td></tr>
+                <tr class="border-b border-slate-50"><td class="py-2 font-medium text-slate-700">C. Logístico (Valpo)</td><td class="text-right">$34.1M</td><td class="text-right text-red-600">$22.8M</td><td class="text-right text-emerald-600">$11.3M</td><td class="text-right">$38.9M</td><td class="text-right"><span class="badge bg-emerald-100 text-emerald-700">OK</span></td></tr>
+                <tr><td class="py-2 font-medium text-slate-700">Farex (Central)</td><td class="text-right">$7.4M</td><td class="text-right text-red-600">$5.9M</td><td class="text-right text-emerald-600">$1.5M</td><td class="text-right">$6.8M</td><td class="text-right"><span class="badge bg-red-100 text-red-700">Urgente</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <div class="bg-white p-5 rounded-lg shadow-sm">
@@ -5171,6 +5260,9 @@ window.initV4Hero = function initV4Hero() {
           console.warn('[v4-hero] Leaflet no disponible (CDN bloqueado).');
         }
       } catch(err) { console.warn('[v4-hero] map init fallo:', err); }
+
+      // F5 · Top 5 inicial = clientes
+      try { window.v4SwitchTop && window.v4SwitchTop('clientes'); } catch(err) { console.warn('[v4-hero] top5 init fallo:', err); }
     }
   } catch(e) { console.warn('[v4-hero] init fallo:', e); }
 };
@@ -5182,6 +5274,97 @@ document.addEventListener('click', (e) => {
   const tab = t.getAttribute('data-v4-tab-goto');
   const realBtn = document.querySelector('button[data-tab="' + tab + '"]');
   if (realBtn) realBtn.click();
+});
+
+// =====================================================================
+// v4-design F5 · Top 5 dinámico
+// =====================================================================
+window._v4TopData = {
+  clientes: [
+    { name:'Coca-Cola Andina',  value:'$45M', icon:'🥤', bar:95 },
+    { name:'Embotelladora Chile', value:'$32M', icon:'🍾', bar:78 },
+    { name:'Concha y Toro',      value:'$28M', icon:'🍷', bar:65 },
+    { name:'CCU',                value:'$21M', icon:'🍺', bar:50 },
+    { name:'Nestlé Chile',       value:'$18M', icon:'🍫', bar:40 }
+  ],
+  proveedores: [
+    { name:'EcoPallets Ltda.',   value:'$15M', icon:'🛢️', bar:90 },
+    { name:'Envases del Sur',    value:'$12M', icon:'📦', bar:80 },
+    { name:'Cartones BioBio',    value:'$9M',  icon:'📋', bar:65 },
+    { name:'Plásticos Chile',    value:'$7M',  icon:'🧴', bar:50 },
+    { name:'Metales Rec S.A.',   value:'$5M',  icon:'🔩', bar:35 }
+  ],
+  servicios: [
+    { name:'Retiro en Planta',   value:'320/mes', icon:'🚛', bar:98 },
+    { name:'Certificación',      value:'180/mes', icon:'📜', bar:75 },
+    { name:'Acopio',             value:'150/mes', icon:'🏭', bar:65 },
+    { name:'Transporte',         value:'140/mes', icon:'🚚', bar:58 },
+    { name:'Consultoría REP',    value:'80/mes',  icon:'📊', bar:40 }
+  ],
+  sucursales: [
+    { name:'Planta Norte (Stgo)', value:'$58M', icon:'🏢', bar:100 },
+    { name:'Planta Sur (Concep)', value:'$42M', icon:'🏗️', bar:72 },
+    { name:'C. Logístico (Valpo)', value:'$34M', icon:'🚢', bar:58 },
+    { name:'Farex Central',       value:'$7M',  icon:'⚙️', bar:22 },
+    { name:'Talca Acopio',        value:'$4M',  icon:'🌾', bar:15 }
+  ],
+  colaboradores: [
+    { name:'Juan Pérez · Pta. Norte',  value:'38 pesajes/día', icon:'👨‍🔧', bar:95 },
+    { name:'María González · Log.',    value:'99% entrega',    icon:'👩‍💼', bar:92 },
+    { name:'Carlos Muñoz · Farex',     value:'$1.2M/día',      icon:'👨‍💼', bar:88 },
+    { name:'Ana Rojas · Admin',        value:'0 errores',      icon:'👩‍🏫', bar:85 },
+    { name:'Pedro Silva · Pta. Sur',   value:'25 ton/día',     icon:'👷',   bar:80 }
+  ],
+  acreedores: [
+    { name:'Banco Santander',      value:'$120M', icon:'🏦', bar:100 },
+    { name:'SII Tesorería',        value:'$45M',  icon:'🏛️', bar:70 },
+    { name:'Proveedor Plásticos',  value:'$18M',  icon:'🏭', bar:45 },
+    { name:'Seguros La Const.',    value:'$8M',   icon:'🛡️', bar:30 },
+    { name:'AFP Habitat',          value:'$5M',   icon:'📊', bar:22 }
+  ],
+  retiros: [
+    { name:'Coca-Cola Andina',     value:'15 ton', icon:'🥤', bar:100 },
+    { name:'Concha y Toro',        value:'12 ton', icon:'🍷', bar:80 },
+    { name:'CCU Planta Renca',     value:'10 ton', icon:'🍺', bar:65 },
+    { name:'Mall Plaza Oeste',     value:'8 ton',  icon:'🏬', bar:50 },
+    { name:'Hospital Clínico UC',  value:'5 ton',  icon:'🏥', bar:35 }
+  ],
+  cumpleanos: [
+    { name:'Juan Pérez',     value:'23 mayo',  icon:'🎂', bar:100 },
+    { name:'María González', value:'28 mayo',  icon:'🎉', bar:90 },
+    { name:'Carlos Muñoz',   value:'3 junio',  icon:'🎈', bar:75 },
+    { name:'Ana Rojas',      value:'12 junio', icon:'🎁', bar:60 },
+    { name:'Pedro Silva',    value:'18 junio', icon:'🍰', bar:45 }
+  ]
+};
+window.v4SwitchTop = function v4SwitchTop(category) {
+  const data = window._v4TopData[category] || window._v4TopData.clientes;
+  const cont = document.getElementById('v4-topContent');
+  if (!cont) return;
+  cont.innerHTML = data.map((item, i) => `
+    <div class="bg-slate-50 rounded-xl p-3 flex flex-col items-center text-center gap-2">
+      <span class="text-2xl" aria-hidden="true">${item.icon}</span>
+      <div class="font-bold text-slate-800 text-sm">${(item.name||'').replace(/</g,'&lt;')}</div>
+      <div class="text-xs text-emerald-700 font-semibold">${(item.value||'').replace(/</g,'&lt;')}</div>
+      <div class="w-full bg-slate-200 rounded-full h-1.5 mt-1"><div class="bg-emerald-500 h-1.5 rounded-full" style="width:${item.bar}%"></div></div>
+      <span class="text-xs text-slate-400">#${i+1}</span>
+    </div>
+  `).join('');
+  // Estilo activo
+  document.querySelectorAll('.top-tab').forEach(b => {
+    if (b.getAttribute('data-v4-top') === category) {
+      b.classList.add('active','bg-emerald-700','text-white');
+      b.classList.remove('bg-slate-200','text-slate-600');
+    } else {
+      b.classList.remove('active','bg-emerald-700','text-white');
+      b.classList.add('bg-slate-200','text-slate-600');
+    }
+  });
+};
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-v4-top]');
+  if (!t) return;
+  window.v4SwitchTop(t.getAttribute('data-v4-top'));
 });
 
 // Hook no invasivo: re-llamar v4Sync* tras hydrate / cambio de silo del select productivo.
