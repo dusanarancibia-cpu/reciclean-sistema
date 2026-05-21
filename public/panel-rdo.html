@@ -126,6 +126,40 @@
 
     /* Top 5 tabs */
     .top-tab { transition: all .15s ease; cursor: pointer; border: 0; }
+
+    /* v4-design F6 · responsive helpers ----------------------- */
+    /* En mobile (<768px) el sidebar v4 ocupa toda la altura via
+       fixed; el contenido productivo no debe quedar bajo él. El
+       header productivo ya respeta el flex porque el sidebar
+       deja translateX(-100%) cuando está cerrado. */
+    @media (max-width: 768px) {
+      #v4-dashboard-hero h1 { font-size: 1.5rem; line-height: 2rem; }
+      #v4-dashboard-hero .grid-cols-2 { gap: 0.5rem; }
+      /* En mobile, los emoji icons grandes encogen un poco */
+      #v4-dashboard-hero .w-11 { width: 2.5rem; }
+      #v4-dashboard-hero .h-11 { height: 2.5rem; }
+    }
+    /* Tablet — Top5 baja de 5 a 4 columnas para no apretar */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      #v4-topContent { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    /* v4-design F6 · a11y ------------------------------------- */
+    /* Focus visible en sidebar + cards interactivas */
+    .v4-sidebar a:focus-visible,
+    .v4-sidebar button:focus-visible,
+    .nav-item:focus-visible,
+    .top-tab:focus-visible,
+    [data-v4-tab-goto]:focus-visible {
+      outline: 2px solid #2C5F2D !important;
+      outline-offset: 2px;
+    }
+    /* prefers-reduced-motion: respetar usuarios sensibles */
+    @media (prefers-reduced-motion: reduce) {
+      .v4-sidebar, .card-hover, .silo-dropdown, .fade-in,
+      .nav-item, .top-tab { transition: none !important; animation: none !important; }
+      .card-hover:hover { transform: none !important; }
+    }
   </style>
 </head>
 <body class="bg-stone-100 min-h-screen">
