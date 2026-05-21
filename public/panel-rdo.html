@@ -226,8 +226,116 @@
 
 <!-- APP -->
 <div id="appContainer" class="app-container">
+
+  <!-- v4-design F2 · Wrapper flex root (sidebar + contenido) -->
+  <div class="flex min-h-screen">
+
+  <!-- ============== v4 SIDEBAR LATERAL ============== -->
+  <aside id="v4-sidebar" class="v4-sidebar w-60 bg-white flex flex-col border-r border-slate-200 flex-shrink-0" aria-label="Navegación lateral">
+    <!-- Logo -->
+    <div class="flex items-center gap-2.5 px-4 h-14 border-b border-slate-100">
+      <div class="h-8 w-8 bg-gradient-to-br from-green-600 to-green-700 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">R</div>
+      <span class="text-base font-semibold text-slate-800">Reciclean</span>
+    </div>
+
+    <!-- Selector de Silo (espejo del header productivo) -->
+    <div class="px-3 pt-3 pb-2 border-b border-slate-100">
+      <p class="px-1 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Estás en</p>
+      <button id="v4-siloToggle" type="button" class="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium bg-slate-50 hover:bg-slate-100 border border-slate-200 transition" aria-expanded="false" aria-controls="v4-siloDropdown">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span id="v4-siloDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+          <span id="v4-siloActual" class="truncate text-slate-700">—</span>
+        </div>
+        <svg class="w-4 h-4 text-slate-400 transition-transform" id="v4-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+      <div id="v4-siloDropdown" class="silo-dropdown mt-1 bg-white border border-slate-200 rounded-lg shadow-lg">
+        <div class="p-1" id="v4-siloDropdownItems">
+          <!-- Items poblados dinámicamente desde currentSilo -->
+          <p class="text-xs text-slate-400 px-3 py-2">Inicia sesión para ver áreas</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navegación: shortcuts a los tabs productivos (los buttons reales siguen vivos en <nav> abajo) -->
+    <nav class="flex-1 overflow-y-auto px-3 py-3 space-y-5" aria-label="Atajos de pestañas">
+      <div>
+        <h3 class="px-3 mb-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Inicio</h3>
+        <a href="#" data-v4-tab="portada" class="nav-item active flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Portada
+        </a>
+      </div>
+      <div>
+        <h3 class="px-3 mb-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Día a día</h3>
+        <a href="#" data-v4-tab="pesaje" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5 5 0 006 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5 5 0 006 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+          Pesaje
+        </a>
+        <a href="#" data-v4-tab="facturacion" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Facturación
+        </a>
+        <a href="#" data-v4-tab="dieguito" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          Dieguito
+        </a>
+      </div>
+      <div>
+        <h3 class="px-3 mb-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Gestión</h3>
+        <a href="#" data-v4-tab="rdo" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z"/></svg>
+          RDO
+        </a>
+        <a href="#" data-v4-tab="precios" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Precios
+        </a>
+        <a href="#" data-v4-tab="cierres" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          Cierre
+        </a>
+        <a href="#" data-v4-tab="cartera" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-3a4 4 0 11-8 0 4 4 0 018 0zm6 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          Cartera
+        </a>
+      </div>
+      <div>
+        <h3 class="px-3 mb-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Equipo</h3>
+        <a href="#" data-v4-tab="comunicados" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4 4 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+          Comunicados
+        </a>
+        <a href="#" data-v4-tab="oportunidades" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          Oportunidades
+        </a>
+      </div>
+    </nav>
+
+    <!-- Footer usuario -->
+    <div class="border-t border-slate-100 p-3">
+      <button class="w-full flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-50 transition" type="button" aria-label="Perfil usuario">
+        <div class="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 text-white flex items-center justify-center text-sm font-bold shadow-sm" id="v4-userInitial">·</div>
+        <div class="flex-1 text-left min-w-0">
+          <p class="text-sm font-medium text-slate-700 truncate"><span id="v4-userName">—</span></p>
+          <p class="text-[11px] text-slate-400 truncate"><span id="v4-userEmail">—</span></p>
+        </div>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Overlay móvil para cerrar sidebar al click -->
+  <div id="v4-overlay" class="hidden fixed inset-0 bg-black/60 z-40 md:hidden"></div>
+
+  <!-- Contenedor del contenido productivo (header + nav + main) -->
+  <div class="flex-1 flex flex-col min-w-0">
+
   <header class="bg-white shadow-sm px-6 py-3 flex justify-between items-center flex-wrap gap-2">
     <div class="flex items-center gap-3">
+      <!-- v4-design F2 · Botón hamburguesa móvil (toggle sidebar v4) -->
+      <button type="button" id="v4-hamburger" class="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Abrir menú lateral">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
       <img src="/assets/logos/grc-simbolo.png" alt="Grupo Reciclean-Farex"
            class="h-10 w-auto"
            onerror="this.onerror=null; this.src='https://reciclean-sistema.vercel.app/assets/logos/grc-simbolo.png';">
@@ -1211,6 +1319,9 @@ Tip: en Excel "Guardar como" → CSV UTF-8 (delimitado por comas).</div>
       </div>
     </section>
   </main>
+
+  </div><!-- /v4-design F2 fin contenido productivo (flex-1) -->
+  </div><!-- /v4-design F2 fin wrapper flex root -->
 </div>
 
 <script>
@@ -4723,6 +4834,128 @@ document.getElementById('forgotEmail').addEventListener('keypress', e => {
 });
 document.getElementById('resetPassword2').addEventListener('keypress', e => {
   if (e.key === 'Enter') setNewPassword();
+});
+
+// =====================================================================
+// v4-design F2 · Sidebar lateral · IIFE comportamiento
+// =====================================================================
+(function v4SidebarInit() {
+  const sidebar = document.getElementById('v4-sidebar');
+  const overlay = document.getElementById('v4-overlay');
+  const hamb    = document.getElementById('v4-hamburger');
+  const sToggle = document.getElementById('v4-siloToggle');
+  const sDrop   = document.getElementById('v4-siloDropdown');
+  const sChev   = document.getElementById('v4-chevron');
+  if (!sidebar) return;
+
+  function openSidebar()  { sidebar.classList.add('open');  overlay && overlay.classList.remove('hidden'); }
+  function closeSidebar() { sidebar.classList.remove('open'); overlay && overlay.classList.add('hidden'); }
+  hamb    && hamb.addEventListener('click', openSidebar);
+  overlay && overlay.addEventListener('click', closeSidebar);
+
+  // Silo dropdown toggle
+  sToggle && sToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = sDrop.classList.toggle('open');
+    sChev && sChev.classList.toggle('rotate-180', isOpen);
+    sToggle.setAttribute('aria-expanded', String(isOpen));
+  });
+  document.addEventListener('click', (e) => {
+    if (sDrop && !sToggle.contains(e.target) && !sDrop.contains(e.target)) {
+      sDrop.classList.remove('open');
+      sChev && sChev.classList.remove('rotate-180');
+      sToggle && sToggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Atajos del sidebar a tabs reales del panel productivo
+  document.querySelectorAll('[data-v4-tab]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = a.getAttribute('data-v4-tab');
+      const realBtn = document.querySelector('button[data-tab="' + target + '"]');
+      if (realBtn) realBtn.click();
+      // Marca activo el item del sidebar
+      document.querySelectorAll('[data-v4-tab]').forEach(x => x.classList.remove('active'));
+      a.classList.add('active');
+      // En mobile, cerrar sidebar tras navegar
+      if (window.innerWidth < 768) closeSidebar();
+    });
+  });
+})();
+
+// Pobla los items del dropdown silo en el sidebar v4 desde la select productiva
+window.v4SyncSilos = function v4SyncSilos() {
+  const cont = document.getElementById('v4-siloDropdownItems');
+  const realSel = document.getElementById('siloSelector');
+  if (!cont || !realSel) return;
+  const opts = Array.from(realSel.options || []);
+  if (!opts.length) return;
+  // Mapeo color por nombre conocido (fallback emerald)
+  const colorMap = { 'gerencia':'bg-emerald-500','comercial':'bg-blue-500','operaciones':'bg-orange-500','planta':'bg-cyan-500','finanzas':'bg-yellow-500','rrhh':'bg-pink-500','logística':'bg-purple-500','logistica':'bg-purple-500','marketing':'bg-fuchsia-500','global':'bg-slate-400' };
+  cont.innerHTML = opts.map(o => {
+    const txt = o.textContent || o.value || 'Área';
+    const key = txt.toLowerCase().trim().replace(/[^a-zà-ÿ]/g,'').slice(0,15);
+    const color = colorMap[key] || 'bg-emerald-500';
+    const val = o.value || '__global__';
+    return `<a href="#" data-v4-silo="${val.replace(/"/g,'&quot;')}" class="v4-silo-option flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-slate-50 text-slate-700"><span class="w-2.5 h-2.5 rounded-full ${color}"></span> ${txt.replace(/</g,'&lt;')}</a>`;
+  }).join('');
+  cont.querySelectorAll('[data-v4-silo]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const v = a.getAttribute('data-v4-silo');
+      realSel.value = v;
+      realSel.dispatchEvent(new Event('change', { bubbles: true }));
+      const drop = document.getElementById('v4-siloDropdown');
+      drop && drop.classList.remove('open');
+    });
+  });
+  // Refleja valor actual del select productivo en el botón del sidebar
+  const cur = opts.find(o => o.value === realSel.value) || opts[0];
+  const lab = document.getElementById('v4-siloActual');
+  if (lab && cur) lab.textContent = cur.textContent;
+};
+
+// Sincroniza nombre/email/inicial en el footer del sidebar (llamado tras hydrate)
+window.v4SyncUser = function v4SyncUser() {
+  try {
+    const realEmail = document.getElementById('userEmailDisplay')?.innerText?.trim() || '';
+    const realProfile = document.getElementById('userProfileDisplay')?.innerText?.trim() || '';
+    const nameEl  = document.getElementById('v4-userName');
+    const emailEl = document.getElementById('v4-userEmail');
+    const initEl  = document.getElementById('v4-userInitial');
+    // currentUser y currentProfile son vars globales del script principal
+    const email = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : realEmail;
+    // Si realEmail es un nombre (no email), úsalo de nombre. Si es email, deriva nombre.
+    const looksEmail = /@/.test(realEmail);
+    const displayName = (!looksEmail && realEmail) ? realEmail : (email.split('@')[0] || 'Usuario');
+    if (nameEl)  nameEl.textContent = displayName;
+    if (emailEl) emailEl.textContent = email || realProfile || '—';
+    if (initEl)  initEl.textContent = (displayName[0] || 'U').toUpperCase();
+  } catch(e) { console.warn('[v4-sidebar] syncUser fallo:', e); }
+};
+
+// Sincroniza el indicador de contexto (silo) en cualquier elemento #v4-siloCtx
+window.v4SyncSiloCtx = function v4SyncSiloCtx() {
+  const el = document.getElementById('v4-siloCtx');
+  if (!el) return;
+  el.textContent = (typeof currentSilo !== 'undefined' && currentSilo) ? currentSilo : 'Vista global';
+};
+
+// Hook no invasivo: re-llamar v4Sync* tras hydrate / cambio de silo del select productivo.
+document.addEventListener('DOMContentLoaded', () => {
+  const realSel = document.getElementById('siloSelector');
+  if (realSel) {
+    realSel.addEventListener('change', () => {
+      window.v4SyncSilos && window.v4SyncSilos();
+      window.v4SyncSiloCtx && window.v4SyncSiloCtx();
+    });
+  }
+  // MutationObserver del userEmailDisplay → dispara syncUser cuando hydrate puebla.
+  const ued = document.getElementById('userEmailDisplay');
+  if (ued && 'MutationObserver' in window) {
+    new MutationObserver(() => { window.v4SyncUser && window.v4SyncUser(); window.v4SyncSilos && window.v4SyncSilos(); window.v4SyncSiloCtx && window.v4SyncSiloCtx(); }).observe(ued, { childList: true, characterData: true, subtree: true });
+  }
 });
 </script>
 
