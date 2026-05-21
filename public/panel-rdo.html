@@ -5250,44 +5250,136 @@ window.initV4Hero = function initV4Hero() {
             data: { labels: ['Reciclean','Farex','Gestión REP','Otros'], datasets: [{ data:[45,25,20,10], backgroundColor:['#059669','#ea580c','#2563eb','#94a3b8'], borderWidth:0 }] },
             options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } } }
           });
+          // F11 · barChart con datos reales por sucursal (RPC f_pesajes_por_sucursal)
           const barEl = document.getElementById('v4-barChart');
-          if (barEl) new Chart(barEl, {
-            type: 'bar',
-            data: { labels: ['Planta N.','Planta S.','C. Log.','Farex'], datasets: [
-              { label:'Ingresos', data:[58,42,34,7], backgroundColor:'#059669', borderRadius:4 },
-              { label:'Costos',   data:[38,31,22,6], backgroundColor:'#fca5a5', borderRadius:4 }
-            ]},
-            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } }, scales:{ x:{ grid:{ display:false } }, y:{ grid:{ color:'#e5e7eb' } } } }
-          });
+          if (barEl) {
+            const _barChart = new Chart(barEl, {
+              type: 'bar',
+              data: { labels: ['Cargando…'], datasets: [
+                { label:'Ingresos (M$)', data:[0], backgroundColor:'#059669', borderRadius:4 },
+                { label:'Gastos (M$)',   data:[0], backgroundColor:'#fca5a5', borderRadius:4 }
+              ]},
+              options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } }, scales:{ x:{ grid:{ display:false } }, y:{ grid:{ color:'#e5e7eb' } } } }
+            });
+            (async () => {
+              try {
+                if (typeof sb === 'undefined' || !sb?.rpc) return;
+                // Agregamos por sucursal desde v_panel_flujo_sucursal_dia (12 meses)
+                const since = new Date(); since.setMonth(since.getMonth()-12);
+                const { data } = await sb.from('v_panel_flujo_sucursal_dia')
+                  .select('sucursal, ingreso_venta_clp, gasto_compra_clp')
+                  .gte('fecha', since.toISOString().slice(0,10));
+                if (!data || data.length === 0) return;
+                const acc = {};
+                data.forEach(r => {
+                  const s = r.sucursal || '—';
+                  if (!acc[s]) acc[s] = { ing:0, gas:0 };
+                  acc[s].ing += Number(r.ingreso_venta_clp) || 0;
+                  acc[s].gas += Number(r.gasto_compra_clp) || 0;
+                });
+                // Top 5 sucursales por suma ing+gas
+                const top = Object.entries(acc).map(([s,v]) => ({ s, ...v, total: v.ing+v.gas }))
+                  .sort((a,b) => b.total - a.total).slice(0,5);
+                _barChart.data.labels = top.map(t => t.s);
+                _barChart.data.datasets[0].data = top.map(t => +(t.ing/1e6).toFixed(2));
+                _barChart.data.datasets[1].data = top.map(t => +(t.gas/1e6).toFixed(2));
+                _barChart.update();
+              } catch(e) { console.warn('[v4-barchart] real fallo:', e); }
+            })();
+          }
+          // F11 · lineChart con datos reales por mes (12 meses agregado client-side)
           const lineEl = document.getElementById('v4-lineChart');
-          if (lineEl) new Chart(lineEl, {
-            type: 'line',
-            data: { labels: ['Jun','Jul','Ago','Sep','Oct','Nov','Dic','Ene','Feb','Mar','Abr','May'], datasets: [
-              { label:'Ingresos', data:[48,52,47,55,60,58,63,68,65,70,75,82], borderColor:'#059669', backgroundColor:'#05966920', fill:true, tension:0.4, pointRadius:2 },
-              { label:'Costos',   data:[35,38,34,40,42,40,44,46,43,48,50,53], borderColor:'#ea580c', backgroundColor:'transparent', tension:0.4, pointRadius:2 }
-            ]},
-            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } }, scales:{ x:{ grid:{ display:false } }, y:{ grid:{ color:'#e5e7eb' } } } }
-          });
+          if (lineEl) {
+            const _lineChart = new Chart(lineEl, {
+              type: 'line',
+              data: { labels: ['Cargando…'], datasets: [
+                { label:'Ingresos (M$)', data:[0], borderColor:'#059669', backgroundColor:'#05966920', fill:true, tension:0.4, pointRadius:2 },
+                { label:'Gastos (M$)',   data:[0], borderColor:'#ea580c', backgroundColor:'transparent', tension:0.4, pointRadius:2 }
+              ]},
+              options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } }, scales:{ x:{ grid:{ display:false } }, y:{ grid:{ color:'#e5e7eb' } } } }
+            });
+            (async () => {
+              try {
+                if (typeof sb === 'undefined' || !sb?.rpc) return;
+                const since = new Date(); since.setMonth(since.getMonth()-12);
+                const { data } = await sb.from('v_panel_flujo_sucursal_dia')
+                  .select('fecha, ingreso_venta_clp, gasto_compra_clp')
+                  .gte('fecha', since.toISOString().slice(0,10));
+                if (!data || data.length === 0) return;
+                const acc = {};
+                data.forEach(r => {
+                  const mes = (r.fecha || '').slice(0,7); // YYYY-MM
+                  if (!mes) return;
+                  if (!acc[mes]) acc[mes] = { ing:0, gas:0 };
+                  acc[mes].ing += Number(r.ingreso_venta_clp) || 0;
+                  acc[mes].gas += Number(r.gasto_compra_clp) || 0;
+                });
+                const meses = Object.keys(acc).sort();
+                _lineChart.data.labels = meses.map(m => m.slice(2)); // 'YY-MM'
+                _lineChart.data.datasets[0].data = meses.map(m => +(acc[m].ing/1e6).toFixed(2));
+                _lineChart.data.datasets[1].data = meses.map(m => +(acc[m].gas/1e6).toFixed(2));
+                _lineChart.update();
+              } catch(e) { console.warn('[v4-linechart] real fallo:', e); }
+            })();
+          }
         } else {
           console.warn('[v4-hero] Chart.js no disponible (CDN bloqueado).');
         }
       } catch(err) { console.warn('[v4-hero] charts init fallo:', err); }
 
+      // F10 · Mapa Leaflet con datos reales f_pesajes_por_sucursal (Pablo handoff)
       try {
         if (typeof L !== 'undefined') {
           const mapEl = document.getElementById('v4-map');
           if (mapEl) {
-            const map = L.map('v4-map').setView([-33.45, -70.65], 6);
+            // Coords por sucursal — match por nombre (case-insensitive partial)
+            const SUC_COORDS = {
+              'talca':          { lat:-35.43, lng:-71.65, color:'#059669', label:'Talca' },
+              'maipú':          { lat:-33.51, lng:-70.76, color:'#2563eb', label:'Maipú' },
+              'maipu':          { lat:-33.51, lng:-70.76, color:'#2563eb', label:'Maipú' },
+              'cerrillos':      { lat:-33.50, lng:-70.71, color:'#ea580c', label:'Cerrillos' },
+              'puerto montt':   { lat:-41.47, lng:-72.94, color:'#9333ea', label:'Pto Montt' },
+              'pto montt':      { lat:-41.47, lng:-72.94, color:'#9333ea', label:'Pto Montt' },
+              'cerro sombrero': { lat:-52.79, lng:-69.50, color:'#dc2626', label:'Cerro Sombrero' }
+            };
+            const map = L.map('v4-map').setView([-37, -71], 4);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; CartoDB' }).addTo(map);
-            [
-              { name:'Planta Norte (Stgo)',   lat:-33.42, lng:-70.65, color:'#059669' },
-              { name:'Planta Sur (Concep)',    lat:-36.82, lng:-73.05, color:'#2563eb' },
-              { name:'C. Logístico (Valpo)',   lat:-33.04, lng:-71.62, color:'#ea580c' },
-              { name:'Farex Central (Stgo)',   lat:-33.45, lng:-70.67, color:'#9333ea' }
-            ].forEach(s => {
-              L.circleMarker([s.lat, s.lng], { radius:10, fillColor:s.color, color:'white', weight:2, fillOpacity:0.85 }).bindPopup('<b>'+s.name+'</b>').addTo(map);
-            });
-            // Forzar invalidateSize en próximo tick (canvas display:none → visible)
+
+            const drawFallback = () => {
+              [
+                { name:'Stgo',   lat:-33.42, lng:-70.65, color:'#059669' },
+                { name:'Concep', lat:-36.82, lng:-73.05, color:'#2563eb' },
+                { name:'Valpo',  lat:-33.04, lng:-71.62, color:'#ea580c' }
+              ].forEach(s => L.circleMarker([s.lat,s.lng],{ radius:10, fillColor:s.color, color:'white', weight:2, fillOpacity:0.85 }).bindPopup('<b>'+s.name+' (mock)</b>').addTo(map));
+            };
+
+            (async () => {
+              try {
+                if (typeof sb === 'undefined' || !sb?.rpc) { drawFallback(); return; }
+                // Rango amplio para tener data; default backend usa 90d que puede estar vacío
+                const { data, error } = await sb.rpc('f_pesajes_por_sucursal', { p_desde: '2025-01-01', p_hasta: new Date().toISOString().slice(0,10) });
+                if (error || !data || data.length === 0) { console.warn('[v4-map] sin datos reales:', error); drawFallback(); return; }
+                const maxTon = Math.max(...data.map(r => Number(r.toneladas)||0), 1);
+                let placed = 0;
+                data.forEach(r => {
+                  const key = (r.sucursal || '').toString().toLowerCase().trim();
+                  const meta = SUC_COORDS[key];
+                  if (!meta) return; // sucursales sin coords (ej. "RECICLEAN" genérica) → omitir
+                  const ton = Number(r.toneladas) || 0;
+                  const tickets = Number(r.tickets_mes) || 0;
+                  const monto = Number(r.monto) || 0;
+                  const montoTxt = monto >= 1e6 ? `$${(monto/1e6).toFixed(1)}M` : `$${(monto/1e3).toFixed(0)}K`;
+                  // Radio logarítmico para evitar que Talca opaque al resto
+                  const radius = Math.max(6, Math.min(28, 8 + 18 * Math.log10(1 + ton) / Math.log10(1 + maxTon)));
+                  L.circleMarker([meta.lat, meta.lng], {
+                    radius, fillColor: meta.color, color: 'white', weight: 2, fillOpacity: 0.85
+                  }).bindPopup(`<b>${meta.label}</b><br>${ton.toFixed(1)} ton · ${tickets} tickets<br>${montoTxt}`).addTo(map);
+                  placed++;
+                });
+                if (placed === 0) drawFallback();
+              } catch(e) { console.warn('[v4-map] fallo carga real:', e); drawFallback(); }
+            })();
+
             setTimeout(() => map.invalidateSize(), 200);
           }
         } else {
