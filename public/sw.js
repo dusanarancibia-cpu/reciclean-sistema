@@ -1,4 +1,4 @@
-const CACHE_NAME = 'reciclean-v1';
+const CACHE_NAME = 'reciclean-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/asistente.html',
@@ -14,11 +14,17 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+    Promise.all([
+      caches.keys().then(keys =>
+        Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      ),
+      self.clients.claim().then(() =>
+        self.clients.matchAll({ type: 'window' }).then(clients => {
+          clients.forEach(client => client.navigate(client.url));
+        })
+      )
+    ])
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
