@@ -450,29 +450,29 @@
           <p class="text-sm text-slate-500 mt-1">Hoy es <span class="font-medium text-slate-700" id="v4-fechaCompleta">—</span> · <span id="v4-siloCtx" class="font-semibold text-emerald-700">Vista global</span> · UF <span id="v4-ufValor" class="font-semibold text-slate-700">$38.214</span></p>
         </div>
 
-        <!-- "Esto necesita tu atención hoy" (mock; futuro: leer panel.diego_bandeja / RDO pendientes) -->
+        <!-- "Esto necesita tu atención hoy" — conectado a public.f_panel_health (datos reales) con fallback mock -->
         <div class="bg-white border border-slate-200 rounded-2xl p-5 border-l-4 border-l-amber-400" role="article" aria-label="Pendientes de hoy">
           <div class="flex items-start justify-between mb-3">
             <div>
               <h2 class="text-base font-semibold text-slate-800">Esto necesita tu atención hoy</h2>
-              <p class="text-xs text-slate-500 mt-0.5">3 cosas pendientes — toma 5 minutos</p>
+              <p id="v4-atencion-subtitle" class="text-xs text-slate-500 mt-0.5">Cargando datos en vivo...</p>
             </div>
-            <span class="badge bg-amber-100 text-amber-700">3 pendientes</span>
+            <span id="v4-atencion-badge" class="badge bg-slate-100 text-slate-500">—</span>
           </div>
           <div class="space-y-2">
             <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="pesaje" aria-label="Ir a Pesajes">
               <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-lg">⚠️</div>
-              <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-800">2 alertas de pesaje sin revisar</div><div class="text-xs text-slate-500">Diferencias detectadas en clientes</div></div>
+              <div class="flex-1 min-w-0"><div id="v4-atencion-alertas-titulo" class="text-sm font-medium text-slate-800">Alertas de pesaje sin revisar</div><div id="v4-atencion-alertas-sub" class="text-xs text-slate-500">Diferencias detectadas en clientes</div></div>
               <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
-            <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="facturacion" aria-label="Ir a Facturación">
-              <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-lg">📄</div>
-              <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-800">5 facturas listas para emitir</div><div class="text-xs text-slate-500">Total estimado <b class="text-slate-600">$8.320.000</b></div></div>
+            <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="cartera" aria-label="Ir a Cartera">
+              <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-lg">👥</div>
+              <div class="flex-1 min-w-0"><div id="v4-atencion-cartera-titulo" class="text-sm font-medium text-slate-800">Cartera sin categorizar</div><div id="v4-atencion-cartera-sub" class="text-xs text-slate-500">Clientes activos sin categoría asignada</div></div>
               <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
-            <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="rdo" aria-label="Ir a RDO Resumen">
+            <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="cierres" aria-label="Ir a Cierres">
               <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-lg">📋</div>
-              <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-800">RDO de ayer sin cerrar</div><div class="text-xs text-slate-500">Faltan firmas de turno noche</div></div>
+              <div class="flex-1 min-w-0"><div id="v4-atencion-cierres-titulo" class="text-sm font-medium text-slate-800">Cierres del mes</div><div id="v4-atencion-cierres-sub" class="text-xs text-slate-500">Estado consolidado</div></div>
               <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
           </div>
@@ -5297,6 +5297,50 @@ window.initV4Hero = function initV4Hero() {
 
       // F5 · Top 5 inicial = clientes
       try { window.v4SwitchTop && window.v4SwitchTop('clientes'); } catch(err) { console.warn('[v4-hero] top5 init fallo:', err); }
+    }
+
+    // F7 · Datos reales en card "atención hoy" via public.f_panel_health() — backend handoff PC2 21-may
+    if (!window._v4AtencionLoaded) {
+      window._v4AtencionLoaded = true;
+      (async () => {
+        try {
+          if (typeof sb === 'undefined' || !sb?.rpc) return;
+          const { data, error } = await sb.rpc('f_panel_health');
+          if (error || !data) { console.warn('[v4-atencion] f_panel_health no respondió:', error); return; }
+
+          const alertasRojo  = data?.alertas?.precio_tarifa_rojo ?? 0;
+          const alertasTotal = data?.alertas?.total ?? alertasRojo;
+          const carteraSin   = data?.crm?.clientes_sin_categoria ?? 0;
+          const carteraTotal = data?.crm?.clientes_activos ?? 0;
+          const pesajesDias  = data?.data_freshness?.pesajes_prod_dias_atras ?? null;
+          const colaPend     = data?.cola_construccion?.pendientes ?? 0;
+          const pcsCaida     = (data?.pcs ?? []).filter(p => p.health === 'caida').length;
+
+          const pendVisibles = (alertasRojo > 0 ? 1 : 0) + (carteraSin > 0 ? 1 : 0) + (colaPend > 0 ? 1 : 0);
+          const sub = document.getElementById('v4-atencion-subtitle');
+          if (sub) sub.textContent = pendVisibles === 0 ? 'Todo al día — nada urgente' : `${pendVisibles} cosa${pendVisibles===1?'':'s'} pendiente${pendVisibles===1?'':'s'} — datos en vivo`;
+          const badge = document.getElementById('v4-atencion-badge');
+          if (badge) {
+            badge.textContent = pendVisibles === 0 ? 'sin pendientes' : `${pendVisibles} pendiente${pendVisibles===1?'':'s'}`;
+            badge.className = 'badge ' + (pendVisibles === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700');
+          }
+
+          const aT = document.getElementById('v4-atencion-alertas-titulo');
+          const aS = document.getElementById('v4-atencion-alertas-sub');
+          if (aT) aT.textContent = alertasRojo === 0 ? 'Sin alertas críticas hoy' : `${alertasRojo} alerta${alertasRojo===1?'':'s'} crítica${alertasRojo===1?'':'s'} de precio sin revisar`;
+          if (aS) aS.textContent = alertasTotal !== alertasRojo ? `${alertasTotal} alertas en total (${alertasRojo} críticas)` : 'Tarifa fuera de rango oficial';
+
+          const cT = document.getElementById('v4-atencion-cartera-titulo');
+          const cS = document.getElementById('v4-atencion-cartera-sub');
+          if (cT) cT.textContent = carteraSin === 0 ? 'Cartera completamente categorizada' : `${carteraSin} cliente${carteraSin===1?'':'s'} sin categoría de cartera`;
+          if (cS) cS.textContent = carteraTotal > 0 ? `${carteraSin}/${carteraTotal} activos sin clasificar` : 'Asignar categoría desde tab Cartera';
+
+          const ciT = document.getElementById('v4-atencion-cierres-titulo');
+          const ciS = document.getElementById('v4-atencion-cierres-sub');
+          if (ciT) ciT.textContent = pesajesDias !== null && pesajesDias > 1 ? `Pesajes con ${pesajesDias} día${pesajesDias===1?'':'s'} de retraso` : 'Cierres del mes';
+          if (ciS) ciS.textContent = pcsCaida > 0 ? `${pcsCaida} PC operativo${pcsCaida===1?'':'s'} sin reporte reciente · cola: ${colaPend} pendiente${colaPend===1?'':'s'}` : `Cola operativa: ${colaPend} pendiente${colaPend===1?'':'s'}`;
+        } catch(err) { console.warn('[v4-atencion] fallo:', err); }
+      })();
     }
   } catch(e) { console.warn('[v4-hero] init fallo:', e); }
 };
