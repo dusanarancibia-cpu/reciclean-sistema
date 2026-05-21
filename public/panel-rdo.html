@@ -5299,26 +5299,33 @@ window.initV4Hero = function initV4Hero() {
       try { window.v4SwitchTop && window.v4SwitchTop('clientes'); } catch(err) { console.warn('[v4-hero] top5 init fallo:', err); }
     }
 
-    // F7 · Datos reales en card "atención hoy" via public.f_panel_health() — backend handoff PC2 21-may
+    // F7 · Datos reales en card "atención hoy" via f_panel_health + f_panel_cartera_cobertura
+    //      Backend handoff PC2 21-may (commit db686c0)
     if (!window._v4AtencionLoaded) {
       window._v4AtencionLoaded = true;
       (async () => {
         try {
           if (typeof sb === 'undefined' || !sb?.rpc) return;
-          const { data, error } = await sb.rpc('f_panel_health');
-          if (error || !data) { console.warn('[v4-atencion] f_panel_health no respondió:', error); return; }
+          // 1 llamada salud general + 1 llamada cobertura cartera (necesaria para sin_categoria)
+          const [healthRes, carteraRes] = await Promise.all([
+            sb.rpc('f_panel_health'),
+            sb.rpc('f_panel_cartera_cobertura')
+          ]);
+          const health = healthRes?.data || {};
+          const cartera = carteraRes?.data || {};
 
-          const alertasRojo  = data?.alertas?.precio_tarifa_rojo ?? 0;
-          const alertasTotal = data?.alertas?.total ?? alertasRojo;
-          const carteraSin   = data?.crm?.clientes_sin_categoria ?? 0;
-          const carteraTotal = data?.crm?.clientes_activos ?? 0;
-          const pesajesDias  = data?.data_freshness?.pesajes_prod_dias_atras ?? null;
-          const colaPend     = data?.cola_construccion?.pendientes ?? 0;
-          const pcsCaida     = (data?.pcs ?? []).filter(p => p.health === 'caida').length;
+          const alertasRojo    = health?.alertas?.precio_tarifa_rojo ?? 0;
+          const alertasContrap = health?.alertas?.contraparte ?? 0;
+          const alertasTotal   = alertasRojo + alertasContrap + (health?.alertas?.cliente_sin_registro ?? 0);
+          const carteraSin     = cartera?.sin_categoria ?? 0;
+          const carteraTotal   = cartera?.total_clientes_activos ?? 0;
+          const pesajesDias    = health?.data_freshness?.pesajes_prod_dias_atras ?? null;
+          const colaPend       = health?.cola_construccion?.pendiente ?? 0;
+          const pcsCaida       = (health?.pcs ?? []).filter(p => p.health === 'caida').length;
 
-          const pendVisibles = (alertasRojo > 0 ? 1 : 0) + (carteraSin > 0 ? 1 : 0) + (colaPend > 0 ? 1 : 0);
+          const pendVisibles = (alertasRojo > 0 ? 1 : 0) + (carteraSin > 0 ? 1 : 0) + ((colaPend > 0 || pcsCaida > 0) ? 1 : 0);
           const sub = document.getElementById('v4-atencion-subtitle');
-          if (sub) sub.textContent = pendVisibles === 0 ? 'Todo al día — nada urgente' : `${pendVisibles} cosa${pendVisibles===1?'':'s'} pendiente${pendVisibles===1?'':'s'} — datos en vivo`;
+          if (sub) sub.textContent = pendVisibles === 0 ? 'Todo al día — nada urgente' : `${pendVisibles} cosa${pendVisibles===1?'':'s'} pendiente${pendVisibles===1?'':'s'} · datos en vivo`;
           const badge = document.getElementById('v4-atencion-badge');
           if (badge) {
             badge.textContent = pendVisibles === 0 ? 'sin pendientes' : `${pendVisibles} pendiente${pendVisibles===1?'':'s'}`;
@@ -5327,18 +5334,18 @@ window.initV4Hero = function initV4Hero() {
 
           const aT = document.getElementById('v4-atencion-alertas-titulo');
           const aS = document.getElementById('v4-atencion-alertas-sub');
-          if (aT) aT.textContent = alertasRojo === 0 ? 'Sin alertas críticas hoy' : `${alertasRojo} alerta${alertasRojo===1?'':'s'} crítica${alertasRojo===1?'':'s'} de precio sin revisar`;
-          if (aS) aS.textContent = alertasTotal !== alertasRojo ? `${alertasTotal} alertas en total (${alertasRojo} críticas)` : 'Tarifa fuera de rango oficial';
+          if (aT) aT.textContent = alertasRojo === 0 ? 'Sin alertas críticas de precio' : `${alertasRojo} alerta${alertasRojo===1?'':'s'} crítica${alertasRojo===1?'':'s'} de precio sin revisar`;
+          if (aS) aS.textContent = `${alertasTotal} alertas totales · ${alertasContrap} contraparte`;
 
           const cT = document.getElementById('v4-atencion-cartera-titulo');
           const cS = document.getElementById('v4-atencion-cartera-sub');
-          if (cT) cT.textContent = carteraSin === 0 ? 'Cartera completamente categorizada' : `${carteraSin} cliente${carteraSin===1?'':'s'} sin categoría de cartera`;
-          if (cS) cS.textContent = carteraTotal > 0 ? `${carteraSin}/${carteraTotal} activos sin clasificar` : 'Asignar categoría desde tab Cartera';
+          if (cT) cT.textContent = carteraSin === 0 ? 'Cartera completamente categorizada' : `${carteraSin} cliente${carteraSin===1?'':'s'} activo${carteraSin===1?'':'s'} sin categoría`;
+          if (cS) cS.textContent = carteraTotal > 0 ? `${carteraSin}/${carteraTotal} sin clasificar — abrí tab Cartera` : 'Asignar categoría desde tab Cartera';
 
           const ciT = document.getElementById('v4-atencion-cierres-titulo');
           const ciS = document.getElementById('v4-atencion-cierres-sub');
-          if (ciT) ciT.textContent = pesajesDias !== null && pesajesDias > 1 ? `Pesajes con ${pesajesDias} día${pesajesDias===1?'':'s'} de retraso` : 'Cierres del mes';
-          if (ciS) ciS.textContent = pcsCaida > 0 ? `${pcsCaida} PC operativo${pcsCaida===1?'':'s'} sin reporte reciente · cola: ${colaPend} pendiente${colaPend===1?'':'s'}` : `Cola operativa: ${colaPend} pendiente${colaPend===1?'':'s'}`;
+          if (ciT) ciT.textContent = pesajesDias !== null && pesajesDias > 2 ? `Pesajes con ${pesajesDias} días de retraso` : (colaPend > 0 ? `${colaPend} tareas pendientes en cola operativa` : 'Operación al día');
+          if (ciS) ciS.textContent = pcsCaida > 0 ? `${pcsCaida}/${(health?.pcs ?? []).length} PCs operativas sin reporte reciente` : 'Todos los PCs reportando OK';
         } catch(err) { console.warn('[v4-atencion] fallo:', err); }
       })();
     }
