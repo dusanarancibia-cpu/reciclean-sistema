@@ -403,6 +403,121 @@
         <p class="text-stone-500">Cargando mensajes destacados...</p>
       </div>
       <div id="portadaAlertas" class="mb-4"></div>
+
+      <!-- =================================================== -->
+      <!-- v4-design F3 · Dashboard hero (saludo + alertas +    -->
+      <!-- acciones rápidas + KPIs sparkline)                   -->
+      <!-- =================================================== -->
+      <div id="v4-dashboard-hero" class="space-y-6 fade-in mb-6">
+
+        <!-- Saludo + fecha + contexto silo -->
+        <div>
+          <h1 class="text-2xl font-bold text-slate-800">Buenos días, <span id="v4-saludoNombre">—</span> 👋</h1>
+          <p class="text-sm text-slate-500 mt-1">Hoy es <span class="font-medium text-slate-700" id="v4-fechaCompleta">—</span> · <span id="v4-siloCtx" class="font-semibold text-emerald-700">Vista global</span> · UF <span id="v4-ufValor" class="font-semibold text-slate-700">$38.214</span></p>
+        </div>
+
+        <!-- "Esto necesita tu atención hoy" (mock; futuro: leer panel.diego_bandeja / RDO pendientes) -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 border-l-4 border-l-amber-400" role="article" aria-label="Pendientes de hoy">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <h2 class="text-base font-semibold text-slate-800">Esto necesita tu atención hoy</h2>
+              <p class="text-xs text-slate-500 mt-0.5">3 cosas pendientes — toma 5 minutos</p>
+            </div>
+            <span class="badge bg-amber-100 text-amber-700">3 pendientes</span>
+          </div>
+          <div class="space-y-2">
+            <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="pesaje" aria-label="Ir a Pesajes">
+              <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-lg">⚠️</div>
+              <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-800">2 alertas de pesaje sin revisar</div><div class="text-xs text-slate-500">Diferencias detectadas en clientes</div></div>
+              <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="facturacion" aria-label="Ir a Facturación">
+              <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-lg">📄</div>
+              <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-800">5 facturas listas para emitir</div><div class="text-xs text-slate-500">Total estimado <b class="text-slate-600">$8.320.000</b></div></div>
+              <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="rdo" aria-label="Ir a RDO Resumen">
+              <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-lg">📋</div>
+              <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-800">RDO de ayer sin cerrar</div><div class="text-xs text-slate-500">Faltan firmas de turno noche</div></div>
+              <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Acciones rápidas -->
+        <div>
+          <h3 class="text-sm font-semibold text-slate-600 mb-3 px-1">¿Qué quieres hacer ahora?</h3>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <button class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-left" type="button" data-v4-tab-goto="pesaje" aria-label="Nuevo pesaje">
+              <div class="w-11 h-11 rounded-xl bg-emerald-100 flex items-center justify-center text-xl mb-3">➕</div>
+              <div class="text-sm font-semibold text-slate-800">Nuevo pesaje</div>
+              <div class="text-xs text-slate-500 mt-0.5">Registrar entrada de camión</div>
+            </button>
+            <button class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-left" type="button" data-v4-tab-goto="facturacion" aria-label="Emitir factura">
+              <div class="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center text-xl mb-3">📄</div>
+              <div class="text-sm font-semibold text-slate-800">Emitir factura</div>
+              <div class="text-xs text-slate-500 mt-0.5">Generar documento tributario</div>
+            </button>
+            <button class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-left" type="button" data-v4-tab-goto="rdo" aria-label="Ver RDO de hoy">
+              <div class="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center text-xl mb-3">📋</div>
+              <div class="text-sm font-semibold text-slate-800">Ver RDO de hoy</div>
+              <div class="text-xs text-slate-500 mt-0.5">Reporte diario operacional</div>
+            </button>
+            <button class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-left" type="button" data-v4-tab-goto="cierres" aria-label="Cierre del mes">
+              <div class="w-11 h-11 rounded-xl bg-purple-100 flex items-center justify-center text-xl mb-3">📊</div>
+              <div class="text-sm font-semibold text-slate-800">Cierre del mes</div>
+              <div class="text-xs text-slate-500 mt-0.5">Consolidar números</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- KPIs principales con sparklines SVG -->
+        <div>
+          <div class="flex items-end justify-between mb-3 px-1">
+            <h3 class="text-sm font-semibold text-slate-600">Números de hoy vs ayer · últimos 7 días</h3>
+          </div>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI Pesajes hoy">
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg">⚖️</div>
+                <span class="badge bg-emerald-100 text-emerald-700">▲ 8%</span>
+              </div>
+              <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Pesajes hoy</div>
+              <div class="text-3xl font-bold text-slate-800 mt-1">28</div>
+              <div class="mt-3 h-10 w-full"><svg viewBox="0 0 160 40" width="100%" height="100%" preserveAspectRatio="none"><defs><linearGradient id="v4gc1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#059669" stop-opacity=".22"/><stop offset="100%" stop-color="#059669" stop-opacity="0"/></linearGradient></defs><path d="M3,26 L29,37 L54,17 L80,3 L106,20 L131,14 L157,9 L157,40 L3,40 Z" fill="url(#v4gc1)"/><path d="M3,26 L29,37 L54,17 L80,3 L106,20 L131,14 L157,9" fill="none" stroke="#059669" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="157" cy="9" r="2.8" fill="#059669"/></svg></div>
+            </div>
+            <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI Facturación hoy">
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-lg">💵</div>
+                <span class="badge bg-blue-100 text-blue-700">Estable</span>
+              </div>
+              <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Facturación hoy</div>
+              <div class="text-3xl font-bold text-slate-800 mt-1">$12.8M</div>
+              <div class="mt-3 h-10 w-full"><svg viewBox="0 0 160 40" width="100%" height="100%" preserveAspectRatio="none"><defs><linearGradient id="v4gc2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2563eb" stop-opacity=".22"/><stop offset="100%" stop-color="#2563eb" stop-opacity="0"/></linearGradient></defs><path d="M3,20 L29,22 L54,18 L80,24 L106,21 L131,26 L157,19 L157,40 L3,40 Z" fill="url(#v4gc2)"/><path d="M3,20 L29,22 L54,18 L80,24 L106,21 L131,26 L157,19" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="157" cy="19" r="2.8" fill="#2563eb"/></svg></div>
+            </div>
+            <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI RDO completado">
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-lg">📋</div>
+                <span class="badge bg-amber-100 text-amber-700">▼ 12%</span>
+              </div>
+              <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">RDO completado</div>
+              <div class="text-3xl font-bold text-slate-800 mt-1">85%</div>
+              <div class="mt-3 h-10 w-full"><svg viewBox="0 0 160 40" width="100%" height="100%" preserveAspectRatio="none"><defs><linearGradient id="v4gc3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d97706" stop-opacity=".22"/><stop offset="100%" stop-color="#d97706" stop-opacity="0"/></linearGradient></defs><path d="M3,10 L29,8 L54,14 L80,12 L106,9 L131,15 L157,11 L157,40 L3,40 Z" fill="url(#v4gc3)"/><path d="M3,10 L29,8 L54,14 L80,12 L106,9 L131,15 L157,11" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="157" cy="11" r="2.8" fill="#d97706"/></svg></div>
+            </div>
+            <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI Alertas activas">
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-lg">🔔</div>
+                <span class="badge bg-red-100 text-red-700">▲ 40%</span>
+              </div>
+              <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Alertas activas</div>
+              <div class="text-3xl font-bold text-slate-800 mt-1">7</div>
+              <div class="mt-3 h-10 w-full"><svg viewBox="0 0 160 40" width="100%" height="100%" preserveAspectRatio="none"><defs><linearGradient id="v4gc4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#dc2626" stop-opacity=".22"/><stop offset="100%" stop-color="#dc2626" stop-opacity="0"/></linearGradient></defs><path d="M3,30 L29,28 L54,34 L80,15 L106,20 L131,10 L157,14 L157,40 L3,40 Z" fill="url(#v4gc4)"/><path d="M3,30 L29,28 L54,34 L80,15 L106,20 L131,10 L157,14" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="157" cy="14" r="2.8" fill="#dc2626"/></svg></div>
+            </div>
+          </div>
+        </div>
+        <!-- (F4 inyectará gráficos + mapa aquí abajo; F5 Top5 + finanzas + riesgos + sucursales) -->
+      </div>
+
       <div class="bg-white p-5 rounded-lg shadow-sm">
         <h3 class="font-bold text-stone-700 mb-2">Sistema integrado de reportes y comunicaciones</h3>
         <p class="text-sm text-stone-600">Aquí puedes subir información operativa, ver mensajes del equipo y consultar el resumen diario.</p>
@@ -1557,6 +1672,11 @@ async function hydrateSessionAndEnter(authUser) {
   // Update ultimo_login (best-effort, no bloquea)
   sb.schema('panel').from('usuarios_autorizados').update({ ultimo_login: new Date().toISOString() })
     .eq('email', email).then(() => {});
+
+  // v4-design · inicializar dashboard hero + sidebar sync tras login
+  try { window.v4SyncUser && window.v4SyncUser(); } catch(e){}
+  try { window.v4SyncSilos && window.v4SyncSilos(); } catch(e){}
+  try { window.initV4Hero && window.initV4Hero(); } catch(e){}
 }
 
 // ---------- D-PANEL-AUTH-001 · UI helpers (cambiar entre las 3 pantallas) ----------
@@ -1899,7 +2019,7 @@ function setupTabs() {
       btn.setAttribute('aria-selected', 'true');
       if (typeof window.pageLog === 'function') window.pageLog('tab_change', tabId);
       if (tabId === 'comunicados') loadAudios();
-      if (tabId === 'portada') { loadPortadaAudio(); loadAlertasPortada(); }
+      if (tabId === 'portada') { loadPortadaAudio(); loadAlertasPortada(); if (typeof window.initV4Hero === 'function') window.initV4Hero(); }
       if (tabId === 'rdo') { loadRdoResumen(); loadKpiAnual(); loadTopClientes(); loadEvolucionAnual(); loadAlertasRdo(); }
       if (tabId === 'pesaje') { loadPesajesSucursal(); loadPesajeTopMateriales(); loadPesajeEvolucion(); }
       if (tabId === 'facturacion') { loadFacturacionCruceAlertas(); loadFacturacionTopClientes(); }
@@ -4941,6 +5061,46 @@ window.v4SyncSiloCtx = function v4SyncSiloCtx() {
   if (!el) return;
   el.textContent = (typeof currentSilo !== 'undefined' && currentSilo) ? currentSilo : 'Vista global';
 };
+
+// =====================================================================
+// v4-design F3 · Dashboard hero · init lazy (solo cuando se ve Portada)
+// =====================================================================
+window.initV4Hero = function initV4Hero() {
+  try {
+    const now = new Date();
+    const dias  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+    const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const fechaCompleta = `${dias[now.getDay()]} ${now.getDate()} de ${meses[now.getMonth()]} de ${now.getFullYear()}`;
+    const fc = document.getElementById('v4-fechaCompleta');
+    if (fc) fc.textContent = fechaCompleta;
+
+    // Saludo según hora
+    const h = now.getHours();
+    const saludo = h < 12 ? 'Buenos días' : (h < 19 ? 'Buenas tardes' : 'Buenas noches');
+    // Nombre desde userEmailDisplay (donde hydrate pone data.nombre || data.email)
+    const realName = document.getElementById('userEmailDisplay')?.innerText?.trim() || '';
+    const isEmail = /@/.test(realName);
+    let nombre = isEmail ? realName.split('@')[0] : (realName || 'Usuario');
+    nombre = nombre.split(/[. _-]/)[0];
+    nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1);
+    const sn = document.getElementById('v4-saludoNombre');
+    if (sn) sn.textContent = nombre;
+    const h1 = sn?.parentElement;
+    if (h1) h1.firstChild && (h1.firstChild.textContent = saludo + ', ');
+
+    // Silo ctx
+    window.v4SyncSiloCtx && window.v4SyncSiloCtx();
+  } catch(e) { console.warn('[v4-hero] init fallo:', e); }
+};
+
+// Bind de buttons "ir a tab X" del hero
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-v4-tab-goto]');
+  if (!t) return;
+  const tab = t.getAttribute('data-v4-tab-goto');
+  const realBtn = document.querySelector('button[data-tab="' + tab + '"]');
+  if (realBtn) realBtn.click();
+});
 
 // Hook no invasivo: re-llamar v4Sync* tras hydrate / cambio de silo del select productivo.
 document.addEventListener('DOMContentLoaded', () => {
