@@ -7,6 +7,10 @@
   <link rel="stylesheet" href="/tailwind.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/page-logger.js"></script>
+  <!-- v4-design F1 · CDNs Chart.js + Leaflet (defer para no bloquear render) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
   <style>
     .app-container { display: none; }
     .login-container { display: flex; }
@@ -51,6 +55,77 @@
       /* En desktop no hace falta el gradient porque los tabs caben. */
       .nav-tabs-wrapper::after, .nav-tabs-wrapper .chevron-more { display: none; }
     }
+  </style>
+
+  <!-- ============================================================
+       v4-design F1 · OVERLAY CSS (mockup Panel-rdo-deepseek-v4.html)
+       Scoped via selectores nuevos / prefijo v4-. NO sobreescribe
+       reglas existentes del panel productivo.
+       ============================================================ -->
+  <style id="v4-overlay-styles">
+    /* Sidebar lateral v4 */
+    .v4-sidebar { transition: transform 0.25s ease; }
+    @media (max-width: 768px) {
+      .v4-sidebar { position: fixed; z-index: 50; top: 0; left: 0; height: 100%; transform: translateX(-100%); }
+      .v4-sidebar.open { transform: translateX(0); }
+    }
+    .nav-item { transition: all .15s ease; color: #475569; text-decoration: none; }
+    .nav-item:hover { background: #f1f5f9; color: #0f172a; }
+    .nav-item.active { background: #ecfdf5; color: #047857; font-weight: 600; }
+    .nav-item .ico { color: #94a3b8; width: 18px; height: 18px; flex-shrink: 0; }
+    .nav-item.active .ico { color: #059669; }
+    .nav-item:hover .ico { color: #475569; }
+
+    /* Silo dropdown (v4 sidebar) */
+    .silo-dropdown { max-height: 0; overflow: hidden; transition: max-height .25s ease; }
+    .silo-dropdown.open { max-height: 520px; overflow-y: auto; }
+
+    /* Cards hover lift */
+    .card-hover { transition: all .15s ease; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px -8px rgba(15,23,42,.12); }
+
+    /* FAB v4 (no colisiona con .diego-fab existente) */
+    .v4-fab {
+      position: fixed; right: 24px; bottom: 24px;
+      width: 60px; height: 60px;
+      background: linear-gradient(135deg, #059669, #047857);
+      color: #fff; border-radius: 50%; border: 0;
+      box-shadow: 0 10px 25px -5px rgba(5,150,105,.45);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all .2s ease;
+      z-index: 60;
+    }
+    .v4-fab:hover { transform: scale(1.08); }
+
+    /* Context menu v4 (renombrado para no colisionar) */
+    .v4-context-menu {
+      position: fixed; z-index: 70;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      box-shadow: 0 16px 48px -12px rgba(15,23,42,.25);
+      padding: 4px; min-width: 220px;
+      display: none;
+    }
+    .v4-context-menu.show { display: block; }
+    .v4-context-menu-item { padding: 8px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all .1s; }
+    .v4-context-menu-item:hover { background: #f1f5f9; }
+
+    /* Fade-in entrada */
+    .fade-in { animation: v4FadeIn .3s ease both; }
+    @keyframes v4FadeIn { from { opacity:0; transform: translateY(8px);} to { opacity:1; transform: translateY(0);} }
+
+    /* Scrollbar slim */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+    /* Charts contained */
+    #v4-pieChart, #v4-barChart, #v4-lineChart { max-height: 240px; }
+
+    /* Badge minicards */
+    .v4-overlay-scope .badge,
+    .badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+
+    /* Top 5 tabs */
+    .top-tab { transition: all .15s ease; cursor: pointer; border: 0; }
   </style>
 </head>
 <body class="bg-stone-100 min-h-screen">
