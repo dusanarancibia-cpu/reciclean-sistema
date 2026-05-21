@@ -4789,5 +4789,18 @@ document.getElementById('resetPassword2').addEventListener('keypress', e => {
   });
 })();
 </script>
+
+<!-- Service Worker registration (v2: skipWaiting + clients.claim + navigate)
+     Sin esto el archivo /sw.js queda muerto: existe en el servidor pero
+     ningun cliente lo carga ni recibe auto-updates. -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(err => {
+        console.warn('SW register failed:', err);
+      });
+    });
+  }
+</script>
 </body>
 </html>
