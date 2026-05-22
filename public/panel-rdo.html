@@ -424,6 +424,7 @@
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
         <button data-tab="oportunidades" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabOportunidades">🎯 Oportunidades</button>
         <button data-tab="entregables"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabEntregables">📤 Entregables</button>
+        <button data-tab="bandeja_dieg"   class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabBandejaDiego">📥 Bandeja Diego</button>
         <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabAdmin">⚙️ Admin</button>
       </div>
       <span class="chevron-more" aria-hidden="true">›</span>
@@ -1464,6 +1465,133 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA BANDEJA DIEGO (D-OP-15) — mensajes/tareas Diego
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabBandejaDiego" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">📥 Bandeja Diego — mensajes y tareas pendientes</h2>
+        <button onclick="loadBandejaDiego()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+
+      <!-- KPI bar -->
+      <div id="bdKpiBar" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Pendientes</div>
+          <div id="bdKpiPend" class="text-2xl font-bold text-amber-600">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Resueltos</div>
+          <div id="bdKpiRes" class="text-2xl font-bold text-green-700">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Sin responsable</div>
+          <div id="bdKpiSinResp" class="text-2xl font-bold text-stone-600">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Vencidos &gt;48h</div>
+          <div id="bdKpiVenc" class="text-2xl font-bold text-red-700">—</div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="bg-white p-3 rounded shadow-sm mb-4 flex flex-wrap gap-3 items-end">
+        <div>
+          <label for="bdFiltroEstado" class="block text-xs text-stone-500 mb-1">Estado</label>
+          <select id="bdFiltroEstado" onchange="loadBandejaDiego()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todos</option>
+            <option value="pendiente" selected>Pendiente</option>
+            <option value="resuelto">Resuelto</option>
+          </select>
+        </div>
+        <div>
+          <label for="bdFiltroResponsable" class="block text-xs text-stone-500 mb-1">Responsable</label>
+          <select id="bdFiltroResponsable" onchange="loadBandejaDiego()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="flex-1 min-w-[12rem]">
+          <label for="bdFiltroBuscar" class="block text-xs text-stone-500 mb-1">Buscar (mensaje, remitente, what/who)</label>
+          <input id="bdFiltroBuscar" type="text" placeholder="Ej. precio cartón"
+                 oninput="bdDebouncedSearch()" aria-label="Buscar"
+                 class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="bg-white rounded shadow-sm overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-stone-50 text-stone-600 text-left">
+            <tr>
+              <th class="px-3 py-2">Mensaje</th>
+              <th class="px-3 py-2">Remitente</th>
+              <th class="px-3 py-2">Responsable</th>
+              <th class="px-3 py-2 text-right">Edad</th>
+              <th class="px-3 py-2">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="bdTbody">
+            <tr><td colspan="5" class="px-3 py-4 text-center text-stone-400">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Drawer -->
+      <div id="bdDrawer" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+        <div class="bg-white w-full max-w-lg h-full overflow-y-auto p-5">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h3 class="text-lg font-bold text-stone-800">Detalle mensaje</h3>
+              <p id="bdDrawerSubtitle" class="text-xs text-stone-500">—</p>
+            </div>
+            <button onclick="bdCerrarDrawer()" class="text-stone-500 hover:text-stone-800 text-2xl leading-none" aria-label="Cerrar">×</button>
+          </div>
+
+          <div id="bdDrawerTags" class="flex flex-wrap gap-2 mb-3"></div>
+
+          <div class="bg-stone-50 p-3 rounded mb-3">
+            <div class="text-xs text-stone-500 mb-1">Mensaje</div>
+            <div id="bdDrawerMensaje" class="text-sm text-stone-800 whitespace-pre-line">—</div>
+          </div>
+
+          <dl class="text-sm grid grid-cols-2 gap-2 mb-3">
+            <div><dt class="text-xs text-stone-500">What</dt><dd id="bdDw_what">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Who</dt><dd id="bdDw_who">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Dónde</dt><dd id="bdDw_where">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Cuándo</dt><dd id="bdDw_when">—</dd></div>
+            <div class="col-span-2"><dt class="text-xs text-stone-500">Why</dt><dd id="bdDw_why">—</dd></div>
+            <div class="col-span-2"><dt class="text-xs text-stone-500">How</dt><dd id="bdDw_how">—</dd></div>
+          </dl>
+
+          <div class="mb-3">
+            <label for="bdDw_resp" class="block text-xs text-stone-500 mb-1">Responsable</label>
+            <input id="bdDw_resp" type="text" placeholder="email o nombre"
+                   class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <button onclick="bdReasignar()" class="mt-1 text-xs px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded">Asignar / reasignar</button>
+          </div>
+
+          <div class="mb-3">
+            <label for="bdDw_nota" class="block text-xs text-stone-500 mb-1">Nota de resolución</label>
+            <textarea id="bdDw_nota" rows="3" placeholder="¿Cómo se resolvió?"
+                      class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none"></textarea>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mb-3">
+            <button id="bdBtnResolver" onclick="bdMarcarResuelto()"
+                    class="bg-green-700 hover:bg-green-800 text-white text-sm px-3 py-1.5 rounded">
+              Marcar resuelto
+            </button>
+            <button id="bdBtnReabrir" onclick="bdReabrir()"
+                    class="hidden bg-amber-200 hover:bg-amber-300 text-amber-900 text-sm px-3 py-1.5 rounded">
+              Reabrir
+            </button>
+          </div>
+
+          <div id="bdDrawerMsg" class="hidden text-xs p-2 rounded"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
          PESTAÑA COTIZADOR
     ═══════════════════════════════════════════════════════════ -->
     <section id="tabCotizador" class="tab-content hidden">
@@ -1679,7 +1807,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'admin'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'admin'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -2252,6 +2380,7 @@ function setupTabs() {
       if (tabId === 'cartera')   initCartera();
       if (tabId === 'oportunidades') initOportunidadesKanban();
       if (tabId === 'entregables') initEntregables();
+      if (tabId === 'bandeja_dieg') initBandejaDiego();
       if (tabId === 'dieguito')  initDieguito();
     });
   });
@@ -5350,6 +5479,155 @@ window.entMarcarObsoleto = async function() {
 window.entRevivir = async function() {
   if (!confirm('¿Revivir como listo?')) return;
   await _entUpdateEstado('listo', 'Marcado como listo.', { fecha_envio: null, enviado_a: [] });
+};
+
+// ============================================================
+// TAB BANDEJA DIEGO (D-OP-15) — mensajes/tareas Diego
+// ============================================================
+let _bdDrawerId = null;
+let _bdSearchTimer = null;
+let _bdCargoRespCombo = false;
+
+function bdDebouncedSearch() {
+  clearTimeout(_bdSearchTimer);
+  _bdSearchTimer = setTimeout(() => loadBandejaDiego(), 300);
+}
+
+async function initBandejaDiego() {
+  if (!_bdCargoRespCombo) {
+    const { data: resp } = await sb.schema('panel').from('diego_bandeja')
+      .select('responsable').not('responsable', 'is', null).limit(500);
+    const set = [...new Set((resp || []).map(r => r.responsable).filter(Boolean))].sort();
+    const sel = document.getElementById('bdFiltroResponsable');
+    set.forEach(r => { const opt = document.createElement('option'); opt.value = r; opt.textContent = r; sel.appendChild(opt); });
+    _bdCargoRespCombo = true;
+  }
+  await loadBandejaDiegoKpis();
+  await loadBandejaDiego();
+}
+
+async function loadBandejaDiegoKpis() {
+  const { data, error } = await sb.schema('panel').rpc('diego_bandeja_kpis');
+  if (error) { console.warn('[BandejaDiego] KPI error:', error.message); return; }
+  let pend = 0, res = 0, sinResp = 0, venc = 0;
+  (data || []).forEach(r => {
+    if (r.estado === 'pendiente') { pend = Number(r.cant); sinResp = Number(r.sin_responsable); venc = Number(r.vencidos_48h); }
+    if (r.estado === 'resuelto')  { res = Number(r.cant); }
+  });
+  document.getElementById('bdKpiPend').textContent = pend.toLocaleString('es-CL');
+  document.getElementById('bdKpiRes').textContent  = res.toLocaleString('es-CL');
+  document.getElementById('bdKpiSinResp').textContent = sinResp.toLocaleString('es-CL');
+  document.getElementById('bdKpiVenc').textContent = venc.toLocaleString('es-CL');
+}
+
+async function loadBandejaDiego() {
+  const tbody = document.getElementById('bdTbody');
+  tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-stone-400">Cargando…</td></tr>';
+  const est = document.getElementById('bdFiltroEstado').value;
+  const resp = document.getElementById('bdFiltroResponsable').value;
+  const buscar = (document.getElementById('bdFiltroBuscar').value || '').trim();
+
+  let q = sb.schema('panel').from('vw_diego_bandeja_detalle').select('*').limit(200);
+  if (est) q = q.eq('estado', est);
+  if (resp) q = q.eq('responsable', resp);
+  if (buscar) {
+    const s = buscar.replace(/'/g, "''");
+    q = q.or(`mensaje.ilike.%${s}%,remitente.ilike.%${s}%,what.ilike.%${s}%,who.ilike.%${s}%`);
+  }
+  const { data, error } = await q;
+  if (error) { tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-4 text-center text-red-600">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-6 text-center text-stone-400">Sin mensajes para los filtros aplicados.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(b => {
+    const edad = Number(b.edad_horas);
+    const edadTxt = edad < 1 ? 'recién' : edad < 24 ? Math.round(edad) + 'h' : Math.round(edad / 24) + 'd';
+    const colorPill = {
+      pendiente: 'bg-amber-100 text-amber-800',
+      resuelto:  'bg-green-100 text-green-800',
+    }[b.estado] || 'bg-stone-100 text-stone-700';
+    const urg = {
+      rojo:  '🔴',
+      ambar: '🟠',
+      verde: '🟢',
+      gris:  '⚪',
+    }[b.urgencia_color] || '';
+    const mensajeTrunc = (b.mensaje || '').length > 90 ? (b.mensaje || '').slice(0, 87) + '…' : (b.mensaje || '');
+    return `
+      <tr class="border-t border-stone-100 hover:bg-stone-50 cursor-pointer" onclick="bdAbrirDrawer('${b.id}')">
+        <td class="px-3 py-2"><span class="mr-1">${urg}</span>${escapeHtml(mensajeTrunc)}</td>
+        <td class="px-3 py-2 text-stone-600">${escapeHtml(b.remitente || '—')}</td>
+        <td class="px-3 py-2 text-stone-600">${escapeHtml(b.responsable || '—')}</td>
+        <td class="px-3 py-2 text-right text-stone-500">${edadTxt}</td>
+        <td class="px-3 py-2"><span class="inline-block px-2 py-0.5 rounded text-xs ${colorPill}">${escapeHtml(b.estado)}</span></td>
+      </tr>`;
+  }).join('');
+}
+
+window.bdAbrirDrawer = async function(id) {
+  _bdDrawerId = id;
+  document.getElementById('bdDrawer').classList.remove('hidden');
+  document.getElementById('bdDrawerMsg').classList.add('hidden');
+  const { data: b, error } = await sb.schema('panel').from('vw_diego_bandeja_detalle').select('*').eq('id', id).maybeSingle();
+  if (error || !b) { document.getElementById('bdDrawerSubtitle').textContent = 'Error cargando'; return; }
+
+  document.getElementById('bdDrawerSubtitle').textContent =
+    `${b.remitente || '—'} · ${new Date(b.creado_en).toLocaleString('es-CL')} · ${b.estado}`;
+  document.getElementById('bdDrawerMensaje').textContent = b.mensaje || '—';
+  document.getElementById('bdDw_what').textContent  = b.what  || '—';
+  document.getElementById('bdDw_who').textContent   = b.who   || '—';
+  document.getElementById('bdDw_where').textContent = b.donde || '—';
+  document.getElementById('bdDw_when').textContent  = b.cuando|| '—';
+  document.getElementById('bdDw_why').textContent   = b.why   || '—';
+  document.getElementById('bdDw_how').textContent   = b.how_  || '—';
+  document.getElementById('bdDw_resp').value = b.responsable || '';
+  document.getElementById('bdDw_nota').value = b.nota_resolucion || '';
+  document.getElementById('bdDrawerTags').innerHTML = b.urgencia_color === 'rojo'
+    ? '<span class="text-xs px-2 py-0.5 bg-red-100 text-red-800 rounded">🔴 Vencido &gt;48h</span>'
+    : '';
+  document.getElementById('bdBtnResolver').style.display = (b.estado === 'pendiente') ? '' : 'none';
+  document.getElementById('bdBtnReabrir').classList.toggle('hidden', b.estado !== 'resuelto');
+};
+
+window.bdCerrarDrawer = function() {
+  document.getElementById('bdDrawer').classList.add('hidden');
+  _bdDrawerId = null;
+};
+
+async function _bdUpdate(patch, mensajeOK) {
+  if (!_bdDrawerId) return;
+  const msg = document.getElementById('bdDrawerMsg');
+  msg.classList.add('hidden');
+  const { error } = await sb.schema('panel').from('diego_bandeja').update(patch).eq('id', _bdDrawerId);
+  if (error) {
+    msg.className = 'text-xs p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'Error: ' + error.message;
+    msg.classList.remove('hidden');
+    return;
+  }
+  msg.className = 'text-xs p-2 rounded bg-green-50 text-green-700';
+  msg.textContent = mensajeOK;
+  msg.classList.remove('hidden');
+  await loadBandejaDiegoKpis();
+  await loadBandejaDiego();
+  if (_bdDrawerId) await bdAbrirDrawer(_bdDrawerId);
+}
+
+window.bdMarcarResuelto = async function() {
+  const nota = document.getElementById('bdDw_nota').value.trim() || null;
+  await _bdUpdate({ estado: 'resuelto', cerrado_en: new Date().toISOString(), nota_resolucion: nota }, 'Marcado resuelto.');
+};
+
+window.bdReabrir = async function() {
+  if (!confirm('¿Reabrir como pendiente?')) return;
+  await _bdUpdate({ estado: 'pendiente', cerrado_en: null }, 'Reabierto.');
+};
+
+window.bdReasignar = async function() {
+  const nuevo = document.getElementById('bdDw_resp').value.trim() || null;
+  await _bdUpdate({ responsable: nuevo }, nuevo ? `Asignado a ${nuevo}.` : 'Responsable removido.');
 };
 
 // ---------- INIT ----------
