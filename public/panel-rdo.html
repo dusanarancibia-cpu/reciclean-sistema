@@ -425,6 +425,7 @@
         <button data-tab="oportunidades" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabOportunidades">🎯 Oportunidades</button>
         <button data-tab="entregables"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabEntregables">📤 Entregables</button>
         <button data-tab="bandeja_dieg"   class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabBandejaDiego">📥 Bandeja Diego</button>
+        <button data-tab="comercial"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabComercial">💼 Comercial</button>
         <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabAdmin">⚙️ Admin</button>
       </div>
       <span class="chevron-more" aria-hidden="true">›</span>
@@ -1725,6 +1726,110 @@
       </div>
     </section>
 
+    <!-- ===================================================== -->
+    <!-- TAB COMERCIAL · CRM Impulsa (mig 046 · 22-may-2026)    -->
+    <!-- Datos: panel.v_crm_impulsa_*  +  panel.v_crm_cliente_360 -->
+    <!-- ===================================================== -->
+    <section id="tabComercial" class="tab-content hidden">
+      <header class="mb-4">
+        <h2 class="text-2xl font-bold text-stone-800">💼 Comercial · CRM Impulsa</h2>
+        <p class="text-sm text-stone-500 mt-1">15 mil registros rescatados del CRM antiguo. Buscá por razón social, RUT o segmento.</p>
+      </header>
+
+      <!-- KPIs -->
+      <div id="crmKpis" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5" role="region" aria-label="KPIs comerciales">
+        <div class="bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
+          <div class="text-xs uppercase tracking-wide text-stone-500">Total clientes</div>
+          <div id="crmKpiClientes" class="text-2xl font-bold text-emerald-700 mt-1">—</div>
+          <div class="text-[11px] text-stone-400 mt-1">Base maestra Impulsa</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
+          <div class="text-xs uppercase tracking-wide text-stone-500">Oportunidades abiertas</div>
+          <div id="crmKpiOpsAbiertas" class="text-2xl font-bold text-amber-600 mt-1">—</div>
+          <div class="text-[11px] text-stone-400 mt-1">Ni Ganada ni Perdida</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
+          <div class="text-xs uppercase tracking-wide text-stone-500">Cotizaciones</div>
+          <div id="crmKpiCotizaciones" class="text-2xl font-bold text-sky-700 mt-1">—</div>
+          <div class="text-[11px] text-stone-400 mt-1">Histórico completo</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
+          <div class="text-xs uppercase tracking-wide text-stone-500">Prospectos nuevos</div>
+          <div id="crmKpiProspectos" class="text-2xl font-bold text-fuchsia-700 mt-1">—</div>
+          <div class="text-[11px] text-stone-400 mt-1">Scraping M8 · 26 leads</div>
+        </div>
+      </div>
+
+      <!-- Buscador + tabla -->
+      <div class="bg-white border border-stone-200 rounded-2xl shadow-sm">
+        <div class="p-4 border-b border-stone-100">
+          <label for="crmSearch" class="sr-only">Buscar cliente</label>
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <input id="crmSearch" type="search" autocomplete="off" placeholder="Buscar por razón social, RUT, segmento o contacto…"
+                     class="w-full border border-stone-300 rounded-lg px-3 py-2 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              <span aria-hidden="true" class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 text-sm">🔍</span>
+            </div>
+            <select id="crmFiltroEstado" class="border border-stone-300 rounded-lg px-2 py-2 text-sm bg-white" aria-label="Filtrar por estado">
+              <option value="">Estado: todos</option>
+              <option value="Activo">Activo</option>
+              <option value="Inactivo">Inactivo</option>
+              <option value="Prospecto">Prospecto</option>
+            </select>
+            <span id="crmCount" class="text-xs text-stone-500 ml-1">—</span>
+          </div>
+        </div>
+        <div id="crmListadoContainer" class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-stone-50 text-stone-600 text-xs uppercase tracking-wide">
+              <tr>
+                <th class="text-left px-3 py-2">Razón social</th>
+                <th class="text-left px-3 py-2">RUT</th>
+                <th class="text-left px-3 py-2">Segmento</th>
+                <th class="text-left px-3 py-2">Contacto</th>
+                <th class="text-left px-3 py-2">Teléfono</th>
+                <th class="text-left px-3 py-2">Email</th>
+                <th class="text-left px-3 py-2">Estado</th>
+                <th class="text-right px-3 py-2">Ficha</th>
+              </tr>
+            </thead>
+            <tbody id="crmListadoBody">
+              <tr><td colspan="8" class="text-center text-stone-400 py-6 text-sm">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Ficha modal -->
+      <div id="crmFichaOverlay" class="hidden fixed inset-0 bg-black/40 z-50 items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="crmFichaTitulo">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <header class="flex items-start justify-between p-5 border-b border-stone-100">
+            <div>
+              <h3 id="crmFichaTitulo" class="text-lg font-bold text-stone-800">—</h3>
+              <p id="crmFichaSub" class="text-xs text-stone-500 mt-0.5">—</p>
+            </div>
+            <button id="crmFichaClose" class="text-stone-400 hover:text-stone-700 text-2xl leading-none" aria-label="Cerrar ficha">×</button>
+          </header>
+          <div class="flex border-b border-stone-100 bg-stone-50 px-5 overflow-x-auto" role="tablist" aria-label="Sub-tabs ficha">
+            <button class="crm-subtab py-3 px-3 text-sm font-medium text-emerald-700 border-b-2 border-emerald-600" data-subtab="datos"        role="tab" aria-selected="true">Datos</button>
+            <button class="crm-subtab py-3 px-3 text-sm text-stone-600"                                              data-subtab="contactos"    role="tab" aria-selected="false">Contactos</button>
+            <button class="crm-subtab py-3 px-3 text-sm text-stone-600"                                              data-subtab="oportunidades" role="tab" aria-selected="false">Oportunidades</button>
+            <button class="crm-subtab py-3 px-3 text-sm text-stone-600"                                              data-subtab="cotizaciones" role="tab" aria-selected="false">Cotizaciones</button>
+            <button class="crm-subtab py-3 px-3 text-sm text-stone-600"                                              data-subtab="documentos"   role="tab" aria-selected="false">Documentos</button>
+            <button class="crm-subtab py-3 px-3 text-sm text-stone-600"                                              data-subtab="gestiones"    role="tab" aria-selected="false">Gestiones</button>
+          </div>
+          <div id="crmFichaBody" class="p-5 overflow-y-auto flex-1">—</div>
+          <footer class="p-4 border-t border-stone-100 bg-stone-50 flex items-center justify-between">
+            <span class="text-xs text-stone-500">Datos rescatados de CRM Impulsa · solo lectura</span>
+            <button id="crmBtnAgregarGestion" disabled title="Disponible cuando Dusan firme D-CRM-GESTIONES"
+                    class="px-3 py-1.5 text-sm rounded-md bg-stone-200 text-stone-400 cursor-not-allowed">
+              + Agregar gestión
+            </button>
+          </footer>
+        </div>
+      </div>
+    </section>
+
     <section id="tabAdmin" class="tab-content hidden">
       <h2 class="text-xl font-bold mb-3 text-stone-800">Administración</h2>
       <div class="bg-white p-5 rounded-lg shadow-sm mb-4">
@@ -2382,6 +2487,7 @@ function setupTabs() {
       if (tabId === 'entregables') initEntregables();
       if (tabId === 'bandeja_dieg') initBandejaDiego();
       if (tabId === 'dieguito')  initDieguito();
+      if (tabId === 'comercial')  initTabComercial();
     });
   });
 }
@@ -5963,6 +6069,348 @@ document.addEventListener('DOMContentLoaded', () => {
     new MutationObserver(() => { window.v4SyncUser && window.v4SyncUser(); window.v4SyncSilos && window.v4SyncSilos(); window.v4SyncSiloCtx && window.v4SyncSiloCtx(); }).observe(ued, { childList: true, characterData: true, subtree: true });
   }
 });
+</script>
+
+<!-- ============================================================== -->
+<!-- Tab Comercial · CRM Impulsa (mig 046 · feature/crm-impulsa)    -->
+<!-- ============================================================== -->
+<script>
+(function() {
+  'use strict';
+
+  const COM = {
+    initialized: false,
+    debounceTimer: null,
+    currentQuery: '',
+    currentEstado: '',
+    listadoCache: [],
+    fichaCache: {}
+  };
+
+  // --------- util ----------
+  const esc = (s) => (typeof escapeHtml === 'function') ? escapeHtml(String(s ?? '')) : String(s ?? '').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+  const fmtNum = (n) => (n == null || Number.isNaN(+n)) ? '—' : Number(n).toLocaleString('es-CL');
+  const fmtMoney = (n, div) => (n == null) ? '—' : `${(div||'CLP')} ${fmtNum(Math.round(+n))}`;
+  const fmtDate = (s) => { if (!s) return '—'; try { return new Date(s).toLocaleDateString('es-CL'); } catch(e) { return s; } };
+  const toast = (msg, type='error') => (typeof showToast === 'function') ? showToast(msg, type) : console.warn('[CRM]', msg);
+  const humanErr = (e) => (typeof humanizeSupabaseError === 'function') ? humanizeSupabaseError(e) : (e?.message || 'Error');
+
+  // --------- init ----------
+  window.initTabComercial = async function() {
+    if (COM.initialized) {
+      // refrescar KPIs igual (números viven en Supabase)
+      loadKPIsComercial();
+      return;
+    }
+    COM.initialized = true;
+
+    // listeners
+    const inp = document.getElementById('crmSearch');
+    const flt = document.getElementById('crmFiltroEstado');
+    inp.addEventListener('input', () => {
+      clearTimeout(COM.debounceTimer);
+      COM.debounceTimer = setTimeout(() => {
+        COM.currentQuery = inp.value.trim();
+        loadListadoClientes();
+      }, 300);
+    });
+    flt.addEventListener('change', () => {
+      COM.currentEstado = flt.value;
+      loadListadoClientes();
+    });
+
+    // modal: close por botón / overlay / ESC
+    document.getElementById('crmFichaClose').addEventListener('click', closeFicha);
+    document.getElementById('crmFichaOverlay').addEventListener('click', (e) => {
+      if (e.target.id === 'crmFichaOverlay') closeFicha();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !document.getElementById('crmFichaOverlay').classList.contains('hidden')) {
+        closeFicha();
+      }
+    });
+
+    // sub-tabs ficha
+    document.querySelectorAll('.crm-subtab').forEach(btn => {
+      btn.addEventListener('click', () => switchSubTab(btn.getAttribute('data-subtab')));
+    });
+
+    // carga inicial
+    await Promise.all([loadKPIsComercial(), loadListadoClientes()]);
+  };
+
+  // --------- KPIs ----------
+  async function loadKPIsComercial() {
+    const slots = {
+      clientes:      document.getElementById('crmKpiClientes'),
+      opsAbiertas:   document.getElementById('crmKpiOpsAbiertas'),
+      cotizaciones:  document.getElementById('crmKpiCotizaciones'),
+      prospectos:    document.getElementById('crmKpiProspectos')
+    };
+    Object.values(slots).forEach(el => el && (el.textContent = '…'));
+
+    try {
+      const [c1, c2, c3, c4] = await Promise.all([
+        sb.schema('panel').from('v_crm_impulsa_clientes').select('id_impulsa', { count: 'exact', head: true }),
+        // Abiertas = no Ganada / no Perdida / no null
+        sb.schema('panel').from('v_crm_impulsa_oportunidades').select('id_impulsa', { count: 'exact', head: true }).not('estado', 'in', '(Ganada,Perdida)').not('estado', 'is', null),
+        sb.schema('panel').from('v_crm_impulsa_cotizaciones').select('id_impulsa', { count: 'exact', head: true }),
+        sb.schema('panel').from('v_crm_impulsa_prospectos').select('id_impulsa', { count: 'exact', head: true })
+      ]);
+      slots.clientes.textContent     = fmtNum(c1.count);
+      slots.opsAbiertas.textContent  = fmtNum(c2.count);
+      slots.cotizaciones.textContent = fmtNum(c3.count);
+      slots.prospectos.textContent   = fmtNum(c4.count);
+    } catch (e) {
+      console.warn('[CRM] KPIs error:', e);
+      Object.values(slots).forEach(el => el && (el.textContent = '!'));
+      toast('No pude cargar los KPIs comerciales: ' + humanErr(e), 'error');
+    }
+  }
+
+  // --------- listado ----------
+  async function loadListadoClientes() {
+    const body = document.getElementById('crmListadoBody');
+    const counter = document.getElementById('crmCount');
+    body.innerHTML = `<tr><td colspan="8" class="text-center text-stone-400 py-6 text-sm">Cargando…</td></tr>`;
+
+    try {
+      let q = sb.schema('panel').from('v_crm_impulsa_clientes')
+        .select('id_impulsa, razon_social, rut, segmento, contacto_nombre, telefono, email, estado', { count: 'exact' });
+
+      if (COM.currentQuery) {
+        const t = COM.currentQuery.replace(/%/g, '');
+        q = q.or(`razon_social.ilike.%${t}%,rut.ilike.%${t}%,segmento.ilike.%${t}%,contacto_nombre.ilike.%${t}%`);
+      }
+      if (COM.currentEstado) {
+        q = q.eq('estado', COM.currentEstado);
+      }
+      q = q.order('razon_social', { ascending: true }).limit(100);
+
+      const { data, error, count } = await q;
+      if (error) throw error;
+
+      COM.listadoCache = data || [];
+      counter.textContent = `${fmtNum(data?.length || 0)} de ${fmtNum(count || 0)}`;
+
+      if (!data || data.length === 0) {
+        body.innerHTML = `<tr><td colspan="8" class="text-center text-stone-400 py-6 text-sm">Sin resultados.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = data.map(r => `
+        <tr class="border-t border-stone-100 hover:bg-stone-50 cursor-pointer crm-row" data-id="${esc(r.id_impulsa)}">
+          <td class="px-3 py-2 font-medium text-stone-800">${esc(r.razon_social || '—')}</td>
+          <td class="px-3 py-2 text-stone-600">${esc(r.rut || '—')}</td>
+          <td class="px-3 py-2 text-stone-600">${esc(r.segmento || '—')}</td>
+          <td class="px-3 py-2 text-stone-600">${esc(r.contacto_nombre || '—')}</td>
+          <td class="px-3 py-2 text-stone-600">${esc(r.telefono || '—')}</td>
+          <td class="px-3 py-2 text-stone-600">${esc(r.email || '—')}</td>
+          <td class="px-3 py-2"><span class="text-xs px-2 py-0.5 rounded-full ${r.estado === 'Activo' ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-200 text-stone-600'}">${esc(r.estado || '—')}</span></td>
+          <td class="px-3 py-2 text-right"><button class="text-emerald-700 hover:underline text-sm" data-action="ficha" data-id="${esc(r.id_impulsa)}">→ Ver</button></td>
+        </tr>
+      `).join('');
+
+      body.querySelectorAll('.crm-row').forEach(tr => {
+        tr.addEventListener('click', (e) => {
+          if (e.target.closest('button')) return;
+          openFichaCliente(tr.dataset.id);
+        });
+      });
+      body.querySelectorAll('[data-action="ficha"]').forEach(b => {
+        b.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openFichaCliente(b.dataset.id);
+        });
+      });
+    } catch (e) {
+      console.warn('[CRM] listado error:', e);
+      body.innerHTML = `<tr><td colspan="8" class="text-center text-red-600 py-6 text-sm">Error: ${esc(humanErr(e))}</td></tr>`;
+      toast(humanErr(e), 'error');
+    }
+  }
+
+  // --------- ficha ----------
+  async function openFichaCliente(idImpulsa) {
+    const overlay = document.getElementById('crmFichaOverlay');
+    const titulo = document.getElementById('crmFichaTitulo');
+    const sub = document.getElementById('crmFichaSub');
+    const body = document.getElementById('crmFichaBody');
+
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    titulo.textContent = 'Cargando…';
+    sub.textContent = '';
+    body.innerHTML = `<div class="text-center text-stone-400 py-8 text-sm">Cargando ficha…</div>`;
+    // reset sub-tab activo
+    document.querySelectorAll('.crm-subtab').forEach(b => {
+      const isActive = b.getAttribute('data-subtab') === 'datos';
+      b.classList.toggle('text-emerald-700', isActive);
+      b.classList.toggle('border-b-2', isActive);
+      b.classList.toggle('border-emerald-600', isActive);
+      b.classList.toggle('text-stone-600', !isActive);
+      b.setAttribute('aria-selected', String(isActive));
+    });
+
+    try {
+      const [cli360, cliFull] = await Promise.all([
+        sb.schema('panel').from('v_crm_cliente_360').select('*').eq('id_impulsa', idImpulsa).maybeSingle(),
+        sb.schema('panel').from('v_crm_impulsa_clientes').select('*').eq('id_impulsa', idImpulsa).maybeSingle()
+      ]);
+      if (cli360.error) throw cli360.error;
+      if (cliFull.error) throw cliFull.error;
+
+      const c360 = cli360.data || {};
+      const cFull = cliFull.data || {};
+      COM.fichaCache = { id: idImpulsa, c360, cFull };
+
+      titulo.textContent = c360.razon_social || cFull.razon_social || '—';
+      sub.textContent = `RUT ${c360.rut || cFull.rut || '—'} · ${c360.n_contactos ?? 0} contactos · ${c360.n_oportunidades ?? 0} oportunidades (${c360.n_oportunidades_abiertas ?? 0} abiertas) · ${c360.n_cotizaciones ?? 0} cotizaciones`;
+      renderSubTab('datos');
+    } catch (e) {
+      console.warn('[CRM] ficha error:', e);
+      body.innerHTML = `<div class="text-red-600 text-sm">Error cargando ficha: ${esc(humanErr(e))}</div>`;
+      toast(humanErr(e), 'error');
+    }
+  }
+
+  function closeFicha() {
+    const overlay = document.getElementById('crmFichaOverlay');
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+  }
+
+  function switchSubTab(name) {
+    document.querySelectorAll('.crm-subtab').forEach(b => {
+      const isActive = b.getAttribute('data-subtab') === name;
+      b.classList.toggle('text-emerald-700', isActive);
+      b.classList.toggle('border-b-2', isActive);
+      b.classList.toggle('border-emerald-600', isActive);
+      b.classList.toggle('text-stone-600', !isActive);
+      b.setAttribute('aria-selected', String(isActive));
+    });
+    renderSubTab(name);
+  }
+
+  async function renderSubTab(name) {
+    const body = document.getElementById('crmFichaBody');
+    const { id, c360, cFull } = COM.fichaCache;
+    if (!id) return;
+
+    if (name === 'datos') {
+      const filas = [
+        ['Razón social',     cFull.razon_social],
+        ['RUT',              cFull.rut],
+        ['Estado',           cFull.estado],
+        ['Segmento',         cFull.segmento],
+        ['Tags',             cFull.tags],
+        ['Dirección',        cFull.direccion],
+        ['Teléfono',         cFull.telefono],
+        ['Email',            cFull.email],
+        ['Contacto',         cFull.contacto_nombre],
+        ['Cargo contacto',   cFull.contacto_cargo],
+        ['Email contacto',   cFull.contacto_email],
+        ['Cliente para',     cFull.cliente_para],
+        ['Sucursales',       cFull.sucursales],
+        ['Creado por',       cFull.creado_por],
+        ['Fecha creación',   fmtDate(cFull.fecha_creacion)],
+        ['Última act. CRM',  fmtDate(cFull._crm_updated_at)],
+        ['Importado',        fmtDate(cFull._importado_at)]
+      ];
+      body.innerHTML = `
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+          ${filas.map(([k, v]) => `
+            <div class="flex border-b border-stone-100 py-1.5">
+              <dt class="w-40 text-stone-500">${esc(k)}</dt>
+              <dd class="flex-1 text-stone-800">${esc(v || '—')}</dd>
+            </div>
+          `).join('')}
+        </dl>`;
+      return;
+    }
+
+    body.innerHTML = `<div class="text-center text-stone-400 py-6 text-sm">Cargando ${esc(name)}…</div>`;
+    try {
+      if (name === 'contactos') {
+        const { data, error } = await sb.schema('panel').from('v_crm_impulsa_contactos')
+          .select('id_contacto, nombre, cargo, email, telefono, fecha_creacion')
+          .eq('id_cliente', id).order('fecha_creacion', { ascending: false }).limit(50);
+        if (error) throw error;
+        body.innerHTML = renderTabla(data, ['Nombre', 'Cargo', 'Email', 'Teléfono', 'Creado'],
+          r => [r.nombre, r.cargo, r.email, r.telefono, fmtDate(r.fecha_creacion)]);
+      }
+      else if (name === 'oportunidades') {
+        const { data, error } = await sb.schema('panel').from('v_crm_impulsa_oportunidades')
+          .select('id_impulsa, titulo, estado, total, divisa, fecha_creacion, fecha_cierre, creado_por')
+          .eq('cliente_rut', cFull.rut || '__no_rut__').order('fecha_creacion', { ascending: false }).limit(100);
+        if (error) throw error;
+        body.innerHTML = renderTabla(data, ['Título', 'Estado', 'Monto', 'Creada', 'Cierre', 'Creado por'],
+          r => [r.titulo, badge(r.estado), fmtMoney(r.total, r.divisa), fmtDate(r.fecha_creacion), fmtDate(r.fecha_cierre), r.creado_por]);
+      }
+      else if (name === 'cotizaciones') {
+        const { data, error } = await sb.schema('panel').from('v_crm_impulsa_cotizaciones')
+          .select('id_impulsa, titulo, estado, total, divisa, producto, fecha_creacion, fecha_cierre')
+          .eq('cliente_rut', cFull.rut || '__no_rut__').order('fecha_creacion', { ascending: false }).limit(100);
+        if (error) throw error;
+        body.innerHTML = renderTabla(data, ['Título', 'Estado', 'Producto', 'Monto', 'Creada', 'Cierre'],
+          r => [r.titulo, badge(r.estado), r.producto, fmtMoney(r.total, r.divisa), fmtDate(r.fecha_creacion), fmtDate(r.fecha_cierre)]);
+      }
+      else if (name === 'documentos') {
+        const { data, error } = await sb.schema('panel').from('v_impulsa_documentos')
+          .select('id, name, bytes, mime, created_at')
+          .eq('cliente_id_impulsa', id).order('created_at', { ascending: false });
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          body.innerHTML = `
+            <div class="text-center py-8">
+              <div class="text-4xl mb-2">📂</div>
+              <p class="text-stone-700 font-medium mb-1">Sin documentos cargados</p>
+              <p class="text-xs text-stone-500 max-w-md mx-auto">Los documentos físicos del CRM Impulsa no se descargaron antes del cierre del plan CRECE (21-may-2026). Cuando se rescaten por otro canal, se cargan en el bucket <code class="bg-stone-100 px-1 rounded">impulsa-documentos/${esc(id)}/</code>.</p>
+            </div>`;
+        } else {
+          body.innerHTML = renderTabla(data, ['Archivo', 'Tamaño', 'Tipo', 'Subido'],
+            r => [r.name, r.bytes ? `${Math.round(r.bytes/1024)} KB` : '—', r.mime, fmtDate(r.created_at)]);
+        }
+      }
+      else if (name === 'gestiones') {
+        body.innerHTML = `
+          <div class="text-center py-8">
+            <div class="text-4xl mb-2">📝</div>
+            <p class="text-stone-700 font-medium mb-1">Sin gestiones registradas</p>
+            <p class="text-xs text-stone-500 max-w-md mx-auto">El registro de nuevas gestiones requiere la tabla <code class="bg-stone-100 px-1 rounded">panel.crm_gestiones</code>, pendiente de firma <code>D-CRM-GESTIONES</code> por Dusan. Una vez firmada, este panel mostrará el historial cronológico y permitirá agregar entradas nuevas.</p>
+          </div>`;
+      }
+    } catch (e) {
+      console.warn('[CRM] subtab', name, 'error:', e);
+      body.innerHTML = `<div class="text-red-600 text-sm">Error: ${esc(humanErr(e))}</div>`;
+    }
+  }
+
+  function renderTabla(data, headers, rowFn) {
+    if (!data || data.length === 0) {
+      return `<div class="text-center text-stone-400 py-6 text-sm">Sin datos.</div>`;
+    }
+    return `
+      <table class="w-full text-sm">
+        <thead class="bg-stone-50 text-stone-600 text-xs uppercase tracking-wide">
+          <tr>${headers.map(h => `<th class="text-left px-3 py-2">${esc(h)}</th>`).join('')}</tr>
+        </thead>
+        <tbody>
+          ${data.map(r => `<tr class="border-t border-stone-100">${rowFn(r).map(c => `<td class="px-3 py-2 text-stone-700">${c == null ? '—' : (String(c).startsWith('<') ? c : esc(c))}</td>`).join('')}</tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  function badge(estado) {
+    if (!estado) return '<span class="text-stone-400">—</span>';
+    const e = String(estado);
+    const cls = e === 'Ganada' ? 'bg-emerald-100 text-emerald-700'
+              : e === 'Perdida' ? 'bg-red-100 text-red-700'
+              : e.startsWith('Contacto') || e === 'Se envía cotización' ? 'bg-amber-100 text-amber-700'
+              : 'bg-sky-100 text-sky-700';
+    return `<span class="text-xs px-2 py-0.5 rounded-full ${cls}">${esc(e.length > 40 ? e.slice(0, 40) + '…' : e)}</span>`;
+  }
+})();
 </script>
 
 <!-- ===== Diego FAB · chat conectado a panel.diego_bandeja ===== -->
