@@ -7,6 +7,10 @@
   <link rel="stylesheet" href="/tailwind.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/page-logger.js"></script>
+  <!-- v4-design F1 · CDNs Chart.js + Leaflet (defer para no bloquear render) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
   <style>
     .app-container { display: none; }
     .login-container { display: flex; }
@@ -50,6 +54,111 @@
     @media (min-width: 768px) {
       /* En desktop no hace falta el gradient porque los tabs caben. */
       .nav-tabs-wrapper::after, .nav-tabs-wrapper .chevron-more { display: none; }
+    }
+  </style>
+
+  <!-- ============================================================
+       v4-design F1 · OVERLAY CSS (mockup Panel-rdo-deepseek-v4.html)
+       Scoped via selectores nuevos / prefijo v4-. NO sobreescribe
+       reglas existentes del panel productivo.
+       ============================================================ -->
+  <style id="v4-overlay-styles">
+    /* Sidebar lateral v4 */
+    .v4-sidebar { transition: transform 0.25s ease; }
+    @media (max-width: 768px) {
+      .v4-sidebar { position: fixed; z-index: 50; top: 0; left: 0; height: 100%; transform: translateX(-100%); }
+      .v4-sidebar.open { transform: translateX(0); }
+    }
+    .nav-item { transition: all .15s ease; color: #475569; text-decoration: none; }
+    .nav-item:hover { background: #f1f5f9; color: #0f172a; }
+    .nav-item.active { background: #ecfdf5; color: #047857; font-weight: 600; }
+    .nav-item .ico { color: #94a3b8; width: 18px; height: 18px; flex-shrink: 0; }
+    .nav-item.active .ico { color: #059669; }
+    .nav-item:hover .ico { color: #475569; }
+
+    /* Silo dropdown (v4 sidebar) */
+    .silo-dropdown { max-height: 0; overflow: hidden; transition: max-height .25s ease; }
+    .silo-dropdown.open { max-height: 520px; overflow-y: auto; }
+
+    /* Cards hover lift */
+    .card-hover { transition: all .15s ease; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px -8px rgba(15,23,42,.12); }
+
+    /* FAB v4 (no colisiona con .diego-fab existente) */
+    .v4-fab {
+      position: fixed; right: 24px; bottom: 24px;
+      width: 60px; height: 60px;
+      background: linear-gradient(135deg, #059669, #047857);
+      color: #fff; border-radius: 50%; border: 0;
+      box-shadow: 0 10px 25px -5px rgba(5,150,105,.45);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all .2s ease;
+      z-index: 60;
+    }
+    .v4-fab:hover { transform: scale(1.08); }
+
+    /* Context menu v4 (renombrado para no colisionar) */
+    .v4-context-menu {
+      position: fixed; z-index: 70;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      box-shadow: 0 16px 48px -12px rgba(15,23,42,.25);
+      padding: 4px; min-width: 220px;
+      display: none;
+    }
+    .v4-context-menu.show { display: block; }
+    .v4-context-menu-item { padding: 8px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all .1s; }
+    .v4-context-menu-item:hover { background: #f1f5f9; }
+
+    /* Fade-in entrada */
+    .fade-in { animation: v4FadeIn .3s ease both; }
+    @keyframes v4FadeIn { from { opacity:0; transform: translateY(8px);} to { opacity:1; transform: translateY(0);} }
+
+    /* Scrollbar slim */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+    /* Charts contained */
+    #v4-pieChart, #v4-barChart, #v4-lineChart { max-height: 240px; }
+
+    /* Badge minicards */
+    .v4-overlay-scope .badge,
+    .badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+
+    /* Top 5 tabs */
+    .top-tab { transition: all .15s ease; cursor: pointer; border: 0; }
+
+    /* v4-design F6 · responsive helpers ----------------------- */
+    /* En mobile (<768px) el sidebar v4 ocupa toda la altura via
+       fixed; el contenido productivo no debe quedar bajo él. El
+       header productivo ya respeta el flex porque el sidebar
+       deja translateX(-100%) cuando está cerrado. */
+    @media (max-width: 768px) {
+      #v4-dashboard-hero h1 { font-size: 1.5rem; line-height: 2rem; }
+      #v4-dashboard-hero .grid-cols-2 { gap: 0.5rem; }
+      /* En mobile, los emoji icons grandes encogen un poco */
+      #v4-dashboard-hero .w-11 { width: 2.5rem; }
+      #v4-dashboard-hero .h-11 { height: 2.5rem; }
+    }
+    /* Tablet — Top5 baja de 5 a 4 columnas para no apretar */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      #v4-topContent { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    /* v4-design F6 · a11y ------------------------------------- */
+    /* Focus visible en sidebar + cards interactivas */
+    .v4-sidebar a:focus-visible,
+    .v4-sidebar button:focus-visible,
+    .nav-item:focus-visible,
+    .top-tab:focus-visible,
+    [data-v4-tab-goto]:focus-visible {
+      outline: 2px solid #2C5F2D !important;
+      outline-offset: 2px;
+    }
+    /* prefers-reduced-motion: respetar usuarios sensibles */
+    @media (prefers-reduced-motion: reduce) {
+      .v4-sidebar, .card-hover, .silo-dropdown, .fade-in,
+      .nav-item, .top-tab { transition: none !important; animation: none !important; }
+      .card-hover:hover { transform: none !important; }
     }
   </style>
 </head>
@@ -151,8 +260,116 @@
 
 <!-- APP -->
 <div id="appContainer" class="app-container">
+
+  <!-- v4-design F2 · Wrapper flex root (sidebar + contenido) -->
+  <div class="flex min-h-screen">
+
+  <!-- ============== v4 SIDEBAR LATERAL ============== -->
+  <aside id="v4-sidebar" class="v4-sidebar w-60 bg-white flex flex-col border-r border-slate-200 flex-shrink-0" aria-label="Navegación lateral">
+    <!-- Logo -->
+    <div class="flex items-center gap-2.5 px-4 h-14 border-b border-slate-100">
+      <div class="h-8 w-8 bg-gradient-to-br from-green-600 to-green-700 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">R</div>
+      <span class="text-base font-semibold text-slate-800">Reciclean</span>
+    </div>
+
+    <!-- Selector de Silo (espejo del header productivo) -->
+    <div class="px-3 pt-3 pb-2 border-b border-slate-100">
+      <p class="px-1 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Estás en</p>
+      <button id="v4-siloToggle" type="button" class="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium bg-slate-50 hover:bg-slate-100 border border-slate-200 transition" aria-expanded="false" aria-controls="v4-siloDropdown">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span id="v4-siloDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+          <span id="v4-siloActual" class="truncate text-slate-700">—</span>
+        </div>
+        <svg class="w-4 h-4 text-slate-400 transition-transform" id="v4-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+      <div id="v4-siloDropdown" class="silo-dropdown mt-1 bg-white border border-slate-200 rounded-lg shadow-lg">
+        <div class="p-1" id="v4-siloDropdownItems">
+          <!-- Items poblados dinámicamente desde currentSilo -->
+          <p class="text-xs text-slate-400 px-3 py-2">Inicia sesión para ver áreas</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navegación: shortcuts a los tabs productivos (los buttons reales siguen vivos en <nav> abajo) -->
+    <nav class="flex-1 overflow-y-auto px-3 py-3 space-y-5" aria-label="Atajos de pestañas">
+      <div>
+        <h3 class="px-3 mb-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Inicio</h3>
+        <a href="#" data-v4-tab="portada" class="nav-item active flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Portada
+        </a>
+      </div>
+      <div>
+        <h3 class="px-3 mb-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Día a día</h3>
+        <a href="#" data-v4-tab="pesaje" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5 5 0 006 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5 5 0 006 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+          Pesaje
+        </a>
+        <a href="#" data-v4-tab="facturacion" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Facturación
+        </a>
+        <a href="#" data-v4-tab="dieguito" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          Dieguito
+        </a>
+      </div>
+      <div>
+        <h3 class="px-3 mb-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Gestión</h3>
+        <a href="#" data-v4-tab="rdo" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z"/></svg>
+          RDO
+        </a>
+        <a href="#" data-v4-tab="precios" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Precios
+        </a>
+        <a href="#" data-v4-tab="cierres" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          Cierre
+        </a>
+        <a href="#" data-v4-tab="cartera" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-3a4 4 0 11-8 0 4 4 0 018 0zm6 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          Cartera
+        </a>
+      </div>
+      <div>
+        <h3 class="px-3 mb-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Equipo</h3>
+        <a href="#" data-v4-tab="comunicados" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4 4 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+          Comunicados
+        </a>
+        <a href="#" data-v4-tab="oportunidades" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          Oportunidades
+        </a>
+      </div>
+    </nav>
+
+    <!-- Footer usuario -->
+    <div class="border-t border-slate-100 p-3">
+      <button class="w-full flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-50 transition" type="button" aria-label="Perfil usuario">
+        <div class="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 text-white flex items-center justify-center text-sm font-bold shadow-sm" id="v4-userInitial">·</div>
+        <div class="flex-1 text-left min-w-0">
+          <p class="text-sm font-medium text-slate-700 truncate"><span id="v4-userName">—</span></p>
+          <p class="text-[11px] text-slate-400 truncate"><span id="v4-userEmail">—</span></p>
+        </div>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Overlay móvil para cerrar sidebar al click -->
+  <div id="v4-overlay" class="hidden fixed inset-0 bg-black/60 z-40 md:hidden"></div>
+
+  <!-- Contenedor del contenido productivo (header + nav + main) -->
+  <div class="flex-1 flex flex-col min-w-0">
+
   <header class="bg-white shadow-sm px-6 py-3 flex justify-between items-center flex-wrap gap-2">
     <div class="flex items-center gap-3">
+      <!-- v4-design F2 · Botón hamburguesa móvil (toggle sidebar v4) -->
+      <button type="button" id="v4-hamburger" class="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Abrir menú lateral">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
       <img src="/assets/logos/grc-simbolo.png" alt="Grupo Reciclean-Farex"
            class="h-10 w-auto"
            onerror="this.onerror=null; this.src='https://reciclean-sistema.vercel.app/assets/logos/grc-simbolo.png';">
@@ -220,6 +437,235 @@
         <p class="text-stone-500">Cargando mensajes destacados...</p>
       </div>
       <div id="portadaAlertas" class="mb-4"></div>
+
+      <!-- =================================================== -->
+      <!-- v4-design F3 · Dashboard hero (saludo + alertas +    -->
+      <!-- acciones rápidas + KPIs sparkline)                   -->
+      <!-- =================================================== -->
+      <div id="v4-dashboard-hero" class="space-y-6 fade-in mb-6">
+
+        <!-- Saludo + fecha + contexto silo -->
+        <div>
+          <h1 class="text-2xl font-bold text-slate-800">Buenos días, <span id="v4-saludoNombre">—</span> 👋</h1>
+          <p class="text-sm text-slate-500 mt-1">Hoy es <span class="font-medium text-slate-700" id="v4-fechaCompleta">—</span> · <span id="v4-siloCtx" class="font-semibold text-emerald-700">Vista global</span> · UF <span id="v4-ufValor" class="font-semibold text-slate-700">$38.214</span></p>
+        </div>
+
+        <!-- "Esto necesita tu atención hoy" (mock; futuro: leer panel.diego_bandeja / RDO pendientes) -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 border-l-4 border-l-amber-400" role="article" aria-label="Pendientes de hoy">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <h2 class="text-base font-semibold text-slate-800">Esto necesita tu atención hoy</h2>
+              <p class="text-xs text-slate-500 mt-0.5">3 cosas pendientes — toma 5 minutos</p>
+            </div>
+            <span class="badge bg-amber-100 text-amber-700">3 pendientes</span>
+          </div>
+          <div class="space-y-2">
+            <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="pesaje" aria-label="Ir a Pesajes">
+              <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-lg">⚠️</div>
+              <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-800">2 alertas de pesaje sin revisar</div><div class="text-xs text-slate-500">Diferencias detectadas en clientes</div></div>
+              <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="facturacion" aria-label="Ir a Facturación">
+              <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-lg">📄</div>
+              <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-800">5 facturas listas para emitir</div><div class="text-xs text-slate-500">Total estimado <b class="text-slate-600">$8.320.000</b></div></div>
+              <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="rdo" aria-label="Ir a RDO Resumen">
+              <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-lg">📋</div>
+              <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-800">RDO de ayer sin cerrar</div><div class="text-xs text-slate-500">Faltan firmas de turno noche</div></div>
+              <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Acciones rápidas -->
+        <div>
+          <h3 class="text-sm font-semibold text-slate-600 mb-3 px-1">¿Qué quieres hacer ahora?</h3>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <button class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-left" type="button" data-v4-tab-goto="pesaje" aria-label="Nuevo pesaje">
+              <div class="w-11 h-11 rounded-xl bg-emerald-100 flex items-center justify-center text-xl mb-3">➕</div>
+              <div class="text-sm font-semibold text-slate-800">Nuevo pesaje</div>
+              <div class="text-xs text-slate-500 mt-0.5">Registrar entrada de camión</div>
+            </button>
+            <button class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-left" type="button" data-v4-tab-goto="facturacion" aria-label="Emitir factura">
+              <div class="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center text-xl mb-3">📄</div>
+              <div class="text-sm font-semibold text-slate-800">Emitir factura</div>
+              <div class="text-xs text-slate-500 mt-0.5">Generar documento tributario</div>
+            </button>
+            <button class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-left" type="button" data-v4-tab-goto="rdo" aria-label="Ver RDO de hoy">
+              <div class="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center text-xl mb-3">📋</div>
+              <div class="text-sm font-semibold text-slate-800">Ver RDO de hoy</div>
+              <div class="text-xs text-slate-500 mt-0.5">Reporte diario operacional</div>
+            </button>
+            <button class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-left" type="button" data-v4-tab-goto="cierres" aria-label="Cierre del mes">
+              <div class="w-11 h-11 rounded-xl bg-purple-100 flex items-center justify-center text-xl mb-3">📊</div>
+              <div class="text-sm font-semibold text-slate-800">Cierre del mes</div>
+              <div class="text-xs text-slate-500 mt-0.5">Consolidar números</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- KPIs principales con sparklines SVG -->
+        <div>
+          <div class="flex items-end justify-between mb-3 px-1">
+            <h3 class="text-sm font-semibold text-slate-600">Números de hoy vs ayer · últimos 7 días</h3>
+          </div>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI Pesajes hoy">
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg">⚖️</div>
+                <span class="badge bg-emerald-100 text-emerald-700">▲ 8%</span>
+              </div>
+              <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Pesajes hoy</div>
+              <div class="text-3xl font-bold text-slate-800 mt-1">28</div>
+              <div class="mt-3 h-10 w-full"><svg viewBox="0 0 160 40" width="100%" height="100%" preserveAspectRatio="none"><defs><linearGradient id="v4gc1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#059669" stop-opacity=".22"/><stop offset="100%" stop-color="#059669" stop-opacity="0"/></linearGradient></defs><path d="M3,26 L29,37 L54,17 L80,3 L106,20 L131,14 L157,9 L157,40 L3,40 Z" fill="url(#v4gc1)"/><path d="M3,26 L29,37 L54,17 L80,3 L106,20 L131,14 L157,9" fill="none" stroke="#059669" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="157" cy="9" r="2.8" fill="#059669"/></svg></div>
+            </div>
+            <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI Facturación hoy">
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-lg">💵</div>
+                <span class="badge bg-blue-100 text-blue-700">Estable</span>
+              </div>
+              <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Facturación hoy</div>
+              <div class="text-3xl font-bold text-slate-800 mt-1">$12.8M</div>
+              <div class="mt-3 h-10 w-full"><svg viewBox="0 0 160 40" width="100%" height="100%" preserveAspectRatio="none"><defs><linearGradient id="v4gc2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2563eb" stop-opacity=".22"/><stop offset="100%" stop-color="#2563eb" stop-opacity="0"/></linearGradient></defs><path d="M3,20 L29,22 L54,18 L80,24 L106,21 L131,26 L157,19 L157,40 L3,40 Z" fill="url(#v4gc2)"/><path d="M3,20 L29,22 L54,18 L80,24 L106,21 L131,26 L157,19" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="157" cy="19" r="2.8" fill="#2563eb"/></svg></div>
+            </div>
+            <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI RDO completado">
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-lg">📋</div>
+                <span class="badge bg-amber-100 text-amber-700">▼ 12%</span>
+              </div>
+              <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">RDO completado</div>
+              <div class="text-3xl font-bold text-slate-800 mt-1">85%</div>
+              <div class="mt-3 h-10 w-full"><svg viewBox="0 0 160 40" width="100%" height="100%" preserveAspectRatio="none"><defs><linearGradient id="v4gc3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d97706" stop-opacity=".22"/><stop offset="100%" stop-color="#d97706" stop-opacity="0"/></linearGradient></defs><path d="M3,10 L29,8 L54,14 L80,12 L106,9 L131,15 L157,11 L157,40 L3,40 Z" fill="url(#v4gc3)"/><path d="M3,10 L29,8 L54,14 L80,12 L106,9 L131,15 L157,11" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="157" cy="11" r="2.8" fill="#d97706"/></svg></div>
+            </div>
+            <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI Alertas activas">
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-lg">🔔</div>
+                <span class="badge bg-red-100 text-red-700">▲ 40%</span>
+              </div>
+              <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Alertas activas</div>
+              <div class="text-3xl font-bold text-slate-800 mt-1">7</div>
+              <div class="mt-3 h-10 w-full"><svg viewBox="0 0 160 40" width="100%" height="100%" preserveAspectRatio="none"><defs><linearGradient id="v4gc4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#dc2626" stop-opacity=".22"/><stop offset="100%" stop-color="#dc2626" stop-opacity="0"/></linearGradient></defs><path d="M3,30 L29,28 L54,34 L80,15 L106,20 L131,10 L157,14 L157,40 L3,40 Z" fill="url(#v4gc4)"/><path d="M3,30 L29,28 L54,34 L80,15 L106,20 L131,10 L157,14" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="157" cy="14" r="2.8" fill="#dc2626"/></svg></div>
+            </div>
+          </div>
+        </div>
+        <!-- v4-design F4 · Gráficos Chart.js -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Composición de ingresos">
+            <h3 class="text-sm font-semibold text-slate-800 mb-1">🍩 Composición Ingresos</h3>
+            <p class="text-xs text-slate-400 mb-3">Por línea de negocio</p>
+            <canvas id="v4-pieChart" height="200" aria-label="Gráfico doughnut composición ingresos"></canvas>
+          </div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Ingresos vs Costos por sucursal">
+            <h3 class="text-sm font-semibold text-slate-800 mb-1">📊 Ingresos vs Costos</h3>
+            <p class="text-xs text-slate-400 mb-3">Por sucursal (millones)</p>
+            <canvas id="v4-barChart" height="200" aria-label="Gráfico barras ingresos vs costos"></canvas>
+          </div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Tendencia 12 meses">
+            <h3 class="text-sm font-semibold text-slate-800 mb-1">📈 Tendencia 12 meses</h3>
+            <p class="text-xs text-slate-400 mb-3">Crecimiento interanual</p>
+            <canvas id="v4-lineChart" height="200" aria-label="Gráfico línea tendencia anual"></canvas>
+          </div>
+        </div>
+
+        <!-- v4-design F4 · Mapa Leaflet sucursales -->
+        <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Cobertura geográfica">
+          <h3 class="text-sm font-semibold text-slate-800 mb-1">🗺️ Cobertura Geográfica</h3>
+          <p class="text-xs text-slate-400 mb-3">Sucursales y centros de acopio</p>
+          <div id="v4-map" style="height:280px; border-radius:12px;" class="z-0"></div>
+        </div>
+        <!-- v4-design F5 · Top 5 dinámico -->
+        <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Top 5 dinámico">
+          <div class="flex flex-wrap gap-2 mb-4 items-center">
+            <span class="text-sm font-bold text-slate-700 mr-2">🏆 Top 5:</span>
+            <button class="top-tab active px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-700 text-white" type="button" data-v4-top="clientes">Clientes</button>
+            <button class="top-tab px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600" type="button" data-v4-top="proveedores">Proveedores</button>
+            <button class="top-tab px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600" type="button" data-v4-top="servicios">Servicios</button>
+            <button class="top-tab px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600" type="button" data-v4-top="sucursales">Sucursales</button>
+            <button class="top-tab px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600" type="button" data-v4-top="colaboradores">Colaboradores</button>
+            <button class="top-tab px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600" type="button" data-v4-top="acreedores">Acreedores</button>
+            <button class="top-tab px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600" type="button" data-v4-top="retiros">Retiros</button>
+            <button class="top-tab px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600" type="button" data-v4-top="cumpleanos">🎂 Cumpleaños</button>
+          </div>
+          <div id="v4-topContent" class="grid grid-cols-2 lg:grid-cols-5 gap-3 text-sm"></div>
+        </div>
+
+        <!-- v4-design F5 · Finanzas resumidas -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Saldo banco">
+            <div class="text-xs text-slate-500 uppercase font-semibold">Saldo Banco</div>
+            <div class="text-xl font-bold text-slate-800 mt-1">$89.2M</div>
+            <div class="text-xs text-slate-400 mt-0.5">🏦 Santander</div>
+          </div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Por cobrar">
+            <div class="text-xs text-slate-500 uppercase font-semibold">Por Cobrar</div>
+            <div class="text-xl font-bold text-orange-600 mt-1">$34.7M</div>
+            <div class="text-xs text-slate-400 mt-0.5">12 facturas</div>
+          </div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Pagos programados">
+            <div class="text-xs text-slate-500 uppercase font-semibold">Pagos Programados</div>
+            <div class="text-xl font-bold text-blue-600 mt-1">$22.1M</div>
+            <div class="text-xs text-slate-400 mt-0.5">Próx. 30 días</div>
+          </div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Inventario">
+            <div class="text-xs text-slate-500 uppercase font-semibold">Inventario</div>
+            <div class="text-xl font-bold text-slate-800 mt-1">$156.3M</div>
+            <div class="text-xs text-emerald-600 mt-0.5">↑ 5% vs mes anterior</div>
+          </div>
+        </div>
+
+        <!-- v4-design F5 · Riesgos + Oportunidades con Diego IA mock -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="bg-red-50 border border-red-200 rounded-2xl p-5" role="article" aria-label="Alertas de riesgo">
+            <div class="flex items-center gap-2 text-red-700 font-bold text-base">⚠️ Alertas de Riesgo</div>
+            <ul class="mt-3 space-y-2 text-sm text-red-800">
+              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-red-500 rounded-full"></span> Cuentas por cobrar vencidas: $12M (crítico)</li>
+              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-orange-500 rounded-full"></span> Margen neto bajó 2 pts vs trimestre anterior</li>
+              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-yellow-500 rounded-full"></span> Concentración: 3 clientes = 65% facturación</li>
+            </ul>
+            <div class="mt-3 p-3 bg-white rounded-xl text-sm border border-slate-100">
+              <span class="font-bold">🤖 Diego IA:</span> Activar recordatorios automáticos. Evaluar diversificación de cartera.
+            </div>
+          </div>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5" role="article" aria-label="Oportunidades">
+            <div class="flex items-center gap-2 text-emerald-700 font-bold text-base">📈 Oportunidades de Quiebre</div>
+            <ul class="mt-3 space-y-2 text-sm text-emerald-800">
+              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Licitación municipal abre en 15 días</li>
+              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Alza precio material reciclado +22%</li>
+              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Competidor redujo operaciones en zona sur</li>
+            </ul>
+            <div class="mt-3 p-3 bg-white rounded-xl text-sm border border-slate-100">
+              <span class="font-bold">🤖 Diego IA:</span> Preparar propuesta. Aumentar acopio. Expandir a zona sur.
+            </div>
+          </div>
+        </div>
+
+        <!-- v4-design F5 · Desglose sucursales -->
+        <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Desglose por sucursales">
+          <h3 class="text-sm font-semibold text-slate-800 mb-3">🏢 Desglose por Sucursales</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="text-slate-500 border-b border-slate-100">
+                <tr>
+                  <th class="text-left py-2 font-medium">Sucursal</th>
+                  <th class="text-right py-2 font-medium">Ingresos</th>
+                  <th class="text-right py-2 font-medium">Costos</th>
+                  <th class="text-right py-2 font-medium">Margen</th>
+                  <th class="text-right py-2 font-medium">Inventario</th>
+                  <th class="text-right py-2 font-medium">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-slate-50"><td class="py-2 font-medium text-slate-700">Planta Norte (Stgo)</td><td class="text-right">$58.2M</td><td class="text-right text-red-600">$38.1M</td><td class="text-right text-emerald-600">$20.1M</td><td class="text-right">$67.4M</td><td class="text-right"><span class="badge bg-emerald-100 text-emerald-700">OK</span></td></tr>
+                <tr class="border-b border-slate-50"><td class="py-2 font-medium text-slate-700">Planta Sur (Concep)</td><td class="text-right">$42.8M</td><td class="text-right text-red-600">$31.5M</td><td class="text-right text-emerald-600">$11.3M</td><td class="text-right">$43.2M</td><td class="text-right"><span class="badge bg-amber-100 text-amber-700">Revisar</span></td></tr>
+                <tr class="border-b border-slate-50"><td class="py-2 font-medium text-slate-700">C. Logístico (Valpo)</td><td class="text-right">$34.1M</td><td class="text-right text-red-600">$22.8M</td><td class="text-right text-emerald-600">$11.3M</td><td class="text-right">$38.9M</td><td class="text-right"><span class="badge bg-emerald-100 text-emerald-700">OK</span></td></tr>
+                <tr><td class="py-2 font-medium text-slate-700">Farex (Central)</td><td class="text-right">$7.4M</td><td class="text-right text-red-600">$5.9M</td><td class="text-right text-emerald-600">$1.5M</td><td class="text-right">$6.8M</td><td class="text-right"><span class="badge bg-red-100 text-red-700">Urgente</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <div class="bg-white p-5 rounded-lg shadow-sm">
         <h3 class="font-bold text-stone-700 mb-2">Sistema integrado de reportes y comunicaciones</h3>
         <p class="text-sm text-stone-600">Aquí puedes subir información operativa, ver mensajes del equipo y consultar el resumen diario.</p>
@@ -1136,6 +1582,9 @@ Tip: en Excel "Guardar como" → CSV UTF-8 (delimitado por comas).</div>
       </div>
     </section>
   </main>
+
+  </div><!-- /v4-design F2 fin contenido productivo (flex-1) -->
+  </div><!-- /v4-design F2 fin wrapper flex root -->
 </div>
 
 <script>
@@ -1371,6 +1820,11 @@ async function hydrateSessionAndEnter(authUser) {
   // Update ultimo_login (best-effort, no bloquea)
   sb.schema('panel').from('usuarios_autorizados').update({ ultimo_login: new Date().toISOString() })
     .eq('email', email).then(() => {});
+
+  // v4-design · inicializar dashboard hero + sidebar sync tras login
+  try { window.v4SyncUser && window.v4SyncUser(); } catch(e){}
+  try { window.v4SyncSilos && window.v4SyncSilos(); } catch(e){}
+  try { window.initV4Hero && window.initV4Hero(); } catch(e){}
 }
 
 // ---------- D-PANEL-AUTH-001 · UI helpers (cambiar entre las 3 pantallas) ----------
@@ -1713,7 +2167,7 @@ function setupTabs() {
       btn.setAttribute('aria-selected', 'true');
       if (typeof window.pageLog === 'function') window.pageLog('tab_change', tabId);
       if (tabId === 'comunicados') loadAudios();
-      if (tabId === 'portada') { loadPortadaAudio(); loadAlertasPortada(); }
+      if (tabId === 'portada') { loadPortadaAudio(); loadAlertasPortada(); if (typeof window.initV4Hero === 'function') window.initV4Hero(); }
       if (tabId === 'rdo') { loadRdoResumen(); loadKpiAnual(); loadTopClientes(); loadEvolucionAnual(); loadAlertasRdo(); }
       if (tabId === 'pesaje') { loadPesajesSucursal(); loadPesajeTopMateriales(); loadPesajeEvolucion(); }
       if (tabId === 'facturacion') { loadFacturacionCruceAlertas(); loadFacturacionTopClientes(); }
@@ -4648,6 +5102,319 @@ document.getElementById('forgotEmail').addEventListener('keypress', e => {
 });
 document.getElementById('resetPassword2').addEventListener('keypress', e => {
   if (e.key === 'Enter') setNewPassword();
+});
+
+// =====================================================================
+// v4-design F2 · Sidebar lateral · IIFE comportamiento
+// =====================================================================
+(function v4SidebarInit() {
+  const sidebar = document.getElementById('v4-sidebar');
+  const overlay = document.getElementById('v4-overlay');
+  const hamb    = document.getElementById('v4-hamburger');
+  const sToggle = document.getElementById('v4-siloToggle');
+  const sDrop   = document.getElementById('v4-siloDropdown');
+  const sChev   = document.getElementById('v4-chevron');
+  if (!sidebar) return;
+
+  function openSidebar()  { sidebar.classList.add('open');  overlay && overlay.classList.remove('hidden'); }
+  function closeSidebar() { sidebar.classList.remove('open'); overlay && overlay.classList.add('hidden'); }
+  hamb    && hamb.addEventListener('click', openSidebar);
+  overlay && overlay.addEventListener('click', closeSidebar);
+
+  // Silo dropdown toggle
+  sToggle && sToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = sDrop.classList.toggle('open');
+    sChev && sChev.classList.toggle('rotate-180', isOpen);
+    sToggle.setAttribute('aria-expanded', String(isOpen));
+  });
+  document.addEventListener('click', (e) => {
+    if (sDrop && !sToggle.contains(e.target) && !sDrop.contains(e.target)) {
+      sDrop.classList.remove('open');
+      sChev && sChev.classList.remove('rotate-180');
+      sToggle && sToggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Atajos del sidebar a tabs reales del panel productivo
+  document.querySelectorAll('[data-v4-tab]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = a.getAttribute('data-v4-tab');
+      const realBtn = document.querySelector('button[data-tab="' + target + '"]');
+      if (realBtn) realBtn.click();
+      // Marca activo el item del sidebar
+      document.querySelectorAll('[data-v4-tab]').forEach(x => x.classList.remove('active'));
+      a.classList.add('active');
+      // En mobile, cerrar sidebar tras navegar
+      if (window.innerWidth < 768) closeSidebar();
+    });
+  });
+})();
+
+// Pobla los items del dropdown silo en el sidebar v4 desde la select productiva
+window.v4SyncSilos = function v4SyncSilos() {
+  const cont = document.getElementById('v4-siloDropdownItems');
+  const realSel = document.getElementById('siloSelector');
+  if (!cont || !realSel) return;
+  const opts = Array.from(realSel.options || []);
+  if (!opts.length) return;
+  // Mapeo color por nombre conocido (fallback emerald)
+  const colorMap = { 'gerencia':'bg-emerald-500','comercial':'bg-blue-500','operaciones':'bg-orange-500','planta':'bg-cyan-500','finanzas':'bg-yellow-500','rrhh':'bg-pink-500','logística':'bg-purple-500','logistica':'bg-purple-500','marketing':'bg-fuchsia-500','global':'bg-slate-400' };
+  cont.innerHTML = opts.map(o => {
+    const txt = o.textContent || o.value || 'Área';
+    const key = txt.toLowerCase().trim().replace(/[^a-zà-ÿ]/g,'').slice(0,15);
+    const color = colorMap[key] || 'bg-emerald-500';
+    const val = o.value || '__global__';
+    return `<a href="#" data-v4-silo="${val.replace(/"/g,'&quot;')}" class="v4-silo-option flex items-center gap-2.5 px-3 py-2 text-sm rounded-md hover:bg-slate-50 text-slate-700"><span class="w-2.5 h-2.5 rounded-full ${color}"></span> ${txt.replace(/</g,'&lt;')}</a>`;
+  }).join('');
+  cont.querySelectorAll('[data-v4-silo]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const v = a.getAttribute('data-v4-silo');
+      realSel.value = v;
+      realSel.dispatchEvent(new Event('change', { bubbles: true }));
+      const drop = document.getElementById('v4-siloDropdown');
+      drop && drop.classList.remove('open');
+    });
+  });
+  // Refleja valor actual del select productivo en el botón del sidebar
+  const cur = opts.find(o => o.value === realSel.value) || opts[0];
+  const lab = document.getElementById('v4-siloActual');
+  if (lab && cur) lab.textContent = cur.textContent;
+};
+
+// Sincroniza nombre/email/inicial en el footer del sidebar (llamado tras hydrate)
+window.v4SyncUser = function v4SyncUser() {
+  try {
+    const realEmail = document.getElementById('userEmailDisplay')?.innerText?.trim() || '';
+    const realProfile = document.getElementById('userProfileDisplay')?.innerText?.trim() || '';
+    const nameEl  = document.getElementById('v4-userName');
+    const emailEl = document.getElementById('v4-userEmail');
+    const initEl  = document.getElementById('v4-userInitial');
+    // currentUser y currentProfile son vars globales del script principal
+    const email = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : realEmail;
+    // Si realEmail es un nombre (no email), úsalo de nombre. Si es email, deriva nombre.
+    const looksEmail = /@/.test(realEmail);
+    const displayName = (!looksEmail && realEmail) ? realEmail : (email.split('@')[0] || 'Usuario');
+    if (nameEl)  nameEl.textContent = displayName;
+    if (emailEl) emailEl.textContent = email || realProfile || '—';
+    if (initEl)  initEl.textContent = (displayName[0] || 'U').toUpperCase();
+  } catch(e) { console.warn('[v4-sidebar] syncUser fallo:', e); }
+};
+
+// Sincroniza el indicador de contexto (silo) en cualquier elemento #v4-siloCtx
+window.v4SyncSiloCtx = function v4SyncSiloCtx() {
+  const el = document.getElementById('v4-siloCtx');
+  if (!el) return;
+  el.textContent = (typeof currentSilo !== 'undefined' && currentSilo) ? currentSilo : 'Vista global';
+};
+
+// =====================================================================
+// v4-design F3 · Dashboard hero · init lazy (solo cuando se ve Portada)
+// =====================================================================
+window.initV4Hero = function initV4Hero() {
+  try {
+    const now = new Date();
+    const dias  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+    const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const fechaCompleta = `${dias[now.getDay()]} ${now.getDate()} de ${meses[now.getMonth()]} de ${now.getFullYear()}`;
+    const fc = document.getElementById('v4-fechaCompleta');
+    if (fc) fc.textContent = fechaCompleta;
+
+    // Saludo según hora
+    const h = now.getHours();
+    const saludo = h < 12 ? 'Buenos días' : (h < 19 ? 'Buenas tardes' : 'Buenas noches');
+    // Nombre desde userEmailDisplay (donde hydrate pone data.nombre || data.email)
+    const realName = document.getElementById('userEmailDisplay')?.innerText?.trim() || '';
+    const isEmail = /@/.test(realName);
+    let nombre = isEmail ? realName.split('@')[0] : (realName || 'Usuario');
+    nombre = nombre.split(/[. _-]/)[0];
+    nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1);
+    const sn = document.getElementById('v4-saludoNombre');
+    if (sn) sn.textContent = nombre;
+    const h1 = sn?.parentElement;
+    if (h1) h1.firstChild && (h1.firstChild.textContent = saludo + ', ');
+
+    // Silo ctx
+    window.v4SyncSiloCtx && window.v4SyncSiloCtx();
+
+    // ===== F4: Charts + Mapa (one-shot, guard contra doble-init) =====
+    if (!window._v4ChartsReady) {
+      window._v4ChartsReady = true;
+      try {
+        if (typeof Chart !== 'undefined') {
+          const pieEl = document.getElementById('v4-pieChart');
+          if (pieEl) new Chart(pieEl, {
+            type: 'doughnut',
+            data: { labels: ['Reciclean','Farex','Gestión REP','Otros'], datasets: [{ data:[45,25,20,10], backgroundColor:['#059669','#ea580c','#2563eb','#94a3b8'], borderWidth:0 }] },
+            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } } }
+          });
+          const barEl = document.getElementById('v4-barChart');
+          if (barEl) new Chart(barEl, {
+            type: 'bar',
+            data: { labels: ['Planta N.','Planta S.','C. Log.','Farex'], datasets: [
+              { label:'Ingresos', data:[58,42,34,7], backgroundColor:'#059669', borderRadius:4 },
+              { label:'Costos',   data:[38,31,22,6], backgroundColor:'#fca5a5', borderRadius:4 }
+            ]},
+            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } }, scales:{ x:{ grid:{ display:false } }, y:{ grid:{ color:'#e5e7eb' } } } }
+          });
+          const lineEl = document.getElementById('v4-lineChart');
+          if (lineEl) new Chart(lineEl, {
+            type: 'line',
+            data: { labels: ['Jun','Jul','Ago','Sep','Oct','Nov','Dic','Ene','Feb','Mar','Abr','May'], datasets: [
+              { label:'Ingresos', data:[48,52,47,55,60,58,63,68,65,70,75,82], borderColor:'#059669', backgroundColor:'#05966920', fill:true, tension:0.4, pointRadius:2 },
+              { label:'Costos',   data:[35,38,34,40,42,40,44,46,43,48,50,53], borderColor:'#ea580c', backgroundColor:'transparent', tension:0.4, pointRadius:2 }
+            ]},
+            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } }, scales:{ x:{ grid:{ display:false } }, y:{ grid:{ color:'#e5e7eb' } } } }
+          });
+        } else {
+          console.warn('[v4-hero] Chart.js no disponible (CDN bloqueado).');
+        }
+      } catch(err) { console.warn('[v4-hero] charts init fallo:', err); }
+
+      try {
+        if (typeof L !== 'undefined') {
+          const mapEl = document.getElementById('v4-map');
+          if (mapEl) {
+            const map = L.map('v4-map').setView([-33.45, -70.65], 6);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; CartoDB' }).addTo(map);
+            [
+              { name:'Planta Norte (Stgo)',   lat:-33.42, lng:-70.65, color:'#059669' },
+              { name:'Planta Sur (Concep)',    lat:-36.82, lng:-73.05, color:'#2563eb' },
+              { name:'C. Logístico (Valpo)',   lat:-33.04, lng:-71.62, color:'#ea580c' },
+              { name:'Farex Central (Stgo)',   lat:-33.45, lng:-70.67, color:'#9333ea' }
+            ].forEach(s => {
+              L.circleMarker([s.lat, s.lng], { radius:10, fillColor:s.color, color:'white', weight:2, fillOpacity:0.85 }).bindPopup('<b>'+s.name+'</b>').addTo(map);
+            });
+            // Forzar invalidateSize en próximo tick (canvas display:none → visible)
+            setTimeout(() => map.invalidateSize(), 200);
+          }
+        } else {
+          console.warn('[v4-hero] Leaflet no disponible (CDN bloqueado).');
+        }
+      } catch(err) { console.warn('[v4-hero] map init fallo:', err); }
+
+      // F5 · Top 5 inicial = clientes
+      try { window.v4SwitchTop && window.v4SwitchTop('clientes'); } catch(err) { console.warn('[v4-hero] top5 init fallo:', err); }
+    }
+  } catch(e) { console.warn('[v4-hero] init fallo:', e); }
+};
+
+// Bind de buttons "ir a tab X" del hero
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-v4-tab-goto]');
+  if (!t) return;
+  const tab = t.getAttribute('data-v4-tab-goto');
+  const realBtn = document.querySelector('button[data-tab="' + tab + '"]');
+  if (realBtn) realBtn.click();
+});
+
+// =====================================================================
+// v4-design F5 · Top 5 dinámico
+// =====================================================================
+window._v4TopData = {
+  clientes: [
+    { name:'Coca-Cola Andina',  value:'$45M', icon:'🥤', bar:95 },
+    { name:'Embotelladora Chile', value:'$32M', icon:'🍾', bar:78 },
+    { name:'Concha y Toro',      value:'$28M', icon:'🍷', bar:65 },
+    { name:'CCU',                value:'$21M', icon:'🍺', bar:50 },
+    { name:'Nestlé Chile',       value:'$18M', icon:'🍫', bar:40 }
+  ],
+  proveedores: [
+    { name:'EcoPallets Ltda.',   value:'$15M', icon:'🛢️', bar:90 },
+    { name:'Envases del Sur',    value:'$12M', icon:'📦', bar:80 },
+    { name:'Cartones BioBio',    value:'$9M',  icon:'📋', bar:65 },
+    { name:'Plásticos Chile',    value:'$7M',  icon:'🧴', bar:50 },
+    { name:'Metales Rec S.A.',   value:'$5M',  icon:'🔩', bar:35 }
+  ],
+  servicios: [
+    { name:'Retiro en Planta',   value:'320/mes', icon:'🚛', bar:98 },
+    { name:'Certificación',      value:'180/mes', icon:'📜', bar:75 },
+    { name:'Acopio',             value:'150/mes', icon:'🏭', bar:65 },
+    { name:'Transporte',         value:'140/mes', icon:'🚚', bar:58 },
+    { name:'Consultoría REP',    value:'80/mes',  icon:'📊', bar:40 }
+  ],
+  sucursales: [
+    { name:'Planta Norte (Stgo)', value:'$58M', icon:'🏢', bar:100 },
+    { name:'Planta Sur (Concep)', value:'$42M', icon:'🏗️', bar:72 },
+    { name:'C. Logístico (Valpo)', value:'$34M', icon:'🚢', bar:58 },
+    { name:'Farex Central',       value:'$7M',  icon:'⚙️', bar:22 },
+    { name:'Talca Acopio',        value:'$4M',  icon:'🌾', bar:15 }
+  ],
+  colaboradores: [
+    { name:'Juan Pérez · Pta. Norte',  value:'38 pesajes/día', icon:'👨‍🔧', bar:95 },
+    { name:'María González · Log.',    value:'99% entrega',    icon:'👩‍💼', bar:92 },
+    { name:'Carlos Muñoz · Farex',     value:'$1.2M/día',      icon:'👨‍💼', bar:88 },
+    { name:'Ana Rojas · Admin',        value:'0 errores',      icon:'👩‍🏫', bar:85 },
+    { name:'Pedro Silva · Pta. Sur',   value:'25 ton/día',     icon:'👷',   bar:80 }
+  ],
+  acreedores: [
+    { name:'Banco Santander',      value:'$120M', icon:'🏦', bar:100 },
+    { name:'SII Tesorería',        value:'$45M',  icon:'🏛️', bar:70 },
+    { name:'Proveedor Plásticos',  value:'$18M',  icon:'🏭', bar:45 },
+    { name:'Seguros La Const.',    value:'$8M',   icon:'🛡️', bar:30 },
+    { name:'AFP Habitat',          value:'$5M',   icon:'📊', bar:22 }
+  ],
+  retiros: [
+    { name:'Coca-Cola Andina',     value:'15 ton', icon:'🥤', bar:100 },
+    { name:'Concha y Toro',        value:'12 ton', icon:'🍷', bar:80 },
+    { name:'CCU Planta Renca',     value:'10 ton', icon:'🍺', bar:65 },
+    { name:'Mall Plaza Oeste',     value:'8 ton',  icon:'🏬', bar:50 },
+    { name:'Hospital Clínico UC',  value:'5 ton',  icon:'🏥', bar:35 }
+  ],
+  cumpleanos: [
+    { name:'Juan Pérez',     value:'23 mayo',  icon:'🎂', bar:100 },
+    { name:'María González', value:'28 mayo',  icon:'🎉', bar:90 },
+    { name:'Carlos Muñoz',   value:'3 junio',  icon:'🎈', bar:75 },
+    { name:'Ana Rojas',      value:'12 junio', icon:'🎁', bar:60 },
+    { name:'Pedro Silva',    value:'18 junio', icon:'🍰', bar:45 }
+  ]
+};
+window.v4SwitchTop = function v4SwitchTop(category) {
+  const data = window._v4TopData[category] || window._v4TopData.clientes;
+  const cont = document.getElementById('v4-topContent');
+  if (!cont) return;
+  cont.innerHTML = data.map((item, i) => `
+    <div class="bg-slate-50 rounded-xl p-3 flex flex-col items-center text-center gap-2">
+      <span class="text-2xl" aria-hidden="true">${item.icon}</span>
+      <div class="font-bold text-slate-800 text-sm">${(item.name||'').replace(/</g,'&lt;')}</div>
+      <div class="text-xs text-emerald-700 font-semibold">${(item.value||'').replace(/</g,'&lt;')}</div>
+      <div class="w-full bg-slate-200 rounded-full h-1.5 mt-1"><div class="bg-emerald-500 h-1.5 rounded-full" style="width:${item.bar}%"></div></div>
+      <span class="text-xs text-slate-400">#${i+1}</span>
+    </div>
+  `).join('');
+  // Estilo activo
+  document.querySelectorAll('.top-tab').forEach(b => {
+    if (b.getAttribute('data-v4-top') === category) {
+      b.classList.add('active','bg-emerald-700','text-white');
+      b.classList.remove('bg-slate-200','text-slate-600');
+    } else {
+      b.classList.remove('active','bg-emerald-700','text-white');
+      b.classList.add('bg-slate-200','text-slate-600');
+    }
+  });
+};
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-v4-top]');
+  if (!t) return;
+  window.v4SwitchTop(t.getAttribute('data-v4-top'));
+});
+
+// Hook no invasivo: re-llamar v4Sync* tras hydrate / cambio de silo del select productivo.
+document.addEventListener('DOMContentLoaded', () => {
+  const realSel = document.getElementById('siloSelector');
+  if (realSel) {
+    realSel.addEventListener('change', () => {
+      window.v4SyncSilos && window.v4SyncSilos();
+      window.v4SyncSiloCtx && window.v4SyncSiloCtx();
+    });
+  }
+  // MutationObserver del userEmailDisplay → dispara syncUser cuando hydrate puebla.
+  const ued = document.getElementById('userEmailDisplay');
+  if (ued && 'MutationObserver' in window) {
+    new MutationObserver(() => { window.v4SyncUser && window.v4SyncUser(); window.v4SyncSilos && window.v4SyncSilos(); window.v4SyncSiloCtx && window.v4SyncSiloCtx(); }).observe(ued, { childList: true, characterData: true, subtree: true });
+  }
 });
 </script>
 
