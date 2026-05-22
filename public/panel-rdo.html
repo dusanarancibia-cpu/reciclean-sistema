@@ -364,40 +364,63 @@
   <!-- Contenedor del contenido productivo (header + nav + main) -->
   <div class="flex-1 flex flex-col min-w-0">
 
-  <header class="bg-white shadow-sm px-6 py-3 flex justify-between items-center flex-wrap gap-2">
-    <div class="flex items-center gap-3">
-      <!-- v4-design F2 · Botón hamburguesa móvil (toggle sidebar v4) -->
+  <!-- v4-design FIX-5 · Topbar mockup faltante (sticky + buscador + íconos + fecha/UF + bell + user) -->
+  <header class="sticky top-0 z-30 bg-white/85 backdrop-blur border-b border-slate-200">
+    <div class="flex items-center gap-4 px-6 lg:px-8 h-14">
+      <!-- Hamburguesa móvil (toggle sidebar v4) -->
       <button type="button" id="v4-hamburger" class="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Abrir menú lateral">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
-      <img src="/assets/logos/grc-simbolo.png" alt="Grupo Reciclean-Farex"
-           class="h-10 w-auto"
-           onerror="this.onerror=null; this.src='https://reciclean-sistema.vercel.app/assets/logos/grc-simbolo.png';">
-      <div class="flex flex-col">
-        <h1 class="text-lg font-bold text-stone-800 leading-tight">Panel RDO</h1>
-        <span class="text-xs text-stone-500">Grupo Reciclean-Farex</span>
+      <!-- Logo compacto (solo mobile — desktop usa el sidebar) -->
+      <div class="md:hidden flex items-center gap-2">
+        <img src="/assets/logos/grc-simbolo.png" alt="Reciclean" class="h-7 w-auto"
+             onerror="this.onerror=null; this.src='https://reciclean-sistema.vercel.app/assets/logos/grc-simbolo.png';">
+        <span class="text-sm font-bold text-stone-800">Panel RDO</span>
       </div>
-    </div>
-
-    <!-- Selector de área (silo) -->
-    <div id="siloSelectorContainer" class="hidden flex items-center gap-2">
-      <label class="text-sm text-stone-600 font-medium">Área:</label>
-      <select id="siloSelector"
-              class="border border-stone-300 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none bg-white">
-        <option value="">Cargando…</option>
-      </select>
-    </div>
-
-    <div class="flex items-center gap-3">
-      <!-- Acceso rápido al ecosistema externo (login.html / asistente.html) -->
+      <!-- Buscador global -->
+      <div class="flex-1 max-w-md relative">
+        <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" id="v4-topbarSearch" placeholder="Buscar pesaje, factura, RDO, cliente…" class="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition" aria-label="Buscador global">
+        <div id="v4-topbarSearchResults" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-80 overflow-y-auto z-40"></div>
+      </div>
+      <!-- Fecha + UF (oculto en mobile chico) -->
+      <div class="hidden sm:flex items-center gap-3 text-xs text-slate-500">
+        <span id="v4-fechaActual" class="font-medium text-slate-600">—</span>
+        <span class="text-slate-300">|</span>
+        <span>UF: <span id="v4-topbarUfValor" class="font-semibold text-slate-700">—</span></span>
+      </div>
+      <!-- Silo selector (productivo, oculto pero accesible) -->
+      <div id="siloSelectorContainer" class="hidden items-center gap-2">
+        <label class="text-sm text-stone-600 font-medium">Área:</label>
+        <select id="siloSelector" class="border border-stone-300 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none bg-white">
+          <option value="">Cargando…</option>
+        </select>
+      </div>
+      <!-- Iconos externos (Gmail / Outlook / WhatsApp) -->
+      <a href="https://mail.google.com" target="_blank" rel="noopener" class="hidden md:inline-flex p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition" title="Gmail" aria-label="Abrir Gmail">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      </a>
+      <a href="https://outlook.live.com" target="_blank" rel="noopener" class="hidden md:inline-flex p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition" title="Outlook" aria-label="Abrir Outlook">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+      </a>
+      <a href="https://web.whatsapp.com" target="_blank" rel="noopener" class="hidden md:inline-flex p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition" title="WhatsApp" aria-label="Abrir WhatsApp">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      </a>
+      <!-- Bell notificaciones (conectado a panel.diego_bandeja count) -->
+      <button type="button" id="v4-bellNotificaciones" class="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition" title="Notificaciones" aria-label="Ver notificaciones">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2 2 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        <span id="v4-bellDot" class="hidden absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+      </button>
+      <!-- Acceso rápido al ecosistema externo (data-driven) -->
       <a id="accesoRapidoHeader" href="#" target="_blank" rel="noopener" class="hidden text-sm bg-green-700 hover:bg-green-800 text-white px-3 py-1.5 rounded font-medium transition flex items-center gap-1">
         <span id="accesoRapidoIcono"></span>
         <span id="accesoRapidoTitulo"></span>
         <span class="opacity-75">→</span>
       </a>
-      <span id="userEmailDisplay" class="text-sm text-stone-600"></span>
-      <span id="userProfileDisplay" class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold uppercase"></span>
-      <button onclick="logout()" class="bg-stone-200 hover:bg-stone-300 text-stone-700 px-3 py-1 rounded text-sm">Salir</button>
+      <!-- User info + logout (compacto) -->
+      <span id="userEmailDisplay" class="hidden sm:inline text-xs text-stone-600 max-w-[12rem] truncate"></span>
+      <span id="userProfileDisplay" class="hidden md:inline bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"></span>
+      <button onclick="logout()" class="text-xs px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg transition" aria-label="Cerrar sesión">Salir</button>
     </div>
   </header>
 
@@ -406,7 +429,7 @@
     <a href="#" onclick="document.querySelector('button[data-tab=comunicados]').click(); return false;" class="underline text-amber-800 ml-2">Escuchar ahora</a>
   </div>
 
-  <nav class="border-b border-stone-200 px-6 bg-white" aria-label="Pestañas del panel">
+  <nav class="border-b border-stone-200 px-6 bg-white md:hidden" aria-label="Pestañas del panel (mobile)">
     <div class="nav-tabs-wrapper">
       <div class="flex gap-2 overflow-x-auto" role="tablist" aria-label="Pestañas del panel">
         <button data-tab="portada"     class="tab-btn py-3 px-3 text-stone-600 active" role="tab" aria-selected="true"  aria-controls="tabPortada">🏠 Portada</button>
@@ -425,6 +448,7 @@
         <button data-tab="oportunidades" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabOportunidades">🎯 Oportunidades</button>
         <button data-tab="entregables"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabEntregables">📤 Entregables</button>
         <button data-tab="bandeja_dieg"   class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabBandejaDiego">📥 Bandeja Diego</button>
+        <button data-tab="ops_diarias"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabOpsDiarias">🌅 Operaciones Día</button>
         <button data-tab="comercial"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabComercial">💼 Comercial</button>
         <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabAdmin">⚙️ Admin</button>
       </div>
@@ -434,12 +458,14 @@
 
   <main id="mainContent" class="p-6 max-w-6xl mx-auto" tabindex="-1">
     <section id="tabPortada" class="tab-content">
-      <h2 class="text-2xl font-bold mb-4 text-stone-800">Bienvenido</h2>
-
-      <div id="portadaAudioPlayer" class="bg-white p-5 rounded-lg shadow-sm mb-4">
+      <!-- FIX-2 · Elementos viejos del panel ocultos visualmente (mockup v4 los reemplaza).
+           Logic loadPortadaAudio/loadAlertasPortada sigue activa silenciosa para no romper
+           funcionalidad. UI nueva v4 dashboard hero abajo. -->
+      <h2 id="bienvenidoTitle" class="hidden">Bienvenido</h2>
+      <div id="portadaAudioPlayer" class="hidden">
         <p class="text-stone-500">Cargando mensajes destacados...</p>
       </div>
-      <div id="portadaAlertas" class="mb-4"></div>
+      <div id="portadaAlertas" class="hidden"></div>
 
       <!-- =================================================== -->
       <!-- v4-design F3 · Dashboard hero (saludo + alertas +    -->
@@ -453,29 +479,29 @@
           <p class="text-sm text-slate-500 mt-1">Hoy es <span class="font-medium text-slate-700" id="v4-fechaCompleta">—</span> · <span id="v4-siloCtx" class="font-semibold text-emerald-700">Vista global</span> · UF <span id="v4-ufValor" class="font-semibold text-slate-700">$38.214</span></p>
         </div>
 
-        <!-- "Esto necesita tu atención hoy" (mock; futuro: leer panel.diego_bandeja / RDO pendientes) -->
+        <!-- "Esto necesita tu atención hoy" — conectado a public.f_panel_health (datos reales) con fallback mock -->
         <div class="bg-white border border-slate-200 rounded-2xl p-5 border-l-4 border-l-amber-400" role="article" aria-label="Pendientes de hoy">
           <div class="flex items-start justify-between mb-3">
             <div>
               <h2 class="text-base font-semibold text-slate-800">Esto necesita tu atención hoy</h2>
-              <p class="text-xs text-slate-500 mt-0.5">3 cosas pendientes — toma 5 minutos</p>
+              <p id="v4-atencion-subtitle" class="text-xs text-slate-500 mt-0.5">Cargando datos en vivo...</p>
             </div>
-            <span class="badge bg-amber-100 text-amber-700">3 pendientes</span>
+            <span id="v4-atencion-badge" class="badge bg-slate-100 text-slate-500">—</span>
           </div>
           <div class="space-y-2">
             <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="pesaje" aria-label="Ir a Pesajes">
               <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-lg">⚠️</div>
-              <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-800">2 alertas de pesaje sin revisar</div><div class="text-xs text-slate-500">Diferencias detectadas en clientes</div></div>
+              <div class="flex-1 min-w-0"><div id="v4-atencion-alertas-titulo" class="text-sm font-medium text-slate-800">Alertas de pesaje sin revisar</div><div id="v4-atencion-alertas-sub" class="text-xs text-slate-500">Diferencias detectadas en clientes</div></div>
               <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
-            <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="facturacion" aria-label="Ir a Facturación">
-              <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-lg">📄</div>
-              <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-800">5 facturas listas para emitir</div><div class="text-xs text-slate-500">Total estimado <b class="text-slate-600">$8.320.000</b></div></div>
+            <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="cartera" aria-label="Ir a Cartera">
+              <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-lg">👥</div>
+              <div class="flex-1 min-w-0"><div id="v4-atencion-cartera-titulo" class="text-sm font-medium text-slate-800">Cartera sin categorizar</div><div id="v4-atencion-cartera-sub" class="text-xs text-slate-500">Clientes activos sin categoría asignada</div></div>
               <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
-            <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="rdo" aria-label="Ir a RDO Resumen">
+            <button class="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition text-left" type="button" data-v4-tab-goto="cierres" aria-label="Ir a Cierres">
               <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-lg">📋</div>
-              <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-800">RDO de ayer sin cerrar</div><div class="text-xs text-slate-500">Faltan firmas de turno noche</div></div>
+              <div class="flex-1 min-w-0"><div id="v4-atencion-cierres-titulo" class="text-sm font-medium text-slate-800">Cierres del mes</div><div id="v4-atencion-cierres-sub" class="text-xs text-slate-500">Estado consolidado</div></div>
               <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
           </div>
@@ -514,40 +540,40 @@
             <h3 class="text-sm font-semibold text-slate-600">Números de hoy vs ayer · últimos 7 días</h3>
           </div>
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI Pesajes hoy">
+            <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI Pesajes semana">
               <div class="flex items-center justify-between mb-3">
                 <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg">⚖️</div>
-                <span class="badge bg-emerald-100 text-emerald-700">▲ 8%</span>
+                <span id="v4-kpi-pesajes-badge" class="badge bg-slate-100 text-slate-500">—</span>
               </div>
-              <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Pesajes hoy</div>
-              <div class="text-3xl font-bold text-slate-800 mt-1">28</div>
+              <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Pesajes (7 días)</div>
+              <div id="v4-kpi-pesajes-valor" class="text-3xl font-bold text-slate-800 mt-1">—</div>
               <div class="mt-3 h-10 w-full"><svg viewBox="0 0 160 40" width="100%" height="100%" preserveAspectRatio="none"><defs><linearGradient id="v4gc1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#059669" stop-opacity=".22"/><stop offset="100%" stop-color="#059669" stop-opacity="0"/></linearGradient></defs><path d="M3,26 L29,37 L54,17 L80,3 L106,20 L131,14 L157,9 L157,40 L3,40 Z" fill="url(#v4gc1)"/><path d="M3,26 L29,37 L54,17 L80,3 L106,20 L131,14 L157,9" fill="none" stroke="#059669" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="157" cy="9" r="2.8" fill="#059669"/></svg></div>
             </div>
-            <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI Facturación hoy">
+            <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI Ventas 30 días">
               <div class="flex items-center justify-between mb-3">
                 <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-lg">💵</div>
-                <span class="badge bg-blue-100 text-blue-700">Estable</span>
+                <span id="v4-kpi-ventas-badge" class="badge bg-slate-100 text-slate-500">—</span>
               </div>
-              <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Facturación hoy</div>
-              <div class="text-3xl font-bold text-slate-800 mt-1">$12.8M</div>
+              <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Ventas (30 días)</div>
+              <div id="v4-kpi-ventas-valor" class="text-3xl font-bold text-slate-800 mt-1">—</div>
               <div class="mt-3 h-10 w-full"><svg viewBox="0 0 160 40" width="100%" height="100%" preserveAspectRatio="none"><defs><linearGradient id="v4gc2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2563eb" stop-opacity=".22"/><stop offset="100%" stop-color="#2563eb" stop-opacity="0"/></linearGradient></defs><path d="M3,20 L29,22 L54,18 L80,24 L106,21 L131,26 L157,19 L157,40 L3,40 Z" fill="url(#v4gc2)"/><path d="M3,20 L29,22 L54,18 L80,24 L106,21 L131,26 L157,19" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="157" cy="19" r="2.8" fill="#2563eb"/></svg></div>
             </div>
-            <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI RDO completado">
+            <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI Frescura datos">
               <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-lg">📋</div>
-                <span class="badge bg-amber-100 text-amber-700">▼ 12%</span>
+                <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-lg">📅</div>
+                <span id="v4-kpi-frescura-badge" class="badge bg-slate-100 text-slate-500">—</span>
               </div>
-              <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">RDO completado</div>
-              <div class="text-3xl font-bold text-slate-800 mt-1">85%</div>
+              <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Última carga</div>
+              <div id="v4-kpi-frescura-valor" class="text-3xl font-bold text-slate-800 mt-1">—</div>
               <div class="mt-3 h-10 w-full"><svg viewBox="0 0 160 40" width="100%" height="100%" preserveAspectRatio="none"><defs><linearGradient id="v4gc3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d97706" stop-opacity=".22"/><stop offset="100%" stop-color="#d97706" stop-opacity="0"/></linearGradient></defs><path d="M3,10 L29,8 L54,14 L80,12 L106,9 L131,15 L157,11 L157,40 L3,40 Z" fill="url(#v4gc3)"/><path d="M3,10 L29,8 L54,14 L80,12 L106,9 L131,15 L157,11" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="157" cy="11" r="2.8" fill="#d97706"/></svg></div>
             </div>
             <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI Alertas activas">
               <div class="flex items-center justify-between mb-3">
                 <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-lg">🔔</div>
-                <span class="badge bg-red-100 text-red-700">▲ 40%</span>
+                <span id="v4-kpi-alertas-badge" class="badge bg-slate-100 text-slate-500">—</span>
               </div>
               <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Alertas activas</div>
-              <div class="text-3xl font-bold text-slate-800 mt-1">7</div>
+              <div id="v4-kpi-alertas-valor" class="text-3xl font-bold text-slate-800 mt-1">—</div>
               <div class="mt-3 h-10 w-full"><svg viewBox="0 0 160 40" width="100%" height="100%" preserveAspectRatio="none"><defs><linearGradient id="v4gc4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#dc2626" stop-opacity=".22"/><stop offset="100%" stop-color="#dc2626" stop-opacity="0"/></linearGradient></defs><path d="M3,30 L29,28 L54,34 L80,15 L106,20 L131,10 L157,14 L157,40 L3,40 Z" fill="url(#v4gc4)"/><path d="M3,30 L29,28 L54,34 L80,15 L106,20 L131,10 L157,14" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="157" cy="14" r="2.8" fill="#dc2626"/></svg></div>
             </div>
           </div>
@@ -571,11 +597,20 @@
           </div>
         </div>
 
-        <!-- v4-design F4 · Mapa Leaflet sucursales -->
-        <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Cobertura geográfica">
-          <h3 class="text-sm font-semibold text-slate-800 mb-1">🗺️ Cobertura Geográfica</h3>
-          <p class="text-xs text-slate-400 mb-3">Sucursales y centros de acopio</p>
-          <div id="v4-map" style="height:280px; border-radius:12px;" class="z-0"></div>
+        <!-- v4-design F4+F12 · Mapa Leaflet + feed actividad reciente -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5 lg:col-span-2" role="article" aria-label="Cobertura geográfica">
+            <h3 class="text-sm font-semibold text-slate-800 mb-1">🗺️ Cobertura Geográfica</h3>
+            <p class="text-xs text-slate-400 mb-3">Sucursales y centros de acopio</p>
+            <div id="v4-map" style="height:280px; border-radius:12px;" class="z-0"></div>
+          </div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Actividad reciente">
+            <h3 class="text-sm font-semibold text-slate-800 mb-1">⚡ Actividad reciente</h3>
+            <p class="text-xs text-slate-400 mb-3">Últimas transacciones (datos en vivo)</p>
+            <div id="v4-actividad-feed" class="space-y-2 overflow-y-auto" style="max-height:280px;">
+              <div class="text-xs text-slate-400 text-center py-6">Cargando...</div>
+            </div>
+          </div>
         </div>
         <!-- v4-design F5 · Top 5 dinámico -->
         <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Top 5 dinámico">
@@ -593,76 +628,70 @@
           <div id="v4-topContent" class="grid grid-cols-2 lg:grid-cols-5 gap-3 text-sm"></div>
         </div>
 
-        <!-- v4-design F5 · Finanzas resumidas -->
+        <!-- v4-design F5+F17 · Métricas operativas mixto (real + tesorería pendiente Dyana) -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Saldo banco">
-            <div class="text-xs text-slate-500 uppercase font-semibold">Saldo Banco</div>
-            <div class="text-xl font-bold text-slate-800 mt-1">$89.2M</div>
-            <div class="text-xs text-slate-400 mt-0.5">🏦 Santander</div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Cola operativa">
+            <div class="text-xs text-slate-500 uppercase font-semibold">Cola Operativa</div>
+            <div id="v4-fin-cola-valor" class="text-xl font-bold text-slate-800 mt-1">—</div>
+            <div id="v4-fin-cola-sub" class="text-xs text-slate-400 mt-0.5">tareas pendientes</div>
           </div>
-          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Por cobrar">
-            <div class="text-xs text-slate-500 uppercase font-semibold">Por Cobrar</div>
-            <div class="text-xl font-bold text-orange-600 mt-1">$34.7M</div>
-            <div class="text-xs text-slate-400 mt-0.5">12 facturas</div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Alertas operativas">
+            <div class="text-xs text-slate-500 uppercase font-semibold">Alertas Operativas</div>
+            <div id="v4-fin-alertas-valor" class="text-xl font-bold text-orange-600 mt-1">—</div>
+            <div id="v4-fin-alertas-sub" class="text-xs text-slate-400 mt-0.5">precio + contraparte</div>
           </div>
-          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Pagos programados">
-            <div class="text-xs text-slate-500 uppercase font-semibold">Pagos Programados</div>
-            <div class="text-xl font-bold text-blue-600 mt-1">$22.1M</div>
-            <div class="text-xs text-slate-400 mt-0.5">Próx. 30 días</div>
+          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Salud PCs">
+            <div class="text-xs text-slate-500 uppercase font-semibold">Salud PCs</div>
+            <div id="v4-fin-pcs-valor" class="text-xl font-bold text-blue-600 mt-1">—</div>
+            <div id="v4-fin-pcs-sub" class="text-xs text-slate-400 mt-0.5">operativas hoy</div>
           </div>
-          <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4 text-center" role="article" aria-label="Inventario">
-            <div class="text-xs text-slate-500 uppercase font-semibold">Inventario</div>
-            <div class="text-xl font-bold text-slate-800 mt-1">$156.3M</div>
-            <div class="text-xs text-emerald-600 mt-0.5">↑ 5% vs mes anterior</div>
+          <div class="card-hover bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center" role="article" aria-label="Tesorería pendiente integrar">
+            <div class="text-xs text-amber-700 uppercase font-semibold">Tesorería</div>
+            <div class="text-xl font-bold text-amber-700 mt-1">—</div>
+            <div class="text-xs text-amber-600 mt-0.5">⚠️ pendiente integrar Dyana</div>
           </div>
         </div>
 
-        <!-- v4-design F5 · Riesgos + Oportunidades con Diego IA mock -->
+        <!-- v4-design F5+F16 · Riesgos + Oportunidades con datos reales -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div class="bg-red-50 border border-red-200 rounded-2xl p-5" role="article" aria-label="Alertas de riesgo">
             <div class="flex items-center gap-2 text-red-700 font-bold text-base">⚠️ Alertas de Riesgo</div>
-            <ul class="mt-3 space-y-2 text-sm text-red-800">
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-red-500 rounded-full"></span> Cuentas por cobrar vencidas: $12M (crítico)</li>
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-orange-500 rounded-full"></span> Margen neto bajó 2 pts vs trimestre anterior</li>
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-yellow-500 rounded-full"></span> Concentración: 3 clientes = 65% facturación</li>
+            <ul id="v4-riesgos-lista" class="mt-3 space-y-2 text-sm text-red-800">
+              <li class="text-xs text-slate-400">Cargando…</li>
             </ul>
-            <div class="mt-3 p-3 bg-white rounded-xl text-sm border border-slate-100">
-              <span class="font-bold">🤖 Diego IA:</span> Activar recordatorios automáticos. Evaluar diversificación de cartera.
+            <div id="v4-riesgos-diego" class="mt-3 p-3 bg-white rounded-xl text-sm border border-slate-100">
+              <span class="font-bold">🤖 Diego IA:</span> Esperando datos…
             </div>
           </div>
           <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5" role="article" aria-label="Oportunidades">
             <div class="flex items-center gap-2 text-emerald-700 font-bold text-base">📈 Oportunidades de Quiebre</div>
-            <ul class="mt-3 space-y-2 text-sm text-emerald-800">
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Licitación municipal abre en 15 días</li>
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Alza precio material reciclado +22%</li>
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Competidor redujo operaciones en zona sur</li>
+            <ul id="v4-oportunidades-lista" class="mt-3 space-y-2 text-sm text-emerald-800">
+              <li class="text-xs text-slate-400">Cargando…</li>
             </ul>
-            <div class="mt-3 p-3 bg-white rounded-xl text-sm border border-slate-100">
-              <span class="font-bold">🤖 Diego IA:</span> Preparar propuesta. Aumentar acopio. Expandir a zona sur.
+            <div id="v4-oportunidades-diego" class="mt-3 p-3 bg-white rounded-xl text-sm border border-slate-100">
+              <span class="font-bold">🤖 Diego IA:</span> Esperando datos…
             </div>
           </div>
         </div>
 
-        <!-- v4-design F5 · Desglose sucursales -->
+        <!-- v4-design F5+F15 · Desglose sucursales con datos reales -->
         <div class="card-hover bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Desglose por sucursales">
-          <h3 class="text-sm font-semibold text-slate-800 mb-3">🏢 Desglose por Sucursales</h3>
+          <h3 class="text-sm font-semibold text-slate-800 mb-1">🏢 Desglose por Sucursales</h3>
+          <p class="text-xs text-slate-400 mb-3">Movimiento últimos 90 días · datos vivos</p>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead class="text-slate-500 border-b border-slate-100">
                 <tr>
                   <th class="text-left py-2 font-medium">Sucursal</th>
-                  <th class="text-right py-2 font-medium">Ingresos</th>
-                  <th class="text-right py-2 font-medium">Costos</th>
-                  <th class="text-right py-2 font-medium">Margen</th>
-                  <th class="text-right py-2 font-medium">Inventario</th>
+                  <th class="text-right py-2 font-medium">Tickets</th>
+                  <th class="text-right py-2 font-medium">Toneladas</th>
+                  <th class="text-right py-2 font-medium">Monto</th>
+                  <th class="text-right py-2 font-medium">Proveedores</th>
                   <th class="text-right py-2 font-medium">Estado</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr class="border-b border-slate-50"><td class="py-2 font-medium text-slate-700">Planta Norte (Stgo)</td><td class="text-right">$58.2M</td><td class="text-right text-red-600">$38.1M</td><td class="text-right text-emerald-600">$20.1M</td><td class="text-right">$67.4M</td><td class="text-right"><span class="badge bg-emerald-100 text-emerald-700">OK</span></td></tr>
-                <tr class="border-b border-slate-50"><td class="py-2 font-medium text-slate-700">Planta Sur (Concep)</td><td class="text-right">$42.8M</td><td class="text-right text-red-600">$31.5M</td><td class="text-right text-emerald-600">$11.3M</td><td class="text-right">$43.2M</td><td class="text-right"><span class="badge bg-amber-100 text-amber-700">Revisar</span></td></tr>
-                <tr class="border-b border-slate-50"><td class="py-2 font-medium text-slate-700">C. Logístico (Valpo)</td><td class="text-right">$34.1M</td><td class="text-right text-red-600">$22.8M</td><td class="text-right text-emerald-600">$11.3M</td><td class="text-right">$38.9M</td><td class="text-right"><span class="badge bg-emerald-100 text-emerald-700">OK</span></td></tr>
-                <tr><td class="py-2 font-medium text-slate-700">Farex (Central)</td><td class="text-right">$7.4M</td><td class="text-right text-red-600">$5.9M</td><td class="text-right text-emerald-600">$1.5M</td><td class="text-right">$6.8M</td><td class="text-right"><span class="badge bg-red-100 text-red-700">Urgente</span></td></tr>
+              <tbody id="v4-sucursales-tbody">
+                <tr><td class="py-2 text-slate-400 text-center" colspan="6">Cargando datos…</td></tr>
               </tbody>
             </table>
           </div>
@@ -957,6 +986,16 @@
         <button onclick="loadPrecios()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
       </div>
 
+      <!-- F19 · Alerta dispersión precios (backend Pablo v_panel_precio_inconsistencias) -->
+      <div id="v4PrecDispBlock" class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-bold text-amber-800">⚠️ Inconsistencias de precio detectadas (mismo día/material/sucursal, >20% dispersión)</h3>
+          <span id="v4PrecDispCount" class="badge bg-amber-200 text-amber-800">cargando…</span>
+        </div>
+        <p class="text-xs text-amber-700 mb-2">Posibles causas: descuento sin firma (revisar D-OP-06 matriz), cliente VIP con precio especial, o error de captura (ej. 120 vs 1200). Top 8 por dispersión:</p>
+        <div id="v4PrecDispTable" class="text-xs"><div class="text-stone-400 text-center py-3">Cargando…</div></div>
+      </div>
+
       <!-- Filtros -->
       <div class="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-wrap gap-3 items-end">
         <div>
@@ -1121,6 +1160,16 @@
         <button onclick="loadReconciliacion(1)" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
       </div>
 
+      <!-- F18 · Sugerencias fuzzy nuevas backend Pablo (handoff 21-may) -->
+      <div id="v4RecFuzzyBlock" class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-bold text-emerald-800">🆕 Sugerencias fuzzy match (backend Pablo)</h3>
+          <span id="v4RecFuzzyCount" class="badge bg-emerald-200 text-emerald-800">cargando…</span>
+        </div>
+        <p class="text-xs text-emerald-700 mb-3">Clientes CRM Impulsa con alta probabilidad de ser el mismo cliente RDO. Confirmar acepta el match (UPDATE external_id_crm). Rechazar marca como falso positivo.</p>
+        <div id="v4RecFuzzyList" class="space-y-1 text-xs text-stone-700"><div class="text-stone-400 text-center py-3">Cargando…</div></div>
+      </div>
+
       <!-- KPI bar -->
       <div id="recKpiBar" class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
         <div class="bg-white p-3 rounded shadow-sm">
@@ -1245,7 +1294,23 @@
         <button onclick="loadCartera()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
       </div>
 
-      <!-- KPI bar por categoría -->
+      <!-- N2-3 · Resumen cobertura cartera (backend Pablo f_panel_cartera_cobertura) -->
+      <div id="v4CarteraCobertura" class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-4">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h3 class="text-sm font-bold text-emerald-800">📊 Cobertura de cartera</h3>
+            <p class="text-xs text-emerald-700 mt-0.5">Resumen vivo desde backend</p>
+          </div>
+          <div class="flex gap-3 text-sm">
+            <div class="text-center"><div class="text-xs text-emerald-700">Activos</div><div id="v4CarCobActivos" class="text-2xl font-bold text-emerald-800">—</div></div>
+            <div class="text-center"><div class="text-xs text-emerald-700">Categorizados</div><div id="v4CarCobCat" class="text-2xl font-bold text-emerald-800">—</div></div>
+            <div class="text-center"><div class="text-xs text-amber-700">Sin categoría</div><div id="v4CarCobSinCat" class="text-2xl font-bold text-amber-700">—</div></div>
+            <div class="text-center"><div class="text-xs text-blue-700">% cobertura</div><div id="v4CarCobPct" class="text-2xl font-bold text-blue-700">—</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI bar por categoría (existente — flujo loadCartera intacto) -->
       <div id="carKpiBar" class="flex flex-wrap gap-2 mb-4"></div>
 
       <!-- Filtros -->
@@ -1343,6 +1408,22 @@
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold text-stone-800">🎯 Oportunidades — Pipeline Kanban</h2>
         <button onclick="loadOportunidadesKanban()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+
+      <!-- N2-5 · Resumen oportunidades + flag fuzzy CRM (backend Pablo) -->
+      <div id="v4OppResumen" class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h3 class="text-sm font-bold text-blue-800">📊 Pipeline operativo</h3>
+            <p class="text-xs text-blue-700 mt-0.5">CRM ↔ RDO en tiempo real</p>
+          </div>
+          <div class="flex flex-wrap gap-3 text-sm">
+            <div class="text-center"><div class="text-xs text-blue-700">Opor RDO abiertas</div><div id="v4OppRdoAbiertas" class="text-2xl font-bold text-blue-800">—</div></div>
+            <div class="text-center"><div class="text-xs text-blue-700">CRM Impulsa</div><div id="v4OppCrmTotal" class="text-2xl font-bold text-blue-800">—</div></div>
+            <div class="text-center"><div class="text-xs text-emerald-700">Matcheadas RDO</div><div id="v4OppMatched" class="text-2xl font-bold text-emerald-700">—</div></div>
+            <div class="text-center"><div class="text-xs text-amber-700">Fuzzy sin reconciliar</div><div id="v4OppFuzzy" class="text-2xl font-bold text-amber-700">—</div></div>
+          </div>
+        </div>
       </div>
 
       <div id="oppKanban" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
@@ -1589,6 +1670,64 @@
 
           <div id="bdDrawerMsg" class="hidden text-xs p-2 rounded"></div>
         </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA OPERACIONES DÍA (D-OP-16) — consolidado transversal
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabOpsDiarias" class="tab-content hidden">
+      <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🌅 Operaciones del día</h2>
+        <div class="flex items-center gap-2">
+          <label for="opsFecha" class="text-xs text-stone-500">Fecha:</label>
+          <input id="opsFecha" type="date" onchange="loadOpsDiarias()"
+                 aria-label="Seleccionar fecha"
+                 class="border border-stone-300 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none">
+          <button onclick="opsFechaAyer()" class="text-xs text-green-700 hover:underline">Ayer</button>
+          <button onclick="opsFechaHoy()" class="text-xs text-green-700 hover:underline">Hoy</button>
+        </div>
+      </div>
+
+      <!-- KPI bar -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Tickets</div>
+          <div id="opsKpiTickets" class="text-2xl font-bold text-stone-800">—</div>
+          <div id="opsKpiTicketsDelta" class="text-xs text-stone-500">vs ayer: —</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Toneladas</div>
+          <div id="opsKpiTon" class="text-2xl font-bold text-green-700">—</div>
+          <div id="opsKpiTonDelta" class="text-xs text-stone-500">vs ayer: —</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Monto pesajes</div>
+          <div id="opsKpiMonto" class="text-2xl font-bold text-blue-700">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Alertas críticas</div>
+          <div id="opsKpiAlertas" class="text-2xl font-bold text-red-700">—</div>
+        </div>
+      </div>
+
+      <!-- Bloque pesajes -->
+      <div class="bg-white p-4 rounded shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-2">⚖️ Pesajes por sucursal</h3>
+        <div id="opsPesajesPorSuc" class="text-sm text-stone-600">—</div>
+      </div>
+
+      <!-- Bloque cierres -->
+      <div class="bg-white p-4 rounded shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-2">📅 Cierres del día</h3>
+        <div id="opsCierres" class="text-sm text-stone-600">—</div>
+      </div>
+
+      <!-- Bloque alertas -->
+      <div class="bg-white p-4 rounded shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-2">🚨 Alertas del día</h3>
+        <div id="opsAlertas" class="text-sm text-stone-600">—</div>
+        <button onclick="document.querySelector('button[data-tab=portada]').click()" class="text-xs text-green-700 hover:underline mt-2">Ver detalle en Portada →</button>
       </div>
     </section>
 
@@ -1912,7 +2051,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'admin'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'admin'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -2486,6 +2625,7 @@ function setupTabs() {
       if (tabId === 'oportunidades') initOportunidadesKanban();
       if (tabId === 'entregables') initEntregables();
       if (tabId === 'bandeja_dieg') initBandejaDiego();
+      if (tabId === 'ops_diarias')   initOpsDiarias();
       if (tabId === 'dieguito')  initDieguito();
       if (tabId === 'comercial')  initTabComercial();
     });
@@ -4053,7 +4193,38 @@ let _preciosIniciado = false;
 let _preciosCache = [];        // resultado crudo de la vista
 let _preciosBuscarTimer = null;
 
+// F19 · Cargar inconsistencias precio backend Pablo en tab Precios
+async function _v4LoadPrecDispersion() {
+  try {
+    if (typeof sb === 'undefined') return;
+    const { data, error } = await sb.from('v_panel_precio_inconsistencias').select('*').order('dispersion_pct', { ascending: false }).limit(50);
+    const countEl = document.getElementById('v4PrecDispCount');
+    const tableEl = document.getElementById('v4PrecDispTable');
+    if (error || !data) { if (tableEl) tableEl.innerHTML = '<div class="text-amber-700">Error</div>'; return; }
+    if (countEl) countEl.textContent = `${data.length} alertas`;
+    if (data.length === 0) { if (tableEl) tableEl.innerHTML = '<div class="text-emerald-600 text-center py-2">Sin inconsistencias</div>'; return; }
+    const safe = (s) => (s || '—').toString().replace(/</g, '&lt;');
+    const fmtNum = (n) => Number(n || 0).toLocaleString('es-CL', { maximumFractionDigits: 0 });
+    if (tableEl) {
+      tableEl.innerHTML = `<table class="w-full text-xs"><thead class="text-amber-800 border-b border-amber-200"><tr>
+        <th class="text-left py-1.5">Fecha</th><th class="text-left">Sucursal</th><th class="text-left">Material</th>
+        <th class="text-right">Tickets</th><th class="text-right">Min</th><th class="text-right">Max</th><th class="text-right">Dispersión</th>
+      </tr></thead><tbody>` + data.slice(0, 8).map(r => `<tr class="border-b border-amber-100 hover:bg-amber-100">
+        <td class="py-1.5 text-stone-700">${safe(r.fecha)}</td>
+        <td>${safe(r.sucursal)}</td>
+        <td class="truncate">${safe(r.material_descripcion)}</td>
+        <td class="text-right">${r.n_tickets}</td>
+        <td class="text-right">$${fmtNum(r.precio_min)}</td>
+        <td class="text-right">$${fmtNum(r.precio_max)}</td>
+        <td class="text-right text-red-600 font-semibold">${Number(r.dispersion_pct).toFixed(1)}%</td>
+      </tr>`).join('') + `</tbody></table>`;
+    }
+  } catch(e) { console.warn('[v4-prec-disp] fallo:', e); }
+}
+
 async function initPrecios() {
+  // F19: cargar dispersión una vez por sesión
+  if (!window._v4PrecDispLoaded) { window._v4PrecDispLoaded = true; _v4LoadPrecDispersion(); }
   if (_preciosIniciado) {
     // re-render con cache si ya está montado
     loadPrecios();
@@ -4752,7 +4923,49 @@ function recDebouncedSearch() {
   recSearchTimer = setTimeout(() => loadReconciliacion(1), 350);
 }
 
+// F18 · Cargar sugerencias fuzzy backend Pablo en tab Reconciliación
+async function _v4LoadFuzzySuggestions() {
+  try {
+    if (typeof sb === 'undefined' || !sb?.schema) return;
+    const { data, error } = await sb.schema('curated').rpc('f_crm_sugerencias_match', { p_threshold: 0.8, p_limit: 100 });
+    const countEl = document.getElementById('v4RecFuzzyCount');
+    const listEl = document.getElementById('v4RecFuzzyList');
+    if (error || !data) { if (listEl) listEl.innerHTML = '<div class="text-amber-600">Error cargando sugerencias</div>'; return; }
+    // Agrupar por cliente_crm_nombre + cliente_id_rdo_sugerido (deduplica si el mismo nombre CRM aparece N veces para el mismo RDO)
+    const grouped = {};
+    data.forEach(r => {
+      const k = (r.cliente_crm_nombre || '') + '||' + (r.cliente_id_rdo_sugerido || '');
+      if (!grouped[k]) grouped[k] = { ...r, n_oportunidades: 0 };
+      grouped[k].n_oportunidades++;
+    });
+    const matches = Object.values(grouped).sort((a, b) => Number(b.similarity_score) - Number(a.similarity_score));
+    if (countEl) countEl.textContent = `${matches.length} matches únicos · ${data.length} oportunidades`;
+    if (matches.length === 0) {
+      if (listEl) listEl.innerHTML = '<div class="text-stone-400 text-center py-2">Sin sugerencias alta confianza</div>';
+      return;
+    }
+    if (listEl) {
+      listEl.innerHTML = matches.slice(0, 12).map(m => {
+        const score = Number(m.similarity_score);
+        const scoreTxt = (score * 100).toFixed(0) + '%';
+        const safe = (s) => (s || '—').toString().replace(/</g, '&lt;');
+        return `<div class="flex items-center gap-2 p-2 rounded bg-white border border-stone-100 hover:bg-stone-50">
+          <span class="badge bg-emerald-100 text-emerald-700 text-xs">${scoreTxt}</span>
+          <div class="flex-1 min-w-0">
+            <div class="font-medium text-stone-800 truncate">${safe(m.cliente_crm_nombre)}</div>
+            <div class="text-xs text-stone-500 truncate">→ ${safe(m.cliente_nombre_rdo)} (${safe(m.cliente_id_rdo_sugerido)}) · ${m.n_oportunidades} oportunidad${m.n_oportunidades===1?'':'es'}</div>
+          </div>
+          <button class="text-xs px-2 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700" onclick="alert('Confirmar match: ' + ${JSON.stringify(m.crm_id)} + ' → ' + ${JSON.stringify(m.cliente_id_rdo_sugerido)} + '. (POC: ejecución real pendiente integrar con tabla reconciliación)')">✓</button>
+          <button class="text-xs px-2 py-1 bg-stone-200 text-stone-700 rounded hover:bg-stone-300" onclick="alert('Rechazar match. (POC: pendiente integrar)')">✗</button>
+        </div>`;
+      }).join('');
+    }
+  } catch(e) { console.warn('[v4-fuzzy] fallo:', e); }
+}
+
 async function initReconciliacion() {
+  // F18: cargar sugerencias fuzzy una sola vez por sesión
+  if (!window._v4FuzzyLoaded) { window._v4FuzzyLoaded = true; _v4LoadFuzzySuggestions(); }
   // Una sola vez: cargar embudos distintos al combo
   if (!document.getElementById('recFiltroEmbudo').dataset.cargado) {
     const { data: embudos } = await sb.schema('curated').from('vw_oportunidades_crm')
@@ -4959,7 +5172,27 @@ function carDebouncedSearch() {
   _cartSearchTimer = setTimeout(() => loadCartera(), 300);
 }
 
+// N2-3 · Cargar resumen cobertura cartera (backend Pablo)
+async function _v4LoadCarteraCobertura() {
+  try {
+    if (typeof sb === 'undefined' || !sb?.rpc) return;
+    const { data, error } = await sb.rpc('f_panel_cartera_cobertura');
+    if (error || !data) return;
+    const activos = data?.total_clientes_activos ?? 0;
+    const cat = data?.con_categoria ?? 0;
+    const sinCat = data?.sin_categoria ?? 0;
+    const pct = activos > 0 ? Math.round(cat / activos * 100) : 0;
+    const setIf = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = txt; };
+    setIf('v4CarCobActivos', activos);
+    setIf('v4CarCobCat', cat);
+    setIf('v4CarCobSinCat', sinCat);
+    setIf('v4CarCobPct', pct + '%');
+  } catch(e) { console.warn('[v4-cartera-cob] fallo:', e); }
+}
+
 async function initCartera() {
+  // N2-3: cobertura cartera once por sesión
+  if (!window._v4CarCobLoaded) { window._v4CarCobLoaded = true; _v4LoadCarteraCobertura(); }
   if (!_cartCategorias) {
     const { data, error } = await sb.schema('curated').from('cartera_categorias')
       .select('categoria_id, nombre, color_ui, orden, activa').order('orden');
@@ -5202,7 +5435,31 @@ const OPP_ESTADOS = [
 let _oppDrawerId = null;
 let _oppSucursalesMap = null;
 
+// N2-5 · Resumen oportunidades pipeline (backend Pablo f_panel_health.crm)
+async function _v4LoadOppResumen() {
+  try {
+    if (typeof sb === 'undefined' || !sb?.rpc) return;
+    const { data, error } = await sb.rpc('f_panel_health');
+    if (error || !data) return;
+    const crmTotal = data?.crm?.oportunidades_total ?? 0;
+    const crmMatch = data?.crm?.matcheadas_rdo ?? 0;
+    const fuzzyRes = await sb.from('v_crm_match_sugerido').select('*', { count:'exact', head:true });
+    const fuzzyTot = fuzzyRes?.count ?? 0;
+    // RDO abiertas: count en curated.oportunidades con estado activo
+    const oppAbiertasRes = await sb.schema('curated').from('oportunidades').select('*', { count:'exact', head:true }).neq('estado', 'cerrada_perdida').neq('estado', 'cerrada_ganada');
+    const oppAbiertas = oppAbiertasRes?.count ?? 0;
+
+    const setIf = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = (txt ?? 0).toLocaleString('es-CL'); };
+    setIf('v4OppRdoAbiertas', oppAbiertas);
+    setIf('v4OppCrmTotal', crmTotal);
+    setIf('v4OppMatched', crmMatch);
+    setIf('v4OppFuzzy', fuzzyTot);
+  } catch(e) { console.warn('[v4-opp-resumen] fallo:', e); }
+}
+
 async function initOportunidadesKanban() {
+  // N2-5: resumen pipeline once por sesión
+  if (!window._v4OppResumenLoaded) { window._v4OppResumenLoaded = true; _v4LoadOppResumen(); }
   if (!_oppSucursalesMap) {
     const sucs = await ensureSucursalesCache();
     _oppSucursalesMap = new Map((sucs || []).map(s => [s.sucursal_id, s.nombre]));
@@ -5736,6 +5993,98 @@ window.bdReasignar = async function() {
   await _bdUpdate({ responsable: nuevo }, nuevo ? `Asignado a ${nuevo}.` : 'Responsable removido.');
 };
 
+// ============================================================
+// TAB OPERACIONES DÍA (D-OP-16) — consolidado transversal
+// ============================================================
+function initOpsDiarias() {
+  const inp = document.getElementById('opsFecha');
+  if (!inp.value) {
+    const d = new Date(); d.setDate(d.getDate() - 1); // default: ayer
+    inp.value = d.toISOString().slice(0, 10);
+  }
+  loadOpsDiarias();
+}
+
+window.opsFechaAyer = function() {
+  const d = new Date(); d.setDate(d.getDate() - 1);
+  document.getElementById('opsFecha').value = d.toISOString().slice(0, 10);
+  loadOpsDiarias();
+};
+window.opsFechaHoy = function() {
+  document.getElementById('opsFecha').value = new Date().toISOString().slice(0, 10);
+  loadOpsDiarias();
+};
+
+async function loadOpsDiarias() {
+  const fecha = document.getElementById('opsFecha').value;
+  if (!fecha) return;
+  ['opsKpiTickets','opsKpiTon','opsKpiMonto','opsKpiAlertas','opsKpiTicketsDelta','opsKpiTonDelta'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '…'; });
+  document.getElementById('opsPesajesPorSuc').textContent = 'Cargando…';
+  document.getElementById('opsCierres').textContent = 'Cargando…';
+  document.getElementById('opsAlertas').textContent = 'Cargando…';
+
+  const { data, error } = await sb.rpc('f_operaciones_dia', { p_fecha: fecha });
+  if (error) {
+    document.getElementById('opsPesajesPorSuc').innerHTML = `<span class="text-red-600">Error: ${escapeHtml(error.message)}</span>`;
+    return;
+  }
+  const p = data?.pesajes || {};
+  const cmp = data?.comparativa || {};
+  const al = data?.alertas || {};
+  const ci = data?.cierres || [];
+
+  const fmtCLP = n => '$' + Math.round(Number(n || 0)).toLocaleString('es-CL');
+  const delta = (a, b) => {
+    const dx = (Number(a || 0) - Number(b || 0));
+    if (Number(b || 0) === 0) return dx > 0 ? '↑ nuevo' : 'sin datos';
+    const pct = (dx / Number(b)) * 100;
+    return (dx >= 0 ? '↑ ' : '↓ ') + Math.abs(pct).toFixed(0) + '%';
+  };
+
+  document.getElementById('opsKpiTickets').textContent = (p.tickets_total || 0).toLocaleString('es-CL');
+  document.getElementById('opsKpiTicketsDelta').textContent = 'vs ayer: ' + delta(p.tickets_total, cmp.tickets_dia_anterior);
+  document.getElementById('opsKpiTon').textContent = (Number(p.toneladas || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 })) + ' t';
+  document.getElementById('opsKpiTonDelta').textContent = 'vs ayer: ' + delta(p.toneladas, cmp.toneladas_dia_anterior);
+  document.getElementById('opsKpiMonto').textContent = fmtCLP(p.monto_total);
+  document.getElementById('opsKpiAlertas').textContent = (Number(al.precio_tarifa_rojo || 0) + Number(al.contraparte || 0)).toLocaleString('es-CL');
+
+  // Pesajes por sucursal
+  const sucs = Array.isArray(p.por_sucursal) ? p.por_sucursal : [];
+  if (sucs.length === 0) {
+    document.getElementById('opsPesajesPorSuc').innerHTML = '<span class="text-stone-400 italic">Sin pesajes ese día.</span>';
+  } else {
+    document.getElementById('opsPesajesPorSuc').innerHTML = `
+      <table class="w-full text-sm"><thead class="text-xs text-stone-500"><tr>
+        <th class="text-left py-1">Sucursal</th><th class="text-right py-1">Tickets</th><th class="text-right py-1">Toneladas</th>
+      </tr></thead><tbody>${sucs.map(s => `
+        <tr class="border-t border-stone-100"><td class="py-1">${escapeHtml(s.sucursal)}</td>
+          <td class="text-right py-1">${s.n}</td>
+          <td class="text-right py-1">${Number(s.t || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 })} t</td></tr>`).join('')}
+      </tbody></table>`;
+  }
+
+  // Cierres
+  if (!ci || ci.length === 0) {
+    document.getElementById('opsCierres').innerHTML = '<span class="text-stone-400 italic">Sin cierres ese día.</span>';
+  } else {
+    document.getElementById('opsCierres').innerHTML = ci.map(c => `
+      <div class="border-l-4 border-blue-400 pl-3 py-1 mb-2">
+        <div class="font-medium text-stone-800">${escapeHtml(c.empresa_id || '')} ${c.sucursal_id ? '· ' + escapeHtml(c.sucursal_id) : ''}</div>
+        <div class="text-xs text-stone-600">
+          Saldo total: ${fmtCLP(c.saldo_total_clp)} ·
+          Flujo neto: <span class="${Number(c.flujo_neto_clp || 0) >= 0 ? 'text-green-700' : 'text-red-700'}">${fmtCLP(c.flujo_neto_clp)}</span> ·
+          Facturado: ${fmtCLP(c.facturado_neto_clp)} ·
+          Estado: ${escapeHtml(c.estado || '—')}
+        </div>
+      </div>`).join('');
+  }
+
+  // Alertas
+  document.getElementById('opsAlertas').innerHTML = `
+    <span class="${Number(al.precio_tarifa_rojo) > 0 ? 'text-red-700 font-semibold' : 'text-stone-600'}">${al.precio_tarifa_rojo || 0} alertas precio_tarifa rojo</span> ·
+    <span class="${Number(al.contraparte) > 0 ? 'text-amber-700' : 'text-stone-600'}">${al.contraparte || 0} contrapartes con discrepancia</span>`;
+}
+
 // ---------- INIT ----------
 initSupabase();
 setupTabs();
@@ -5871,23 +6220,46 @@ window.initV4Hero = function initV4Hero() {
     const now = new Date();
     const dias  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
     const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const diasCortos  = ['dom','lun','mar','mié','jue','vie','sáb'];
+    const mesesCortos = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
     const fechaCompleta = `${dias[now.getDay()]} ${now.getDate()} de ${meses[now.getMonth()]} de ${now.getFullYear()}`;
+    const fechaCorta    = `${diasCortos[now.getDay()]} ${now.getDate()} de ${mesesCortos[now.getMonth()]}`;
     const fc = document.getElementById('v4-fechaCompleta');
     if (fc) fc.textContent = fechaCompleta;
+    // FIX-5 · fecha corta en topbar
+    const fa = document.getElementById('v4-fechaActual');
+    if (fa) fa.textContent = fechaCorta;
 
     // Saludo según hora
     const h = now.getHours();
     const saludo = h < 12 ? 'Buenos días' : (h < 19 ? 'Buenas tardes' : 'Buenas noches');
-    // Nombre desde userEmailDisplay (donde hydrate pone data.nombre || data.email)
-    const realName = document.getElementById('userEmailDisplay')?.innerText?.trim() || '';
+    // FIX-3 · Nombre real: prioridad userEmailDisplay → currentUser global → currentProfile.
+    const fromDisplay = document.getElementById('userEmailDisplay')?.innerText?.trim() || '';
+    const fromGlobal  = (typeof currentUser !== 'undefined' && currentUser) ? String(currentUser) : '';
+    const fromProfile = (typeof currentProfile !== 'undefined' && currentProfile) ? String(currentProfile) : '';
+    let realName = fromDisplay || fromGlobal || fromProfile || '';
     const isEmail = /@/.test(realName);
-    let nombre = isEmail ? realName.split('@')[0] : (realName || 'Usuario');
+    let nombre = isEmail ? realName.split('@')[0] : realName;
+    if (!nombre || nombre === '—') nombre = 'Usuario';
     nombre = nombre.split(/[. _-]/)[0];
     nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1);
     const sn = document.getElementById('v4-saludoNombre');
     if (sn) sn.textContent = nombre;
     const h1 = sn?.parentElement;
-    if (h1) h1.firstChild && (h1.firstChild.textContent = saludo + ', ');
+    if (h1 && h1.firstChild) h1.firstChild.textContent = saludo + ', ';
+    // Re-disparar saludo cuando userEmailDisplay cambie (post-hydrate)
+    if (!window._v4SaludoObserver && document.getElementById('userEmailDisplay')) {
+      window._v4SaludoObserver = new MutationObserver(() => {
+        const newDisplay = document.getElementById('userEmailDisplay')?.innerText?.trim() || '';
+        if (newDisplay && newDisplay !== '—' && sn) {
+          const isE = /@/.test(newDisplay);
+          let n = isE ? newDisplay.split('@')[0] : newDisplay;
+          n = n.split(/[. _-]/)[0];
+          sn.textContent = n.charAt(0).toUpperCase() + n.slice(1);
+        }
+      });
+      window._v4SaludoObserver.observe(document.getElementById('userEmailDisplay'), { childList: true, characterData: true, subtree: true });
+    }
 
     // Silo ctx
     window.v4SyncSiloCtx && window.v4SyncSiloCtx();
@@ -5897,50 +6269,162 @@ window.initV4Hero = function initV4Hero() {
       window._v4ChartsReady = true;
       try {
         if (typeof Chart !== 'undefined') {
+          // F13 · pieChart con datos reales por material top 5 (RPC f_panel_top_n)
           const pieEl = document.getElementById('v4-pieChart');
-          if (pieEl) new Chart(pieEl, {
-            type: 'doughnut',
-            data: { labels: ['Reciclean','Farex','Gestión REP','Otros'], datasets: [{ data:[45,25,20,10], backgroundColor:['#059669','#ea580c','#2563eb','#94a3b8'], borderWidth:0 }] },
-            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } } }
-          });
+          if (pieEl) {
+            const PIE_COLORS = ['#059669','#ea580c','#2563eb','#9333ea','#facc15','#94a3b8'];
+            const _pieChart = new Chart(pieEl, {
+              type: 'doughnut',
+              data: { labels: ['Cargando…'], datasets: [{ data:[1], backgroundColor:['#cbd5e1'], borderWidth:0 }] },
+              options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } } }
+            });
+            (async () => {
+              try {
+                if (typeof sb === 'undefined' || !sb?.rpc) return;
+                const { data, error } = await sb.rpc('f_panel_top_n', { p_kind: 'materiales', p_limit: 6 });
+                if (error || !data || data.length === 0) { console.warn('[v4-pie] sin datos:', error); return; }
+                const labels = data.map(r => (r.nombre || r.codigo || '—').toString().slice(0, 18));
+                const values = data.map(r => Number(r.monto) || 0);
+                _pieChart.data.labels = labels;
+                _pieChart.data.datasets[0].data = values;
+                _pieChart.data.datasets[0].backgroundColor = PIE_COLORS.slice(0, labels.length);
+                _pieChart.update();
+                // Subtítulo dinámico
+                const subEl = document.getElementById('v4-pieChart')?.closest('.bg-white')?.querySelector('p.text-xs');
+                if (subEl) subEl.textContent = 'Top 6 materiales por monto (90d)';
+              } catch(e) { console.warn('[v4-pie] real fallo:', e); }
+            })();
+          }
+          // F11 · barChart con datos reales por sucursal (RPC f_pesajes_por_sucursal)
           const barEl = document.getElementById('v4-barChart');
-          if (barEl) new Chart(barEl, {
-            type: 'bar',
-            data: { labels: ['Planta N.','Planta S.','C. Log.','Farex'], datasets: [
-              { label:'Ingresos', data:[58,42,34,7], backgroundColor:'#059669', borderRadius:4 },
-              { label:'Costos',   data:[38,31,22,6], backgroundColor:'#fca5a5', borderRadius:4 }
-            ]},
-            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } }, scales:{ x:{ grid:{ display:false } }, y:{ grid:{ color:'#e5e7eb' } } } }
-          });
+          if (barEl) {
+            const _barChart = new Chart(barEl, {
+              type: 'bar',
+              data: { labels: ['Cargando…'], datasets: [
+                { label:'Ingresos (M$)', data:[0], backgroundColor:'#059669', borderRadius:4 },
+                { label:'Gastos (M$)',   data:[0], backgroundColor:'#fca5a5', borderRadius:4 }
+              ]},
+              options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } }, scales:{ x:{ grid:{ display:false } }, y:{ grid:{ color:'#e5e7eb' } } } }
+            });
+            (async () => {
+              try {
+                if (typeof sb === 'undefined' || !sb?.rpc) return;
+                // Agregamos por sucursal desde v_panel_flujo_sucursal_dia (12 meses)
+                const since = new Date(); since.setMonth(since.getMonth()-12);
+                const { data } = await sb.from('v_panel_flujo_sucursal_dia')
+                  .select('sucursal, ingreso_venta_clp, gasto_compra_clp')
+                  .gte('fecha', since.toISOString().slice(0,10));
+                if (!data || data.length === 0) return;
+                const acc = {};
+                data.forEach(r => {
+                  const s = r.sucursal || '—';
+                  if (!acc[s]) acc[s] = { ing:0, gas:0 };
+                  acc[s].ing += Number(r.ingreso_venta_clp) || 0;
+                  acc[s].gas += Number(r.gasto_compra_clp) || 0;
+                });
+                // Top 5 sucursales por suma ing+gas
+                const top = Object.entries(acc).map(([s,v]) => ({ s, ...v, total: v.ing+v.gas }))
+                  .sort((a,b) => b.total - a.total).slice(0,5);
+                _barChart.data.labels = top.map(t => t.s);
+                _barChart.data.datasets[0].data = top.map(t => +(t.ing/1e6).toFixed(2));
+                _barChart.data.datasets[1].data = top.map(t => +(t.gas/1e6).toFixed(2));
+                _barChart.update();
+              } catch(e) { console.warn('[v4-barchart] real fallo:', e); }
+            })();
+          }
+          // F11 · lineChart con datos reales por mes (12 meses agregado client-side)
           const lineEl = document.getElementById('v4-lineChart');
-          if (lineEl) new Chart(lineEl, {
-            type: 'line',
-            data: { labels: ['Jun','Jul','Ago','Sep','Oct','Nov','Dic','Ene','Feb','Mar','Abr','May'], datasets: [
-              { label:'Ingresos', data:[48,52,47,55,60,58,63,68,65,70,75,82], borderColor:'#059669', backgroundColor:'#05966920', fill:true, tension:0.4, pointRadius:2 },
-              { label:'Costos',   data:[35,38,34,40,42,40,44,46,43,48,50,53], borderColor:'#ea580c', backgroundColor:'transparent', tension:0.4, pointRadius:2 }
-            ]},
-            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } }, scales:{ x:{ grid:{ display:false } }, y:{ grid:{ color:'#e5e7eb' } } } }
-          });
+          if (lineEl) {
+            const _lineChart = new Chart(lineEl, {
+              type: 'line',
+              data: { labels: ['Cargando…'], datasets: [
+                { label:'Ingresos (M$)', data:[0], borderColor:'#059669', backgroundColor:'#05966920', fill:true, tension:0.4, pointRadius:2 },
+                { label:'Gastos (M$)',   data:[0], borderColor:'#ea580c', backgroundColor:'transparent', tension:0.4, pointRadius:2 }
+              ]},
+              options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } }, scales:{ x:{ grid:{ display:false } }, y:{ grid:{ color:'#e5e7eb' } } } }
+            });
+            (async () => {
+              try {
+                if (typeof sb === 'undefined' || !sb?.rpc) return;
+                const since = new Date(); since.setMonth(since.getMonth()-12);
+                const { data } = await sb.from('v_panel_flujo_sucursal_dia')
+                  .select('fecha, ingreso_venta_clp, gasto_compra_clp')
+                  .gte('fecha', since.toISOString().slice(0,10));
+                if (!data || data.length === 0) return;
+                const acc = {};
+                data.forEach(r => {
+                  const mes = (r.fecha || '').slice(0,7); // YYYY-MM
+                  if (!mes) return;
+                  if (!acc[mes]) acc[mes] = { ing:0, gas:0 };
+                  acc[mes].ing += Number(r.ingreso_venta_clp) || 0;
+                  acc[mes].gas += Number(r.gasto_compra_clp) || 0;
+                });
+                const meses = Object.keys(acc).sort();
+                _lineChart.data.labels = meses.map(m => m.slice(2)); // 'YY-MM'
+                _lineChart.data.datasets[0].data = meses.map(m => +(acc[m].ing/1e6).toFixed(2));
+                _lineChart.data.datasets[1].data = meses.map(m => +(acc[m].gas/1e6).toFixed(2));
+                _lineChart.update();
+              } catch(e) { console.warn('[v4-linechart] real fallo:', e); }
+            })();
+          }
         } else {
           console.warn('[v4-hero] Chart.js no disponible (CDN bloqueado).');
         }
       } catch(err) { console.warn('[v4-hero] charts init fallo:', err); }
 
+      // F10 · Mapa Leaflet con datos reales f_pesajes_por_sucursal (Pablo handoff)
       try {
         if (typeof L !== 'undefined') {
           const mapEl = document.getElementById('v4-map');
           if (mapEl) {
-            const map = L.map('v4-map').setView([-33.45, -70.65], 6);
+            // Coords por sucursal — match por nombre (case-insensitive partial)
+            const SUC_COORDS = {
+              'talca':          { lat:-35.43, lng:-71.65, color:'#059669', label:'Talca' },
+              'maipú':          { lat:-33.51, lng:-70.76, color:'#2563eb', label:'Maipú' },
+              'maipu':          { lat:-33.51, lng:-70.76, color:'#2563eb', label:'Maipú' },
+              'cerrillos':      { lat:-33.50, lng:-70.71, color:'#ea580c', label:'Cerrillos' },
+              'puerto montt':   { lat:-41.47, lng:-72.94, color:'#9333ea', label:'Pto Montt' },
+              'pto montt':      { lat:-41.47, lng:-72.94, color:'#9333ea', label:'Pto Montt' },
+              'cerro sombrero': { lat:-52.79, lng:-69.50, color:'#dc2626', label:'Cerro Sombrero' }
+            };
+            const map = L.map('v4-map').setView([-37, -71], 4);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; CartoDB' }).addTo(map);
-            [
-              { name:'Planta Norte (Stgo)',   lat:-33.42, lng:-70.65, color:'#059669' },
-              { name:'Planta Sur (Concep)',    lat:-36.82, lng:-73.05, color:'#2563eb' },
-              { name:'C. Logístico (Valpo)',   lat:-33.04, lng:-71.62, color:'#ea580c' },
-              { name:'Farex Central (Stgo)',   lat:-33.45, lng:-70.67, color:'#9333ea' }
-            ].forEach(s => {
-              L.circleMarker([s.lat, s.lng], { radius:10, fillColor:s.color, color:'white', weight:2, fillOpacity:0.85 }).bindPopup('<b>'+s.name+'</b>').addTo(map);
-            });
-            // Forzar invalidateSize en próximo tick (canvas display:none → visible)
+
+            const drawFallback = () => {
+              [
+                { name:'Stgo',   lat:-33.42, lng:-70.65, color:'#059669' },
+                { name:'Concep', lat:-36.82, lng:-73.05, color:'#2563eb' },
+                { name:'Valpo',  lat:-33.04, lng:-71.62, color:'#ea580c' }
+              ].forEach(s => L.circleMarker([s.lat,s.lng],{ radius:10, fillColor:s.color, color:'white', weight:2, fillOpacity:0.85 }).bindPopup('<b>'+s.name+' (mock)</b>').addTo(map));
+            };
+
+            (async () => {
+              try {
+                if (typeof sb === 'undefined' || !sb?.rpc) { drawFallback(); return; }
+                // Rango amplio para tener data; default backend usa 90d que puede estar vacío
+                const { data, error } = await sb.rpc('f_pesajes_por_sucursal', { p_desde: '2025-01-01', p_hasta: new Date().toISOString().slice(0,10) });
+                if (error || !data || data.length === 0) { console.warn('[v4-map] sin datos reales:', error); drawFallback(); return; }
+                const maxTon = Math.max(...data.map(r => Number(r.toneladas)||0), 1);
+                let placed = 0;
+                data.forEach(r => {
+                  const key = (r.sucursal || '').toString().toLowerCase().trim();
+                  const meta = SUC_COORDS[key];
+                  if (!meta) return; // sucursales sin coords (ej. "RECICLEAN" genérica) → omitir
+                  const ton = Number(r.toneladas) || 0;
+                  const tickets = Number(r.tickets_mes) || 0;
+                  const monto = Number(r.monto) || 0;
+                  const montoTxt = monto >= 1e6 ? `$${(monto/1e6).toFixed(1)}M` : `$${(monto/1e3).toFixed(0)}K`;
+                  // Radio logarítmico para evitar que Talca opaque al resto
+                  const radius = Math.max(6, Math.min(28, 8 + 18 * Math.log10(1 + ton) / Math.log10(1 + maxTon)));
+                  L.circleMarker([meta.lat, meta.lng], {
+                    radius, fillColor: meta.color, color: 'white', weight: 2, fillOpacity: 0.85
+                  }).bindPopup(`<b>${meta.label}</b><br>${ton.toFixed(1)} ton · ${tickets} tickets<br>${montoTxt}`).addTo(map);
+                  placed++;
+                });
+                if (placed === 0) drawFallback();
+              } catch(e) { console.warn('[v4-map] fallo carga real:', e); drawFallback(); }
+            })();
+
             setTimeout(() => map.invalidateSize(), 200);
           }
         } else {
@@ -5950,6 +6434,288 @@ window.initV4Hero = function initV4Hero() {
 
       // F5 · Top 5 inicial = clientes
       try { window.v4SwitchTop && window.v4SwitchTop('clientes'); } catch(err) { console.warn('[v4-hero] top5 init fallo:', err); }
+
+      // F14 · KPIs sparkline con datos reales (pesajes 7d, ventas 30d, frescura, alertas)
+      try {
+        (async () => {
+          if (typeof sb === 'undefined' || !sb?.rpc) return;
+          const setBadge = (el, txt, cls) => { if (el) { el.textContent = txt; el.className = 'badge ' + cls; } };
+          const today = new Date(); const d7 = new Date(today); d7.setDate(today.getDate()-7);
+          const d30 = new Date(today); d30.setDate(today.getDate()-30);
+          const d60 = new Date(today); d60.setDate(today.getDate()-60);
+          const fmtDate = (d) => d.toISOString().slice(0,10);
+          try {
+            // KPI 1+2 desde v_panel_flujo_sucursal_dia (public, accesible PostgREST)
+            // KPI 3+4 desde f_panel_health()
+            const d14 = new Date(d7.getTime() - 7*86400000);
+            const [flujo60, health] = await Promise.all([
+              sb.from('v_panel_flujo_sucursal_dia')
+                .select('fecha, tickets_total, ingreso_venta_clp')
+                .gte('fecha', fmtDate(d60)),
+              sb.rpc('f_panel_health')
+            ]);
+            const filasFlujo = flujo60.data || [];
+            // KPI 1: Pesajes (tickets) 7d vs 8-14d
+            let p7 = 0, p14 = 0;
+            filasFlujo.forEach(r => {
+              const f = r.fecha;
+              if (!f) return;
+              if (f >= fmtDate(d7)) p7 += Number(r.tickets_total) || 0;
+              else if (f >= fmtDate(d14)) p14 += Number(r.tickets_total) || 0;
+            });
+            const elP = document.getElementById('v4-kpi-pesajes-valor');
+            if (elP) elP.textContent = p7;
+            const deltaP = p14 > 0 ? Math.round((p7 - p14) / p14 * 100) : null;
+            setBadge(document.getElementById('v4-kpi-pesajes-badge'),
+              deltaP === null ? '—' : (deltaP >= 0 ? `▲ ${deltaP}%` : `▼ ${Math.abs(deltaP)}%`),
+              deltaP === null ? 'bg-slate-100 text-slate-500' : (deltaP >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'));
+            // KPI 2: Ventas 30d vs 30-60d (de la misma vista)
+            let sum30 = 0, sum60 = 0;
+            filasFlujo.forEach(r => {
+              const f = r.fecha;
+              if (!f) return;
+              const v = Number(r.ingreso_venta_clp) || 0;
+              if (f >= fmtDate(d30)) sum30 += v;
+              else sum60 += v;
+            });
+            const elV = document.getElementById('v4-kpi-ventas-valor');
+            const ventasTxt = sum30 >= 1e6 ? `$${(sum30/1e6).toFixed(1)}M` : (sum30 >= 1e3 ? `$${(sum30/1e3).toFixed(0)}K` : `$${sum30}`);
+            if (elV) elV.textContent = ventasTxt;
+            const deltaV = sum60 > 0 ? Math.round((sum30 - sum60) / sum60 * 100) : null;
+            setBadge(document.getElementById('v4-kpi-ventas-badge'),
+              deltaV === null ? '—' : (deltaV >= 0 ? `▲ ${deltaV}%` : `▼ ${Math.abs(deltaV)}%`),
+              deltaV === null ? 'bg-slate-100 text-slate-500' : (deltaV >= 0 ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'));
+            // KPI 3: Frescura datos
+            const dias = health?.data?.data_freshness?.pesajes_prod_dias_atras ?? null;
+            const elF = document.getElementById('v4-kpi-frescura-valor');
+            if (elF) elF.textContent = dias === null ? '—' : (dias === 0 ? 'Hoy' : `${dias}d`);
+            setBadge(document.getElementById('v4-kpi-frescura-badge'),
+              dias === null ? '—' : (dias <= 1 ? 'al día' : (dias <= 7 ? 'reciente' : 'desfasado')),
+              dias === null ? 'bg-slate-100 text-slate-500' : (dias <= 1 ? 'bg-emerald-100 text-emerald-700' : (dias <= 7 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700')));
+            // KPI 4: Alertas activas (sumadas)
+            const a = health?.data?.alertas || {};
+            const alertasTotal = (a.precio_tarifa_rojo || 0) + (a.contraparte || 0) + (a.cliente_sin_registro || 0);
+            const elA = document.getElementById('v4-kpi-alertas-valor');
+            if (elA) elA.textContent = alertasTotal;
+            setBadge(document.getElementById('v4-kpi-alertas-badge'),
+              alertasTotal === 0 ? 'sin alertas' : `${a.precio_tarifa_rojo || 0} críticas`,
+              alertasTotal === 0 ? 'bg-emerald-100 text-emerald-700' : (alertasTotal > 30 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'));
+          } catch(e) { console.warn('[v4-kpis] fallo:', e); }
+        })();
+      } catch(err) { console.warn('[v4-kpis] init fallo:', err); }
+
+      // F15 · Tabla desglose sucursales datos reales (RPC f_pesajes_por_sucursal)
+      try {
+        const tbody = document.getElementById('v4-sucursales-tbody');
+        if (tbody) {
+          (async () => {
+            try {
+              if (typeof sb === 'undefined' || !sb?.rpc) return;
+              const { data, error } = await sb.rpc('f_pesajes_por_sucursal', { p_desde: '2025-01-01', p_hasta: new Date().toISOString().slice(0,10) });
+              if (error || !data || data.length === 0) { tbody.innerHTML = '<tr><td class="py-2 text-slate-400 text-center" colspan="6">Sin datos</td></tr>'; return; }
+              const fmtM = (n) => { n = Number(n)||0; return n >= 1e6 ? `$${(n/1e6).toFixed(1)}M` : (n >= 1e3 ? `$${(n/1e3).toFixed(0)}K` : `$${n}`); };
+              const safe = (s) => (s||'—').toString().replace(/</g,'&lt;');
+              tbody.innerHTML = data.map(r => {
+                const ton = Number(r.toneladas) || 0;
+                const tickets = Number(r.tickets_mes) || 0;
+                let estado, badge;
+                if (tickets >= 50 && ton >= 50) { estado = 'OK'; badge = 'bg-emerald-100 text-emerald-700'; }
+                else if (tickets >= 5) { estado = 'Revisar'; badge = 'bg-amber-100 text-amber-700'; }
+                else { estado = 'Bajo'; badge = 'bg-red-100 text-red-700'; }
+                return `<tr class="border-b border-slate-50"><td class="py-2 font-medium text-slate-700">${safe(r.sucursal)}</td><td class="text-right">${tickets}</td><td class="text-right">${ton.toFixed(1)}t</td><td class="text-right">${fmtM(r.monto)}</td><td class="text-right">${Number(r.proveedores_unicos)||0}</td><td class="text-right"><span class="badge ${badge}">${estado}</span></td></tr>`;
+              }).join('');
+            } catch(e) { console.warn('[v4-sucursales] fallo:', e); }
+          })();
+        }
+      } catch(err) { console.warn('[v4-sucursales] init fallo:', err); }
+
+      // F16 · Riesgos + Oportunidades datos reales
+      try {
+        (async () => {
+          if (typeof sb === 'undefined' || !sb?.rpc) return;
+          try {
+            const [healthRes, fuzzyRes, anomRes] = await Promise.all([
+              sb.rpc('f_panel_health'),
+              sb.from('v_crm_match_sugerido').select('*', { count:'exact', head:true }),
+              sb.from('v_panel_pesajes_anomalias').select('id', { count:'exact', head:true })
+            ]);
+            const health = healthRes?.data || {};
+            const riesgos = document.getElementById('v4-riesgos-lista');
+            const oport   = document.getElementById('v4-oportunidades-lista');
+            const dRiesgos = document.getElementById('v4-riesgos-diego');
+            const dOport   = document.getElementById('v4-oportunidades-diego');
+
+            const alertasR = health?.alertas?.precio_tarifa_rojo ?? 0;
+            const alertasC = health?.alertas?.contraparte ?? 0;
+            const alertasS = health?.alertas?.cliente_sin_registro ?? 0;
+            const colaPend = health?.cola_construccion?.pendiente ?? 0;
+            const pesajesD = health?.data_freshness?.pesajes_prod_dias_atras ?? 0;
+            const anomTot  = anomRes?.count ?? 0;
+
+            if (riesgos) {
+              riesgos.innerHTML = `
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-red-500 rounded-full"></span> ${alertasR} alertas críticas de precio sin revisar</li>
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-orange-500 rounded-full"></span> ${alertasC} alertas de contraparte (cliente sin rut, etc.)</li>
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-yellow-500 rounded-full"></span> ${anomTot} anomalías de pesaje detectadas (kg=0, precio negativo, sin sucursal)</li>
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-amber-500 rounded-full"></span> Última carga pesajes hace ${pesajesD} días</li>
+              `;
+            }
+            if (dRiesgos) {
+              const accion = alertasR > 30 ? 'Revisar tab Precios urgente.' : (anomTot > 100 ? 'Auditar v_panel_pesajes_anomalias.' : 'Sin acción crítica hoy.');
+              dRiesgos.innerHTML = `<span class="font-bold">🤖 Diego IA:</span> ${accion}`;
+            }
+
+            const fuzzyTot = fuzzyRes?.count ?? 0;
+            const e360Tot  = health?.e360?.total_links ?? 0;
+            const crmOpor  = health?.crm?.oportunidades_total ?? 0;
+
+            if (oport) {
+              oport.innerHTML = `
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> ${fuzzyTot} sugerencias fuzzy CRM Impulsa↔RDO listas para reconciliar</li>
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> ${crmOpor.toLocaleString('es-CL')} oportunidades en CRM (cartera activa)</li>
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> ${e360Tot} links E360 ecosistema↔entidad operativa</li>
+                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> ${colaPend} tareas operativas listas para ejecutar</li>
+              `;
+            }
+            if (dOport) {
+              const accion = fuzzyTot > 100 ? 'Andrea revisa 23 alta-confianza (30 min cierra duplicados).' : 'Pipeline operativo balanceado.';
+              dOport.innerHTML = `<span class="font-bold">🤖 Diego IA:</span> ${accion}`;
+            }
+          } catch(e) { console.warn('[v4-riesgos-oport] fallo:', e); }
+        })();
+      } catch(err) { console.warn('[v4-riesgos-oport] init fallo:', err); }
+
+      // F17 · Cards finanzas (mix real + tesorería disclaimer)
+      try {
+        (async () => {
+          if (typeof sb === 'undefined' || !sb?.rpc) return;
+          try {
+            const { data: health } = await sb.rpc('f_panel_health');
+            const colaPend = health?.cola_construccion?.pendiente ?? 0;
+            const colaBuilt = health?.cola_construccion?.built ?? 0;
+            const alertasR = health?.alertas?.precio_tarifa_rojo ?? 0;
+            const alertasC = health?.alertas?.contraparte ?? 0;
+            const pcsTotal = (health?.pcs ?? []).length;
+            const pcsActivas = (health?.pcs ?? []).filter(p => p.health !== 'caida').length;
+
+            const setIf = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = txt; };
+            setIf('v4-fin-cola-valor', colaPend + colaBuilt);
+            setIf('v4-fin-cola-sub', `${colaPend} pend · ${colaBuilt} listas auditar`);
+            setIf('v4-fin-alertas-valor', alertasR + alertasC);
+            setIf('v4-fin-alertas-sub', `${alertasR} precio rojo · ${alertasC} contraparte`);
+            setIf('v4-fin-pcs-valor', `${pcsActivas}/${pcsTotal}`);
+            setIf('v4-fin-pcs-sub', pcsActivas === pcsTotal ? 'todas reportando' : `${pcsTotal - pcsActivas} caídas`);
+          } catch(e) { console.warn('[v4-finanzas-mixto] fallo:', e); }
+        })();
+      } catch(err) { console.warn('[v4-finanzas-mixto] init fallo:', err); }
+
+      // F12 · Feed actividad reciente datos reales (RPC f_panel_actividad_reciente)
+      try {
+        const feedEl = document.getElementById('v4-actividad-feed');
+        if (feedEl) {
+          (async () => {
+            try {
+              if (typeof sb === 'undefined' || !sb?.rpc) { feedEl.innerHTML = '<div class="text-xs text-slate-400 text-center py-6">sb no disponible</div>'; return; }
+              // Pedimos 50 y filtramos client-side cierres con monto=0 (borradores automáticos)
+              const { data, error } = await sb.rpc('f_panel_actividad_reciente', { p_limit: 50 });
+              if (error || !data) { feedEl.innerHTML = '<div class="text-xs text-amber-600 text-center py-6">Sin datos disponibles</div>'; return; }
+              const filtrados = data.filter(r => r.tipo === 'pesaje' || (r.tipo === 'cierre' && Number(r.monto) > 0)).slice(0, 12);
+              if (filtrados.length === 0) {
+                feedEl.innerHTML = '<div class="text-xs text-slate-400 text-center py-6">Sin transacciones con monto recientes</div>';
+                return;
+              }
+              const fmtMonto = (m) => {
+                const n = Number(m) || 0;
+                if (n === 0) return '—';
+                if (Math.abs(n) >= 1e6) return `$${(n/1e6).toFixed(2)}M`;
+                if (Math.abs(n) >= 1e3) return `$${(n/1e3).toFixed(0)}K`;
+                return `$${n}`;
+              };
+              const fmtFecha = (f) => {
+                if (!f) return '—';
+                const d = new Date(f);
+                const dias = ['dom','lun','mar','mié','jue','vie','sáb'];
+                return `${dias[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+              };
+              const iconPorTipo = (descripcion, tipo) => {
+                if (tipo === 'cierre') return '📋';
+                if (/VENTA/i.test(descripcion)) return '💰';
+                if (/COMPRA/i.test(descripcion)) return '🛒';
+                if (/SERVICIO/i.test(descripcion)) return '🚚';
+                if (/DONACI/i.test(descripcion)) return '🎁';
+                return '📦';
+              };
+              feedEl.innerHTML = filtrados.map(r => {
+                const icon = iconPorTipo(r.descripcion || '', r.tipo);
+                const desc = (r.descripcion || '').toString().replace(/</g, '&lt;');
+                const sucursal = r.sucursal ? `<span class="text-slate-400">· ${r.sucursal.replace(/</g,'&lt;')}</span>` : '';
+                return `<div class="flex items-start gap-2 p-2 rounded-lg hover:bg-slate-50 text-xs border-b border-slate-50 last:border-b-0">
+                  <span class="text-base flex-shrink-0">${icon}</span>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-slate-700 truncate">${desc}</div>
+                    <div class="text-slate-400 text-[10px]">${fmtFecha(r.fecha)} ${sucursal}</div>
+                  </div>
+                  <span class="text-emerald-700 font-semibold flex-shrink-0">${fmtMonto(r.monto)}</span>
+                </div>`;
+              }).join('');
+            } catch(e) {
+              console.warn('[v4-actividad] fallo:', e);
+              feedEl.innerHTML = '<div class="text-xs text-red-500 text-center py-6">Error cargando feed</div>';
+            }
+          })();
+        }
+      } catch(err) { console.warn('[v4-actividad] init fallo:', err); }
+    }
+
+    // F7 · Datos reales en card "atención hoy" via f_panel_health + f_panel_cartera_cobertura
+    //      Backend handoff PC2 21-may (commit db686c0)
+    if (!window._v4AtencionLoaded) {
+      window._v4AtencionLoaded = true;
+      (async () => {
+        try {
+          if (typeof sb === 'undefined' || !sb?.rpc) return;
+          // 1 llamada salud general + 1 llamada cobertura cartera (necesaria para sin_categoria)
+          const [healthRes, carteraRes] = await Promise.all([
+            sb.rpc('f_panel_health'),
+            sb.rpc('f_panel_cartera_cobertura')
+          ]);
+          const health = healthRes?.data || {};
+          const cartera = carteraRes?.data || {};
+
+          const alertasRojo    = health?.alertas?.precio_tarifa_rojo ?? 0;
+          const alertasContrap = health?.alertas?.contraparte ?? 0;
+          const alertasTotal   = alertasRojo + alertasContrap + (health?.alertas?.cliente_sin_registro ?? 0);
+          const carteraSin     = cartera?.sin_categoria ?? 0;
+          const carteraTotal   = cartera?.total_clientes_activos ?? 0;
+          const pesajesDias    = health?.data_freshness?.pesajes_prod_dias_atras ?? null;
+          const colaPend       = health?.cola_construccion?.pendiente ?? 0;
+          const pcsCaida       = (health?.pcs ?? []).filter(p => p.health === 'caida').length;
+
+          const pendVisibles = (alertasRojo > 0 ? 1 : 0) + (carteraSin > 0 ? 1 : 0) + ((colaPend > 0 || pcsCaida > 0) ? 1 : 0);
+          const sub = document.getElementById('v4-atencion-subtitle');
+          if (sub) sub.textContent = pendVisibles === 0 ? 'Todo al día — nada urgente' : `${pendVisibles} cosa${pendVisibles===1?'':'s'} pendiente${pendVisibles===1?'':'s'} · datos en vivo`;
+          const badge = document.getElementById('v4-atencion-badge');
+          if (badge) {
+            badge.textContent = pendVisibles === 0 ? 'sin pendientes' : `${pendVisibles} pendiente${pendVisibles===1?'':'s'}`;
+            badge.className = 'badge ' + (pendVisibles === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700');
+          }
+
+          const aT = document.getElementById('v4-atencion-alertas-titulo');
+          const aS = document.getElementById('v4-atencion-alertas-sub');
+          if (aT) aT.textContent = alertasRojo === 0 ? 'Sin alertas críticas de precio' : `${alertasRojo} alerta${alertasRojo===1?'':'s'} crítica${alertasRojo===1?'':'s'} de precio sin revisar`;
+          if (aS) aS.textContent = `${alertasTotal} alertas totales · ${alertasContrap} contraparte`;
+
+          const cT = document.getElementById('v4-atencion-cartera-titulo');
+          const cS = document.getElementById('v4-atencion-cartera-sub');
+          if (cT) cT.textContent = carteraSin === 0 ? 'Cartera completamente categorizada' : `${carteraSin} cliente${carteraSin===1?'':'s'} activo${carteraSin===1?'':'s'} sin categoría`;
+          if (cS) cS.textContent = carteraTotal > 0 ? `${carteraSin}/${carteraTotal} sin clasificar — abrí tab Cartera` : 'Asignar categoría desde tab Cartera';
+
+          const ciT = document.getElementById('v4-atencion-cierres-titulo');
+          const ciS = document.getElementById('v4-atencion-cierres-sub');
+          if (ciT) ciT.textContent = pesajesDias !== null && pesajesDias > 2 ? `Pesajes con ${pesajesDias} días de retraso` : (colaPend > 0 ? `${colaPend} tareas pendientes en cola operativa` : 'Operación al día');
+          if (ciS) ciS.textContent = pcsCaida > 0 ? `${pcsCaida}/${(health?.pcs ?? []).length} PCs operativas sin reporte reciente` : 'Todos los PCs reportando OK';
+        } catch(err) { console.warn('[v4-atencion] fallo:', err); }
+      })();
     }
   } catch(e) { console.warn('[v4-hero] init fallo:', e); }
 };
@@ -6024,11 +6790,37 @@ window._v4TopData = {
     { name:'Pedro Silva',    value:'18 junio', icon:'🍰', bar:45 }
   ]
 };
-window.v4SwitchTop = function v4SwitchTop(category) {
-  const data = window._v4TopData[category] || window._v4TopData.clientes;
-  const cont = document.getElementById('v4-topContent');
-  if (!cont) return;
-  cont.innerHTML = data.map((item, i) => `
+// F9 · v4SwitchTop async: usa f_panel_top_n (RPC Pablo handoff db686c0) para
+// {clientes, proveedores, sucursales, materiales}; mock fallback para el resto.
+window._v4TopCache = window._v4TopCache || {};
+const _v4TopIcons = { clientes:'🥤', proveedores:'🛢️', sucursales:'🏢', materiales:'📦' };
+
+async function _v4FetchTopReal(category) {
+  if (typeof sb === 'undefined' || !sb?.rpc) return null;
+  if (window._v4TopCache[category]) return window._v4TopCache[category];
+  try {
+    const { data, error } = await sb.rpc('f_panel_top_n', { p_kind: category, p_limit: 5 });
+    if (error || !data || !Array.isArray(data) || data.length === 0) return null;
+    const maxMonto = Math.max(...data.map(r => Number(r.monto) || 0), 1);
+    const mapped = data.map((r, i) => {
+      const monto = Number(r.monto) || 0;
+      const ton = Number(r.toneladas) || 0;
+      const montoTxt = monto >= 1e6 ? `$${(monto/1e6).toFixed(1)}M` : (monto >= 1e3 ? `$${(monto/1e3).toFixed(0)}K` : `$${monto}`);
+      const tonTxt = ton > 0 ? ` · ${ton.toFixed(1)}t` : '';
+      return {
+        name: r.nombre || r.codigo || '—',
+        value: category === 'materiales' && ton > 0 ? `${ton.toFixed(1)}t${monto > 0 ? ' · ' + montoTxt : ''}` : montoTxt + (category === 'sucursales' && ton > 0 ? ' · ' + ton.toFixed(0) + 't' : ''),
+        icon: _v4TopIcons[category] || '⭐',
+        bar: Math.round(100 * (Number(r.monto)||0) / maxMonto)
+      };
+    });
+    window._v4TopCache[category] = mapped;
+    return mapped;
+  } catch(err) { console.warn('[v4-top5] f_panel_top_n fallo:', err); return null; }
+}
+
+function _v4RenderTop(data, container) {
+  container.innerHTML = data.map((item, i) => `
     <div class="bg-slate-50 rounded-xl p-3 flex flex-col items-center text-center gap-2">
       <span class="text-2xl" aria-hidden="true">${item.icon}</span>
       <div class="font-bold text-slate-800 text-sm">${(item.name||'').replace(/</g,'&lt;')}</div>
@@ -6037,7 +6829,12 @@ window.v4SwitchTop = function v4SwitchTop(category) {
       <span class="text-xs text-slate-400">#${i+1}</span>
     </div>
   `).join('');
-  // Estilo activo
+}
+
+window.v4SwitchTop = function v4SwitchTop(category) {
+  const cont = document.getElementById('v4-topContent');
+  if (!cont) return;
+  // Estilo activo (síncrono)
   document.querySelectorAll('.top-tab').forEach(b => {
     if (b.getAttribute('data-v4-top') === category) {
       b.classList.add('active','bg-emerald-700','text-white');
@@ -6047,6 +6844,24 @@ window.v4SwitchTop = function v4SwitchTop(category) {
       b.classList.add('bg-slate-200','text-slate-600');
     }
   });
+  // Categorías cubiertas por f_panel_top_n (RPC backend Pablo)
+  const REAL_KINDS = new Set(['clientes', 'proveedores', 'sucursales', 'materiales']);
+  if (REAL_KINDS.has(category)) {
+    cont.innerHTML = '<div class="col-span-full text-center text-xs text-slate-400 py-4">Cargando datos reales...</div>';
+    _v4FetchTopReal(category).then(realData => {
+      if (realData && realData.length > 0) {
+        _v4RenderTop(realData, cont);
+      } else {
+        // Fallback al mock si la RPC no respondió
+        const mock = window._v4TopData[category] || window._v4TopData.clientes;
+        _v4RenderTop(mock, cont);
+      }
+    });
+  } else {
+    // Categorías sin endpoint backend → mock estable
+    const data = window._v4TopData[category] || window._v4TopData.clientes;
+    _v4RenderTop(data, cont);
+  }
 };
 document.addEventListener('click', (e) => {
   const t = e.target.closest('[data-v4-top]');
@@ -6549,6 +7364,101 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ok) { input.value = ''; cargar(); }
     else { alert('No pude enviar: ' + err + (String(err).includes('401') || String(err).toLowerCase().includes('jwt') ? '\n(¿iniciaste sesión en el panel?)' : '')); }
   });
+})();
+</script>
+
+<!-- v4-design FIX-5 · Topbar utilities: UF + bell count + buscador global -->
+<script>
+(function v4TopbarUtilities() {
+  'use strict';
+  // UF — refresca via f_uf_hoy o sb edge function (lazy 1 vez por carga)
+  async function loadUF() {
+    if (typeof sb === 'undefined') return;
+    try {
+      const { data, error } = await sb.rpc('f_uf_hoy');
+      if (error || !data || !data[0]) return;
+      const valor = data[0].valor_uf || data[0].valor || data[0].uf;
+      if (!valor) return;
+      const fmt = '$' + Number(valor).toLocaleString('es-CL', { maximumFractionDigits: 0 });
+      ['v4-topbarUfValor', 'v4-ufValor'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = fmt;
+      });
+    } catch (e) { console.warn('[v4-topbar-uf] fallo:', e); }
+  }
+
+  // Bell · cuenta items pendientes en panel.diego_bandeja
+  async function loadBellCount() {
+    if (typeof sb === 'undefined' || !sb?.schema) return;
+    try {
+      const { count, error } = await sb.schema('panel').from('diego_bandeja')
+        .select('*', { count: 'exact', head: true })
+        .in('estado', ['nuevo', 'pendiente', 'sin_leer']);
+      if (error) return;
+      const dot = document.getElementById('v4-bellDot');
+      const bell = document.getElementById('v4-bellNotificaciones');
+      if (dot) dot.classList.toggle('hidden', !(count && count > 0));
+      if (bell && count > 0) bell.setAttribute('title', `${count} notificaciones pendientes`);
+    } catch (e) { console.warn('[v4-topbar-bell] fallo:', e); }
+  }
+
+  // Bell click → abrir FAB Diego existente (reusa el chat ya construido)
+  const bell = document.getElementById('v4-bellNotificaciones');
+  if (bell) bell.addEventListener('click', () => {
+    const fab = document.querySelector('.diego-fab');
+    if (fab) fab.click();
+  });
+
+  // Buscador global — debounced sb.rpc('f_panel_buscar_global', { p_query })
+  const input = document.getElementById('v4-topbarSearch');
+  const results = document.getElementById('v4-topbarSearchResults');
+  if (input && results) {
+    let timer = null;
+    input.addEventListener('input', (e) => {
+      clearTimeout(timer);
+      const q = e.target.value.trim();
+      if (q.length < 2) { results.classList.add('hidden'); results.innerHTML = ''; return; }
+      timer = setTimeout(async () => {
+        if (typeof sb === 'undefined') return;
+        try {
+          const { data, error } = await sb.rpc('f_panel_buscar_global', { p_query: q });
+          if (error || !data || data.length === 0) {
+            results.innerHTML = '<div class="p-3 text-xs text-slate-400 text-center">Sin resultados</div>';
+            results.classList.remove('hidden');
+            return;
+          }
+          const safe = (s) => (s || '').toString().replace(/</g, '&lt;');
+          results.innerHTML = data.slice(0, 10).map(r => `
+            <div class="px-3 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0 text-xs" data-v4-search-result>
+              <div class="font-medium text-slate-700"><span class="badge bg-emerald-100 text-emerald-700 text-[10px] mr-1">${safe(r.tipo || '—')}</span>${safe(r.titulo || r.nombre || r.id)}</div>
+              <div class="text-slate-500 mt-0.5">${safe(r.snippet || r.descripcion || r.detalle || '')}</div>
+            </div>
+          `).join('');
+          results.classList.remove('hidden');
+        } catch (e) {
+          results.innerHTML = '<div class="p-3 text-xs text-amber-600 text-center">Buscador no disponible</div>';
+          results.classList.remove('hidden');
+          console.warn('[v4-topbar-search] fallo:', e);
+        }
+      }, 300);
+    });
+    // Esc cierra resultados
+    input.addEventListener('keydown', (e) => { if (e.key === 'Escape') { results.classList.add('hidden'); input.blur(); } });
+    document.addEventListener('click', (e) => { if (!input.contains(e.target) && !results.contains(e.target)) results.classList.add('hidden'); });
+  }
+
+  // Refresh inicial post-login (espera que sb esté listo y hydrate haya corrido)
+  function tryRefresh() {
+    if (typeof sb === 'undefined') return setTimeout(tryRefresh, 800);
+    loadUF();
+    loadBellCount();
+  }
+  // Esperar 1.5s post-load para que initSupabase + hydrate corran
+  if (document.readyState === 'complete') setTimeout(tryRefresh, 1500);
+  else window.addEventListener('load', () => setTimeout(tryRefresh, 1500));
+
+  // Re-cargar bell cada 60s (es liviano)
+  setInterval(() => { if (typeof sb !== 'undefined') loadBellCount(); }, 60000);
 })();
 </script>
 
