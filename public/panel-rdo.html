@@ -425,6 +425,7 @@
         <button data-tab="oportunidades" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabOportunidades">🎯 Oportunidades</button>
         <button data-tab="entregables"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabEntregables">📤 Entregables</button>
         <button data-tab="bandeja_dieg"   class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabBandejaDiego">📥 Bandeja Diego</button>
+        <button data-tab="ops_diarias"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabOpsDiarias">🌅 Operaciones Día</button>
         <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabAdmin">⚙️ Admin</button>
       </div>
       <span class="chevron-more" aria-hidden="true">›</span>
@@ -1592,6 +1593,64 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA OPERACIONES DÍA (D-OP-16) — consolidado transversal
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabOpsDiarias" class="tab-content hidden">
+      <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🌅 Operaciones del día</h2>
+        <div class="flex items-center gap-2">
+          <label for="opsFecha" class="text-xs text-stone-500">Fecha:</label>
+          <input id="opsFecha" type="date" onchange="loadOpsDiarias()"
+                 aria-label="Seleccionar fecha"
+                 class="border border-stone-300 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none">
+          <button onclick="opsFechaAyer()" class="text-xs text-green-700 hover:underline">Ayer</button>
+          <button onclick="opsFechaHoy()" class="text-xs text-green-700 hover:underline">Hoy</button>
+        </div>
+      </div>
+
+      <!-- KPI bar -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Tickets</div>
+          <div id="opsKpiTickets" class="text-2xl font-bold text-stone-800">—</div>
+          <div id="opsKpiTicketsDelta" class="text-xs text-stone-500">vs ayer: —</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Toneladas</div>
+          <div id="opsKpiTon" class="text-2xl font-bold text-green-700">—</div>
+          <div id="opsKpiTonDelta" class="text-xs text-stone-500">vs ayer: —</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Monto pesajes</div>
+          <div id="opsKpiMonto" class="text-2xl font-bold text-blue-700">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Alertas críticas</div>
+          <div id="opsKpiAlertas" class="text-2xl font-bold text-red-700">—</div>
+        </div>
+      </div>
+
+      <!-- Bloque pesajes -->
+      <div class="bg-white p-4 rounded shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-2">⚖️ Pesajes por sucursal</h3>
+        <div id="opsPesajesPorSuc" class="text-sm text-stone-600">—</div>
+      </div>
+
+      <!-- Bloque cierres -->
+      <div class="bg-white p-4 rounded shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-2">📅 Cierres del día</h3>
+        <div id="opsCierres" class="text-sm text-stone-600">—</div>
+      </div>
+
+      <!-- Bloque alertas -->
+      <div class="bg-white p-4 rounded shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-2">🚨 Alertas del día</h3>
+        <div id="opsAlertas" class="text-sm text-stone-600">—</div>
+        <button onclick="document.querySelector('button[data-tab=portada]').click()" class="text-xs text-green-700 hover:underline mt-2">Ver detalle en Portada →</button>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
          PESTAÑA COTIZADOR
     ═══════════════════════════════════════════════════════════ -->
     <section id="tabCotizador" class="tab-content hidden">
@@ -1807,7 +1866,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'admin'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'admin'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -2381,6 +2440,7 @@ function setupTabs() {
       if (tabId === 'oportunidades') initOportunidadesKanban();
       if (tabId === 'entregables') initEntregables();
       if (tabId === 'bandeja_dieg') initBandejaDiego();
+      if (tabId === 'ops_diarias')   initOpsDiarias();
       if (tabId === 'dieguito')  initDieguito();
     });
   });
@@ -5629,6 +5689,98 @@ window.bdReasignar = async function() {
   const nuevo = document.getElementById('bdDw_resp').value.trim() || null;
   await _bdUpdate({ responsable: nuevo }, nuevo ? `Asignado a ${nuevo}.` : 'Responsable removido.');
 };
+
+// ============================================================
+// TAB OPERACIONES DÍA (D-OP-16) — consolidado transversal
+// ============================================================
+function initOpsDiarias() {
+  const inp = document.getElementById('opsFecha');
+  if (!inp.value) {
+    const d = new Date(); d.setDate(d.getDate() - 1); // default: ayer
+    inp.value = d.toISOString().slice(0, 10);
+  }
+  loadOpsDiarias();
+}
+
+window.opsFechaAyer = function() {
+  const d = new Date(); d.setDate(d.getDate() - 1);
+  document.getElementById('opsFecha').value = d.toISOString().slice(0, 10);
+  loadOpsDiarias();
+};
+window.opsFechaHoy = function() {
+  document.getElementById('opsFecha').value = new Date().toISOString().slice(0, 10);
+  loadOpsDiarias();
+};
+
+async function loadOpsDiarias() {
+  const fecha = document.getElementById('opsFecha').value;
+  if (!fecha) return;
+  ['opsKpiTickets','opsKpiTon','opsKpiMonto','opsKpiAlertas','opsKpiTicketsDelta','opsKpiTonDelta'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '…'; });
+  document.getElementById('opsPesajesPorSuc').textContent = 'Cargando…';
+  document.getElementById('opsCierres').textContent = 'Cargando…';
+  document.getElementById('opsAlertas').textContent = 'Cargando…';
+
+  const { data, error } = await sb.rpc('f_operaciones_dia', { p_fecha: fecha });
+  if (error) {
+    document.getElementById('opsPesajesPorSuc').innerHTML = `<span class="text-red-600">Error: ${escapeHtml(error.message)}</span>`;
+    return;
+  }
+  const p = data?.pesajes || {};
+  const cmp = data?.comparativa || {};
+  const al = data?.alertas || {};
+  const ci = data?.cierres || [];
+
+  const fmtCLP = n => '$' + Math.round(Number(n || 0)).toLocaleString('es-CL');
+  const delta = (a, b) => {
+    const dx = (Number(a || 0) - Number(b || 0));
+    if (Number(b || 0) === 0) return dx > 0 ? '↑ nuevo' : 'sin datos';
+    const pct = (dx / Number(b)) * 100;
+    return (dx >= 0 ? '↑ ' : '↓ ') + Math.abs(pct).toFixed(0) + '%';
+  };
+
+  document.getElementById('opsKpiTickets').textContent = (p.tickets_total || 0).toLocaleString('es-CL');
+  document.getElementById('opsKpiTicketsDelta').textContent = 'vs ayer: ' + delta(p.tickets_total, cmp.tickets_dia_anterior);
+  document.getElementById('opsKpiTon').textContent = (Number(p.toneladas || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 })) + ' t';
+  document.getElementById('opsKpiTonDelta').textContent = 'vs ayer: ' + delta(p.toneladas, cmp.toneladas_dia_anterior);
+  document.getElementById('opsKpiMonto').textContent = fmtCLP(p.monto_total);
+  document.getElementById('opsKpiAlertas').textContent = (Number(al.precio_tarifa_rojo || 0) + Number(al.contraparte || 0)).toLocaleString('es-CL');
+
+  // Pesajes por sucursal
+  const sucs = Array.isArray(p.por_sucursal) ? p.por_sucursal : [];
+  if (sucs.length === 0) {
+    document.getElementById('opsPesajesPorSuc').innerHTML = '<span class="text-stone-400 italic">Sin pesajes ese día.</span>';
+  } else {
+    document.getElementById('opsPesajesPorSuc').innerHTML = `
+      <table class="w-full text-sm"><thead class="text-xs text-stone-500"><tr>
+        <th class="text-left py-1">Sucursal</th><th class="text-right py-1">Tickets</th><th class="text-right py-1">Toneladas</th>
+      </tr></thead><tbody>${sucs.map(s => `
+        <tr class="border-t border-stone-100"><td class="py-1">${escapeHtml(s.sucursal)}</td>
+          <td class="text-right py-1">${s.n}</td>
+          <td class="text-right py-1">${Number(s.t || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 })} t</td></tr>`).join('')}
+      </tbody></table>`;
+  }
+
+  // Cierres
+  if (!ci || ci.length === 0) {
+    document.getElementById('opsCierres').innerHTML = '<span class="text-stone-400 italic">Sin cierres ese día.</span>';
+  } else {
+    document.getElementById('opsCierres').innerHTML = ci.map(c => `
+      <div class="border-l-4 border-blue-400 pl-3 py-1 mb-2">
+        <div class="font-medium text-stone-800">${escapeHtml(c.empresa_id || '')} ${c.sucursal_id ? '· ' + escapeHtml(c.sucursal_id) : ''}</div>
+        <div class="text-xs text-stone-600">
+          Saldo total: ${fmtCLP(c.saldo_total_clp)} ·
+          Flujo neto: <span class="${Number(c.flujo_neto_clp || 0) >= 0 ? 'text-green-700' : 'text-red-700'}">${fmtCLP(c.flujo_neto_clp)}</span> ·
+          Facturado: ${fmtCLP(c.facturado_neto_clp)} ·
+          Estado: ${escapeHtml(c.estado || '—')}
+        </div>
+      </div>`).join('');
+  }
+
+  // Alertas
+  document.getElementById('opsAlertas').innerHTML = `
+    <span class="${Number(al.precio_tarifa_rojo) > 0 ? 'text-red-700 font-semibold' : 'text-stone-600'}">${al.precio_tarifa_rojo || 0} alertas precio_tarifa rojo</span> ·
+    <span class="${Number(al.contraparte) > 0 ? 'text-amber-700' : 'text-stone-600'}">${al.contraparte || 0} contrapartes con discrepancia</span>`;
+}
 
 // ---------- INIT ----------
 initSupabase();
