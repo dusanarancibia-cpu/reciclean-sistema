@@ -423,6 +423,7 @@
         <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
         <button data-tab="oportunidades" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabOportunidades">🎯 Oportunidades</button>
+        <button data-tab="entregables"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabEntregables">📤 Entregables</button>
         <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabAdmin">⚙️ Admin</button>
       </div>
       <span class="chevron-more" aria-hidden="true">›</span>
@@ -1393,6 +1394,76 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA ENTREGABLES (D-OP-14) — Andrea matriz negocio×tipo
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabEntregables" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">📤 Entregables por negocio</h2>
+        <button onclick="loadEntregables()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+
+      <!-- KPI bar -->
+      <div id="entKpiBar" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Total entregables</div>
+          <div id="entKpiTotal" class="text-2xl font-bold text-stone-800">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Listos para enviar</div>
+          <div id="entKpiListo" class="text-2xl font-bold text-green-700">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Enviados</div>
+          <div id="entKpiEnv" class="text-2xl font-bold text-blue-700">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Obsoletos</div>
+          <div id="entKpiObs" class="text-2xl font-bold text-stone-500">—</div>
+        </div>
+      </div>
+
+      <!-- Matriz -->
+      <div id="entMatriz" class="bg-white rounded shadow-sm overflow-x-auto">
+        <div class="text-stone-400 text-center py-6">Cargando…</div>
+      </div>
+
+      <!-- Drawer entregable -->
+      <div id="entDrawer" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+        <div class="bg-white w-full max-w-2xl h-full overflow-y-auto p-5">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h3 id="entDrawerTitulo" class="text-lg font-bold text-stone-800">—</h3>
+              <p id="entDrawerSubtitle" class="text-xs text-stone-500">—</p>
+            </div>
+            <button onclick="entCerrarDrawer()" class="text-stone-500 hover:text-stone-800 text-2xl leading-none" aria-label="Cerrar">×</button>
+          </div>
+
+          <div id="entDrawerTags" class="flex flex-wrap gap-2 mb-4"></div>
+
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button id="entBtnMarcarEnviado" onclick="entMarcarEnviado()"
+                    class="bg-green-700 hover:bg-green-800 text-white text-sm px-3 py-1.5 rounded">
+              Marcar enviado manualmente
+            </button>
+            <button id="entBtnMarcarObsoleto" onclick="entMarcarObsoleto()"
+                    class="bg-stone-300 hover:bg-stone-400 text-stone-800 text-sm px-3 py-1.5 rounded">
+              Marcar obsoleto
+            </button>
+            <button id="entBtnRevivir" onclick="entRevivir()"
+                    class="bg-amber-100 hover:bg-amber-200 text-amber-800 text-sm px-3 py-1.5 rounded hidden">
+              Marcar como listo de nuevo
+            </button>
+          </div>
+          <div id="entDrawerMsg" class="hidden text-xs p-2 rounded mb-3"></div>
+
+          <div id="entDrawerPreview" class="border border-stone-200 rounded p-4 bg-stone-50 text-sm prose prose-sm max-w-none">
+            <div class="text-stone-400 italic">Cargando preview…</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
          PESTAÑA COTIZADOR
     ═══════════════════════════════════════════════════════════ -->
     <section id="tabCotizador" class="tab-content hidden">
@@ -1608,7 +1679,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'admin'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'admin'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -2180,6 +2251,7 @@ function setupTabs() {
       if (tabId === 'reconciliacion') initReconciliacion();
       if (tabId === 'cartera')   initCartera();
       if (tabId === 'oportunidades') initOportunidadesKanban();
+      if (tabId === 'entregables') initEntregables();
       if (tabId === 'dieguito')  initDieguito();
     });
   });
@@ -5094,6 +5166,190 @@ window.ingPesajesSubir = async function() {
     resDiv.textContent = 'Error al leer el archivo: ' + e.message;
     resDiv.classList.remove('hidden');
   }
+};
+
+// ============================================================
+// TAB ENTREGABLES (D-OP-14) — Andrea matriz negocio × tipo
+// ============================================================
+const ENT_TIPOS_ORDEN = [
+  'alcance_metas',
+  'carta',
+  'diagrama_cotizacion',
+  'diagrama_activacion',
+  'pauta_seguimiento',
+  'presentacion_corporativa',
+  'presentacion_servicio',
+];
+const ENT_TIPO_LABEL = {
+  alcance_metas: '🎯 Alcance · metas',
+  carta: '✉️ Carta',
+  diagrama_cotizacion: '📐 Diag. cotización',
+  diagrama_activacion: '🚀 Diag. activación',
+  pauta_seguimiento: '📋 Pauta seguim.',
+  presentacion_corporativa: '🏢 Pres. corp.',
+  presentacion_servicio: '🛠️ Pres. servicio',
+};
+const ENT_ESTADO_PILL = {
+  listo:    'bg-green-100 text-green-800',
+  enviado:  'bg-blue-100 text-blue-800',
+  obsoleto: 'bg-stone-200 text-stone-500',
+  borrador: 'bg-amber-100 text-amber-800',
+};
+let _entDrawerId = null;
+let _entCacheData = null;
+
+async function initEntregables() {
+  await loadEntregables();
+}
+
+async function loadEntregables() {
+  const cont = document.getElementById('entMatriz');
+  cont.innerHTML = '<div class="text-stone-400 text-center py-6">Cargando…</div>';
+
+  const { data, error } = await sb.schema('curated').from('vw_entregables_estado_matriz').select('*');
+  if (error) { cont.innerHTML = `<div class="text-red-600 p-4">Error: ${escapeHtml(error.message)}</div>`; return; }
+  _entCacheData = data || [];
+
+  // KPIs
+  const c = { listo: 0, enviado: 0, obsoleto: 0, borrador: 0 };
+  _entCacheData.forEach(e => { c[e.estado] = (c[e.estado] || 0) + 1; });
+  document.getElementById('entKpiTotal').textContent = _entCacheData.length.toLocaleString('es-CL');
+  document.getElementById('entKpiListo').textContent = (c.listo || 0).toLocaleString('es-CL');
+  document.getElementById('entKpiEnv').textContent   = (c.enviado || 0).toLocaleString('es-CL');
+  document.getElementById('entKpiObs').textContent   = (c.obsoleto || 0).toLocaleString('es-CL');
+
+  // Matriz: filas = tipos en ENT_TIPOS_ORDEN, columnas = negocios distintos
+  const negocios = [...new Set(_entCacheData.map(e => e.negocio_id))].sort();
+  // Buscar mejor entregable por (negocio, tipo): preferir listo > enviado > borrador > obsoleto
+  const prio = { listo: 4, enviado: 3, borrador: 2, obsoleto: 1 };
+  const matriz = {};
+  _entCacheData.forEach(e => {
+    const key = `${e.negocio_id}|${e.tipo_entregable}`;
+    const prev = matriz[key];
+    if (!prev || (prio[e.estado] || 0) > (prio[prev.estado] || 0)) matriz[key] = e;
+  });
+
+  let html = '<table class="w-full text-sm"><thead class="bg-stone-50 text-stone-600"><tr>';
+  html += '<th class="px-3 py-2 text-left sticky left-0 bg-stone-50">Tipo</th>';
+  negocios.forEach(n => {
+    const corto = n.replace(/^NEG-/, '').replace(/-001$/, '');
+    html += `<th class="px-3 py-2 text-center" title="${escapeHtml(n)}">${escapeHtml(corto)}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+  ENT_TIPOS_ORDEN.forEach(t => {
+    html += `<tr class="border-t border-stone-100"><td class="px-3 py-2 font-medium text-stone-700 sticky left-0 bg-white">${escapeHtml(ENT_TIPO_LABEL[t] || t)}</td>`;
+    negocios.forEach(n => {
+      const cell = matriz[`${n}|${t}`];
+      if (!cell) {
+        html += '<td class="px-3 py-2 text-center text-stone-300">—</td>';
+      } else {
+        const pill = ENT_ESTADO_PILL[cell.estado] || 'bg-stone-100 text-stone-600';
+        html += `<td class="px-3 py-2 text-center">
+          <button onclick="entAbrirDrawer(${cell.entregable_id})"
+                  class="inline-flex items-center gap-1 px-2 py-1 rounded hover:opacity-80 ${pill}"
+                  title="Click para ver / enviar">
+            <span class="text-xs">${escapeHtml(cell.estado)}</span>
+          </button>
+        </td>`;
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  cont.innerHTML = html;
+}
+
+window.entAbrirDrawer = async function(entId) {
+  _entDrawerId = entId;
+  document.getElementById('entDrawer').classList.remove('hidden');
+  document.getElementById('entDrawerMsg').classList.add('hidden');
+  document.getElementById('entDrawerTitulo').textContent = 'Cargando…';
+  document.getElementById('entDrawerSubtitle').textContent = '';
+  document.getElementById('entDrawerTags').innerHTML = '';
+  document.getElementById('entDrawerPreview').innerHTML = '<div class="text-stone-400 italic">Cargando preview…</div>';
+
+  const { data: e, error } = await sb.schema('curated').from('entregables_negocio').select('*').eq('entregable_id', entId).maybeSingle();
+  if (error || !e) {
+    document.getElementById('entDrawerTitulo').textContent = 'Error cargando entregable';
+    return;
+  }
+
+  document.getElementById('entDrawerTitulo').textContent = (ENT_TIPO_LABEL[e.tipo_entregable] || e.tipo_entregable) + ' · ' + e.negocio_id;
+  document.getElementById('entDrawerSubtitle').textContent = `Plantilla #${e.plantilla_id} · actualizado ${e.updated_at ? new Date(e.updated_at).toLocaleDateString('es-CL') : '—'}`;
+
+  const tags = [`<span class="text-xs px-2 py-0.5 rounded ${ENT_ESTADO_PILL[e.estado] || 'bg-stone-100 text-stone-600'}">${escapeHtml(e.estado)}</span>`];
+  if (e.fecha_envio) tags.push(`<span class="text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-700">enviado ${new Date(e.fecha_envio).toLocaleDateString('es-CL')}</span>`);
+  if (Array.isArray(e.enviado_a) && e.enviado_a.length > 0) tags.push(`<span class="text-xs px-2 py-0.5 rounded bg-stone-50 text-stone-600">→ ${escapeHtml(e.enviado_a.join(', '))}</span>`);
+  if (e.url_storage_pdf) tags.push(`<a href="${escapeHtml(e.url_storage_pdf)}" target="_blank" class="text-xs px-2 py-0.5 rounded bg-red-50 text-red-700 hover:underline">📄 PDF</a>`);
+  document.getElementById('entDrawerTags').innerHTML = tags.join('');
+
+  // Botones según estado
+  document.getElementById('entBtnMarcarEnviado').style.display  = (e.estado === 'listo') ? '' : 'none';
+  document.getElementById('entBtnMarcarObsoleto').style.display = (e.estado === 'listo' || e.estado === 'enviado') ? '' : 'none';
+  document.getElementById('entBtnRevivir').classList.toggle('hidden', e.estado !== 'obsoleto');
+
+  // Preview
+  const preview = document.getElementById('entDrawerPreview');
+  if (e.contenido_html) {
+    preview.innerHTML = e.contenido_html;
+  } else if (e.contenido_md) {
+    // Render md básico: paragraphs por doble newline + bold/italic minimal
+    const md = e.contenido_md;
+    const html = md
+      .split(/\n\n+/).map(p =>
+        '<p>' + escapeHtml(p)
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.+?)\*/g, '<em>$1</em>')
+          .replace(/\n/g, '<br>')
+        + '</p>'
+      ).join('');
+    preview.innerHTML = html;
+  } else if (e.diagrama_mermaid) {
+    preview.innerHTML = `<pre class="text-xs bg-white p-3 border border-stone-200 rounded overflow-x-auto">${escapeHtml(e.diagrama_mermaid)}</pre><div class="text-xs text-stone-500 mt-2">Diagrama Mermaid (render visual disponible sprint 2).</div>`;
+  } else {
+    preview.innerHTML = '<div class="text-stone-400 italic">Sin contenido disponible. Posible: archivo solo en storage (ver botón PDF arriba).</div>';
+  }
+};
+
+window.entCerrarDrawer = function() {
+  document.getElementById('entDrawer').classList.add('hidden');
+  _entDrawerId = null;
+};
+
+async function _entUpdateEstado(nuevoEstado, mensaje, extraPatch) {
+  if (!_entDrawerId) return;
+  const msg = document.getElementById('entDrawerMsg');
+  msg.classList.add('hidden');
+  const patch = Object.assign({ estado: nuevoEstado }, extraPatch || {});
+  const { error } = await sb.schema('curated').from('entregables_negocio').update(patch).eq('entregable_id', _entDrawerId);
+  if (error) {
+    msg.className = 'text-xs p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'Error: ' + error.message;
+    msg.classList.remove('hidden');
+    return;
+  }
+  msg.className = 'text-xs p-2 rounded bg-green-50 text-green-700';
+  msg.textContent = mensaje;
+  msg.classList.remove('hidden');
+  await loadEntregables();
+  if (_entDrawerId) await entAbrirDrawer(_entDrawerId);
+}
+
+window.entMarcarEnviado = async function() {
+  const destinatario = prompt('Destinatario (email/nombre) — opcional:');
+  const patch = { fecha_envio: new Date().toISOString() };
+  if (destinatario) patch.enviado_a = [destinatario.trim()];
+  await _entUpdateEstado('enviado', 'Marcado como enviado manualmente.', patch);
+};
+
+window.entMarcarObsoleto = async function() {
+  if (!confirm('¿Marcar como obsoleto?')) return;
+  await _entUpdateEstado('obsoleto', 'Marcado obsoleto.', {});
+};
+
+window.entRevivir = async function() {
+  if (!confirm('¿Revivir como listo?')) return;
+  await _entUpdateEstado('listo', 'Marcado como listo.', { fecha_envio: null, enviado_a: [] });
 };
 
 // ---------- INIT ----------
