@@ -1160,6 +1160,21 @@
         <button onclick="loadReconciliacion(1)" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
       </div>
 
+      <!-- CRM Impulsa import stats (M9 ETL 2026-05-22) -->
+      <div class="bg-stone-50 border border-stone-200 rounded-2xl p-4 mb-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-sm font-bold text-stone-700">📦 Importación CRM Impulsa completada — 2026-05-22</span>
+          <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Plan CRECE vencido 2026-05-21</span>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-xs text-stone-600">
+          <div class="bg-white rounded p-2"><div class="text-lg font-bold text-stone-800">10.214</div><div>Oportunidades</div></div>
+          <div class="bg-white rounded p-2"><div class="text-lg font-bold text-stone-800">1.939</div><div>Clientes migrados</div></div>
+          <div class="bg-white rounded p-2"><div class="text-lg font-bold text-stone-800">1.516</div><div>Contactos</div></div>
+          <div class="bg-white rounded p-2"><div class="text-lg font-bold text-stone-800">1.195</div><div>Cotizaciones hist.</div></div>
+          <div class="bg-white rounded p-2"><div class="text-lg font-bold text-stone-800">183/184</div><div>Productos mapeados</div></div>
+        </div>
+      </div>
+
       <!-- F18 · Sugerencias fuzzy nuevas backend Pablo (handoff 21-may) -->
       <div id="v4RecFuzzyBlock" class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-4">
         <div class="flex items-center justify-between mb-2">
@@ -1329,6 +1344,15 @@
             <option value="">Todas</option>
           </select>
         </div>
+        <div>
+          <label for="carFiltroFuente" class="block text-xs text-stone-500 mb-1">Fuente</label>
+          <select id="carFiltroFuente" onchange="loadCartera()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todas</option>
+            <option value="crm">Solo CRM Impulsa</option>
+            <option value="rdo">Solo RDO nativo</option>
+          </select>
+        </div>
         <div class="flex-1 min-w-[12rem]">
           <label for="carFiltroBuscar" class="block text-xs text-stone-500 mb-1">Buscar (razón social, RUT)</label>
           <input id="carFiltroBuscar" type="text" placeholder="Ej. Reciklo"
@@ -1423,6 +1447,31 @@
             <div class="text-center"><div class="text-xs text-emerald-700">Matcheadas RDO</div><div id="v4OppMatched" class="text-2xl font-bold text-emerald-700">—</div></div>
             <div class="text-center"><div class="text-xs text-amber-700">Fuzzy sin reconciliar</div><div id="v4OppFuzzy" class="text-2xl font-bold text-amber-700">—</div></div>
           </div>
+        </div>
+      </div>
+
+      <!-- Filtros Kanban — origen CRM/RDO + cerrados + búsqueda -->
+      <div class="bg-white p-3 rounded shadow-sm mb-4 flex flex-wrap gap-3 items-end">
+        <div>
+          <label for="oppFiltroOrigen" class="block text-xs text-stone-500 mb-1">Origen</label>
+          <select id="oppFiltroOrigen" onchange="loadOportunidadesKanban()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="rdo">Solo RDO nativo</option>
+            <option value="crm">Solo CRM Impulsa</option>
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="flex items-end pb-1.5">
+          <label class="flex items-center gap-1.5 text-sm text-stone-600 cursor-pointer select-none">
+            <input type="checkbox" id="oppMostrarCerrados" onchange="loadOportunidadesKanban()" class="rounded">
+            Incluir ganadas/perdidas
+          </label>
+        </div>
+        <div class="flex-1 min-w-[12rem]">
+          <label for="oppFiltroBuscar" class="block text-xs text-stone-500 mb-1">Buscar</label>
+          <input id="oppFiltroBuscar" type="text" placeholder="Cliente o título…"
+                 oninput="oppDebouncedSearch()" aria-label="Buscar oportunidad"
+                 class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
         </div>
       </div>
 
@@ -5246,10 +5295,13 @@ async function loadCartera() {
   const suc = document.getElementById('carFiltroSucursal').value;
   const buscar = (document.getElementById('carFiltroBuscar').value || '').trim();
 
+  const fuente = document.getElementById('carFiltroFuente')?.value ?? '';
   let q = sb.schema('curated').from('vw_cartera_detalle').select('*').order('razon_social');
   if (cat === 'sin_clasificar') q = q.is('categoria_id', null);
   else if (cat) q = q.eq('categoria_id', cat);
   if (suc) q = q.eq('sucursal_principal', suc);
+  if (fuente === 'crm') q = q.not('external_id_crm', 'is', null);
+  else if (fuente === 'rdo') q = q.is('external_id_crm', null);
   if (buscar) {
     const s = buscar.replace(/'/g, "''");
     q = q.or(`razon_social.ilike.%${s}%,rut.ilike.%${s}%`);
@@ -5429,11 +5481,19 @@ window.carAplicarCategoria = async function() {
 const OPP_ESTADOS = [
   { id: 'recibida',      nombre: 'Recibida',      color: 'bg-stone-100' },
   { id: 'en_evaluacion', nombre: 'En evaluación', color: 'bg-amber-50' },
+  { id: 'activada',      nombre: 'Activada',      color: 'bg-blue-50' },
+  { id: 'monitoreo',     nombre: 'Monitoreo',     color: 'bg-purple-50' },
+  { id: 'respondida',    nombre: 'Respondida',    color: 'bg-cyan-50' },
   { id: 'ganada',        nombre: 'Ganada',        color: 'bg-green-50' },
   { id: 'perdida',       nombre: 'Perdida',       color: 'bg-red-50' },
 ];
 let _oppDrawerId = null;
 let _oppSucursalesMap = null;
+let _oppSearchTimer = null;
+function oppDebouncedSearch() {
+  clearTimeout(_oppSearchTimer);
+  _oppSearchTimer = setTimeout(() => loadOportunidadesKanban(), 300);
+}
 
 // N2-5 · Resumen oportunidades pipeline (backend Pablo f_panel_health.crm)
 async function _v4LoadOppResumen() {
@@ -5471,32 +5531,55 @@ async function loadOportunidadesKanban() {
   const cont = document.getElementById('oppKanban');
   cont.innerHTML = '<div class="text-stone-400 col-span-full text-center py-6">Cargando…</div>';
 
+  const origenFiltro = document.getElementById('oppFiltroOrigen')?.value ?? 'rdo';
+  const mostrarCerrados = document.getElementById('oppMostrarCerrados')?.checked ?? false;
+  const buscar = (document.getElementById('oppFiltroBuscar')?.value || '').trim();
+
+  let q = sb.schema('curated').from('vw_oportunidades_kanban').select('*').order('fecha_recepcion', { ascending: false });
+  if (origenFiltro === 'rdo') q = q.neq('origen', 'crm_impulsa');
+  else if (origenFiltro === 'crm') q = q.eq('origen', 'crm_impulsa');
+  if (!mostrarCerrados) q = q.not('estado', 'in', '("ganada","perdida","estandarizada","descartada")');
+  if (buscar) {
+    const s = buscar.replace(/'/g, "''");
+    q = q.or(`titulo.ilike.%${s}%,cliente_nombre.ilike.%${s}%`);
+  }
+
   const [{ data: opps, error }, { data: kpis, error: e2 }] = await Promise.all([
-    sb.schema('curated').from('vw_oportunidades_kanban').select('*').order('fecha_recepcion', { ascending: false }),
+    q,
     sb.schema('curated').rpc('oportunidades_kanban_kpis')
   ]);
   if (error) { cont.innerHTML = `<div class="text-red-600 col-span-full">Error: ${escapeHtml(error.message)}</div>`; return; }
 
+  const LIMIT_PER_COL = 30;
   const porEstado = {};
   OPP_ESTADOS.forEach(e => porEstado[e.id] = []);
   (opps || []).forEach(o => {
     if (!porEstado[o.estado]) porEstado[o.estado] = [];
     porEstado[o.estado].push(o);
   });
-  const kpisMap = new Map((kpis || []).map(k => [k.estado, k]));
 
-  cont.innerHTML = OPP_ESTADOS.map(e => {
+  const estadosVisibles = mostrarCerrados ? OPP_ESTADOS : OPP_ESTADOS.filter(e => !['ganada','perdida'].includes(e.id));
+  const kpisMap = new Map((kpis || []).map(k => [k.estado, k]));
+  const cols = mostrarCerrados ? 'xl:grid-cols-4' : 'xl:grid-cols-5';
+  cont.className = `grid grid-cols-1 md:grid-cols-2 ${cols} gap-3`;
+
+  cont.innerHTML = estadosVisibles.map(e => {
     const k = kpisMap.get(e.id);
     const cant = k ? Number(k.cant) : 0;
     const uf = k ? Number(k.uf_total) : 0;
-    const cards = (porEstado[e.id] || []).map(oppRenderCard).join('') || '<div class="text-xs text-stone-400 italic py-3 text-center">Sin oportunidades</div>';
+    const todos = porEstado[e.id] || [];
+    const visible = todos.slice(0, LIMIT_PER_COL);
+    const resto = todos.length - visible.length;
+    const cards = visible.map(oppRenderCard).join('');
+    const masBtn = resto > 0 ? `<div class="text-xs text-stone-400 italic py-2 text-center">+${resto.toLocaleString('es-CL')} más — usa búsqueda para filtrar</div>` : '';
+    const emptyMsg = todos.length === 0 ? '<div class="text-xs text-stone-400 italic py-3 text-center">Sin oportunidades</div>' : '';
     return `
-      <div class="${e.color} rounded-lg p-3 min-h-[400px]">
+      <div class="${e.color} rounded-lg p-3 min-h-[200px]">
         <div class="flex justify-between items-baseline mb-2 pb-2 border-b border-stone-200">
           <h3 class="font-semibold text-stone-800">${escapeHtml(e.nombre)}</h3>
-          <div class="text-xs text-stone-500">${cant} · ${uf.toLocaleString('es-CL', { maximumFractionDigits: 1 })} UF</div>
+          <div class="text-xs text-stone-500">${cant.toLocaleString('es-CL')} · ${uf.toLocaleString('es-CL', { maximumFractionDigits: 1 })} UF</div>
         </div>
-        <div class="space-y-2">${cards}</div>
+        <div class="space-y-2">${cards}${masBtn}${emptyMsg}</div>
       </div>`;
   }).join('');
 }
