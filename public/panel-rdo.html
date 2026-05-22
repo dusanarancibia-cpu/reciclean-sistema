@@ -7319,142 +7319,322 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-<!-- ===== Diego FAB · chat conectado a panel.diego_bandeja ===== -->
+<!-- ===== Diego FAB v6 · chat inteligente (D-DIEGO-PROMPT-V6) ===== -->
 <style>
   .diego-fab{position:fixed;right:24px;bottom:24px;width:60px;height:60px;background:linear-gradient(135deg,#059669,#047857);color:#fff;border-radius:50%;border:0;box-shadow:0 10px 25px -5px rgba(5,150,105,.45);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s ease;z-index:60}
   .diego-fab:hover{transform:scale(1.08)}
+  .diego-fab-badge{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 6px;background:#ef4444;color:#fff;border-radius:10px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+  .diego-fab-badge.hidden{display:none}
   .diego-fab-label{position:absolute;right:70px;top:50%;transform:translateY(-50%);background:#0f172a;color:#fff;padding:6px 12px;border-radius:8px;font-size:13px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s ease}
   .diego-fab:hover .diego-fab-label{opacity:1}
-  .diego-chat{position:fixed;right:24px;bottom:96px;width:340px;max-width:calc(100vw - 32px);background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 16px 48px -12px rgba(15,23,42,.25);z-index:60;display:none;flex-direction:column;overflow:hidden}
+  .diego-chat{position:fixed;right:24px;bottom:96px;width:420px;max-width:calc(100vw - 32px);background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 16px 48px -12px rgba(15,23,42,.25);z-index:60;display:none;flex-direction:column;overflow:hidden}
   .diego-chat.open{display:flex}
   .diego-chat-h{background:linear-gradient(135deg,#059669,#047857);color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600}
-  .diego-chat-h button{background:none;border:0;color:#fff;cursor:pointer;font-size:16px;line-height:1}
-  .diego-chat-body{background:#f8fafc;padding:12px;max-height:360px;min-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
-  .diego-msg{font-size:13px;padding:8px 12px;border-radius:12px;max-width:85%;line-height:1.35}
+  .diego-chat-h .h-title{display:flex;align-items:center;gap:8px}
+  .diego-chat-h .h-version{background:rgba(255,255,255,.2);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
+  .diego-chat-h button{background:none;border:0;color:#fff;cursor:pointer;font-size:16px;line-height:1;padding:4px 8px}
+  .diego-chat-body{background:#f8fafc;padding:12px;max-height:480px;min-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;position:relative}
+  .diego-msg{font-size:13px;padding:8px 12px;border-radius:12px;max-width:88%;line-height:1.4;white-space:pre-wrap;word-wrap:break-word}
   .diego-msg.mine{align-self:flex-end;background:#ecfdf5;color:#064e3b}
   .diego-msg.theirs{align-self:flex-start;background:#fff;border:1px solid #e2e8f0;color:#0f172a}
-  .diego-msg-meta{font-size:10px;color:#94a3b8;margin-top:3px}
+  .diego-msg.diego{align-self:flex-start;background:#fff;border:1px solid #059669;color:#0f172a}
+  .diego-msg.thinking{align-self:flex-start;background:#fff;border:1px dashed #94a3b8;color:#64748b;font-style:italic}
+  .diego-msg-meta{font-size:10px;color:#94a3b8;margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .diego-msg-attach{font-size:11px;background:#f1f5f9;padding:2px 8px;border-radius:6px;color:#475569;margin-top:4px;display:inline-block}
+  .diego-actions{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+  .diego-actions .chip{font-size:10px;background:#dcfce7;color:#166534;padding:2px 6px;border-radius:4px;font-weight:600}
+  .diego-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .diego-suggestions button{font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:500}
+  .diego-suggestions button:hover{background:#059669;color:#fff;border-color:#059669}
   .diego-empty{color:#94a3b8;font-size:12px;text-align:center;padding:24px 8px}
-  .diego-chat-form{display:flex;gap:8px;padding:10px;border-top:1px solid #e2e8f0;background:#fff}
-  .diego-chat-form input{flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none}
-  .diego-chat-form input:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.15)}
-  .diego-chat-form button{background:#059669;color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer}
-  .diego-chat-form button:disabled{opacity:.5;cursor:not-allowed}
+  .diego-chat-form{display:flex;gap:6px;padding:10px;border-top:1px solid #e2e8f0;background:#fff;align-items:flex-end}
+  .diego-chat-form .attach-btn{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;color:#475569}
+  .diego-chat-form .attach-btn:hover{background:#059669;color:#fff;border-color:#059669}
+  .diego-chat-form textarea{flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;resize:none;min-height:36px;max-height:120px}
+  .diego-chat-form textarea:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.15)}
+  .diego-chat-form button.send{background:#059669;color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer}
+  .diego-chat-form button.send:disabled{opacity:.5;cursor:not-allowed}
+  .diego-attach-preview{padding:6px 10px;background:#eff6ff;border-top:1px solid #dbeafe;font-size:11px;color:#1e40af;display:flex;justify-content:space-between;align-items:center}
+  .diego-attach-preview button{background:none;border:0;color:#1e40af;cursor:pointer;font-size:14px}
+  .diego-drag-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(5,150,105,.9);color:#fff;display:none;align-items:center;justify-content:center;font-weight:600;font-size:14px;border-radius:12px;z-index:5}
+  .diego-drag-overlay.active{display:flex}
 </style>
 
 <button class="diego-fab" id="diegoFab" type="button" aria-label="Abrir chat Diego">
   <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-  <span class="diego-fab-label">Pregúntale a Diego</span>
+  <span class="diego-fab-label">Diego — pregúntame</span>
+  <span class="diego-fab-badge hidden" id="diegoFabBadge">0</span>
 </button>
 
 <div class="diego-chat" id="diegoChat" role="dialog" aria-label="Chat con Diego">
   <div class="diego-chat-h">
-    <span>🤖 Diego — Bandeja</span>
+    <span class="h-title">🤖 Diego <span class="h-version">v6</span></span>
     <button type="button" id="diegoChatClose" aria-label="Cerrar chat">✕</button>
   </div>
   <div class="diego-chat-body" id="diegoChatBody">
-    <div class="diego-empty">Cargando bandeja…</div>
+    <div class="diego-empty">¿En qué te ayudo? Probá: <em>"precio cartón Maipú"</em> · <em>"resumen facturación mayo"</em> · arrastrá una foto.</div>
+    <div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>
+  </div>
+  <div class="diego-attach-preview" id="diegoAttachPreview" style="display:none;">
+    <span id="diegoAttachName"></span>
+    <button type="button" id="diegoAttachRemove" aria-label="Quitar adjunto">✕</button>
   </div>
   <form class="diego-chat-form" id="diegoChatForm" autocomplete="off">
-    <input type="text" id="diegoChatInput" placeholder="Escribe un mensaje a Diego…" maxlength="500" aria-label="Mensaje a Diego" />
-    <button type="submit" id="diegoChatSend">Enviar</button>
+    <input type="file" id="diegoFileInput" accept="image/*,audio/*,application/pdf,text/plain,text/csv,application/json" style="display:none;" />
+    <button type="button" class="attach-btn" id="diegoAttachBtn" aria-label="Adjuntar archivo" title="Adjuntar foto, audio o PDF">📎</button>
+    <textarea id="diegoChatInput" placeholder="Escribí o adjuntá algo…" maxlength="2000" aria-label="Mensaje a Diego" rows="1"></textarea>
+    <button type="submit" class="send" id="diegoChatSend">Enviar</button>
   </form>
 </div>
 
 <script>
 (function () {
-  // Reutiliza el cliente global `sb` ya creado en initSupabase() —> mismo JWT del usuario.
+  // Diego v6 · chat inteligente conectado a Edge Function diego-chat-process
+  // D-DIEGO-PROMPT-V6 (Dusan 22-may-2026). System prompt fuente: DIEGO-PROMPT-MAXIMO.md
   function ready() { return typeof sb !== 'undefined' && sb && sb.schema; }
 
   const fab = document.getElementById('diegoFab');
+  const fabBadge = document.getElementById('diegoFabBadge');
   const win = document.getElementById('diegoChat');
   const closeBtn = document.getElementById('diegoChatClose');
   const body = document.getElementById('diegoChatBody');
   const form = document.getElementById('diegoChatForm');
   const input = document.getElementById('diegoChatInput');
   const sendBtn = document.getElementById('diegoChatSend');
+  const fileInput = document.getElementById('diegoFileInput');
+  const attachBtn = document.getElementById('diegoAttachBtn');
+  const attachPreview = document.getElementById('diegoAttachPreview');
+  const attachName = document.getElementById('diegoAttachName');
+  const attachRemove = document.getElementById('diegoAttachRemove');
+  const dragOverlay = document.getElementById('diegoDragOverlay');
 
   let realtimeCh = null;
+  let pendingFile = null;          // { file_url, file_mime, file_name }
+  let history = [];                // [{role:'user'|'diego', mensaje, ts, attach?, six_w?, actions?, suggestions?}]
 
-  function getRemitente() {
+  function getUserEmail() {
     try {
       const s = JSON.parse(localStorage.getItem('rf_session') || 'null');
-      return (s && (s.email || s.nombre)) || 'Panel RDO';
-    } catch { return 'Panel RDO'; }
+      return (s && (s.email || s.user_email)) || (window.currentUser ?? null);
+    } catch { return null; }
   }
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
-  function fmtHora(iso) {
-    if (!iso) return '';
-    try {
-      return new Date(iso).toLocaleString('es-CL', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-    } catch { return ''; }
+  function fmtHora(d) {
+    try { return (d instanceof Date ? d : new Date(d)).toLocaleString('es-CL', { hour:'2-digit', minute:'2-digit' }); }
+    catch { return ''; }
   }
-  function render(rows) {
-    if (!rows || rows.length === 0) {
-      body.innerHTML = '<div class="diego-empty">Sin mensajes todavía. Escribí abajo para empezar.</div>';
+
+  function render() {
+    if (!history.length) {
+      body.innerHTML = '<div class="diego-empty">¿En qué te ayudo? Probá: <em>"precio cartón Maipú"</em> · <em>"resumen facturación mayo"</em> · arrastrá una foto.</div>'
+        + '<div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>';
       return;
     }
-    const yo = getRemitente();
-    body.innerHTML = rows.slice().reverse().map(r => {
-      const mine = r.remitente === yo;
-      const cls = mine ? 'mine' : 'theirs';
-      const respLine = r.responsable ? ' · resp: ' + esc(r.responsable) : '';
-      const estLine = r.estado && r.estado !== 'pendiente' ? ' · ' + esc(r.estado) : '';
-      return '<div class="diego-msg ' + cls + '">' +
-               '<div>' + esc(r.mensaje) + '</div>' +
-               '<div class="diego-msg-meta">' + esc(r.remitente || 'anon') + ' · ' + fmtHora(r.creado_en) + respLine + estLine + '</div>' +
-             '</div>';
+    const html = history.map(h => {
+      const cls = h.role === 'user' ? 'mine' : (h.role === 'thinking' ? 'thinking' : 'diego');
+      const attach = h.attach ? `<div class="diego-msg-attach">📎 ${esc(h.attach)}</div>` : '';
+      const actionsArr = (h.actions || []).map(a => `<span class="chip">${esc(a.tool || a)}</span>`).join('');
+      const actions = actionsArr ? `<div class="diego-actions">${actionsArr}</div>` : '';
+      const suggestionsArr = (h.suggestions || []).slice(0, 4).map((s, i) =>
+        `<button type="button" data-sugg="${i}">${esc(s.label || s)}</button>`).join('');
+      const suggestions = suggestionsArr ? `<div class="diego-suggestions">${suggestionsArr}</div>` : '';
+      const sixW = h.six_w && (h.six_w.what || h.six_w.when)
+        ? `<div class="diego-msg-meta">🧠 ${esc(h.six_w.what || '')}${h.six_w.when ? ' · ⏰ ' + esc(h.six_w.when) : ''}${h.six_w.who ? ' · 👤 ' + esc(h.six_w.who) : ''}</div>`
+        : '';
+      return `<div class="diego-msg ${cls}">
+        <div>${esc(h.mensaje)}</div>
+        ${attach}
+        ${actions}
+        ${sixW}
+        <div class="diego-msg-meta">${cls === 'mine' ? 'Vos' : 'Diego'} · ${fmtHora(h.ts)}${h.tokens ? ' · ' + h.tokens + ' tok' : ''}${h.cola_id ? ' · ✅ cola' : ''}</div>
+        ${suggestions}
+      </div>`;
     }).join('');
+    body.innerHTML = html + '<div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>';
     body.scrollTop = body.scrollHeight;
+
+    // Re-bind sugerencias (event delegation simple)
+    body.querySelectorAll('button[data-sugg]').forEach((btn, idx) => {
+      btn.addEventListener('click', (e) => {
+        const last = [...history].reverse().find(h => h.role === 'diego');
+        const sIdx = parseInt(btn.getAttribute('data-sugg'), 10);
+        const s = last?.suggestions?.[sIdx];
+        if (s) {
+          input.value = s.action || s.label || s;
+          input.focus();
+        }
+      });
+    });
   }
-  async function cargar() {
-    if (!ready()) {
-      body.innerHTML = '<div class="diego-empty">Cliente Supabase no disponible.</div>';
-      return;
+
+  async function refreshBadge() {
+    if (!ready()) return;
+    try {
+      const { count } = await sb.schema('panel').from('diego_bandeja')
+        .select('*', { count: 'exact', head: true })
+        .eq('estado', 'pendiente');
+      if (count && count > 0) {
+        fabBadge.textContent = count > 99 ? '99+' : String(count);
+        fabBadge.classList.remove('hidden');
+      } else {
+        fabBadge.classList.add('hidden');
+      }
+    } catch (e) { /* noop */ }
+  }
+
+  async function uploadFile(file) {
+    if (!ready()) throw new Error('Supabase no listo');
+    const email = getUserEmail() || 'anon';
+    const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
+    const path = `${email}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
+    const { data, error } = await sb.storage.from('diego-chat-files').upload(path, file, { upsert: false, contentType: file.type });
+    if (error) throw error;
+    return { file_url: data.path, file_mime: file.type, file_name: file.name };
+  }
+
+  async function callDiego(mensaje, attach) {
+    const email = getUserEmail();
+    if (!email) return { error: 'No hay sesión. ¿Iniciaste sesión en el panel?' };
+    const SUPABASE_URL_LOCAL = (typeof SUPABASE_URL !== 'undefined' && SUPABASE_URL) || 'https://eknmtsrtfkzroxnovfqn.supabase.co';
+    let token = null;
+    try {
+      const s = await sb.auth.getSession();
+      token = s?.data?.session?.access_token;
+    } catch { /* noop */ }
+    if (!token) return { error: 'No tengo token de sesión válido.' };
+
+    const body = {
+      user_email: email,
+      mensaje: mensaje || '',
+      request_id: crypto.randomUUID(),
+      ...(attach ? { file_url: attach.file_url, file_mime: attach.file_mime, file_name: attach.file_name } : {}),
+    };
+    try {
+      const r = await fetch(`${SUPABASE_URL_LOCAL}/functions/v1/diego-chat-process`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const j = await r.json();
+      if (!r.ok) return { error: j.error || `HTTP ${r.status}` };
+      return j;
+    } catch (e) {
+      return { error: String(e?.message || e) };
     }
-    const { data, error } = await sb.schema('panel').from('diego_bandeja')
-      .select('id,mensaje,remitente,responsable,estado,creado_en')
-      .order('creado_en', { ascending: false })
-      .limit(30);
-    if (error) {
-      body.innerHTML = '<div class="diego-empty">Error: ' + esc(error.message) + '</div>';
-      return;
-    }
-    render(data);
   }
-  async function enviar(msg) {
-    if (!ready()) return { ok: false, err: 'sb no disponible' };
-    const { error } = await sb.schema('panel').from('diego_bandeja')
-      .insert({ mensaje: msg, remitente: getRemitente(), estado: 'pendiente' });
-    if (error) return { ok: false, err: error.message };
-    return { ok: true };
-  }
+
   function suscribir() {
     if (realtimeCh || !ready()) return;
-    realtimeCh = sb.channel('diego_bandeja_fab')
-      .on('postgres_changes', { event: '*', schema: 'panel', table: 'diego_bandeja' }, () => cargar())
+    realtimeCh = sb.channel('diego_bandeja_fab_v6')
+      .on('postgres_changes', { event: '*', schema: 'panel', table: 'diego_bandeja' }, () => refreshBadge())
       .subscribe();
   }
 
+  // -- File handling --
+  attachBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (f.size > 20 * 1024 * 1024) { alert('Archivo > 20MB no soportado.'); return; }
+    attachName.textContent = `Subiendo ${f.name}…`;
+    attachPreview.style.display = 'flex';
+    try {
+      pendingFile = await uploadFile(f);
+      attachName.textContent = `📎 ${pendingFile.file_name}`;
+    } catch (err) {
+      attachName.textContent = `Error: ${err.message || err}`;
+      pendingFile = null;
+    }
+    fileInput.value = '';
+  });
+  attachRemove.addEventListener('click', () => {
+    pendingFile = null;
+    attachPreview.style.display = 'none';
+  });
+
+  // Drag & drop
+  ['dragenter', 'dragover'].forEach(ev => body.addEventListener(ev, (e) => {
+    e.preventDefault();
+    const ov = document.getElementById('diegoDragOverlay');
+    if (ov) ov.classList.add('active');
+  }));
+  ['dragleave', 'drop'].forEach(ev => body.addEventListener(ev, (e) => {
+    e.preventDefault();
+    const ov = document.getElementById('diegoDragOverlay');
+    if (ov) ov.classList.remove('active');
+  }));
+  body.addEventListener('drop', async (e) => {
+    const f = e.dataTransfer?.files?.[0];
+    if (!f) return;
+    fileInput.files = e.dataTransfer.files;
+    fileInput.dispatchEvent(new Event('change'));
+  });
+
+  // -- Open / close --
   fab.addEventListener('click', () => {
     win.classList.add('open');
-    cargar();
     suscribir();
+    refreshBadge();
+    if (!history.length) render();
     setTimeout(() => input.focus(), 50);
   });
   closeBtn.addEventListener('click', () => win.classList.remove('open'));
+
+  // -- Auto-grow textarea + Enter to send --
+  input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      form.dispatchEvent(new Event('submit'));
+    }
+  });
+
+  // -- Submit --
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const msg = input.value.trim();
-    if (!msg) return;
+    if (!msg && !pendingFile) return;
     sendBtn.disabled = true;
-    const { ok, err } = await enviar(msg);
+    const attach = pendingFile;
+    history.push({ role: 'user', mensaje: msg || `(adjunto)`, attach: attach?.file_name, ts: Date.now() });
+    history.push({ role: 'thinking', mensaje: 'Pensando…', ts: Date.now() });
+    render();
+    input.value = '';
+    input.style.height = 'auto';
+    pendingFile = null;
+    attachPreview.style.display = 'none';
+
+    const resp = await callDiego(msg, attach);
+    // Quitar el "thinking"
+    history = history.filter(h => h.role !== 'thinking');
+
+    if (resp.error) {
+      history.push({ role: 'diego', mensaje: '❌ ' + resp.error, ts: Date.now() });
+    } else {
+      history.push({
+        role: 'diego',
+        mensaje: resp.reply || '(sin respuesta)',
+        ts: Date.now(),
+        actions: resp.actions_taken || [],
+        suggestions: resp.suggestions || [],
+        six_w: resp.six_w || {},
+        cola_id: resp.cola_id,
+        tokens: resp.tokens_used,
+      });
+    }
+    render();
     sendBtn.disabled = false;
-    if (ok) { input.value = ''; cargar(); }
-    else { alert('No pude enviar: ' + err + (String(err).includes('401') || String(err).toLowerCase().includes('jwt') ? '\n(¿iniciaste sesión en el panel?)' : '')); }
+    refreshBadge();
   });
+
+  // Refresh badge al cargar
+  setTimeout(refreshBadge, 1500);
+  setInterval(refreshBadge, 60000);
 })();
 </script>
 
