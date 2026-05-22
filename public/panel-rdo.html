@@ -364,40 +364,63 @@
   <!-- Contenedor del contenido productivo (header + nav + main) -->
   <div class="flex-1 flex flex-col min-w-0">
 
-  <header class="bg-white shadow-sm px-6 py-3 flex justify-between items-center flex-wrap gap-2">
-    <div class="flex items-center gap-3">
-      <!-- v4-design F2 · Botón hamburguesa móvil (toggle sidebar v4) -->
+  <!-- v4-design FIX-5 · Topbar mockup faltante (sticky + buscador + íconos + fecha/UF + bell + user) -->
+  <header class="sticky top-0 z-30 bg-white/85 backdrop-blur border-b border-slate-200">
+    <div class="flex items-center gap-4 px-6 lg:px-8 h-14">
+      <!-- Hamburguesa móvil (toggle sidebar v4) -->
       <button type="button" id="v4-hamburger" class="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Abrir menú lateral">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
-      <img src="/assets/logos/grc-simbolo.png" alt="Grupo Reciclean-Farex"
-           class="h-10 w-auto"
-           onerror="this.onerror=null; this.src='https://reciclean-sistema.vercel.app/assets/logos/grc-simbolo.png';">
-      <div class="flex flex-col">
-        <h1 class="text-lg font-bold text-stone-800 leading-tight">Panel RDO</h1>
-        <span class="text-xs text-stone-500">Grupo Reciclean-Farex</span>
+      <!-- Logo compacto (solo mobile — desktop usa el sidebar) -->
+      <div class="md:hidden flex items-center gap-2">
+        <img src="/assets/logos/grc-simbolo.png" alt="Reciclean" class="h-7 w-auto"
+             onerror="this.onerror=null; this.src='https://reciclean-sistema.vercel.app/assets/logos/grc-simbolo.png';">
+        <span class="text-sm font-bold text-stone-800">Panel RDO</span>
       </div>
-    </div>
-
-    <!-- Selector de área (silo) -->
-    <div id="siloSelectorContainer" class="hidden flex items-center gap-2">
-      <label class="text-sm text-stone-600 font-medium">Área:</label>
-      <select id="siloSelector"
-              class="border border-stone-300 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none bg-white">
-        <option value="">Cargando…</option>
-      </select>
-    </div>
-
-    <div class="flex items-center gap-3">
-      <!-- Acceso rápido al ecosistema externo (login.html / asistente.html) -->
+      <!-- Buscador global -->
+      <div class="flex-1 max-w-md relative">
+        <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" id="v4-topbarSearch" placeholder="Buscar pesaje, factura, RDO, cliente…" class="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition" aria-label="Buscador global">
+        <div id="v4-topbarSearchResults" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-80 overflow-y-auto z-40"></div>
+      </div>
+      <!-- Fecha + UF (oculto en mobile chico) -->
+      <div class="hidden sm:flex items-center gap-3 text-xs text-slate-500">
+        <span id="v4-fechaActual" class="font-medium text-slate-600">—</span>
+        <span class="text-slate-300">|</span>
+        <span>UF: <span id="v4-topbarUfValor" class="font-semibold text-slate-700">—</span></span>
+      </div>
+      <!-- Silo selector (productivo, oculto pero accesible) -->
+      <div id="siloSelectorContainer" class="hidden items-center gap-2">
+        <label class="text-sm text-stone-600 font-medium">Área:</label>
+        <select id="siloSelector" class="border border-stone-300 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none bg-white">
+          <option value="">Cargando…</option>
+        </select>
+      </div>
+      <!-- Iconos externos (Gmail / Outlook / WhatsApp) -->
+      <a href="https://mail.google.com" target="_blank" rel="noopener" class="hidden md:inline-flex p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition" title="Gmail" aria-label="Abrir Gmail">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      </a>
+      <a href="https://outlook.live.com" target="_blank" rel="noopener" class="hidden md:inline-flex p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition" title="Outlook" aria-label="Abrir Outlook">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+      </a>
+      <a href="https://web.whatsapp.com" target="_blank" rel="noopener" class="hidden md:inline-flex p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition" title="WhatsApp" aria-label="Abrir WhatsApp">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      </a>
+      <!-- Bell notificaciones (conectado a panel.diego_bandeja count) -->
+      <button type="button" id="v4-bellNotificaciones" class="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition" title="Notificaciones" aria-label="Ver notificaciones">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2 2 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        <span id="v4-bellDot" class="hidden absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+      </button>
+      <!-- Acceso rápido al ecosistema externo (data-driven) -->
       <a id="accesoRapidoHeader" href="#" target="_blank" rel="noopener" class="hidden text-sm bg-green-700 hover:bg-green-800 text-white px-3 py-1.5 rounded font-medium transition flex items-center gap-1">
         <span id="accesoRapidoIcono"></span>
         <span id="accesoRapidoTitulo"></span>
         <span class="opacity-75">→</span>
       </a>
-      <span id="userEmailDisplay" class="text-sm text-stone-600"></span>
-      <span id="userProfileDisplay" class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold uppercase"></span>
-      <button onclick="logout()" class="bg-stone-200 hover:bg-stone-300 text-stone-700 px-3 py-1 rounded text-sm">Salir</button>
+      <!-- User info + logout (compacto) -->
+      <span id="userEmailDisplay" class="hidden sm:inline text-xs text-stone-600 max-w-[12rem] truncate"></span>
+      <span id="userProfileDisplay" class="hidden md:inline bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"></span>
+      <button onclick="logout()" class="text-xs px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg transition" aria-label="Cerrar sesión">Salir</button>
     </div>
   </header>
 
@@ -5392,9 +5415,15 @@ window.initV4Hero = function initV4Hero() {
     const now = new Date();
     const dias  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
     const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const diasCortos  = ['dom','lun','mar','mié','jue','vie','sáb'];
+    const mesesCortos = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
     const fechaCompleta = `${dias[now.getDay()]} ${now.getDate()} de ${meses[now.getMonth()]} de ${now.getFullYear()}`;
+    const fechaCorta    = `${diasCortos[now.getDay()]} ${now.getDate()} de ${mesesCortos[now.getMonth()]}`;
     const fc = document.getElementById('v4-fechaCompleta');
     if (fc) fc.textContent = fechaCompleta;
+    // FIX-5 · fecha corta en topbar
+    const fa = document.getElementById('v4-fechaActual');
+    if (fa) fa.textContent = fechaCorta;
 
     // Saludo según hora
     const h = now.getHours();
@@ -6188,6 +6217,101 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ok) { input.value = ''; cargar(); }
     else { alert('No pude enviar: ' + err + (String(err).includes('401') || String(err).toLowerCase().includes('jwt') ? '\n(¿iniciaste sesión en el panel?)' : '')); }
   });
+})();
+</script>
+
+<!-- v4-design FIX-5 · Topbar utilities: UF + bell count + buscador global -->
+<script>
+(function v4TopbarUtilities() {
+  'use strict';
+  // UF — refresca via f_uf_hoy o sb edge function (lazy 1 vez por carga)
+  async function loadUF() {
+    if (typeof sb === 'undefined') return;
+    try {
+      const { data, error } = await sb.rpc('f_uf_hoy');
+      if (error || !data || !data[0]) return;
+      const valor = data[0].valor_uf || data[0].valor || data[0].uf;
+      if (!valor) return;
+      const fmt = '$' + Number(valor).toLocaleString('es-CL', { maximumFractionDigits: 0 });
+      ['v4-topbarUfValor', 'v4-ufValor'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = fmt;
+      });
+    } catch (e) { console.warn('[v4-topbar-uf] fallo:', e); }
+  }
+
+  // Bell · cuenta items pendientes en panel.diego_bandeja
+  async function loadBellCount() {
+    if (typeof sb === 'undefined' || !sb?.schema) return;
+    try {
+      const { count, error } = await sb.schema('panel').from('diego_bandeja')
+        .select('*', { count: 'exact', head: true })
+        .in('estado', ['nuevo', 'pendiente', 'sin_leer']);
+      if (error) return;
+      const dot = document.getElementById('v4-bellDot');
+      const bell = document.getElementById('v4-bellNotificaciones');
+      if (dot) dot.classList.toggle('hidden', !(count && count > 0));
+      if (bell && count > 0) bell.setAttribute('title', `${count} notificaciones pendientes`);
+    } catch (e) { console.warn('[v4-topbar-bell] fallo:', e); }
+  }
+
+  // Bell click → abrir FAB Diego existente (reusa el chat ya construido)
+  const bell = document.getElementById('v4-bellNotificaciones');
+  if (bell) bell.addEventListener('click', () => {
+    const fab = document.querySelector('.diego-fab');
+    if (fab) fab.click();
+  });
+
+  // Buscador global — debounced sb.rpc('f_panel_buscar_global', { p_query })
+  const input = document.getElementById('v4-topbarSearch');
+  const results = document.getElementById('v4-topbarSearchResults');
+  if (input && results) {
+    let timer = null;
+    input.addEventListener('input', (e) => {
+      clearTimeout(timer);
+      const q = e.target.value.trim();
+      if (q.length < 2) { results.classList.add('hidden'); results.innerHTML = ''; return; }
+      timer = setTimeout(async () => {
+        if (typeof sb === 'undefined') return;
+        try {
+          const { data, error } = await sb.rpc('f_panel_buscar_global', { p_query: q });
+          if (error || !data || data.length === 0) {
+            results.innerHTML = '<div class="p-3 text-xs text-slate-400 text-center">Sin resultados</div>';
+            results.classList.remove('hidden');
+            return;
+          }
+          const safe = (s) => (s || '').toString().replace(/</g, '&lt;');
+          results.innerHTML = data.slice(0, 10).map(r => `
+            <div class="px-3 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0 text-xs" data-v4-search-result>
+              <div class="font-medium text-slate-700"><span class="badge bg-emerald-100 text-emerald-700 text-[10px] mr-1">${safe(r.tipo || '—')}</span>${safe(r.titulo || r.nombre || r.id)}</div>
+              <div class="text-slate-500 mt-0.5">${safe(r.snippet || r.descripcion || r.detalle || '')}</div>
+            </div>
+          `).join('');
+          results.classList.remove('hidden');
+        } catch (e) {
+          results.innerHTML = '<div class="p-3 text-xs text-amber-600 text-center">Buscador no disponible</div>';
+          results.classList.remove('hidden');
+          console.warn('[v4-topbar-search] fallo:', e);
+        }
+      }, 300);
+    });
+    // Esc cierra resultados
+    input.addEventListener('keydown', (e) => { if (e.key === 'Escape') { results.classList.add('hidden'); input.blur(); } });
+    document.addEventListener('click', (e) => { if (!input.contains(e.target) && !results.contains(e.target)) results.classList.add('hidden'); });
+  }
+
+  // Refresh inicial post-login (espera que sb esté listo y hydrate haya corrido)
+  function tryRefresh() {
+    if (typeof sb === 'undefined') return setTimeout(tryRefresh, 800);
+    loadUF();
+    loadBellCount();
+  }
+  // Esperar 1.5s post-load para que initSupabase + hydrate corran
+  if (document.readyState === 'complete') setTimeout(tryRefresh, 1500);
+  else window.addEventListener('load', () => setTimeout(tryRefresh, 1500));
+
+  // Re-cargar bell cada 60s (es liviano)
+  setInterval(() => { if (typeof sb !== 'undefined') loadBellCount(); }, 60000);
 })();
 </script>
 
