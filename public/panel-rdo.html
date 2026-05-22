@@ -2595,12 +2595,20 @@ window.logout = async function() {
 };
 
 // ---------- TABS ----------
+// Mapeo explícito data-tab → id de sección. Necesario para data-tabs con `_`
+// (auditoría 22-may: `bandeja_dieg`→`tabBandejaDiego` y `ops_diarias`→`tabOpsDiarias`
+// fallaban porque el cálculo automático no convierte snake_case a CamelCase).
+const TAB_SECTION_MAP = {
+  bandeja_dieg: 'tabBandejaDiego',
+  ops_diarias: 'tabOpsDiarias'
+};
 function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const tabId = btn.getAttribute('data-tab');
       document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-      const target = document.getElementById('tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+      const sectionId = TAB_SECTION_MAP[tabId] || ('tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+      const target = document.getElementById(sectionId);
       if (target) target.classList.remove('hidden');
       document.querySelectorAll('.tab-btn').forEach(b => {
         b.classList.remove('active');
