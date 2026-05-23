@@ -3,7 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel RDO — Reciclean-Farex</title>
+  <title>Panel RDO — Gestión REP Chile</title>
+  <!-- Favicon e íconos Gestión REP Chile (logo verde/amarillo) -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1A7A3C">
+  <meta name="apple-mobile-web-app-title" content="Gestión REP Chile">
+  <meta name="application-name" content="Gestión REP Chile">
   <link rel="stylesheet" href="/tailwind.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/page-logger.js"></script>
@@ -194,10 +203,20 @@
              autocomplete="email"
              class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
       <label for="loginPassword" class="sr-only">Contraseña</label>
-      <input type="password" id="loginPassword" placeholder="Contraseña"
-             aria-label="Contraseña"
-             autocomplete="current-password"
-             class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
+      <div class="relative mb-3">
+        <input type="password" id="loginPassword" placeholder="Contraseña"
+               aria-label="Contraseña"
+               autocomplete="current-password"
+               class="w-full p-3 pr-12 border border-stone-300 rounded focus:border-green-700 focus:outline-none">
+        <button type="button" id="loginPasswordToggle"
+                onclick="toggleLoginPasswordVisibility()"
+                aria-label="Mostrar u ocultar contraseña"
+                title="Mostrar/ocultar contraseña"
+                class="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-stone-500 hover:text-green-700 bg-transparent border-0 cursor-pointer focus:outline-none focus:text-green-700"
+                style="color:#64748b">
+          <span id="loginPasswordToggleIcon">👁️</span>
+        </button>
+      </div>
       <div class="flex items-center justify-between mb-3 text-sm">
         <label class="flex items-center gap-2 text-stone-600 cursor-pointer">
           <input type="checkbox" id="loginRemember" checked
@@ -479,6 +498,19 @@
           <p class="text-sm text-slate-500 mt-1">Hoy es <span class="font-medium text-slate-700" id="v4-fechaCompleta">—</span> · <span id="v4-siloCtx" class="font-semibold text-emerald-700">Vista global</span> · UF <span id="v4-ufValor" class="font-semibold text-slate-700">$38.214</span></p>
         </div>
 
+        <!-- 🤖 INDICADOR SALUD DIEGO (monitoreo perpetuo D-DIEGO-MONITOREO-001) -->
+        <div id="v4-diego-health" class="bg-white border border-slate-200 rounded-2xl p-4 flex items-center gap-4" role="article" aria-label="Estado Diego">
+          <div id="v4-health-icon" class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-2xl flex-shrink-0">⏳</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-sm font-semibold text-slate-800">Diego</span>
+              <span id="v4-health-badge" class="badge bg-slate-100 text-slate-500 text-xs px-2 py-0.5 rounded-full font-semibold">verificando…</span>
+            </div>
+            <div id="v4-health-detail" class="text-xs text-slate-500 mt-0.5">Cargando última prueba…</div>
+          </div>
+          <button id="v4-health-refresh" type="button" class="text-xs text-slate-400 hover:text-emerald-700 transition" aria-label="Actualizar">🔄</button>
+        </div>
+
         <!-- "Esto necesita tu atención hoy" — conectado a public.f_panel_health (datos reales) con fallback mock -->
         <div class="bg-white border border-slate-200 rounded-2xl p-5 border-l-4 border-l-amber-400" role="article" aria-label="Pendientes de hoy">
           <div class="flex items-start justify-between mb-3">
@@ -504,6 +536,32 @@
               <div class="flex-1 min-w-0"><div id="v4-atencion-cierres-titulo" class="text-sm font-medium text-slate-800">Cierres del mes</div><div id="v4-atencion-cierres-sub" class="text-xs text-slate-500">Estado consolidado</div></div>
               <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
+          </div>
+        </div>
+
+        <!-- 📅 AGENDA DIEGO — T2 modo agresivo 23-may · feature/diego-agenda-tareas -->
+        <div id="v4-diego-agenda" class="bg-white border border-slate-200 rounded-2xl p-5" role="article" aria-label="Agenda Diego">
+          <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <div>
+              <h2 class="text-base font-semibold text-slate-800">📅 Tu agenda</h2>
+              <p id="v4-agenda-sub" class="text-xs text-slate-500 mt-0.5">Tareas creadas por Diego desde el chat</p>
+            </div>
+            <div class="flex gap-2 text-xs">
+              <button id="v4-agenda-filtro-mias" class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200" type="button" aria-label="Solo mis tareas">Mías</button>
+              <button id="v4-agenda-filtro-todas" class="px-3 py-1 rounded-full bg-slate-50 text-slate-600 border border-slate-200" type="button" aria-label="Todas las tareas">Todas</button>
+            </div>
+          </div>
+          <div class="flex gap-1 mb-3 border-b border-slate-100" role="tablist" aria-label="Vista de agenda">
+            <button class="agenda-vista-tab px-3 py-2 text-xs font-semibold text-emerald-700 border-b-2 border-emerald-600" data-agenda-vista="hoy" type="button" aria-selected="true">Hoy</button>
+            <button class="agenda-vista-tab px-3 py-2 text-xs font-semibold text-slate-500 hover:text-slate-700" data-agenda-vista="semana" type="button" aria-selected="false">Esta semana</button>
+            <button class="agenda-vista-tab px-3 py-2 text-xs font-semibold text-slate-500 hover:text-slate-700" data-agenda-vista="por-persona" type="button" aria-selected="false">Por persona</button>
+          </div>
+          <div id="v4-agenda-lista" class="space-y-2 min-h-[80px]">
+            <div class="text-xs text-slate-400 italic py-4 text-center">Cargando agenda…</div>
+          </div>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs flex-wrap gap-2">
+            <button id="v4-agenda-crear" type="button" class="text-emerald-700 font-semibold hover:underline">+ Crear tarea con Diego</button>
+            <span id="v4-agenda-total" class="text-slate-400">— tareas</span>
           </div>
         </div>
 
@@ -2229,6 +2287,19 @@ function showResult(divId, ok, message) {
   div.innerHTML = (ok ? '✅ ' : '❌ ') + escapeHtml(message);
 }
 
+// ---------- LOGIN UI helpers ----------
+window.toggleLoginPasswordVisibility = function() {
+  const inp = document.getElementById('loginPassword');
+  const icon = document.getElementById('loginPasswordToggleIcon');
+  const btn = document.getElementById('loginPasswordToggle');
+  if (!inp || !icon || !btn) return;
+  const showing = inp.type === 'text';
+  inp.type = showing ? 'password' : 'text';
+  icon.textContent = showing ? '👁️' : '👁️‍🗨️';
+  btn.setAttribute('aria-label', showing ? 'Mostrar contraseña' : 'Ocultar contraseña');
+  btn.setAttribute('title', showing ? 'Mostrar contraseña' : 'Ocultar contraseña');
+};
+
 // ---------- LOGIN (D-PANEL-AUTH-001 · email + password real) ----------
 window.login = async function() {
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
@@ -2317,6 +2388,8 @@ async function hydrateSessionAndEnter(authUser) {
   try { window.v4SyncUser && window.v4SyncUser(); } catch(e){}
   try { window.v4SyncSilos && window.v4SyncSilos(); } catch(e){}
   try { window.initV4Hero && window.initV4Hero(); } catch(e){}
+  try { window.setupDiegoAgenda && window.setupDiegoAgenda(); window.loadDiegoAgenda && window.loadDiegoAgenda(); } catch(e){}
+  try { window.setupDiegoHealth && window.setupDiegoHealth(); window.loadDiegoHealth && window.loadDiegoHealth(); } catch(e){}
 }
 
 // ---------- D-PANEL-AUTH-001 · UI helpers (cambiar entre las 3 pantallas) ----------
@@ -2667,7 +2740,7 @@ function setupTabs() {
       btn.setAttribute('aria-selected', 'true');
       if (typeof window.pageLog === 'function') window.pageLog('tab_change', tabId);
       if (tabId === 'comunicados') loadAudios();
-      if (tabId === 'portada') { loadPortadaAudio(); loadAlertasPortada(); if (typeof window.initV4Hero === 'function') window.initV4Hero(); }
+      if (tabId === 'portada') { loadPortadaAudio(); loadAlertasPortada(); if (typeof window.initV4Hero === 'function') window.initV4Hero(); if (typeof window.setupDiegoAgenda === 'function') { window.setupDiegoAgenda(); window.loadDiegoAgenda(); } }
       if (tabId === 'rdo') { loadRdoResumen(); loadKpiAnual(); loadTopClientes(); loadEvolucionAnual(); loadAlertasRdo(); }
       if (tabId === 'pesaje') { loadPesajesSucursal(); loadPesajeTopMateriales(); loadPesajeEvolucion(); }
       if (tabId === 'facturacion') { loadFacturacionCruceAlertas(); loadFacturacionTopClientes(); }
@@ -3449,6 +3522,188 @@ async function loadEvolucionAnual() {
       </table>
     </div>`).join('');
 }
+
+// ============================================================
+// 📅 AGENDA DIEGO — T2 modo agresivo 23-may
+// Lee panel.diego_tareas filtradas por usuario logueado.
+// Colores: verde (al día) · amarillo (vence ≤2d) · rojo (vencida).
+// Vistas: hoy / semana / por persona. Toggle "mías" / "todas".
+// ============================================================
+const _EMAIL_TO_NOMBRE = {
+  'gerencia@gestionrepchile.cl': 'dusan',
+  'comercial@gestionrepchile.cl': 'andrea',
+  'comercial.prueba@reciclean.cl': 'andrea',
+  'sercot@gestionrepchile.cl': 'cony',
+  'contabilidad@gestionrepchile.cl': 'dyana',
+  'sistemas@gestionrepchile.cl': 'pablo',
+  'asistente@gestionrepchile.cl': 'andrea',
+  'apoyo@gestionrepchile.cl': 'cony'
+};
+
+window.loadDiegoAgenda = async function loadDiegoAgenda() {
+  const lista = document.getElementById('v4-agenda-lista');
+  const total = document.getElementById('v4-agenda-total');
+  const sub   = document.getElementById('v4-agenda-sub');
+  if (!lista) return;
+  if (typeof sb === 'undefined') {
+    lista.innerHTML = '<div class="text-xs text-slate-400 italic py-4 text-center">Esperando sesión…</div>';
+    return;
+  }
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const userEmail = (session?.user?.email || '').toLowerCase();
+    const personMatch = _EMAIL_TO_NOMBRE[userEmail] || (userEmail.split('@')[0] || '');
+
+    // Filtro mías vs todas
+    const btnMias = document.getElementById('v4-agenda-filtro-mias');
+    const filtroMias = btnMias?.classList?.contains('bg-emerald-50');
+
+    // Vista actual (hoy / semana / por-persona)
+    const tabActiva = document.querySelector('.agenda-vista-tab.border-emerald-600');
+    const vista = tabActiva?.dataset?.agendaVista || 'hoy';
+
+    // Query base
+    let q = sb.schema('panel').from('diego_tareas')
+      .select('id,titulo,destinatario,deadline,prioridad,estado,created_at')
+      .neq('estado', 'completada')
+      .order('deadline', { ascending: true, nullsFirst: false });
+
+    const hoyISO = new Date().toISOString().slice(0,10);
+    if (vista === 'hoy') {
+      q = q.lte('deadline', hoyISO);
+    } else if (vista === 'semana') {
+      const en7d = new Date(Date.now() + 7*86400000).toISOString().slice(0,10);
+      q = q.lte('deadline', en7d);
+    }
+
+    const { data, error } = await q.limit(100);
+    if (error) throw error;
+
+    let tareas = data || [];
+    if (filtroMias && personMatch) {
+      tareas = tareas.filter(t => (t.destinatario || '').toLowerCase().includes(personMatch));
+    }
+
+    if (!tareas.length) {
+      lista.innerHTML = '<div class="text-xs text-slate-400 italic py-6 text-center">Sin tareas pendientes acá. Pedile a Diego "Crear tarea: ..." y aparece sola.</div>';
+      total.textContent = '0 tareas';
+      sub.textContent = filtroMias ? 'Todo al día — sin tareas tuyas' : 'No hay tareas en este rango';
+      return;
+    }
+
+    const ahora = new Date();
+    let html;
+
+    if (vista === 'por-persona') {
+      const porPersona = tareas.reduce((acc,t) => {
+        const k = (t.destinatario || 'sin asignar').trim();
+        (acc[k] = acc[k] || []).push(t);
+        return acc;
+      }, {});
+      html = Object.entries(porPersona).sort((a,b) => b[1].length - a[1].length).map(([persona, arr]) => {
+        const items = arr.map(t => _renderTareaItem(t, ahora)).join('');
+        return `<div class="mb-3"><div class="text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">👤 ${escapeHtml(persona)} <span class="text-slate-400 font-normal">· ${arr.length}</span></div><div class="space-y-1">${items}</div></div>`;
+      }).join('');
+    } else {
+      html = tareas.map(t => _renderTareaItem(t, ahora)).join('');
+    }
+
+    lista.innerHTML = html;
+    total.textContent = `${tareas.length} tarea${tareas.length===1?'':'s'}`;
+
+    const vencidas = tareas.filter(t => { const dl=t.deadline?new Date(t.deadline):null; return dl && dl < ahora; }).length;
+    const porVencer = tareas.filter(t => { const dl=t.deadline?new Date(t.deadline):null; if(!dl) return false; const d=(dl-ahora)/86400000; return d >= 0 && d <= 2; }).length;
+    sub.textContent = vencidas ? `🔴 ${vencidas} vencida${vencidas===1?'':'s'} · ⏰ ${porVencer} por vencer` : (porVencer ? `⏰ ${porVencer} por vencer · resto al día` : 'Todo al día');
+  } catch (e) {
+    console.error('[loadDiegoAgenda]', e);
+    lista.innerHTML = '<div class="text-xs text-red-500 py-4 text-center">Error cargando agenda: ' + escapeHtml(e?.message || String(e)) + '</div>';
+    total.textContent = '—';
+    sub.textContent = 'Error al cargar';
+  }
+};
+
+function _renderTareaItem(t, ahora) {
+  const dl = t.deadline ? new Date(t.deadline) : null;
+  const dias = dl ? Math.floor((dl - ahora) / 86400000) : null;
+  let cls = 'bg-emerald-50 border-emerald-200';
+  let txtCls = 'text-emerald-700';
+  let icon = '✅';
+  let etiqueta = 'al día';
+  if (dias !== null) {
+    if (dias < 0) {
+      cls = 'bg-red-50 border-red-200';
+      txtCls = 'text-red-700';
+      icon = '🔴';
+      const d = Math.abs(dias);
+      etiqueta = `vencida hace ${d} día${d===1?'':'s'}`;
+    } else if (dias <= 2) {
+      cls = 'bg-amber-50 border-amber-200';
+      txtCls = 'text-amber-700';
+      icon = '⏰';
+      etiqueta = dias === 0 ? 'vence hoy' : (dias === 1 ? 'vence mañana' : `vence en ${dias} días`);
+    }
+  } else {
+    etiqueta = 'sin fecha';
+    txtCls = 'text-slate-500';
+  }
+  const prio = (t.prioridad || '').toLowerCase();
+  const prioBadge = prio === 'alta' ? '<span class="text-[10px] font-bold text-red-600 ml-1">●</span>' : (prio === 'media' ? '<span class="text-[10px] font-bold text-amber-600 ml-1">●</span>' : '');
+  return `<div class="flex items-center gap-3 p-3 rounded-xl border ${cls}">
+    <div class="text-xl flex-shrink-0">${icon}</div>
+    <div class="flex-1 min-w-0">
+      <div class="text-sm font-medium text-slate-800 truncate">${escapeHtml(t.titulo || '(sin título)')}${prioBadge}</div>
+      <div class="text-xs text-slate-500 mt-0.5">👤 ${escapeHtml(t.destinatario || 'sin asignar')} · 📅 ${escapeHtml(t.deadline || '—')} · <span class="${txtCls} font-semibold">${etiqueta}</span></div>
+    </div>
+  </div>`;
+}
+
+window.setupDiegoAgenda = function setupDiegoAgenda() {
+  const agenda = document.getElementById('v4-diego-agenda');
+  if (!agenda || agenda.dataset.setup === '1') return;
+  agenda.dataset.setup = '1';
+
+  const btnMias  = document.getElementById('v4-agenda-filtro-mias');
+  const btnTodas = document.getElementById('v4-agenda-filtro-todas');
+  function setActivo(activo, otro) {
+    activo.classList.remove('bg-slate-50','text-slate-600','border-slate-200');
+    activo.classList.add('bg-emerald-50','text-emerald-700','border-emerald-200','font-semibold');
+    otro.classList.remove('bg-emerald-50','text-emerald-700','border-emerald-200','font-semibold');
+    otro.classList.add('bg-slate-50','text-slate-600','border-slate-200');
+    loadDiegoAgenda();
+  }
+  btnMias?.addEventListener('click', () => setActivo(btnMias, btnTodas));
+  btnTodas?.addEventListener('click', () => setActivo(btnTodas, btnMias));
+
+  agenda.querySelectorAll('.agenda-vista-tab').forEach(b => {
+    b.addEventListener('click', () => {
+      agenda.querySelectorAll('.agenda-vista-tab').forEach(x => {
+        x.classList.remove('text-emerald-700','border-emerald-600','border-b-2');
+        x.classList.add('text-slate-500');
+        x.setAttribute('aria-selected','false');
+      });
+      b.classList.remove('text-slate-500');
+      b.classList.add('text-emerald-700','border-emerald-600','border-b-2');
+      b.setAttribute('aria-selected','true');
+      loadDiegoAgenda();
+    });
+  });
+
+  document.getElementById('v4-agenda-crear')?.addEventListener('click', () => {
+    const fab = document.getElementById('diegoFab');
+    const chat = document.getElementById('diegoChat');
+    if (chat && !chat.classList.contains('open')) fab?.click();
+    setTimeout(() => {
+      const input = document.getElementById('diegoChatInput');
+      if (input) {
+        input.value = 'Crear tarea para ';
+        input.focus();
+        const len = input.value.length;
+        input.setSelectionRange(len, len);
+      }
+    }, 220);
+  });
+};
 
 async function loadAlertasPortada() {
   const div = document.getElementById('portadaAlertas');
@@ -6306,6 +6561,72 @@ window.v4SyncSiloCtx = function v4SyncSiloCtx() {
 // =====================================================================
 // v4-design F3 · Dashboard hero · init lazy (solo cuando se ve Portada)
 // =====================================================================
+// ============================================================
+// 🤖 INDICADOR SALUD DIEGO — monitoreo perpetuo
+// Lee última fila de panel.diego_health_log y muestra verde/rojo/amber
+// ============================================================
+window.loadDiegoHealth = async function loadDiegoHealth() {
+  const iconEl = document.getElementById('v4-health-icon');
+  const badgeEl = document.getElementById('v4-health-badge');
+  const detailEl = document.getElementById('v4-health-detail');
+  if (!iconEl || typeof sb === 'undefined') return;
+  try {
+    // Última prueba de cada smoke individual (3 pruebas máximas)
+    const { data, error } = await sb.schema('panel').from('diego_health_log')
+      .select('prueba, resultado, tiempo_ms, creado_en, error')
+      .order('creado_en', { ascending: false })
+      .limit(20);
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      iconEl.textContent = '⏳';
+      iconEl.className = 'w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-2xl flex-shrink-0';
+      badgeEl.textContent = 'sin pruebas';
+      badgeEl.className = 'badge bg-slate-100 text-slate-500 text-xs px-2 py-0.5 rounded-full font-semibold';
+      detailEl.textContent = 'Diego nunca corrió un smoke test. Esperando 8:30 AM CLT.';
+      return;
+    }
+    // Tomar la última corrida (3 pruebas con timestamps cercanos)
+    const latestTs = new Date(data[0].creado_en).getTime();
+    const ultimaCorrida = data.filter(r => Math.abs(new Date(r.creado_en).getTime() - latestTs) < 60_000);
+    const ok = ultimaCorrida.filter(r => r.resultado === 'ok').length;
+    const fail = ultimaCorrida.filter(r => r.resultado !== 'ok').length;
+    const total = ultimaCorrida.length;
+    const allOk = fail === 0;
+    const ageMin = Math.floor((Date.now() - latestTs) / 60000);
+    const ageText = ageMin < 1 ? 'hace segundos' : (ageMin < 60 ? `hace ${ageMin} min` : (ageMin < 1440 ? `hace ${Math.floor(ageMin/60)} h` : `hace ${Math.floor(ageMin/1440)} días`));
+    if (allOk) {
+      iconEl.textContent = '✅';
+      iconEl.className = 'w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-2xl flex-shrink-0';
+      badgeEl.textContent = 'OK';
+      badgeEl.className = 'badge bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-semibold';
+      const avgMs = Math.round(ultimaCorrida.reduce((s,r) => s + (r.tiempo_ms || 0), 0) / total);
+      detailEl.textContent = `${total}/${total} pruebas pasaron · ${avgMs} ms promedio · última ${ageText}`;
+    } else {
+      iconEl.textContent = '❌';
+      iconEl.className = 'w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-2xl flex-shrink-0';
+      badgeEl.textContent = 'CAÍDO';
+      badgeEl.className = 'badge bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full font-semibold';
+      const fallidos = ultimaCorrida.filter(r => r.resultado !== 'ok').map(r => r.prueba).join(', ');
+      detailEl.textContent = `${fail}/${total} fallaron: ${fallidos} · última ${ageText}`;
+    }
+  } catch (e) {
+    console.error('[loadDiegoHealth]', e);
+    iconEl.textContent = '⚠️';
+    iconEl.className = 'w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-2xl flex-shrink-0';
+    badgeEl.textContent = 'error';
+    badgeEl.className = 'badge bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full font-semibold';
+    detailEl.textContent = 'No pude leer panel.diego_health_log: ' + escapeHtml(e?.message || String(e)).slice(0,80);
+  }
+};
+window.setupDiegoHealth = function setupDiegoHealth() {
+  const card = document.getElementById('v4-diego-health');
+  if (!card || card.dataset.setup === '1') return;
+  card.dataset.setup = '1';
+  document.getElementById('v4-health-refresh')?.addEventListener('click', () => window.loadDiegoHealth());
+  // Auto-refresh cada 5 min
+  setInterval(() => window.loadDiegoHealth(), 5 * 60 * 1000);
+};
+
 window.initV4Hero = function initV4Hero() {
   try {
     const now = new Date();
