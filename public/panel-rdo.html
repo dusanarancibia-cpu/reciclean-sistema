@@ -479,6 +479,19 @@
           <p class="text-sm text-slate-500 mt-1">Hoy es <span class="font-medium text-slate-700" id="v4-fechaCompleta">—</span> · <span id="v4-siloCtx" class="font-semibold text-emerald-700">Vista global</span> · UF <span id="v4-ufValor" class="font-semibold text-slate-700">$38.214</span></p>
         </div>
 
+        <!-- 🤖 INDICADOR SALUD DIEGO (monitoreo perpetuo D-DIEGO-MONITOREO-001) -->
+        <div id="v4-diego-health" class="bg-white border border-slate-200 rounded-2xl p-4 flex items-center gap-4" role="article" aria-label="Estado Diego">
+          <div id="v4-health-icon" class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-2xl flex-shrink-0">⏳</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-sm font-semibold text-slate-800">Diego</span>
+              <span id="v4-health-badge" class="badge bg-slate-100 text-slate-500 text-xs px-2 py-0.5 rounded-full font-semibold">verificando…</span>
+            </div>
+            <div id="v4-health-detail" class="text-xs text-slate-500 mt-0.5">Cargando última prueba…</div>
+          </div>
+          <button id="v4-health-refresh" type="button" class="text-xs text-slate-400 hover:text-emerald-700 transition" aria-label="Actualizar">🔄</button>
+        </div>
+
         <!-- "Esto necesita tu atención hoy" — conectado a public.f_panel_health (datos reales) con fallback mock -->
         <div class="bg-white border border-slate-200 rounded-2xl p-5 border-l-4 border-l-amber-400" role="article" aria-label="Pendientes de hoy">
           <div class="flex items-start justify-between mb-3">
@@ -2344,6 +2357,7 @@ async function hydrateSessionAndEnter(authUser) {
   try { window.v4SyncSilos && window.v4SyncSilos(); } catch(e){}
   try { window.initV4Hero && window.initV4Hero(); } catch(e){}
   try { window.setupDiegoAgenda && window.setupDiegoAgenda(); window.loadDiegoAgenda && window.loadDiegoAgenda(); } catch(e){}
+  try { window.setupDiegoHealth && window.setupDiegoHealth(); window.loadDiegoHealth && window.loadDiegoHealth(); } catch(e){}
 }
 
 // ---------- D-PANEL-AUTH-001 · UI helpers (cambiar entre las 3 pantallas) ----------
@@ -6515,6 +6529,72 @@ window.v4SyncSiloCtx = function v4SyncSiloCtx() {
 // =====================================================================
 // v4-design F3 · Dashboard hero · init lazy (solo cuando se ve Portada)
 // =====================================================================
+// ============================================================
+// 🤖 INDICADOR SALUD DIEGO — monitoreo perpetuo
+// Lee última fila de panel.diego_health_log y muestra verde/rojo/amber
+// ============================================================
+window.loadDiegoHealth = async function loadDiegoHealth() {
+  const iconEl = document.getElementById('v4-health-icon');
+  const badgeEl = document.getElementById('v4-health-badge');
+  const detailEl = document.getElementById('v4-health-detail');
+  if (!iconEl || typeof sb === 'undefined') return;
+  try {
+    // Última prueba de cada smoke individual (3 pruebas máximas)
+    const { data, error } = await sb.schema('panel').from('diego_health_log')
+      .select('prueba, resultado, tiempo_ms, creado_en, error')
+      .order('creado_en', { ascending: false })
+      .limit(20);
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      iconEl.textContent = '⏳';
+      iconEl.className = 'w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-2xl flex-shrink-0';
+      badgeEl.textContent = 'sin pruebas';
+      badgeEl.className = 'badge bg-slate-100 text-slate-500 text-xs px-2 py-0.5 rounded-full font-semibold';
+      detailEl.textContent = 'Diego nunca corrió un smoke test. Esperando 8:30 AM CLT.';
+      return;
+    }
+    // Tomar la última corrida (3 pruebas con timestamps cercanos)
+    const latestTs = new Date(data[0].creado_en).getTime();
+    const ultimaCorrida = data.filter(r => Math.abs(new Date(r.creado_en).getTime() - latestTs) < 60_000);
+    const ok = ultimaCorrida.filter(r => r.resultado === 'ok').length;
+    const fail = ultimaCorrida.filter(r => r.resultado !== 'ok').length;
+    const total = ultimaCorrida.length;
+    const allOk = fail === 0;
+    const ageMin = Math.floor((Date.now() - latestTs) / 60000);
+    const ageText = ageMin < 1 ? 'hace segundos' : (ageMin < 60 ? `hace ${ageMin} min` : (ageMin < 1440 ? `hace ${Math.floor(ageMin/60)} h` : `hace ${Math.floor(ageMin/1440)} días`));
+    if (allOk) {
+      iconEl.textContent = '✅';
+      iconEl.className = 'w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-2xl flex-shrink-0';
+      badgeEl.textContent = 'OK';
+      badgeEl.className = 'badge bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-semibold';
+      const avgMs = Math.round(ultimaCorrida.reduce((s,r) => s + (r.tiempo_ms || 0), 0) / total);
+      detailEl.textContent = `${total}/${total} pruebas pasaron · ${avgMs} ms promedio · última ${ageText}`;
+    } else {
+      iconEl.textContent = '❌';
+      iconEl.className = 'w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-2xl flex-shrink-0';
+      badgeEl.textContent = 'CAÍDO';
+      badgeEl.className = 'badge bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full font-semibold';
+      const fallidos = ultimaCorrida.filter(r => r.resultado !== 'ok').map(r => r.prueba).join(', ');
+      detailEl.textContent = `${fail}/${total} fallaron: ${fallidos} · última ${ageText}`;
+    }
+  } catch (e) {
+    console.error('[loadDiegoHealth]', e);
+    iconEl.textContent = '⚠️';
+    iconEl.className = 'w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-2xl flex-shrink-0';
+    badgeEl.textContent = 'error';
+    badgeEl.className = 'badge bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full font-semibold';
+    detailEl.textContent = 'No pude leer panel.diego_health_log: ' + escapeHtml(e?.message || String(e)).slice(0,80);
+  }
+};
+window.setupDiegoHealth = function setupDiegoHealth() {
+  const card = document.getElementById('v4-diego-health');
+  if (!card || card.dataset.setup === '1') return;
+  card.dataset.setup = '1';
+  document.getElementById('v4-health-refresh')?.addEventListener('click', () => window.loadDiegoHealth());
+  // Auto-refresh cada 5 min
+  setInterval(() => window.loadDiegoHealth(), 5 * 60 * 1000);
+};
+
 window.initV4Hero = function initV4Hero() {
   try {
     const now = new Date();
