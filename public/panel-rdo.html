@@ -194,10 +194,20 @@
              autocomplete="email"
              class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
       <label for="loginPassword" class="sr-only">Contraseña</label>
-      <input type="password" id="loginPassword" placeholder="Contraseña"
-             aria-label="Contraseña"
-             autocomplete="current-password"
-             class="w-full p-3 border border-stone-300 rounded mb-3 focus:border-green-700 focus:outline-none">
+      <div class="relative mb-3">
+        <input type="password" id="loginPassword" placeholder="Contraseña"
+               aria-label="Contraseña"
+               autocomplete="current-password"
+               class="w-full p-3 pr-12 border border-stone-300 rounded focus:border-green-700 focus:outline-none">
+        <button type="button" id="loginPasswordToggle"
+                onclick="toggleLoginPasswordVisibility()"
+                aria-label="Mostrar u ocultar contraseña"
+                title="Mostrar/ocultar contraseña"
+                class="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-stone-500 hover:text-green-700 bg-transparent border-0 cursor-pointer focus:outline-none focus:text-green-700"
+                style="color:#64748b">
+          <span id="loginPasswordToggleIcon">👁️</span>
+        </button>
+      </div>
       <div class="flex items-center justify-between mb-3 text-sm">
         <label class="flex items-center gap-2 text-stone-600 cursor-pointer">
           <input type="checkbox" id="loginRemember" checked
@@ -2267,6 +2277,19 @@ function showResult(divId, ok, message) {
   div.className = `mt-4 text-sm p-3 rounded ${ok ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`;
   div.innerHTML = (ok ? '✅ ' : '❌ ') + escapeHtml(message);
 }
+
+// ---------- LOGIN UI helpers ----------
+window.toggleLoginPasswordVisibility = function() {
+  const inp = document.getElementById('loginPassword');
+  const icon = document.getElementById('loginPasswordToggleIcon');
+  const btn = document.getElementById('loginPasswordToggle');
+  if (!inp || !icon || !btn) return;
+  const showing = inp.type === 'text';
+  inp.type = showing ? 'password' : 'text';
+  icon.textContent = showing ? '👁️' : '👁️‍🗨️';
+  btn.setAttribute('aria-label', showing ? 'Mostrar contraseña' : 'Ocultar contraseña');
+  btn.setAttribute('title', showing ? 'Mostrar contraseña' : 'Ocultar contraseña');
+};
 
 // ---------- LOGIN (D-PANEL-AUTH-001 · email + password real) ----------
 window.login = async function() {
