@@ -7816,14 +7816,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function callDiego(mensaje, attach) {
-    const email = getUserEmail();
-    if (!email) return { error: 'No hay sesión. ¿Iniciaste sesión en el panel?' };
+    let email = getUserEmail();
     const SUPABASE_URL_LOCAL = (typeof SUPABASE_URL !== 'undefined' && SUPABASE_URL) || 'https://eknmtsrtfkzroxnovfqn.supabase.co';
     let token = null;
     try {
       const s = await sb.auth.getSession();
       token = s?.data?.session?.access_token;
+      if (!email) email = s?.data?.session?.user?.email || null;
     } catch { /* noop */ }
+    if (!email) return { error: 'No hay sesión. ¿Iniciaste sesión en el panel?' };
     if (!token) return { error: 'No tengo token de sesión válido.' };
 
     const body = {
