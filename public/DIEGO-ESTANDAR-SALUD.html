@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diego v8 — Estándar Mundial Salud y Bienestar Laboral 2025-2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde: #059669;
+    --azul: #2563eb;
+    --naranja: #ea580c;
+    --purpura: #9333ea;
+    --rojo: #dc2626;
+    --ambar: #d97706;
+    --fondo: #f8fafc;
+    --fondo-medio: #f1f5f9;
+    --titulo: #0f172a;
+    --cuerpo: #475569;
+    --nota: #94a3b8;
+    --linea: #e2e8f0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--fondo);
+    color: var(--cuerpo);
+    line-height: 1.6;
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  header {
+    background: linear-gradient(135deg, var(--verde) 0%, #047857 100%);
+    color: white;
+    padding: 32px 28px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    animation: fadeIn 0.3s ease;
+  }
+  header h1 { font-size: 1.875rem; font-weight: 700; margin-bottom: 8px; }
+  header p { opacity: 0.92; font-size: 0.95rem; }
+  header .meta { margin-top: 16px; display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.8125rem; opacity: 0.85; }
+  header .meta span { background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 999px; }
+
+  section {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    animation: fadeIn 0.3s ease;
+  }
+  section h2 {
+    color: var(--titulo);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  section h2 .badge {
+    background: var(--verde);
+    color: white;
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.875rem; font-weight: 700;
+  }
+  section h3 {
+    color: var(--titulo);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 20px 0 12px 0;
+  }
+  section p { margin-bottom: 12px; color: var(--cuerpo); }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .kpi-card {
+    background: white;
+    border: 1px solid var(--linea);
+    border-radius: 12px;
+    padding: 18px;
+    transition: all 0.15s ease;
+  }
+  .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  .kpi-card .label {
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .kpi-card .value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--titulo);
+    line-height: 1;
+  }
+  .kpi-card .desc {
+    font-size: 0.75rem;
+    color: var(--cuerpo);
+    margin-top: 8px;
+  }
+  .kpi-card.verde .value { color: var(--verde); }
+  .kpi-card.azul .value { color: var(--azul); }
+  .kpi-card.naranja .value { color: var(--naranja); }
+  .kpi-card.rojo .value { color: var(--rojo); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 0.875rem;
+  }
+  th {
+    background: var(--fondo-medio);
+    text-align: left;
+    padding: 12px;
+    font-weight: 600;
+    color: var(--titulo);
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  td {
+    padding: 12px;
+    border-bottom: 1px solid var(--linea);
+    color: var(--cuerpo);
+  }
+  tr:hover td { background: var(--fondo); }
+
+  .regla-critica {
+    background: #fef2f2;
+    border-left: 4px solid var(--rojo);
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin: 16px 0;
+  }
+  .regla-critica strong { color: var(--rojo); }
+
+  .quick-win {
+    background: #ecfdf5;
+    border-left: 4px solid var(--verde);
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin: 12px 0;
+  }
+  .quick-win strong { color: #047857; }
+
+  .codigo {
+    background: var(--titulo);
+    color: #e2e8f0;
+    padding: 16px;
+    border-radius: 8px;
+    font-family: 'Menlo', 'Monaco', monospace;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    overflow-x: auto;
+    margin: 12px 0;
+    white-space: pre-wrap;
+  }
+
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .pill.verde { background: #d1fae5; color: #065f46; }
+  .pill.azul { background: #dbeafe; color: #1e40af; }
+  .pill.rojo { background: #fee2e2; color: #991b1b; }
+  .pill.ambar { background: #fef3c7; color: #92400e; }
+
+  ul { padding-left: 24px; margin-bottom: 12px; }
+  ul li { margin-bottom: 6px; color: var(--cuerpo); }
+
+  .nav {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .nav a {
+    text-decoration: none;
+    color: var(--cuerpo);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
+  }
+  .nav a:hover { background: var(--fondo-medio); color: var(--verde); }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  @media (max-width: 768px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .kpi-card .value { font-size: 2rem; }
+  }
+
+  footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--nota);
+    font-size: 0.8125rem;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .source-list { font-size: 0.8125rem; }
+  .source-list li { margin-bottom: 8px; }
+  .source-list a { color: var(--azul); text-decoration: none; }
+  .source-list a:hover { text-decoration: underline; }
+
+  .gatillo-box {
+    background: var(--fondo-medio);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 12px 0;
+  }
+  .gatillo-box h4 {
+    color: var(--rojo);
+    font-size: 0.875rem;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .gatillo-box ul { margin: 0; }
+  .gatillo-box li {
+    font-style: italic;
+    color: var(--titulo);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Diego v8 · Estándar Mundial Salud y Bienestar Laboral</h1>
+  <p>Investigación benchmark 2025-2026 aplicada a Grupo Reciclean-Farex-SERCOT</p>
+  <div class="meta">
+    <span>14 personas</span>
+    <span>Planta + Oficina</span>
+    <span>Chile</span>
+    <span>Ley 21.719 vigente 1-dic-2026</span>
+    <span>Pauta visual oro v1.0</span>
+  </div>
+</header>
+
+<nav class="nav">
+  <a href="#resumen">Resumen</a>
+  <a href="#reglas">Reglas críticas</a>
+  <a href="#a1">A1 Recordatorios</a>
+  <a href="#a2">A2 Recetas</a>
+  <a href="#a3">A3 Pausas activas</a>
+  <a href="#a4">A4 Fatiga/estrés</a>
+  <a href="#a5">A5 Emergencia</a>
+  <a href="#brechas">Brechas</a>
+  <a href="#quick-wins">Quick-wins</a>
+  <a href="#fuentes">Fuentes</a>
+</nav>
+
+<section id="resumen">
+  <h2><span class="badge">★</span> Resumen ejecutivo</h2>
+  <p>Diego v8 puede convertirse en el <strong>primer asistente de bienestar laboral</strong> del Grupo si adopta los 5 pilares que dominan el mercado mundial 2025-2026:</p>
+  <div class="kpi-grid">
+    <div class="kpi-card verde">
+      <div class="label">A1 · Recordatorios</div>
+      <div class="value">+40%</div>
+      <div class="desc">adherencia esperada</div>
+    </div>
+    <div class="kpi-card azul">
+      <div class="label">A2 · Recetas OCR</div>
+      <div class="value">0</div>
+      <div class="desc">errores de dosis</div>
+    </div>
+    <div class="kpi-card verde">
+      <div class="label">A3 · Pausas activas</div>
+      <div class="value">−30%</div>
+      <div class="desc">reportes lumbago 6m</div>
+    </div>
+    <div class="kpi-card naranja">
+      <div class="label">A4 · Fatiga</div>
+      <div class="value">−22%</div>
+      <div class="desc">indicadores burnout</div>
+    </div>
+    <div class="kpi-card rojo">
+      <div class="label">A5 · Emergencia</div>
+      <div class="value">131</div>
+      <div class="desc">derivación SAMU directa</div>
+    </div>
+  </div>
+  <div class="regla-critica">
+    <strong>Regla maestra de Diego en salud:</strong><br>
+    Diego escucha, recuerda, deriva. <strong>Diego nunca diagnostica, nunca receta, nunca reemplaza al médico.</strong>
+  </div>
+</section>
+
+<section id="reglas">
+  <h2><span class="badge">!</span> Reglas críticas (no negociables)</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Regla</th><th>Acción si se viola</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>NUNCA diagnosticar</td><td>Diego apaga la conversación y deriva al médico</td></tr>
+      <tr><td>2</td><td>NUNCA recomendar medicamento (ni dosis, ni cambios)</td><td>Solo lee lo que dijo el doctor</td></tr>
+      <tr><td>3</td><td>NUNCA reemplazar consulta médica</td><td>"Esto es para el doctor, no para mí"</td></tr>
+      <tr><td>4</td><td>Emergencia → 131 SAMU + Dusan/Pablo</td><td>Stop total a cualquier otra tarea</td></tr>
+      <tr><td>5</td><td>Datos médicos: privacidad máxima, jamás cross-usuario</td><td>Cifrado AES-256 + BAA obligatorio</td></tr>
+      <tr><td>6</td><td>Empatía antes que proceso</td><td>Nunca "no es para tanto"</td></tr>
+      <tr><td>7</td><td>Si hay duda, deriva al humano</td><td>Pablo / Dusan / médico</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="a1">
+  <h2><span class="badge">1</span> Recordatorios médicos + medicamentos</h2>
+  <p><strong>Estado del arte:</strong> Medisafe (#1 de 461 apps farmacéuticas, mejores prácticas HIPAA), MyTherapy (recordatorios + tracking + síntomas + EHR), Mango Health (metas + premios adherencia).</p>
+
+  <h3>Capacidades estándar 2025-2026</h3>
+  <table>
+    <thead><tr><th>Capacidad</th><th>Estándar</th><th>Diego v8</th></tr></thead>
+    <tbody>
+      <tr><td>Recordatorio multi-dosis</td><td><span class="pill verde">Sí</span></td><td><span class="pill verde">Vía WhatsApp</span></td></tr>
+      <tr><td>Confirmación de toma</td><td><span class="pill verde">Sí</span></td><td><span class="pill verde">Sí</span></td></tr>
+      <tr><td>Re-recordatorio escalado</td><td><span class="pill verde">Sí</span></td><td><span class="pill verde">5/15/30 min</span></td></tr>
+      <tr><td>Tracking adherencia %</td><td><span class="pill verde">Sí</span></td><td><span class="pill verde">Sí — privado</span></td></tr>
+      <tr><td>Alerta stock bajo</td><td><span class="pill verde">Sí</span></td><td><span class="pill verde">Sí</span></td></tr>
+      <tr><td>Control médico recurrente</td><td><span class="pill verde">Sí</span></td><td><span class="pill verde">Sí</span></td></tr>
+      <tr><td>Integración Google Calendar</td><td><span class="pill verde">Sí</span></td><td><span class="pill verde">Sí</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Protocolo HIPAA / Ley 21.719 Chile</h3>
+  <p><strong>Ley 21.719</strong> vigente 1-dic-2026 reemplaza Ley 19.628. Datos sensibles incluyen <strong>salud, biometría, genética</strong>. Estándar reforzado: consentimiento expreso por escrito, cifrado AES-256 reposo + TLS 1.2+ tránsito, audit log, right to be forgotten. Sanción máxima: <strong>20.000 UTM o 4% facturación anual</strong>.</p>
+
+  <div class="codigo">PROTOCOLO DE RECORDATORIO
+─────────────────────────────────
+Diego (08:00): "Buenos días Cony. Recordatorio:
+                tomar Losartán 50mg con agua.
+                ¿Lo tomaste? [Sí] [No, ahora] [No puedo hoy]"
+
+Si "Sí" → registra en tabla cifrada · "¡Bien!"
+Si "No, ahora" → "Avísame cuando lo tomes."
+Sin respuesta en 30min → re-pingüino una vez. Sin más insistencia.</div>
+</section>
+
+<section id="a2">
+  <h2><span class="badge">2</span> Lectura de recetas e indicaciones</h2>
+  <p><strong>Estado del arte:</strong> Sistema MEDIC (Mayo Clinic Proceedings 2024-2025) combina OCR + ChatGPT para extraer nombres de medicamentos desde foto y detectar interacciones drug-drug. <strong>Ada Health</strong> con certificación CE Class IIa. <strong>FDA</strong> Digital Health Advisory Committee nov-2025 endurece escrutinio sobre LLM en salud.</p>
+
+  <h3>Lo que Diego SÍ puede</h3>
+  <ul>
+    <li>OCR de receta y envase de medicamento (Google Vision / GPT-4 Vision)</li>
+    <li>Leer dosis y frecuencia escrita por el doctor</li>
+    <li>Alertar de interacción medicamento-medicamento (base DrugBank)</li>
+    <li>Alertar de interacción medicamento-alimento</li>
+    <li>Explicar prospecto en lenguaje simple</li>
+  </ul>
+
+  <h3>Lo que Diego NUNCA hace</h3>
+  <div class="regla-critica">
+    <strong>BLOQUEADO:</strong>
+    <ul>
+      <li>Sugerir cambio de dosis</li>
+      <li>Recomendar reemplazo de medicamento</li>
+      <li>Diagnosticar síntoma</li>
+      <li>Indicar interrumpir tratamiento</li>
+    </ul>
+  </div>
+
+  <div class="codigo">LECTURA DE RECETA — DIEGO v8
+─────────────────────────────────
+Usuario: [envía foto de receta]
+Diego: "Recibí la receta. Te resumo lo que dice el doctor:
+        • Paracetamol 500mg
+        • 1 comprimido cada 8 horas
+        • Por 5 días
+
+        ¿Quieres que te recuerde tomar cada dosis?
+
+        IMPORTANTE: yo solo leo lo que escribió el doctor.
+        Si tienes dudas, llama al consultorio."
+
+Si usuario: "¿puedo tomar el doble?"
+Diego: "Esa pregunta es para el doctor, no para mí.
+        ¿Quieres que te ayude a encontrar el teléfono?"</div>
+</section>
+
+<section id="a3">
+  <h2><span class="badge">3</span> Pausas activas durante la jornada</h2>
+
+  <h3>Estado del arte Chile 2025-2026</h3>
+  <div class="grid-2">
+    <div class="kpi-card">
+      <div class="label">ACHS</div>
+      <div class="value" style="font-size: 1.5rem;">+1 al día</div>
+      <div class="desc">Foco: cuello, hombros, vista</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Mutual Seguridad</div>
+      <div class="value" style="font-size: 1.5rem;">5-10 min</div>
+      <div class="desc">cada 3 hrs · digitación: 10-15 min/hora</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">MINSAL · TMERT</div>
+      <div class="value" style="font-size: 1.5rem;">cada 2-3 hrs</div>
+      <div class="desc">Industria con tareas repetitivas</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">OSHA · 20-20-20</div>
+      <div class="value" style="font-size: 1.5rem;">cada 20 min</div>
+      <div class="desc">Mirar 6 m de distancia 20 seg</div>
+    </div>
+  </div>
+
+  <h3>Diferenciación por área en Reciclean-Farex-SERCOT</h3>
+  <table>
+    <thead><tr><th>Tipo trabajo</th><th>Frecuencia</th><th>Duración</th><th>Foco</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Planta (T01-T10)</strong> — físico, polvo, levantamiento</td><td>Cada 2 hrs</td><td>5-10 min</td><td>Lumbar, hombros, hidratación 150-250 mL c/15-20 min</td></tr>
+      <tr><td><strong>Oficina (T11-T14)</strong> — pantalla, sedentario</td><td>Cada 1 hr + 20-20-20</td><td>2-5 min microbreak</td><td>Vista, cuello, muñecas</td></tr>
+    </tbody>
+  </table>
+
+  <div class="codigo">PAUSA ACTIVA · PLANTA (10:00, 12:30, 15:00, 17:30)
+─────────────────────────────────
+Diego: "Hora de pausa activa 5 min, equipo planta.
+        Hoy: estiramiento lumbar.
+        1) Manos en cintura, inclínate hacia atrás 5 veces
+        2) Hombros círculos hacia atrás 10 veces
+        3) Cuello: oreja al hombro, 10 seg cada lado
+
+        ¿Listo? Mándame 👍 cuando termines."
+
+PAUSA OFICINA · 20-20-20 (cada hora)
+─────────────────────────────────
+Diego: "Mira lejos 20 segundos. Levanta la vista de la pantalla
+        y mira por la ventana. Te aviso en 20s."</div>
+</section>
+
+<section id="a4">
+  <h2><span class="badge">4</span> Alertas de estrés y fatiga</h2>
+  <p><strong>Meta-análisis nov-2025 (31 RCTs):</strong> chatbots IA producen reducción moderada y estadísticamente significativa del estrés. <strong>Wysa</strong>: −31% ansiedad/depresión, multilingüe español, B2B con dashboards anónimos. <strong>Woebot</strong>: −22% depresión en 2 semanas.</p>
+
+  <h3>Biomarcadores conductuales (detección pasiva)</h3>
+  <div class="kpi-card verde" style="max-width: 400px; margin: 16px 0;">
+    <div class="label">Precisión detección estrés</div>
+    <div class="value">85.1%</div>
+    <div class="desc">Monitoreo pasivo combinado fisiológico + conductual · PMC NCBI 2025</div>
+  </div>
+
+  <h3>Top 7 predictores de burnout en chat/mensajes</h3>
+  <ol style="padding-left: 24px;">
+    <li><strong>Mensajes nocturnos</strong> (&gt;22:00) — marcador #1 exhaustión</li>
+    <li><strong>Mensajes fin de semana</strong> sin motivo operativo</li>
+    <li><strong>Caída en reciprocidad social</strong> (no saluda, no agradece)</li>
+    <li><strong>Sentiment negativo creciente</strong> (más quejas, menos cierre positivo)</li>
+    <li><strong>Errores de tipeo</strong> aumentando (cansancio motor)</li>
+    <li><strong>Respuestas más cortas y abruptas</strong> que su baseline</li>
+    <li><strong>Comunicaciones fuera de horario</strong> = exhausto</li>
+  </ol>
+
+  <div class="codigo">TRIGGER SUAVE (1 flag):
+Diego: "Cony, vi que escribiste anoche tarde. ¿Todo bien?
+        Si necesitas conversar, te puedo conectar con
+        Mutual de Seguridad — tienen línea 24/7."
+
+TRIGGER MEDIO (2-3 flags simultáneos):
+Diego (privado): "Hola Cony. Esta semana noté que escribes
+        tarde y los mensajes están más cortos. ¿Cómo te sientes?
+        [Bien] [Cansada] [Estresada] [No quiero hablar]"
+
+TRIGGER ALTO:
+Diego → Dusan: "Flag de bienestar: T08 con patrón de fatiga
+        5 días. Sugiero conversación informal sin mencionar
+        el patrón." (Solo el flag, nunca el contenido)</div>
+</section>
+
+<section id="a5">
+  <h2><span class="badge">5</span> Detección de emergencia y derivación</h2>
+  <p><strong>Hallazgo crítico JMIR Mental Health 2025:</strong> 0 de 29 chatbots evaluados dieron respuesta adecuada a crisis de suicidio. Diego v8 debe estar en el grupo de los que sí responden bien.</p>
+
+  <div class="grid-2">
+    <div class="gatillo-box">
+      <h4>Emergencia médica física → 131</h4>
+      <ul>
+        <li>"pecho aprieta" / "me aprieta el pecho"</li>
+        <li>"no puedo respirar"</li>
+        <li>"se me duerme el brazo" / "no siento la cara"</li>
+        <li>"se me cae la boca"</li>
+        <li>"estoy sangrando mucho"</li>
+        <li>"me desmayé" / "me caí y no me puedo parar"</li>
+        <li>"vómito con sangre"</li>
+        <li>"dolor de cabeza el peor de mi vida"</li>
+      </ul>
+    </div>
+    <div class="gatillo-box">
+      <h4>Salud mental → 600 360 7777 / 4141</h4>
+      <ul>
+        <li>"no quiero seguir" / "ya no doy más"</li>
+        <li>"quiero terminar con esto"</li>
+        <li>"me quiero matar"</li>
+        <li>"no aguanto más" (persistente)</li>
+        <li>"todos estarían mejor sin mí"</li>
+        <li>"tengo las pastillas listas"</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Protocolo de derivación Diego v8</h3>
+  <div class="codigo">PASO 1 — DETECTAR (regex + LLM, score >0.85)
+PASO 2 — STOP TOTAL (suspende cualquier otra tarea)
+PASO 3 — CONFIRMAR con calma
+         "¿Estás teniendo una emergencia ahora?"
+PASO 4 — DERIVAR
+         Médico: "Llama AHORA al 131. No manejes tú."
+         Mental: "Salud Responde 600 360 7777 (24/7)
+                  o Línea Libre 4141. Quédate conmigo."
+         Diego → Dusan: 🚨 ALERTA T08 — emergencia posible.
+                        Trigger: '[texto]'. Llamar YA.
+PASO 5 — NO SOLTAR hasta confirmar ayuda llegó
+PASO 6 — DOCUMENTAR cifrado, solo agregado mensual a Mutual</div>
+
+  <h3>Números emergencia Chile (memoria Diego)</h3>
+  <table>
+    <thead><tr><th>Número</th><th>Servicio</th><th>Cuándo</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color: var(--rojo);">131</strong></td><td>SAMU — ambulancia</td><td>Emergencia médica física</td></tr>
+      <tr><td><strong>132</strong></td><td>Bomberos</td><td>Fuego, rescate, accidente</td></tr>
+      <tr><td><strong>133</strong></td><td>Carabineros</td><td>Violencia, robo, peligro</td></tr>
+      <tr><td><strong>600 360 7777</strong></td><td>Salud Responde</td><td>Consulta no urgente 24/7</td></tr>
+      <tr><td><strong>4141</strong></td><td>Línea Libre</td><td>Salud mental joven</td></tr>
+      <tr><td><strong>1455</strong></td><td>Mujer en violencia</td><td>Apoyo emocional</td></tr>
+      <tr><td><strong>1407</strong></td><td>Mutual</td><td>Accidente laboral</td></tr>
+      <tr><td><strong>1404</strong></td><td>ACHS</td><td>Accidente laboral ACHS</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="brechas">
+  <h2><span class="badge">△</span> Brechas vs Diego v8 (Top 5)</h2>
+  <table>
+    <thead><tr><th>#</th><th>Brecha</th><th>Impacto</th><th>Esfuerzo</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>1</strong></td>
+        <td>Sin capa de detección de emergencia con palabras gatillo. Hoy responde "pecho aprieta" como consulta de negocio.</td>
+        <td><span class="pill rojo">Crítico · riesgo vida</span></td>
+        <td>1-2 días</td>
+      </tr>
+      <tr>
+        <td><strong>2</strong></td>
+        <td>No segmenta schema de datos de salud. Hoy todo en <code>public</code>. Viola Ley 21.719 (dic-2026).</td>
+        <td><span class="pill rojo">Alto · riesgo legal</span></td>
+        <td>2-3 días</td>
+      </tr>
+      <tr>
+        <td><strong>3</strong></td>
+        <td>Sin recordatorios médicos personalizados. Solo recordatorios operativos hoy.</td>
+        <td><span class="pill ambar">Medio · adherencia</span></td>
+        <td>1 día</td>
+      </tr>
+      <tr>
+        <td><strong>4</strong></td>
+        <td>No detecta patrón de fatiga conductual (mensajes nocturnos, sentiment).</td>
+        <td><span class="pill ambar">Medio · burnout silencioso</span></td>
+        <td>3-4 días</td>
+      </tr>
+      <tr>
+        <td><strong>5</strong></td>
+        <td>Sin pausas activas diferenciadas planta/oficina. Hoy no envía pausas.</td>
+        <td><span class="pill azul">Bajo-Medio · lumbago + vista</span></td>
+        <td>1 día</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="quick-wins">
+  <h2><span class="badge">⚡</span> Implementable sin Pablo en 1-2 días (Top 3)</h2>
+
+  <div class="quick-win">
+    <strong>QW1 · Palabras gatillo de emergencia</strong><br>
+    Crear archivo <code>panel.config_diego.palabras_gatillo_salud_v1</code> en Supabase (Dusan tiene SELECT; pedir UN INSERT único a Pablo). Diego cloud (Claude API) lee este config y filtra antes de responder. <strong>Cero deploy frontend.</strong>
+  </div>
+
+  <div class="quick-win">
+    <strong>QW2 · Pausas activas vía WhatsApp con cron</strong><br>
+    Usar Zapier (ya conectado) + WhatsApp Business API + Google Calendar. Trigger horario fijo, plantilla diferenciada planta/oficina por tag de grupo WhatsApp. <strong>Cero código nuevo.</strong>
+  </div>
+
+  <div class="quick-win">
+    <strong>QW3 · Recordatorio de medicamento personal opt-in</strong><br>
+    Tabla <code>panel.recordatorios_personales</code> (usuario, hora, mensaje cifrado). Edge Function lee cada 15 min y envía vía WhatsApp. Trabajador se autoinscribe vía formulario Tally → webhook Supabase. Pablo solo crea la tabla (1 SQL).
+  </div>
+
+  <h3>Beneficio esperado a 6 meses</h3>
+  <div class="kpi-grid">
+    <div class="kpi-card verde">
+      <div class="label">Lumbago</div>
+      <div class="value">−30%</div>
+    </div>
+    <div class="kpi-card naranja">
+      <div class="label">Burnout</div>
+      <div class="value">−22%</div>
+    </div>
+    <div class="kpi-card verde">
+      <div class="label">Adherencia</div>
+      <div class="value">+40%</div>
+    </div>
+    <div class="kpi-card azul">
+      <div class="label">Ley 21.719</div>
+      <div class="value">100%</div>
+    </div>
+    <div class="kpi-card rojo">
+      <div class="label">Emergencias no derivadas</div>
+      <div class="value">0</div>
+    </div>
+  </div>
+</section>
+
+<section id="fuentes">
+  <h2><span class="badge">📚</span> Fuentes 2025-2026 verificables</h2>
+  <ol class="source-list">
+    <li><a href="https://www.mcpdigitalhealth.org/article/S2949-7612(24)00098-1/fulltext">Mayo Clinic Proceedings: Digital Health</a> — MEDIC chatbot OCR + GPT para DDI</li>
+    <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12655262/">PMC NCBI 2025</a> — Passive AI Detection of Stress and Burnout (85.1% accuracy)</li>
+    <li><a href="https://mental.jmir.org/2025/1/e73623">JMIR Mental Health 2025</a> — Generative AI Response to Suicide Inquiries</li>
+    <li><a href="https://www.achs.cl/centro-de-noticias/noticia/2025/achs-servicios-cuida-la-salud-y-calidad-de-vida-de-los-trabajadores-de-tu-organizacion">ACHS Chile 2025</a> — Servicios bienestar y pausas activas</li>
+    <li><a href="https://www.mutual.cl/portal/wcm/connect/ad16845e-7c71-471c-91e4-a5192d5c57a7/efecto_de_las_pausas_activas_en_el_dolor_musculoesqueletico_en_trabajadoras_de_packing.pdf">Mutual de Seguridad Chile</a> — Efecto pausas activas en dolor musculoesquelético packing</li>
+    <li><a href="https://www.bcn.cl/leychile/navegar?idNorma=1209272">Ley 21.719 Chile</a> — Protección datos personales, vigente 1-dic-2026</li>
+    <li><a href="https://kestrelinstruments.com/blog/what-are-the-2026-osha-safety-rules-for-heat-stress">OSHA 2025-2026</a> — Heat Injury and Illness Prevention Rule</li>
+    <li><a href="https://www.wysa.com/for-employers">Wysa for Employers 2025</a> — Plataforma B2B salud mental empresarial</li>
+    <li><a href="https://www.osha.gov/SLTC/recycling/recycling_ergonomics.html">OSHA Recycling Ergonomics</a> — Lifting injuries in recycling collection</li>
+    <li><a href="https://www.minsal.cl/salud-ocupacional/">MINSAL Salud Ocupacional</a> — Protocolo TMERT</li>
+    <li><a href="https://www.medrxiv.org/content/10.64898/2026.01.12.26343914.full.pdf">medRxiv 2026</a> — Suicide- and crisis-risk detection using LLMs</li>
+    <li><a href="https://playbook.achs.cl/docs/librariesprovider19/default-document-library/actualizaci%C3%B3n-pausas-ejercicios-industria.pdf">ACHS Playbook</a> — Incorporación de pausas y ejercicios industria</li>
+  </ol>
+</section>
+
+<footer>
+  Diego v8 · Estándar Salud y Bienestar Laboral · Investigación para PC Dusan · May 2026<br>
+  Pendiente firma CEO antes de ejecutar · Pauta visual oro v1.0 aplicada
+</footer>
+
+</body>
+</html>

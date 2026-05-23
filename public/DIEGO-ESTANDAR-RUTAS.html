@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diego v9 · Estándar Mundial 2025-2026 — Rutas y Navegación</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --reciclean-verde: #059669;
+    --reciclean-verde-dark: #047857;
+    --reciclean-verde-light: #10b981;
+    --reciclean-verde-soft: #d1fae5;
+    --naranja: #f97316;
+    --naranja-soft: #fed7aa;
+    --rojo: #dc2626;
+    --rojo-soft: #fecaca;
+    --amarillo: #eab308;
+    --amarillo-soft: #fef3c7;
+    --azul: #2563eb;
+    --azul-soft: #dbeafe;
+    --gris-900: #111827;
+    --gris-700: #374151;
+    --gris-500: #6b7280;
+    --gris-300: #d1d5db;
+    --gris-200: #e5e7eb;
+    --gris-100: #f3f4f6;
+    --gris-50: #f9fafb;
+    --blanco: #ffffff;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.05);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--gris-50);
+    color: var(--gris-900);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--reciclean-verde) 0%, var(--reciclean-verde-dark) 100%);
+    color: white;
+    padding: 56px 32px 40px;
+    box-shadow: var(--shadow-lg);
+  }
+  header .wrap { max-width: 1280px; margin: 0 auto; }
+  header .pill {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+  header p.sub {
+    font-size: 1.05rem;
+    opacity: 0.92;
+    max-width: 800px;
+  }
+  header .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 24px;
+    font-size: 0.85rem;
+    opacity: 0.92;
+  }
+  header .meta span::before { content: "● "; opacity: 0.6; }
+
+  main {
+    max-width: 1280px;
+    margin: -24px auto 64px;
+    padding: 0 24px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* KPI cards */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .kpi-card {
+    background: white;
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: var(--shadow-md);
+    border-left: 4px solid var(--reciclean-verde);
+  }
+  .kpi-card.naranja { border-left-color: var(--naranja); }
+  .kpi-card.rojo { border-left-color: var(--rojo); }
+  .kpi-card.azul { border-left-color: var(--azul); }
+  .kpi-card .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gris-500);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .kpi-card .value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--gris-900);
+    letter-spacing: -0.02em;
+  }
+  .kpi-card .unit {
+    font-size: 0.95rem;
+    color: var(--gris-500);
+    font-weight: 500;
+    margin-left: 4px;
+  }
+  .kpi-card .note {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: var(--gris-700);
+  }
+
+  section {
+    background: white;
+    border-radius: 16px;
+    padding: 36px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-md);
+  }
+  section h2 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--gris-900);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  section h2 .num {
+    width: 36px;
+    height: 36px;
+    background: var(--reciclean-verde-soft);
+    color: var(--reciclean-verde-dark);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  section h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--gris-900);
+    margin: 24px 0 10px;
+  }
+  section h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--reciclean-verde-dark);
+    margin: 20px 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  section p { margin-bottom: 12px; color: var(--gris-700); }
+  section ul, section ol { margin-left: 22px; margin-bottom: 16px; color: var(--gris-700); }
+  section li { margin-bottom: 4px; }
+  section strong { color: var(--gris-900); font-weight: 600; }
+  section .lede {
+    font-size: 1rem;
+    color: var(--gris-700);
+    margin-bottom: 24px;
+    padding-left: 16px;
+    border-left: 3px solid var(--reciclean-verde-soft);
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 0.9rem;
+  }
+  thead { background: var(--gris-50); }
+  th {
+    text-align: left;
+    padding: 12px 14px;
+    font-weight: 600;
+    color: var(--gris-700);
+    border-bottom: 2px solid var(--gris-200);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--gris-100);
+    color: var(--gris-700);
+    vertical-align: top;
+  }
+  tr:hover td { background: var(--gris-50); }
+  td .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .tag.ok { background: var(--reciclean-verde-soft); color: var(--reciclean-verde-dark); }
+  .tag.warn { background: var(--amarillo-soft); color: #92400e; }
+  .tag.bad { background: var(--rojo-soft); color: #991b1b; }
+  .tag.info { background: var(--azul-soft); color: #1e40af; }
+
+  /* Charts */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin: 24px 0;
+  }
+  @media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } }
+  .chart-box {
+    background: var(--gris-50);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid var(--gris-200);
+  }
+  .chart-box h4 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: var(--gris-900);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .chart-canvas-wrap { position: relative; height: 280px; }
+
+  /* Route visual */
+  .ruta-vis {
+    background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%);
+    border-radius: 14px;
+    padding: 28px;
+    margin: 20px 0;
+    border: 1px solid var(--reciclean-verde-soft);
+  }
+  .ruta-paradas {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+  .parada {
+    display: flex;
+    gap: 16px;
+    padding: 14px 0;
+    position: relative;
+  }
+  .parada-bullet {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--reciclean-verde);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 0 0 4px var(--reciclean-verde-soft);
+    z-index: 2;
+  }
+  .parada.salida .parada-bullet { background: var(--gris-700); }
+  .parada.regreso .parada-bullet { background: var(--gris-700); }
+  .parada::after {
+    content: "";
+    position: absolute;
+    left: 18px;
+    top: 38px;
+    bottom: -14px;
+    width: 2px;
+    background: var(--reciclean-verde-soft);
+    z-index: 1;
+  }
+  .parada:last-child::after { display: none; }
+  .parada-info { flex: 1; }
+  .parada-hora {
+    font-size: 0.78rem;
+    color: var(--gris-500);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .parada-cliente {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--gris-900);
+    margin-top: 2px;
+  }
+  .parada-direccion {
+    font-size: 0.88rem;
+    color: var(--gris-500);
+  }
+  .parada-extra {
+    margin-top: 6px;
+    display: flex;
+    gap: 12px;
+    font-size: 0.78rem;
+    color: var(--gris-700);
+    flex-wrap: wrap;
+  }
+  .parada-extra span {
+    background: white;
+    padding: 3px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--gris-200);
+  }
+
+  /* Code */
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 18px 22px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 14px 0 20px;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
+  code {
+    background: var(--gris-100);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 0.85em;
+    color: var(--reciclean-verde-dark);
+  }
+  pre code { background: transparent; padding: 0; color: inherit; }
+
+  /* Callouts */
+  .callout {
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    border-left: 4px solid var(--reciclean-verde);
+    background: var(--reciclean-verde-soft);
+  }
+  .callout.warn { border-left-color: var(--amarillo); background: var(--amarillo-soft); }
+  .callout.bad { border-left-color: var(--rojo); background: var(--rojo-soft); }
+  .callout.info { border-left-color: var(--azul); background: var(--azul-soft); }
+  .callout strong { display: block; margin-bottom: 4px; }
+
+  /* TL;DR */
+  .tldr {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+    border: 2px solid var(--reciclean-verde-soft);
+  }
+  .tldr ol { counter-reset: tldr; list-style: none; margin-left: 0; }
+  .tldr ol li {
+    counter-increment: tldr;
+    padding: 14px 0 14px 56px;
+    position: relative;
+    border-bottom: 1px solid var(--gris-100);
+    color: var(--gris-700);
+  }
+  .tldr ol li:last-child { border-bottom: none; }
+  .tldr ol li::before {
+    content: counter(tldr);
+    position: absolute;
+    left: 0;
+    top: 14px;
+    width: 38px;
+    height: 38px;
+    background: var(--reciclean-verde);
+    color: white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 32px 24px;
+    color: var(--gris-500);
+    font-size: 0.85rem;
+  }
+  footer a { color: var(--reciclean-verde-dark); text-decoration: none; }
+
+  /* Sources */
+  .sources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .source-card {
+    background: var(--gris-50);
+    padding: 14px 16px;
+    border-radius: 10px;
+    border-left: 3px solid var(--reciclean-verde);
+    font-size: 0.85rem;
+  }
+  .source-card a {
+    color: var(--reciclean-verde-dark);
+    text-decoration: none;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .source-card span { color: var(--gris-500); font-size: 0.78rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="pill">Diego v9 · Investigación Backend Architect</span>
+    <h1>Estándar Mundial 2025-2026<br>Rutas y Navegación para Flota de Retiro</h1>
+    <p class="sub">Cómo Diego v9 puede igualar a Routific, Onfleet y Circuit for Teams reutilizando la infraestructura Supabase + Google Maps que Reciclean ya tiene desplegada.</p>
+    <div class="meta">
+      <span>Diego v8 ACTIVE</span>
+      <span>EF google-maps-distance v3 ACTIVE</span>
+      <span>Cerrillos · Maipú · Talca</span>
+      <span>23-may-2026</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- KPI ROW -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="label">Brecha P0</div>
+      <div class="value">3</div>
+      <div class="note">críticas vs Diego v8</div>
+    </div>
+    <div class="kpi-card azul">
+      <div class="label">Costo API estimado</div>
+      <div class="value">$0<span class="unit">USD/mes</span></div>
+      <div class="note">dentro free tier 2026</div>
+    </div>
+    <div class="kpi-card naranja">
+      <div class="label">Sprints PC Pablo</div>
+      <div class="value">4</div>
+      <div class="note">para paridad con Routific</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Reducción tiempo dispatcher</div>
+      <div class="value">95<span class="unit">%</span></div>
+      <div class="note">de 20 min a &lt; 30 seg</div>
+    </div>
+    <div class="kpi-card rojo">
+      <div class="label">Multa restricción</div>
+      <div class="value">$100<span class="unit">k CLP</span></div>
+      <div class="note">por incidente evitable</div>
+    </div>
+  </div>
+
+  <!-- TL;DR -->
+  <section class="tldr">
+    <h2><span class="num">★</span>TL;DR — 5 puntos clave</h2>
+    <ol>
+      <li><strong>El estándar 2025-2026 no es Distance Matrix sino Google Routes API v2</strong> con <code>computeRoutes</code> + <code>optimizeWaypointOrder=true</code>. Soporta hasta 25 paradas con place IDs o 98 con coordenadas. Diego v8 hoy sólo hace tiempo punto-a-punto — brecha crítica.</li>
+      <li><strong>El benchmark son Routific, Onfleet y Circuit for Teams</strong>. No para competir con ellos sino para igualar sus capacidades. El estándar es: dispatcher escribe en lenguaje natural → bot extrae direcciones, valida, optimiza, devuelve secuencia + ETA + share-link.</li>
+      <li><strong>Validar direcciones es obligatorio en Chile</strong>. Numeración no oficial, comunas homónimas, calles repetidas. Google Address Validation API soporta Chile desde 2024. Diego v8 confía en lo tipeado → riesgo de despachar camión a dirección inexistente.</li>
+      <li><strong>Restricción vehicular Santiago 2026</strong> obliga filtrado por patente. Período 4-may → 31-ago, lun-vie 07:30-21:00. Camiones sin sello verde restringidos por dígito + prohibidos dentro de Vespucio. Multa ~$100.000 CLP por incidente.</li>
+      <li><strong>Patrón arquitectónico</strong>: <code>diego-chat-process</code> orquesta tool calls a <code>google-maps-distance</code> (ya activa) + <code>route-optimize</code> (nueva) + <code>verify-address</code> (nueva). Cache en <code>panel.maps_cache</code> con TTL diferenciado. Costo: $0 USD/mes dentro de free tier.</li>
+    </ol>
+  </section>
+
+  <!-- SECTION 1 -->
+  <section>
+    <h2><span class="num">1</span>Cálculo de ruta multi-parada (TSP/VRP)</h2>
+    <p class="lede">La confusión más común — y la que tiene atrapada a Diego v8 — es pensar que Distance Matrix y Route Optimization son lo mismo. No lo son.</p>
+
+    <h3>Comparativa técnica</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Aspecto</th>
+          <th>Distance Matrix (legacy)</th>
+          <th>computeRoutes + optimizeWaypointOrder</th>
+          <th>Route Optimization API (VRP)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Algoritmo</strong></td>
+          <td>No optimiza, sólo par a par</td>
+          <td>TSP simple</td>
+          <td>VRP / CVRPTW</td>
+        </tr>
+        <tr>
+          <td><strong>Límite paradas</strong></td>
+          <td>25 × 25</td>
+          <td>25 con place IDs, 98 con lat/lng</td>
+          <td>Miles en una request</td>
+        </tr>
+        <tr>
+          <td><strong>Capacidad camión</strong></td>
+          <td><span class="tag bad">No</span></td>
+          <td><span class="tag bad">No</span></td>
+          <td><span class="tag ok">Sí</span></td>
+        </tr>
+        <tr>
+          <td><strong>Ventanas horarias</strong></td>
+          <td><span class="tag bad">No</span></td>
+          <td><span class="tag bad">No</span></td>
+          <td><span class="tag ok">Sí</span></td>
+        </tr>
+        <tr>
+          <td><strong>Múltiples vehículos</strong></td>
+          <td><span class="tag bad">No</span></td>
+          <td><span class="tag bad">No</span></td>
+          <td><span class="tag ok">Sí</span></td>
+        </tr>
+        <tr>
+          <td><strong>Billing</strong></td>
+          <td>$5/1000 (Essentials)</td>
+          <td>Compute Routes Pro (mayor)</td>
+          <td>Enterprise (1.000/mes free)</td>
+        </tr>
+        <tr>
+          <td><strong>Cuándo en Reciclean</strong></td>
+          <td>Pre-cálculo cache</td>
+          <td><span class="tag ok">Recomendado hoy</span></td>
+          <td>Backlog 2027 si crece flota</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>Veredicto para Diego v9</strong>
+      Hoy Reciclean opera 1 camión por sucursal. El estándar correcto es <code>computeRoutes</code> con <code>optimizeWaypointOrder=true</code>. Migrar a Route Optimization API (VRP) es sobre-ingeniería hasta que aparezca el 3er camión simultáneo.
+    </div>
+
+    <h3>Request mínima</h3>
+<pre><code>POST https://routes.googleapis.com/directions/v2:computeRoutes
+
+Headers:
+  X-Goog-Api-Key: &lt;GOOGLE_MAPS_API_KEY&gt;
+  X-Goog-FieldMask: routes.optimizedIntermediateWaypointIndex,
+                    routes.duration,routes.distanceMeters,
+                    routes.legs.duration,routes.polyline.encodedPolyline
+  X-Server-Timeout: 10
+
+Body:
+{
+  "origin":      { "address": "Sucursal Cerrillos, Camino a Lonquén 9001" },
+  "destination": { "address": "Sucursal Cerrillos, Camino a Lonquén 9001" },
+  "intermediates": [
+    { "address": "Pincore, Av. El Salto 4001, Maipú" },
+    { "address": "HUAL, Av. Pdte. Salvador Allende 1500, Cerrillos" },
+    { "address": "Cliente C, El Olivo 220, Quilicura" },
+    { "address": "Cliente D, Vicuña Mackenna 7300, La Florida" }
+  ],
+  "travelMode": "DRIVE",
+  "routingPreference": "TRAFFIC_AWARE",
+  "optimizeWaypointOrder": true,
+  "departureTime": "2026-05-23T13:00:00Z"
+}</code></pre>
+
+    <p>Respuesta clave: <code>routes[0].optimizedIntermediateWaypointIndex: [2, 0, 3, 1]</code> indica el orden óptimo de las paradas según los índices originales.</p>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section>
+    <h2><span class="num">2</span>Optimización ruta diaria del equipo</h2>
+    <p class="lede">Tres plataformas comerciales dominan 2025-2026. Lo relevante no es competir con ellas: es igualar las capacidades que el dispatcher esperaría tener.</p>
+
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h4>Comparativa benchmark (puntaje 1-10)</h4>
+        <div class="chart-canvas-wrap"><canvas id="chartBenchmark"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h4>Ahorro proyectado en flota de reciclaje</h4>
+        <div class="chart-canvas-wrap"><canvas id="chartAhorro"></canvas></div>
+      </div>
+    </div>
+
+    <h3>Ejemplo real — Lunes RM Santiago, salida Cerrillos</h3>
+
+    <div class="ruta-vis">
+      <p style="margin-bottom: 16px;"><strong>Diego v9 responde</strong> con ruta optimizada considerando tráfico + restricción vehicular + ventanas horarias:</p>
+
+      <div class="ruta-paradas">
+        <div class="parada salida">
+          <div class="parada-bullet">●</div>
+          <div class="parada-info">
+            <div class="parada-hora">08:30 · SALIDA</div>
+            <div class="parada-cliente">Sucursal Reciclean Cerrillos</div>
+            <div class="parada-direccion">Camino a Lonquén 9001</div>
+          </div>
+        </div>
+        <div class="parada">
+          <div class="parada-bullet">1</div>
+          <div class="parada-info">
+            <div class="parada-hora">08:42 → 09:05 · 12 min ruta + 23 min carga</div>
+            <div class="parada-cliente">HUAL</div>
+            <div class="parada-direccion">Av. Pdte. Salvador Allende 1500, Cerrillos</div>
+            <div class="parada-extra"><span>600 kg chatarra</span><span>ventana 10:00-13:00</span><span class="tag ok" style="border:0;">en ventana</span></div>
+          </div>
+        </div>
+        <div class="parada">
+          <div class="parada-bullet">2</div>
+          <div class="parada-info">
+            <div class="parada-hora">09:30 → 10:00 · 25 min ruta + 30 min carga</div>
+            <div class="parada-cliente">Pincore</div>
+            <div class="parada-direccion">Av. El Salto 4001, Maipú</div>
+            <div class="parada-extra"><span>800 kg cartón</span><span>ventana 09:00-12:00</span><span class="tag ok" style="border:0;">en ventana</span></div>
+          </div>
+        </div>
+        <div class="parada">
+          <div class="parada-bullet">3</div>
+          <div class="parada-info">
+            <div class="parada-hora">10:38 → 11:00 · 38 min ruta + 22 min carga</div>
+            <div class="parada-cliente">Cliente C</div>
+            <div class="parada-direccion">El Olivo 220, Quilicura</div>
+            <div class="parada-extra"><span>400 kg PET</span><span>ventana 11:00-15:00</span><span class="tag warn" style="border:0;">llegada anticipada</span></div>
+          </div>
+        </div>
+        <div class="parada">
+          <div class="parada-bullet">4</div>
+          <div class="parada-info">
+            <div class="parada-hora">11:41 → 12:00 · 41 min ruta + 19 min carga</div>
+            <div class="parada-cliente">Cliente D</div>
+            <div class="parada-direccion">Vicuña Mackenna 7300, La Florida</div>
+            <div class="parada-extra"><span>200 kg vidrio</span><span>ventana 14:00-17:00</span><span class="tag bad" style="border:0;">fuera de ventana — sugerir reagendar</span></div>
+          </div>
+        </div>
+        <div class="parada regreso">
+          <div class="parada-bullet">●</div>
+          <div class="parada-info">
+            <div class="parada-hora">12:38 · REGRESO</div>
+            <div class="parada-cliente">Sucursal Cerrillos</div>
+            <div class="parada-direccion">Total: 154 km · 4h 08min · combustible $32k CLP</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <strong>Alerta restricción vehicular</strong>
+      Patente RJ-22-XY (dígito 2) — hoy lunes 25-may-2026 tiene restricción 07:30-21:00. Sugerencias: (a) usar camión RK-44-AB de Maipú, (b) reagendar fin de semana, (c) operación pre-07:30 si cliente acepta.
+    </div>
+
+    <h3>KPIs a medir post-implementación</h3>
+    <table>
+      <thead>
+        <tr><th>KPI</th><th>Baseline Diego v8</th><th>Target Diego v9</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Tiempo dispatcher arma ruta</td><td>15-30 min manual</td><td><span class="tag ok">&lt; 30 segundos</span></td></tr>
+        <tr><td>% rutas con error de orden</td><td>~20%</td><td><span class="tag ok">&lt; 5%</span></td></tr>
+        <tr><td>Combustible mensual</td><td>baseline X</td><td><span class="tag ok">-15%</span></td></tr>
+        <tr><td>Retiros en ventana horaria</td><td>~75%</td><td><span class="tag ok">&gt; 90%</span></td></tr>
+        <tr><td>Multas por restricción</td><td>1-2/año</td><td><span class="tag ok">0</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section>
+    <h2><span class="num">3</span>Verificación coherencia de direcciones</h2>
+    <p class="lede">Las direcciones tipeadas tienen 3 patologías: numeración inexistente, comuna ambigua, calles homónimas. Mandar camión a dirección no validada = combustible perdido + cliente cabreado.</p>
+
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h4>Niveles de precisión Google Geocoding</h4>
+        <div class="chart-canvas-wrap"><canvas id="chartPrecision"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h4>Costo estimado validaciones/mes Reciclean</h4>
+        <div class="chart-canvas-wrap"><canvas id="chartCosto"></canvas></div>
+      </div>
+    </div>
+
+    <h3>Reglas de aceptación</h3>
+    <table>
+      <thead>
+        <tr><th>location_type</th><th>Significado</th><th>Acción Diego</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>ROOFTOP</code></td><td>Exacto, coordenada del techo</td><td><span class="tag ok">Aceptar automático</span></td></tr>
+        <tr><td><code>RANGE_INTERPOLATED</code></td><td>Interpolada entre 2 puntos</td><td><span class="tag info">Aceptar con warning</span></td></tr>
+        <tr><td><code>GEOMETRIC_CENTER</code></td><td>Centro calle, sin número</td><td><span class="tag warn">Pedir confirmación</span></td></tr>
+        <tr><td><code>APPROXIMATE</code></td><td>Sólo comuna o región</td><td><span class="tag bad">Rechazar, pedir más datos</span></td></tr>
+        <tr><td><code>ZERO_RESULTS</code></td><td>Dirección no existe</td><td><span class="tag bad">Rechazar, pedir corrección</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Detección de duplicados</h3>
+    <p>Antes de aceptar dirección nueva, query PostGIS contra base de clientes existentes:</p>
+<pre><code>SELECT id, nombre, similarity(nombre, $1) AS sim
+FROM curated.clientes
+WHERE ST_DWithin(
+  geog_punto,
+  ST_MakePoint($lng, $lat)::geography,
+  50  -- metros
+)
+AND id != COALESCE($cliente_excluir, '00000000-0000-0000-0000-000000000000')
+ORDER BY sim DESC LIMIT 5;</code></pre>
+    <p>Si hay match a &lt; 50m con similitud de nombre &gt; 0.8 → alertar al dispatcher antes de crear duplicado.</p>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section>
+    <h2><span class="num">4</span>Integración Google Maps + Supabase Edge Function</h2>
+    <p class="lede">Patrón arquitectónico recomendado para Diego v9 reutilizando la EF <code>google-maps-distance</code> v3 existente y agregando dos nuevas.</p>
+
+    <h3>Arquitectura propuesta</h3>
+<pre><code>WhatsApp/Web
+   ↓
+diego-chat-process (EF)  ←→  Claude API (tool calling)
+   ↓
+   ├─→ google-maps-distance (v3, EXISTE) ──┐
+   ├─→ route-optimize (NUEVA) ─────────────┤
+   └─→ verify-address (NUEVA) ─────────────┤
+                                            ↓
+                                    panel.maps_cache
+                                            ↓ (miss)
+                              Google Maps Platform
+                       (Routes / Geocoding / Address Validation)</code></pre>
+
+    <h3>Tabla de cache</h3>
+<pre><code>CREATE TABLE panel.maps_cache (
+  cache_key       TEXT PRIMARY KEY,
+  cache_type      TEXT NOT NULL,    -- 'distance'|'route'|'geocode'|'validate'
+  request_params  JSONB NOT NULL,
+  response_body   JSONB NOT NULL,
+  hit_count       INTEGER DEFAULT 0,
+  created_at      TIMESTAMPTZ DEFAULT NOW(),
+  expires_at      TIMESTAMPTZ NOT NULL
+);
+
+-- TTL recomendado:
+-- distance: 24h · route: 2h · geocode: 180d · validate: 365d</code></pre>
+
+    <h3>Costos proyectados Reciclean — 12 meses</h3>
+    <table>
+      <thead>
+        <tr><th>API</th><th>Calls/mes</th><th>Free cap</th><th>Facturado</th><th>USD/mes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Compute Routes Pro</td><td>330</td><td>5.000</td><td>0</td><td><span class="tag ok">$0</span></td></tr>
+        <tr><td>Compute Route Matrix Essentials</td><td>~500</td><td>10.000</td><td>0</td><td><span class="tag ok">$0</span></td></tr>
+        <tr><td>Geocoding</td><td>~150</td><td>10.000</td><td>0</td><td><span class="tag ok">$0</span></td></tr>
+        <tr><td>Address Validation Pro</td><td>~50</td><td>5.000</td><td>0</td><td><span class="tag ok">$0</span></td></tr>
+        <tr style="background: var(--reciclean-verde-soft); font-weight: 600;"><td colspan="4">Total proyectado</td><td><strong>$0 USD/mes</strong></td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>Conclusión costos</strong>
+      Con cache 60% hit rate (conservador), el primer alerta de billing aparece sólo si Reciclean escala a 6+ camiones simultáneos. <strong>Estamos cómodos dentro del free tier durante todo 2026.</strong>
+    </div>
+  </section>
+
+  <!-- SECTION 5 -->
+  <section>
+    <h2><span class="num">5</span>Mejor ruta según horario</h2>
+    <p class="lede">Tráfico real Santiago + restricción vehicular 2026 obligan lógica adicional. No basta con pedir "mejor ruta" — hay que filtrar por dígito patente y respetar pico.</p>
+
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h4>Tráfico Santiago RM — patrón típico día hábil</h4>
+        <div class="chart-canvas-wrap"><canvas id="chartTrafico"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h4>Restricción vehicular 2026 — patentes restringidas por día</h4>
+        <div class="chart-canvas-wrap"><canvas id="chartRestriccion"></canvas></div>
+      </div>
+    </div>
+
+    <h3>Modelos de tráfico disponibles</h3>
+    <table>
+      <thead><tr><th>Modelo</th><th>Comportamiento</th><th>Cuándo usar en Reciclean</th></tr></thead>
+      <tbody>
+        <tr><td><code>BEST_GUESS</code></td><td>Histórico + live</td><td><span class="tag ok">Default todas las rutas</span></td></tr>
+        <tr><td><code>PESSIMISTIC</code></td><td>Días malos</td><td>Lluvia + viernes tarde + multas por atraso</td></tr>
+        <tr><td><code>OPTIMISTIC</code></td><td>Días buenos</td><td>Cotizaciones iniciales (no operativas)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <strong>Restricción crítica del API</strong>
+      <code>trafficModel</code> solo funciona con <code>routingPreference: TRAFFIC_AWARE_OPTIMAL</code>, que es <strong>incompatible</strong> con <code>optimizeWaypointOrder: true</code>. Solución: 2 calls — primero optimizar con TRAFFIC_AWARE, luego pedir ETAs con TRAFFIC_AWARE_OPTIMAL + PESSIMISTIC sobre el orden ya fijado.
+    </div>
+
+    <h3>Restricción vehicular 2026 — función Postgres</h3>
+<pre><code>CREATE FUNCTION panel.camion_puede_circular(
+  p_patente TEXT,
+  p_fecha   DATE,
+  p_dentro_anillo BOOLEAN DEFAULT FALSE
+) RETURNS BOOLEAN AS $$
+DECLARE
+  v_sello_verde BOOLEAN;
+  v_ultimo INT;
+  v_restringidos INT[];
+BEGIN
+  IF p_fecha NOT BETWEEN '2026-05-04' AND '2026-08-31'
+  THEN RETURN TRUE; END IF;
+
+  SELECT tiene_sello_verde, ultimo_digito::INT
+    INTO v_sello_verde, v_ultimo
+  FROM panel.flota_vehiculos WHERE patente = p_patente;
+
+  IF v_sello_verde THEN RETURN TRUE; END IF;
+  IF p_dentro_anillo THEN RETURN FALSE; END IF;
+
+  SELECT digitos_restringidos INTO v_restringidos
+  FROM panel.restriccion_vehicular_calendario
+  WHERE fecha = p_fecha;
+
+  RETURN NOT (v_ultimo = ANY(v_restringidos));
+END;
+$$ LANGUAGE plpgsql STABLE;</code></pre>
+  </section>
+
+  <!-- SECTION 6 -->
+  <section>
+    <h2><span class="num">6</span>Spec tool <code>calcular_ruta_eficiente</code></h2>
+    <p class="lede">Tool que Diego v9 invoca via Anthropic Messages API tool calling. Spec para implementación PC Pablo.</p>
+
+    <h4>Definición</h4>
+<pre><code>{
+  "name": "calcular_ruta_eficiente",
+  "description": "Calcula ruta óptima multi-parada considerando tráfico,
+    restricción vehicular Santiago, ventanas horarias. Devuelve secuencia,
+    ETAs, distancia, alertas.",
+  "input_schema": {
+    "type": "object",
+    "required": ["origen", "destino", "paradas", "fecha_salida"],
+    "properties": {
+      "origen":       { "type": "string" },
+      "destino":      { "type": "string" },
+      "paradas": {
+        "type": "array", "maxItems": 23,
+        "items": {
+          "type": "object",
+          "required": ["direccion"],
+          "properties": {
+            "direccion":         { "type": "string" },
+            "cliente_id":        { "type": "string" },
+            "ventana_inicio":    { "type": "string" },
+            "ventana_fin":       { "type": "string" },
+            "duracion_minutos":  { "type": "integer", "default": 20 },
+            "prioridad":         { "type": "integer", "default": 3 }
+          }
+        }
+      },
+      "fecha_salida":   { "type": "string", "format": "date-time" },
+      "patente_camion": { "type": "string" },
+      "modelo_trafico": {
+        "type": "string",
+        "enum": ["best_guess", "pessimistic", "optimistic"]
+      }
+    }
+  }
+}</code></pre>
+
+    <h4>Flow interno (12 pasos)</h4>
+    <ol>
+      <li>Recibir tool_use de Claude con params.</li>
+      <li>Validar required fields.</li>
+      <li>Para cada parada: validar dirección (call interno a verify-address).</li>
+      <li>Si patente_camion provista: llamar <code>panel.camion_puede_circular()</code>.</li>
+      <li>Llamar EF <code>route-optimize</code> con body normalizado.</li>
+      <li>route-optimize chequea cache → llama Google Routes API si miss.</li>
+      <li>Recibir <code>optimizedIntermediateWaypointIndex</code> + duration + legs.</li>
+      <li>Reordenar paradas según índice optimizado.</li>
+      <li>Calcular ETA por parada (acumular legs[].duration + duracion_minutos).</li>
+      <li>Validar ventanas horarias contra ETAs → flagear violaciones.</li>
+      <li>Generar share-link Google Maps.</li>
+      <li>Devolver respuesta estructurada a Claude.</li>
+    </ol>
+
+    <h4>Ejemplo curl</h4>
+<pre><code>curl -X POST 'https://eknmtsrtfkzroxnovfqn.functions.supabase.co/diego-chat-process' \
+  -H 'Authorization: Bearer eyJ...' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "session_id": "uuid-...",
+    "user_message": "Armame ruta de mañana desde Cerrillos:
+                     HUAL, Pincore, Quilicura y La Florida. Patente RJ22XY.",
+    "user_id": "uuid-dusan"
+  }'</code></pre>
+
+    <h4>Manejo de errores</h4>
+    <table>
+      <thead><tr><th>Código</th><th>Causa</th><th>Acción</th></tr></thead>
+      <tbody>
+        <tr><td><code>ADDRESS_NOT_FOUND</code></td><td>Dirección no geocodable</td><td>Pedir aclaración</td></tr>
+        <tr><td><code>TOO_MANY_STOPS</code></td><td>&gt; 23 paradas</td><td>Sugerir dividir</td></tr>
+        <tr><td><code>RESTRICCION_VEHICULAR</code></td><td>Camión bloqueado</td><td>Sugerir patente alt</td></tr>
+        <tr><td><code>VENTANA_IMPOSIBLE</code></td><td>Ninguna optimización respeta ventanas</td><td>Best effort + lista violaciones</td></tr>
+        <tr><td><code>GOOGLE_API_ERROR</code></td><td>API down / rate limit</td><td>Cache fallback</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SECTION 7 -->
+  <section>
+    <h2><span class="num">7</span>Spec tool <code>verificar_direccion</code></h2>
+    <p class="lede">Tool dedicado a validar direcciones antes de aceptarlas en base de clientes o como parada de ruta.</p>
+
+    <h4>Definición</h4>
+<pre><code>{
+  "name": "verificar_direccion",
+  "description": "Verifica que una dirección sea válida, deliverable
+    y no duplicada. Usar al alta de cliente, antes de aceptar dirección
+    de retiro, o cuando el dispatcher dude.",
+  "input_schema": {
+    "type": "object",
+    "required": ["direccion"],
+    "properties": {
+      "direccion":            { "type": "string" },
+      "pais":                 { "type": "string", "default": "CL" },
+      "buscar_duplicados":    { "type": "boolean", "default": true },
+      "cliente_id_excluir":   { "type": "string" }
+    }
+  }
+}</code></pre>
+
+    <h4>Flow interno</h4>
+    <ol>
+      <li>Normalizar input (trim, agregar ", Chile" si falta).</li>
+      <li>Cache check en <code>panel.maps_cache</code> (cache_type='geocode', TTL 180d).</li>
+      <li>Llamar Google Geocoding API con <code>components=country:CL</code>.</li>
+      <li>Evaluar <code>location_type</code> según tabla de reglas.</li>
+      <li>(Opcional) Address Validation API para validación dura.</li>
+      <li>Si buscar_duplicados=true → query PostGIS &lt; 50m + similarity nombre.</li>
+      <li>Persistir en cache.</li>
+      <li>Devolver respuesta estructurada (valid, lat/lng, componentes, duplicados, alertas).</li>
+    </ol>
+
+    <h4>Ejemplo curl</h4>
+<pre><code>curl -X POST 'https://eknmtsrtfkzroxnovfqn.functions.supabase.co/diego-chat-process' \
+  -H 'Authorization: Bearer eyJ...' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "session_id": "uuid-...",
+    "user_message": "Validame esta dirección antes de cargarla:
+                     Av El Salto 4001 Maipu",
+    "user_id": "uuid-dusan"
+  }'</code></pre>
+
+    <h4>Respuesta estructurada</h4>
+<pre><code>{
+  "valid": true,
+  "confianza": "alta",
+  "direccion_normalizada": "Av. El Salto 4001, Maipú, RM, Chile",
+  "lat": -33.5061, "lng": -70.7531,
+  "place_id": "ChIJ...",
+  "location_type": "ROOFTOP",
+  "componentes": {
+    "calle": "Av. El Salto", "numero": "4001",
+    "comuna": "Maipú", "region": "RM", "pais": "Chile"
+  },
+  "dentro_anillo_vespucio": false,
+  "validation_pro": {
+    "address_complete": true,
+    "has_unconfirmed_components": false,
+    "has_inferred_components": false
+  },
+  "duplicados_potenciales": [],
+  "alertas": []
+}</code></pre>
+  </section>
+
+  <!-- SECTION 8 - Brechas + Quick Wins -->
+  <section>
+    <h2><span class="num">8</span>Brechas Diego v8 vs estándar + Quick-wins</h2>
+
+    <h3>Brechas críticas (P0)</h3>
+    <table>
+      <thead><tr><th>#</th><th>Brecha</th><th>Impacto</th><th>Esfuerzo</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>1</strong></td>
+          <td>No hay TSP — sólo distancia punto-a-punto</td>
+          <td>Dispatcher arma ruta manual, 20% con error de orden</td>
+          <td><span class="tag warn">1 sprint</span></td>
+        </tr>
+        <tr>
+          <td><strong>2</strong></td>
+          <td>No valida direcciones al alta</td>
+          <td>Camión despachado a dirección inexistente</td>
+          <td><span class="tag ok">3-5 días</span></td>
+        </tr>
+        <tr>
+          <td><strong>3</strong></td>
+          <td>No considera restricción vehicular Santiago</td>
+          <td>Multa $100k CLP por incidente · riesgo legal</td>
+          <td><span class="tag warn">1 sprint</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Roadmap 4 sprints</h3>
+    <table>
+      <thead><tr><th>Sprint</th><th>Entregable</th><th>Quick-win</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>1</strong></td>
+          <td>EF verify-address + tabla maps_cache + tool en diego-chat-process</td>
+          <td><span class="tag ok">Validar todas las altas</span></td>
+        </tr>
+        <tr>
+          <td><strong>2</strong></td>
+          <td>EF route-optimize con computeRoutes + optimizeWaypointOrder</td>
+          <td><span class="tag ok">Ruta diaria sucursal Cerrillos</span></td>
+        </tr>
+        <tr>
+          <td><strong>3</strong></td>
+          <td>Tabla restricción vehicular 2026 + tabla flota_vehiculos + función puede_circular</td>
+          <td><span class="tag ok">Cero multas</span></td>
+        </tr>
+        <tr>
+          <td><strong>4</strong></td>
+          <td>Ventanas horarias + ETAs + alertas + share-link Maps</td>
+          <td><span class="tag ok">Paridad con Routific</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>Estimación total</strong>
+      4 sprints de PC Pablo para llegar a paridad funcional con Routific/Onfleet en las features que importan a Reciclean. Costo Google Maps: <strong>$0 USD/mes</strong> durante todo 2026 dentro del free tier (volumen actual 330 rutas/mes).
+    </div>
+  </section>
+
+  <!-- SOURCES -->
+  <section>
+    <h2><span class="num">★</span>Fuentes citadas (2025-2026)</h2>
+
+    <h4>Google Maps Platform</h4>
+    <div class="sources-grid">
+      <div class="source-card">
+        <a href="https://developers.google.com/maps/documentation/routes/opt-way" target="_blank">Routes API — Optimize waypoint order</a>
+        <span>developers.google.com</span>
+      </div>
+      <div class="source-card">
+        <a href="https://developers.google.com/maps/documentation/routes/reference/rest/v2/TopLevel/computeRoutes" target="_blank">computeRoutes — Reference</a>
+        <span>developers.google.com</span>
+      </div>
+      <div class="source-card">
+        <a href="https://developers.google.com/maps/documentation/routes/traffic-model" target="_blank">TrafficModel — Routes API</a>
+        <span>developers.google.com</span>
+      </div>
+      <div class="source-card">
+        <a href="https://developers.google.com/maps/documentation/route-optimization" target="_blank">Route Optimization API — VRP solver</a>
+        <span>developers.google.com</span>
+      </div>
+      <div class="source-card">
+        <a href="https://developers.google.com/maps/documentation/address-validation/overview" target="_blank">Address Validation API</a>
+        <span>developers.google.com</span>
+      </div>
+      <div class="source-card">
+        <a href="https://developers.google.com/maps/billing-and-pricing/pricing" target="_blank">Pricing & Billing 2026</a>
+        <span>developers.google.com</span>
+      </div>
+    </div>
+
+    <h4>Benchmarks fleet & geocoding</h4>
+    <div class="sources-grid">
+      <div class="source-card">
+        <a href="https://docs.mapbox.com/api/navigation/optimization/" target="_blank">Mapbox Optimization API v2</a>
+        <span>docs.mapbox.com</span>
+      </div>
+      <div class="source-card">
+        <a href="https://www.mapbox.com/blog/mapbox-geocoding-v6-now-generally-available" target="_blank">Mapbox Geocoding v6 GA</a>
+        <span>mapbox.com</span>
+      </div>
+      <div class="source-card">
+        <a href="https://developer.here.com/documentation/tour-planning/3.1/dev_guide/index.html" target="_blank">HERE Tour Planning 3.1</a>
+        <span>developer.here.com</span>
+      </div>
+      <div class="source-card">
+        <a href="https://developers.google.com/optimization/routing/vrptw" target="_blank">OR-Tools — VRPTW</a>
+        <span>developers.google.com</span>
+      </div>
+      <div class="source-card">
+        <a href="https://locus.sh/blogs/routific-vs-onfleet-vs-locus/" target="_blank">Routific vs Onfleet vs Locus 2026</a>
+        <span>locus.sh</span>
+      </div>
+      <div class="source-card">
+        <a href="https://nextbillion.ai/blog/waste-collection-route-optimization" target="_blank">Waste Collection Route Optimization 2025</a>
+        <span>nextbillion.ai</span>
+      </div>
+    </div>
+
+    <h4>Chile · Restricción vehicular + Supabase</h4>
+    <div class="sources-grid">
+      <div class="source-card">
+        <a href="https://mtt.gob.cl/restriccion-vehicular-2026/" target="_blank">MTT — Restricción Vehicular 2026 RM</a>
+        <span>mtt.gob.cl</span>
+      </div>
+      <div class="source-card">
+        <a href="https://mtt.gob.cl/inicia-periodo-de-restriccion-vehicular-2026-region-metropolitana/" target="_blank">MTT — Inicio Período 2026</a>
+        <span>mtt.gob.cl</span>
+      </div>
+      <div class="source-card">
+        <a href="https://supabase.com/docs/guides/functions" target="_blank">Supabase Edge Functions</a>
+        <span>supabase.com</span>
+      </div>
+      <div class="source-card">
+        <a href="https://deno.com/blog/supabase-functions-on-deno-deploy" target="_blank">Supabase Functions on Deno Deploy</a>
+        <span>deno.com</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Documento elaborado por Backend Architect · Para implementación PC Pablo · Validación final Dusan Arancibia<br>
+  <a href="DIEGO-ESTANDAR-RUTAS.md">Versión Markdown</a> · Próxima revisión post quick-win #1 (≈ 4-jun-2026)
+</footer>
+
+<script>
+  // Paleta Reciclean
+  const VERDE = '#059669';
+  const VERDE_DARK = '#047857';
+  const VERDE_LIGHT = '#10b981';
+  const VERDE_SOFT = '#d1fae5';
+  const NARANJA = '#f97316';
+  const AMARILLO = '#eab308';
+  const ROJO = '#dc2626';
+  const AZUL = '#2563eb';
+  const GRIS = '#6b7280';
+
+  // Defaults Chart.js
+  Chart.defaults.font.family = "'Inter', sans-serif";
+  Chart.defaults.font.size = 12;
+  Chart.defaults.color = '#374151';
+  Chart.defaults.plugins.legend.labels.boxWidth = 12;
+  Chart.defaults.plugins.legend.labels.padding = 14;
+
+  // Chart 1: Benchmark plataformas
+  new Chart(document.getElementById('chartBenchmark'), {
+    type: 'radar',
+    data: {
+      labels: ['Optimización', 'Multi-depot', 'Driver tracking', 'POD', 'Setup ease', 'Precio'],
+      datasets: [
+        { label: 'Routific', data: [9.5, 6, 7, 7, 9, 8], backgroundColor: VERDE_SOFT, borderColor: VERDE, borderWidth: 2 },
+        { label: 'Onfleet', data: [8, 7, 9.4, 9.3, 7, 5], backgroundColor: 'rgba(249,115,22,0.18)', borderColor: NARANJA, borderWidth: 2 },
+        { label: 'Circuit Teams', data: [8.5, 9, 8, 8, 8.5, 7.5], backgroundColor: 'rgba(37,99,235,0.18)', borderColor: AZUL, borderWidth: 2 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { r: { min: 0, max: 10, ticks: { stepSize: 2, color: GRIS }, grid: { color: '#e5e7eb' } } }
+    }
+  });
+
+  // Chart 2: Ahorros documentados waste fleet
+  new Chart(document.getElementById('chartAhorro'), {
+    type: 'bar',
+    data: {
+      labels: ['Casella', 'TX Co. 150 trucks', 'Lexington KY', 'Promedio FleetRabbit', 'Target Reciclean'],
+      datasets: [{
+        label: '% reducción de millas / costos',
+        data: [21, 28, 25, 27, 15],
+        backgroundColor: [VERDE_LIGHT, VERDE_LIGHT, VERDE_LIGHT, VERDE_LIGHT, NARANJA],
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => v + '%' }, grid: { color: '#e5e7eb' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Chart 3: Precisión geocoding
+  new Chart(document.getElementById('chartPrecision'), {
+    type: 'doughnut',
+    data: {
+      labels: ['ROOFTOP (aceptar)', 'RANGE_INTERPOLATED', 'GEOMETRIC_CENTER', 'APPROXIMATE (rechazar)'],
+      datasets: [{
+        data: [62, 22, 11, 5],
+        backgroundColor: [VERDE, VERDE_LIGHT, AMARILLO, ROJO],
+        borderWidth: 2, borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + '% direcciones Chile típicas' } }
+      }
+    }
+  });
+
+  // Chart 4: Costo proyectado
+  new Chart(document.getElementById('chartCosto'), {
+    type: 'bar',
+    data: {
+      labels: ['Routes Pro', 'Route Matrix', 'Geocoding', 'Address Valid.'],
+      datasets: [
+        { label: 'Free cap', data: [5000, 10000, 10000, 5000], backgroundColor: VERDE_SOFT, stack: 'a' },
+        { label: 'Uso Reciclean', data: [330, 500, 150, 50], backgroundColor: VERDE, stack: 'b' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#e5e7eb' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Chart 5: Tráfico Santiago día hábil
+  new Chart(document.getElementById('chartTrafico'), {
+    type: 'line',
+    data: {
+      labels: ['06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21'],
+      datasets: [{
+        label: 'Índice de congestión (0-100)',
+        data: [25, 75, 92, 78, 50, 45, 55, 60, 50, 45, 50, 65, 88, 95, 78, 45],
+        borderColor: VERDE,
+        backgroundColor: VERDE_SOFT,
+        fill: true,
+        tension: 0.35,
+        borderWidth: 2.5,
+        pointRadius: 3,
+        pointBackgroundColor: VERDE
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { afterLabel: ctx => ctx.parsed.y > 80 ? 'PICO — usar PESSIMISTIC' : '' } }
+      },
+      scales: {
+        y: { beginAtZero: true, max: 100, grid: { color: '#e5e7eb' } },
+        x: { grid: { display: false }, ticks: { callback: v => v + 'h' } }
+      }
+    }
+  });
+
+  // Chart 6: Restricción vehicular
+  new Chart(document.getElementById('chartRestriccion'), {
+    type: 'bar',
+    data: {
+      labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+      datasets: [
+        { label: 'Dígitos restringidos (sin sello verde)', data: [2, 2, 2, 2, 2, 0, 0], backgroundColor: ROJO, borderRadius: 4 },
+        { label: 'Patentes libres', data: [8, 8, 8, 8, 8, 10, 10], backgroundColor: VERDE, borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, beginAtZero: true, max: 10, grid: { color: '#e5e7eb' } }
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

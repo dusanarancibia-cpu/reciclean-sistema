@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diego v9 · Estándar Mundial de Respuestas 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+<style>
+  :root{
+    --verde:#059669; --verde-d:#047857; --verde-l:#d1fae5;
+    --azul:#2563eb; --naranja:#ea580c; --purpura:#9333ea;
+    --rojo:#dc2626; --ambar:#d97706;
+    --bg:#ffffff; --bg2:#f8fafc; --bg3:#f1f5f9;
+    --txt:#0f172a; --txt2:#475569; --txt3:#94a3b8; --txt4:#64748b;
+    --borde:#e2e8f0;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg2);color:var(--txt);font-family:'Inter',system-ui,sans-serif;line-height:1.55;font-feature-settings:"cv02","cv03","cv04","cv11"}
+  .wrap{max-width:1180px;margin:0 auto;padding:32px 24px 96px}
+  header.hero{background:linear-gradient(135deg,var(--verde) 0%,var(--verde-d) 100%);color:#fff;border-radius:20px;padding:36px 32px;margin-bottom:32px;box-shadow:0 12px 32px rgba(5,150,105,.18)}
+  header.hero h1{margin:0 0 8px;font-size:2rem;font-weight:800;letter-spacing:-.02em}
+  header.hero p{margin:0;opacity:.92;font-size:.95rem;max-width:780px}
+  header.hero .meta{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+  header.hero .meta span{background:rgba(255,255,255,.16);backdrop-filter:blur(6px);padding:6px 12px;border-radius:999px;font-size:.78rem;font-weight:500}
+  h2{font-size:1.35rem;font-weight:700;margin:48px 0 16px;color:var(--txt);letter-spacing:-.01em;border-bottom:2px solid var(--verde-l);padding-bottom:8px}
+  h3{font-size:1.05rem;font-weight:600;margin:24px 0 10px;color:var(--txt)}
+  p,li{font-size:.93rem;color:var(--txt2)}
+  .grid-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:20px 0}
+  .kpi-card{background:#fff;border-radius:16px;padding:20px;border:1px solid var(--borde);box-shadow:0 1px 3px rgba(15,23,42,.04)}
+  .kpi-card .label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--txt4);font-weight:600}
+  .kpi-card .value{font-size:2.5rem;font-weight:700;color:var(--txt);margin:6px 0 4px;line-height:1}
+  .kpi-card .delta{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.75rem;font-weight:600}
+  .delta.up{background:rgba(5,150,105,.15);color:var(--verde)}
+  .delta.down{background:rgba(220,38,38,.15);color:var(--rojo)}
+  .delta.neutral{background:rgba(100,116,139,.15);color:var(--txt4)}
+  table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;margin:14px 0 22px;box-shadow:0 1px 3px rgba(15,23,42,.04);font-size:.88rem}
+  th{background:var(--verde-l);color:var(--verde-d);font-weight:600;text-align:left;padding:12px 14px;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase}
+  td{padding:11px 14px;border-top:1px solid var(--borde);color:var(--txt2)}
+  tr:hover td{background:var(--bg2)}
+  .v8-bad{background:rgba(220,38,38,.06);border-left:4px solid var(--rojo);padding:14px 18px;border-radius:8px;margin:10px 0;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:#7f1d1d;white-space:pre-wrap}
+  .v9-good{background:rgba(5,150,105,.06);border-left:4px solid var(--verde);padding:14px 18px;border-radius:8px;margin:10px 0;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:#064e3b;white-space:pre-wrap}
+  .v8-bad::before{content:"DIEGO V8 (hoy — mal)";display:block;font-family:'Inter',sans-serif;font-weight:700;font-size:.72rem;color:var(--rojo);letter-spacing:.06em;margin-bottom:8px}
+  .v9-good::before{content:"DIEGO V9 (estándar 2026 — bien)";display:block;font-family:'Inter',sans-serif;font-weight:700;font-size:.72rem;color:var(--verde);letter-spacing:.06em;margin-bottom:8px}
+  pre{background:#0f172a;color:#e2e8f0;padding:18px 20px;border-radius:12px;overflow:auto;font-family:'JetBrains Mono',monospace;font-size:.8rem;line-height:1.5}
+  pre.prompt{background:#f8fafc;color:#0f172a;border:1px solid var(--borde)}
+  code:not(pre code){background:var(--bg3);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.82em;color:var(--verde-d)}
+  .mermaid{background:#fff;border-radius:14px;padding:24px;margin:16px 0;box-shadow:0 1px 3px rgba(15,23,42,.04);border:1px solid var(--borde);text-align:center}
+  .ranking-bar{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:.82rem}
+  .ranking-bar .bar{font-family:'JetBrains Mono',monospace;color:var(--verde)}
+  .callout{background:#fff;border-radius:16px;padding:20px 22px;margin:18px 0;border-left:5px solid var(--verde);box-shadow:0 1px 3px rgba(15,23,42,.04)}
+  .callout.warn{border-left-color:var(--ambar)}
+  .callout.alert{border-left-color:var(--rojo)}
+  .callout strong{color:var(--txt);font-weight:600}
+  .sparkline{font-family:'JetBrains Mono',monospace;color:var(--verde);letter-spacing:1px}
+  .chart-wrap{background:#fff;border-radius:14px;padding:20px;margin:18px 0;border:1px solid var(--borde);box-shadow:0 1px 3px rgba(15,23,42,.04)}
+  .chart-wrap canvas{max-height:280px}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:720px){.two-col{grid-template-columns:1fr}}
+  ul.checklist{list-style:none;padding:0;margin:10px 0}
+  ul.checklist li{padding:8px 0 8px 30px;position:relative;font-size:.92rem;color:var(--txt2)}
+  ul.checklist li::before{content:"✓";position:absolute;left:0;color:var(--verde);font-weight:700;font-size:1.1rem}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:600;background:var(--bg3);color:var(--txt4);letter-spacing:.02em}
+  .pill.green{background:var(--verde-l);color:var(--verde-d)}
+  .pill.orange{background:#fed7aa;color:#9a3412}
+  .pill.red{background:#fecaca;color:#991b1b}
+  footer{margin-top:48px;padding:20px;background:#fff;border-radius:14px;border:1px solid var(--borde);font-size:.82rem;color:var(--txt4);text-align:center}
+  footer a{color:var(--verde);text-decoration:none;font-weight:500}
+  .nav{position:sticky;top:12px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-radius:14px;padding:10px 16px;margin-bottom:24px;border:1px solid var(--borde);display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;z-index:50}
+  .nav a{color:var(--txt2);text-decoration:none;font-weight:500}
+  .nav a:hover{color:var(--verde)}
+  .section-num{display:inline-block;background:var(--verde);color:#fff;width:28px;height:28px;border-radius:8px;text-align:center;line-height:28px;font-weight:700;font-size:.85rem;margin-right:10px;vertical-align:middle}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>Diego v9 · Estándar Mundial de Respuestas 2026</h1>
+  <p>Investigación de los más altos estándares 2025-2026 en eficiencia y respuestas visuales de chatbots empresariales, aplicado a Diego v8 del Panel RDO.</p>
+  <div class="meta">
+    <span>23-may-2026</span>
+    <span>PC Dusan · AI Engineer</span>
+    <span>≥10 fuentes citadas</span>
+    <span>3 quick-wins sin Pablo</span>
+    <span>Spec literal incluida</span>
+  </div>
+</header>
+
+<nav class="nav">
+  <a href="#tldr">TL;DR</a>
+  <a href="#visuales">1 · Visuales inline</a>
+  <a href="#singleturn">2 · Single-turn</a>
+  <a href="#honesty">3 · Honesty</a>
+  <a href="#elevation">4 · Elevation</a>
+  <a href="#brevedad">5 · Brevedad</a>
+  <a href="#memoria">6 · Memoria</a>
+  <a href="#brechas">Brechas</a>
+  <a href="#quickwins">Quick-wins</a>
+  <a href="#prompt">Prompt patch</a>
+</nav>
+
+<h2 id="tldr"><span class="section-num">0</span>TL;DR — 5 hechos para Dusan</h2>
+<div class="callout">
+  <ul class="checklist">
+    <li><strong>Diego v8 responde como chatbot 2023:</strong> texto plano, multi-turno, sin tablas/diagramas inline. Pierde 39% accuracy según ICLR 2026.</li>
+    <li><strong>El estándar 2026 es single-turn + visual cuando el dato lo justifica</strong> (Claude artifacts, ChatGPT Canvas, Linear AI). Diego debe imitarlo.</li>
+    <li><strong>Honesty calibration ("no sé, voy a consultar")</strong> es patrón de research consolidado: token [IDK], behavioral calibration RL.</li>
+    <li><strong>Elevación de permisos</strong> es estándar production con LangGraph 1.2 (mayo 2026). Diego v8 no lo tiene.</li>
+    <li><strong>3 quick-wins implementables sin Pablo en 1-2 días:</strong> patch al SYSTEM_PROMPT para forzar tablas + Mermaid + brevedad adaptativa por intent.</li>
+  </ul>
+</div>
+
+<div class="grid-kpi">
+  <div class="kpi-card">
+    <div class="label">Accuracy loss multi-turn</div>
+    <div class="value">39%</div>
+    <div class="delta down">ICLR 2026</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Reliability collapse</div>
+    <div class="value">112%</div>
+    <div class="delta down">ICLR 2026</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">CSAT Slack-based support</div>
+    <div class="value">+15%</div>
+    <div class="delta up">Slack 2026</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Resolution rate top tier</div>
+    <div class="value">80%</div>
+    <div class="delta up">fin.ai 2026</div>
+  </div>
+</div>
+
+<h2 id="visuales"><span class="section-num">1</span>Respuestas visuales inline</h2>
+
+<p>Anthropic en marzo 2026 lanzó <em>custom visuals in chat</em>: Claude decide cuándo renderizar visual sin que se le pida. ChatGPT Canvas (oct-2024) hace lo mismo para documentos largos. Diego v8 está atrás. Matriz "cuándo visual":</p>
+
+<table>
+  <thead>
+    <tr><th>Tipo de dato</th><th>Mejor formato</th><th>Ejemplo Diego</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Hecho único</td><td>1 línea texto</td><td>"Cobre Cerrillos: $4.850/kg"</td></tr>
+    <tr><td>≥3 items comparables</td><td>Tabla Markdown</td><td>3 sucursales × precio</td></tr>
+    <tr><td>Serie temporal</td><td>Tabla + sparkline</td><td>precio cobre 30d ▁▂▃▄▅</td></tr>
+    <tr><td>Proceso con pasos</td><td>Mermaid flowchart</td><td>flujo pesaje cliente</td></tr>
+    <tr><td>Decisión entre opciones</td><td>Tabla side-by-side + recomendación</td><td>Cerrillos vs Maipú</td></tr>
+    <tr><td>Ranking</td><td>Tabla + barras ▓▓▓░░</td><td>top 5 generadores</td></tr>
+    <tr><td>Distribución %</td><td>Donut / bar inline</td><td>materiales por sucursal</td></tr>
+    <tr><td>Jerarquía</td><td>Mermaid graph LR</td><td>organigrama grupo</td></tr>
+  </tbody>
+</table>
+
+<h3>Ejemplo: precios cobre 3 sucursales</h3>
+
+<div class="v8-bad">Hola Andrea, los precios del cobre esta semana son los siguientes: en Cerrillos está a $4.850/kg, en Maipú a $4.820/kg y en Talca a $4.780/kg. Han subido un poco respecto a la semana pasada. ¿Quieres más detalle?</div>
+
+<div class="v9-good">Cobre · semana 21 · cierre 22-may
+
+| Sucursal  | Precio $/kg | Δ vs sem 20 | Tendencia |
+|-----------|-------------|-------------|-----------|
+| Cerrillos | $4.850      | +1.2 %      | ▁▂▃▄▅     |
+| Maipú     | $4.820      | +0.8 %      | ▁▂▂▃▃     |
+| Talca     | $4.780      | +0.3 %      | ▁▁▂▂▂     |
+
+LME +1.7% semanal → arrastra los 3. Margen Reciclean intacto (% sobre mercado).</div>
+
+<h3>Si el FAB rendea la respuesta como HTML, se ve así:</h3>
+
+<table>
+  <thead><tr><th>Sucursal</th><th>Precio $/kg</th><th>Δ vs sem 20</th><th>Tendencia 5d</th></tr></thead>
+  <tbody>
+    <tr><td>Cerrillos</td><td><strong>$4.850</strong></td><td><span class="delta up">+1.2%</span></td><td><span class="sparkline">▁▂▃▄▅</span></td></tr>
+    <tr><td>Maipú</td><td><strong>$4.820</strong></td><td><span class="delta up">+0.8%</span></td><td><span class="sparkline">▁▂▂▃▃</span></td></tr>
+    <tr><td>Talca</td><td><strong>$4.780</strong></td><td><span class="delta up">+0.3%</span></td><td><span class="sparkline">▁▁▂▂▂</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Y si la pregunta es de proceso, Mermaid embebido:</h3>
+
+<div class="mermaid">
+graph TD
+    A[Generador llega a sucursal] --> B{Material declarado}
+    B -->|Cobre/aluminio| C[Pesaje balanza certificada]
+    B -->|Ferroso| D[Pesaje báscula camión]
+    C --> E[Foto pesaje + RUT]
+    D --> E
+    E --> F[Carga en RDO]
+    F --> G[Emisión DTE en T+24h]
+    style A fill:#d1fae5,stroke:#059669,color:#064e3b
+    style G fill:#d1fae5,stroke:#059669,color:#064e3b
+</div>
+
+<h3>Y si es ranking → barras inline:</h3>
+
+<table>
+  <thead><tr><th>#</th><th>Generador</th><th>Volumen mes (kg)</th><th>Participación</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>HUAL</td><td>48.500</td><td><span class="bar">▓▓▓▓▓▓▓▓░░ 82%</span></td></tr>
+    <tr><td>2</td><td>RESIMEX</td><td>32.100</td><td><span class="bar">▓▓▓▓▓▓░░░░ 54%</span></td></tr>
+    <tr><td>3</td><td>FPC</td><td>21.800</td><td><span class="bar">▓▓▓▓░░░░░░ 37%</span></td></tr>
+    <tr><td>4</td><td>POLPLAST</td><td>14.200</td><td><span class="bar">▓▓▓░░░░░░░ 24%</span></td></tr>
+    <tr><td>5</td><td>ADASME</td><td>9.800</td><td><span class="bar">▓▓░░░░░░░░ 17%</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Y si es distribución → donut Chart.js (paleta corporativa):</h3>
+<div class="chart-wrap">
+  <canvas id="dist-mat"></canvas>
+</div>
+
+<h2 id="singleturn"><span class="section-num">2</span>Eficiencia: single-turn por defecto</h2>
+
+<div class="callout alert">
+  <strong>ICLR 2026 textual:</strong> <em>"Multi-turn conversations do not just make models slightly worse on average. They make models wildly inconsistent."</em> GPT-4.1 cae 91.7% → 70.7% accuracy. Reliability colapsa 112%.
+</div>
+
+<p>Mitigaciones probadas en el paper:</p>
+<ul class="checklist">
+  <li>Recap method (resumir contexto antes de generar) — mejora marginal.</li>
+  <li>Consolidar contexto antes de output — reduce inconsistencia.</li>
+  <li>Validación externa (no autocorrección) — única que cierra la brecha.</li>
+</ul>
+
+<p>Diego v9 debe usar <strong>Opus 4.7 con extended thinking</strong> para queries analíticas (single-shot garantizado) y Sonnet 4.6 para transaccionales (rápido).</p>
+
+<table>
+  <thead><tr><th>Modelo</th><th>Caso de uso</th><th>Thinking budget</th><th>Latencia esperada</th></tr></thead>
+  <tbody>
+    <tr><td>Haiku 4.5</td><td>Acuse recibo, "hola Diego"</td><td>0</td><td>&lt;200 ms</td></tr>
+    <tr><td>Sonnet 4.6</td><td>Queries fácticas, tools simples</td><td>0-1K</td><td>1-3 s</td></tr>
+    <tr><td>Opus 4.7</td><td>Analítico, comparativos, decisión</td><td>4-16K</td><td>5-15 s</td></tr>
+  </tbody>
+</table>
+
+<h2 id="honesty"><span class="section-num">3</span>Regla de oro: "no sé, voy a consultar"</h2>
+
+<div class="callout warn">
+  <strong>Anthropic + OpenAI alignment 2025:</strong> <em>"Standard RL with binary reward inadvertently incentivizes models to function as 'good test-takers' rather than 'honest communicators', encouraging guessing whenever correctness probability exceeds zero."</em>
+</div>
+
+<p>Soluciones research consolidadas:</p>
+<ul class="checklist">
+  <li>Token <code>[IDK]</code> en pretraining (arXiv 2412.06676) — el modelo aprende a abstenerse.</li>
+  <li>Behavioral calibration RL (arXiv 2512.19920) — respuesta sustantiva solo si confianza supera threshold definido por usuario.</li>
+  <li>ConFix — usar facts de alta confianza para corregir los de baja, sin recurrir a fuentes externas.</li>
+</ul>
+
+<h3>Ejemplo Diego: "¿cuánto le debemos a HUAL?"</h3>
+
+<div class="v8-bad">A HUAL le debemos $3.450.000 según mis registros.
+
+[¿Es real? ¿De qué tabla salió? ¿Es el saldo actual o un valor cacheado? — Riesgo de alucinación]</div>
+
+<div class="v9-good">No tengo acceso directo a `cuentas_por_pagar`. Lo que sí veo en `facturacion_hual`:
+
+- Última factura emitida HUAL: F-2026-0421 · $1.240.000 · 18-may
+- Pendiente de pago según DTE: 1 factura ($1.240.000)
+- Histórico 90d: 4 facturas, $4.890.000 total
+
+Para el saldo consolidado real (incluye descuentos, NC, retenciones) hay que preguntarle a Dyana o consultar SII directo. ¿Le escribo a Dyana?</div>
+
+<h2 id="elevation"><span class="section-num">4</span>Elevation policy: autorización antes de parámetro nuevo</h2>
+
+<p>LangGraph 1.2 (mayo 2026) consolidó el patrón <strong>Human-in-the-loop interrupts</strong>: cada tool call pasa por un policy check. 4 decisiones: approve / edit / reject / respond. Estado persistido con <code>AsyncPostgresSaver</code>.</p>
+
+<h3>Flujo de elevación Diego v9:</h3>
+
+<div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant U as Usuario (Andrea)
+    participant D as Diego v9
+    participant G as Guardrail / Policy
+    participant A as Admin (Pablo/Dusan)
+
+    U->>D: Pregunta que requiere tool Z
+    D->>G: ¿Puedo usar tool Z con params P?
+    alt Tool whitelist + params OK
+        G-->>D: APPROVE
+        D->>D: Ejecuta + responde
+        D-->>U: Respuesta con datos
+    else Tool nueva o param fuera de rango
+        G-->>D: ELEVATE
+        D-->>U: "Necesito permiso para Z. Pido OK a Pablo."
+        D->>A: Solicitud de elevación + contexto
+        A-->>D: APPROVE / EDIT / REJECT
+        D-->>U: Respuesta final
+    end
+</div>
+
+<h3>Matriz de elevation por tool actual de Diego v8:</h3>
+
+<table>
+  <thead><tr><th>Tool</th><th>Default</th><th>Eleva si…</th><th>Riesgo</th></tr></thead>
+  <tbody>
+    <tr><td><code>precios</code></td><td><span class="pill green">auto</span></td><td>—</td><td>Bajo</td></tr>
+    <tr><td><code>UF</code></td><td><span class="pill green">auto</span></td><td>—</td><td>Bajo</td></tr>
+    <tr><td><code>clientes</code></td><td><span class="pill green">auto</span></td><td>flag confidencial=true</td><td>Medio</td></tr>
+    <tr><td><code>facturacion</code></td><td><span class="pill green">auto</span></td><td>monto &gt; $500.000</td><td>Medio</td></tr>
+    <tr><td><code>tareas</code> INSERT</td><td><span class="pill orange">condicional</span></td><td>asigna a otra persona</td><td>Medio</td></tr>
+    <tr><td><code>agenda</code> INSERT</td><td><span class="pill orange">condicional</span></td><td>involucra terceros</td><td>Medio</td></tr>
+    <tr><td><code>borradores</code></td><td><span class="pill green">auto</span></td><td>—</td><td>Bajo</td></tr>
+    <tr><td><code>carga_equipo</code></td><td><span class="pill red">elevar SIEMPRE</span></td><td>siempre — datos personales</td><td>Alto</td></tr>
+    <tr><td><code>verificar_y_corregir_dato</code></td><td><span class="pill red">elevar SIEMPRE</span></td><td>siempre — escritura</td><td>Alto</td></tr>
+    <tr><td><strong>TOOL NUEVA</strong></td><td><span class="pill red">BLOQUEAR</span></td><td>siempre — avisar admin</td><td>Crítico</td></tr>
+  </tbody>
+</table>
+
+<h2 id="brevedad"><span class="section-num">5</span>Brevedad accionable por intent</h2>
+
+<div class="callout">
+  <strong>Slack 2026:</strong> "Slack-based support delivers <strong>21% faster resolution + 15% higher satisfaction</strong>" — la longitud breve + link al recurso real gana sobre la respuesta extensa.
+</div>
+
+<h3>Matriz longitud por intent:</h3>
+
+<table>
+  <thead><tr><th>Intent</th><th>Max chars</th><th>Formato</th><th>Ejemplo</th></tr></thead>
+  <tbody>
+    <tr><td>Fáctico simple</td><td>80</td><td>1 línea inline</td><td>"Cobre Cerrillos: $4.850/kg"</td></tr>
+    <tr><td>Multi-dato</td><td>tabla ≤6 filas</td><td>Markdown table</td><td>3 sucursales × precio</td></tr>
+    <tr><td>Analítico</td><td>5 líneas + tabla</td><td>Tabla + 1 conclusión</td><td>tendencia semana</td></tr>
+    <tr><td>Decisión</td><td>10 líneas</td><td>Headers + opciones + recomendación</td><td>"¿abro Pto Montt?"</td></tr>
+    <tr><td>Proceso</td><td>Mermaid + 2 líneas</td><td>Diagrama + nota</td><td>flujo pesaje</td></tr>
+    <tr><td>Reporte CEO</td><td>3 líneas</td><td>Bullets cortos</td><td>"Día OK: 3 RDOs, 2 pendientes, 0 alertas"</td></tr>
+    <tr><td>Conversación</td><td>1 línea</td><td>Texto breve</td><td>"Hola Andrea, ¿en qué te ayudo?"</td></tr>
+    <tr><td>No sé</td><td>2 líneas</td><td>Honesto + propuesta</td><td>"No tengo X. ¿Pregunto a Dyana?"</td></tr>
+  </tbody>
+</table>
+
+<h3>Antes / Después:</h3>
+
+<div class="two-col">
+  <div class="v8-bad">Hola! El precio del cobre en Cerrillos hoy es de $4.850/kg. Subió un 1.2% respecto a la semana pasada. ¿Quieres saber otros materiales?
+
+[244 chars · multi-turno innecesario]</div>
+  <div class="v9-good">Cobre Cerrillos: $4.850/kg (+1.2% sem)
+
+[43 chars · 1 turno]</div>
+</div>
+
+<h2 id="memoria"><span class="section-num">6</span>Memoria: conversaciones no reiterativas</h2>
+
+<p>Patrón consolidado 2026: <strong>short-term memory</strong> (ventana del modelo) + <strong>long-term memory</strong> (pgvector + embeddings) + <strong>recursive summarization</strong> cada N turnos.</p>
+
+<h3>Arquitectura propuesta:</h3>
+
+<div class="mermaid">
+graph LR
+    M[Mensaje nuevo Andrea] --> E[Embed OpenAI / Voyage]
+    E --> P[(pgvector<br/>memoria_diego)]
+    E --> S{Similar a algo<br/>previo > 0.85?}
+    S -->|Sí| R[Recuperar memoria<br/>relevante]
+    S -->|No| N[Solo contexto reciente]
+    R --> C[Construir contexto<br/>de respuesta]
+    N --> C
+    C --> L[LLM Sonnet/Opus]
+    L --> O[Respuesta Diego]
+    O --> SUM[Summarizer cada 10 turnos]
+    SUM --> P
+    style P fill:#d1fae5,stroke:#059669
+    style L fill:#dbeafe,stroke:#2563eb
+</div>
+
+<h3>DDL Supabase sugerido:</h3>
+<pre>CREATE TABLE curated.diego_memoria_corto (
+  id BIGSERIAL PRIMARY KEY,
+  conversacion_id UUID NOT NULL,
+  usuario TEXT NOT NULL,
+  rol TEXT CHECK (rol IN ('user','assistant','system','tool')),
+  contenido TEXT NOT NULL,
+  embedding vector(1536),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE curated.diego_memoria_largo (
+  id BIGSERIAL PRIMARY KEY,
+  usuario TEXT NOT NULL,
+  hecho TEXT NOT NULL,
+  fuente TEXT,
+  confianza FLOAT,
+  embedding vector(1536),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX diego_corto_emb_idx ON curated.diego_memoria_corto
+  USING hnsw (embedding vector_cosine_ops);
+CREATE INDEX diego_largo_emb_idx ON curated.diego_memoria_largo
+  USING hnsw (embedding vector_cosine_ops);</pre>
+
+<h2 id="brechas">Brechas vs Diego v8 (Top 5)</h2>
+
+<table>
+  <thead><tr><th>#</th><th>Brecha</th><th>Impacto</th><th>Cierre</th><th>Esfuerzo</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Cero visualización inline</td><td>Andrea/Dusan pierden 30-60s por respuesta armando tabla mental</td><td>Patch SYSTEM_PROMPT v9</td><td><span class="pill green">2-4h</span></td></tr>
+    <tr><td>2</td><td>Multi-turn por defecto (39% accuracy loss)</td><td>5-8 turnos para resolver lo que es 1 turno → adopción baja</td><td>Regla single-turn priority + extended thinking</td><td><span class="pill green">1-2h</span></td></tr>
+    <tr><td>3</td><td>No tiene "no sé" honesto</td><td>Riesgo legal — alucinación en precios HUAL, saldos, IVA, Ley REP</td><td>Honesty calibration en prompt + tool registro de gaps</td><td><span class="pill green">2-3h</span></td></tr>
+    <tr><td>4</td><td>Cero elevation policy</td><td>Tools futuras pueden ejecutar sin frontera. No hay umbral monetario.</td><td>Matriz por tool + umbrales en prompt</td><td><span class="pill orange">3-5h prompt / 1-2 sem con HITL real</span></td></tr>
+    <tr><td>5</td><td>Memoria nula</td><td>Repetir info al bot es queja #1 UX. Andrea repite "soy Maipú" cada vez.</td><td>pgvector + summarizer (requiere Pablo)</td><td><span class="pill red">3-5d Pablo</span></td></tr>
+  </tbody>
+</table>
+
+<h2 id="quickwins">Implementable sin Pablo en 1-2 días (Top 3)</h2>
+
+<div class="grid-kpi">
+  <div class="kpi-card">
+    <div class="label">Quick-win 1</div>
+    <div class="value" style="font-size:1.1rem;line-height:1.3">Visual output policy</div>
+    <p style="margin:8px 0 0;font-size:.82rem">Patch SYSTEM_PROMPT — fuerza Markdown tables + Mermaid cuando el intent lo amerita. Si Mermaid no rendea, agregar <code>mermaid.min.js</code> al panel-rdo.html (1 línea).</p>
+    <div class="delta neutral" style="margin-top:10px">~4 horas</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Quick-win 2</div>
+    <div class="value" style="font-size:1.1rem;line-height:1.3">Single-turn + brevedad</div>
+    <p style="margin:8px 0 0;font-size:.82rem">Patch SYSTEM_PROMPT — bloque "RESPONSE LENGTH POLICY" + "SINGLE-TURN PRIORITY". Elimina "¿quieres más detalle?" y baja chars/respuesta de ~300 a ~80.</p>
+    <div class="delta neutral" style="margin-top:10px">~3 horas</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Quick-win 3</div>
+    <div class="value" style="font-size:1.1rem;line-height:1.3">Honesty + Elevation</div>
+    <p style="margin:8px 0 0;font-size:.82rem">Patch SYSTEM_PROMPT — bloques "HONESTY CALIBRATION" + "ELEVATION POLICY". Diego dice "no sé" cuando falta dato y pide OK cuando cruza umbral.</p>
+    <div class="delta neutral" style="margin-top:10px">~3 horas</div>
+  </div>
+</div>
+
+<h2 id="prompt">Spec literal del prompt patch para v9</h2>
+
+<p>Pegar al final del SYSTEM_PROMPT actual de Diego v8 (en EF <code>diego-chat-process</code>):</p>
+
+<pre class="prompt">═══════════════════════════════════════════════════════════════════
+DIEGO v9 · ESTÁNDAR DE RESPUESTAS (parche 23-may-2026)
+═══════════════════════════════════════════════════════════════════
+
+# 1. VISUAL OUTPUT POLICY
+Cuando la respuesta involucre datos comparables, series temporales,
+procesos o decisiones, USA VISUAL INLINE — no texto plano.
+
+Reglas:
+- ≥3 datos comparables → Markdown table.
+- Serie temporal → tabla + sparkline ASCII (▁▂▃▄▅▆▇█).
+- Proceso/flujo/jerarquía → bloque ```mermaid``` con graph TD o sequenceDiagram.
+- Decisión entre opciones → tabla side-by-side + 1 línea recomendación.
+- Ranking → tabla ordenada con barras ▓▓▓░░░ proporcionales.
+
+PROHIBIDO: explicar en prosa lo que cabe en tabla de 3 filas.
+
+# 2. SINGLE-TURN PRIORITY
+- ¿Tengo todo necesario? SÍ → respondé YA con datos + visual + conclusión.
+- ¿NO? → enumerá TODO lo que falta en UNA pregunta, no de a uno.
+PROHIBIDO: "¿Quieres profundizar?" / "¿Te muestro más?"
+
+# 3. RESPONSE LENGTH POLICY (por intent)
+Fáctico simple: 80 chars, 1 línea inline.
+Multi-dato: 6 filas tabla Markdown.
+Analítico: 5 líneas + tabla.
+Decisión: 10 líneas con headers + opciones + recomendación.
+Proceso: Mermaid + 2 líneas.
+Reporte CEO: 3 líneas bullets cortos.
+Conversación: 1 línea.
+No sé: 2 líneas honesto + propuesta.
+
+# 4. HONESTY CALIBRATION
+Si NO tenés el dato en tools:
+- NO inventes. NO promediés sin avisar. NO cites fuentes inexistentes.
+- Respondé: "No tengo [X] cargado. Lo que sí veo: [Y]. ¿Le pregunto a [persona]?"
+Si cruza umbral riesgo (>$500K, decisión cliente, cambio público):
+- PARÁ. Resumí. Pedí firma a Dusan.
+
+# 5. ELEVATION POLICY
+Auto-approve (READ): precios, UF, alertas, agenda propia, borradores.
+Con umbral: facturacion (>$500K confirmar), clientes (confidencial confirmar),
+  tareas (asigna a otro confirmar), carga_equipo (siempre confirmar).
+Escritura SIEMPRE confirmar: verificar_y_corregir_dato, cualquier INSERT/UPDATE/DELETE.
+Tool NUEVA: BLOQUEAR. Decir: "Necesito acceso a [tool]. Aviso a Pablo."
+
+# 6. MEMORY DISCIPLINE
+Antes de preguntar info ya conocida del usuario, consultá thread actual.
+Si ya respondió esa info, USALA. No vuelvas a preguntar.
+(v9.1 agregará memoria persistente con pgvector.)
+
+# 7. STOP GENERATING
+Parar cuando: ya respondiste literal, quedan &lt;20% tokens, te detectás repitiendo.
+
+═══════════════════════════════════════════════════════════════════
+FIN PARCHE v9
+═══════════════════════════════════════════════════════════════════</pre>
+
+<h3>Tests de regresión (10 prompts canónicos):</h3>
+<ol>
+  <li>"¿Precio cobre Cerrillos?" → debe ser 1 línea ≤80 chars.</li>
+  <li>"Compará precios cobre 3 sucursales." → debe ser Markdown table.</li>
+  <li>"¿Cómo van los precios esta semana?" → tabla + 1 conclusión + sparkline.</li>
+  <li>"¿Cómo funciona el pesaje cliente?" → bloque <code>mermaid</code>.</li>
+  <li>"¿Qué pendientes tengo hoy?" (Andrea de comercial) → no repreguntar área.</li>
+  <li>"¿Cuánto le debemos a HUAL?" → "no sé exacto, ver Dyana".</li>
+  <li>"Cargá $2M en facturacion para Pincore." → pedir OK Dusan.</li>
+  <li>"Mandale un email a Andrea." → tool no existe → bloquear.</li>
+  <li>"Hola Diego." → 1 línea, sin lista de capacidades.</li>
+  <li>"¿Abro sucursal Concepción?" → tabla pros/contras + recomendación.</li>
+</ol>
+
+<h2>Métricas de éxito post-deploy v9</h2>
+<table>
+  <thead><tr><th>KPI</th><th>Baseline v8</th><th>Objetivo v9 (30d)</th><th>Fuente</th></tr></thead>
+  <tbody>
+    <tr><td>Single-turn resolution rate</td><td>desconocido</td><td>≥70%</td><td>log EF</td></tr>
+    <tr><td>Avg chars/respuesta (fáctica)</td><td>~300</td><td>≤100</td><td>log EF</td></tr>
+    <tr><td>% respuestas con visual cuando aplica</td><td>~0%</td><td>≥60%</td><td>audit manual 20/sem</td></tr>
+    <tr><td>% "no sé" cuando falta dato</td><td>~0%</td><td>100% de gaps</td><td>audit</td></tr>
+    <tr><td>Tools no autorizadas ejecutadas</td><td>desconocido</td><td>0</td><td>log EF</td></tr>
+    <tr><td>CSAT interno equipo</td><td>n/a</td><td>≥4.2/5</td><td>encuesta semanal</td></tr>
+  </tbody>
+</table>
+
+<h2>Fuentes citadas (≥10 referencias 2025-2026)</h2>
+<ol style="font-size:.86rem;color:var(--txt2);line-height:1.7">
+  <li><a href="https://beam.ai/agentic-insights/iclr-2026-llms-lose-accuracy-in-multi-turn-conversations">ICLR 2026 — LLMs Lose Accuracy in Multi-Turn Conversations</a> (39% drop, 112% reliability collapse)</li>
+  <li><a href="https://support.claude.com/en/articles/13979539-custom-visuals-in-chat-and-cowork">Anthropic Support 2026 — Custom visuals in chat and Cowork</a></li>
+  <li><a href="https://fin.ai/learn/ai-agent-kpis-enterprise-performance-metrics-framework">fin.ai 2026 — AI Agent KPIs: Enterprise Performance Framework</a></li>
+  <li><a href="https://arxiv.org/pdf/2412.06676">arXiv 2412.06676 — I Don't Know: Explicit Modeling of Uncertainty with [IDK] Token</a></li>
+  <li><a href="https://arxiv.org/pdf/2512.19920">arXiv 2512.19920 — Mitigating LLM Hallucination via Behaviorally Calibrated RL</a></li>
+  <li><a href="https://developer.nvidia.com/nemo-guardrails">NVIDIA NeMo Guardrails 2026</a></li>
+  <li><a href="https://docs.lakera.ai/docs/defenses">Lakera Guard Defenses</a></li>
+  <li><a href="https://docs.langchain.com/oss/python/langchain/human-in-the-loop">LangGraph 1.2 (mayo 2026) — Human-in-the-loop docs</a></li>
+  <li><a href="https://slack.com/blog/productivity/ai-powered-bots-guide-to-chatbots-tools-and-best-practices">Slack 2026 — AI-Powered Bots Guide</a> (+21% faster, +15% CSAT)</li>
+  <li><a href="https://quickchat.ai/post/chatbot-csat-score-guide">Quickchat 2026 — Chatbot CSAT Score Guide</a></li>
+  <li><a href="https://arxiv.org/pdf/2410.10813">arXiv 2410.10813 — LongMemEval benchmark</a></li>
+  <li><a href="https://mermaid.ai/blog/posts/claude-to-mermaid-ai-generated-diagrams">Mermaid Chart — Claude to Mermaid AI generated diagrams</a></li>
+  <li><a href="https://www.mindstudio.ai/blog/what-is-claude-generative-ui-vs-canvas-artifacts">MindStudio 2026 — Claude Generative UI vs Canvas vs Artifacts</a></li>
+  <li><a href="https://www.confident-ai.com/blog/multi-turn-llm-evaluation-in-2026">Confident AI 2026 — Multi-Turn LLM Evaluation</a></li>
+</ol>
+
+<footer>
+  Diego v9 · Estándar Mundial de Respuestas 2026 · Documento espejo de
+  <code>DIEGO-ESTANDAR-RESPUESTAS.md</code> · Visual standard v1 (paleta corporativa #059669)<br>
+  Autor: PC Dusan (AI Engineer) · 23-may-2026 · Pendiente firma D-DIEGO-V9-001 por Dusan
+</footer>
+
+</div>
+
+<script>
+mermaid.initialize({
+  startOnLoad:true,
+  theme:'base',
+  themeVariables:{
+    primaryColor:'#d1fae5',
+    primaryTextColor:'#064e3b',
+    primaryBorderColor:'#059669',
+    lineColor:'#475569',
+    fontFamily:'Inter, sans-serif',
+    fontSize:'14px'
+  }
+});
+
+// Donut distribución materiales (paleta corporativa)
+const ctx = document.getElementById('dist-mat');
+if (ctx) {
+  new Chart(ctx, {
+    type:'doughnut',
+    data:{
+      labels:['Papel/Cartón','Plástico','Vidrio','Ferrosos','No-ferrosos','Otros'],
+      datasets:[{
+        data:[34,22,12,18,11,3],
+        backgroundColor:['#059669','#2563eb','#ea580c','#9333ea','#d97706','#94a3b8'],
+        borderWidth:0
+      }]
+    },
+    options:{
+      cutout:'65%',
+      plugins:{
+        legend:{
+          position:'bottom',
+          labels:{usePointStyle:true,pointStyle:'circle',padding:14,font:{family:'Inter',size:11}}
+        },
+        tooltip:{
+          callbacks:{label:(c)=>`${c.label}: ${c.parsed}%`}
+        }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>

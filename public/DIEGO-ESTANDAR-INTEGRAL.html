@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diego — Estándar Integral · Copiloto del equipo Reciclean-Farex</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--verde:#059669;--azul:#2563eb;--naranja:#ea580c;--purpura:#9333ea;--rojo:#dc2626;--ambar:#d97706;--bg:#f8fafc;--bg2:#f1f5f9;--card:#ffffff;--txt:#0f172a;--txt2:#475569;--txt3:#94a3b8;--linea:#e2e8f0}
+*{box-sizing:border-box}body{font-family:'Inter','Calibri',Arial,sans-serif;margin:0;background:var(--bg);color:var(--txt);line-height:1.5}
+.hero{background:linear-gradient(135deg,var(--verde) 0%,#047857 50%,#065f46 100%);color:white;padding:48px 24px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;top:-30%;right:-15%;width:700px;height:700px;background:rgba(255,255,255,0.05);border-radius:50%}
+.hero h1{font-size:2.5rem;font-weight:800;margin:0 0 8px;letter-spacing:-0.02em;position:relative;z-index:1}
+.hero .sub{font-size:1.05rem;opacity:0.95;margin:0 0 28px;max-width:860px;position:relative;z-index:1}
+.hs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;position:relative;z-index:1;max-width:920px}
+.hs{background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.18);padding:14px;border-radius:12px}
+.hs .val{font-size:1.7rem;font-weight:700;line-height:1}.hs .lbl{font-size:0.72rem;opacity:0.85;text-transform:uppercase;letter-spacing:0.05em;margin-top:4px}
+.wrap{max-width:1240px;margin:0 auto;padding:24px;display:grid;grid-template-columns:240px 1fr;gap:24px}
+@media(max-width:1024px){.wrap{grid-template-columns:1fr}.sidebar{display:none}}
+.sidebar{position:sticky;top:24px;height:max-content;background:var(--card);border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(15,23,42,0.05)}
+.sidebar h3{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--txt3);margin:0 0 12px;font-weight:600}
+.sidebar ol{list-style:none;padding:0;margin:0;counter-reset:nav}
+.sidebar ol li{counter-increment:nav;font-size:0.85rem;margin-bottom:8px}
+.sidebar ol li a{display:flex;gap:8px;color:var(--txt2);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all 0.15s}
+.sidebar ol li a::before{content:counter(nav,decimal-leading-zero);color:var(--verde);font-weight:600;min-width:24px}
+.sidebar ol li a:hover{background:var(--bg);color:var(--verde);transform:translateY(-1px)}
+.sec{background:var(--card);border-radius:16px;padding:24px;margin-bottom:24px;box-shadow:0 1px 3px rgba(15,23,42,0.05);animation:fadein 0.3s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.sec h2{font-size:1.5rem;font-weight:700;margin:0 0 4px;color:var(--txt);display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.sec h2 .num{font-size:0.85rem;color:var(--verde);font-weight:600;background:rgba(5,150,105,0.08);padding:3px 10px;border-radius:8px}
+.sec h2 .crit{background:rgba(220,38,38,0.1);color:var(--rojo)}
+.sec .lead{color:var(--txt2);font-size:0.95rem;margin:0 0 20px;max-width:820px}
+.sec h3{font-size:1rem;font-weight:600;margin:20px 0 10px;color:var(--txt)}
+.dim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:14px 0}
+.dim{background:var(--bg);border-radius:14px;padding:16px;border:1px solid var(--linea);transition:all 0.15s}
+.dim:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(15,23,42,0.08)}
+.dim .ico{font-size:1.5rem;display:block;margin-bottom:6px}
+.dim h4{margin:0 0 4px;font-size:1rem;color:var(--txt);font-weight:700}
+.dim .stats{font-size:0.7rem;color:var(--txt3);margin-bottom:6px}
+.dim p{font-size:0.82rem;color:var(--txt2);margin:0 0 8px;line-height:1.5}
+.dim .gap{font-size:0.76rem;color:var(--rojo);font-weight:600;background:rgba(220,38,38,0.08);padding:8px 10px;border-radius:8px;margin-top:6px}
+.dim a.lnk{display:inline-block;margin-top:6px;font-size:0.76rem;color:var(--verde);text-decoration:none;font-weight:600}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:0.85rem}
+th{background:var(--bg);text-transform:uppercase;letter-spacing:0.05em;font-size:0.7rem;color:var(--txt3);font-weight:600;padding:10px 12px;text-align:left;border-bottom:2px solid var(--linea)}
+td{padding:10px 12px;border-bottom:1px solid var(--linea);vertical-align:top}
+tr:hover td{background:rgba(5,150,105,0.04)}
+code{font-family:'SF Mono','Consolas',monospace;font-size:0.78em;background:var(--bg2);padding:2px 6px;border-radius:4px;color:var(--txt)}
+.badge{display:inline-block;font-size:0.65rem;font-weight:700;padding:3px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap}
+.b-crit{background:rgba(220,38,38,0.15);color:var(--rojo)}.b-alta{background:rgba(217,119,6,0.15);color:var(--ambar)}.b-media{background:rgba(37,99,235,0.15);color:var(--azul)}.b-ok{background:rgba(5,150,105,0.15);color:var(--verde)}.b-quick{background:linear-gradient(135deg,rgba(5,150,105,0.18),rgba(37,99,235,0.12));color:var(--verde)}.b-pablo{background:rgba(147,51,234,0.15);color:var(--purpura)}.b-reg{background:rgba(220,38,38,0.2);color:var(--rojo);border:1px solid var(--rojo)}
+.chart-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:14px 0}
+.chart-box{background:var(--bg);border-radius:12px;padding:16px;border:1px solid var(--linea)}
+.chart-box h4{font-size:0.78rem;color:var(--txt2);margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}
+.chart-box canvas{max-height:240px}
+.callout{padding:14px 16px;border-radius:12px;margin:14px 0;font-size:0.88rem;display:flex;gap:12px;align-items:flex-start}
+.callout.warn{background:rgba(217,119,6,0.08);border-left:4px solid var(--ambar);color:var(--txt2)}
+.callout.crit{background:rgba(220,38,38,0.08);border-left:4px solid var(--rojo);color:var(--txt2)}
+.callout.info{background:rgba(37,99,235,0.08);border-left:4px solid var(--azul);color:var(--txt2)}
+.callout.ok{background:rgba(5,150,105,0.08);border-left:4px solid var(--verde);color:var(--txt2)}
+.callout strong{color:var(--txt)}
+.regla-oro{background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);border:2px solid var(--ambar);border-radius:16px;padding:24px;margin:18px 0;position:relative}
+.regla-oro .label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--ambar);font-weight:700;margin-bottom:8px}
+.regla-oro h3{margin:0 0 12px;font-size:1.4rem;color:var(--txt)}
+.regla-oro p{margin:0;font-size:1rem;color:var(--txt);font-style:italic;line-height:1.6}
+.fase{background:var(--bg);border-radius:14px;padding:18px;margin-bottom:14px;border-left:5px solid var(--verde)}
+.fase.f1{border-left-color:var(--azul)}.fase.f2{border-left-color:var(--naranja)}.fase.f3{border-left-color:var(--purpura)}
+.fase-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+.fase-head h4{margin:0;font-size:1.05rem;color:var(--txt)}
+.fase-head .meta{font-size:0.76rem;color:var(--txt3);font-weight:600}
+.fase ul{margin:6px 0 0 0;padding-left:18px;font-size:0.85rem;color:var(--txt2)}.fase ul li{margin-bottom:4px}
+footer{text-align:center;padding:32px 24px;color:var(--txt3);font-size:0.8rem;background:var(--card);border-top:1px solid var(--linea);margin-top:24px}
+.ant-desp{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+@media(max-width:768px){.ant-desp{grid-template-columns:1fr}}
+.antes,.despues{padding:14px;border-radius:12px;font-size:0.82rem;background:var(--bg)}
+.antes{border-left:4px solid var(--rojo)}
+.despues{border-left:4px solid var(--verde)}
+.antes h5,.despues h5{margin:0 0 8px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em}
+.antes h5{color:var(--rojo)}.despues h5{color:var(--verde)}
+.antes p,.despues p{margin:0 0 6px;color:var(--txt2);font-size:0.82rem}
+.escalation-grid{display:grid;grid-template-columns:1fr;gap:10px;margin:14px 0}
+.esc-row{display:grid;grid-template-columns:1.5fr 2fr 2fr;gap:14px;padding:12px;background:var(--bg);border-radius:10px;border:1px solid var(--linea);font-size:0.85rem}
+@media(max-width:640px){.esc-row{grid-template-columns:1fr}}
+.esc-row .dom{font-weight:700;color:var(--verde)}
+.esc-row .target{color:var(--txt);font-weight:600}
+.esc-row .why{color:var(--txt2);font-size:0.78rem}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>🤝 Diego — Estándar Integral</h1>
+  <p class="sub">Copiloto del equipo Reciclean-Farex-SERCOT que apoya las 7 dimensiones de la vida: trabajo, legal, rutas, RRHH, salud, familia, respuestas visuales. Consolidación de 6 investigaciones especialistas (23-may-2026). Sin inventar nunca — escala cuando no sabe.</p>
+  <div class="hs-grid">
+    <div class="hs"><div class="val">7</div><div class="lbl">Dimensiones cubiertas</div></div>
+    <div class="hs"><div class="val">12+1</div><div class="lbl">Docs (6 esp + 6 visuales + 1 master)</div></div>
+    <div class="hs"><div class="val">~10 250</div><div class="lbl">Líneas totales</div></div>
+    <div class="hs"><div class="val">~75</div><div class="lbl">Fuentes 2025-2026</div></div>
+    <div class="hs"><div class="val">20</div><div class="lbl">Brechas priorizadas</div></div>
+    <div class="hs"><div class="val">8</div><div class="lbl">Quick-wins sin Pablo</div></div>
+    <div class="hs"><div class="val">12</div><div class="lbl">Specs BANDEJA Pablo</div></div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<aside class="sidebar">
+  <h3>Índice</h3>
+  <ol>
+    <li><a href="#s1">Visión integral</a></li>
+    <li><a href="#s2">Regla de oro</a></li>
+    <li><a href="#s3">6 dimensiones</a></li>
+    <li><a href="#s4">Top 20 brechas</a></li>
+    <li><a href="#s5">Plan F0→F3</a></li>
+    <li><a href="#s6">Elevation Policy</a></li>
+    <li><a href="#s7">BANDEJA Pablo</a></li>
+    <li><a href="#s8">Decisiones Dusan</a></li>
+    <li><a href="#s9">Ejemplos visuales</a></li>
+  </ol>
+</aside>
+
+<main>
+
+<section class="sec" id="s1">
+  <h2><span class="num">01</span>Visión — Diego copiloto integral</h2>
+  <p class="lead">Diego v8 ya cubre trabajo operativo. <strong>v9 lo expande</strong> a las 6 dimensiones que hoy el equipo resuelve fuera del panel (WhatsApp, Google, memoria propia). Mismo FAB, misma sesión, mismo principio: <em>nunca inventa, escala cuando no sabe</em>.</p>
+
+  <div class="chart-row">
+    <div class="chart-box"><h4>Cobertura por dimensión (estado v8)</h4><canvas id="ch1"></canvas></div>
+    <div class="chart-box"><h4>Severidad de brechas detectadas</h4><canvas id="ch2"></canvas></div>
+    <div class="chart-box"><h4>Esfuerzo F0/F1/F2 (horas)</h4><canvas id="ch3"></canvas></div>
+  </div>
+</section>
+
+<section class="sec" id="s2">
+  <h2><span class="num crit">02 ⚠️</span>Regla de oro · NUNCA INVENTAR</h2>
+  <p class="lead">Grabada por Dusan 23-may-2026. <strong>Vinculante en las 7 dimensiones.</strong></p>
+
+  <div class="regla-oro">
+    <div class="label">⚠️ Regla operativa central de Diego v9</div>
+    <h3>"No sé. Voy a consultar con [persona]. Te aviso cuando tenga la respuesta."</h3>
+    <p>Si Diego no tiene certeza ≥95% sobre un dato (precio, monto, ley, dirección, cláusula, fecha, RUT, contacto), responde literalmente esa frase y escala al humano apropiado. <strong>Sin disclaimers. Sin alucinaciones. Sin opinión vinculante.</strong></p>
+  </div>
+
+  <div class="callout warn">
+    ⚖️ <div><strong>Precedente legal:</strong> <em>Nippon Life v. OpenAI</em> (marzo 2026, USD 10.3M, Stanford CodeX). Sentó que disclaimers no protegen — escalación obligatoria es la única defensa probable contra responsabilidad civil por hallucinations en datos sensibles.</div>
+  </div>
+
+  <h3>Mapping de escalación por dominio</h3>
+  <div class="escalation-grid">
+    <div class="esc-row"><div class="dom">⚖️ Legal / SII / Ley REP</div><div class="target">Dyana (contadora SERCOT)</div><div class="why">Única autorizada a opinión vinculante</div></div>
+    <div class="esc-row"><div class="dom">🚨 Salud (palabras gatillo)</div><div class="target">SAMU 131 inmediato + Dusan/Pablo</div><div class="why">Nunca diagnosticar, nunca medicamento</div></div>
+    <div class="esc-row"><div class="dom">👥 RRHH (montos / cláusulas)</div><div class="target">Dyana</div><div class="why">Datos sensibles laborales</div></div>
+    <div class="esc-row"><div class="dom">👨‍👩‍👧 Familia / educación</div><div class="target">Modo /familia aislado del CRM</div><div class="why">Privacidad ultra de hijos</div></div>
+    <div class="esc-row"><div class="dom">🗺️ Rutas (dirección inválida)</div><div class="target">Pedir corrección al usuario</div><div class="why">Evita camión a dirección falsa</div></div>
+    <div class="esc-row"><div class="dom">💰 Precios (corrección)</div><div class="target">verificar_y_corregir_dato (doble turno)</div><div class="why">Ya implementado v8</div></div>
+  </div>
+</section>
+
+<section class="sec" id="s3">
+  <h2><span class="num">03</span>Las 6 dimensiones investigadas</h2>
+  <p class="lead">Un párrafo por dimensión, brecha más crítica, link al doc detallado + HTML visual.</p>
+
+  <div class="dim-grid">
+    <div class="dim">
+      <span class="ico">⚖️</span><h4>Legal y tributario</h4>
+      <div class="stats">672 MD · 573 HTML · 5+ fuentes</div>
+      <p>Integración SII via BaseAPI/Floid, OCR PDFs, KB Ley REP, derivación a Dyana.</p>
+      <div class="gap"><strong>Brecha crítica:</strong> sin integración SII ni KB REP estructurada</div>
+      <a class="lnk" href="DIEGO-ESTANDAR-LEGAL.md">📂 MD</a> · <a class="lnk" href="DIEGO-ESTANDAR-LEGAL.html">🎨 HTML</a>
+    </div>
+    <div class="dim">
+      <span class="ico">🗺️</span><h4>Rutas y navegación</h4>
+      <div class="stats">937 MD · 1290 HTML · 17 fuentes</div>
+      <p>computeRoutes multi-parada, Address Validation, restricción vehicular Santiago.</p>
+      <div class="gap"><strong>Brecha crítica:</strong> sin TSP multi-parada + sin restricción vehicular (multa $100K)</div>
+      <a class="lnk" href="DIEGO-ESTANDAR-RUTAS.md">📂 MD</a> · <a class="lnk" href="DIEGO-ESTANDAR-RUTAS.html">🎨 HTML</a>
+    </div>
+    <div class="dim">
+      <span class="ico">👥</span><h4>RRHH</h4>
+      <div class="stats">877 MD · 920 HTML · 15 fuentes</div>
+      <p>Análisis cobertura vacaciones, OCR liquidación, matriz skills + disponibilidad.</p>
+      <div class="gap"><strong>Brecha crítica:</strong> sin análisis cobertura → incendios cuando Andrea/Cony se van</div>
+      <a class="lnk" href="DIEGO-ESTANDAR-RRHH.md">📂 MD</a> · <a class="lnk" href="DIEGO-ESTANDAR-RRHH.html">🎨 HTML</a>
+    </div>
+    <div class="dim">
+      <span class="ico">🩺</span><h4>Salud y bienestar</h4>
+      <div class="stats">770 MD · 665 HTML · 12 fuentes</div>
+      <p>Recordatorios médicos, pausas activas planta/oficina, detección emergencia → SAMU.</p>
+      <div class="gap" style="background:rgba(220,38,38,0.18);color:var(--rojo)"><strong>⚠️ REGULATORIA:</strong> Ley 21.719 vigente 1-dic-2026 · multa 4% facturación</div>
+      <a class="lnk" href="DIEGO-ESTANDAR-SALUD.md">📂 MD</a> · <a class="lnk" href="DIEGO-ESTANDAR-SALUD.html">🎨 HTML</a>
+    </div>
+    <div class="dim">
+      <span class="ico">📚</span><h4>Educación y familia</h4>
+      <div class="stats">758 MD · 868 HTML · 11 fuentes</div>
+      <p>Modo /familia separado del CRM, protocolo socrático Khanmigo, marco legal CdT Chile.</p>
+      <div class="gap"><strong>Brecha crítica:</strong> sin compartment /familia — Andrea/Cony no pueden usar para sus hijos</div>
+      <a class="lnk" href="DIEGO-ESTANDAR-EDUCACION.md">📂 MD</a> · <a class="lnk" href="DIEGO-ESTANDAR-EDUCACION.html">🎨 HTML</a>
+    </div>
+    <div class="dim">
+      <span class="ico">💬</span><h4>Respuestas visuales</h4>
+      <div class="stats">726 MD · 593 HTML · 14 fuentes</div>
+      <p>Tablas/diagramas inline, single-turn priority, honesty calibration, elevation policy.</p>
+      <div class="gap"><strong>Brecha crítica:</strong> texto plano siempre + multi-turn (39% accuracy loss · ICLR 2026)</div>
+      <a class="lnk" href="DIEGO-ESTANDAR-RESPUESTAS.md">📂 MD</a> · <a class="lnk" href="DIEGO-ESTANDAR-RESPUESTAS.html">🎨 HTML</a>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="s4">
+  <h2><span class="num">04</span>Matriz consolidada · Top 20 brechas</h2>
+  <p class="lead">⭐ = quick-win sin Pablo · 🔧 = requiere Pablo · ⚠️ = riesgo regulatorio/vida.</p>
+
+  <table>
+    <thead><tr><th>#</th><th>Brecha</th><th>Dimensión</th><th>Sev</th><th>Esfuerzo</th><th>Quien</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>⚠️ Sin detección emergencia médica (palabras gatillo)</td><td>Salud</td><td><span class="badge b-crit">Crítica</span></td><td>4h</td><td><span class="badge b-quick">⭐</span></td></tr>
+      <tr><td>2</td><td>⚠️ Datos médicos sin schema (Ley 21.719 1-dic-2026)</td><td>Salud</td><td><span class="badge b-reg">Regulatoria</span></td><td>1d</td><td><span class="badge b-pablo">🔧</span></td></tr>
+      <tr><td>3</td><td>⚠️ Sin "no sé" honesto (alucinaciones REP/IVA)</td><td>Respuestas</td><td><span class="badge b-crit">Crítica</span></td><td>3h</td><td><span class="badge b-quick">⭐</span></td></tr>
+      <tr><td>4</td><td>Sin compartment /familia aislado del CRM</td><td>Educación</td><td><span class="badge b-alta">Alta privacidad</span></td><td>1-2d</td><td><span class="badge b-pablo">🔧</span></td></tr>
+      <tr><td>5</td><td>Sin análisis cobertura al aprobar vacaciones</td><td>RRHH</td><td><span class="badge b-alta">Alta</span></td><td>M</td><td><span class="badge b-pablo">🔧</span></td></tr>
+      <tr><td>6</td><td>Sin TSP multi-parada (computeRoutes)</td><td>Rutas</td><td><span class="badge b-alta">Alta</span></td><td>3-5d</td><td><span class="badge b-pablo">🔧</span></td></tr>
+      <tr><td>7</td><td>Sin validación dirección al alta cliente</td><td>Rutas</td><td><span class="badge b-alta">Alta</span></td><td>3-5d</td><td><span class="badge b-pablo">🔧</span></td></tr>
+      <tr><td>8</td><td>Sin restricción vehicular Santiago en calendario</td><td>Rutas</td><td><span class="badge b-alta">Alta multa</span></td><td>2d</td><td><span class="badge b-pablo">🔧</span></td></tr>
+      <tr><td>9</td><td>Sin integración SII / BaseAPI / Floid</td><td>Legal</td><td><span class="badge b-alta">Alta</span></td><td>2-3d</td><td><span class="badge b-pablo">🔧</span></td></tr>
+      <tr><td>10</td><td>Sin OCR + cross-check PDFs legales</td><td>Legal</td><td><span class="badge b-alta">Alta</span></td><td>3-5d</td><td><span class="badge b-pablo">🔧</span></td></tr>
+      <tr><td>11</td><td>Sin KB Ley REP estructurada</td><td>Legal</td><td><span class="badge b-alta">Alta</span></td><td>1-2d</td><td><span class="badge b-pablo">🔧</span></td></tr>
+      <tr><td>12</td><td>Cero visualización inline</td><td>Respuestas</td><td><span class="badge b-alta">Alta</span></td><td>7h</td><td><span class="badge b-quick">⭐</span></td></tr>
+      <tr><td>13</td><td>Multi-turn por defecto (39% accuracy loss)</td><td>Respuestas</td><td><span class="badge b-alta">Alta</span></td><td>3h</td><td><span class="badge b-quick">⭐</span></td></tr>
+      <tr><td>14</td><td>Sin protocolo socrático /familia</td><td>Educación</td><td><span class="badge b-media">Media</span></td><td>3h</td><td><span class="badge b-quick">⭐</span></td></tr>
+      <tr><td>15</td><td>Sin marco legal Chile cargado</td><td>Educación</td><td><span class="badge b-media">Media</span></td><td>4h</td><td><span class="badge b-quick">⭐</span></td></tr>
+      <tr><td>16</td><td>Sin lectura PDF de liquidación</td><td>RRHH</td><td><span class="badge b-media">Media</span></td><td>2-3d</td><td><span class="badge b-pablo">🔧</span></td></tr>
+      <tr><td>17</td><td>Sin matriz trabajadores_skills</td><td>RRHH</td><td><span class="badge b-media">Media</span></td><td>1-2d</td><td><span class="badge b-pablo">🔧</span></td></tr>
+      <tr><td>18</td><td>Sin pausas activas planta vs oficina</td><td>Salud</td><td><span class="badge b-media">Media</span></td><td>6h</td><td><span class="badge b-quick">⭐</span></td></tr>
+      <tr><td>19</td><td>Sin recordatorios medicamentos</td><td>Salud</td><td><span class="badge b-media">Media</span></td><td>1d</td><td><span class="badge b-pablo">🔧</span></td></tr>
+      <tr><td>20</td><td>Sin Elevation Policy (autorización previa)</td><td>Respuestas</td><td><span class="badge b-media">Media</span></td><td>2h</td><td><span class="badge b-quick">⭐</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="sec" id="s5">
+  <h2><span class="num">05</span>Plan de evolución F0→F3</h2>
+
+  <div class="fase">
+    <div class="fase-head"><h4>🟢 F0 — HOY · sin Pablo · solo prompt + config_ui</h4><span class="meta">~25h Dusan + UX</span></div>
+    <ul>
+      <li><strong>F0.1</strong> ⚠️ Palabras gatillo emergencia (4h)</li>
+      <li><strong>F0.2</strong> ⚠️ Patch "no sé / no inventar" + escalación por dominio (3h)</li>
+      <li><strong>F0.3</strong> Patch "Visual Output Policy" tablas inline (4h)</li>
+      <li><strong>F0.4</strong> Patch "Single-Turn Priority" (3h)</li>
+      <li><strong>F0.5</strong> Patch "Elevation Policy" (2h)</li>
+      <li><strong>F0.6</strong> Patch "MODO /familia" + protocolo socrático (3h)</li>
+      <li><strong>F0.7</strong> KB Ley 20.920 + decretos en config_ui (Dyana redacta) (5h)</li>
+      <li><strong>F0.8</strong> Config pausas activas planta vs oficina (1h)</li>
+    </ul>
+  </div>
+
+  <div class="fase f1">
+    <div class="fase-head"><h4>🔵 F1 — 2-4 semanas · Pablo backend</h4><span class="meta">~10-15 días Pablo</span></div>
+    <ul>
+      <li><strong>F1.1</strong> EF <code>verify-address</code> + Address Validation API</li>
+      <li><strong>F1.2</strong> EF <code>route-optimize</code> con computeRoutes + optimizeWaypointOrder</li>
+      <li><strong>F1.3</strong> Tabla restricción_vehicular_calendario + RPC <code>camion_puede_circular()</code></li>
+      <li><strong>F1.4</strong> Matriz trabajadores_skills + tool análisis cobertura</li>
+      <li><strong>F1.5</strong> EF lectura-pdf-liquidacion (OCR Vision + parser Talana)</li>
+      <li><strong>F1.6</strong> Tool agendar_compromiso_medico + Calendar OAuth</li>
+      <li><strong>F1.7</strong> Compartment /familia aislado del CRM en EF</li>
+    </ul>
+  </div>
+
+  <div class="fase f2">
+    <div class="fase-head"><h4>🟠 F2 — 1-3 meses · integraciones externas</h4></div>
+    <ul>
+      <li>Integración SII via BaseAPI/Floid</li>
+      <li>EF ocr-legal (guías SAG + RUT + certificados)</li>
+      <li>Schema salud cifrado en reposo (Ley 21.719)</li>
+      <li>Canal WhatsApp Diego v9</li>
+      <li>Modo /familia UI completa en panel-rdo</li>
+    </ul>
+  </div>
+
+  <div class="fase f3">
+    <div class="fase-head"><h4>🟣 F3 — 3-6 meses · cambio de categoría</h4></div>
+    <ul>
+      <li>LLM-as-a-Judge para honesty calibration</li>
+      <li>Memoria semántica per-user (pgvector real)</li>
+      <li>Coaching socrático completo (Khanmigo nivel)</li>
+      <li>Simulación negociación (ZOPA/BATNA)</li>
+    </ul>
+  </div>
+</section>
+
+<section class="sec" id="s6">
+  <h2><span class="num">06</span>Cuándo Diego pide autorización (Elevation Policy)</h2>
+  <p class="lead">Diego v9 avisa al admin <strong>ANTES</strong> de ejecutar si se cumple cualquiera de estos 5 casos:</p>
+
+  <ol style="font-size:0.9rem;color:var(--txt2);line-height:1.8">
+    <li>Necesita acceso a una <strong>tabla nueva</strong> que no está en su whitelist actual.</li>
+    <li>Necesita invocar una <strong>API externa</strong> no configurada (ej. SII real).</li>
+    <li>Va a <strong>modificar un dato sensible</strong> sin precedente (ej. monto > 10 UF, dirección cliente clave).</li>
+    <li>Va a <strong>enviar a un tercero</strong> algo en nombre del grupo (mail, WhatsApp masivo).</li>
+    <li>Detecta que el usuario pide algo que <strong>viola la regla de oro</strong> (opinar como abogado, diagnosticar como médico, decidir como CEO sin consulta).</li>
+  </ol>
+
+  <div class="callout info">
+    💬 <div><strong>Respuesta canónica:</strong> <em>"Para eso necesito autorización de Dusan/Pablo. ¿Le pido o lo hacés vos directamente?"</em></div>
+  </div>
+</section>
+
+<section class="sec" id="s7">
+  <h2><span class="num">07</span>BANDEJA PABLO · 12 specs consolidadas</h2>
+  <table>
+    <thead><tr><th>#</th><th>Spec</th><th>Esfuerzo</th><th>Dim</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>EF <code>verify-address</code> + Address Validation API + cache</td><td>3-5d</td><td>Rutas</td></tr>
+      <tr><td>2</td><td>EF <code>route-optimize</code> con computeRoutes</td><td>1 sem</td><td>Rutas</td></tr>
+      <tr><td>3</td><td>Tabla <code>restriccion_vehicular_calendario</code> + RPC</td><td>2d</td><td>Rutas</td></tr>
+      <tr><td>4</td><td>Matriz <code>trabajadores_skills</code> + tool análisis cobertura</td><td>1-2d</td><td>RRHH</td></tr>
+      <tr><td>5</td><td>EF <code>lectura-pdf-liquidacion</code> (OCR Vision + Talana)</td><td>2-3d</td><td>RRHH</td></tr>
+      <tr><td>6</td><td>Tool <code>agendar_compromiso_medico</code> + Calendar</td><td>1d</td><td>Salud</td></tr>
+      <tr><td>7</td><td>Schema dedicado salud cifrado (Ley 21.719)</td><td>1d</td><td>Salud</td></tr>
+      <tr><td>8</td><td>Compartment <code>/familia</code> aislado del CRM</td><td>2d</td><td>Educación</td></tr>
+      <tr><td>9</td><td>KB REP estructurada <code>panel.kb_rep</code></td><td>1d</td><td>Legal</td></tr>
+      <tr><td>10</td><td>EF <code>ocr-legal</code> (guías SAG + certificados)</td><td>3-5d</td><td>Legal</td></tr>
+      <tr><td>11</td><td>Integración SII via BaseAPI/Floid</td><td>2-3d</td><td>Legal</td></tr>
+      <tr><td>12</td><td>Daily-digest + briefing matinal + alertas SRE</td><td>1-2d</td><td>Operativo</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="sec" id="s8">
+  <h2><span class="num">08</span>Decisiones que necesita Dusan</h2>
+  <table>
+    <thead><tr><th>#</th><th>Decisión</th><th>Bloquea</th></tr></thead>
+    <tbody>
+      <tr><td>Q1</td><td>Mapping responsables silos para escalación</td><td>F0.2</td></tr>
+      <tr><td>Q2</td><td>OK schema separado salud (Ley 21.719)</td><td>F1.7 — riesgo 4% facturación</td></tr>
+      <tr><td>Q3</td><td>OK compartment /familia privacidad</td><td>F1.7 + F2.5</td></tr>
+      <tr><td>Q4</td><td>Aprobar Sprint 1 rutas (Pablo)</td><td>F1.1 + F1.2 · costo $0 USD/mes</td></tr>
+      <tr><td>Q5</td><td>Firmar D-DIEGO-V9-001 (deploy EF v9 con patches)</td><td>F0.2 + F0.3 + F0.4</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="sec" id="s9">
+  <h2><span class="num">09</span>Ejemplos de respuestas eficientes</h2>
+
+  <h3>Visualización inline (antes / después)</h3>
+  <div class="ant-desp">
+    <div class="antes">
+      <h5>🚫 Antes (v8 · texto plano)</h5>
+      <p><em>Usuario:</em> "Mostrame los precios del cartón en las 3 sucursales."</p>
+      <p><em>Diego:</em> "El precio de compra del cartón en Cerrillos es $20, en Maipú $30 y en Talca $22. El precio de venta es $115, $120 y $118 respectivamente."</p>
+    </div>
+    <div class="despues">
+      <h5>✅ Después (v9 · tabla inline)</h5>
+      <p><em>Usuario:</em> "Mostrame los precios del cartón en las 3 sucursales."</p>
+      <p><em>Diego:</em> tabla Markdown:</p>
+      <table style="font-size:0.78rem;margin:6px 0">
+        <thead><tr><th>Sucursal</th><th>Compra</th><th>Venta</th><th>Margen</th></tr></thead>
+        <tbody>
+          <tr><td>Cerrillos</td><td>$20</td><td>$115</td><td>+475%</td></tr>
+          <tr><td>Maipú</td><td>$30</td><td>$120</td><td>+300%</td></tr>
+          <tr><td>Talca</td><td>$22</td><td>$118</td><td>+436%</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:0.78rem;font-style:italic"><em>Maipú tiene compra más alta pero margen menor. ¿Profundizo?</em></p>
+    </div>
+  </div>
+
+  <h3>Single-turn priority (antes / después)</h3>
+  <div class="ant-desp">
+    <div class="antes">
+      <h5>🚫 Antes (v8 · multi-turn)</h5>
+      <p><em>Usuario:</em> "Necesito cotizar."</p>
+      <p><em>Diego:</em> "¿Qué material?"</p>
+      <p><em>Usuario:</em> "Cartón."</p>
+      <p><em>Diego:</em> "¿Sucursal?"</p>
+      <p><em>Usuario:</em> "Maipú."</p>
+      <p><em>Diego:</em> "¿Plazo?"</p>
+      <p style="color:var(--rojo);font-size:0.78rem">⏱️ 4 turnos · 39% accuracy loss</p>
+    </div>
+    <div class="despues">
+      <h5>✅ Después (v9 · single-turn)</h5>
+      <p><em>Usuario:</em> "Necesito cotizar."</p>
+      <p><em>Diego:</em> "¿Qué material, qué sucursal y para qué plazo? Si no sabés algún campo, decímelo y lo dejo abierto."</p>
+      <p style="color:var(--verde);font-size:0.78rem">⏱️ 2 turnos · 1 sola pregunta agrupada</p>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<footer>
+  Generado por PC Dusan · 2026-05-23 ~15:00 CLT · Branch <code>feature/diego-v9-integral</code><br>
+  Consolidación de 6 investigaciones especialistas + 1 documento maestro · 75+ fuentes 2025-2026 · regla de oro vinculante
+</footer>
+
+<script>
+Chart.defaults.font.family = "Inter, Calibri, Arial, sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#475569';
+Chart.defaults.plugins.legend.position = 'bottom';
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.padding = 14;
+const C = {verde:'#059669',azul:'#2563eb',naranja:'#ea580c',purpura:'#9333ea',rojo:'#dc2626',ambar:'#d97706'};
+const gridY = {grid:{display:true,color:'#e2e8f0',drawBorder:false},border:{display:false}};
+const gridX = {grid:{display:false},border:{display:false}};
+
+new Chart(document.getElementById('ch1'),{
+  type:'bar',
+  data:{labels:['Operativo','Legal','Rutas','RRHH','Salud','Educación','Visual'],datasets:[{label:'Cobertura v8 (%)',data:[85,5,30,10,5,5,40],backgroundColor:[C.verde,C.rojo,C.naranja,C.rojo,C.rojo,C.rojo,C.ambar],borderRadius:6}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{...gridY,max:100},x:gridX}}
+});
+new Chart(document.getElementById('ch2'),{
+  type:'doughnut',
+  data:{labels:['Crítica','Regulatoria','Alta','Media'],datasets:[{data:[3,1,9,7],backgroundColor:[C.rojo,'#7f1d1d',C.ambar,C.azul],borderWidth:0}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'65%'}
+});
+new Chart(document.getElementById('ch3'),{
+  type:'bar',
+  data:{labels:['F0 sin Pablo','F1 Pablo','F2 integraciones','F3 estructural'],datasets:[{label:'Horas',data:[25,120,400,800],backgroundColor:[C.verde,C.azul,C.naranja,C.purpura],borderRadius:6}]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{...gridY,type:'logarithmic'},y:gridX}}
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diego v8 — Estandar de Apoyo Educativo y Familiar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green: #059669;
+    --green-dark: #047857;
+    --green-light: #d1fae5;
+    --blue: #2563eb;
+    --blue-soft: #dbeafe;
+    --orange: #ea580c;
+    --orange-soft: #ffedd5;
+    --purple: #9333ea;
+    --purple-soft: #ede9fe;
+    --red: #dc2626;
+    --red-soft: #fee2e2;
+    --amber: #d97706;
+    --amber-soft: #fef3c7;
+    --bg: #f8fafc;
+    --bg-card: #ffffff;
+    --bg-soft: #f1f5f9;
+    --title: #0f172a;
+    --body: #475569;
+    --note: #94a3b8;
+    --border: #e2e8f0;
+  }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--body);
+    line-height: 1.6;
+    padding: 32px 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+
+  header.hero {
+    background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 36px 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 16px rgba(5, 150, 105, 0.18);
+  }
+  header.hero .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.85;
+    margin-bottom: 8px;
+  }
+  header.hero h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.02em; }
+  header.hero p.tagline { font-size: 15px; opacity: 0.92; max-width: 760px; }
+  header.hero .meta { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; font-size: 12px; }
+  header.hero .meta span { background: rgba(255,255,255,0.18); padding: 4px 12px; border-radius: 999px; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .kpi {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .kpi:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(15,23,42,0.06); }
+  .kpi .label {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 10px;
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .kpi .value { font-size: 2.5rem; font-weight: 700; color: var(--title); line-height: 1; letter-spacing: -0.02em; }
+  .kpi .unit { font-size: 0.9rem; color: var(--body); margin-left: 4px; font-weight: 500; }
+  .kpi .sub { font-size: 12px; color: var(--note); margin-top: 6px; }
+
+  section.card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+  }
+  section.card h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--title);
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+  section.card h2 .num {
+    display: inline-block;
+    width: 28px; height: 28px;
+    background: var(--green);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 28px;
+    text-align: center;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+  section.card h3 { font-size: 1rem; font-weight: 600; color: var(--title); margin: 20px 0 10px; }
+  section.card p { margin-bottom: 12px; font-size: 14.5px; }
+  section.card .lede { color: var(--title); font-weight: 500; margin-bottom: 14px; }
+
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .pill.green { background: var(--green-light); color: var(--green-dark); }
+  .pill.blue { background: var(--blue-soft); color: var(--blue); }
+  .pill.red { background: var(--red-soft); color: var(--red); }
+  .pill.amber { background: var(--amber-soft); color: var(--amber); }
+  .pill.purple { background: var(--purple-soft); color: var(--purple); }
+  .pill.orange { background: var(--orange-soft); color: var(--orange); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 13.5px;
+  }
+  thead th {
+    background: var(--bg-soft);
+    color: var(--title);
+    font-weight: 600;
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--bg-soft); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .box {
+    background: var(--bg-soft);
+    border-radius: 12px;
+    padding: 16px 18px;
+    border-left: 4px solid var(--green);
+  }
+  .box.red { border-left-color: var(--red); background: var(--red-soft); }
+  .box.amber { border-left-color: var(--amber); background: var(--amber-soft); }
+  .box.blue { border-left-color: var(--blue); background: var(--blue-soft); }
+  .box.purple { border-left-color: var(--purple); background: var(--purple-soft); }
+  .box h4 { font-size: 0.95rem; font-weight: 700; color: var(--title); margin-bottom: 6px; }
+  .box p { font-size: 13.5px; margin-bottom: 6px; }
+
+  pre.chat {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 16px 18px;
+    border-radius: 12px;
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    overflow-x: auto;
+    margin: 12px 0;
+    white-space: pre-wrap;
+  }
+  pre.chat .who { color: #34d399; font-weight: 700; }
+  pre.chat .diego { color: #93c5fd; font-weight: 700; }
+
+  .chart-box {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .chart-box h3 { font-size: 1.05rem; font-weight: 700; color: var(--title); margin-bottom: 6px; }
+  .chart-box .sub { font-size: 12.5px; color: var(--note); margin-bottom: 14px; }
+  .chart-wrap { position: relative; height: 280px; }
+
+  ul.clean { list-style: none; padding: 0; }
+  ul.clean li {
+    padding: 8px 0 8px 22px;
+    position: relative;
+    font-size: 14px;
+    border-bottom: 1px dashed var(--border);
+  }
+  ul.clean li:last-child { border-bottom: none; }
+  ul.clean li::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 14px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+  ul.clean li.red::before { background: var(--red); }
+  ul.clean li.amber::before { background: var(--amber); }
+  ul.clean li.blue::before { background: var(--blue); }
+
+  .compartments-svg {
+    width: 100%;
+    max-width: 720px;
+    margin: 16px auto;
+    display: block;
+  }
+
+  footer.foot {
+    text-align: center;
+    padding: 32px 16px 8px;
+    color: var(--note);
+    font-size: 12px;
+  }
+  footer.foot a { color: var(--green); text-decoration: none; }
+
+  .quick-wins {
+    background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+    border: 1px solid var(--green-light);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .quick-wins .qw {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--green);
+  }
+  .quick-wins .qw:last-child { margin-bottom: 0; }
+  .quick-wins .qw h4 { color: var(--green-dark); margin-bottom: 6px; font-weight: 700; }
+  .quick-wins .qw .meta { font-size: 12px; color: var(--note); margin-top: 8px; }
+  .quick-wins .qw .meta span { margin-right: 12px; }
+
+  .brecha-row {
+    display: grid;
+    grid-template-columns: 30px 1fr 110px 100px;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .brecha-row:last-child { border-bottom: none; }
+  .brecha-row .n {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--red);
+    color: #fff;
+    font-weight: 700;
+    text-align: center;
+    line-height: 28px;
+    font-size: 13px;
+  }
+  .brecha-row .txt { font-size: 13.5px; }
+  .brecha-row .txt strong { color: var(--title); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Diego v8 · Estándar de Referencia</div>
+  <h1>Apoyo Educativo y Familiar para el Equipo Reciclean-Farex-SERCOT</h1>
+  <p class="tagline">
+    Diego ayuda al apoderado a apoyar al hijo. Nunca reemplaza al niño.
+    Datos de hijos = ultra privados. NUNCA cruzan con el CRM laboral.
+  </p>
+  <div class="meta">
+    <span>Versión 1.0</span>
+    <span>23-may-2026</span>
+    <span>14 empleados Chile</span>
+    <span>11 fuentes 2025-2026</span>
+    <span>UX Research · PC Dusan</span>
+  </div>
+</header>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="label">Equipo con hijos</div>
+    <div class="value">10<span class="unit">/ 14</span></div>
+    <div class="sub">71% del staff tiene carga familiar</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Áreas cubiertas</div>
+    <div class="value">5</div>
+    <div class="sub">Tareas, reuniones, edad, permisos, privacidad</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Reglas no negociables</div>
+    <div class="value">3</div>
+    <div class="sub">No-tarea, no-opinión, no-cruce</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Quick-wins sin Pablo</div>
+    <div class="value">3</div>
+    <div class="sub">Implementables en 1-2 días</div>
+  </div>
+</div>
+
+<section class="card">
+  <h2><span class="num">0</span>TL;DR ejecutivo (30 segundos)</h2>
+  <p class="lede">
+    Diego v8 hoy opera el CRM laboral. Este documento define el estándar para extenderlo
+    como <strong>asistente familiar y educativo</strong> para apoderados del equipo:
+    Andrea con sus hijos en básica, Cony con su hijo en media, los demás trabajadores con
+    cargas familiares similares.
+  </p>
+  <div class="grid-2">
+    <div class="box red">
+      <h4>3 reglas no negociables</h4>
+      <p><strong>1.</strong> Diego nunca da la respuesta de la tarea al niño. Guía al apoderado
+      para que el apoderado guíe (modelo Khanmigo / Socratic).</p>
+      <p><strong>2.</strong> Diego nunca opina sobre contenido sensible (sexualidad, drogas,
+      política, religión, violencia). Deriva al apoderado.</p>
+      <p><strong>3.</strong> Datos del hijo en compartimento distinto al laboral.
+      Andrea pregunta por hija → Diego no ve clientes. Andrea pregunta por cliente → Diego no ve hijos.</p>
+    </div>
+    <div class="box">
+      <h4>5 áreas a cubrir</h4>
+      <p>1. Tareas escolares — modelo socrático Khanmigo.</p>
+      <p>2. Reuniones de apoderados — recordatorios + templates al colegio.</p>
+      <p>3. Actividades por edad — Khan Kids, Duolingo, Khanmigo, DEMRE.</p>
+      <p>4. Permisos laborales — art. 66, 199 bis, 195 CdT.</p>
+      <p>5. Separación laboral/personal — patrón compartments Microsoft Copilot.</p>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="num">1</span>Tareas Escolares · Modelo Khanmigo</h2>
+  <p class="lede">El estándar mundial 2025-2026: Khanmigo nunca da la respuesta. Guía con preguntas hasta que el estudiante descubre la solución.</p>
+
+  <h3>Andrea ayuda a su hija con fracciones</h3>
+  <div class="grid-2">
+    <div class="box red">
+      <h4>Diego MAL</h4>
+      <pre class="chat"><span class="who">Andrea:</span> Diego, ¿cuánto es 3/4 ÷ 2/3?
+<span class="diego">Diego:</span> Es 9/8 o 1.125.</pre>
+      <p>Le quita la tarea a la niña, le quita a Andrea la oportunidad de aprender con ella,
+      y normaliza pedir respuestas.</p>
+    </div>
+    <div class="box">
+      <h4>Diego BIEN</h4>
+      <pre class="chat"><span class="who">Andrea:</span> Diego, mi hija tiene que dividir 3/4 ÷ 2/3
+y yo no me acuerdo cómo se hace.
+
+<span class="diego">Diego:</span> Te ayudo a vos para que vos la guíes.
+
+Regla en 3 pasos:
+ 1. Dividir fracciones = multiplicar por el inverso
+ 2. El inverso de 2/3 es 3/2 (das vuelta el segundo)
+ 3. Entonces 3/4 × 3/2 = 9/8
+
+Tip pedagógico para vos:
+ Preguntale: "¿Qué pasa si en vez de dividir,
+ multiplicás por el dado vuelta?"
+ Que ella descubra el truco.</pre>
+    </div>
+  </div>
+
+  <h3>Reglas de Diego para tareas</h3>
+  <table>
+    <thead><tr><th>Situación</th><th>Acción</th></tr></thead>
+    <tbody>
+      <tr><td>Apoderado pide ayuda para entender el tema</td><td><span class="pill green">SÍ</span> explica al adulto</td></tr>
+      <tr><td>Apoderado pide pasos pedagógicos para guiar al hijo</td><td><span class="pill green">SÍ</span> entrega script</td></tr>
+      <tr><td>Apoderado pide "la respuesta" para copiar</td><td><span class="pill red">NO</span> sugiere método socrático</td></tr>
+      <tr><td>Niño accede directamente vía cuenta del padre</td><td><span class="pill amber">DETECTA</span> redirige al apoderado</td></tr>
+      <tr><td>Tema sensible (sexualidad, drogas, política, religión)</td><td><span class="pill red">NO</span> opina · deriva</td></tr>
+      <tr><td>Tarea de redacción/ensayo</td><td><span class="pill amber">ESTRUCTURA</span> jamás escribe el texto</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Comparativa de herramientas mundiales</h3>
+  <table>
+    <thead><tr><th>App</th><th>Edad</th><th>Modelo</th><th>Fortaleza</th><th>Diego recomienda</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Khanmigo</strong></td><td>7+ con padre</td><td>Socrático</td><td>Currículum integrado · alertas a padres</td><td>Mate y ciencias</td></tr>
+      <tr><td><strong>Photomath</strong></td><td>10+</td><td>Paso a paso</td><td>Foto → solución guiada</td><td>Cuando padre quiere ver método</td></tr>
+      <tr><td><strong>Socratic by Google</strong></td><td>13+</td><td>Multimateria</td><td>Gratis, todas las materias</td><td>Búsqueda rápida</td></tr>
+      <tr><td><strong>Khan Academy Kids</strong></td><td>2-8</td><td>Juego guiado</td><td>COPPA · gratis · sin ads</td><td>Pre-básica + 1°-3°</td></tr>
+      <tr><td><strong>Duolingo ABC/Kids</strong></td><td>3-8</td><td>Fonética inglés</td><td>Gratis</td><td>Refuerzo inglés temprano</td></tr>
+      <tr><td><strong>Brainly</strong></td><td>13+</td><td>Comunidad</td><td>Pares</td><td><span class="pill red">No recomienda</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <h2><span class="num">2</span>Reuniones de Apoderados · Lirmi, Webclass, Educaplan</h2>
+  <p class="lede">Los colegios chilenos usan Lirmi Familia (la más extendida), Webclass y Educaplan. Diego trabaja sobre el flujo manual del apoderado.</p>
+
+  <div class="grid-2">
+    <div class="box blue">
+      <h4>Lo que Diego SÍ hace hoy (sin Pablo)</h4>
+      <ul class="clean">
+        <li>Recordatorios manuales 24h y 2h antes</li>
+        <li>6 templates de respuesta cordial al colegio</li>
+        <li>Checklist pre-reunión que el apoderado lleva</li>
+        <li>Resumen post-reunión con acciones</li>
+      </ul>
+    </div>
+    <div class="box amber">
+      <h4>Lo que Diego NO hace (requiere Pablo)</h4>
+      <ul class="clean">
+        <li>Login automático con credenciales del apoderado a Lirmi</li>
+        <li>Lectura automática de calificaciones del hijo</li>
+        <li>Sincronización OAuth con sistema escolar</li>
+      </ul>
+      <p style="margin-top:8px;font-size:12.5px;"><strong>Recomendación v8:</strong> no integrar. Riesgo de privacidad del menor es alto.</p>
+    </div>
+  </div>
+
+  <h3>6 templates listos para copiar al colegio</h3>
+  <table>
+    <thead><tr><th>Código</th><th>Situación</th><th>Tono</th></tr></thead>
+    <tbody>
+      <tr><td><strong>T1</strong></td><td>Confirmar asistencia a reunión</td><td>Cordial breve</td></tr>
+      <tr><td><strong>T2</strong></td><td>Justificar inasistencia a reunión</td><td>Disculpa + solicitud resumen</td></tr>
+      <tr><td><strong>T3</strong></td><td>Justificar inasistencia del hijo</td><td>Formal · adjunta certificado</td></tr>
+      <tr><td><strong>T4</strong></td><td>Solicitar reunión con profesor jefe</td><td>Proactivo · ofrece horarios</td></tr>
+      <tr><td><strong>T5</strong></td><td>Responder citación por situación del hijo</td><td>Serio · compromiso conversar</td></tr>
+      <tr><td><strong>T6</strong></td><td>Permiso por viaje/actividad familiar</td><td>Anticipado · compromiso reponer</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Checklist pre-reunión que Diego entrega</h3>
+  <div class="box">
+    <ul class="clean">
+      <li>Anotá las 3 cosas que más te preocupan (rendimiento, ánimo, amigos)</li>
+      <li>Llevá la última libreta / informe de notas</li>
+      <li>Anotá 1 pregunta sobre tareas y 1 sobre comportamiento</li>
+      <li>Llegá 5 minutos antes (profesores tienen reuniones en cadena)</li>
+      <li>Si el otro apoderado no puede, llevá su firma autorizada</li>
+      <li>Llevá lápiz y papel: vas a anotar fechas/compromisos</li>
+    </ul>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="num">3</span>Actividades Educativas por Edad</h2>
+  <p class="lede">Common Sense Media: cero AI toys conversacionales bajo 5 años. Precaución 6-12. Supervisión activa 13+. Co-viewing siempre.</p>
+
+  <div class="chart-box" style="padding: 20px 24px 24px;">
+    <h3>Tiempo de pantalla educativa sugerido por edad</h3>
+    <div class="sub">Recomendaciones Common Sense Media + APA 2025 · co-viewing obligatorio bajo 8 años</div>
+    <div class="chart-wrap"><canvas id="chartEdad"></canvas></div>
+  </div>
+
+  <h3>Hitos por edad — herramientas validadas</h3>
+  <table>
+    <thead><tr><th>Hito</th><th>Edad</th><th>Herramientas recomendadas</th><th>Costo</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Pre-básica + 1°-3° básico</strong></td>
+        <td>4-9 años</td>
+        <td>Khan Academy Kids · Duolingo ABC · PBS Kids · Moose Math</td>
+        <td><span class="pill green">Gratis</span></td>
+      </tr>
+      <tr>
+        <td><strong>4°-6° básico</strong></td>
+        <td>9-12 años</td>
+        <td>Khan Academy · Khanmigo · Aprendo en Línea Mineduc · Photomath</td>
+        <td><span class="pill green">Gratis</span> / <span class="pill blue">$4 USD</span></td>
+      </tr>
+      <tr>
+        <td><strong>7°-2° medio</strong></td>
+        <td>12-15 años</td>
+        <td>Khan Academy · Khanmigo · Duolingo · Brilliant</td>
+        <td><span class="pill green">Gratis</span> / <span class="pill blue">$4-13 USD</span></td>
+      </tr>
+      <tr>
+        <td><strong>3°-4° medio + PAES</strong></td>
+        <td>15-18 años</td>
+        <td>DEMRE oficial · PAES Mineduc material · Puntaje Nacional · Khanmigo · Beca PAES</td>
+        <td><span class="pill green">Gratis</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Contenido sensible — Diego deriva</h3>
+  <div class="box red">
+    <p>Diego <strong>NO opina</strong> y deriva al apoderado en estos temas que pueden aparecer en tareas escolares:</p>
+    <ul class="clean">
+      <li class="red">Educación sexual / identidad de género</li>
+      <li class="red">Drogas y alcohol</li>
+      <li class="red">Política contingente (constitución, elecciones, dictadura, conflicto Mapuche)</li>
+      <li class="red">Religión y creencias</li>
+      <li class="red">Violencia · suicidio · autolesión</li>
+      <li class="red">Aborto · eutanasia · pena de muerte</li>
+    </ul>
+    <p style="margin-top:10px;"><strong>Script:</strong> "Este tema es delicado y los valores los pone la familia, no yo. Te paso los hechos verificables. Las opiniones y la conversación con [hijo] las llevás vos."</p>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="num">4</span>Permisos Laborales · Marco Legal Chile</h2>
+  <p class="lede">Diego conoce al dedillo art. 66, 199 bis, 195 del Código del Trabajo. Redacta. El empleado firma.</p>
+
+  <h3>Art. 66 CdT — Muerte y nacimiento</h3>
+  <table>
+    <thead><tr><th>Evento</th><th>Días</th><th>Tipo</th><th>Fuero</th></tr></thead>
+    <tbody>
+      <tr><td>Muerte de <strong>hijo</strong></td><td>10 corridos</td><td>Pagado</td><td>1 mes</td></tr>
+      <tr><td>Muerte de cónyuge o conviviente civil</td><td>7 corridos</td><td>Pagado</td><td>1 mes</td></tr>
+      <tr><td>Muerte de hijo en gestación</td><td>7 hábiles</td><td>Pagado</td><td>1 mes</td></tr>
+      <tr><td>Muerte de padre, madre o hermano</td><td>4 hábiles</td><td>Pagado</td><td>—</td></tr>
+      <tr><td>Nacimiento de hijo (padre)</td><td>5 días</td><td>Pagado · adicional a feriado</td><td>—</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12.5px; color: var(--note);">No se pueden compensar en dinero. Aplica desde día 1 de trabajo, independiente de antigüedad.</p>
+
+  <h3>Art. 199 bis CdT — Enfermedad grave de hijo (1-18 años)</h3>
+  <div class="box blue">
+    <p><strong>10 días laborales/año</strong> por padre Y por madre, cada uno, cuando el hijo
+    sufre enfermedad/accidente grave con riesgo de muerte.</p>
+    <ul class="clean">
+      <li class="blue">Distribución libre: días completos, parciales, o combinación</li>
+      <li class="blue">Certificado médico obligatorio</li>
+      <li class="blue">El empleador <strong>no puede negar</strong> el permiso</li>
+      <li class="blue">Horas no trabajadas se reponen vía feriado o acuerdo</li>
+      <li class="blue">Mayor de 18 con discapacidad mental → también aplica</li>
+    </ul>
+  </div>
+
+  <h3>Flujo Diego — Cony, hijo con fiebre súbita</h3>
+  <pre class="chat"><span class="who">Cony:</span> Diego, me llamó el colegio. Mi hijo está con 39° de fiebre,
+       tengo que ir a buscarlo.
+
+<span class="diego">Diego:</span> Ok, primero lo importante: andá al colegio.
+       Acá te dejo todo listo para cuando vuelvas.
+
+  1. AVISO EXPRESS (copiá y pegá al WhatsApp de tu jefa):
+     "Hola [jefa], me llamaron del colegio. Mi hijo con fiebre alta.
+      Voy a buscarlo y al consultorio. Te aviso diagnóstico.
+      Urgencia: derivá a [colega]."
+
+  2. PERMISO LEGAL:
+     · Enfermedad común: art. 199 bis NO aplica.
+       Acordá recuperación de horas con [jefa].
+     · Si médico determina cuadro grave: 199 bis → 10 días/año.
+
+  3. DOCUMENTOS:
+     · Constancia del colegio · Certificado del médico
+
+  4. CUANDO VUELVAS:
+     Te ayudo a redactar el correo formal a RRHH.
+
+  Andá tranquila.</pre>
+
+  <div class="box amber" style="margin-top: 12px;">
+    <h4>Diego NO firma por el empleado</h4>
+    <p>Diego redacta. El empleado firma. Específicamente: <strong>NO</strong> envía solicitudes
+    a RRHH en nombre del trabajador, <strong>NO</strong> adjunta certificados médicos a sistemas
+    del Grupo. <strong>SÍ</strong> entrega texto listo para copiar y recuerda plazos.</p>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="num">5</span>Separación Laboral vs Personal · Compartments</h2>
+  <p class="lede">El estándar Microsoft Copilot 2025: dos contextos claramente etiquetados, sin cross-pollination, con controles separados.</p>
+
+  <svg class="compartments-svg" viewBox="0 0 720 380" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="gradLab" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#dbeafe"/>
+        <stop offset="100%" stop-color="#bfdbfe"/>
+      </linearGradient>
+      <linearGradient id="gradFam" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#d1fae5"/>
+        <stop offset="100%" stop-color="#a7f3d0"/>
+      </linearGradient>
+    </defs>
+    <!-- container -->
+    <rect x="10" y="10" width="700" height="360" rx="20" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+    <text x="360" y="40" text-anchor="middle" font-family="Inter" font-size="15" font-weight="700" fill="#0f172a">DIEGO v8 — Andrea (operadora_galpon)</text>
+
+    <!-- Laboral -->
+    <rect x="40" y="70" width="290" height="270" rx="14" fill="url(#gradLab)" stroke="#2563eb" stroke-width="2"/>
+    <text x="185" y="100" text-anchor="middle" font-family="Inter" font-size="13" font-weight="700" fill="#1e40af">COMPARTMENT LABORAL</text>
+    <text x="60" y="130" font-family="Inter" font-size="12" fill="#1e3a8a">· CRM clientes</text>
+    <text x="60" y="150" font-family="Inter" font-size="12" fill="#1e3a8a">· Retiros y agendas</text>
+    <text x="60" y="170" font-family="Inter" font-size="12" fill="#1e3a8a">· Cotizaciones</text>
+    <text x="60" y="190" font-family="Inter" font-size="12" fill="#1e3a8a">· Operación galpón</text>
+    <text x="60" y="225" font-family="Inter" font-size="11" font-weight="700" fill="#1e40af">Visible a:</text>
+    <text x="60" y="245" font-family="Inter" font-size="12" fill="#1e3a8a">· Andrea</text>
+    <text x="60" y="263" font-family="Inter" font-size="12" fill="#1e3a8a">· Dusan (CEO)</text>
+    <text x="60" y="281" font-family="Inter" font-size="12" fill="#1e3a8a">· Supervisor galpón</text>
+    <text x="60" y="299" font-family="Inter" font-size="12" fill="#1e3a8a">· Auditoría interna</text>
+    <text x="60" y="325" font-family="Inter" font-size="11" font-style="italic" fill="#475569">comando: /trabajo</text>
+
+    <!-- Familiar -->
+    <rect x="390" y="70" width="290" height="270" rx="14" fill="url(#gradFam)" stroke="#059669" stroke-width="2"/>
+    <text x="535" y="100" text-anchor="middle" font-family="Inter" font-size="13" font-weight="700" fill="#065f46">COMPARTMENT PERSONAL/FAMILIA</text>
+    <text x="410" y="130" font-family="Inter" font-size="12" fill="#064e3b">· Hijos · edades · colegio</text>
+    <text x="410" y="150" font-family="Inter" font-size="12" fill="#064e3b">· Reuniones apoderado</text>
+    <text x="410" y="170" font-family="Inter" font-size="12" fill="#064e3b">· Permisos laborales personales</text>
+    <text x="410" y="190" font-family="Inter" font-size="12" fill="#064e3b">· Salud familiar</text>
+    <text x="410" y="225" font-family="Inter" font-size="11" font-weight="700" fill="#065f46">Visible a:</text>
+    <text x="410" y="245" font-family="Inter" font-size="12" fill="#064e3b">· Andrea (SOLA)</text>
+    <text x="410" y="263" font-family="Inter" font-size="12" fill="#064e3b">· NADIE más</text>
+    <text x="410" y="281" font-family="Inter" font-size="12" fill="#064e3b">· Cifrado con clave de Andrea</text>
+    <text x="410" y="299" font-family="Inter" font-size="12" fill="#064e3b">· Borrable a pedido (hard delete)</text>
+    <text x="410" y="325" font-family="Inter" font-size="11" font-style="italic" fill="#475569">comando: /familia</text>
+
+    <!-- Barrier -->
+    <line x1="360" y1="80" x2="360" y2="330" stroke="#dc2626" stroke-width="3" stroke-dasharray="6,4"/>
+    <text x="360" y="220" text-anchor="middle" font-family="Inter" font-size="10" font-weight="700" fill="#dc2626" transform="rotate(-90 360 220)">SIN CRUCE</text>
+  </svg>
+
+  <h3>Reglas de los compartments</h3>
+  <table>
+    <thead><tr><th>Regla</th><th>Implementación</th></tr></thead>
+    <tbody>
+      <tr><td>Datos de hijos NUNCA tocan CRM</td><td>Schema separado · RLS estricto</td></tr>
+      <tr><td>Dusan ve laboral, NO personal</td><td>RLS bloquea CEO de schema <code>personal_empleado</code></td></tr>
+      <tr><td>Empleado puede borrar todo personal</td><td>Botón "borrar mi historial familiar" · hard delete</td></tr>
+      <tr><td>Diego no menciona datos personales en /trabajo</td><td>Filtro de contexto al cambiar de modo</td></tr>
+      <tr><td>Auditoría solo accede a laboral</td><td>Log separado por compartment</td></tr>
+      <tr><td>Backups personales cifrados con clave del empleado</td><td>El Grupo no puede leerlos sin consentimiento</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <h2><span class="num">6</span>Casos Reales del Equipo</h2>
+
+  <div class="grid-2">
+    <div class="box blue">
+      <h4>Caso A — Andrea: reunión + fracciones</h4>
+      <p>Pide recordatorio reunión miércoles 6:30 PM + ayuda con fracciones de hija 5° básico.</p>
+      <p>Diego en /familia entrega plan completo. 2h después Andrea pregunta retiros Pincore en /trabajo. <strong>Diego NO menciona hija ni reunión.</strong></p>
+    </div>
+    <div class="box amber">
+      <h4>Caso B — Cony: fiebre súbita hijo 8 años</h4>
+      <p>Diego entrega aviso WhatsApp jefa + permiso legal aplicable + documentos a pedir + correo formal RRHH.</p>
+      <p>Cony sale del galpón en 2 minutos con todo cubierto.</p>
+    </div>
+    <div class="box purple">
+      <h4>Caso C — Trabajador padre: nacimiento</h4>
+      <p>Diego activa art. 195 (5 días postnatal paterno) + 66 + redacta aviso jefa + recordatorio inscripción civil 60 días + asignación familiar.</p>
+    </div>
+    <div class="box">
+      <h4>Caso D — Hijo de empleado da PAES</h4>
+      <p>Diego arma plan 6 meses: inscripción DEMRE, Beca PAES (gratis para colegio público/subvencionado), 1 ensayo cronometrado/semana, simulacro último mes.</p>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="num">7</span>Cumplimiento Normativo</h2>
+  <div class="grid-2">
+    <div class="box">
+      <h4>COPPA (EEUU) 2025-2026</h4>
+      <p>FTC, jun-2025, deadline abr-2026. Consentimiento parental <strong>separado</strong> para uso en entrenamiento de AI. Persistent IDs ahora son datos personales.</p>
+      <p><strong>Diego:</strong> no usa datos de menores para fine-tuning ni evaluación.</p>
+    </div>
+    <div class="box">
+      <h4>GDPR-K (Europa)</h4>
+      <p>Consentimiento parental para menores de 16. Derecho al olvido reforzado.</p>
+      <p><strong>Diego:</strong> aplica por herencia si empleado migra o tiene hijo en intercambio.</p>
+    </div>
+    <div class="box">
+      <h4>Chile · Ley 19.628</h4>
+      <p>Consentimiento expreso. Derechos ARCO. Reforma 2025 alinea Chile a GDPR.</p>
+      <p><strong>Diego:</strong> consentimiento explícito al onboarding del empleado.</p>
+    </div>
+    <div class="box red">
+      <h4>Líneas rojas</h4>
+      <p>Diego NUNCA: cruza datos personales↔laborales, opina sobre temas sensibles, escribe la tarea por el niño, firma por el empleado, comparte datos del menor con el Grupo.</p>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="num">8</span>Brechas vs Diego v8 actual</h2>
+  <p class="lede">Top 5 brechas del estado actual versus este estándar.</p>
+
+  <div class="brecha-row">
+    <div class="n">1</div>
+    <div class="txt"><strong>Sin compartment /familia separado del CRM laboral.</strong> Andrea no puede usar Diego para hijos sin que Dusan eventualmente lo vea. Riesgo alto de cruce.</div>
+    <div><span class="pill red">Impacto ALTO</span></div>
+    <div><span class="pill amber">Esfuerzo ALTO</span></div>
+  </div>
+  <div class="brecha-row">
+    <div class="n">2</div>
+    <div class="txt"><strong>No hay base de conocimiento marco legal Chile</strong> (art. 66, 199 bis, 195). Equipo pierde días por desconocer derechos laborales familiares.</div>
+    <div><span class="pill red">Impacto ALTO</span></div>
+    <div><span class="pill green">Esfuerzo MEDIO</span></div>
+  </div>
+  <div class="brecha-row">
+    <div class="n">3</div>
+    <div class="txt"><strong>No hay templates de respuesta cordial al colegio.</strong> Empleado pierde tiempo redactando o lo redacta mal.</div>
+    <div><span class="pill amber">Impacto MEDIO</span></div>
+    <div><span class="pill green">Esfuerzo BAJO</span></div>
+  </div>
+  <div class="brecha-row">
+    <div class="n">4</div>
+    <div class="txt"><strong>No hay protocolo socrático para tareas</strong> (modelo Khanmigo). Diego podría dar respuestas directas, reemplazando aprendizaje del niño.</div>
+    <div><span class="pill red">Impacto ALTO</span></div>
+    <div><span class="pill green">Esfuerzo MEDIO</span></div>
+  </div>
+  <div class="brecha-row">
+    <div class="n">5</div>
+    <div class="txt"><strong>No hay derivación automática en contenido sensible.</strong> Diego podría opinar sobre sexualidad/política/religión y generar conflicto familiar.</div>
+    <div><span class="pill red">Impacto ALTO</span></div>
+    <div><span class="pill green">Esfuerzo MEDIO</span></div>
+  </div>
+</section>
+
+<div class="quick-wins">
+  <h2 style="font-size:1.4rem; font-weight:800; color:var(--green-dark); margin-bottom:14px;">Implementable sin Pablo en 1-2 días — Top 3</h2>
+
+  <div class="qw">
+    <h4>1 · Cargar marco legal + templates en base de conocimiento Diego</h4>
+    <p>Subir a Storage <code>diego-conocimiento/educacion/</code> un MD con: art. 66, 199 bis, 195, 207 bis del CdT · los 6 templates al colegio · calendario PAES 2026.</p>
+    <div class="meta">
+      <span><strong>Quién:</strong> PC Dusan prepara · Dusan aprueba</span>
+      <span><strong>Tiempo:</strong> 4 horas</span>
+      <span><strong>Sin Pablo:</strong> sí · solo carga</span>
+    </div>
+  </div>
+
+  <div class="qw">
+    <h4>2 · System prompt "modo familia" con regla socrática</h4>
+    <p>Añadir al prompt maestro de Diego el bloque MODO /familia: regla socrática (no responder por el niño), lista de temas sensibles que derivan al apoderado, recordatorio de no cruce de datos.</p>
+    <div class="meta">
+      <span><strong>Quién:</strong> PC Dusan redacta · Dusan revisa</span>
+      <span><strong>Tiempo:</strong> 3 horas</span>
+      <span><strong>Sin Pablo:</strong> sí · edición de DIEGO-PROMPT-MAXIMO.md</span>
+    </div>
+  </div>
+
+  <div class="qw">
+    <h4>3 · Onboarding conversacional voluntario con cada empleado</h4>
+    <p>Diego inicia conversación 1-a-1 con cada uno de los 14 empleados: "¿tenés hijos en edad escolar? ¿querés ayuda con el lado familiar?". El empleado decide cuánto comparte. Diego guarda en notas-perfil-empleado mientras se construye el schema.</p>
+    <div class="meta">
+      <span><strong>Quién:</strong> PC Dusan coordina con supervisores</span>
+      <span><strong>Tiempo:</strong> 1 día · 14 × 10 min</span>
+      <span><strong>Sin Pablo:</strong> sí · interacción humana</span>
+    </div>
+  </div>
+</div>
+
+<section class="card">
+  <h2><span class="num">9</span>Métricas de Éxito (90 días)</h2>
+  <div class="chart-box" style="padding: 4px 0 0; border: none; background: transparent; margin-bottom: 0;">
+    <div class="chart-wrap"><canvas id="chartMetricas"></canvas></div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="num">10</span>Bibliografía · ≥11 fuentes 2025-2026</h2>
+  <ol style="padding-left: 24px; font-size: 13.5px; line-height: 1.8;">
+    <li><a href="https://www.khanmigo.ai/parents" style="color:var(--green);">Khan Academy (2025) — Khanmigo for Parents</a></li>
+    <li><a href="https://www.commonsensemedia.org/press-releases/ai-companions-decoded-common-sense-media-recommends-ai-companion-safety-standards" style="color:var(--green);">Common Sense Media (2025) — AI Companions Decoded</a></li>
+    <li><a href="https://www.commonsensemedia.org/sites/default/files/featured-content/files/csm-ai-risk-assessment-chatgpt-5-10232025.pdf" style="color:var(--green);">Common Sense Media (oct-2025) — Risk Assessment ChatGPT 5</a></li>
+    <li><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/enterprise-data-protection" style="color:var(--green);">Microsoft Learn (oct-2025) — Enterprise Data Protection Copilot</a></li>
+    <li><a href="https://securiti.ai/ftc-coppa-final-rule-amendments/" style="color:var(--green);">FTC / Securiti (jun-2025) — COPPA Final Rule Amendments</a></li>
+    <li><a href="https://acceso.mineduc.cl/material-de-preparacion-paes/" style="color:var(--green);">Mineduc / DEMRE (2026) — Material PAES</a></li>
+    <li><a href="https://www.junaeb.cl/becas-junaeb" style="color:var(--green);">JUNAEB (2026) — Becas y Beneficios</a></li>
+    <li><a href="https://www.dt.gob.cl/legislacion/1624/w3-propertyvalue-145760.html" style="color:var(--green);">Dirección del Trabajo Chile (2025) — Art. 66 CdT</a></li>
+    <li><a href="https://www.dt.gob.cl/portal/1628/w3-article-60112.html" style="color:var(--green);">Dirección del Trabajo Chile (2025) — Art. 199 bis CdT</a></li>
+    <li><a href="https://sesameworkshop.org/about-us/press-room/sesame-workshop-and-google-team-up-to-launch-new-resources-to-help-families-navigate-a-digital-world/" style="color:var(--green);">Sesame Workshop + Google (sep-2025) — Raising Kids in a Digital World</a></li>
+    <li><a href="https://www.apa.org/monitor/2025/04-05/kids-digital-educational-media" style="color:var(--green);">APA Monitor (abr-may 2025) — Digital Educational Media</a></li>
+  </ol>
+</section>
+
+<footer class="foot">
+  <p><strong>Documento vivo.</strong> Próxima revisión: nov-2026.</p>
+  <p>Mantiene: PC Dusan + UX Researcher · Aprueba cambios: Dusan Arancibia</p>
+  <p>Diego v8 · Estándar de Apoyo Educativo y Familiar · Reciclean-Farex-SERCOT-GestionREP</p>
+</footer>
+
+</div>
+
+<script>
+  // Chart 1 — tiempo de pantalla educativa por edad
+  new Chart(document.getElementById('chartEdad').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['2-4 años', '5-7 años', '8-10 años', '11-13 años', '14-18 años'],
+      datasets: [{
+        label: 'Minutos educativos / día (con co-viewing)',
+        data: [15, 25, 45, 60, 90],
+        backgroundColor: '#059669',
+        borderRadius: 8,
+        barThickness: 42
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 12 } } },
+        y: {
+          grid: { color: '#e2e8f0' },
+          ticks: { font: { family: 'Inter', size: 11 }, callback: v => v + ' min' },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  // Chart 2 — métricas de éxito (baseline vs target 90d)
+  new Chart(document.getElementById('chartMetricas').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: [
+        'Empleados con /familia activo',
+        'Permisos legales asistidos',
+        'Reuniones con recordatorio',
+        'Templates al colegio usados',
+        'NPS empleados /familia'
+      ],
+      datasets: [
+        {
+          label: 'Baseline (hoy)',
+          data: [0, 0, 0, 0, 0],
+          backgroundColor: '#94a3b8',
+          borderRadius: 6
+        },
+        {
+          label: 'Target 90 días',
+          data: [8, 5, 80, 20, 8],
+          backgroundColor: '#059669',
+          borderRadius: 6
+        }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 12 } } } },
+      scales: {
+        x: { grid: { color: '#e2e8f0' }, ticks: { font: { family: 'Inter', size: 11 } }, beginAtZero: true },
+        y: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 } } }
+      }
+    }
+  });
+</script>
+</body>
+</html>

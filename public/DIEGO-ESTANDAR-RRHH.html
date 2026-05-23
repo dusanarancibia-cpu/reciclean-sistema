@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Diego v8 · Estándar Mundial RRHH 2025-2026 · Reciclean-Farex-SERCOT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --verde:#059669;
+    --verde-dark:#047857;
+    --verde-light:#10b981;
+    --verde-50:#ecfdf5;
+    --gris-900:#0f172a;
+    --gris-800:#1e293b;
+    --gris-700:#334155;
+    --gris-600:#475569;
+    --gris-500:#64748b;
+    --gris-300:#cbd5e1;
+    --gris-200:#e2e8f0;
+    --gris-100:#f1f5f9;
+    --gris-50:#f8fafc;
+    --bg:#ffffff;
+    --rojo:#dc2626;
+    --ambar:#f59e0b;
+    --azul:#2563eb;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.04);
+    --shadow-md:0 4px 12px rgba(15,23,42,.06);
+    --shadow-lg:0 12px 32px rgba(15,23,42,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    color:var(--gris-900);
+    background:var(--gris-50);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 28px 96px}
+
+  /* Header */
+  header.hero{
+    background:linear-gradient(135deg,var(--verde) 0%,var(--verde-dark) 100%);
+    color:#fff;
+    padding:56px 28px;
+    border-radius:20px;
+    margin-bottom:40px;
+    box-shadow:var(--shadow-lg);
+  }
+  .hero-eyebrow{
+    text-transform:uppercase;
+    letter-spacing:.14em;
+    font-size:.78rem;
+    font-weight:600;
+    opacity:.85;
+    margin-bottom:16px;
+  }
+  .hero h1{
+    font-size:2.5rem;
+    font-weight:800;
+    letter-spacing:-.02em;
+    line-height:1.15;
+    max-width:880px;
+  }
+  .hero p.lede{
+    margin-top:18px;
+    font-size:1.1rem;
+    opacity:.93;
+    max-width:780px;
+    font-weight:400;
+  }
+  .hero-meta{
+    margin-top:28px;
+    display:flex;
+    gap:24px;
+    flex-wrap:wrap;
+    font-size:.92rem;
+    opacity:.9;
+  }
+  .hero-meta span{display:inline-flex;align-items:center;gap:8px}
+  .hero-meta b{font-weight:600}
+
+  /* Sections */
+  section.card{
+    background:#fff;
+    border-radius:16px;
+    padding:36px;
+    margin-bottom:24px;
+    box-shadow:var(--shadow-sm);
+    border:1px solid var(--gris-200);
+  }
+  section h2{
+    font-size:1.6rem;
+    font-weight:700;
+    letter-spacing:-.01em;
+    color:var(--gris-900);
+    margin-bottom:8px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  section h2 .num{
+    width:38px;height:38px;
+    background:var(--verde-50);
+    color:var(--verde-dark);
+    border-radius:10px;
+    font-size:1rem;
+    font-weight:700;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+  section h3{
+    font-size:1.05rem;
+    font-weight:600;
+    color:var(--gris-800);
+    margin:22px 0 10px;
+  }
+  section p{color:var(--gris-700);margin-bottom:12px}
+  section ul, section ol{margin:8px 0 14px 22px;color:var(--gris-700)}
+  section li{margin-bottom:8px}
+  section strong{color:var(--gris-900);font-weight:600}
+
+  /* Resumen 5 puntos */
+  .summary-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:16px;
+    margin-top:22px;
+  }
+  .summary-card{
+    background:var(--gris-50);
+    border-left:4px solid var(--verde);
+    padding:18px 18px 18px 20px;
+    border-radius:8px;
+  }
+  .summary-card .num{
+    font-size:2.5rem;
+    font-weight:800;
+    color:var(--verde-dark);
+    line-height:1;
+    margin-bottom:8px;
+  }
+  .summary-card .label{
+    font-size:.84rem;
+    font-weight:500;
+    color:var(--gris-700);
+    line-height:1.45;
+  }
+
+  /* KPI row */
+  .kpi-row{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px;
+    margin:24px 0;
+  }
+  .kpi{
+    background:#fff;
+    padding:22px 20px;
+    border-radius:12px;
+    border:1px solid var(--gris-200);
+    box-shadow:var(--shadow-sm);
+  }
+  .kpi .val{
+    font-size:2.5rem;
+    font-weight:800;
+    color:var(--verde-dark);
+    line-height:1;
+    letter-spacing:-.02em;
+  }
+  .kpi .lbl{
+    margin-top:8px;
+    font-size:.82rem;
+    color:var(--gris-600);
+    font-weight:500;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+
+  /* Charts */
+  .chart-wrap{
+    background:#fff;
+    border:1px solid var(--gris-200);
+    border-radius:12px;
+    padding:24px;
+    margin:20px 0;
+    box-shadow:var(--shadow-sm);
+  }
+  .chart-wrap h4{
+    font-size:.95rem;
+    font-weight:600;
+    color:var(--gris-800);
+    margin-bottom:14px;
+  }
+  .chart-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+  }
+  @media (max-width:780px){.chart-grid{grid-template-columns:1fr}}
+  canvas{max-height:280px}
+
+  /* Tables */
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin:14px 0;
+    font-size:.92rem;
+    background:#fff;
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:var(--shadow-sm);
+    border:1px solid var(--gris-200);
+  }
+  th{
+    background:var(--gris-100);
+    color:var(--gris-800);
+    text-align:left;
+    padding:12px 14px;
+    font-weight:600;
+    font-size:.84rem;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    border-bottom:2px solid var(--gris-200);
+  }
+  td{
+    padding:12px 14px;
+    border-bottom:1px solid var(--gris-100);
+    color:var(--gris-700);
+    vertical-align:top;
+  }
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:var(--verde-50)}
+
+  /* Code / examples */
+  pre{
+    background:var(--gris-900);
+    color:#e2e8f0;
+    padding:18px 22px;
+    border-radius:10px;
+    font-family:'Menlo','Monaco','Courier New',monospace;
+    font-size:.84rem;
+    overflow-x:auto;
+    margin:14px 0;
+    line-height:1.55;
+  }
+  code.inline{
+    background:var(--gris-100);
+    color:var(--verde-dark);
+    padding:2px 6px;
+    border-radius:4px;
+    font-family:'Menlo','Monaco',monospace;
+    font-size:.86em;
+  }
+
+  /* Callouts */
+  .callout{
+    border-left:4px solid var(--ambar);
+    background:#fffbeb;
+    padding:16px 18px;
+    border-radius:6px;
+    margin:14px 0;
+  }
+  .callout.danger{
+    border-left-color:var(--rojo);
+    background:#fef2f2;
+  }
+  .callout.success{
+    border-left-color:var(--verde);
+    background:var(--verde-50);
+  }
+  .callout strong{color:var(--gris-900)}
+
+  /* TOC */
+  nav.toc{
+    background:#fff;
+    border-radius:12px;
+    padding:24px 28px;
+    margin-bottom:32px;
+    box-shadow:var(--shadow-sm);
+    border:1px solid var(--gris-200);
+  }
+  nav.toc h3{font-size:.84rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-500);margin-bottom:14px;font-weight:600}
+  nav.toc ol{margin-left:0;list-style:none;counter-reset:tocnum}
+  nav.toc li{
+    counter-increment:tocnum;
+    margin-bottom:8px;
+    padding-left:42px;
+    position:relative;
+  }
+  nav.toc li::before{
+    content:counter(tocnum,decimal-leading-zero);
+    position:absolute;
+    left:0;top:0;
+    font-weight:700;
+    color:var(--verde);
+    font-size:.85rem;
+    background:var(--verde-50);
+    width:32px;height:24px;
+    border-radius:6px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+  nav.toc a{color:var(--gris-700);text-decoration:none;font-weight:500}
+  nav.toc a:hover{color:var(--verde-dark)}
+
+  /* Brechas / Quick wins */
+  .gap-card{
+    background:#fff;
+    border-radius:10px;
+    padding:18px 22px;
+    margin-bottom:14px;
+    border:1px solid var(--gris-200);
+    border-left:4px solid var(--rojo);
+    box-shadow:var(--shadow-sm);
+  }
+  .quickwin-card{
+    background:#fff;
+    border-radius:10px;
+    padding:18px 22px;
+    margin-bottom:14px;
+    border:1px solid var(--gris-200);
+    border-left:4px solid var(--verde);
+    box-shadow:var(--shadow-sm);
+  }
+  .gap-card h4,.quickwin-card h4{
+    font-size:1.05rem;
+    font-weight:600;
+    margin-bottom:6px;
+    color:var(--gris-900);
+  }
+  .gap-card .tag{
+    display:inline-block;
+    background:#fee2e2;
+    color:var(--rojo);
+    font-size:.72rem;
+    font-weight:600;
+    padding:3px 10px;
+    border-radius:999px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    margin-bottom:8px;
+  }
+  .quickwin-card .tag{
+    display:inline-block;
+    background:var(--verde-50);
+    color:var(--verde-dark);
+    font-size:.72rem;
+    font-weight:600;
+    padding:3px 10px;
+    border-radius:999px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    margin-bottom:8px;
+  }
+  .quickwin-card .time{
+    font-size:.84rem;
+    color:var(--gris-600);
+    margin-top:8px;
+    font-weight:500;
+  }
+
+  /* Sources */
+  .sources-list{
+    list-style:none;
+    margin:0;
+  }
+  .sources-list li{
+    padding:10px 0;
+    border-bottom:1px solid var(--gris-100);
+    font-size:.92rem;
+  }
+  .sources-list li:last-child{border-bottom:none}
+  .sources-list a{color:var(--verde-dark);text-decoration:none;font-weight:500}
+  .sources-list a:hover{text-decoration:underline}
+  .sources-list .src-num{
+    display:inline-block;
+    width:28px;
+    color:var(--gris-500);
+    font-weight:600;
+    font-size:.85rem;
+  }
+
+  footer{
+    text-align:center;
+    color:var(--gris-500);
+    font-size:.85rem;
+    margin-top:48px;
+    padding-top:24px;
+    border-top:1px solid var(--gris-200);
+  }
+
+  /* Persona examples */
+  .persona-box{
+    background:var(--verde-50);
+    border:1px solid var(--verde-light);
+    border-radius:10px;
+    padding:18px 22px;
+    margin:14px 0;
+  }
+  .persona-box .who{
+    font-weight:600;
+    color:var(--verde-dark);
+    margin-bottom:6px;
+    font-size:.92rem;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="hero-eyebrow">Diego v8 · Investigación estándar mundial</div>
+    <h1>Chatbots de RRHH 2025-2026 aplicables a Reciclean-Farex-SERCOT</h1>
+    <p class="lede">5 áreas críticas, 14 personas, marco legal Chile. La pregunta no es "qué hace la industria"; es "qué de eso puede activarse en Diego sin esperar a Pablo".</p>
+    <div class="hero-meta">
+      <span><b>Equipo:</b> 14 personas</span>
+      <span><b>Marco legal:</b> Código del Trabajo Chile</span>
+      <span><b>Stack actual:</b> Diego v8 + Supabase + WhatsApp</span>
+      <span><b>Fecha:</b> 23-may-2026</span>
+    </div>
+  </header>
+
+  <!-- Resumen ejecutivo -->
+  <section class="card">
+    <h2><span class="num">★</span>Resumen ejecutivo en 5 puntos</h2>
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="num">01</div>
+        <div class="label"><strong>De copilots a superagents</strong> — Workday + Microsoft 365 anunciaron en mayo 2026 el patrón: un agente ejecuta workflows completos, no responde y deriva.</div>
+      </div>
+      <div class="summary-card">
+        <div class="num">02</div>
+        <div class="label"><strong>Para 14 personas</strong>, BambooHR/AttendanceBot + Buk/Talana cubren 80%. Diego es la capa conversacional sobre lo que ya existe.</div>
+      </div>
+      <div class="summary-card">
+        <div class="num">03</div>
+        <div class="label"><strong>3 brechas reales</strong>: análisis de cobertura, lectura de PDF de liquidación, detección de sobrecarga. Nadie lo hace en WhatsApp Chile todavía.</div>
+      </div>
+      <div class="summary-card">
+        <div class="num">04</div>
+        <div class="label"><strong>Compliance Chile</strong>: 15 días hábiles feriado · FEA con ClaveÚnica · endpoint REST DT desde marzo 2025. No opcional.</div>
+      </div>
+      <div class="summary-card">
+        <div class="num">05</div>
+        <div class="label"><strong>REGLA DE ORO</strong>: Diego nunca inventa monto, fecha ni cláusula. Si no sabe → "no sé, consultá con Dyana" + escalar. Lo contrario es riesgo legal.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KPI snapshot -->
+  <section class="card">
+    <h2><span class="num">#</span>Snapshot Reciclean en números</h2>
+    <div class="kpi-row">
+      <div class="kpi"><div class="val">14</div><div class="lbl">Personas en el grupo</div></div>
+      <div class="kpi"><div class="val">5</div><div class="lbl">Áreas RRHH cubiertas</div></div>
+      <div class="kpi"><div class="val">15</div><div class="lbl">Días hábiles feriado legal</div></div>
+      <div class="kpi"><div class="val">3</div><div class="lbl">Quick-wins sin Pablo</div></div>
+      <div class="kpi"><div class="val">5</div><div class="lbl">Brechas vs estándar</div></div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-wrap">
+        <h4>Cobertura Diego v8 vs estándar mundial</h4>
+        <canvas id="chartCobertura"></canvas>
+      </div>
+      <div class="chart-wrap">
+        <h4>Distribución de áreas RRHH (5 grandes)</h4>
+        <canvas id="chartAreas"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <h3>Contenido</h3>
+    <ol>
+      <li><a href="#area1">Gestión de vacaciones</a></li>
+      <li><a href="#area2">Análisis de reemplazo transitorio</a></li>
+      <li><a href="#area3">Liquidaciones, pagos y reembolsos</a></li>
+      <li><a href="#area4">Certificados laborales</a></li>
+      <li><a href="#area5">Detección de sobrecarga laboral</a></li>
+      <li><a href="#regla-oro">Marco anti-alucinación (REGLA DE ORO)</a></li>
+      <li><a href="#brechas">Brechas vs Diego v8</a></li>
+      <li><a href="#quickwins">Implementable sin Pablo en 1-2 días</a></li>
+      <li><a href="#fuentes">Fuentes verificadas</a></li>
+    </ol>
+  </nav>
+
+  <!-- AREA 1 -->
+  <section class="card" id="area1">
+    <h2><span class="num">1</span>Gestión de vacaciones</h2>
+    <p><strong>En una frase:</strong> solicitar es fácil; aprobar bien es la diferencia. El estándar 2025-2026 es que el bot pregunte <strong>antes</strong> de aprobar quién cubrirá al solicitante.</p>
+
+    <h3>Marco legal Chile que Diego debe respetar</h3>
+    <ul>
+      <li><strong>Art. 67 Código del Trabajo</strong>: 15 días hábiles con remuneración íntegra tras 1 año de servicio.</li>
+      <li>Los 15 días se cuentan <strong>lunes a viernes</strong> — sábado siempre inhábil para el cómputo (≈21 días corridos).</li>
+      <li>El trabajador propone la fecha; el empleador con &gt;5 trabajadores puede modificarla por necesidades operativas.</li>
+      <li>Continuo, pero días sobre 10 hábiles se pueden fraccionar por acuerdo.</li>
+      <li>Máximo 2 períodos acumulables.</li>
+    </ul>
+
+    <h3>Estándar mundial 2025-2026</h3>
+    <table>
+      <thead><tr><th>Plataforma</th><th>Qué hace bien</th><th>Aplicable a Reciclean</th></tr></thead>
+      <tbody>
+        <tr><td><strong>BambooHR</strong></td><td>Retrieve política + balance + calendarios. Aprobación 1-click desde Slack/Teams.</td><td>Modelo de UX a copiar.</td></tr>
+        <tr><td><strong>HiBob</strong></td><td>Calendario visible "quién está fuera y cuándo" <em>antes</em> de aprobar.</td><td>Prevención visual de conflictos.</td></tr>
+        <tr><td><strong>Personio</strong></td><td>Balances en tiempo real, 1-click approvals.</td><td>UX referencial.</td></tr>
+        <tr><td><strong>AttendanceBot / Vacation Tracker</strong> (Slack-first)</td><td>Solicitudes overlap visibles + setup &lt;5 min.</td><td>Es lo más cerca de Diego — conversacional en el canal.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="persona-box">
+      <div class="who">Caso Andrea — qué debería responder Diego</div>
+      <p><em>Andrea pide vacaciones del 12 al 26 de junio.</em></p>
+      <p>Diego: "Tenés 18 días hábiles disponibles. La solicitud son 11 días hábiles. OJO: del 15 al 19 también está fuera [colega]. ¿Querés ajustar la fecha? Si seguís adelante, mando aprobación a Dusan con el análisis de reemplazo. ¿Confirmás?"</p>
+    </div>
+
+    <div class="callout danger">
+      <strong>Riesgos que Diego debe evitar:</strong> nunca aprueba por su cuenta (solo registra y escala) · nunca inventa saldos (si Supabase no tiene el dato, escala a Dyana) · nunca promete fechas firmes (el empleador puede negar por necesidades operativas).
+    </div>
+  </section>
+
+  <!-- AREA 2 -->
+  <section class="card" id="area2">
+    <h2><span class="num">2</span>Análisis de reemplazo transitorio</h2>
+    <p><strong>En una frase:</strong> si Andrea pide vacaciones, ¿quién la cubre? La pregunta no es disponibilidad — es <strong>skills + carga actual + disponibilidad</strong> simultáneamente.</p>
+
+    <h3>Estándar mundial 2025-2026</h3>
+    <p>Los algoritmos de skill matching evaluan atributos del empleado contra los requerimientos del rol y calculan un score de compatibilidad. Van más allá de la simple disponibilidad: consideran capacidades, certificaciones, experiencia, preferencias del empleado y carga actual.</p>
+    <p><strong>Workday Sana Self-Service Agent</strong> (mayo 2026, dentro de Microsoft 365 Copilot) ejecuta acciones HR end-to-end respetando role-based permissions y reglas de aprobación. Es el patrón "superagent" del que habla HR Executive: un solo agente corre el workflow completo en lugar de derivar a múltiples sistemas.</p>
+
+    <h3>Realidad para una empresa de 14 personas</h3>
+    <p>No necesitamos ML. Necesitamos una matriz de <strong>skills + carga + disponibilidad</strong> que Diego pueda leer de Supabase en milisegundos.</p>
+
+    <pre><code>-- panel.trabajadores_skills
+CREATE TABLE panel.trabajadores_skills (
+  trabajador_id  uuid PRIMARY KEY,
+  nombre         text,
+  rol_primario   text,        -- "comercial", "admin", "contabilidad", "operaciones"
+  rol_secundario text[],      -- skills que puede cubrir
+  carga_actual   numeric(3,2),-- 0.0 libre, 1.0 saturado
+  disponible     boolean,
+  proximo_feriado date,
+  notas          text
+);</code></pre>
+
+    <div class="persona-box">
+      <div class="who">Caso Andrea — qué responde Diego al CEO</div>
+      <p>"Para cubrir a Andrea del 12-26 jun, hay 2 candidatos:<br>
+      <strong>1. [Trabajador X]</strong> — carga 0.4, ya cubrió comercial en mar/2026.<br>
+      <strong>2. [Trabajador Y]</strong> — carga 0.6, primera vez en rol comercial (necesita briefing).<br>
+      Recomendación: X. ¿Coordino con vos y con X la transferencia de la pipeline?"</p>
+    </div>
+
+    <h3>Casos reales Reciclean</h3>
+    <table>
+      <thead><tr><th>Caso</th><th>Acción Diego</th></tr></thead>
+      <tbody>
+        <tr><td>Andrea fuera 2 semanas</td><td>Propone quién toma WhatsApp comercial + qué oportunidades del CRM derivar a quién.</td></tr>
+        <tr><td>Cony enferma 3 días</td><td>Marca qué facturas SERCOT quedan en pausa y a quién consultar.</td></tr>
+        <tr><td>Dyana de vacaciones</td><td>Avisa que liquidaciones quedan congeladas hasta su vuelta o escala a Pablo para coordinar contable externo.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- AREA 3 -->
+  <section class="card" id="area3">
+    <h2><span class="num">3</span>Liquidaciones, pagos y reembolsos</h2>
+    <p><strong>En una frase:</strong> Diego no calcula liquidaciones. Diego <strong>lee la liquidación que ya emitió Buk o Talana, y se la explica al empleado línea por línea.</strong></p>
+
+    <h3>Marco Chile — las plataformas certificadas</h3>
+    <ul>
+      <li><strong>Buk</strong> certificado por la Dirección del Trabajo, Previred y SII. Actualiza UF, límites legales y sueldo mínimo mensualmente.</li>
+      <li><strong>Talana</strong> con conexión directa a Previred, Banco Central y SII. Su API REST entrega objetos JSON leíbles y escribibles.</li>
+      <li><strong>Previred</strong>: integrador previsional obligatorio en Chile — Diego nunca lo toca directo, lee desde Buk/Talana.</li>
+    </ul>
+
+    <h3>El patrón Workday Sana — mayo 2026</h3>
+    <p>El empleado pregunta en lenguaje natural, el agente consulta el sistema autorizado, y responde con citación al documento fuente. <strong>Nunca calcula sobre la marcha — siempre lee la fuente y la traduce.</strong></p>
+
+    <div class="persona-box">
+      <div class="who">Caso típico — empleado pregunta por su líquido</div>
+      <p><em>Empleado: "Diego, ¿por qué este mes me llegó menos plata?"</em></p>
+      <p>Diego: "Tu líquido bajó de $X a $Y este mes. La diferencia ($Z) es por:<br>
+      • Aumento de descuento AFP de 11.45% a 11.6% ($A)<br>
+      • Anticipo del 15 de mayo ($B)<br>
+      El resto se mantiene igual. Detalle completo en la liquidación PDF. ¿Te la mando?"</p>
+      <p><em>Si no tiene certeza:</em> "No estoy seguro de un ítem. Te paso a Dyana para confirmar."</p>
+    </div>
+
+    <h3>Reembolsos — flujo permitido</h3>
+    <ul>
+      <li>Diego <strong>registra</strong> la solicitud (boleta + monto + concepto).</li>
+      <li>Diego <strong>nunca aprueba</strong> ni promete fecha — eso lo hace Dyana o Cony.</li>
+      <li>Diego escala con el paquete completo: foto boleta + monto + empleado + concepto.</li>
+    </ul>
+  </section>
+
+  <!-- AREA 4 -->
+  <section class="card" id="area4">
+    <h2><span class="num">4</span>Certificados laborales</h2>
+    <p><strong>En una frase:</strong> Diego prepara, autoriza con el empleado, y manda a firma. <strong>Diego nunca firma.</strong></p>
+
+    <h3>Marco Chile</h3>
+    <ul>
+      <li><strong>FEA con ClaveÚnica</strong>: desde 2022 vale como instrumento público para licitaciones, créditos hipotecarios o defensas judiciales.</li>
+      <li><strong>Endpoint REST DT (marzo 2025)</strong>: con token OAuth vinculado a ClaveÚnica, permite bajar paquetes ZIP de certificados en JSON+PDF — ideal para automatización.</li>
+      <li><strong>Documentación electrónica laboral</strong> reconocida por la DT (contratos, anexos, finiquitos, liquidaciones) bajo normativa 3.0.</li>
+    </ul>
+
+    <h3>Certificados que Diego debe poder armar</h3>
+    <table>
+      <thead><tr><th>Certificado</th><th>Solicitante</th><th>Datos</th><th>Firma</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Antigüedad</strong></td><td>Empleado para banco / visa</td><td>Nombre, RUT, fecha ingreso, cargo</td><td>Dyana / Cony</td></tr>
+        <tr><td><strong>Ingresos</strong></td><td>Empleado para crédito</td><td>Sueldo bruto últimos 3-6 meses</td><td>Dyana</td></tr>
+        <tr><td><strong>Vigencia laboral</strong></td><td>Empleado para arriendo</td><td>Status activo + cargo + fecha</td><td>Dyana / Cony</td></tr>
+        <tr><td><strong>No deuda con empresa</strong></td><td>Empleado en salida</td><td>Cierre contable</td><td>Dyana</td></tr>
+      </tbody>
+    </table>
+
+    <div class="persona-box">
+      <div class="who">Workflow — Cony pide certificado de antigüedad</div>
+      <ol>
+        <li>Diego: "Voy a usar tus datos: nombre, RUT, fecha ingreso, cargo. ¿Autorizás? Responde SÍ o NO."</li>
+        <li>Si SÍ → consulta Supabase trabajadores[Cony]</li>
+        <li>Genera PDF con plantilla legal Chile</li>
+        <li>Envía a Dyana para FEA o firma manuscrita escaneada</li>
+        <li>Diego: "Listo, lo va a firmar Dyana hoy. Te llega por mail máximo mañana 12:00."</li>
+      </ol>
+    </div>
+
+    <div class="callout danger">
+      <strong>Riesgos legales no negociables:</strong> Diego nunca firma · nunca emite certificado de ingresos si las últimas 3 liquidaciones no están en Buk/Talana · nunca incluye cláusulas que no estén en el contrato real.
+    </div>
+  </section>
+
+  <!-- AREA 5 -->
+  <section class="card" id="area5">
+    <h2><span class="num">5</span>Detección de sobrecarga laboral</h2>
+    <p><strong>En una frase:</strong> la sobrecarga se detecta con <strong>patrones objetivos</strong>, no preguntando "¿estás cansado?". Microsoft Viva Insights lleva años haciéndolo enterprise; para 14 personas se replica con un dashboard simple sobre Supabase.</p>
+
+    <h3>Estándar mundial 2025-2026</h3>
+    <ul>
+      <li><strong>Microsoft Viva Insights</strong>: detecta after-hours activity, meeting overload, too little focus time, wellbeing alerts agregadas anonimizadas. Desde 2025 alimenta Microsoft Copilot.</li>
+      <li><strong>Yerbo Burnout Index</strong>: mide 4 factores (burnout físico, emocional, work engagement, mental traps). 200K+ assessments. Útil como benchmark, no productivo.</li>
+      <li><strong>Headspace for Work</strong>: dashboards de wellbeing agregados. Para 14 personas es overkill.</li>
+    </ul>
+
+    <h3>Señales objetivas medibles hoy en Reciclean</h3>
+    <table>
+      <thead><tr><th>Señal</th><th>Fuente</th><th>Umbral alerta</th></tr></thead>
+      <tbody>
+        <tr><td>Mensajes WhatsApp fuera de horario</td><td>Logs Diego (21:00-07:00 + sábado/domingo)</td><td>&gt;5/semana</td></tr>
+        <tr><td>Tareas overdue</td><td><code class="inline">curated.tareas</code></td><td>&gt;3 por persona</td></tr>
+        <tr><td>Vacaciones acumuladas sin tomar</td><td><code class="inline">trabajadores.feriado_acumulado</code></td><td>&gt;25 días hábiles</td></tr>
+        <tr><td>Horas extra reportadas</td><td>Buk/Talana</td><td>&gt;20 hrs/mes</td></tr>
+        <tr><td>Días corridos sin libre</td><td>Asistencias</td><td>&gt;12 días</td></tr>
+      </tbody>
+    </table>
+
+    <div class="chart-wrap">
+      <h4>Distribución de señales de sobrecarga (semana simulada, ejemplo)</h4>
+      <canvas id="chartSobrecarga"></canvas>
+    </div>
+
+    <div class="persona-box">
+      <div class="who">Cada lunes 09:00 — Diego escala a Dusan en privado</div>
+      <p>"Dusan, alerta blanda esta semana:<br>
+      • [Persona X] mandó 8 mensajes fuera de horario.<br>
+      • [Persona Y] tiene 28 días de feriado acumulado sin tomar.<br>
+      • [Persona Z] tiene 4 tareas overdue.<br>
+      No actúo. Te lo paso para que decidas si conversás vos o lo manejo yo."</p>
+    </div>
+
+    <div class="callout">
+      <strong>Riesgos éticos:</strong> nunca publica alertas individuales en grupo (siempre 1:1) · no diagnostica burnout (eso es médico) · respeta confidencialidad si la persona lo pide · el equipo debe saber que existe esta medición y para qué se usa. No vigilancia disfrazada de bienestar.
+    </div>
+  </section>
+
+  <!-- REGLA DE ORO -->
+  <section class="card" id="regla-oro">
+    <h2><span class="num">!</span>Marco anti-alucinación · REGLA DE ORO</h2>
+
+    <div class="callout danger">
+      <strong>Diego NUNCA inventa monto, fecha ni cláusula.</strong> Si no tiene el dato confirmado contra Supabase o contra Buk/Talana, responde "no sé, consultá con Dyana" + escala.
+    </div>
+
+    <h3>Cómo se implementa técnicamente</h3>
+    <ol>
+      <li><strong>RAG con citación obligatoria</strong> — cada respuesta sobre datos referencia tabla + fila + timestamp.</li>
+      <li><strong>Whitelist de fuentes</strong> — solo Supabase, Buk API, Talana API o Storage autorizado. Nunca "lo que recuerdo".</li>
+      <li><strong>Threshold de confianza</strong> — si la confianza en un dato numérico es &lt;90%, escala a humano.</li>
+      <li><strong>Human in the loop obligatorio</strong> en: vacaciones, certificados, liquidaciones con diferencia &gt;$1, reemplazos.</li>
+      <li><strong>Log de auditoría</strong> — pregunta + fuente consultada + respuesta + escalación quedan en Supabase.</li>
+    </ol>
+
+    <h3>Frases canónicas cuando Diego no sabe</h3>
+    <ul>
+      <li>"No tengo ese dato confirmado en sistema. Te lo confirma Dyana hoy."</li>
+      <li>"Esto necesita firma de Dusan, no lo puedo aprobar yo."</li>
+      <li>"La liquidación dice X, pero la duda específica que me hacés se la paso a Dyana."</li>
+      <li>"Tu antigüedad la tengo aproximada, pero para el certificado oficial necesito que Dyana la confirme."</li>
+    </ul>
+  </section>
+
+  <!-- BRECHAS -->
+  <section class="card" id="brechas">
+    <h2><span class="num">Δ</span>Brechas vs Diego v8 — Top 5</h2>
+
+    <div class="gap-card">
+      <span class="tag">Brecha 1 · Crítica</span>
+      <h4>Sin análisis de cobertura al aprobar vacaciones</h4>
+      <p>Diego v8 registra la solicitud pero no responde "si Andrea se va el 12-26 jun, X la cubre y queda sin cobertura el viernes 19". Es la brecha más cara: sin esto, las vacaciones generan incendios operativos.</p>
+    </div>
+
+    <div class="gap-card">
+      <span class="tag">Brecha 2 · Alta</span>
+      <h4>No lee PDF de liquidación para explicarla línea por línea</h4>
+      <p>El empleado pregunta "¿por qué este mes me llegó menos?" y Diego no carga la liquidación de Buk/Talana, no la compara con el mes anterior, no explica deltas. Hoy todo se deriva a Dyana manualmente.</p>
+    </div>
+
+    <div class="gap-card">
+      <span class="tag">Brecha 3 · Alta</span>
+      <h4>No existe matriz de skills + carga + disponibilidad</h4>
+      <p>La tabla <code class="inline">panel.trabajadores_skills</code> no existe todavía. Sin ella, el análisis de reemplazo es manual y sesgado por la memoria de Dusan.</p>
+    </div>
+
+    <div class="gap-card">
+      <span class="tag">Brecha 4 · Media</span>
+      <h4>Diego es reactivo, no proactivo en detección de sobrecarga</h4>
+      <p>Diego v8 responde cuando le hablan, pero no avisa al CEO cuando detecta patrones. Falta el job semanal del lunes 09:00 que ejecute el chequeo y escale alertas blandas.</p>
+    </div>
+
+    <div class="gap-card">
+      <span class="tag">Brecha 5 · Media</span>
+      <h4>Sin integración con FEA / ClaveÚnica para certificados</h4>
+      <p>Diego v8 puede preparar texto pero no puede firmar digitalmente con validez legal. Para 2026 el patrón industria es firma digital embebida en el flujo; para Reciclean sigue siendo manual con Dyana.</p>
+    </div>
+  </section>
+
+  <!-- QUICK WINS -->
+  <section class="card" id="quickwins">
+    <h2><span class="num">✓</span>Implementable sin Pablo en 1-2 días — Top 3</h2>
+
+    <div class="quickwin-card">
+      <span class="tag">Quick-win 1</span>
+      <h4>Matriz de skills en Google Sheet + lectura por Diego</h4>
+      <p>Una hoja con 14 filas (una por persona) y 5 columnas: rol primario, rol secundario, carga actual 0-1, disponible sí/no, próximo feriado.</p>
+      <p>Diego lee Google Sheets via API. Migración a tabla nativa Supabase después.</p>
+      <div class="time"><strong>Tiempo:</strong> 4 horas · 3 hrs Dusan rellenando + 1 hr Diego conectando.</div>
+    </div>
+
+    <div class="quickwin-card">
+      <span class="tag">Quick-win 2</span>
+      <h4>Plantillas de certificados en Google Docs + autorización por WhatsApp</h4>
+      <p>3 plantillas (antigüedad, ingresos, vigencia) validadas legalmente Chile. Diego rellena placeholders y manda PDF a Dyana para firma manuscrita escaneada (FEA después).</p>
+      <div class="time"><strong>Tiempo:</strong> 6 horas · redacción + validación + script Diego de doble confirmación.</div>
+    </div>
+
+    <div class="quickwin-card">
+      <span class="tag">Quick-win 3</span>
+      <h4>Job lunes 09:00 — chequeo de sobrecarga (versión manual asistida)</h4>
+      <p>Cada lunes 09:00 Dusan pide a Diego "¿quién tiene alertas blandas esta semana?". Diego corre las 5 queries definidas y devuelve la lista.</p>
+      <p>Sin cron de Pablo — manual hasta validar el patrón y luego se automatiza.</p>
+      <div class="time"><strong>Tiempo:</strong> 2 horas para definir queries + 30 min/semana ejecución.</div>
+    </div>
+
+    <div class="callout success">
+      <strong>Total Top 3:</strong> 12 horas de Dusan + Diego para cerrar 3 brechas críticas sin que Pablo toque código backend. Las brechas 4 y 5 sí requieren Pablo (job nativo + integración FEA), pero pueden esperar 2 semanas.
+    </div>
+  </section>
+
+  <!-- FUENTES -->
+  <section class="card" id="fuentes">
+    <h2><span class="num">📎</span>Fuentes verificadas 2025-2026</h2>
+    <ol class="sources-list">
+      <li><span class="src-num">01</span><a href="https://newsroom.workday.com/2026-05-13-Workday-Brings-Sana-Self-Service-Agent-for-HR-and-Finance-Into-Microsoft-365-Copilot" target="_blank">Workday Newsroom — Sana Self-Service Agent en Microsoft 365 Copilot (13-may-2026)</a></li>
+      <li><span class="src-num">02</span><a href="https://hrexecutive.com/from-copilots-to-superagents-hrs-2026-shift/" target="_blank">HR Executive — From copilots to superagents: HR's 2026 shift</a></li>
+      <li><span class="src-num">03</span><a href="https://www.hibob.com/blog/best-hr-ai-software-tools/" target="_blank">HiBob — 15+ Best HR AI software tools 2026</a></li>
+      <li><span class="src-num">04</span><a href="https://www.dt.gob.cl/portal/1628/w3-article-60177.html" target="_blank">Dirección del Trabajo Chile — Días hábiles del feriado anual</a></li>
+      <li><span class="src-num">05</span><a href="https://www.buk.cl/blog/todo-lo-que-debes-saber-de-las-vacaciones" target="_blank">Buk Chile — Vacaciones en Chile 2026: 10 claves legales</a></li>
+      <li><span class="src-num">06</span><a href="https://web.talana.com/software-remuneraciones" target="_blank">Talana — Software Remuneraciones con conexión Previred/BC/SII</a></li>
+      <li><span class="src-num">07</span><a href="https://learn.microsoft.com/en-us/viva/insights/introduction" target="_blank">Microsoft Learn — Introduction to Viva Insights</a></li>
+      <li><span class="src-num">08</span><a href="https://yerbo.co/methodology/" target="_blank">Yerbo — Methodology of the Burnout Index</a></li>
+      <li><span class="src-num">09</span><a href="https://www.myshyft.com/blog/skill-matching-algorithms/" target="_blank">myshyft — AI Skill Matching Algorithms for Schedule Optimization</a></li>
+      <li><span class="src-num">10</span><a href="https://botpress.com/blog/hr-chatbot" target="_blank">Botpress — Best 6 HR Chatbots and How to Use Them in 2026</a></li>
+      <li><span class="src-num">11</span><a href="https://www.anavcloudsanalytics.ai/blog/prevent-hallucinations-in-llm/" target="_blank">Anavclouds — Prevent Hallucinations in LLM, Best Practices 2026</a></li>
+      <li><span class="src-num">12</span><a href="https://asanify.com/blog/news/ai-agent-hallucination-april-29-2026/" target="_blank">Asanify — AI Agent Hallucination Trap (29-abr-2026)</a></li>
+      <li><span class="src-num">13</span><a href="https://vacationtracker.io/" target="_blank">Vacation Tracker — PTO & Leave Management Software (Slack-first)</a></li>
+      <li><span class="src-num">14</span><a href="https://slack.com/marketplace/A1XNNPZFC-attendancebot" target="_blank">Slack Marketplace — AttendanceBot PTO & Time Tracking</a></li>
+      <li><span class="src-num">15</span><a href="https://certificadosdechile.com/historia-laboral-firma-digital-avanzada/" target="_blank">Certificados de Chile — Historia laboral con FEA / ClaveÚnica</a></li>
+    </ol>
+  </section>
+
+  <footer>
+    Documento elaborado por <strong>HR Onboarding Agent</strong> · Diego v8 spec · 23-may-2026 · <strong>Grupo Reciclean-Farex-SERCOT</strong>
+  </footer>
+
+</div>
+
+<script>
+Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+Chart.defaults.color = "#475569";
+Chart.defaults.borderColor = "rgba(15,23,42,0.06)";
+
+// Chart 1 — Cobertura Diego v8 vs estándar
+new Chart(document.getElementById('chartCobertura'), {
+  type: 'bar',
+  data: {
+    labels: ['Vacaciones', 'Reemplazo', 'Liquidaciones', 'Certificados', 'Sobrecarga'],
+    datasets: [
+      {
+        label: 'Diego v8 actual',
+        data: [40, 10, 25, 50, 15],
+        backgroundColor: '#cbd5e1',
+        borderRadius: 6,
+      },
+      {
+        label: 'Estándar mundial 2026',
+        data: [90, 85, 90, 95, 80],
+        backgroundColor: '#059669',
+        borderRadius: 6,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16, font: { size: 12 } } },
+      tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y + '%' } }
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: { max: 100, ticks: { callback: v => v + '%' }, grid: { color: 'rgba(15,23,42,0.05)' } }
+    }
+  }
+});
+
+// Chart 2 — Distribución áreas (donut)
+new Chart(document.getElementById('chartAreas'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Vacaciones', 'Reemplazo', 'Liquidaciones', 'Certificados', 'Sobrecarga'],
+    datasets: [{
+      data: [25, 20, 25, 15, 15],
+      backgroundColor: ['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0'],
+      borderWidth: 0,
+      hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '65%',
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 12, padding: 14, font: { size: 11 } } },
+      tooltip: { callbacks: { label: (ctx) => ctx.label + ': ' + ctx.parsed + '% del peso' } }
+    }
+  }
+});
+
+// Chart 3 — Señales sobrecarga (radar)
+new Chart(document.getElementById('chartSobrecarga'), {
+  type: 'radar',
+  data: {
+    labels: ['Msg fuera de horario', 'Tareas overdue', 'Feriado acumulado', 'Horas extra/mes', 'Días sin libre'],
+    datasets: [
+      {
+        label: 'Equipo Reciclean (ejemplo)',
+        data: [6, 3, 18, 12, 8],
+        backgroundColor: 'rgba(5, 150, 105, 0.18)',
+        borderColor: '#059669',
+        borderWidth: 2,
+        pointBackgroundColor: '#059669',
+        pointRadius: 4
+      },
+      {
+        label: 'Umbral de alerta',
+        data: [5, 3, 25, 20, 12],
+        backgroundColor: 'rgba(245, 158, 11, 0.12)',
+        borderColor: '#f59e0b',
+        borderWidth: 2,
+        borderDash: [4, 4],
+        pointBackgroundColor: '#f59e0b',
+        pointRadius: 3
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 12, padding: 14, font: { size: 11 } } }
+    },
+    scales: {
+      r: {
+        beginAtZero: true,
+        ticks: { font: { size: 10 } },
+        grid: { color: 'rgba(15,23,42,0.08)' },
+        angleLines: { color: 'rgba(15,23,42,0.08)' }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diego v9 — Estándar Legal y Tributario 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green: #059669;
+    --green-dark: #047857;
+    --green-light: #d1fae5;
+    --blue: #2563eb;
+    --orange: #ea580c;
+    --purple: #9333ea;
+    --red: #dc2626;
+    --amber: #d97706;
+    --bg: #f8fafc;
+    --bg-card: #ffffff;
+    --bg-soft: #f1f5f9;
+    --title: #0f172a;
+    --body: #475569;
+    --note: #94a3b8;
+    --border: #e2e8f0;
+  }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--body);
+    line-height: 1.6;
+    padding: 32px 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  header.hero {
+    background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 36px 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 16px rgba(5, 150, 105, 0.18);
+  }
+  header.hero .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.85;
+    margin-bottom: 8px;
+  }
+  header.hero h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em; }
+  header.hero p { font-size: 15px; opacity: 0.92; max-width: 760px; }
+  header.hero .meta { display: flex; gap: 18px; margin-top: 16px; flex-wrap: wrap; font-size: 12px; }
+  header.hero .meta span { background: rgba(255,255,255,0.18); padding: 4px 12px; border-radius: 999px; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .kpi {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .kpi:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(15,23,42,0.06); }
+  .kpi .label {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 10px;
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .kpi .value { font-size: 2.5rem; font-weight: 700; color: var(--title); line-height: 1; letter-spacing: -0.02em; }
+  .kpi .unit { font-size: 0.9rem; color: var(--body); margin-left: 4px; font-weight: 500; }
+  .kpi .sub { font-size: 12px; color: var(--note); margin-top: 6px; }
+
+  section.card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+  }
+  section.card h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--title);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  section.card h2 .num {
+    display: inline-block;
+    width: 28px; height: 28px;
+    background: var(--green);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 28px;
+    text-align: center;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+  section.card h3 { font-size: 0.95rem; font-weight: 600; color: var(--title); margin: 18px 0 8px; }
+  section.card p { margin-bottom: 12px; font-size: 14.5px; }
+  section.card .lede { color: var(--title); font-weight: 500; margin-bottom: 14px; }
+
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--green-light);
+    color: var(--green-dark);
+    margin-right: 6px;
+  }
+  .pill.red { background: #fee2e2; color: var(--red); }
+  .pill.amber { background: #fef3c7; color: var(--amber); }
+  .pill.blue { background: #dbeafe; color: var(--blue); }
+
+  .callout {
+    background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+    border-left: 4px solid var(--amber);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 14px;
+    color: #78350f;
+  }
+  .callout strong { color: #78350f; }
+  .callout.green {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border-left-color: var(--green);
+    color: #064e3b;
+  }
+  .callout.green strong { color: #064e3b; }
+  .callout.red {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border-left-color: var(--red);
+    color: #7f1d1d;
+  }
+  .callout.red strong { color: #7f1d1d; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 13.5px;
+  }
+  th { background: var(--bg-soft); color: var(--title); font-weight: 600; text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--border); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--body); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  pre.codeblock {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 16px 18px;
+    border-radius: 12px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    overflow-x: auto;
+    margin: 12px 0;
+    white-space: pre-wrap;
+  }
+
+  ul.checklist { list-style: none; padding: 0; margin: 10px 0; }
+  ul.checklist li {
+    padding: 6px 0 6px 28px;
+    position: relative;
+    font-size: 14px;
+  }
+  ul.checklist li::before {
+    content: "✓";
+    position: absolute;
+    left: 0; top: 6px;
+    width: 20px; height: 20px;
+    background: var(--green-light);
+    color: var(--green-dark);
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  ul.checklist li.no::before { content: "✗"; background: #fee2e2; color: var(--red); }
+
+  .chart-wrap {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+  }
+  .chart-wrap h3 { font-size: 1rem; font-weight: 600; color: var(--title); margin-bottom: 14px; }
+  .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  @media (max-width: 768px) { .chart-row { grid-template-columns: 1fr; } }
+
+  .source-list { columns: 2; column-gap: 32px; font-size: 13px; }
+  .source-list li { break-inside: avoid; margin-bottom: 10px; }
+  @media (max-width: 700px) { .source-list { columns: 1; } }
+  .source-list a { color: var(--green-dark); text-decoration: none; word-break: break-word; }
+  .source-list a:hover { text-decoration: underline; }
+
+  footer.foot {
+    text-align: center;
+    margin-top: 32px;
+    padding: 24px;
+    font-size: 12px;
+    color: var(--note);
+  }
+
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .toc a {
+    background: var(--bg-soft);
+    color: var(--green-dark);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.15s;
+  }
+  .toc a:hover { background: var(--green-light); }
+
+  @media (max-width: 600px) {
+    body { padding: 16px 8px; }
+    header.hero { padding: 24px 20px; }
+    header.hero h1 { font-size: 22px; }
+    section.card { padding: 20px; }
+    .kpi .value { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Investigación legal · 23-may-2026</div>
+  <h1>Diego v9 — Estándar Legal y Tributario 2026</h1>
+  <p>Los más altos estándares mundiales 2025-2026 en chatbots de asistencia legal y tributaria, aplicados al Grupo Reciclean-Farex-SERCOT (Chile). Investigación: 10 fuentes verificables, 5 áreas críticas, 5 brechas, 3 quick-wins.</p>
+  <div class="meta">
+    <span>Autor: Legal Compliance Checker</span>
+    <span>Versión 1.0</span>
+    <span>Para: Diego v9</span>
+    <span>Próxima revisión: 23-ago-2026</span>
+  </div>
+  <div class="toc">
+    <a href="#sii">1 · SII</a>
+    <a href="#rep">2 · Ley REP</a>
+    <a href="#docs">3 · Documentos</a>
+    <a href="#pdf">4 · PDF cotejo ley</a>
+    <a href="#escal">5 · Escalación</a>
+    <a href="#brechas">Brechas</a>
+    <a href="#quick">Quick-wins</a>
+  </div>
+</header>
+
+<!-- KPIs ejecutivos -->
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="label">Casos AI hallucination · Cortes USA</div>
+    <div class="value">729<span class="unit">+</span></div>
+    <div class="sub">Q1 2026, sanciones hasta USD 110.000</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Hallucination Westlaw AI</div>
+    <div class="value">33<span class="unit">%</span></div>
+    <div class="sub">Stanford RegLab 2025-2026</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Demanda Nippon vs OpenAI</div>
+    <div class="value">10,3<span class="unit">M USD</span></div>
+    <div class="sub">Marzo 2026 · product liability</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Equipos legales en Spellbook</div>
+    <div class="value">4.000<span class="unit">+</span></div>
+    <div class="sub">30 países · contratos en Word</div>
+  </div>
+</div>
+
+<!-- Resumen ejecutivo -->
+<section class="card">
+  <h2><span class="num">★</span>Resumen ejecutivo</h2>
+  <p class="lede">Cinco hallazgos que Diego v9 debe internalizar antes de operar legal/tributario.</p>
+  <ul class="checklist">
+    <li><strong>SII Chile tiene API oficial + 4 wrappers comerciales</strong> (BaseAPI, Floid, SimpleAPI, API Gateway). Resolución N° 168 vigente desde 2-mar-2026 formaliza el proceso de verificación tributaria.</li>
+    <li><strong>Ley REP 20.920 en fase sancionatoria desde 2025</strong> vía SISREP. La SMA dejó de "acompañar" y comenzó a multar. Diego debe traducir caso real a obligación REP (categoría, meta, plazo).</li>
+    <li><strong>Harvey AI y Spellbook fijaron el estándar 2026</strong> para PDF cotejo con ley: extracción + comparación normativa + citación obligatoria de fuente primaria.</li>
+    <li><strong>Los disclaimers ya NO protegen al chatbot.</strong> Nippon Life v. OpenAI + NY SB 7263 + 12 estados USA. Diego debe rechazar interpretación legal vinculante y forzar escalación.</li>
+    <li><strong>Tasa de alucinación de IA legal sigue alta</strong> (33% Westlaw, 17% Lexis+). 729+ incidentes en cortes USA. El humano debe verificar la fuente primaria — NO confiar en que la IA verifique a otra IA.</li>
+  </ul>
+  <div class="callout red">
+    <strong>REGLA DE ORO grabada a fuego:</strong> Diego NUNCA INVENTA. Si no sabe → "no sé, voy a consultar a Dyana" + escalar. Aplica en las 5 áreas de este documento.
+  </div>
+</section>
+
+<!-- Gráficos -->
+<div class="chart-row">
+  <div class="chart-wrap">
+    <h3>Escalada de sanciones AI en cortes USA · 2025-2026</h3>
+    <canvas id="chartSanciones" height="180"></canvas>
+  </div>
+  <div class="chart-wrap">
+    <h3>Hallucination rate por sistema legal AI</h3>
+    <canvas id="chartHallucin" height="180"></canvas>
+  </div>
+</div>
+
+<!-- Sección 1: SII -->
+<section class="card" id="sii">
+  <h2><span class="num">1</span>Consultar situación tributaria SII</h2>
+  <p class="lede">SII Chile + 4 proveedores comerciales permiten consultar carpeta tributaria, RUT, deudas Tesorería y DTEs con consentimiento del contribuyente.</p>
+
+  <h3>Estado del arte 2026</h3>
+  <p>Resolución N° 168 SII (vigente 2-mar-2026) formaliza el proceso por el cual entidades pueden verificar que sus usuarios cumplen obligaciones tributarias. Wrappers: <span class="pill">BaseAPI</span><span class="pill">Floid</span><span class="pill">SimpleAPI</span><span class="pill">API Gateway</span> Todos exigen consentimiento documentado.</p>
+
+  <h3>Protocolo Diego v9 — Autorización previa obligatoria</h3>
+  <pre class="codeblock">PASO 1 — Consentimiento explícito:
+  "Para consultar SII necesito (a) tu RUT, (b) autorización escrita.
+   Datos cifrados, borrado 30 días, solo Dyana ve. ¿SÍ / NO?"
+PASO 2 — Si SÍ → llamar BaseAPI/Floid con RUT.
+PASO 3 — Presentar resultado SIN interpretar:
+  "Estado SII: [activo/no contribuyente/con deuda].
+   Para qué hacer con esto → Dyana."
+PASO 4 — Log consentimiento en Supabase (Ley 19.628 / GDPR).</pre>
+
+  <h3>Aplicado a Reciclean</h3>
+  <p><strong>Caso:</strong> Andrea pregunta "¿Pincore está al día con SII?" antes de cotizar cobre. Diego pide caso de uso (evaluación interna firmada por Dyana), consulta API, devuelve estado bruto + cita Dyana para interpretación.</p>
+  <div class="callout"><strong>Lo que Diego NO hace:</strong> decir "Pincore debe 12M, no les vendamos". Eso es interpretación crediticia vinculante. Diego pasa el dato, no la conclusión.</div>
+</section>
+
+<!-- Sección 2: REP -->
+<section class="card" id="rep">
+  <h2><span class="num">2</span>Interpretar Ley REP 20.920</h2>
+  <p class="lede">Fase sancionatoria desde 2025 vía SISREP. EU PPWR (Reg. 2025/40) entra en vigor 12-ago-2026. USA: 7 estados con ley EPR.</p>
+
+  <h3>Las 3 preguntas REP que Diego debe saber traducir</h3>
+  <table>
+    <thead><tr><th>Pregunta</th><th>Resuelve</th></tr></thead>
+    <tbody>
+      <tr><td>¿Es productor según Ley 20.920?</td><td>Introduce producto prioritario al mercado nacional</td></tr>
+      <tr><td>¿Qué categoría es?</td><td>Envases / Neumáticos / Aceites / Baterías / Pilas / AEE</td></tr>
+      <tr><td>¿Meta de valorización vigente?</td><td>Decreto específico (DS 12 envases, DS 8 neumáticos…)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Aplicado a Reciclean</h3>
+  <p>Generador llama por WhatsApp: "tengo 200 kg de PET, ¿me corresponde REP?". Diego aplica la escalera:</p>
+  <ul class="checklist">
+    <li>¿Lo introdujiste al mercado o lo recibiste post-consumo? → solo el primero es "productor REP".</li>
+    <li>Si productor → ¿adherido a Sistema de Gestión (ej: ReSimple)? Sí → reporte vía SISREP del SdG. No → derivar a Dyana.</li>
+    <li>Si post-consumo → tu rol es proveer al valorizador (Reciclean). El reporte lo hace el SdG del productor original.</li>
+  </ul>
+  <div class="callout"><strong>Diego NO dice</strong> cuánto es la meta de valorización del PET 2026 ni el plazo exacto. Eso lo deriva.</div>
+</section>
+
+<!-- Sección 3: Validar documentos -->
+<section class="card" id="docs">
+  <h2><span class="num">3</span>Validar documentos legales</h2>
+  <p class="lede">OCR + cross-check con base autoritativa es estándar industrial 2026 (Klippa, Docsumo, Innovatrics). Aplica a guías, certificados sanitarios, autorizaciones SAG, RUT SII.</p>
+
+  <h3>Documentos relevantes en Reciclean</h3>
+  <table>
+    <thead><tr><th>Documento</th><th>Base de validación</th><th>Inconsistencia típica</th></tr></thead>
+    <tbody>
+      <tr><td>Guía de despacho electrónica</td><td>SII (folio + RUT emisor)</td><td>folio anulado, RUT no contribuyente</td></tr>
+      <tr><td>Autorización transporte residuos</td><td>SEREMI Salud regional</td><td>vencimiento &gt; fecha actual</td></tr>
+      <tr><td>Certificado destrucción (REP)</td><td>Sistema de Gestión</td><td>RUT valorizador no acreditado</td></tr>
+      <tr><td>Permiso autorización sanitaria</td><td>ChileAtiende / SEREMI</td><td>rubro no incluye residuos</td></tr>
+      <tr><td>RUT contribuyente (cliente nuevo)</td><td>SII vía BaseAPI</td><td>RUT inexistente, giro inconsistente</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Aplicado a Reciclean</h3>
+  <p>Cony (SERCOT) sube certificado de destrucción de plásticos al panel. Diego extrae RUT valorizador, número, toneladas, fecha. Cruza contra base MMA de valorizadores acreditados. Si NO aparece → flag rojo + "este certificado no es válido para REP, derivar a Dyana".</p>
+  <div class="callout"><strong>Diego NO dice</strong> "el certificado es falso". Diego dice "encontré 1 inconsistencia, no puedo concluir, derivá".</div>
+</section>
+
+<!-- Sección 4: PDF cotejo -->
+<section class="card" id="pdf">
+  <h2><span class="num">4</span>PDF cotejo con ley</h2>
+  <p class="lede">Harvey AI (USD 11B, 25.000+ agentes) y Spellbook (4.000+ equipos, 30 países) son el estándar 2026 para revisión de contratos con cotejo normativo y citación de fuente primaria.</p>
+
+  <h3>Protocolo Diego v9 — Cotejo PDF vs ley</h3>
+  <pre class="codeblock">PASO 1 — Usuario sube contrato (ej: compra-venta de chatarra con Pincore).
+PASO 2 — Diego extrae cláusulas → tabla [Cláusula][Texto][Ley aplicable][Riesgo].
+PASO 3 — Diego compara contra: Código Civil, Ley REP 20.920,
+         Ley 19.628 (datos personales), Código Tributario.
+PASO 4 — Marca inconsistencias con CITA:
+  "Cláusula 7 (pago 90 días) → Ley 21.131 fija máx 30 días pago Pyme.
+   Fuente: bcn.cl/leychile/Norma=1130352
+   NO interpretación vinculante. Derivar a Dyana o abogado."
+PASO 5 — Entrega informe + lista de fuentes + disclaimer.</pre>
+
+  <h3>Aplicado a Reciclean</h3>
+  <p>Andrea recibe contrato marco de valorizador grande con 14 páginas. Lo sube a Diego. Diego identifica 22 cláusulas, marca 3 riesgosas (plazo 120 días, indemnidad ilimitada, jurisdicción Lima), cita norma chilena aplicable, entrega informe en 90 segundos. Andrea pasa el informe a Dyana, Dyana firma o ajusta, recién después se firma el contrato.</p>
+  <div class="callout green"><strong>Ahorro real:</strong> 4 horas de lectura humana → 90 segundos + revisión humana focal. Diego NO firmó ni decidió.</div>
+</section>
+
+<!-- Sección 5: Escalación -->
+<section class="card" id="escal">
+  <h2><span class="num">5</span>Escalación a contador humano</h2>
+  <p class="lede">Nippon Life v. OpenAI (mar-2026, USD 10.3M) sentó precedente: los disclaimers NO protegen. NY SB 7263 y 12 estados USA prohíben "respuesta sustantiva" de chatbot que equivalga a práctica no autorizada.</p>
+
+  <h3>Triggers automáticos de escalación</h3>
+  <table>
+    <thead><tr><th>Trigger</th><th>Acción Diego</th></tr></thead>
+    <tbody>
+      <tr><td>Keywords "¿puedo facturar?" / "¿es legal?" / "¿me multan?" / "interpretación de…"</td><td>"No doy respuesta vinculante. Te conecto con Dyana."</td></tr>
+      <tr><td>PDF con &gt;2 inconsistencias / cláusula no estándar / monto &gt; $5M</td><td>Notificar Dyana por WhatsApp + log en panel</td></tr>
+      <tr><td>Pregunta sobre liquidación, AFP, SII, SMA, REP con plazo legal</td><td>Escalación inmediata. No intentar responder.</td></tr>
+      <tr><td>Diego con confianza &lt;70% en su propia respuesta</td><td>"No estoy seguro. Voy a consultar a Dyana. Te respondo en X min."</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Cuándo Diego NO opina NUNCA</h3>
+  <ul class="checklist">
+    <li class="no">Interpretación vinculante de ley vigente (práctica no autorizada de derecho)</li>
+    <li class="no">Cálculo de impuesto adeudado (responsabilidad civil contador certificado)</li>
+    <li class="no">Validez de contrato (solo abogado firma)</li>
+    <li class="no">Defensa ante sanción SMA / SII (procedimiento administrativo con plazos)</li>
+    <li class="no">Conflicto laboral / despido (Dirección del Trabajo o abogado laboral)</li>
+    <li class="no">Datos personales de terceros sin consentimiento (Ley 19.628 / GDPR)</li>
+    <li class="no">Diagnóstico de incumplimiento REP de competidor (Diego no acusa)</li>
+  </ul>
+  <div class="callout green"><strong>Línea divisoria clara:</strong> información pública procedimental = OK. Interpretación con consecuencia legal = escalación.</div>
+</section>
+
+<!-- Brechas vs Diego v9 -->
+<section class="card" id="brechas">
+  <h2><span class="num">⚠</span>Brechas vs Diego v9 (Top 5)</h2>
+  <table>
+    <thead><tr><th>#</th><th>Brecha</th><th>Severidad</th><th>Esfuerzo</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>NO tiene integración con API SII / BaseAPI / Floid. No valida RUT ni consulta carpeta tributaria.</td><td><span class="pill red">Alta</span></td><td>2-3 días Pablo</td></tr>
+      <tr><td>2</td><td>NO tiene OCR de PDF + cross-check con base SII/SEREMI. Validación de guías y certificados 100% manual.</td><td><span class="pill red">Alta</span></td><td>3-5 días</td></tr>
+      <tr><td>3</td><td>NO tiene KB REP estructurada (categorías, decretos, metas, plazos SISREP). Responde genérico.</td><td><span class="pill red">Alta</span></td><td>1-2 días Dusan/Dyana + 1 día Pablo</td></tr>
+      <tr><td>4</td><td>NO tiene triggers automáticos de escalación. Depende de que el usuario pida humano.</td><td><span class="pill amber">Media</span></td><td>1 día Pablo</td></tr>
+      <tr><td>5</td><td>NO registra log de consentimiento ni hash de PDFs. Sin audit trail no es defendible (Ley 19.628 / GDPR).</td><td><span class="pill amber">Media</span></td><td>1-2 días Pablo</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Quick wins -->
+<section class="card" id="quick">
+  <h2><span class="num">⚡</span>Implementable sin Pablo en 1-2 días (Top 3)</h2>
+  <table>
+    <thead><tr><th>#</th><th>Quick win</th><th>Cómo</th><th>Quién</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><strong>KB REP estructurada en Markdown</strong> — categorías, decretos vigentes, metas 2026, plazos SISREP, contacto SdG por categoría. Diego lee y cita.</td>
+        <td>Crear <code>public/DIEGO-KB-REP.md</code> (~200 líneas). Diego v8 ya lee MD del repo.</td>
+        <td>Dusan 3h + Dyana 2h</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>Lista de triggers de escalación + mensaje canónico</strong> — 20 keywords que disparan "te derivo a Dyana".</td>
+        <td>Editar prompt de Diego en <code>diego-chat-process</code>. Probar con 10 mensajes de Andrea.</td>
+        <td>Dusan solo · 2h</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong>Protocolo de consentimiento previo en lenguaje natural</strong> — Diego pide SÍ/NO antes de procesar dato sensible.</td>
+        <td>3 líneas en prompt sistema + log manual en planilla mientras se construye tabla audit.</td>
+        <td>Dusan solo · 1h</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout green"><strong>Total quick-wins:</strong> 8 horas Dusan + 2 horas Dyana = listo en 2 días sin tocar código backend ni esperar a Pablo.</div>
+</section>
+
+<!-- Fuentes -->
+<section class="card">
+  <h2><span class="num">📚</span>Fuentes verificables 2025-2026</h2>
+  <ol class="source-list">
+    <li><strong>Carey</strong> — Ley REP aplicación 2025-2026 — <a href="https://leyrep.carey.cl/en/home/" target="_blank">leyrep.carey.cl</a></li>
+    <li><strong>SMA Chile</strong> — Plataforma SISREP — <a href="https://portal.sma.gob.cl/index.php/sma-pone-a-disposicion-plataforma-de-reporte-para-dar-cumplimiento-a-la-ley-rep/" target="_blank">portal.sma.gob.cl</a></li>
+    <li><strong>Harvey AI</strong> — Plataforma legal AI 2026 — <a href="https://www.harvey.ai/platform" target="_blank">harvey.ai/platform</a></li>
+    <li><strong>Spellbook</strong> — Best Legal AI Contract Review 2026 — <a href="https://spellbook.com/learn/ai-legal-contract-review-faster-analysis" target="_blank">spellbook.com</a></li>
+    <li><strong>Stanford Law CodeX</strong> — Nippon Life v. OpenAI — <a href="https://law.stanford.edu/2026/03/07/designed-to-cross-why-nippon-life-v-openai-is-a-product-liability-case/" target="_blank">law.stanford.edu</a></li>
+    <li><strong>Orrick Herrington</strong> — 2026 State Chatbot Laws — <a href="https://www.orrick.com/en/Insights/2026/04/2026-State-Chatbot-Laws-Key-Provisions-and-Regulatory-Trends" target="_blank">orrick.com</a></li>
+    <li><strong>BaseAPI Chile</strong> — Automatizar Carpeta Tributaria SII — <a href="https://baseapi.cl/blog/automatizar-carpeta-tributaria-api" target="_blank">baseapi.cl</a></li>
+    <li><strong>KPMG</strong> — Chile Resolución SII N° 168 — <a href="https://kpmg.com/us/en/taxnewsflash/news/2025/12/chile-tax-compliance-platforms-payment-service-providers.html" target="_blank">kpmg.com</a></li>
+    <li><strong>Reconomy</strong> — EPR 2026 + EU PPWR Reg 2025/40 — <a href="https://www.reconomy.com/2026/01/21/extended-producer-responsibility-in-2026/" target="_blank">reconomy.com</a></li>
+    <li><strong>ComplianceHub</strong> — 729+ casos AI hallucination Q1 2026 — <a href="https://compliancehub.wiki/legal-ai-hallucination-reckoning-2026/" target="_blank">compliancehub.wiki</a></li>
+  </ol>
+</section>
+
+<footer class="foot">
+  Legal Compliance Checker · Diego v9 · 23-may-2026 · v1.0<br>
+  Próxima revisión: trimestral (23-ago-2026) o ante cambio normativo material.
+</footer>
+
+</div>
+
+<script>
+// Chart.js config global · sin grid vertical, Inter, paleta Reciclean
+Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#475569';
+
+// Sanciones AI USA — escalada por trimestre
+new Chart(document.getElementById('chartSanciones'), {
+  type: 'line',
+  data: {
+    labels: ['Q3 2024','Q4 2024','Q1 2025','Q2 2025','Q3 2025','Q4 2025','Q1 2026'],
+    datasets: [{
+      label: 'Sanción típica (USD)',
+      data: [2500, 5000, 7500, 12000, 30000, 86000, 110000],
+      borderColor: '#059669',
+      backgroundColor: 'rgba(5, 150, 105, 0.18)',
+      borderWidth: 2.5,
+      tension: 0.4,
+      fill: true,
+      pointBackgroundColor: '#059669',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 4
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 8 } },
+      tooltip: { backgroundColor: '#0f172a', padding: 12, callbacks: { label: c => 'USD ' + c.parsed.y.toLocaleString() } }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+      y: { grid: { color: '#e2e8f0', drawBorder: false }, ticks: { color: '#94a3b8', callback: v => 'USD ' + (v/1000) + 'k' } }
+    }
+  }
+});
+
+// Hallucination rate por sistema legal AI
+new Chart(document.getElementById('chartHallucin'), {
+  type: 'bar',
+  data: {
+    labels: ['Westlaw AI', 'Lexis+ AI', 'Harvey AI (citas)', 'GPT genérico'],
+    datasets: [{
+      label: 'Tasa hallucination (%)',
+      data: [33, 17, 8, 58],
+      backgroundColor: ['#dc2626','#ea580c','#059669','#9333ea'],
+      borderRadius: 6,
+      borderSkipped: false
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { backgroundColor: '#0f172a', padding: 12, callbacks: { label: c => c.parsed.y + '% alucinaciones' } }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+      y: { grid: { color: '#e2e8f0', drawBorder: false }, ticks: { color: '#94a3b8', callback: v => v + '%' }, max: 70 }
+    }
+  }
+});
+</script>
+</body>
+</html>
