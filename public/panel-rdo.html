@@ -7648,27 +7648,29 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-fab-badge.hidden{display:none}
   .diego-fab-label{position:absolute;right:70px;top:50%;transform:translateY(-50%);background:#0f172a;color:#fff;padding:6px 12px;border-radius:8px;font-size:13px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s ease}
   .diego-fab:hover .diego-fab-label{opacity:1}
-  .diego-chat{position:fixed;right:24px;bottom:96px;width:420px;max-width:calc(100vw - 32px);background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 16px 48px -12px rgba(15,23,42,.25);z-index:60;display:none;flex-direction:column;overflow:hidden}
+  /* Cirugía spacing 23-may-2026: width 380, max-height 60vh, padding burbujas 10px, hora derecha compacta */
+  .diego-chat{position:fixed;right:24px;bottom:96px;width:380px;max-width:calc(100vw - 16px);max-height:60vh;background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 16px 48px -12px rgba(15,23,42,.25);z-index:60;display:none;flex-direction:column;overflow:hidden}
   .diego-chat.open{display:flex}
-  .diego-chat-h{background:linear-gradient(135deg,#059669,#047857);color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600}
+  .diego-chat-h{background:linear-gradient(135deg,#059669,#047857);color:#fff;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;flex-shrink:0}
   .diego-chat-h .h-title{display:flex;align-items:center;gap:8px}
   .diego-chat-h .h-version{background:rgba(255,255,255,.2);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
   .diego-chat-h button{background:none;border:0;color:#fff;cursor:pointer;font-size:16px;line-height:1;padding:4px 8px}
-  .diego-chat-body{background:#f8fafc;padding:12px;max-height:480px;min-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;position:relative}
-  .diego-msg{font-size:13px;padding:8px 12px;border-radius:12px;max-width:88%;line-height:1.4;white-space:pre-wrap;word-wrap:break-word}
-  .diego-msg.mine{align-self:flex-end;background:#ecfdf5;color:#064e3b}
-  .diego-msg.theirs{align-self:flex-start;background:#fff;border:1px solid #e2e8f0;color:#0f172a}
-  .diego-msg.diego{align-self:flex-start;background:#fff;border:1px solid #059669;color:#0f172a}
+  .diego-chat-body{background:#f8fafc;padding:10px;flex:1;min-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;position:relative}
+  .diego-msg{font-size:13px;padding:8px 10px;border-radius:12px;max-width:85%;line-height:1.35;white-space:pre-wrap;word-wrap:break-word}
+  .diego-msg.mine{align-self:flex-end;background:#ecfdf5;color:#064e3b;border-bottom-right-radius:4px}
+  .diego-msg.theirs{align-self:flex-start;background:#fff;border:1px solid #e2e8f0;color:#0f172a;border-bottom-left-radius:4px}
+  .diego-msg.diego{align-self:flex-start;background:#fff;border:1px solid #059669;color:#0f172a;border-bottom-left-radius:4px}
   .diego-msg.thinking{align-self:flex-start;background:#fff;border:1px dashed #94a3b8;color:#64748b;font-style:italic}
-  .diego-msg-meta{font-size:10px;color:#94a3b8;margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .diego-msg-meta{font-size:10px;color:#94a3b8;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;line-height:1.2}
+  .diego-msg.mine + .diego-msg-meta,.diego-msg-meta.mine-meta{align-self:flex-end}
   .diego-msg-attach{font-size:11px;background:#f1f5f9;padding:2px 8px;border-radius:6px;color:#475569;margin-top:4px;display:inline-block}
-  .diego-actions{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+  .diego-actions{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
   .diego-actions .chip{font-size:10px;background:#dcfce7;color:#166534;padding:2px 6px;border-radius:4px;font-weight:600}
-  .diego-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .diego-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
   .diego-suggestions button{font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:500}
   .diego-suggestions button:hover{background:#059669;color:#fff;border-color:#059669}
   .diego-empty{color:#94a3b8;font-size:12px;text-align:center;padding:24px 8px}
-  .diego-chat-form{display:flex;gap:6px;padding:10px;border-top:1px solid #e2e8f0;background:#fff;align-items:flex-end}
+  .diego-chat-form{display:flex;gap:6px;padding:8px;border-top:1px solid #e2e8f0;background:#fff;align-items:flex-end;flex-shrink:0}
   .diego-chat-form .attach-btn{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;color:#475569}
   .diego-chat-form .attach-btn:hover{background:#059669;color:#fff;border-color:#059669}
   .diego-chat-form textarea{flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;resize:none;min-height:36px;max-height:120px}
@@ -7679,6 +7681,12 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-attach-preview button{background:none;border:0;color:#1e40af;cursor:pointer;font-size:14px}
   .diego-drag-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(5,150,105,.9);color:#fff;display:none;align-items:center;justify-content:center;font-weight:600;font-size:14px;border-radius:12px;z-index:5}
   .diego-drag-overlay.active{display:flex}
+  /* Responsive mobile: chat ocupa casi todo el ancho */
+  @media (max-width: 480px) {
+    .diego-chat{right:8px;left:8px;bottom:84px;width:auto;max-width:none;max-height:70vh}
+    .diego-fab{right:16px;bottom:16px;width:54px;height:54px}
+    .diego-msg{max-width:90%;font-size:13.5px}
+  }
 </style>
 
 <button class="diego-fab" id="diegoFab" type="button" aria-label="Abrir chat Diego">
