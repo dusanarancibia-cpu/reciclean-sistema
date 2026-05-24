@@ -369,6 +369,10 @@
           <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           Precios
         </a>
+        <a href="#" data-v4-tab="bandeja_precios" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          Bandeja Precios
+        </a>
         <a href="#" data-v4-tab="cierres" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
           <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
           Cierre
@@ -487,6 +491,7 @@
         <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCotizador">📋 Cotizador</button>
         <button data-tab="cierres"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCierres">📅 Cierres</button>
         <button data-tab="precios"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabPrecios">💲 Precios</button>
+        <button data-tab="bandeja_precios" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabBandejaPrecios">📨 Bandeja Precios</button>
         <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
         <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
@@ -1136,8 +1141,140 @@
       <p class="text-xs text-stone-400 mt-3">
         Fuente: <code>curated.vw_materiales_sucursal_precios_vigente</code> (precios vigentes con <code>vigencia_hasta IS NULL</code>).
         Margen calculado como <code>(precio_venta − precio_compra) / precio_venta</code>.
-        Filtro por cliente: pendiente Ola 2 (requiere <code>staging.precios_propuestos</code>).
+        Precios propuestos vía WhatsApp / Diego: ver tab <strong>📨 Bandeja Precios</strong>.
       </p>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA BANDEJA PRECIOS (D-OP-04-v2 Ola 2.6 · staging.precios_propuestos)
+         Andrea/Dusan aprueban precios reportados por WhatsApp/Diego.
+         Click Aprobar → POST /functions/v1/precio-aplicar → abre nueva vigencia atómica.
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabBandejaPrecios" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">📨 Bandeja Precios — propuestas para aprobación</h2>
+        <button onclick="loadBandejaPrecios()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+
+      <!-- KPI bar -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Pendientes</div>
+          <div id="bpKpiPend" class="text-2xl font-bold text-amber-600">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Aplicados hoy</div>
+          <div id="bpKpiHoy" class="text-2xl font-bold text-green-700">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Ruta auto</div>
+          <div id="bpKpiAuto" class="text-2xl font-bold text-sky-700">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">Escalados Dusan</div>
+          <div id="bpKpiDusan" class="text-2xl font-bold text-red-700">—</div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="bg-white p-3 rounded shadow-sm mb-4 flex flex-wrap gap-3 items-end">
+        <div>
+          <label for="bpFiltroEstado" class="block text-xs text-stone-500 mb-1">Estado</label>
+          <select id="bpFiltroEstado" onchange="loadBandejaPrecios()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="pendiente" selected>Pendiente</option>
+            <option value="aplicado">Aplicado</option>
+            <option value="rechazado">Rechazado</option>
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div>
+          <label for="bpFiltroRuta" class="block text-xs text-stone-500 mb-1">Ruta</label>
+          <select id="bpFiltroRuta" onchange="loadBandejaPrecios()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todas</option>
+            <option value="auto">auto</option>
+            <option value="andrea">andrea</option>
+            <option value="dusan">dusan</option>
+          </select>
+        </div>
+        <div class="flex-1 min-w-[12rem]">
+          <label for="bpFiltroBuscar" class="block text-xs text-stone-500 mb-1">Buscar (cliente, material, notas)</label>
+          <input id="bpFiltroBuscar" type="text" placeholder="Ej. cartón blanco SOREPA"
+                 oninput="bpDebouncedSearch()" aria-label="Buscar"
+                 class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="bg-white rounded shadow-sm overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-stone-50 text-stone-600 text-left">
+            <tr>
+              <th class="px-3 py-2">Cliente</th>
+              <th class="px-3 py-2">Material</th>
+              <th class="px-3 py-2">Sucursal</th>
+              <th class="px-3 py-2 text-right">Propuesto</th>
+              <th class="px-3 py-2 text-right">Vigente</th>
+              <th class="px-3 py-2 text-right">Δ%</th>
+              <th class="px-3 py-2 text-right">Conf.</th>
+              <th class="px-3 py-2">Ruta</th>
+              <th class="px-3 py-2">Estado</th>
+              <th class="px-3 py-2 text-right">Edad</th>
+            </tr>
+          </thead>
+          <tbody id="bpTbody">
+            <tr><td colspan="10" class="px-3 py-4 text-center text-stone-400">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="text-xs text-stone-400 mt-3">
+        Fuente: <code>staging.v_bandeja_precios</code> · Click una fila para ver detalle y aprobar/rechazar.
+        Aprobación atómica via <code>/functions/v1/precio-aplicar</code> (cierre vigencia anterior + INSERT nueva + log histórico).
+      </p>
+
+      <!-- Drawer aprobar/rechazar -->
+      <div id="bpDrawer" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+        <div class="bg-white w-full max-w-lg h-full overflow-y-auto p-5">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h3 class="text-lg font-bold text-stone-800">Propuesta de precio</h3>
+              <p id="bpDrawerSubtitle" class="text-xs text-stone-500">—</p>
+            </div>
+            <button onclick="bpCerrarDrawer()" class="text-stone-500 hover:text-stone-800 text-2xl leading-none" aria-label="Cerrar">×</button>
+          </div>
+
+          <div id="bpDrawerLockWarn" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-xs p-2 rounded mb-3">—</div>
+
+          <dl class="text-sm grid grid-cols-2 gap-2 mb-3">
+            <div><dt class="text-xs text-stone-500">Cliente</dt><dd id="bpDw_cliente">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Material</dt><dd id="bpDw_material">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Sucursal</dt><dd id="bpDw_sucursal">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Vigencia</dt><dd id="bpDw_vigencia">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Propuesto</dt><dd id="bpDw_propuesto" class="font-bold text-stone-900">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Vigente</dt><dd id="bpDw_vigente">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Δ%</dt><dd id="bpDw_delta">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Confianza</dt><dd id="bpDw_confidence">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Ruta</dt><dd id="bpDw_ruta">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Estado</dt><dd id="bpDw_estado">—</dd></div>
+          </dl>
+
+          <div class="bg-stone-50 p-3 rounded mb-3">
+            <div class="text-xs text-stone-500 mb-1">Notas / fuente</div>
+            <div id="bpDw_notas" class="text-sm text-stone-700 whitespace-pre-line">—</div>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mb-3">
+            <button id="bpBtnAprobar" onclick="bpAprobar()" class="bg-green-700 hover:bg-green-800 text-white text-sm px-3 py-1.5 rounded">
+              ✓ Aprobar y aplicar
+            </button>
+            <button id="bpBtnRechazar" onclick="bpRechazar()" class="bg-red-100 hover:bg-red-200 text-red-800 text-sm px-3 py-1.5 rounded">
+              ✗ Rechazar
+            </button>
+          </div>
+
+          <div id="bpDrawerMsg" class="hidden text-xs p-2 rounded"></div>
+        </div>
+      </div>
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -2184,7 +2321,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'admin'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'admin'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -2764,6 +2901,7 @@ window.logout = async function() {
 // fallaban porque el cálculo automático no convierte snake_case a CamelCase).
 const TAB_SECTION_MAP = {
   bandeja_dieg: 'tabBandejaDiego',
+  bandeja_precios: 'tabBandejaPrecios',
   ops_diarias: 'tabOpsDiarias'
 };
 function setupTabs() {
@@ -2797,6 +2935,7 @@ function setupTabs() {
       if (tabId === 'oportunidades') initOportunidadesKanban();
       if (tabId === 'entregables') initEntregables();
       if (tabId === 'bandeja_dieg') initBandejaDiego();
+      if (tabId === 'bandeja_precios') initBandejaPrecios();
       if (tabId === 'ops_diarias')   initOpsDiarias();
       if (tabId === 'dieguito')  initDieguito();
       if (tabId === 'comercial')  initTabComercial();
@@ -7807,7 +7946,10 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="diego-chat" id="diegoChat" role="dialog" aria-label="Chat con Diego">
   <div class="diego-chat-h">
     <span class="h-title">🤖 Diego <span class="h-version">v6</span></span>
-    <button type="button" id="diegoChatClose" aria-label="Cerrar chat">✕</button>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <button type="button" id="diegoChatLimpiar" aria-label="Limpiar vista del chat" title="Limpiar pantalla (Diego sigue recordando todo)">🧹</button>
+      <button type="button" id="diegoChatClose" aria-label="Cerrar chat">✕</button>
+    </div>
   </div>
   <div class="diego-chat-body" id="diegoChatBody">
     <div class="diego-empty">¿En qué te ayudo? Probá: <em>"precio cartón Maipú"</em> · <em>"resumen facturación mayo"</em> · arrastrá una foto.</div>
@@ -7835,6 +7977,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const fabBadge = document.getElementById('diegoFabBadge');
   const win = document.getElementById('diegoChat');
   const closeBtn = document.getElementById('diegoChatClose');
+  // 🧹 Botón limpiar vista (NO borra memoria — solo limpia la pantalla del FAB)
+  const limpiarBtn = document.getElementById('diegoChatLimpiar');
+  if (limpiarBtn) limpiarBtn.addEventListener('click', () => {
+    const b = document.getElementById('diegoChatBody');
+    if (!b) return;
+    b.innerHTML = '<div class="diego-empty">Pantalla limpia 🧹 — Diego sigue recordando todo lo anterior. ¿Algo nuevo?</div><div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>';
+  });
   const body = document.getElementById('diegoChatBody');
   const form = document.getElementById('diegoChatForm');
   const input = document.getElementById('diegoChatInput');
@@ -8183,6 +8332,304 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
+</script>
+
+<!-- ============================================================
+     Bandeja Precios (D-OP-04-v2 Ola 2.6) · staging.precios_propuestos
+     Andrea / Dusan aprueban precios reportados por WhatsApp / Diego.
+============================================================ -->
+<script>
+(function bandejaPreciosBootstrap() {
+  const BP_LOCK_MIN = 30; // minutos
+  const REFRESH_MS  = 60000;
+  let bpRefreshTimer = null;
+  let bpCurrentId = null;
+  let bpSearchDebounce = null;
+
+  function esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  function fmtCLP(n) {
+    if (n == null || n === '') return '—';
+    const v = Number(n);
+    if (!isFinite(v)) return '—';
+    return '$' + v.toLocaleString('es-CL', { maximumFractionDigits: 2 });
+  }
+
+  function fmtPct(n) {
+    if (n == null || n === '') return '—';
+    const v = Number(n);
+    if (!isFinite(v)) return '—';
+    const sign = v > 0 ? '+' : '';
+    return sign + v.toFixed(2) + '%';
+  }
+
+  function fmtEdad(iso) {
+    if (!iso) return '—';
+    const diff = Date.now() - new Date(iso).getTime();
+    if (diff < 60_000)        return Math.round(diff / 1000) + 's';
+    if (diff < 3_600_000)     return Math.round(diff / 60_000) + 'm';
+    if (diff < 86_400_000)    return Math.round(diff / 3_600_000) + 'h';
+    return Math.round(diff / 86_400_000) + 'd';
+  }
+
+  function rutaBadge(ruta) {
+    const cls = ruta === 'auto'   ? 'bg-sky-100 text-sky-700'
+              : ruta === 'andrea' ? 'bg-emerald-100 text-emerald-700'
+              : ruta === 'dusan'  ? 'bg-red-100 text-red-700'
+              : 'bg-stone-100 text-stone-600';
+    return `<span class="text-xs px-2 py-0.5 rounded-full ${cls}">${esc(ruta ?? '—')}</span>`;
+  }
+
+  function estadoBadge(estado) {
+    const cls = estado === 'pendiente' ? 'bg-amber-100 text-amber-800'
+              : estado === 'aplicado'  ? 'bg-green-100 text-green-800'
+              : estado === 'rechazado' ? 'bg-stone-200 text-stone-600'
+              : 'bg-stone-100 text-stone-600';
+    return `<span class="text-xs px-2 py-0.5 rounded-full ${cls}">${esc(estado ?? '—')}</span>`;
+  }
+
+  async function loadKpis() {
+    if (typeof sb === 'undefined' || !sb) return;
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const { data, error } = await sb.schema('staging').from('precios_propuestos')
+        .select('estado, ruta, aplicado_at');
+      if (error) { console.warn('bp kpis:', error.message); return; }
+      const rows = data ?? [];
+      const pend  = rows.filter(r => r.estado === 'pendiente').length;
+      const auto  = rows.filter(r => r.ruta === 'auto').length;
+      const dusan = rows.filter(r => r.ruta === 'dusan').length;
+      const hoy   = rows.filter(r => r.estado === 'aplicado' && r.aplicado_at && r.aplicado_at.slice(0, 10) === today).length;
+      document.getElementById('bpKpiPend').textContent  = pend;
+      document.getElementById('bpKpiHoy').textContent   = hoy;
+      document.getElementById('bpKpiAuto').textContent  = auto;
+      document.getElementById('bpKpiDusan').textContent = dusan;
+    } catch (e) { console.warn('bp kpis exc:', e); }
+  }
+
+  async function loadBandejaPrecios() {
+    if (typeof sb === 'undefined' || !sb) return;
+    const tbody = document.getElementById('bpTbody');
+    if (!tbody) return;
+    const estado = document.getElementById('bpFiltroEstado').value;
+    const ruta   = document.getElementById('bpFiltroRuta').value;
+    const buscar = (document.getElementById('bpFiltroBuscar').value || '').trim();
+
+    let q = sb.schema('staging').from('v_bandeja_precios')
+      .select('id, cliente_id, cliente_nombre, material_id, material_nombre, sucursal_id, sucursal_nombre, precio_clp_kg, precio_vigente, desviacion_pct, confidence_score, ruta, estado, fecha_vigencia, created_at, revisando_por, lock_until, notas')
+      .order('created_at', { ascending: false }).limit(200);
+    if (estado) q = q.eq('estado', estado);
+    if (ruta)   q = q.eq('ruta', ruta);
+
+    const { data, error } = await q;
+    if (error) {
+      tbody.innerHTML = `<tr><td colspan="10" class="px-3 py-4 text-center text-red-600">Error: ${esc(error.message)}</td></tr>`;
+      return;
+    }
+    let rows = data ?? [];
+    if (buscar) {
+      const q2 = buscar.toLowerCase();
+      rows = rows.filter(r =>
+        (r.cliente_nombre ?? '').toLowerCase().includes(q2)
+        || (r.material_nombre ?? '').toLowerCase().includes(q2)
+        || (r.notas ?? '').toLowerCase().includes(q2)
+      );
+    }
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="10" class="px-3 py-4 text-center text-stone-400">Sin propuestas para este filtro.</td></tr>';
+      loadKpis();
+      return;
+    }
+    tbody.innerHTML = rows.map(r => {
+      const lockActive = r.lock_until && new Date(r.lock_until).getTime() > Date.now();
+      const lockTag = lockActive ? `<span class="ml-1 text-[10px] text-amber-700">🔒 ${esc(r.revisando_por ?? '?')}</span>` : '';
+      const deltaCls = r.desviacion_pct == null ? 'text-stone-400'
+                    : Math.abs(Number(r.desviacion_pct)) > 30 ? 'text-red-700'
+                    : Math.abs(Number(r.desviacion_pct)) > 15 ? 'text-amber-700'
+                    : 'text-stone-600';
+      return `<tr class="border-t hover:bg-stone-50 cursor-pointer" onclick="bpAbrirDrawer(${r.id})">
+        <td class="px-3 py-2">${esc(r.cliente_nombre ?? '—')}${lockTag}</td>
+        <td class="px-3 py-2">${esc(r.material_nombre ?? '—')}</td>
+        <td class="px-3 py-2">${esc(r.sucursal_nombre ?? '—')}</td>
+        <td class="px-3 py-2 text-right font-medium">${fmtCLP(r.precio_clp_kg)}</td>
+        <td class="px-3 py-2 text-right text-stone-500">${fmtCLP(r.precio_vigente)}</td>
+        <td class="px-3 py-2 text-right ${deltaCls}">${fmtPct(r.desviacion_pct)}</td>
+        <td class="px-3 py-2 text-right">${r.confidence_score != null ? Number(r.confidence_score).toFixed(2) : '—'}</td>
+        <td class="px-3 py-2">${rutaBadge(r.ruta)}</td>
+        <td class="px-3 py-2">${estadoBadge(r.estado)}</td>
+        <td class="px-3 py-2 text-right text-xs text-stone-500">${fmtEdad(r.created_at)}</td>
+      </tr>`;
+    }).join('');
+    loadKpis();
+  }
+
+  async function bpAbrirDrawer(id) {
+    if (typeof sb === 'undefined' || !sb) return;
+    bpCurrentId = id;
+    const { data: r, error } = await sb.schema('staging').from('v_bandeja_precios').select('*').eq('id', id).maybeSingle();
+    if (error || !r) {
+      alert('No pude cargar la propuesta: ' + (error?.message ?? 'no existe'));
+      return;
+    }
+    document.getElementById('bpDrawerSubtitle').textContent  = `#${r.id} · creada ${fmtEdad(r.created_at)} atrás`;
+    document.getElementById('bpDw_cliente').textContent      = r.cliente_nombre ?? r.cliente_id ?? '—';
+    document.getElementById('bpDw_material').textContent     = r.material_nombre ?? r.material_id ?? '—';
+    document.getElementById('bpDw_sucursal').textContent     = r.sucursal_nombre ?? r.sucursal_id ?? 'todas';
+    document.getElementById('bpDw_vigencia').textContent     = r.fecha_vigencia ?? 'desde hoy';
+    document.getElementById('bpDw_propuesto').textContent    = fmtCLP(r.precio_clp_kg);
+    document.getElementById('bpDw_vigente').textContent      = fmtCLP(r.precio_vigente);
+    document.getElementById('bpDw_delta').textContent        = fmtPct(r.desviacion_pct);
+    document.getElementById('bpDw_confidence').textContent   = r.confidence_score != null ? Number(r.confidence_score).toFixed(2) : '—';
+    document.getElementById('bpDw_ruta').innerHTML           = rutaBadge(r.ruta);
+    document.getElementById('bpDw_estado').innerHTML         = estadoBadge(r.estado);
+    document.getElementById('bpDw_notas').textContent        = r.notas ?? '—';
+
+    // Lock optimista
+    const lockActive = r.lock_until && new Date(r.lock_until).getTime() > Date.now();
+    const lockWarn = document.getElementById('bpDrawerLockWarn');
+    if (lockActive && r.revisando_por && r.revisando_por !== (currentUser ?? '')) {
+      lockWarn.textContent = `🔒 Esta propuesta la está revisando ${r.revisando_por} desde ${fmtEdad(r.lock_until)} (lock expira en breve).`;
+      lockWarn.classList.remove('hidden');
+    } else {
+      lockWarn.classList.add('hidden');
+      // Tomar el lock
+      try {
+        const lockUntil = new Date(Date.now() + BP_LOCK_MIN * 60_000).toISOString();
+        await sb.schema('staging').from('precios_propuestos')
+          .update({ revisando_por: currentUser ?? null, lock_until: lockUntil, updated_at: new Date().toISOString() })
+          .eq('id', id);
+      } catch (e) { console.warn('bp lock:', e); }
+    }
+
+    // Habilitar/deshabilitar botones según estado
+    const btnAprobar  = document.getElementById('bpBtnAprobar');
+    const btnRechazar = document.getElementById('bpBtnRechazar');
+    const yaCerrada = r.estado === 'aplicado' || r.estado === 'rechazado' || r.estado === 'obsoleto';
+    btnAprobar.disabled  = yaCerrada;
+    btnRechazar.disabled = yaCerrada;
+    btnAprobar.classList.toggle('opacity-50', yaCerrada);
+    btnRechazar.classList.toggle('opacity-50', yaCerrada);
+
+    document.getElementById('bpDrawerMsg').classList.add('hidden');
+    document.getElementById('bpDrawer').classList.remove('hidden');
+  }
+
+  async function bpCerrarDrawer() {
+    // Liberar lock si soy yo el que lo tenía
+    if (bpCurrentId && typeof sb !== 'undefined' && sb && currentUser) {
+      try {
+        await sb.schema('staging').from('precios_propuestos')
+          .update({ revisando_por: null, lock_until: null, updated_at: new Date().toISOString() })
+          .eq('id', bpCurrentId).eq('revisando_por', currentUser);
+      } catch (e) { console.warn('bp release lock:', e); }
+    }
+    bpCurrentId = null;
+    document.getElementById('bpDrawer').classList.add('hidden');
+  }
+
+  function bpMsg(text, ok) {
+    const el = document.getElementById('bpDrawerMsg');
+    el.textContent = text;
+    el.className = 'text-xs p-2 rounded ' + (ok ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+  }
+
+  async function bpAprobar() {
+    if (!bpCurrentId) return;
+    if (!currentUser || !currentUser.includes('@')) { bpMsg('Falta email del usuario actual.', false); return; }
+    const btn = document.getElementById('bpBtnAprobar');
+    btn.disabled = true;
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/precio-aplicar`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          apikey: SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ propuesta_id: bpCurrentId, aprobado_por: currentUser }),
+      });
+      const j = await resp.json();
+      if (resp.ok && j.ok) {
+        bpMsg(`✓ Aplicado. Nueva vigencia desde ${j.vigencia_desde ?? '—'} a ${fmtCLP(j.precio_venta_clp)}.`, true);
+        // Disparar feed Andrea (best-effort, no bloquea)
+        try {
+          fetch(`${SUPABASE_URL}/functions/v1/notif-precios`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+              apikey: SUPABASE_ANON_KEY,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ modo: 'feed', propuesta_id: bpCurrentId }),
+          }).catch((e) => console.warn('notif-precios feed:', e));
+        } catch (_) { /* no bloquea */ }
+        setTimeout(() => { bpCerrarDrawer(); loadBandejaPrecios(); }, 1500);
+      } else {
+        bpMsg(`✗ ${j.error ?? j.detail?.message ?? 'No se pudo aplicar'}`, false);
+        btn.disabled = false;
+      }
+    } catch (e) {
+      bpMsg(`Error de red: ${String(e).slice(0, 100)}`, false);
+      btn.disabled = false;
+    }
+  }
+
+  async function bpRechazar() {
+    if (!bpCurrentId) return;
+    if (typeof sb === 'undefined' || !sb) return;
+    const btn = document.getElementById('bpBtnRechazar');
+    btn.disabled = true;
+    try {
+      const { error } = await sb.schema('staging').from('precios_propuestos')
+        .update({
+          estado: 'rechazado',
+          aprobado_por: currentUser ?? null,
+          aprobado_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          revisando_por: null,
+          lock_until: null,
+        })
+        .eq('id', bpCurrentId);
+      if (error) {
+        bpMsg(`✗ ${error.message}`, false);
+        btn.disabled = false;
+        return;
+      }
+      bpMsg('✓ Rechazada.', true);
+      setTimeout(() => { bpCerrarDrawer(); loadBandejaPrecios(); }, 1000);
+    } catch (e) {
+      bpMsg(`Error: ${String(e).slice(0, 100)}`, false);
+      btn.disabled = false;
+    }
+  }
+
+  function bpDebouncedSearch() {
+    if (bpSearchDebounce) clearTimeout(bpSearchDebounce);
+    bpSearchDebounce = setTimeout(loadBandejaPrecios, 250);
+  }
+
+  function initBandejaPrecios() {
+    loadBandejaPrecios();
+    if (bpRefreshTimer) clearInterval(bpRefreshTimer);
+    bpRefreshTimer = setInterval(() => {
+      const tabActive = document.getElementById('tabBandejaPrecios');
+      if (tabActive && !tabActive.classList.contains('hidden')) loadBandejaPrecios();
+    }, REFRESH_MS);
+  }
+
+  // Exponer al global para que setupTabs + onclick HTML puedan invocarlo
+  window.initBandejaPrecios = initBandejaPrecios;
+  window.loadBandejaPrecios = loadBandejaPrecios;
+  window.bpAbrirDrawer      = bpAbrirDrawer;
+  window.bpCerrarDrawer     = bpCerrarDrawer;
+  window.bpAprobar          = bpAprobar;
+  window.bpRechazar         = bpRechazar;
+  window.bpDebouncedSearch  = bpDebouncedSearch;
+})();
 </script>
 
 <!-- E360 context menu (D-MISMATCH Mig 035 frontend) -->
