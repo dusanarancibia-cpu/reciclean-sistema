@@ -2613,11 +2613,27 @@ async function loadSilos() {
     selector.appendChild(opt);
   }
 
+  // F3 alias visuales: nombres cortos e intuitivos sin tocar la BD
+  // (los `nombre` reales en panel.silos siguen siendo "01_Comercial-Ventas" etc.)
+  const SILO_NOMBRES_CORTOS = {
+    '01': 'Comercial',
+    '02': 'Operaciones',
+    '03': 'Planta',
+    '04': 'Manifiestos',
+    '05': 'Cumplimiento',
+    '06': 'Tecnología',
+    '07': 'Finanzas',
+    '08': 'RRHH',
+    '09': 'Marketing',
+    '10': 'Gerencia',
+    '11': 'Personal'
+  };
   silosVisibles.forEach(s => {
     const opt = document.createElement('option');
     opt.value = s.codigo;
     const prefijo = s.rol_silo === 'owner' ? '👑 ' : '';
-    opt.textContent = `${prefijo}${s.nombre}`;
+    const nombreCorto = SILO_NOMBRES_CORTOS[s.codigo] || s.nombre;
+    opt.textContent = `${prefijo}${nombreCorto}`;
     selector.appendChild(opt);
   });
 
