@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>R-AUD-029 — Sistema de Cumplimiento Legal</title>
+<style>
+  body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:24px;font-size:13px}
+  h1{font-size:18px;margin:0 0 4px;color:#10b981}
+  h2{font-size:13px;color:#94a3b8;margin:18px 0 6px;text-transform:uppercase;letter-spacing:.05em}
+  .meta{color:#64748b;font-size:11px;margin-bottom:14px}
+  .stats{display:flex;gap:12px;margin:12px 0 20px;flex-wrap:wrap}
+  .stat{background:#1e293b;padding:12px 14px;border-radius:8px;flex:1;min-width:130px;text-align:center}
+  .stat .n{font-size:26px;font-weight:700;color:#10b981}
+  .stat .l{font-size:10px;color:#94a3b8;text-transform:uppercase;margin-top:2px}
+  table{width:100%;border-collapse:collapse;background:#1e293b;border-radius:8px;overflow:hidden;margin-bottom:18px}
+  th{background:#334155;text-align:left;padding:8px 10px;font-size:11px;color:#cbd5e1;text-transform:uppercase}
+  td{padding:8px 10px;border-bottom:1px solid #334155;vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  .law-id{color:#60a5fa;font-weight:700;font-family:ui-monospace,monospace;font-size:11px}
+  .badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase}
+  .badge.pend{background:#7c2d12;color:#fed7aa}
+  .badge.cump{background:#064e3b;color:#a7f3d0}
+  .badge.high{background:#7f1d1d;color:#fecaca}
+  .sanc{font-size:10px;color:#fbbf24;font-style:italic}
+  .progress{background:#0a0f1c;border-radius:6px;height:8px;overflow:hidden;width:80px;display:inline-block;vertical-align:middle;margin-right:6px}
+  .progress > div{background:#10b981;height:100%}
+  .sql{background:#0a0f1c;border:1px solid #334155;border-radius:6px;padding:10px;font-family:ui-monospace,monospace;font-size:11px;color:#cbd5e1;line-height:1.5;white-space:pre-wrap}
+</style></head><body>
+
+<h1>R-AUD-029 — Sistema de Cumplimiento Legal del Grupo Reciclean</h1>
+<div class="meta">2026-05-23 noche · Mig 067 · Diego v10.13 vocero experto y guardián del cumplimiento</div>
+
+<div class="stats">
+  <div class="stat"><div class="n">5</div><div class="l">leyes</div></div>
+  <div class="stat"><div class="n">25</div><div class="l">artículos</div></div>
+  <div class="stat"><div class="n">20</div><div class="l">obligaciones directas</div></div>
+  <div class="stat"><div class="n">20</div><div class="l">pendientes verificación Dyana</div></div>
+  <div class="stat"><div class="n">0</div><div class="l">incumplidos</div></div>
+</div>
+
+<h2>panel.v_cumplimiento_legal (dashboard por ley)</h2>
+<table>
+<thead><tr><th>ley_id</th><th>Nombre</th><th>Autoridad</th><th>Sanción máxima</th><th>Artículos</th><th>Estado</th><th>%</th></tr></thead>
+<tbody>
+<tr>
+  <td class="law-id">LEY-20920</td>
+  <td><b>Ley REP 20.920</b></td>
+  <td>MMA / SMA</td>
+  <td class="sanc">hasta 10.000 UTM (~$700M) + clausura</td>
+  <td>5 (3 obligación)</td>
+  <td><span class="badge pend">3 pendientes</span></td>
+  <td><div class="progress"><div style="width:0%"></div></div> 0.0%</td>
+</tr>
+<tr>
+  <td class="law-id">LEY-21719</td>
+  <td><b>Protección Datos 21.719</b></td>
+  <td>APDP <i>(vigor 1-dic-2026)</i></td>
+  <td class="sanc">hasta 20.000 UTM (~$1.400M)</td>
+  <td>5 (3 obligación)</td>
+  <td><span class="badge pend">3 pendientes</span></td>
+  <td><div class="progress"><div style="width:0%"></div></div> 0.0%</td>
+</tr>
+<tr>
+  <td class="law-id">LEY-18290</td>
+  <td><b>Ley de Tránsito</b></td>
+  <td>MTT / Carabineros</td>
+  <td class="sanc">30 UTM + suspensión licencia + cárcel</td>
+  <td>5 (5 obligación)</td>
+  <td><span class="badge pend">5 pendientes</span></td>
+  <td><div class="progress"><div style="width:0%"></div></div> 0.0%</td>
+</tr>
+<tr>
+  <td class="law-id">LEY-SII</td>
+  <td><b>Código Tributario</b></td>
+  <td>Servicio de Impuestos Internos</td>
+  <td class="sanc">5%-100% impuesto + cárcel Art. 97</td>
+  <td>5 (4 obligación)</td>
+  <td><span class="badge pend">4 pendientes</span></td>
+  <td><div class="progress"><div style="width:0%"></div></div> 0.0%</td>
+</tr>
+<tr>
+  <td class="law-id">LEY-LABORAL</td>
+  <td><b>Código del Trabajo + Ley 16.744</b></td>
+  <td>DT + Inspección + ACHS</td>
+  <td class="sanc">150 UTM + responsabilidad penal</td>
+  <td>5 (5 obligación)</td>
+  <td><span class="badge pend">5 pendientes</span></td>
+  <td><div class="progress"><div style="width:0%"></div></div> 0.0%</td>
+</tr>
+</tbody>
+</table>
+
+<h2>Estructura técnica (Mig 067 aplicada en prod)</h2>
+<div class="sql">panel.leyes_aplicables       → 5 leyes seedeadas
+panel.articulos_ley          → 25 artículos (5 por ley) con plazo + evidencia requerida
+panel.cumplimiento_legal     → 20 filas (1 por artículo con obligacion_directa=true)
+panel.v_cumplimiento_legal   → dashboard con pct_cumplimiento por ley</div>
+
+<h2>Reglas operativas Diego v10.13 (R-AUD-029)</h2>
+<div class="sql">(a) Pregunta legal → responde con ARTÍCULO EXACTO + autoridad + sanción
+(b) Reporte incumplimiento → UPDATE panel.cumplimiento_legal estado='incumplido' + avisa a Dusan
+(c) Sindical / contra dueños → derivar a Dyana (R4 vigente)
+(d) Si no sabe → "voy a consultar la ley" + SELECT panel.articulos_ley (NO inventar)
+(e) Datos personales → R-AUD-006 discreción + recordatorio Ley 21.719
+(f) Estado por ley → SELECT panel.v_cumplimiento_legal</div>
+
+<h2>Pendientes Dusan / Dyana (BANDEJA)</h2>
+<div class="sql">⚠ Dyana SERCOT: verificar los 20 artículos con obligación directa → UPDATE estado
+⚠ Decisión Ley 21.719 Art. 33: ¿Reciclean designa DPO? (3.5k titulares < umbral 100k → probable NO)
+⚠ Política de privacidad pública (Art. 4 Ley 21.719) — publicar antes 1-dic-2026
+⚠ Branch feat/diego-r-aud-029-cumplimiento-legal esperando firma Dusan</div>
+
+</body></html>
