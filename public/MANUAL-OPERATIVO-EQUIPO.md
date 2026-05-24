@@ -253,6 +253,72 @@
 | **WHY** | Multas potenciales por las 5 leyes: hasta $1.400M (Datos) + $700M (REP) + cárcel SII (delitos graves). |
 | **HOW** | Diego es vocero — responde con artículo exacto + autoridad + sanción. Si detecta incumplimiento, registra en `panel.cumplimiento_legal` con `estado='incumplido'` y avisa a Dusan. |
 
+### 18. RECEPCIÓN MATERIAL DE TERCEROS (V2)
+
+| 6W | Detalle |
+|---|---|
+| **WHAT** | Material que llega a planta sin retiro previo (un tercero lo TRAE). |
+| **WHO** | Operario planta (T03/T05/T06/T07) recibe + identifica. Ingrid (T04) / Cony aprueban montos. |
+| **WHERE** | Báscula entrada + tab Pesaje + `staging.pesajes.origen='recepcion_terceros'`. Tabla complementaria pendiente: `curated.actas_recepcion_terceros` (mig pendiente). |
+| **WHEN** | Horario recepción planta (8:00-18:00 lunes-sábado). |
+| **WHY** | Sin esta línea el material entra "fantasma" — sin trazabilidad MERR (viola Ley REP Art. 32). Hoy existe en práctica pero no está sistematizado. |
+| **HOW** | (1) Camión 3ro entra → operario identifica + RUT + tipo material → (2) **Acta recepción terceros** firmada (formato físico hoy, digital pendiente) → (3) Pesaje báscula → (4) Ticket pesaje origen=`tercero` → (5) Tipo: compra / donación / depósito gratuito → (6) DTE: factura compra o Declaración Donación. |
+
+### 19. PREFACTURA (V2)
+
+| 6W | Detalle |
+|---|---|
+| **WHAT** | Documento preliminar entre cierre comercial y emisión DTE definitivo, con cantidad estimada × precio acordado. |
+| **WHO** | **Andrea (T11)** genera tras cerrar comercial. **Dyana (T14)** la promueve a factura formal una vez pesada. |
+| **WHERE** | **Tabla nueva pendiente:** `curated.prefacturas` (spec en `BANDEJA-PABLO-PREFACTURAS-PAGOS.md` mig 070). |
+| **WHEN** | Entre cierre comercial y emisión DTE definitivo. Típicamente 1-3 días hábiles. |
+| **WHY** | Permite al cliente/proveedor ver el monto estimado ANTES del DTE, validar, evitar la mayoría de notas de crédito. Reduce fricción cobranza. |
+| **HOW** | (1) Andrea cierra → INSERT `curated.prefacturas`. (2) Pesaje real planta destino. (3) Si `delta <= 5%` → promueve a DTE con cantidad real. (4) Si `delta > 5%` → ajuste o nota de crédito. |
+
+### 20. PLANIFICACIÓN VIAJE + CHOFER (V2)
+
+| 6W | Detalle |
+|---|---|
+| **WHAT** | Asignar chofer + vehículo + fecha al viaje específico que va a hacer el retiro. |
+| **WHO** | **Ingrid (T04)** en Talca · **Cony (SERCOT)** en Maipú/Cerrillos. |
+| **WHERE** | `curated.viaje_expedicionario` (`oferente_transporte_id`, `fecha_planificada`). Lista de choferes: `panel.conductores` (T08 Braniff Maipú · T09 Cordero Talca · T10 Valenzuela Talca). |
+| **WHEN** | Semanal (lunes planifica semana) + reactivo si entra urgente. |
+| **WHY** | Sin asignación explícita el chofer no sabe qué viaje le toca + no se cumple Ley 18.290 (verificar licencia vigente). |
+| **HOW** | (1) Ingrid filtra negocios "pendiente programar". (2) Verifica licencia en `panel.conductores`. (3) Crea fila en `viaje_expedicionario`. (4) **Notifica chofer por WhatsApp directo** (R-AUD-027). (5) Diego v10.13 puede orquestar con tool `enviar_whatsapp` (pendiente Pablo). |
+
+### 21. RECHAZO / DEVOLUCIÓN DESTINO FINAL (V2)
+
+| 6W | Detalle |
+|---|---|
+| **WHAT** | Cliente final rechaza el material entregado (calidad fuera de spec, contaminación, peso menor). |
+| **WHO** | Cliente reporta → Andrea (T11) recibe → escala Dusan (T01) → Dyana (T14) emite NC. |
+| **WHERE** | `curated.viaje_expedicionario.estado='rechazado'` + `curated.facturas` tipo='nota_credito' + `panel.diego_bandeja` tarea Dusan. |
+| **WHEN** | Por evento (típicamente <48h después de despacho). |
+| **WHY** | Sin flujo de devolución, la facturación queda inflada + el material queda "perdido" en libros. |
+| **HOW** | (1) Cliente rechaza → Andrea recibe. (2) `panel.diego_bandeja` tipo='rechazo_destino_final' + foto evidencia. (3) Diego escala a Dusan firma. (4) Dyana emite NC reverso. (5) Si material vuelve: nuevo viaje `estado='retorno'`. (6) Tarea Dusan: revisar causa raíz planta origen. |
+
+### 22. PAGO PROVEEDOR (V2)
+
+| 6W | Detalle |
+|---|---|
+| **WHAT** | Egreso bancario al proveedor por compra de material (chatarra, cartón, etc.) o por servicio (peoneta, jaulas, transporte externo). |
+| **WHO** | **Dyana (T14)** prepara planilla pagos semanal. **Dusan (T01) firma** transferencias > 10 UF. |
+| **WHERE** | **Tabla nueva pendiente:** `curated.pagos_emitidos` (spec en `BANDEJA-PABLO-PREFACTURAS-PAGOS.md` mig 070). Hoy solo agregado en `panel.tesoreria_kpis.pagos_programados_clp`. |
+| **WHEN** | Semanal (martes Dyana prepara, miércoles Dusan firma, jueves transferencia). |
+| **WHY** | Mantener capital trabajo + cumplir compromisos proveedores + evitar intereses moratorios + auditoría SII. |
+| **HOW** | (1) Dyana arma planilla desde `curated.facturas` tipo='compra' + estado='pendiente_pago'. (2) Dusan firma. (3) Dyana ejecuta transferencias. (4) INSERT `curated.pagos_emitidos` por cada egreso. (5) UPDATE `curated.facturas` estado='pagado'. (6) Card "Egresos semana" en Portada Dusan. |
+
+### 23. CIERRE VIAJE + RDO + RETC (V2)
+
+| 6W | Detalle |
+|---|---|
+| **WHAT** | Cierre formal del viaje cuando todos los pesajes + facturas + pagos están conciliados. Cálculo de margen real. Reporte RDO diario al MMA (RETC). |
+| **WHO** | **Dyana (T14)** cierra viaje contable. **Ingrid + Cony** consolidan RDO sucursal. **Dusan (T01) firma** envío MMA. **Cesar (T13)** sistema cron lo arma. |
+| **WHERE** | `curated.viaje_expedicionario.margen_real_clp` + `curated.rdo_diario` + EF `rdo-builder` (cron 8:00 CLT). |
+| **WHEN** | Diario para RDO (8:00 cron + 12:00 humano valida + 16:00 envío MMA). Mensual día 15 para RDO consolidado MMA. |
+| **WHY** | Ley REP Art. 22 (RETC) — multa hasta 10.000 UTM por omisión. Cierre viaje permite calcular margen real por sucursal × material × cliente. |
+| **HOW** | (1) Diario 8:00 cron EF consolida. (2) `curated.rdo_diario` con `email_texto` armado. (3) Ingrid/Cony validan en tab RDO. (4) Dusan firma → `enviado_email=true`. (5) Día 15: RDO mes al MMA + planilla RETC. (6) Por cada viaje cerrado: `margen_real_clp = ingreso - costos_logistica - costos_estadia`. (7) Cierre 360 = viaje + factura + cobranza + pago todos OK. |
+
 ---
 
 ## PERFILES OPERATIVOS

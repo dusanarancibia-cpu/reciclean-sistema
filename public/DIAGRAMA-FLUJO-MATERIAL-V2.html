@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<title>Diagrama Flujo Material V2 — Grupo Reciclean</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<style>
+  body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:24px;font-size:13px}
+  h1{font-size:18px;color:#10b981;margin:0 0 4px}
+  .meta{color:#64748b;font-size:11px;margin-bottom:14px}
+  .legend{display:flex;gap:14px;margin:14px 0;font-size:11px;background:#1e293b;padding:10px 14px;border-radius:8px}
+  .legend-item{display:flex;align-items:center;gap:6px}
+  .swatch{width:12px;height:12px;border-radius:3px}
+  .diagram-wrap{background:#fff;border-radius:8px;padding:14px;overflow:auto}
+  .nuevas{margin-top:18px;background:#1e293b;padding:14px;border-radius:8px;font-size:12px}
+  .nuevas h2{font-size:13px;color:#10b981;margin:0 0 8px;text-transform:uppercase}
+  .nuevas ul{margin:0;padding-left:18px}
+  .nuevas li{margin-bottom:4px}
+  .nuevas b{color:#fbbf24}
+</style></head><body>
+
+<h1>Diagrama Flujo Material V2 — Grupo Reciclean-Farex</h1>
+<div class="meta">2026-05-24 madrugada · Reconstruido desde diagrama txt + 6 líneas nuevas integradas. Vinculado a MANUAL-OPERATIVO-EQUIPO.md procesos 18-23.</div>
+
+<div class="legend">
+  <span class="legend-item"><span class="swatch" style="background:#0891b2"></span>Etapa principal</span>
+  <span class="legend-item"><span class="swatch" style="background:#10b981"></span>Sub-proceso existente</span>
+  <span class="legend-item"><span class="swatch" style="background:#fbbf24"></span>Decisión</span>
+  <span class="legend-item"><span class="swatch" style="background:#ef4444"></span>NUEVO (línea faltante agregada)</span>
+  <span class="legend-item"><span class="swatch" style="background:#7c3aed"></span>Documento / DTE</span>
+</div>
+
+<div class="diagram-wrap">
+<pre class="mermaid">
+flowchart TB
+  classDef etapa fill:#0891b2,stroke:#0e7490,color:#fff,font-weight:bold
+  classDef sub fill:#d1fae5,stroke:#047857,color:#064e3b
+  classDef decision fill:#fef3c7,stroke:#d97706,color:#78350f
+  classDef nuevo fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,font-weight:bold,stroke-width:3px
+  classDef doc fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
+
+  %% ===== ETAPA 1: SERVICIOS / ORIGEN =====
+  E1[1. SERVICIOS / ORIGEN]:::etapa
+  Cot[Cotización<br/>f_evaluar_retiro]:::sub
+  Cierre[Cierre comercial<br/>oportunidades]:::sub
+  Tipo{Tipo de operación}:::decision
+  RetReciclean[Retiro POR Reciclean<br/>al generador]:::sub
+  RecTerceros[<b>RECEPCIÓN MATERIAL<br/>DE TERCEROS</b><br/>tercero TRAE a planta]:::nuevo
+  Donacion[Donación<br/>declaración firmada]:::sub
+  ArrCont[Arriendo contenedor<br/>flujo lateral simple]:::sub
+  SegDesm[Segregación / Desmantelamiento<br/>servicio interno en planta]:::sub
+
+  E1 --> Cot --> Cierre --> Tipo
+  Tipo -->|Reciclean retira| RetReciclean
+  Tipo -->|Tercero entrega| RecTerceros
+  Tipo -->|Sin pago| Donacion
+  Tipo -->|Solo servicio| ArrCont
+  Tipo -->|En planta| SegDesm
+
+  %% ===== ETAPA 2: PLANIFICACIÓN VIAJE (NUEVO) =====
+  E2[<b>2. PLANIFICACIÓN VIAJE</b><br/>NUEVA línea]:::nuevo
+  AsigChofer[Asignación chofer + vehículo<br/>Ingrid Talca · Cony RM]:::sub
+  ConfChofer[Confirmación chofer<br/>WhatsApp T08/T09/T10]:::sub
+  RetReciclean --> E2 --> AsigChofer --> ConfChofer
+
+  %% ===== ETAPA 3: INGRESO MATERIAL =====
+  E3[3. INGRESO MATERIAL A PLANTA]:::etapa
+  PesO{¿Pesaje origen?}:::decision
+  TickO[Ticket pesaje origen]:::doc
+  CtrlRec[Control recepción<br/>operario planta]:::sub
+  ActaRec[<b>Acta recepción terceros</b><br/>firmada]:::nuevo
+  ConfChofer --> E3
+  RecTerceros --> E3
+  Donacion --> E3
+  E3 --> PesO
+  PesO -->|Sí| TickO
+  PesO -->|No| CtrlRec
+  TickO --> CtrlRec
+  CtrlRec --> ActaRec
+
+  %% ===== ETAPA 4: ENVÍO DOCUMENTAL =====
+  E4[4. ENVÍO DOCUMENTAL]:::etapa
+  GuiaDesp[Guía despacho electrónica<br/>SII]:::doc
+  ActaProc[Acta procedencia<br/>Ley REP Art. 32 RED]:::doc
+  TipoIng{Tipo ingreso}:::decision
+  PreFact[<b>PREFACTURA</b><br/>preliminar antes de DTE]:::nuevo
+  Retened{¿Proveedor<br/>retenedor SII?}:::decision
+  FacCompraRecl[Reciclean emite<br/>factura compra]:::doc
+  FacCompraProv[Proveedor emite<br/>factura compra]:::doc
+  InfImpulsa[Informe a Impulsa CRM<br/>detalle]:::sub
+  ActaRec --> E4 --> GuiaDesp --> ActaProc --> TipoIng
+  TipoIng -->|Compra| PreFact
+  PreFact --> Retened
+  Retened -->|Sí| FacCompraRecl
+  Retened -->|No| FacCompraProv
+  TipoIng -->|Donación| InfImpulsa
+  FacCompraRecl --> InfImpulsa
+  FacCompraProv --> InfImpulsa
+
+  %% ===== ETAPA 5: MATERIAL EN PLANTA + DESPACHO =====
+  E5[5. PROCESO + DESPACHO A DESTINO FINAL]:::etapa
+  ProcPlanta[Procesamiento planta<br/>enfardado / clasificación]:::sub
+  Drop{¿Drop-shipping?<br/>directo destino final}:::decision
+  TransDestF[Transporte a destino final<br/>cliente valorizador]:::sub
+  PesD[Ticket pesaje destino final]:::doc
+  GuiaVenta[Guía despacho venta<br/>Reciclean → cliente]:::doc
+  InfImpulsa --> E5 --> ProcPlanta --> Drop
+  Drop -->|No| TransDestF
+  Drop -->|Sí| TransDestF
+  TransDestF --> PesD --> GuiaVenta
+
+  %% ===== ETAPA 6: FACTURACIÓN VENTA =====
+  E6[6. FACTURACIÓN VENTA]:::etapa
+  ValidPref[<b>Validar prefactura vs pesaje real</b>]:::nuevo
+  AjusteDelta{¿Delta &gt; 5%?}:::decision
+  FacVenta[Reciclean emite<br/>factura venta DTE]:::doc
+  NotaCred[<b>NOTA DE CRÉDITO</b><br/>ajuste si delta &gt; 5%]:::nuevo
+  GuiaVenta --> E6 --> ValidPref --> AjusteDelta
+  AjusteDelta -->|No| FacVenta
+  AjusteDelta -->|Sí| NotaCred
+  NotaCred --> FacVenta
+
+  %% ===== ETAPA 7: RECHAZO / DEVOLUCIÓN (NUEVO) =====
+  E7[<b>7. RECHAZO / DEVOLUCIÓN</b><br/>NUEVA línea]:::nuevo
+  Rechazo{¿Cliente final<br/>rechaza calidad?}:::decision
+  RetMat[Retorno material<br/>viaje estado=rechazado]:::sub
+  NCRev[Nota crédito reverso]:::doc
+  TareaDusan[Tarea Dusan<br/>cierre comercial]:::sub
+  FacVenta --> Rechazo
+  Rechazo -->|Sí| E7
+  Rechazo -->|No| E8
+  E7 --> RetMat --> NCRev --> TareaDusan
+
+  %% ===== ETAPA 8: PAGO PROVEEDOR + COBRANZA =====
+  E8[8. TESORERÍA]:::etapa
+  PagoProv[<b>PAGO PROVEEDOR</b><br/>egreso bancario]:::nuevo
+  Cobranza[Cobranza cliente<br/>aging 30/60/90]:::sub
+  Rechazo -->|No| E8
+  E8 --> PagoProv
+  E8 --> Cobranza
+
+  %% ===== ETAPA 9: CIERRE VIAJE + RDO (NUEVO) =====
+  E9[<b>9. CIERRE VIAJE + RETC</b><br/>NUEVA línea]:::nuevo
+  CalcMargen[Cálculo margen real<br/>viaje_expedicionario.margen_real_clp]:::sub
+  RDOMMA[RDO diario MMA<br/>Ley REP Art. 22]:::doc
+  Cierre360[Cierre 360<br/>viaje · factura · pago]:::sub
+  PagoProv --> E9
+  Cobranza --> E9
+  E9 --> CalcMargen --> RDOMMA --> Cierre360
+</pre>
+</div>
+
+<div class="nuevas">
+<h2>📋 6 líneas faltantes integradas (rojo) — corresponden a procesos 18-23 del MANUAL</h2>
+<ul>
+  <li><b>18. RECEPCIÓN MATERIAL DE TERCEROS</b> — etapa 1 (cuando un 3ro trae material en lugar de Reciclean retirar)</li>
+  <li><b>19. PREFACTURA</b> — etapa 4 (documento preliminar entre cierre comercial y DTE definitivo)</li>
+  <li><b>20. PLANIFICACIÓN VIAJE</b> — etapa 2 nueva (asignación chofer + vehículo + confirmación WhatsApp)</li>
+  <li><b>21. RECHAZO / DEVOLUCIÓN DESTINO FINAL</b> — etapa 7 nueva (NC reverso + tarea Dusan)</li>
+  <li><b>22. PAGO PROVEEDOR</b> — etapa 8 (egreso bancario hoy invisible como flujo)</li>
+  <li><b>23. CIERRE VIAJE + RDO + RETC</b> — etapa 9 nueva (margen real + Ley REP + cierre 360)</li>
+</ul>
+</div>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'default', flowchart: { curve: 'basis', nodeSpacing: 30, rankSpacing: 50 } });
+</script>
+</body></html>
