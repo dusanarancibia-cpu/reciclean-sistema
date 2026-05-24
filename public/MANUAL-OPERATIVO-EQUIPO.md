@@ -77,6 +77,19 @@
 | **WHY** | Aceptar negocio sin margen = pérdida directa. `f_evaluar_retiro` calcula brecha UF en 2 segundos → decisión sí/no objetiva. |
 | **HOW** | (1) Andrea entra al tab Cotizador. (2) Ingresa km + kg + material. (3) RPC devuelve ranking vehículo + decisión. (4) Si decisión=ACEPTAR → registra oportunidad en `curated.oportunidades`. (5) Si decisión=NEGOCIAR → escala a Dusan vía Diego "Bandeja Dusan". (6) Cierre → cambia `estado` de la oportunidad a `cerrada`. |
 
+```mermaid
+flowchart LR
+  A[Lead llega<br/>WhatsApp/llamada/email] --> B[Andrea pide<br/>km + kg + material]
+  B --> C[Tab Cotizador<br/>f_evaluar_retiro RPC]
+  C --> D{Margen y UF}
+  D -->|≤100 UF y margen≥10%| E[ACEPTAR<br/>Andrea cierra sola]
+  D -->|>100 UF o margen<10%| F[NEGOCIAR<br/>Diego avisa a Dusan]
+  F --> G[Dusan firma]
+  E --> H[Registrar oportunidad<br/>curated.oportunidades]
+  G --> H
+  H --> I[Estado: cerrada]
+```
+
 ### 2. NEGOCIO EXPEDICIONARIO (alta)
 
 | 6W | Detalle |
@@ -87,6 +100,19 @@
 | **WHEN** | Por evento — al cerrar cada oportunidad nueva. |
 | **WHY** | Sin negocio dado de alta, no se pueden planificar viajes ni emitir guías. |
 | **HOW** | Pendiente form CREATE en panel (gap — hoy se hace via SQL o Excel). Mientras: Andrea pega los datos en `panel.diego_bandeja` con tipo=`alta_negocio`, Dyana o Pablo lo cargan. |
+
+```mermaid
+flowchart TD
+  A[Oportunidad cerrada] --> B[Andrea arma alta]
+  B --> C[Datos: cliente, material,<br/>frecuencia, zonas]
+  C --> D{¿Form CREATE<br/>en panel?}
+  D -->|Hoy NO| E[Andrea deja en<br/>panel.diego_bandeja]
+  D -->|V2 SI| F[Andrea completa form]
+  E --> G[Dyana o Pablo<br/>cargan a SQL]
+  F --> H[curated.negocio_expedicionario]
+  G --> H
+  H --> I[Habilita planificación viajes]
+```
 
 ### 3. PLANIFICACIÓN DE VIAJE + ASIGNACIÓN DE CHOFER
 
@@ -109,6 +135,19 @@
 | **WHEN** | Tiempo real — cada vez que un camión cruza la báscula. |
 | **WHY** | Ley REP 20.920 Art. 32 (trazabilidad MERR). Base para facturación. Detecta mermas anómalas. |
 | **HOW** | (1) Báscula imprime ticket. (2) Operario carga ticket a `staging.pesajes` via tab Pesaje > Subir CSV. (3) PC Cámaras hace ETL diario a `curated.pesajes`. (4) Si la merma > 5%, alerta automática en `panel.diego_bandeja` para Ingrid + Dusan. (5) `viaje_expedicionario.peso_origen_kg` y `peso_destino_kg` se actualizan. |
+
+```mermaid
+flowchart LR
+  A[Camión cruza<br/>báscula CMR] --> B[Ticket impreso<br/>bruto + tara + neto]
+  B --> C[Operario carga CSV<br/>tab Pesaje S1]
+  C --> D[staging.pesajes]
+  D --> E[PC Cámaras ETL diario]
+  E --> F[curated.pesajes]
+  F --> G{Merma >5%?}
+  G -->|Sí| H[Alerta diego_bandeja<br/>Ingrid + Dusan]
+  G -->|No| I[Actualiza viaje_expedicionario<br/>peso_origen + peso_destino]
+  F --> I
+```
 
 ### 5. GUÍA DE DESPACHO (DTE)
 
@@ -164,6 +203,23 @@
 | **WHEN** | Pagos: programados según condiciones del proveedor (típico 30 días). Cobranza: seguimiento semanal por Andrea. |
 | **WHY** | Mantener capital de trabajo + cumplir compromisos + evitar atraso intereses moratorios. |
 | **HOW** | (1) Dyana arma planilla pagos semanal. (2) Dusan firma. (3) Dyana ejecuta transferencias. (4) Carga snapshot del saldo banco a `panel.tesoreria_kpis.saldo_banco_clp` (manual hoy, automatizable con API bancaria futura). (5) Andrea sigue las cuentas por cobrar `>30 días` en card Portada. |
+
+```mermaid
+flowchart LR
+  subgraph "Pagos a proveedor"
+    P1[Dyana arma<br/>planilla semanal] --> P2{Monto >10 UF?}
+    P2 -->|Sí| P3[Dusan firma]
+    P2 -->|No| P4[Dyana ejecuta]
+    P3 --> P4
+    P4 --> P5[Snapshot a<br/>panel.tesoreria_kpis]
+  end
+  subgraph "Cobranza cliente"
+    C1[Andrea revisa<br/>card Portada] --> C2{Cuenta >30 días?}
+    C2 -->|Sí| C3[Andrea contacta<br/>cliente]
+    C3 --> C4[Cliente paga]
+    C4 --> P5
+  end
+```
 
 ### 10. RENDICIÓN DE DINERO DEL EQUIPO
 
@@ -241,6 +297,20 @@
 | **WHEN** | Tiempo real — cuando alguien escucha algo en terreno. |
 | **WHY** | Detectar amenazas antes que se materialicen + ajustar precios + escalar a Dusan. |
 | **HOW** | (1) Andrea o chofer le dice a Diego: "Vi camión SOREPA en planta Pincore". (2) Diego ejecuta flujo IC: empatiza → pide respaldo (foto/factura) → registra. (3) Card portada Dusan: "Inteligencia competitiva 24h" + escalación si reincidente. |
+
+```mermaid
+flowchart TD
+  A[Andrea/chofer<br/>escucha algo en terreno] --> B[Le dice a Diego]
+  B --> C[Diego empatiza<br/>R-AUD-006]
+  C --> D[Diego pide respaldo<br/>foto/factura/RUT]
+  D --> E{¿Hay respaldo?}
+  E -->|Sí| F[registrar_inteligencia_competitiva<br/>estado=validado]
+  E -->|No| G[Registrar<br/>estado=pendiente/rumor]
+  F --> H[Card Portada Dusan<br/>IC 24h]
+  G --> H
+  H --> I{¿Reincidente?}
+  I -->|Sí| J[Escalación tarea<br/>cola_construccion alta]
+```
 
 ### 17. CUMPLIMIENTO LEGAL (R-AUD-029)
 
