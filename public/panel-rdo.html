@@ -153,6 +153,32 @@
       #v4-topContent { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     }
 
+    /* Mobile chico (≤480px): topbar compacto + selectores acotados + tablas con scroll-x.
+       Aplica solo a celulares; no afecta desktop ni tablet. */
+    @media (max-width: 480px) {
+      /* Topbar: evitar overflow horizontal */
+      header.flex.items-center { gap: 6px !important; padding-left: 8px !important; padding-right: 8px !important; flex-wrap: nowrap; }
+      header .text-sm.font-bold.text-stone-800 { display: none; } /* "Panel RDO" texto compite con search */
+      #v4-topbarSearch { font-size: 12px; padding-left: 28px; padding-right: 6px; }
+      #v4-topbarSearch::placeholder { font-size: 11px; }
+      #v4-fechaActual { display: none; }
+      /* Silo selector compacto */
+      #siloSelectorContainer label { display: none; }
+      #siloSelectorContainer select { max-width: 130px; font-size: 11px; text-overflow: ellipsis; }
+      /* KPIs hero — 4 columnas → 2 */
+      #v4-dashboard-hero .grid-cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      /* Tablas con scroll horizontal forzado para no romper layout */
+      .v4-overlay-scope table, main table, #v4-tabContent table { display: block; overflow-x: auto; white-space: nowrap; max-width: 100%; }
+      /* Badges no se cortan */
+      .badge, .v4-overlay-scope .badge { white-space: nowrap; max-width: none; }
+      /* Tabs top: padding reducido para que entren más sin cortarse */
+      .top-tab { padding-left: 8px !important; padding-right: 8px !important; }
+      /* FAB Diego no debe tapar contenido — sube un poco */
+      .diego-fab, .v4-fab { right: 14px !important; bottom: 14px !important; }
+      /* Modales fullscreen-friendly */
+      .v4-modal, [role="dialog"]:not(.diego-chat) { max-width: 95vw !important; }
+    }
+
     /* v4-design F6 · a11y ------------------------------------- */
     /* Focus visible en sidebar + cards interactivas */
     .v4-sidebar a:focus-visible,
@@ -2613,11 +2639,27 @@ async function loadSilos() {
     selector.appendChild(opt);
   }
 
+  // F3 alias visuales: nombres cortos e intuitivos sin tocar la BD
+  // (los `nombre` reales en panel.silos siguen siendo "01_Comercial-Ventas" etc.)
+  const SILO_NOMBRES_CORTOS = {
+    '01': 'Comercial',
+    '02': 'Operaciones',
+    '03': 'Planta',
+    '04': 'Manifiestos',
+    '05': 'Cumplimiento',
+    '06': 'Tecnología',
+    '07': 'Finanzas',
+    '08': 'RRHH',
+    '09': 'Marketing',
+    '10': 'Gerencia',
+    '11': 'Personal'
+  };
   silosVisibles.forEach(s => {
     const opt = document.createElement('option');
     opt.value = s.codigo;
     const prefijo = s.rol_silo === 'owner' ? '👑 ' : '';
-    opt.textContent = `${prefijo}${s.nombre}`;
+    const nombreCorto = SILO_NOMBRES_CORTOS[s.codigo] || s.nombre;
+    opt.textContent = `${prefijo}${nombreCorto}`;
     selector.appendChild(opt);
   });
 

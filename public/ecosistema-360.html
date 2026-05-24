@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ecosistema 360 — Reciclean</title>
+<script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 0; overflow: hidden; }
+  header { padding: 14px 24px; background: linear-gradient(135deg, #047857, #064e3b); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 14px rgba(0,0,0,.3); position: relative; z-index: 10; }
+  header h1 { margin: 0; font-size: 18px; }
+  header .sub { font-size: 11px; color: #d1fae5; opacity: .9; }
+  .controls { display: flex; gap: 10px; align-items: center; padding: 12px 24px; background: #1e293b; border-bottom: 1px solid #334155; }
+  .toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; user-select: none; }
+  .toggle input { accent-color: #10b981; }
+  .legend { display: flex; gap: 14px; margin-left: auto; font-size: 11px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  #cy { width: 100vw; height: calc(100vh - 100px); background: radial-gradient(ellipse at center, #1e293b 0%, #0f172a 100%); }
+  .tooltip { position: absolute; background: #1e293b; border: 1px solid #475569; border-radius: 8px; padding: 8px 12px; font-size: 12px; pointer-events: none; z-index: 100; display: none; max-width: 280px; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+  .tooltip b { color: #10b981; }
+  .tooltip .label { color: #94a3b8; font-size: 10px; text-transform: uppercase; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🌐 Ecosistema 360 — Grupo Reciclean-Farex</h1>
+    <div class="sub">F5 visión equipo + sucursales + clientes + agentes IA · Cytoscape.js con layout cose</div>
+  </div>
+  <div style="font-size:11px;color:#d1fae5;">Hover sobre nodo para ver detalle · Click para focalizar</div>
+</header>
+
+<div class="controls">
+  <label class="toggle"><input type="checkbox" data-layer="equipo" checked> Equipo (14)</label>
+  <label class="toggle"><input type="checkbox" data-layer="sucursales" checked> Sucursales (4)</label>
+  <label class="toggle"><input type="checkbox" data-layer="clientes" checked> Clientes (5)</label>
+  <label class="toggle"><input type="checkbox" data-layer="proveedores" checked> Proveedores (3)</label>
+  <label class="toggle"><input type="checkbox" data-layer="pcs" checked> PCs/Diego (5)</label>
+  <button onclick="cy.fit(null, 50)" style="background:#059669;color:#fff;border:0;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;">⤢ Reset vista</button>
+  <div class="legend">
+    <span class="legend-item"><span class="legend-dot" style="background:#6b7280"></span>Equipo</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#059669"></span>Sucursal</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#0891b2"></span>Cliente</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#d97706"></span>Proveedor</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#7c3aed"></span>PC/Diego</span>
+  </div>
+</div>
+
+<div id="cy"></div>
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// Nodos seed — equipo T01-T14, sucursales, clientes top, proveedores top, PCs
+const elements = [
+  // === SUCURSALES (anclas) ===
+  { data: { id: 'suc-cerrillos', label: 'Cerrillos', tipo: 'sucursal', detalle: 'Sucursal principal RM · planta + báscula' } },
+  { data: { id: 'suc-maipu',     label: 'Maipú',     tipo: 'sucursal', detalle: 'Sucursal RM · planta + báscula' } },
+  { data: { id: 'suc-talca',     label: 'Talca',     tipo: 'sucursal', detalle: 'Sucursal VII · planta + báscula' } },
+  { data: { id: 'suc-pm',        label: 'Pto Montt', tipo: 'sucursal', detalle: 'Sucursal X · BLOQUEADA SEREMI' } },
+
+  // === EQUIPO T01-T14 ===
+  { data: { id: 'T01', label: 'Dusan (CEO)',  tipo: 'equipo', detalle: 'CEO Reciclean SPA · gerencia@gestionrepchile.cl' } },
+  { data: { id: 'T02', label: 'Pablo (IT)',   tipo: 'equipo', detalle: 'Tech Lead · recepcion01@gestionrepchile.cl' } },
+  { data: { id: 'T03', label: 'Nicolás',      tipo: 'equipo', detalle: 'Operativo Cerrillos · operaciones.pm@' } },
+  { data: { id: 'T04', label: 'Ingrid',       tipo: 'equipo', detalle: 'Admin Talca · gestorcomercial@' } },
+  { data: { id: 'T05', label: 'Juan Mendoza', tipo: 'equipo', detalle: 'Operativo Maipú · comercial@' } },
+  { data: { id: 'T06', label: 'C. Montecinos',tipo: 'equipo', detalle: 'Operativo Talca · asistente.talca@' } },
+  { data: { id: 'T07', label: 'Carlos Iturra',tipo: 'equipo', detalle: 'Operativo Maipú · apoyo@' } },
+  { data: { id: 'T08', label: 'A. Braniff',   tipo: 'equipo', detalle: 'Chofer Maipú · WhatsApp directo' } },
+  { data: { id: 'T09', label: 'V. Cordero',   tipo: 'equipo', detalle: 'Chofer Talca · WhatsApp directo' } },
+  { data: { id: 'T10', label: 'C. Valenzuela',tipo: 'equipo', detalle: 'Chofer Talca · WhatsApp directo' } },
+  { data: { id: 'T11', label: 'Andrea Rivera',tipo: 'equipo', detalle: 'Comercial · servicios@' } },
+  { data: { id: 'T12', label: 'Jair',         tipo: 'equipo', detalle: 'Asistente · Asistente@' } },
+  { data: { id: 'T13', label: 'Cesar Mora',   tipo: 'equipo', detalle: 'IT · soporte@' } },
+  { data: { id: 'T14', label: 'Dyana',        tipo: 'equipo', detalle: 'Contabilidad SERCOT · WhatsApp directo' } },
+
+  // === CLIENTES TOP ===
+  { data: { id: 'cli-envases',  label: 'ENVASES IMPRESOS', tipo: 'cliente', detalle: 'Generador papel/cartón Las Condes' } },
+  { data: { id: 'cli-hual',     label: 'HUAL',             tipo: 'cliente', detalle: 'Generador grande RM' } },
+  { data: { id: 'cli-pincore',  label: 'PINCORE',          tipo: 'cliente', detalle: 'Generador top — preferido Andrea' } },
+  { data: { id: 'cli-resimex',  label: 'RESIMEX',          tipo: 'cliente', detalle: 'Generador chatarra metálica' } },
+  { data: { id: 'cli-fpc',      label: 'FPC',              tipo: 'cliente', detalle: 'Comprador final papel' } },
+
+  // === PROVEEDORES ===
+  { data: { id: 'prov-sorepa', label: 'SOREPA',     tipo: 'proveedor', detalle: 'Comprador valorizador competidor' } },
+  { data: { id: 'prov-cmpc',   label: 'CMPC',       tipo: 'proveedor', detalle: 'Trayectoria Dusan 1995-2012' } },
+  { data: { id: 'prov-grenergy',label: 'GRENERGY',  tipo: 'proveedor', detalle: 'Madera + cartón VII región' } },
+
+  // === PCs Y DIEGO ===
+  { data: { id: 'diego',       label: 'Diego v10.13',   tipo: 'pc', detalle: 'EF diego-chat-process — vocero IA + memoria sesión' } },
+  { data: { id: 'pc-dusan',    label: 'PC Dusan',       tipo: 'pc', detalle: 'Mayordomo orquestador (este Claude)' } },
+  { data: { id: 'pc-pablo',    label: 'PC Pablo',       tipo: 'pc', detalle: 'Tech Lead — deploys EF + frontend' } },
+  { data: { id: 'pc-camaras',  label: 'PC Cámaras',     tipo: 'pc', detalle: 'ETL + scraping CRM Impulsa' } },
+  { data: { id: 'pc-desocup',  label: 'PC Desocupado',  tipo: 'pc', detalle: 'Análisis Plan 2026' } },
+
+  // === ARISTAS equipo → sucursal ===
+  { data: { source: 'T01', target: 'suc-cerrillos', tipo: 'asignacion' } },
+  { data: { source: 'T03', target: 'suc-cerrillos', tipo: 'asignacion' } },
+  { data: { source: 'T05', target: 'suc-maipu',     tipo: 'asignacion' } },
+  { data: { source: 'T07', target: 'suc-maipu',     tipo: 'asignacion' } },
+  { data: { source: 'T08', target: 'suc-maipu',     tipo: 'asignacion' } },
+  { data: { source: 'T02', target: 'suc-maipu',     tipo: 'asignacion' } },
+  { data: { source: 'T04', target: 'suc-talca',     tipo: 'asignacion' } },
+  { data: { source: 'T06', target: 'suc-talca',     tipo: 'asignacion' } },
+  { data: { source: 'T09', target: 'suc-talca',     tipo: 'asignacion' } },
+  { data: { source: 'T10', target: 'suc-talca',     tipo: 'asignacion' } },
+
+  // === ARISTAS comerciales → clientes ===
+  { data: { source: 'T11', target: 'cli-pincore', tipo: 'comercial', label: 'preferido' } },
+  { data: { source: 'T11', target: 'cli-envases', tipo: 'comercial' } },
+  { data: { source: 'T11', target: 'cli-hual',    tipo: 'comercial' } },
+  { data: { source: 'T11', target: 'cli-resimex', tipo: 'comercial' } },
+  { data: { source: 'T11', target: 'cli-fpc',     tipo: 'comercial' } },
+
+  // === ARISTAS PCs → Diego (consultas) ===
+  { data: { source: 'pc-dusan',   target: 'diego', tipo: 'consulta' } },
+  { data: { source: 'pc-pablo',   target: 'diego', tipo: 'consulta' } },
+  { data: { source: 'pc-camaras', target: 'diego', tipo: 'consulta' } },
+  { data: { source: 'pc-desocup', target: 'diego', tipo: 'consulta' } },
+
+  // === ARISTAS Diego → equipo ===
+  { data: { source: 'diego', target: 'T01', tipo: 'asiste' } },
+  { data: { source: 'diego', target: 'T11', tipo: 'asiste' } },
+  { data: { source: 'diego', target: 'T04', tipo: 'asiste' } },
+  { data: { source: 'diego', target: 'T14', tipo: 'asiste' } },
+
+  // === FLUJO MATERIAL: proveedores ↔ Reciclean ↔ clientes ===
+  { data: { source: 'prov-cmpc',     target: 'suc-cerrillos', tipo: 'flujo_material' } },
+  { data: { source: 'prov-grenergy', target: 'suc-talca',     tipo: 'flujo_material' } },
+  { data: { source: 'suc-cerrillos', target: 'cli-fpc',       tipo: 'flujo_material' } },
+  { data: { source: 'suc-maipu',     target: 'cli-resimex',   tipo: 'flujo_material' } }
+];
+
+const cy = cytoscape({
+  container: document.getElementById('cy'),
+  elements,
+  style: [
+    { selector: 'node', style: {
+      'background-color': '#6b7280', 'label': 'data(label)',
+      'color': '#e2e8f0', 'font-size': '11px', 'font-family': 'Inter,sans-serif',
+      'text-valign': 'bottom', 'text-margin-y': 6,
+      'width': 30, 'height': 30, 'border-width': 2, 'border-color': '#1e293b'
+    }},
+    { selector: 'node[tipo="sucursal"]', style: { 'background-color': '#059669', 'width': 50, 'height': 50, 'shape': 'roundrectangle', 'font-weight': 700 }},
+    { selector: 'node[tipo="cliente"]',  style: { 'background-color': '#0891b2', 'width': 36, 'height': 36 }},
+    { selector: 'node[tipo="proveedor"]',style: { 'background-color': '#d97706', 'width': 36, 'height': 36 }},
+    { selector: 'node[tipo="pc"]',       style: { 'background-color': '#7c3aed', 'width': 40, 'height': 40, 'shape': 'diamond' }},
+    { selector: 'node[id="diego"]',      style: { 'background-color': '#10b981', 'width': 60, 'height': 60, 'shape': 'hexagon', 'border-color': '#fff', 'border-width': 3, 'font-size': '13px', 'font-weight': 700 }},
+    { selector: 'edge', style: {
+      'width': 1.5, 'line-color': '#475569', 'curve-style': 'bezier',
+      'target-arrow-shape': 'triangle', 'target-arrow-color': '#475569',
+      'arrow-scale': 0.7, 'opacity': 0.6
+    }},
+    { selector: 'edge[tipo="comercial"]',     style: { 'line-color': '#0891b2', 'target-arrow-color': '#0891b2', 'opacity': 0.8 }},
+    { selector: 'edge[tipo="consulta"]',      style: { 'line-color': '#7c3aed', 'target-arrow-color': '#7c3aed', 'line-style': 'dashed' }},
+    { selector: 'edge[tipo="asiste"]',        style: { 'line-color': '#10b981', 'target-arrow-color': '#10b981' }},
+    { selector: 'edge[tipo="flujo_material"]',style: { 'line-color': '#d97706', 'target-arrow-color': '#d97706', 'width': 3, 'opacity': 0.9 }},
+    { selector: ':selected', style: { 'border-color': '#fbbf24', 'border-width': 4 }}
+  ],
+  layout: {
+    name: 'cose',
+    nodeDimensionsIncludeLabels: true,
+    idealEdgeLength: 110,
+    nodeOverlap: 20,
+    padding: 30,
+    componentSpacing: 80,
+    nodeRepulsion: () => 400000,
+    edgeElasticity: () => 100,
+    nestingFactor: 5,
+    gravity: 80,
+    numIter: 1500,
+    initialTemp: 200,
+    coolingFactor: 0.95,
+    minTemp: 1.0,
+    animate: true,
+    animationDuration: 1200
+  }
+});
+
+// === Tooltips ===
+const tip = document.getElementById('tooltip');
+cy.on('mouseover', 'node', (evt) => {
+  const n = evt.target;
+  const pos = evt.renderedPosition || evt.target.renderedPosition();
+  tip.innerHTML = `<div class="label">${n.data('tipo').toUpperCase()}</div><b>${n.data('label')}</b><br>${n.data('detalle') || ''}`;
+  tip.style.left = (pos.x + 20) + 'px';
+  tip.style.top  = (pos.y + 60) + 'px';
+  tip.style.display = 'block';
+});
+cy.on('mouseout', 'node', () => { tip.style.display = 'none'; });
+cy.on('tap', 'node', (evt) => { cy.center(evt.target); cy.zoom({ level: 1.5, position: evt.target.position() }); });
+
+// === Toggles por capa ===
+const tipoLayer = { 'equipo': 'equipo', 'sucursales': 'sucursal', 'clientes': 'cliente', 'proveedores': 'proveedor', 'pcs': 'pc' };
+document.querySelectorAll('[data-layer]').forEach(chk => {
+  chk.addEventListener('change', () => {
+    const layer = chk.dataset.layer;
+    const tipo = tipoLayer[layer];
+    cy.nodes(`[tipo="${tipo}"]`).style('display', chk.checked ? 'element' : 'none');
+    if (tipo === 'pc') cy.nodes('[id="diego"]').style('display', chk.checked ? 'element' : 'none');
+  });
+});
+</script>
+</body>
+</html>

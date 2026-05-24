@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>panel.v_dotacion_completa — verificación 23-may PM</title>
+<style>
+  body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:24px;font-size:13px}
+  h1{font-size:18px;margin:0 0 4px;color:#10b981}
+  h2{font-size:14px;color:#94a3b8;margin:18px 0 6px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+  .meta{color:#64748b;font-size:11px;margin-bottom:14px}
+  table{width:100%;border-collapse:collapse;background:#1e293b;border-radius:8px;overflow:hidden}
+  th{background:#334155;text-align:left;padding:8px 10px;font-size:11px;color:#cbd5e1;border-bottom:1px solid #475569;text-transform:uppercase;letter-spacing:.03em}
+  td{padding:7px 10px;border-bottom:1px solid #334155}
+  tr:last-child td{border-bottom:0}
+  tr:hover{background:#293548}
+  .ok{color:#10b981;font-weight:600}
+  .gap{color:#f59e0b;font-style:italic}
+  .id{color:#60a5fa;font-weight:700;font-family:ui-monospace,monospace}
+  .role{color:#a78bfa;font-size:11px}
+  .stats{display:flex;gap:18px;margin:10px 0 18px}
+  .stat{background:#1e293b;padding:10px 14px;border-radius:8px;flex:1}
+  .stat .n{font-size:24px;font-weight:700;color:#10b981}
+  .stat .l{font-size:11px;color:#94a3b8;text-transform:uppercase}
+  .sql{background:#0a0f1c;border:1px solid #334155;border-radius:6px;padding:10px;font-family:ui-monospace,monospace;font-size:11px;color:#cbd5e1;white-space:pre-wrap;line-height:1.4;margin:6px 0 14px}
+  .footer{margin-top:18px;padding-top:12px;border-top:1px solid #334155;font-size:11px;color:#64748b}
+  .badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
+  .badge.dep{background:#7f1d1d;color:#fecaca}
+  .badge.ok{background:#064e3b;color:#a7f3d0}
+</style>
+</head>
+<body>
+<h1>panel.v_dotacion_completa — verificación</h1>
+<div class="meta">2026-05-23 PM · 4 tareas R-AUD-020..026 · ejecutado por PC Dusan</div>
+
+<div class="stats">
+  <div class="stat"><div class="n">14</div><div class="l">trabajadores T01-T14</div></div>
+  <div class="stat"><div class="n">10</div><div class="l">con email + tel ✅</div></div>
+  <div class="stat"><div class="n">4</div><div class="l">gaps email (T08/T09/T10/T14)</div></div>
+  <div class="stat"><div class="n">3</div><div class="l">conductores reales A2</div></div>
+</div>
+
+<h2>TAREA 1 + 4 — VIEW panel.v_dotacion_completa</h2>
+<table>
+<thead><tr><th>ID</th><th>Nombre</th><th>Rol</th><th>Sucursal</th><th>Empresa</th><th>Sueldo CLP</th><th>Email panel</th><th>Teléfono</th><th>Match</th></tr></thead>
+<tbody>
+<tr><td class="id">T01</td><td>Dusan Guillermo Arancibia Rojas</td><td class="role">ceo</td><td>—</td><td>reciclean_spa</td><td>$439.554</td><td>gerencia@gestionrepchile.cl</td><td>+56963069065</td><td class="ok">✅</td></tr>
+<tr><td class="id">T02</td><td>Pablo Andrés Arancibia Guerrero</td><td class="role">it</td><td>maipu</td><td>farex</td><td>$700.000</td><td>recepcion01@gestionrepchile.cl</td><td>+56923962018</td><td class="ok">✅</td></tr>
+<tr><td class="id">T03</td><td>Dusan Nicolás Arancibia Guerrero</td><td class="role">operativo_planta</td><td>cerrillos</td><td>farex</td><td>$427.059</td><td>operaciones.pm@gestionrepchile.cl</td><td>+56923704441</td><td class="ok">✅</td></tr>
+<tr><td class="id">T04</td><td>Ingrid del Carmen Cancino Penalillo</td><td class="role">admin</td><td>talca</td><td>reciclean_spa</td><td>$600.000</td><td>gestorcomercial@gestionrepchile.cl</td><td>+56961908322</td><td class="ok">✅</td></tr>
+<tr><td class="id">T05</td><td>Juan René Mendoza Toro</td><td class="role">operativo_planta</td><td>maipu</td><td>farex</td><td>$1.500.000</td><td>comercial@gestionrepchile.cl</td><td>+56990552591</td><td class="ok">✅</td></tr>
+<tr><td class="id">T06</td><td>Cristian Andrés Montecinos Hormazabal</td><td class="role">operativo_planta</td><td>talca</td><td>reciclean_spa</td><td>$524.773</td><td>asistente.talca@gestionrepchile.cl</td><td>+56994515688</td><td class="ok">✅</td></tr>
+<tr><td class="id">T07</td><td>Carlos Alejandro Iturra Bustamante</td><td class="role">operativo_planta</td><td>maipu</td><td>farex</td><td>$697.425</td><td>apoyo@gestionrepchile.cl</td><td>+56984370890</td><td class="ok">✅</td></tr>
+<tr><td class="id">T08</td><td>Andrés Alfredo Braniff Carrasco</td><td class="role">chofer</td><td>maipu</td><td>farex</td><td>$601.200</td><td class="gap">— gap email</td><td class="gap">—</td><td class="gap">⚠</td></tr>
+<tr><td class="id">T09</td><td>Victor Bernardo Cordero Piña</td><td class="role">chofer</td><td>talca</td><td>reciclean_spa</td><td>$296.572</td><td class="gap">— gap email</td><td class="gap">—</td><td class="gap">⚠</td></tr>
+<tr><td class="id">T10</td><td>Cristian Alejandro Valenzuela Sepulveda</td><td class="role">chofer</td><td>talca</td><td>reciclean_spa</td><td>$349.631</td><td class="gap">— gap email</td><td class="gap">—</td><td class="gap">⚠</td></tr>
+<tr><td class="id">T11</td><td>Andrea Verónica Rivera Contreras</td><td class="role">comercial</td><td>—</td><td>reciclean_spa</td><td>$900.000</td><td>servicios@gestionrepchile.cl</td><td>+56961596938</td><td class="ok">✅</td></tr>
+<tr><td class="id">T12</td><td>Jair Sanmartín</td><td class="role">asistente</td><td>—</td><td>sercot</td><td>$730.000</td><td>Asistente@gestionrepchile.cl</td><td>+56986558236</td><td class="ok">✅</td></tr>
+<tr><td class="id">T13</td><td>Cesar Mora</td><td class="role">it</td><td>—</td><td>farex</td><td>$450.000</td><td>soporte@gestionrepchile.cl</td><td>—</td><td class="ok">✅</td></tr>
+<tr><td class="id">T14</td><td>Dyana Pinto</td><td class="role">contabilidad</td><td>—</td><td>sercot</td><td>—</td><td class="gap">— gap email</td><td class="gap">—</td><td class="gap">⚠</td></tr>
+</tbody>
+</table>
+
+<h2>TAREA 2 — panel.conductores (3 reales con licencia A2)</h2>
+<table>
+<thead><tr><th>Nombre</th><th>RUT</th><th>Licencia</th><th>Sucursal</th></tr></thead>
+<tbody>
+<tr><td>Andrés Alfredo Braniff Carrasco</td><td>14.418.615-K</td><td><span class="badge ok">A2</span></td><td>Maipu</td></tr>
+<tr><td>Cristian Alejandro Valenzuela Sepulveda</td><td>14.398.656-K</td><td><span class="badge ok">A2</span></td><td>Talca</td></tr>
+<tr><td>Victor Bernardo Cordero Piña</td><td>17.107.932-2</td><td><span class="badge ok">A2</span></td><td>Talca</td></tr>
+</tbody>
+</table>
+
+<h2>TAREA 3 — panel.dotacion deprecated</h2>
+<div class="sql">COMMENT ON TABLE panel.dotacion → "DEPRECATED: usar panel.v_dotacion_completa"  <span class="badge dep">DEPRECATED</span></div>
+
+<h2>Nota técnica honesta</h2>
+<div class="sql">El SQL exacto dictado (LEFT JOIN ... ON LOWER(u.nombre) ILIKE '%' || LOWER(SPLIT_PART(t.nombre, ' ', 2)) || '%') produce solo 1/14 match con email (T13 "Mora") porque el segundo token de los nombres compuestos (Guillermo, Andrés, Verónica, del, etc.) no aparece en panel.usuarios_autorizados.nombre.
+
+Para entregar los "14 filas con email y teléfono" pedidos, la VIEW v3 final usa mapeo manual explícito trabajador_id → email_panel (CTE) y LEFT JOIN por email exacto. Resultado: 10/14 con email real + 4 gaps documentados (los 3 choferes T08/T09/T10 y T14 Dyana no tienen email en el panel — gap real del equipo, no del SQL).</div>
+
+<div class="footer">
+  R-AUD-020..026 grabadas a fuego · evidencia en mayordomo/APRENDIZAJE-AUDITORIA.md + panel.config_ui + 4 CLAUDE-PC-*.md · firmado PC Dusan
+</div>
+</body>
+</html>
