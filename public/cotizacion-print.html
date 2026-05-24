@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Cotización Reciclean</title>
+<style>
+  @media print {
+    @page { margin: 14mm; size: A4; }
+    .no-print { display: none !important; }
+    body { padding: 0; }
+  }
+  body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; color: #0f172a; max-width: 720px; margin: 0 auto; padding: 24px; font-size: 13px; line-height: 1.5; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #059669; padding-bottom: 14px; margin-bottom: 18px; }
+  .header h1 { font-size: 22px; margin: 0 0 4px; color: #047857; }
+  .header .sub { color: #64748b; font-size: 11px; }
+  .header .logo { width: 56px; height: 56px; background: linear-gradient(135deg, #059669, #047857); color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-weight: 700; font-size: 22px; }
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+  .meta-card { background: #f8fafc; border-radius: 8px; padding: 12px; }
+  .meta-card h3 { font-size: 11px; color: #64748b; text-transform: uppercase; margin: 0 0 6px; letter-spacing: 0.04em; }
+  .meta-card p { margin: 2px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; }
+  th { background: #ecfdf5; color: #047857; text-align: left; padding: 8px 10px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 2px solid #10b981; }
+  td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
+  .total { background: #047857; color: #fff; padding: 12px 14px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 16px; font-weight: 700; }
+  .footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid #e2e8f0; font-size: 10px; color: #64748b; }
+  .footer p { margin: 2px 0; }
+  .actions { background: #fef3c7; border: 1px solid #fbbf24; border-radius: 8px; padding: 12px; margin-bottom: 18px; display: flex; gap: 10px; align-items: center; }
+  .actions button { background: #059669; color: #fff; border: 0; border-radius: 6px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .actions button:hover { background: #047857; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+  .pill.draft { background: #fef3c7; color: #92400e; }
+  .pill.sent { background: #dcfce7; color: #166534; }
+</style>
+</head>
+<body>
+
+<div class="actions no-print">
+  <button onclick="window.print()">🖨️ Generar PDF (imprimir → Guardar como PDF)</button>
+  <span style="font-size:11px;color:#92400e;">Tip: en Chrome → "Guardar como PDF" en lugar de impresora.</span>
+</div>
+
+<div class="header">
+  <div>
+    <h1>Cotización Reciclean</h1>
+    <div class="sub">Grupo Reciclean-Farex · GESTOR Ley REP 20.920</div>
+    <div class="sub" id="cot-numero">N° pendiente · <span class="pill draft">Borrador</span></div>
+  </div>
+  <div class="logo">R</div>
+</div>
+
+<div class="meta-grid">
+  <div class="meta-card">
+    <h3>Cliente</h3>
+    <p><b id="cli-nombre">—</b></p>
+    <p id="cli-rut">RUT: —</p>
+    <p id="cli-direccion">—</p>
+    <p id="cli-contacto">—</p>
+  </div>
+  <div class="meta-card">
+    <h3>Cotización</h3>
+    <p>Fecha: <b id="cot-fecha">—</b></p>
+    <p>Validez: <b>30 días corridos</b></p>
+    <p>Sucursal: <b id="cot-sucursal">—</b></p>
+    <p>Emite: <b id="cot-emite">Andrea Rivera (comercial)</b></p>
+  </div>
+</div>
+
+<table>
+  <thead>
+    <tr><th>Material</th><th>Cantidad (kg)</th><th>Precio compra ($/kg)</th><th>Subtotal CLP</th></tr>
+  </thead>
+  <tbody id="cot-lineas">
+    <tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:20px;">Sin líneas — cargá la URL con ?cliente_id=… &amp;cot_id=…</td></tr>
+  </tbody>
+</table>
+
+<div class="total">
+  <span>TOTAL ESTIMADO</span>
+  <span id="cot-total">$ 0 CLP</span>
+</div>
+
+<div class="footer">
+  <p><b>Reciclean SpA</b> · RUT 76.XXX.XXX-X · Gestor Ley REP 20.920 autorizado</p>
+  <p>Cerrillos · Maipú · Talca · Pto Montt (en proceso SEREMI)</p>
+  <p>Andrea Rivera · servicios@gestionrepchile.cl · +56 9 6159 6938</p>
+  <p style="margin-top:8px;font-style:italic;">Esta cotización es preliminar. El precio definitivo queda sujeto a verificación de calidad del material en planta y a variaciones del mercado (UF + tipo de cambio).</p>
+</div>
+
+<script>
+  // F7 — datos del cliente/cotización desde URL params o desde Supabase
+  // Uso: /cotizacion-print.html?cliente_id=crm_181579&cot_id=COT-2025-001
+  // Si no hay query params, carga ejemplo ENVASES IMPRESOS para preview.
+  const params = new URLSearchParams(location.search);
+  const clienteId = params.get('cliente_id');
+  const cotId = params.get('cot_id');
+
+  // Datos demo (fallback cuando no hay query params) — ENVASES IMPRESOS
+  const demoData = {
+    cliente: {
+      nombre: 'ENVASES IMPRESOS SPA',
+      rut: '76.123.456-7',
+      direccion: 'Av. Apoquindo 4501, Las Condes, Santiago',
+      contacto: 'Contacto: María Pérez · +56 9 1234 5678'
+    },
+    cotizacion: {
+      numero: 'COT-2026-DEMO',
+      fecha: new Date().toLocaleDateString('es-CL'),
+      sucursal: 'Cerrillos',
+      lineas: [
+        { material: 'Cartón corrugado', cantidad: 5000, precio: 90, subtotal: 450000 },
+        { material: 'Papel blanco oficina', cantidad: 1200, precio: 180, subtotal: 216000 },
+        { material: 'Plástico PET', cantidad: 800, precio: 250, subtotal: 200000 }
+      ]
+    }
+  };
+
+  function render(data) {
+    document.getElementById('cli-nombre').textContent = data.cliente.nombre;
+    document.getElementById('cli-rut').textContent = 'RUT: ' + data.cliente.rut;
+    document.getElementById('cli-direccion').textContent = data.cliente.direccion;
+    document.getElementById('cli-contacto').textContent = data.cliente.contacto;
+    document.getElementById('cot-numero').innerHTML = data.cotizacion.numero + ' · <span class="pill draft">Borrador</span>';
+    document.getElementById('cot-fecha').textContent = data.cotizacion.fecha;
+    document.getElementById('cot-sucursal').textContent = data.cotizacion.sucursal;
+    const tbody = document.getElementById('cot-lineas');
+    tbody.innerHTML = data.cotizacion.lineas.map(l => `
+      <tr>
+        <td>${l.material}</td>
+        <td style="text-align:right;">${l.cantidad.toLocaleString('es-CL')}</td>
+        <td style="text-align:right;">$ ${l.precio.toLocaleString('es-CL')}</td>
+        <td style="text-align:right;"><b>$ ${l.subtotal.toLocaleString('es-CL')}</b></td>
+      </tr>`).join('');
+    const total = data.cotizacion.lineas.reduce((s, l) => s + l.subtotal, 0);
+    document.getElementById('cot-total').textContent = '$ ' + total.toLocaleString('es-CL') + ' CLP';
+    document.title = `Cotización ${data.cotizacion.numero} — ${data.cliente.nombre}`;
+  }
+
+  if (!clienteId && !cotId) {
+    render(demoData);
+  } else {
+    // TODO Pablo: leer desde Supabase con cliente_id + cot_id reales
+    // Por ahora: render demo y mostrar mensaje
+    render(demoData);
+    console.log('[cotizacion-print] TODO: cargar datos reales con cliente_id=' + clienteId + ' cot_id=' + cotId);
+  }
+</script>
+</body>
+</html>
