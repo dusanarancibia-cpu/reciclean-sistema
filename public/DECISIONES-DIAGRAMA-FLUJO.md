@@ -99,3 +99,24 @@ Cotización arriendo → Contrato firmado → Facturación recurrente mensual
 ---
 
 **Firmado:** PC Dusan, 2026-05-24 madrugada (pendiente firma Dusan).
+
+---
+
+## ✅ FIRMA DUSAN — 2026-05-25 AM
+
+**Los 5 defaults quedan vinculantes** + complemento Punto 5:
+
+> "Los 5 defaults OK, pero si el #7 [punto 5] hay que complementar por envío WhatsApp." — Dusan, 25-may-2026 AM
+
+### Complemento Punto 5
+
+El nuevo diagrama "Servicios consultoría/comerciales" tiene que incluir paso obligatorio de **entrega vía WhatsApp** al cliente:
+
+- **Capacitación:** terminada la capacitación → WhatsApp con resumen PDF + foto asistencia + grabación si hubo.
+- **Imágenes/respaldos Ley REP:** fotos del retiro → WhatsApp inmediato al cliente como respaldo legal.
+
+Tool: `dieguito-whatsapp` v3.1 (ya en prod tras D-OP-04-v2 Ola 2). Sin infraestructura nueva.
+
+### Referencia cruzada
+
+`reciclean-rdo: mayordomo/DECISIONES.md § D-DIAGRAMA-FLUJO-V2-FINAL` (commit a generar).
