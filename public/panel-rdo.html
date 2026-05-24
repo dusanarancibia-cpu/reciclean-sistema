@@ -3218,9 +3218,13 @@ window.diegAutoSuggest = function(val) {
   if (val.trim().length < 15) return;
   _diegSuggestTimer = setTimeout(async () => {
     try {
+      // BUG-DIEG-401-001 (Cesar Mora 2026-05-24): EF dieguito-process tiene verify_jwt=true,
+      // hay que mandar Authorization Bearer con el JWT del usuario (o anon como fallback).
+      let _diegAuth = DIEG_ANON;
+      try { const _s = await sb.auth.getSession(); if (_s?.data?.session?.access_token) _diegAuth = _s.data.session.access_token; } catch {}
       const resp = await fetch(DIEG_FN_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_diegAuth}`, 'apikey': DIEG_ANON },
         body: JSON.stringify({ subido_por: currentUser, text: val, suggest_only: true })
       });
       if (!resp.ok) return;
@@ -3361,9 +3365,13 @@ window.diegMandar = async function() {
     if (fileBase64) { body.file_base64 = fileBase64; body.file_mime = fileMime; body.file_name = fileName; }
     if (destIds.length > 0) body.destination_ids = destIds;
 
+    // BUG-DIEG-401-001 (Cesar Mora 2026-05-24): EF dieguito-process tiene verify_jwt=true,
+    // hay que mandar Authorization Bearer con el JWT del usuario (o anon como fallback).
+    let _diegAuth2 = DIEG_ANON;
+    try { const _s2 = await sb.auth.getSession(); if (_s2?.data?.session?.access_token) _diegAuth2 = _s2.data.session.access_token; } catch {}
     const fnResp = await fetch(DIEG_FN_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_diegAuth2}`, 'apikey': DIEG_ANON },
       body: JSON.stringify(body)
     });
 
@@ -4546,6 +4554,32 @@ function cerrarCierresDetalle() {
 let _preciosIniciado = false;
 let _preciosCache = [];        // resultado crudo de la vista
 let _preciosBuscarTimer = null;
+let _permisosUsuario = null;   // R-AUD-020 fix: cache de permisos del usuario actual
+
+// R-AUD-020 fix (D-RAUD-020-FIX-001, Dusan 2026-05-24):
+// Consulta permisos del usuario actual via RPC public.consultar_permisos_usuario.
+// Default seguro: todos los flags en false si no hay fila en panel.permisos.
+async function _loadPermisosUsuarioActual() {
+  if (_permisosUsuario) return _permisosUsuario;
+  const email = (typeof currentUser === 'string' && currentUser) ? currentUser : '';
+  if (!email) {
+    _permisosUsuario = { ver_precio_venta: false, ver_margenes: false, ver_finanzas: false, puede_gestionar_permisos: false };
+    return _permisosUsuario;
+  }
+  try {
+    const { data, error } = await sb.rpc('consultar_permisos_usuario', { p_email: email });
+    if (error || !data || data.length === 0) {
+      console.warn('[R-AUD-020] consultar_permisos_usuario fallback default seguro:', error);
+      _permisosUsuario = { ver_precio_venta: false, ver_margenes: false, ver_finanzas: false, puede_gestionar_permisos: false };
+    } else {
+      _permisosUsuario = data[0];
+    }
+  } catch (e) {
+    console.warn('[R-AUD-020] excepción RPC permisos, fallback default seguro:', e);
+    _permisosUsuario = { ver_precio_venta: false, ver_margenes: false, ver_finanzas: false, puede_gestionar_permisos: false };
+  }
+  return _permisosUsuario;
+}
 
 // F19 · Cargar inconsistencias precio backend Pablo en tab Precios
 async function _v4LoadPrecDispersion() {
@@ -4618,6 +4652,11 @@ async function loadPrecios() {
   const div = document.getElementById('preciosTabla');
   div.innerHTML = '<p class="text-stone-400">Cargando…</p>';
 
+  // R-AUD-020 fix: cargar permisos ANTES de la query. Default seguro.
+  const perm = await _loadPermisosUsuarioActual();
+  const verVenta    = perm.ver_precio_venta === true;
+  const verMargenes = perm.ver_margenes === true;
+
   const fmat = document.getElementById('precFiltroMaterial')?.value || '';
   const fsuc = document.getElementById('precFiltroSucursal')?.value || '';
   const buscar = (document.getElementById('precBuscar')?.value || '').trim().toLowerCase();
@@ -4627,8 +4666,13 @@ async function loadPrecios() {
   const matCacheP = sb.schema('curated').from('materiales').select('material_id, nombre');
   const sucCacheP = sb.schema('curated').from('sucursales').select('sucursal_id, nombre');
 
+  // R-AUD-020: defensa en profundidad — si no ve venta, NO solicitar precio_venta_clp.
+  const selectCols = verVenta
+    ? 'material_id, sucursal_id, vigencia_desde, vigencia_hasta, precio_compra_clp, precio_venta_clp, moneda, notas'
+    : 'material_id, sucursal_id, vigencia_desde, vigencia_hasta, precio_compra_clp, moneda, notas';
+
   let q = sb.schema('curated').from('vw_materiales_sucursal_precios_vigente')
-    .select('material_id, sucursal_id, vigencia_desde, vigencia_hasta, precio_compra_clp, precio_venta_clp, moneda, notas')
+    .select(selectCols)
     .is('vigencia_hasta', null);   // solo vigentes (sin cierre de vigencia)
   if (fmat) q = q.eq('material_id', fmat);
   if (fsuc) q = q.eq('sucursal_id', fsuc);
@@ -4648,28 +4692,36 @@ async function loadPrecios() {
   const sucMap = new Map(((sucCacheRes && sucCacheRes.data) || []).map(s => [s.sucursal_id, s.nombre || s.sucursal_id]));
 
   // Enriquecer con nombre + margen calculado, aplicar filtros frontend.
+  // R-AUD-020: margen requiere ver_margenes (no solo ver_venta).
   let rows = (data || []).map(r => {
     const matNom = matMap.get(r.material_id) || r.material_id;
     const sucNom = sucMap.get(r.sucursal_id) || r.sucursal_id;
     const compra = Number(r.precio_compra_clp);
-    const venta  = Number(r.precio_venta_clp);
-    const margenPct = (Number.isFinite(venta) && venta > 0) ? ((venta - compra) / venta) * 100 : null;
+    const venta  = verVenta ? Number(r.precio_venta_clp) : null;
+    const margenPct = (verMargenes && Number.isFinite(venta) && venta > 0)
+      ? ((venta - compra) / venta) * 100
+      : null;
     return { ...r, matNom, sucNom, margenPct };
   });
 
   if (buscar) rows = rows.filter(r => r.matNom.toLowerCase().includes(buscar));
-  if (margenBajoOnly) rows = rows.filter(r => r.margenPct !== null && r.margenPct < 30);
+  if (margenBajoOnly && verMargenes) rows = rows.filter(r => r.margenPct !== null && r.margenPct < 30);
 
   _preciosCache = rows;
 
-  // KPIs
+  // KPIs (R-AUD-020: margen oculto si no tiene ver_margenes)
   document.getElementById('precKpiTotal').textContent = rows.length.toLocaleString('es-CL');
   document.getElementById('precKpiMateriales').textContent = new Set(rows.map(r => r.material_id)).size.toLocaleString('es-CL');
-  const margenes = rows.map(r => r.margenPct).filter(m => m !== null);
-  document.getElementById('precKpiMargenProm').textContent = margenes.length
-    ? (margenes.reduce((a, b) => a + b, 0) / margenes.length).toFixed(1) + '%'
-    : '—';
-  document.getElementById('precKpiMargenBajo').textContent = rows.filter(r => r.margenPct !== null && r.margenPct < 30).length.toLocaleString('es-CL');
+  if (verMargenes) {
+    const margenes = rows.map(r => r.margenPct).filter(m => m !== null);
+    document.getElementById('precKpiMargenProm').textContent = margenes.length
+      ? (margenes.reduce((a, b) => a + b, 0) / margenes.length).toFixed(1) + '%'
+      : '—';
+    document.getElementById('precKpiMargenBajo').textContent = rows.filter(r => r.margenPct !== null && r.margenPct < 30).length.toLocaleString('es-CL');
+  } else {
+    const elProm = document.getElementById('precKpiMargenProm'); if (elProm) elProm.textContent = '🔒';
+    const elBajo = document.getElementById('precKpiMargenBajo'); if (elBajo) elBajo.textContent = '🔒';
+  }
 
   if (rows.length === 0) {
     div.innerHTML = `<div class="p-8 text-center">
@@ -4683,6 +4735,7 @@ async function loadPrecios() {
     ? '—'
     : '$' + Math.round(Number(n)).toLocaleString('es-CL');
 
+  // R-AUD-020: render condicional según permisos.
   const rowsHtml = rows.map(r => {
     const margenCls = r.margenPct === null
       ? 'text-stone-400'
@@ -4691,35 +4744,48 @@ async function loadPrecios() {
         : r.margenPct < 50
           ? 'text-amber-700 font-semibold'
           : 'text-green-700 font-semibold';
+    const ventaCell = verVenta
+      ? `<td class="py-2 px-3 text-right text-stone-700">${fmtCLP_n(r.precio_venta_clp)}</td>`
+      : '';
+    const margenCell = verMargenes
+      ? `<td class="py-2 px-3 text-right ${margenCls}">${r.margenPct !== null ? r.margenPct.toFixed(1) + '%' : '—'}</td>`
+      : '';
     return `<tr class="border-b border-stone-100 hover:bg-stone-50"
         data-entity-type="material" data-entity-id="${escapeHtml(r.material_id)}" data-entity-nombre="${escapeHtml(r.matNom)}"
         title="Click-derecho: vínculos E360">
       <td class="py-2 px-3 font-medium text-stone-700">${escapeHtml(r.matNom)}</td>
       <td class="py-2 px-3 text-stone-600">${escapeHtml(r.sucNom)}</td>
       <td class="py-2 px-3 text-right text-stone-700">${fmtCLP_n(r.precio_compra_clp)}</td>
-      <td class="py-2 px-3 text-right text-stone-700">${fmtCLP_n(r.precio_venta_clp)}</td>
-      <td class="py-2 px-3 text-right ${margenCls}">${r.margenPct !== null ? r.margenPct.toFixed(1) + '%' : '—'}</td>
+      ${ventaCell}
+      ${margenCell}
       <td class="py-2 px-3 text-right text-stone-400 text-xs">${r.vigencia_desde ? new Date(r.vigencia_desde).toLocaleDateString('es-CL') : '—'}</td>
       <td class="py-2 px-3 text-stone-500 text-xs">${escapeHtml(r.notas || '')}</td>
     </tr>`;
   }).join('');
 
+  const ventaTh   = verVenta    ? '<th class="py-2 px-3 text-right">Venta (CLP)</th>' : '';
+  const margenTh  = verMargenes ? '<th class="py-2 px-3 text-right">Margen</th>' : '';
+  const lockNote  = (!verVenta || !verMargenes)
+    ? `<p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2 m-3">🔒 Estás viendo solo precios de compra. Si necesitás ver venta o márgenes, pedile a Dusan que te active el permiso (panel.permisos).</p>`
+    : '';
+
   div.innerHTML = `
+    ${lockNote}
     <table class="min-w-full text-sm">
       <thead class="bg-stone-50 text-stone-500 text-xs uppercase tracking-wide">
         <tr>
           <th class="py-2 px-3 text-left">Material</th>
           <th class="py-2 px-3 text-left">Sucursal</th>
           <th class="py-2 px-3 text-right">Compra (CLP)</th>
-          <th class="py-2 px-3 text-right">Venta (CLP)</th>
-          <th class="py-2 px-3 text-right">Margen</th>
+          ${ventaTh}
+          ${margenTh}
           <th class="py-2 px-3 text-right">Vigencia desde</th>
           <th class="py-2 px-3 text-left">Notas</th>
         </tr>
       </thead>
       <tbody>${rowsHtml}</tbody>
     </table>
-    <p class="text-xs text-stone-400 p-3">${rows.length} fila(s) · margen rojo &lt;30% · ámbar 30-50% · verde ≥50%</p>`;
+    <p class="text-xs text-stone-400 p-3">${rows.length} fila(s)${verMargenes ? ' · margen rojo &lt;30% · ámbar 30-50% · verde ≥50%' : ''}</p>`;
 }
 
 // ============================================================
