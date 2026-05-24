@@ -7946,7 +7946,10 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="diego-chat" id="diegoChat" role="dialog" aria-label="Chat con Diego">
   <div class="diego-chat-h">
     <span class="h-title">🤖 Diego <span class="h-version">v6</span></span>
-    <button type="button" id="diegoChatClose" aria-label="Cerrar chat">✕</button>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <button type="button" id="diegoChatLimpiar" aria-label="Limpiar vista del chat" title="Limpiar pantalla (Diego sigue recordando todo)">🧹</button>
+      <button type="button" id="diegoChatClose" aria-label="Cerrar chat">✕</button>
+    </div>
   </div>
   <div class="diego-chat-body" id="diegoChatBody">
     <div class="diego-empty">¿En qué te ayudo? Probá: <em>"precio cartón Maipú"</em> · <em>"resumen facturación mayo"</em> · arrastrá una foto.</div>
@@ -7974,6 +7977,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const fabBadge = document.getElementById('diegoFabBadge');
   const win = document.getElementById('diegoChat');
   const closeBtn = document.getElementById('diegoChatClose');
+  // 🧹 Botón limpiar vista (NO borra memoria — solo limpia la pantalla del FAB)
+  const limpiarBtn = document.getElementById('diegoChatLimpiar');
+  if (limpiarBtn) limpiarBtn.addEventListener('click', () => {
+    const b = document.getElementById('diegoChatBody');
+    if (!b) return;
+    b.innerHTML = '<div class="diego-empty">Pantalla limpia 🧹 — Diego sigue recordando todo lo anterior. ¿Algo nuevo?</div><div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>';
+  });
   const body = document.getElementById('diegoChatBody');
   const form = document.getElementById('diegoChatForm');
   const input = document.getElementById('diegoChatInput');
