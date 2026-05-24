@@ -7929,6 +7929,24 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-attach-preview button{background:none;border:0;color:#1e40af;cursor:pointer;font-size:14px}
   .diego-drag-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(5,150,105,.9);color:#fff;display:none;align-items:center;justify-content:center;font-weight:600;font-size:14px;border-radius:12px;z-index:5}
   .diego-drag-overlay.active{display:flex}
+  /* D-DIEGO-FAB-MEJORAS-001 M1 — Estado minimizado: barra blanca fina anclada abajo-derecha */
+  .diego-chat.minimized{max-height:36px;overflow:hidden;border-radius:18px;background:#fff;border-color:#cbd5e1}
+  .diego-chat.minimized .diego-chat-h{background:#fff;color:#0f172a;border-bottom:1px solid #e2e8f0;cursor:pointer}
+  .diego-chat.minimized .diego-chat-h .h-title{color:#0f172a}
+  .diego-chat.minimized .diego-chat-h .h-version,
+  .diego-chat.minimized #diegoChatLimpiar,
+  .diego-chat.minimized #diegoChatClose{display:none}
+  .diego-chat.minimized .diego-chat-body,
+  .diego-chat.minimized .diego-attach-preview,
+  .diego-chat.minimized .diego-chat-form{display:none}
+  /* M3 — Botón attach con SVG en lugar de emoji */
+  .diego-chat-form .attach-btn{padding:8px;display:inline-flex;align-items:center;justify-content:center}
+  /* M4 — Badge FAB clickeable: cursor pointer + hover */
+  .diego-fab-badge{cursor:pointer}
+  .diego-fab-badge:hover{transform:scale(1.1)}
+  /* M5 — Punto rojo binario en bell topbar */
+  #v4-bellNotificaciones .bell-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:#ef4444;display:none}
+  #v4-bellNotificaciones.has-alerts .bell-dot{display:block}
   /* Responsive mobile: chat ocupa casi todo el ancho */
   @media (max-width: 480px) {
     .diego-chat{right:8px;left:8px;bottom:84px;width:auto;max-width:none;max-height:70vh}
@@ -7940,15 +7958,16 @@ document.addEventListener('DOMContentLoaded', () => {
 <button class="diego-fab" id="diegoFab" type="button" aria-label="Abrir chat Diego">
   <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
   <span class="diego-fab-label">Diego — pregúntame</span>
-  <span class="diego-fab-badge hidden" id="diegoFabBadge">0</span>
+  <span class="diego-fab-badge hidden" id="diegoFabBadge" role="button" tabindex="0" aria-label="Ver tareas pendientes">0</span>
 </button>
 
 <div class="diego-chat" id="diegoChat" role="dialog" aria-label="Chat con Diego">
   <div class="diego-chat-h">
     <span class="h-title">🤖 Diego <span class="h-version">v6</span></span>
     <div style="display:flex;gap:4px;align-items:center;">
-      <button type="button" id="diegoChatLimpiar" aria-label="Limpiar vista del chat" title="Limpiar pantalla (Diego sigue recordando todo)">🧹</button>
-      <button type="button" id="diegoChatClose" aria-label="Cerrar chat">✕</button>
+      <button type="button" id="diegoChatLimpiar" aria-label="Limpiar pantalla" title="Limpiar pantalla — Diego sigue recordando todo">↻</button>
+      <button type="button" id="diegoChatMinimize" aria-label="Minimizar chat" title="Minimizar (mantiene conversación)">−</button>
+      <button type="button" id="diegoChatClose" aria-label="Cerrar chat" title="Cerrar (limpia conversación)">✕</button>
     </div>
   </div>
   <div class="diego-chat-body" id="diegoChatBody">
@@ -7961,7 +7980,11 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
   <form class="diego-chat-form" id="diegoChatForm" autocomplete="off">
     <input type="file" id="diegoFileInput" accept="image/*,audio/*,application/pdf,text/plain,text/csv,application/json" style="display:none;" />
-    <button type="button" class="attach-btn" id="diegoAttachBtn" aria-label="Adjuntar archivo" title="Adjuntar foto, audio o PDF">📎</button>
+    <button type="button" class="attach-btn" id="diegoAttachBtn" aria-label="Adjuntar archivo" title="Foto, audio o PDF">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 17.98 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+      </svg>
+    </button>
     <textarea id="diegoChatInput" placeholder="Escribí o adjuntá algo…" maxlength="2000" aria-label="Mensaje a Diego" rows="1"></textarea>
     <button type="submit" class="send" id="diegoChatSend">Enviar</button>
   </form>
@@ -7982,8 +8005,41 @@ document.addEventListener('DOMContentLoaded', () => {
   if (limpiarBtn) limpiarBtn.addEventListener('click', () => {
     const b = document.getElementById('diegoChatBody');
     if (!b) return;
-    b.innerHTML = '<div class="diego-empty">Pantalla limpia 🧹 — Diego sigue recordando todo lo anterior. ¿Algo nuevo?</div><div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>';
+    b.innerHTML = '<div class="diego-empty">Pantalla limpia ↻ — Diego sigue recordando todo lo anterior. ¿Algo nuevo?</div><div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>';
   });
+  // D-DIEGO-FAB-MEJORAS-001 · M1 minimizar/expandir
+  const minBtn = document.getElementById('diegoChatMinimize');
+  const chatWin = document.getElementById('diegoChat');
+  const chatHeader = chatWin?.querySelector('.diego-chat-h');
+  if (minBtn && chatWin) {
+    minBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      chatWin.classList.add('minimized');
+    });
+  }
+  if (chatHeader && chatWin) {
+    chatHeader.addEventListener('click', (e) => {
+      if (chatWin.classList.contains('minimized') && e.target.tagName !== 'BUTTON') {
+        chatWin.classList.remove('minimized');
+      }
+    });
+  }
+  // M4 · click en badge ≠ click en FAB → ir a tab Bandeja Diego (donde caen las tareas)
+  const fabBadgeEl = document.getElementById('diegoFabBadge');
+  if (fabBadgeEl) {
+    const goToTareas = (e) => {
+      e.stopPropagation();
+      const tabBtn = document.querySelector('[data-v4-tab="bandeja_dieg"]')
+                  || document.querySelector('[data-tab="bandeja_dieg"]')
+                  || document.querySelector('[data-v4-tab="bandeja_precios"]')
+                  || document.querySelector('[data-tab="bandeja_precios"]');
+      if (tabBtn) tabBtn.click();
+    };
+    fabBadgeEl.addEventListener('click', goToTareas);
+    fabBadgeEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToTareas(e); }
+    });
+  }
   const body = document.getElementById('diegoChatBody');
   const form = document.getElementById('diegoChatForm');
   const input = document.getElementById('diegoChatInput');
@@ -8261,12 +8317,39 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { console.warn('[v4-topbar-bell] fallo:', e); }
   }
 
-  // Bell click → abrir FAB Diego existente (reusa el chat ya construido)
+  // D-DIEGO-FAB-MEJORAS-001 · M5 — Bell desacoplada del FAB.
+  // Bell topbar va a tab de notificaciones generales (Bandeja Diego por ahora;
+  // si Dusan crea tab 'notificaciones' dedicada, el selector lo prefiere).
+  // FAB Diego sigue siendo el chat; el badge del FAB (M4) va a tareas pendientes.
   const bell = document.getElementById('v4-bellNotificaciones');
-  if (bell) bell.addEventListener('click', () => {
-    const fab = document.querySelector('.diego-fab');
-    if (fab) fab.click();
-  });
+  if (bell) {
+    // Asegurar que tenga el punto rojo dentro (si no, agregarlo)
+    if (!bell.querySelector('.bell-dot')) {
+      const dot = document.createElement('span');
+      dot.className = 'bell-dot';
+      bell.appendChild(dot);
+    }
+    bell.addEventListener('click', () => {
+      const tabBtn = document.querySelector('[data-v4-tab="notificaciones"]')
+                  || document.querySelector('[data-tab="notificaciones"]')
+                  || document.querySelector('[data-v4-tab="bandeja_dieg"]')
+                  || document.querySelector('[data-tab="bandeja_dieg"]');
+      if (tabBtn) tabBtn.click();
+    });
+    // Punto rojo binario refrescado cada 60s (M5)
+    async function updateBellDot() {
+      try {
+        if (typeof sb === 'undefined' || !sb) return;
+        const { count, error } = await sb.schema('panel').from('diego_bandeja')
+          .select('id', { count: 'exact', head: true })
+          .eq('estado', 'pendiente');
+        if (error) return;
+        bell.classList.toggle('has-alerts', (count || 0) > 0);
+      } catch { /* silencio: punto rojo es info, no bloqueante */ }
+    }
+    updateBellDot();
+    setInterval(updateBellDot, 60000);
+  }
 
   // Buscador global — debounced sb.rpc('f_panel_buscar_global', { p_query })
   const input = document.getElementById('v4-topbarSearch');
