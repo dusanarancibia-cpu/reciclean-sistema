@@ -388,6 +388,10 @@
           <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4 4 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
           Comunicados
         </a>
+        <a href="#" data-v4-tab="manual" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          Manual
+        </a>
         <a href="#" data-v4-tab="oportunidades" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
           <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
           Oportunidades
@@ -486,6 +490,7 @@
         <button data-tab="facturacion" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabFacturacion">🧾 Facturación S5</button>
         <button data-tab="dieguito"    class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabDieguito">📎 Dieguito</button>
         <button data-tab="comunicados" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabComunicados">🎧 Comunicados</button>
+        <button data-tab="manual" class="tab-btn py-3 px-3 text-stone-600"              role="tab" aria-selected="false" aria-controls="tabManual">📖 Manual</button>
         <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabRdo">📈 RDO Resumen</button>
         <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
         <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCotizador">📋 Cotizador</button>
@@ -2135,6 +2140,82 @@
       </div>
     </section>
 
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA MANUAL (D-MANUAL-EN-PANEL-001 · 2026-05-25)
+         Manual operativo dentro del panel · texto + diagramas mermaid
+         + filtros (Por mí / Todos / Por rol) + comentar in-app.
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabManual" class="tab-content hidden">
+      <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">📖 Manual operativo del equipo</h2>
+          <p class="text-xs text-stone-500" id="manualUserInfo">Cargando tu perfil…</p>
+        </div>
+        <div class="flex gap-2">
+          <button id="manualFiltroMia" class="px-3 py-1.5 text-sm rounded-lg bg-emerald-100 text-emerald-800 font-medium border border-emerald-200" type="button">Por mí</button>
+          <button id="manualFiltroTodos" class="px-3 py-1.5 text-sm rounded-lg bg-white text-stone-600 border border-stone-300" type="button">Todos</button>
+          <select id="manualFiltroRol" class="px-3 py-1.5 text-sm rounded-lg border border-stone-300 bg-white text-stone-700">
+            <option value="">— Por rol —</option>
+            <option value="Andrea">Comercial (Andrea)</option>
+            <option value="Cony">Operaciones RM (Cony)</option>
+            <option value="Ingrid">Operaciones Talca (Ingrid)</option>
+            <option value="Dyana">Admin/SERCOT (Dyana)</option>
+            <option value="Dusan">Gerencia (Dusan)</option>
+            <option value="Pablo">Sistemas (Pablo)</option>
+            <option value="Chofer">Choferes</option>
+            <option value="Operario">Operarios planta</option>
+          </select>
+          <button id="manualReload" class="px-3 py-1.5 text-sm text-green-700 hover:underline" type="button">↺</button>
+        </div>
+      </div>
+
+      <!-- Sub-tabs: Manual vs Feedback Dusan -->
+      <div class="border-b border-stone-200 mb-4 flex gap-1">
+        <button id="manualSubManual" class="px-4 py-2 text-sm font-medium border-b-2 border-emerald-600 text-emerald-700" type="button">📖 Manual</button>
+        <button id="manualSubFeedback" class="hidden px-4 py-2 text-sm font-medium border-b-2 border-transparent text-stone-500 hover:text-stone-700" type="button">💬 Feedback del equipo <span id="manualFeedbackBadge" class="ml-1 text-xs bg-amber-100 text-amber-800 px-1.5 rounded">0</span></button>
+      </div>
+
+      <!-- Vista Manual -->
+      <div id="manualVistaManual">
+        <div id="manualContenido" class="bg-white rounded-lg shadow-sm p-5 prose prose-sm max-w-none">
+          <p class="text-sm text-stone-500">Cargando manual…</p>
+        </div>
+        <p class="text-xs text-stone-400 mt-3">Fuente: <code>public/MANUAL-OPERATIVO-EQUIPO.md</code> · Versión vive en repo, este tab es la vista renderizada. Si ves algo mal, usá 💬 Comentar — Dusan revisa y aplica los cambios al manual fuente.</p>
+      </div>
+
+      <!-- Vista Feedback (solo Dusan) -->
+      <div id="manualVistaFeedback" class="hidden">
+        <div id="manualFeedbackTabla" class="bg-white rounded-lg shadow-sm overflow-x-auto">
+          <p class="text-sm text-stone-500 p-5">Cargando feedback…</p>
+        </div>
+      </div>
+
+      <!-- Modal comentar -->
+      <div id="manualCommentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg w-full max-w-lg p-5">
+          <div class="flex justify-between items-start mb-3">
+            <h3 class="text-lg font-bold text-stone-800">💬 Comentar proceso</h3>
+            <button id="manualCommentClose" class="text-stone-500 hover:text-stone-800 text-2xl leading-none" type="button" aria-label="Cerrar">×</button>
+          </div>
+          <p id="manualCommentProceso" class="text-sm text-stone-600 mb-3">—</p>
+          <label class="block text-xs text-stone-500 mb-1">¿Qué está mal, falta o sobra?</label>
+          <textarea id="manualCommentText" rows="4" placeholder="Describí brevemente…" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none mb-3"></textarea>
+          <label class="block text-xs text-stone-500 mb-1">Tipo</label>
+          <div class="flex flex-wrap gap-3 mb-3 text-sm">
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="radio" name="manualCommentTipo" value="error" class="accent-red-600">Error</label>
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="radio" name="manualCommentTipo" value="falta" class="accent-amber-600">Falta info</label>
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="radio" name="manualCommentTipo" value="sobra" class="accent-stone-600">Sobra info</label>
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="radio" name="manualCommentTipo" value="idea" class="accent-emerald-600" checked>Idea de mejora</label>
+          </div>
+          <div id="manualCommentMsg" class="hidden text-xs p-2 rounded mb-2"></div>
+          <div class="flex justify-end gap-2">
+            <button id="manualCommentCancel" class="px-3 py-1.5 text-sm text-stone-600 hover:bg-stone-100 rounded" type="button">Cancelar</button>
+            <button id="manualCommentSubmit" class="px-3 py-1.5 text-sm bg-emerald-700 hover:bg-emerald-800 text-white rounded font-semibold" type="button">Enviar a Dusan</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ===================================================== -->
     <!-- TAB COMERCIAL · CRM Impulsa (mig 046 · 22-may-2026)    -->
     <!-- Datos: panel.v_crm_impulsa_*  +  panel.v_crm_cliente_360 -->
@@ -2321,7 +2402,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'admin'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'manual', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'admin'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -2939,6 +3020,7 @@ function setupTabs() {
       if (tabId === 'ops_diarias')   initOpsDiarias();
       if (tabId === 'dieguito')  initDieguito();
       if (tabId === 'comercial')  initTabComercial();
+      if (tabId === 'manual')      initManual();
     });
   });
 }
@@ -8714,6 +8796,380 @@ document.addEventListener('DOMContentLoaded', () => {
   window.bpDebouncedSearch  = bpDebouncedSearch;
 })();
 </script>
+
+<!-- ============================================================
+     Tab Manual (D-MANUAL-EN-PANEL-001 · 2026-05-25)
+     · Render markdown vivo de MANUAL-OPERATIVO-EQUIPO.md
+     · Filtros Por mí / Todos / Por rol
+     · Diagramas Mermaid embebidos en bloques ```mermaid```
+     · Botón Comentar + INSERT panel.manual_feedback
+     · Sub-tab Feedback (solo bypass_emails)
+============================================================ -->
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js" defer></script>
+<script>
+(function manualBootstrap() {
+  const MANUAL_URL = '/MANUAL-OPERATIVO-EQUIPO.md';
+  const BYPASS_EMAILS = new Set([
+    'gerencia@gestionrepchile.cl',
+    'dusan.arancibia@gmail.com',
+    'sistemas@gestionrepchile.cl',
+    'recepcion01@gestionrepchile.cl',
+    'soporte@gestionrepchile.cl',
+  ]);
+  let manualLoaded = false;
+  let manualHtml = '';
+  let manualUserNombre = '';
+  let manualUserRol = '';
+  let manualUserEmail = '';
+  let currentFilter = 'mia';
+  let mermaidInited = false;
+  let commentCurrentProceso = { num: 0, nombre: '' };
+
+  function esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  function getCurrentEmail() {
+    try {
+      const s = JSON.parse(localStorage.getItem('rf_session') || 'null');
+      return (s && s.email) ? String(s.email).toLowerCase() : '';
+    } catch { return ''; }
+  }
+
+  async function loadUserProfile() {
+    manualUserEmail = getCurrentEmail();
+    if (!manualUserEmail) { manualUserNombre = '—'; manualUserRol = '—'; return; }
+    try {
+      if (typeof sb === 'undefined' || !sb) return;
+      const { data } = await sb.schema('panel').from('dotacion')
+        .select('nombre, rol').ilike('email', manualUserEmail).maybeSingle();
+      if (data) {
+        manualUserNombre = data.nombre || manualUserEmail;
+        manualUserRol = data.rol || '—';
+      } else {
+        manualUserNombre = manualUserEmail;
+        manualUserRol = 'sin rol asignado';
+      }
+    } catch (e) { console.warn('manual user profile:', e); }
+  }
+
+  async function loadManualMd() {
+    if (manualLoaded) return;
+    try {
+      const r = await fetch(MANUAL_URL);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const md = await r.text();
+      // Esperar a que marked esté disponible (defer)
+      let attempts = 0;
+      while (typeof window.marked === 'undefined' && attempts < 50) {
+        await new Promise((res) => setTimeout(res, 100));
+        attempts++;
+      }
+      if (typeof window.marked === 'undefined') {
+        manualHtml = '<p class="text-red-600">No pude cargar marked.js (CDN). Revisá conexión.</p><pre>' + esc(md.slice(0, 4000)) + '</pre>';
+      } else {
+        manualHtml = window.marked.parse(md, { breaks: false });
+      }
+      manualLoaded = true;
+    } catch (e) {
+      manualHtml = '<p class="text-red-600">Error cargando manual: ' + esc(String(e)) + '</p>';
+    }
+  }
+
+  // Detectar protagonistas de un proceso: regex sobre el texto del <h3> + siguientes nodos
+  function detectarProtagonistas(h3Element) {
+    const block = [];
+    let cur = h3Element.nextElementSibling;
+    while (cur && cur.tagName !== 'H3' && cur.tagName !== 'H2') {
+      block.push(cur.textContent || '');
+      cur = cur.nextElementSibling;
+    }
+    const blob = block.join(' ').toLowerCase();
+    const protagonistas = new Set();
+    // Nombres reales + roles típicos
+    const PROTAGONISTAS = [
+      'andrea', 'cony', 'ingrid', 'dyana', 'dusan', 'pablo', 'cesar', 'jair',
+      'braniff', 'cordero', 'valenzuela',
+      'nicolás', 'nicolas', 'carlos iturra', 'cristian',
+      'chofer', 'choferes', 'operario', 'operarios'
+    ];
+    for (const p of PROTAGONISTAS) {
+      // Solo cuenta como protagonista si aparece en negrita o como WHO/Responsable
+      if (blob.includes(p)) protagonistas.add(p);
+    }
+    return protagonistas;
+  }
+
+  function applyFilter() {
+    const contenedor = document.getElementById('manualContenido');
+    if (!contenedor) return;
+    const h3s = contenedor.querySelectorAll('h3');
+    h3s.forEach((h3) => {
+      const protagonistas = h3._manualProtagonistas || new Set();
+      let visible = false;
+      let resaltar = false;
+      if (currentFilter === 'todos') {
+        visible = true;
+      } else if (currentFilter === 'mia') {
+        // "Por mí" muestra TODO el manual pero RESALTA los procesos donde
+        // la persona es protagonista (más amigable que ocultar lo demás).
+        visible = true;
+        const nombreLower = (manualUserNombre || '').toLowerCase();
+        const rolLower = (manualUserRol || '').toLowerCase();
+        for (const p of protagonistas) {
+          if (nombreLower.includes(p) || rolLower.includes(p)) { resaltar = true; break; }
+        }
+      } else if (currentFilter.startsWith('rol:')) {
+        const target = currentFilter.slice(4).toLowerCase();
+        for (const p of protagonistas) {
+          if (p === target || p.includes(target)) { visible = true; break; }
+        }
+      }
+      // Toggle visibility en h3 + siblings hasta el próximo h3/h2
+      let cur = h3;
+      while (cur && (cur === h3 || (cur.tagName !== 'H3' && cur.tagName !== 'H2'))) {
+        cur.style.display = visible ? '' : 'none';
+        if (cur === h3) {
+          cur.classList.toggle('manual-resaltado', resaltar);
+        }
+        cur = cur.nextElementSibling;
+      }
+    });
+  }
+
+  function agregarBotonesComentar() {
+    const contenedor = document.getElementById('manualContenido');
+    if (!contenedor) return;
+    const h3s = contenedor.querySelectorAll('h3');
+    h3s.forEach((h3) => {
+      // Extraer número y nombre: "### 1. COTIZAR retiros" → num=1, nombre="COTIZAR retiros"
+      const match = (h3.textContent || '').match(/^\s*(\d+)\.\s*(.+)$/);
+      if (!match) return;
+      const num = parseInt(match[1], 10);
+      const nombre = match[2].trim();
+      h3._manualProtagonistas = detectarProtagonistas(h3);
+      // Buscar el final del bloque (próximo h3 o h2) y agregar botón antes
+      let cur = h3.nextElementSibling;
+      let lastInBlock = h3;
+      while (cur && cur.tagName !== 'H3' && cur.tagName !== 'H2') {
+        lastInBlock = cur;
+        cur = cur.nextElementSibling;
+      }
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'mt-2 mb-4 text-xs px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded font-medium';
+      btn.textContent = '💬 Comentar este proceso';
+      btn.addEventListener('click', () => openCommentModal(num, nombre));
+      lastInBlock.parentNode.insertBefore(btn, lastInBlock.nextSibling);
+    });
+  }
+
+  function openCommentModal(num, nombre) {
+    commentCurrentProceso = { num, nombre };
+    document.getElementById('manualCommentProceso').textContent = `Proceso #${num}: ${nombre}`;
+    document.getElementById('manualCommentText').value = '';
+    const r = document.querySelector('input[name="manualCommentTipo"][value="idea"]');
+    if (r) r.checked = true;
+    document.getElementById('manualCommentMsg').classList.add('hidden');
+    document.getElementById('manualCommentModal').classList.remove('hidden');
+  }
+
+  function closeCommentModal() {
+    document.getElementById('manualCommentModal').classList.add('hidden');
+  }
+
+  async function submitComment() {
+    if (typeof sb === 'undefined' || !sb) return;
+    const texto = (document.getElementById('manualCommentText').value || '').trim();
+    if (!texto) {
+      showCommentMsg('Escribí algo antes de enviar.', false);
+      return;
+    }
+    const tipoEl = document.querySelector('input[name="manualCommentTipo"]:checked');
+    const tipo = tipoEl ? tipoEl.value : 'idea';
+    const email = manualUserEmail || getCurrentEmail();
+    if (!email) {
+      showCommentMsg('No detecté tu email. Recargá la página.', false);
+      return;
+    }
+    const submitBtn = document.getElementById('manualCommentSubmit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviando…';
+    try {
+      const { error } = await sb.schema('panel').from('manual_feedback').insert({
+        proceso_num: commentCurrentProceso.num,
+        proceso_nombre: commentCurrentProceso.nombre,
+        remitente_email: email,
+        remitente_nombre: manualUserNombre || null,
+        comentario: texto,
+        tipo,
+      });
+      if (error) throw error;
+      showCommentMsg('✓ Enviado a Dusan. ¡Gracias!', true);
+      setTimeout(closeCommentModal, 1200);
+    } catch (e) {
+      showCommentMsg('Error: ' + (e.message || String(e)), false);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar a Dusan';
+    }
+  }
+
+  function showCommentMsg(txt, ok) {
+    const el = document.getElementById('manualCommentMsg');
+    el.textContent = txt;
+    el.className = 'text-xs p-2 rounded mb-2 ' + (ok ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+  }
+
+  async function loadFeedbackList() {
+    if (typeof sb === 'undefined' || !sb) return;
+    const tbody = document.getElementById('manualFeedbackTabla');
+    if (!tbody) return;
+    const { data, error } = await sb.schema('panel').from('manual_feedback')
+      .select('id, proceso_num, proceso_nombre, remitente_nombre, remitente_email, comentario, tipo, estado, respuesta_dusan, created_at')
+      .order('created_at', { ascending: false }).limit(100);
+    if (error) {
+      tbody.innerHTML = `<p class="text-sm text-red-600 p-5">Error: ${esc(error.message)}</p>`;
+      return;
+    }
+    const rows = data || [];
+    const pendCount = rows.filter((r) => r.estado === 'pendiente').length;
+    const badge = document.getElementById('manualFeedbackBadge');
+    if (badge) badge.textContent = String(pendCount);
+    if (rows.length === 0) {
+      tbody.innerHTML = '<p class="text-sm text-stone-400 p-5">Sin feedback todavía.</p>';
+      return;
+    }
+    tbody.innerHTML = `<table class="w-full text-sm">
+      <thead class="bg-stone-50 text-stone-600 text-left"><tr>
+        <th class="px-3 py-2">Proceso</th><th class="px-3 py-2">De</th><th class="px-3 py-2">Tipo</th>
+        <th class="px-3 py-2">Comentario</th><th class="px-3 py-2">Estado</th><th class="px-3 py-2">Acciones</th>
+      </tr></thead><tbody>${rows.map((r) => `<tr class="border-t">
+        <td class="px-3 py-2 font-medium">#${r.proceso_num} ${esc(r.proceso_nombre)}</td>
+        <td class="px-3 py-2 text-xs">${esc(r.remitente_nombre || r.remitente_email)}</td>
+        <td class="px-3 py-2"><span class="text-xs px-2 py-0.5 rounded-full ${r.tipo === 'error' ? 'bg-red-100 text-red-700' : r.tipo === 'falta' ? 'bg-amber-100 text-amber-800' : r.tipo === 'idea' ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-100 text-stone-600'}">${esc(r.tipo)}</span></td>
+        <td class="px-3 py-2 text-xs max-w-md">${esc(r.comentario)}</td>
+        <td class="px-3 py-2"><span class="text-xs px-2 py-0.5 rounded ${r.estado === 'pendiente' ? 'bg-amber-100 text-amber-800' : r.estado === 'aplicado' ? 'bg-green-100 text-green-800' : 'bg-stone-100 text-stone-600'}">${esc(r.estado)}</span></td>
+        <td class="px-3 py-2 text-xs">
+          ${r.estado === 'pendiente' ? `<button onclick="window.manualResolverFeedback('${r.id}','aplicado')" class="text-emerald-700 hover:underline">Aplicar</button> · <button onclick="window.manualResolverFeedback('${r.id}','descartado')" class="text-stone-500 hover:underline">Descartar</button>` : '—'}
+        </td></tr>`).join('')}</tbody></table>`;
+  }
+
+  async function manualResolverFeedback(id, nuevoEstado) {
+    if (typeof sb === 'undefined' || !sb) return;
+    const { error } = await sb.schema('panel').from('manual_feedback').update({
+      estado: nuevoEstado,
+      resuelto_at: new Date().toISOString(),
+      resuelto_por: manualUserEmail,
+    }).eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    loadFeedbackList();
+  }
+  window.manualResolverFeedback = manualResolverFeedback;
+
+  async function initManual() {
+    await loadUserProfile();
+    const info = document.getElementById('manualUserInfo');
+    if (info) info.textContent = `Estás viendo el manual desde ${manualUserNombre} (${manualUserRol})`;
+
+    // Mostrar sub-tab Feedback solo si bypass
+    const isDusanOrBypass = BYPASS_EMAILS.has(manualUserEmail);
+    const subFb = document.getElementById('manualSubFeedback');
+    if (subFb) subFb.classList.toggle('hidden', !isDusanOrBypass);
+
+    await loadManualMd();
+    const cont = document.getElementById('manualContenido');
+    if (cont) {
+      cont.innerHTML = manualHtml;
+      agregarBotonesComentar();
+      applyFilter();
+      // Inicializar Mermaid si está cargado
+      try {
+        if (window.mermaid && !mermaidInited) {
+          window.mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+          mermaidInited = true;
+        }
+        if (window.mermaid) {
+          await window.mermaid.run({ querySelector: '#manualContenido .language-mermaid' });
+        }
+      } catch (e) { console.warn('mermaid render:', e); }
+    }
+
+    if (isDusanOrBypass) loadFeedbackList();
+  }
+  window.initManual = initManual;
+
+  // Wire up filtros + sub-tabs (idempotente: addEventListener una sola vez)
+  document.addEventListener('DOMContentLoaded', () => {
+    const btnMia = document.getElementById('manualFiltroMia');
+    const btnTodos = document.getElementById('manualFiltroTodos');
+    const selRol = document.getElementById('manualFiltroRol');
+    const reload = document.getElementById('manualReload');
+    const subManual = document.getElementById('manualSubManual');
+    const subFb = document.getElementById('manualSubFeedback');
+    const vManual = document.getElementById('manualVistaManual');
+    const vFb = document.getElementById('manualVistaFeedback');
+    const cClose = document.getElementById('manualCommentClose');
+    const cCancel = document.getElementById('manualCommentCancel');
+    const cSubmit = document.getElementById('manualCommentSubmit');
+
+    function setFilterActive(which) {
+      currentFilter = which;
+      if (btnMia) btnMia.className = 'px-3 py-1.5 text-sm rounded-lg font-medium border ' + (which === 'mia' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-white text-stone-600 border-stone-300');
+      if (btnTodos) btnTodos.className = 'px-3 py-1.5 text-sm rounded-lg font-medium border ' + (which === 'todos' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-white text-stone-600 border-stone-300');
+      if (selRol && !which.startsWith('rol:')) selRol.value = '';
+      applyFilter();
+    }
+
+    if (btnMia) btnMia.addEventListener('click', () => setFilterActive('mia'));
+    if (btnTodos) btnTodos.addEventListener('click', () => setFilterActive('todos'));
+    if (selRol) selRol.addEventListener('change', (e) => {
+      const v = e.target.value;
+      if (v) setFilterActive('rol:' + v.toLowerCase()); else setFilterActive('mia');
+    });
+    if (reload) reload.addEventListener('click', async () => { manualLoaded = false; await initManual(); });
+
+    if (subManual) subManual.addEventListener('click', () => {
+      vManual.classList.remove('hidden'); vFb.classList.add('hidden');
+      subManual.className = 'px-4 py-2 text-sm font-medium border-b-2 border-emerald-600 text-emerald-700';
+      subFb.className = 'px-4 py-2 text-sm font-medium border-b-2 border-transparent text-stone-500 hover:text-stone-700' + (subFb.classList.contains('hidden') ? ' hidden' : '');
+    });
+    if (subFb) subFb.addEventListener('click', () => {
+      vManual.classList.add('hidden'); vFb.classList.remove('hidden');
+      subFb.className = 'px-4 py-2 text-sm font-medium border-b-2 border-emerald-600 text-emerald-700';
+      subManual.className = 'px-4 py-2 text-sm font-medium border-b-2 border-transparent text-stone-500 hover:text-stone-700';
+      loadFeedbackList();
+    });
+
+    if (cClose) cClose.addEventListener('click', closeCommentModal);
+    if (cCancel) cCancel.addEventListener('click', closeCommentModal);
+    if (cSubmit) cSubmit.addEventListener('click', submitComment);
+  });
+})();
+</script>
+
+<style>
+  /* D-MANUAL-EN-PANEL-001 · estilos contenido renderizado */
+  #manualContenido h2 { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+  #manualContenido h3 { font-size: 1.05rem; font-weight: 600; color: #047857; margin-top: 1.5rem; margin-bottom: 0.5rem; padding-left: 0.5rem; border-left: 3px solid #cbd5e1; }
+  #manualContenido h3.manual-resaltado { border-left-color: #10b981; background: #ecfdf5; padding: 0.5rem; }
+  #manualContenido table { font-size: 0.85rem; border-collapse: collapse; margin: 0.5rem 0; }
+  #manualContenido th, #manualContenido td { border: 1px solid #e2e8f0; padding: 4px 8px; text-align: left; vertical-align: top; }
+  #manualContenido th { background: #f1f5f9; font-weight: 600; }
+  #manualContenido code { background: #f1f5f9; padding: 1px 4px; border-radius: 3px; font-size: 0.85em; }
+  #manualContenido pre { background: #f8fafc; padding: 8px; border-radius: 4px; overflow-x: auto; font-size: 0.85em; }
+  #manualContenido .language-mermaid { background: white; border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; }
+  #manualContenido ul, #manualContenido ol { margin-left: 1.25rem; margin-top: 0.25rem; }
+  #manualContenido li { margin-bottom: 0.2rem; }
+  @media (max-width: 768px) {
+    #manualContenido table { font-size: 0.75rem; display: block; overflow-x: auto; }
+    #manualContenido h2 { font-size: 1.1rem; }
+    #manualContenido h3 { font-size: 0.95rem; }
+  }
+</style>
 
 <!-- E360 context menu (D-MISMATCH Mig 035 frontend) -->
 <script src="/js/e360-context-menu.js"></script>
