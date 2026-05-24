@@ -2,6 +2,23 @@
 
 ---
 
+## ⚠️ REGLA UNIVERSAL — Comunicación clara (grabada a fuego 2026-05-23)
+
+Vale para TODOS los PCs (1/2/3/4) en cualquier mensaje, documento, informe o explicación:
+
+1. **Cero términos técnicos.** Si Andrea, Cony o Dyana no lo entienden, no se usa.
+2. **Máximo 3 párrafos cortos** por explicación.
+3. **Íconos, dibujos o gráficos** que reemplacen palabras cada vez que se pueda.
+4. **Ejemplos reales de Reciclean** (Cerrillos / Maipú / Talca · Pincore / HUAL / Resimex · Andrea / Cony / Dyana · toneladas / facturación / UF).
+5. **Resumen de 5 puntos al inicio** de cualquier doc, una frase cada uno.
+6. **Test 5 minutos:** persona nueva entiende todo en 5 minutos de lectura.
+
+**Aplica al output visual** también: KPIs nombrados con datos reales del grupo, no genéricos. Charts con etiquetas que digan algo (no "Series 1 / Series 2"). Diagramas con personas y sucursales nombradas. **No aplica al código fuente** — el código va técnico, los textos visibles cumplen.
+
+**Fuentes canónicas:** `mayordomo/COMO-TRABAJAR.md § Comunicación clara` · este archivo · Supabase `panel.config_ui.regla_comunicacion_clara_v1` · `INFORME-EJECUTIVO-VISUAL.html § 11`. **Firmada por Dusan 2026-05-23.**
+
+---
+
 ## ⚠️ REGLA DE AUTORIZACIÓN — GRABADA A FUEGO POR DUSAN (2026-05-20 20:15)
 
 **Antes de pedir autorización para pushear o deployar cualquier cambio visual o funcional** sobre `panel-rdo-v4.html`, `panel-rdo.html`, o cualquier archivo que afecte la interfaz:

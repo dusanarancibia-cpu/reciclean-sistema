@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informe Ejecutivo Visual — Grupo Reciclean-Farex-SERCOT</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --verde:#059669; --azul:#2563eb; --naranja:#ea580c; --purpura:#9333ea;
+  --rojo:#dc2626; --ambar:#d97706;
+  --bg:#f8fafc; --bg2:#f1f5f9; --card:#ffffff;
+  --txt:#0f172a; --txt2:#475569; --txt3:#94a3b8; --linea:#e2e8f0;
+}
+*{box-sizing:border-box}
+body{font-family:'Inter','Calibri',Arial,sans-serif;margin:0;background:var(--bg);color:var(--txt);line-height:1.5}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--verde) 0%,#047857 100%);color:white;padding:48px 24px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;top:-50%;right:-10%;width:600px;height:600px;background:rgba(255,255,255,0.05);border-radius:50%}
+.hero h1{font-size:2.5rem;font-weight:800;margin:0 0 12px;letter-spacing:-0.02em;position:relative;z-index:1}
+.hero p{font-size:1.05rem;opacity:0.95;margin:0;max-width:780px;position:relative;z-index:1}
+.hero .meta{display:flex;gap:16px;margin-top:24px;flex-wrap:wrap;position:relative;z-index:1}
+.hero .badge{background:rgba(255,255,255,0.18);backdrop-filter:blur(8px);padding:6px 14px;border-radius:20px;font-size:0.8rem;font-weight:500}
+
+/* LAYOUT */
+.wrap{max-width:1240px;margin:0 auto;padding:24px;display:grid;grid-template-columns:240px 1fr;gap:24px}
+@media(max-width:1024px){.wrap{grid-template-columns:1fr}.sidebar{display:none}}
+.sidebar{position:sticky;top:24px;height:max-content;background:var(--card);border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(15,23,42,0.05)}
+.sidebar h3{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--txt3);margin:0 0 12px;font-weight:600}
+.sidebar ol{list-style:none;padding:0;margin:0;counter-reset:nav}
+.sidebar ol li{counter-increment:nav;font-size:0.85rem;margin-bottom:8px}
+.sidebar ol li a{display:flex;gap:8px;color:var(--txt2);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all 0.15s}
+.sidebar ol li a::before{content:counter(nav,decimal-leading-zero);color:var(--verde);font-weight:600;min-width:24px}
+.sidebar ol li a:hover{background:var(--bg);color:var(--verde);transform:translateY(-1px)}
+
+/* SECTION CARD */
+.sec{background:var(--card);border-radius:16px;padding:24px;margin-bottom:24px;box-shadow:0 1px 3px rgba(15,23,42,0.05);animation:fadein 0.3s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.sec h2{font-size:1.5rem;font-weight:700;margin:0 0 4px;color:var(--txt);display:flex;align-items:baseline;gap:12px}
+.sec h2 .num{font-size:0.85rem;color:var(--verde);font-weight:600;background:rgba(5,150,105,0.08);padding:3px 10px;border-radius:8px}
+.sec h2 .crit{background:rgba(220,38,38,0.1);color:var(--rojo)}
+.sec .lead{color:var(--txt2);font-size:0.95rem;margin:0 0 20px;max-width:780px}
+.sec h3{font-size:1rem;font-weight:600;margin:20px 0 10px;color:var(--txt)}
+
+/* PALETA SWATCHES */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin:14px 0}
+.sw{height:80px;border-radius:12px;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;color:white;font-size:0.72rem;font-weight:600;font-family:'SF Mono','Consolas',monospace;box-shadow:0 1px 3px rgba(15,23,42,0.1)}
+.sw.dark{color:white}.sw.light{color:var(--txt)}
+.sw .name{opacity:0.85;font-weight:500;font-family:Inter,sans-serif;margin-bottom:2px}
+
+/* KPI EJEMPLO */
+.kpi-demo{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:14px 0}
+.kpi{background:var(--card);border:1px solid var(--linea);border-radius:16px;padding:18px;transition:all 0.15s}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(15,23,42,0.08)}
+.kpi .label{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--txt3);font-weight:600;margin-bottom:6px}
+.kpi .val{font-size:2.5rem;font-weight:700;color:var(--txt);line-height:1}
+.kpi .badge{display:inline-block;font-size:0.7rem;font-weight:600;padding:3px 8px;border-radius:6px;margin-top:6px}
+.kpi .badge.up{background:rgba(5,150,105,0.15);color:var(--verde)}
+.kpi .badge.dn{background:rgba(220,38,38,0.15);color:var(--rojo)}
+.kpi .spark{height:32px;margin-top:8px}
+
+/* GRID CATALOGO */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin:14px 0}
+.cat-card{background:var(--bg);border-radius:12px;padding:14px;border:1px solid var(--linea);transition:all 0.15s}
+.cat-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(15,23,42,0.06)}
+.cat-card .icon{font-size:1.6rem;margin-bottom:6px;display:block}
+.cat-card .ti{font-size:0.85rem;font-weight:600;color:var(--txt);margin-bottom:2px}
+.cat-card .desc{font-size:0.72rem;color:var(--txt3)}
+.cat-card .lib{display:inline-block;font-size:0.65rem;font-weight:600;padding:2px 6px;border-radius:4px;background:rgba(37,99,235,0.1);color:var(--azul);margin-top:6px}
+
+/* CHARTS */
+.chart-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:14px 0}
+.chart-box{background:var(--bg);border-radius:12px;padding:16px;border:1px solid var(--linea)}
+.chart-box h4{font-size:0.78rem;color:var(--txt2);margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}
+.chart-box canvas{max-height:200px}
+
+/* TIMELINE */
+.timeline{position:relative;padding:20px 0;margin:14px 0}
+.timeline::before{content:'';position:absolute;left:0;right:0;top:50%;height:3px;background:var(--linea);border-radius:2px}
+.timeline-inner{display:flex;justify-content:space-between;position:relative;z-index:1}
+.tl-step{background:var(--card);border:3px solid var(--verde);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--verde);font-size:0.9rem;position:relative}
+.tl-step .lbl{position:absolute;top:60px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.75rem;color:var(--txt2);font-weight:500;text-align:center;line-height:1.3}
+.tl-step.alert{border-color:var(--rojo);color:var(--rojo)}
+.tl-step.warn{border-color:var(--ambar);color:var(--ambar)}
+
+/* FLOWCHART */
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0;align-items:center}
+.flow-box{background:var(--card);border:2px solid var(--verde);border-radius:12px;padding:14px 10px;text-align:center;position:relative;font-size:0.78rem}
+.flow-box .n{position:absolute;top:-10px;left:-10px;width:24px;height:24px;background:var(--verde);color:white;border-radius:50%;font-size:0.75rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.flow-arrow{font-size:1.4rem;color:var(--verde);text-align:center}
+
+/* DO / DONT */
+.dodont{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+@media(max-width:640px){.dodont{grid-template-columns:1fr}}
+.do,.dont{padding:14px;border-radius:12px;font-size:0.85rem}
+.do{background:rgba(5,150,105,0.08);border-left:4px solid var(--verde)}
+.dont{background:rgba(220,38,38,0.08);border-left:4px solid var(--rojo)}
+.do h4,.dont h4{margin:0 0 8px;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em}
+.do h4{color:var(--verde)}.dont h4{color:var(--rojo)}
+.do ul,.dont ul{margin:0;padding-left:18px;color:var(--txt2)}
+
+/* 3-COL */
+.cols-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:14px 0}
+@media(max-width:768px){.cols-3{grid-template-columns:1fr}}
+.col-box{background:var(--bg);padding:16px;border-radius:12px;border:1px solid var(--linea);position:relative}
+.col-box .layer{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--txt3);font-weight:600}
+.col-box h4{margin:6px 0 8px;font-size:0.95rem;color:var(--txt)}
+.col-box .canonical{position:absolute;top:10px;right:10px;background:var(--verde);color:white;font-size:0.65rem;padding:2px 8px;border-radius:6px;font-weight:600}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:0.85rem}
+th{background:var(--bg);text-transform:uppercase;letter-spacing:0.05em;font-size:0.7rem;color:var(--txt3);font-weight:600;padding:10px 12px;text-align:left;border-bottom:2px solid var(--linea)}
+td{padding:10px 12px;border-bottom:1px solid var(--linea);vertical-align:top}
+tr:hover td{background:rgba(5,150,105,0.04)}
+code{font-family:'SF Mono','Consolas',monospace;font-size:0.78em;background:var(--bg2);padding:2px 6px;border-radius:4px;color:var(--txt)}
+
+/* STACK ICONS */
+.stack-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:14px 0}
+.stack-item{background:var(--bg);border-radius:12px;padding:14px;text-align:center;border:1px solid var(--linea)}
+.stack-item .stk-ico{font-size:1.6rem;display:block;margin-bottom:4px}
+.stack-item .stk-name{font-size:0.85rem;font-weight:600;color:var(--txt)}
+.stack-item .stk-role{font-size:0.7rem;color:var(--txt3);margin-top:2px}
+
+/* CALLOUT */
+.callout{padding:14px 16px;border-radius:12px;margin:14px 0;font-size:0.85rem;display:flex;gap:12px;align-items:flex-start}
+.callout.warn{background:rgba(217,119,6,0.08);border-left:4px solid var(--ambar);color:var(--txt2)}
+.callout.crit{background:rgba(220,38,38,0.08);border-left:4px solid var(--rojo);color:var(--txt2)}
+.callout.info{background:rgba(37,99,235,0.08);border-left:4px solid var(--azul);color:var(--txt2)}
+.callout strong{color:var(--txt)}
+
+/* SOURCE */
+.source{font-size:0.72rem;color:var(--txt3);margin-top:10px;padding-top:10px;border-top:1px dashed var(--linea)}
+.source code{font-size:0.7rem}
+
+/* FOOTER */
+footer{text-align:center;padding:32px 24px;color:var(--txt3);font-size:0.8rem;background:var(--card);border-top:1px solid var(--linea);margin-top:24px}
+
+/* 6W HEX */
+.w6-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+@media(max-width:640px){.w6-grid{grid-template-columns:repeat(2,1fr)}}
+.w6{background:linear-gradient(135deg,rgba(5,150,105,0.08),rgba(37,99,235,0.04));border:1px solid rgba(5,150,105,0.15);border-radius:12px;padding:14px;text-align:center}
+.w6 .lt{font-size:1.6rem;font-weight:800;color:var(--verde);line-height:1}
+.w6 .nm{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--txt2);margin-top:4px;font-weight:600}
+.w6 .ex{font-size:0.7rem;color:var(--txt3);margin-top:2px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>📊 Informe Ejecutivo Visual</h1>
+  <p>Pautas visuales y reglas operativas grabadas a fuego del Grupo Reciclean-Farex-SERCOT. Una sola hoja con triple respaldo (repo + Supabase + skill). Para que cualquier PC, cualquier Claude, cualquier sesión nueva entienda en 3 minutos.</p>
+  <div class="meta">
+    <span class="badge">📅 2026-05-23</span>
+    <span class="badge">🟢 Versión 1.0</span>
+    <span class="badge">✍️ PC Dusan</span>
+    <span class="badge">🔒 Triple respaldo activo</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+<aside class="sidebar">
+  <h3>Índice</h3>
+  <ol>
+    <li><a href="#s1">Pauta Visual Oro</a></li>
+    <li><a href="#s2">Catálogo Visual</a></li>
+    <li><a href="#s3">Config Chart.js / Leaflet</a></li>
+    <li><a href="#s4">Modo Autónomo</a></li>
+    <li><a href="#s5">Coherencia PCs</a></li>
+    <li><a href="#s6">Autorización Previa</a></li>
+    <li><a href="#s7">Interrupción Segura</a></li>
+    <li><a href="#s8">Sistema 6W</a></li>
+    <li><a href="#s9">Triple Respaldo</a></li>
+    <li><a href="#s10">Stack mínimo</a></li>
+    <li><a href="#s11">Comunicación clara</a></li>
+  </ol>
+</aside>
+
+<main>
+
+<!-- SECCIÓN 1 — PAUTA VISUAL ORO -->
+<section class="sec" id="s1">
+  <h2><span class="num">01</span>Pauta Visual Oro <code>visual_standard_v1</code></h2>
+  <p class="lead">Identidad visual del grupo. <strong>No se discute por turno — se aplica.</strong> Paleta, tipografía Inter, KPI cards, animaciones sutiles.</p>
+
+  <h3>Paleta corporativa</h3>
+  <div class="swatches">
+    <div class="sw dark" style="background:#059669"><div class="name">Verde Principal</div>#059669</div>
+    <div class="sw dark" style="background:#2563eb"><div class="name">Azul</div>#2563eb</div>
+    <div class="sw dark" style="background:#ea580c"><div class="name">Naranja</div>#ea580c</div>
+    <div class="sw dark" style="background:#9333ea"><div class="name">Púrpura</div>#9333ea</div>
+    <div class="sw dark" style="background:#dc2626"><div class="name">Rojo alerta</div>#dc2626</div>
+    <div class="sw dark" style="background:#d97706"><div class="name">Ámbar alerta</div>#d97706</div>
+    <div class="sw light" style="background:#ffffff;border:1px solid var(--linea);color:var(--txt)"><div class="name" style="color:var(--txt2)">Fondo claro</div>#ffffff</div>
+    <div class="sw light" style="background:#f8fafc;border:1px solid var(--linea);color:var(--txt)"><div class="name" style="color:var(--txt2)">Fondo gris</div>#f8fafc</div>
+    <div class="sw dark" style="background:#0f172a"><div class="name">Texto título</div>#0f172a</div>
+    <div class="sw dark" style="background:#475569"><div class="name">Texto cuerpo</div>#475569</div>
+  </div>
+
+  <h3>KPI cards de ejemplo</h3>
+  <div class="kpi-demo">
+    <div class="kpi">
+      <div class="label">Facturación mes</div>
+      <div class="val">$84M</div>
+      <span class="badge up">▲ 12%</span>
+      <canvas class="spark" id="spark1"></canvas>
+    </div>
+    <div class="kpi">
+      <div class="label">Toneladas semana</div>
+      <div class="val">142t</div>
+      <span class="badge up">▲ 8%</span>
+      <canvas class="spark" id="spark2"></canvas>
+    </div>
+    <div class="kpi">
+      <div class="label">UF hoy</div>
+      <div class="val">$40.459</div>
+      <span class="badge dn">▼ 0.2%</span>
+      <canvas class="spark" id="spark3"></canvas>
+    </div>
+    <div class="kpi">
+      <div class="label">Alertas activas</div>
+      <div class="val" style="color:var(--rojo)">51</div>
+      <span class="badge dn">▲ 12</span>
+      <canvas class="spark" id="spark4"></canvas>
+    </div>
+  </div>
+
+  <h3>Reglas de aplicación</h3>
+  <div class="dodont">
+    <div class="do">
+      <h4>✅ Hacer</h4>
+      <ul>
+        <li>Tipografía <strong>Inter</strong> (fallback Calibri/Arial)</li>
+        <li>Números KPI <strong>2.5rem bold</strong></li>
+        <li>Secciones <strong>radius 16px, padding 24px</strong></li>
+        <li>Fade-in <strong>0.3s</strong>, hover sube 2px</li>
+      </ul>
+    </div>
+    <div class="dont">
+      <h4>🚫 Evitar</h4>
+      <ul>
+        <li>Comic Sans / serif decorativa</li>
+        <li>Animaciones que rebotan o exageran</li>
+        <li>Sombras pesadas o blur dramático</li>
+        <li>Emojis decorativos en docs corporativos</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="source">📂 Fuente canónica: <code>reciclean-sistema/public/CLAUDE-VISUAL.md</code> · 🗄️ Supabase: <code>panel.config_ui.visual_standard_v1</code> · 🧩 Skill: <code>visual-oro</code></div>
+</section>
+
+<!-- SECCIÓN 2 — CATÁLOGO VISUAL UNIVERSAL -->
+<section class="sec" id="s2">
+  <h2><span class="num">02</span>Catálogo Visual Universal <code>catalogo_visual_v1</code></h2>
+  <p class="lead">Decisor por tipo de dato — qué gráfico usar sin pensarlo dos veces. <strong>El PC propone proactivamente</strong> cuando aparecen datos, no espera que se lo pidan.</p>
+
+  <div class="cat-grid">
+    <div class="cat-card"><span class="icon">📈</span><div class="ti">Serie temporal</div><div class="desc">1 métrica en el tiempo</div><span class="lib">Chart.js · Línea</span></div>
+    <div class="cat-card"><span class="icon">📊</span><div class="ti">Comparación 2-7</div><div class="desc">Magnitud entre pocos</div><span class="lib">Chart.js · Barras V</span></div>
+    <div class="cat-card"><span class="icon">📏</span><div class="ti">Comparación 8-25</div><div class="desc">Etiquetas legibles</div><span class="lib">Chart.js · Barras H</span></div>
+    <div class="cat-card"><span class="icon">🏆</span><div class="ti">Ranking Top-N</div><div class="desc">3-10 ítems</div><span class="lib">HTML/CSS · Cards</span></div>
+    <div class="cat-card"><span class="icon">🍩</span><div class="ti">Distribución 3-6</div><div class="desc">Parte/todo</div><span class="lib">Chart.js · Donut 65%</span></div>
+    <div class="cat-card"><span class="icon">🌳</span><div class="ti">Distribución >6</div><div class="desc">Jerarquía + áreas</div><span class="lib">ECharts · Treemap</span></div>
+    <div class="cat-card"><span class="icon">🔵</span><div class="ti">Correlación 2 vars</div><div class="desc">Patrones + outliers</div><span class="lib">Chart.js · Scatter</span></div>
+    <div class="cat-card"><span class="icon">🫧</span><div class="ti">Correlación 3 vars</div><div class="desc">Tamaño = 3ra dim</div><span class="lib">Chart.js · Bubble</span></div>
+    <div class="cat-card"><span class="icon">🔀</span><div class="ti">Flujo nodos</div><div class="desc">Origen → destino</div><span class="lib">ECharts · Sankey</span></div>
+    <div class="cat-card"><span class="icon">📍</span><div class="ti">Geografía</div><div class="desc">Marcadores</div><span class="lib">Leaflet · CartoDB</span></div>
+    <div class="cat-card"><span class="icon">🎯</span><div class="ti">Avance vs meta</div><div class="desc">Bullet o progress 4px</div><span class="lib">D3 / HTML</span></div>
+    <div class="cat-card"><span class="icon">💳</span><div class="ti">Estado + variación</div><div class="desc">Glance ejecutivo</div><span class="lib">HTML · KPI card</span></div>
+    <div class="cat-card"><span class="icon">📅</span><div class="ti">Denso temporal</div><div class="desc">Patrones cíclicos</div><span class="lib">D3 · Heatmap cal</span></div>
+    <div class="cat-card"><span class="icon">📐</span><div class="ti">Antes vs después</div><div class="desc">2 puntos en t</div><span class="lib">D3 / HTML · Slope</span></div>
+    <div class="cat-card" style="border-color:var(--rojo);background:rgba(220,38,38,0.04)"><span class="icon">🚫</span><div class="ti">1-2 valores</div><div class="desc"><strong>Texto, no gráfico</strong></div><span class="lib" style="background:rgba(220,38,38,0.15);color:var(--rojo)">No graficar</span></div>
+  </div>
+
+  <div class="callout warn">⚠️ <div><strong>Cuándo NO graficar:</strong> 1-2 valores únicos · &lt;3 puntos en serie · ruido sin patrón · orden importa más que forma (→ tabla).</div></div>
+
+  <div class="source">📂 Canónica: <code>reciclean-rdo/mayordomo/skills/visual-oro/CATALOGO-VISUAL-UNIVERSAL.md</code> · Espejo: <code>public/CATALOGO-VISUAL-UNIVERSAL.md</code> · 🗄️ <code>panel.config_ui.catalogo_visual_v1</code></div>
+</section>
+
+<!-- SECCIÓN 3 — CHART.JS / LEAFLET -->
+<section class="sec" id="s3">
+  <h2><span class="num">03</span>Configuración Chart.js / Leaflet</h2>
+  <p class="lead">La "guía de gráficos" — config no negociable de Chart.js + Leaflet, replicada en cada panel del grupo. Sin leyenda cuadrada, sin grid vertical, donut 65%, líneas tension 0.4.</p>
+
+  <div class="chart-row">
+    <div class="chart-box"><h4>Línea con área 20%</h4><canvas id="ch1"></canvas></div>
+    <div class="chart-box"><h4>Barras radius 6</h4><canvas id="ch2"></canvas></div>
+    <div class="chart-box"><h4>Donut 65%</h4><canvas id="ch3"></canvas></div>
+    <div class="chart-box"><h4>Multi-línea</h4><canvas id="ch4"></canvas></div>
+  </div>
+
+  <h3>Reglas Chart.js</h3>
+  <table>
+    <thead><tr><th>Elemento</th><th>Config</th></tr></thead>
+    <tbody>
+      <tr><td>Leyenda</td><td>Abajo centrada con <strong>círculos</strong>, nunca cuadrada</td></tr>
+      <tr><td>Líneas</td><td>Curvas <code>tension: 0.4</code> · área sombreada <strong>20% opacidad</strong></td></tr>
+      <tr><td>Grid</td><td>Sin grid vertical · solo líneas H gris <code>#e2e8f0</code></td></tr>
+      <tr><td>Barras</td><td><code>borderRadius: 6</code></td></tr>
+      <tr><td>Donut</td><td>Agujero <strong>65%</strong>, sin borde entre segmentos</td></tr>
+      <tr><td>Tipografía</td><td>Inter 11px en todos los charts</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Reglas Leaflet</h3>
+  <div class="callout info">🗺️ <div>Tema claro <strong>CartoDB Positron</strong> · marcadores circulares borde blanco + relleno corporativo · sin popups invasivos, solo tooltip al hover.</div></div>
+
+  <div class="source">📂 Fuente canónica: <code>reciclean-sistema/public/CLAUDE-VISUAL.md § Gráficos · § Mapa · § Top 5</code></div>
+</section>
+
+<!-- SECCIÓN 4 — MODO AUTÓNOMO -->
+<section class="sec" id="s4">
+  <h2><span class="num">04</span>Modo Autónomo Continuo v1.0</h2>
+  <p class="lead">Régimen permanente firmado por Dusan 2026-05-19. Trabajo en autónomo <strong>23 horas/día</strong> sin preguntas, loop avanzar → verificar → documentar → avanzar.</p>
+
+  <h3>Ciclo diario</h3>
+  <div class="timeline">
+    <div class="timeline-inner">
+      <div class="tl-step">8:30<span class="lbl">Inicio<br>autónomo</span></div>
+      <div class="tl-step">12:00<span class="lbl">Loop<br>en curso</span></div>
+      <div class="tl-step">18:00<span class="lbl">Pico<br>productivo</span></div>
+      <div class="tl-step">00:00<span class="lbl">Cruce<br>nocturno</span></div>
+      <div class="tl-step warn">7:30<span class="lbl">Cierre<br>autónomo</span></div>
+    </div>
+  </div>
+
+  <h3>Reglas durante el loop</h3>
+  <div class="dodont">
+    <div class="do">
+      <h4>✅ Hacer</h4>
+      <ul>
+        <li>Si algo bloquea → <code>BLOQUEOS.md</code> + seguir</li>
+        <li>Si falta dato → placeholder <code>—</code> + <code>PENDIENTES-DATOS.md</code></li>
+        <li>Si no estoy seguro → conservar (no borrar)</li>
+        <li>Documentar cada avance en BITACORA-VIVA</li>
+      </ul>
+    </div>
+    <div class="dont">
+      <h4>🚫 Restricciones absolutas</h4>
+      <ul>
+        <li>NO commit/push sin autorización explícita</li>
+        <li>NO tocar <code>package.json</code> / <code>vercel.json</code> / <code>vite.config.js</code></li>
+        <li>NO modificar lógica de autenticación</li>
+        <li>NO duplicar archivos críticos sin avisar</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="source">📂 Fuente canónica: <code>reciclean-sistema/public/CLAUDE-VISUAL.md § Modo autónomo continuo v1.0</code></div>
+</section>
+
+<!-- SECCIÓN 5 — COHERENCIA PCs -->
+<section class="sec" id="s5">
+  <h2><span class="num">05</span>Reglas de Coherencia entre PCs</h2>
+  <p class="lead">Antes de declarar "PC X inactivo" cruzar <strong>3 fuentes</strong>. Solo si las 3 muestran inactividad, reportar. Nunca decir "PC parado" si hay evidencia de actividad real.</p>
+
+  <div class="chart-row" style="grid-template-columns:1fr 1.5fr">
+    <div class="chart-box" style="display:flex;align-items:center;justify-content:center"><canvas id="ch5" style="max-height:240px"></canvas></div>
+    <div>
+      <h3 style="margin-top:0">Las 3 fuentes obligatorias</h3>
+      <table>
+        <thead><tr><th>#</th><th>Fuente</th><th>Qué dice</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>panel.pc_heartbeat</code></td><td>Último latido del PC</td></tr>
+          <tr><td>2</td><td><code>BITACORA-CIERRE.md</code></td><td>Última tarea cerrada</td></tr>
+          <tr><td>3</td><td><strong>GitHub</strong></td><td>Commits/PRs últimas 24h</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="callout crit">🚫 <div><strong>NUNCA</strong> decir <em>"PC X no trabaja"</em> o <em>"PC X está parado"</em> si hay evidencia de actividad real. Si heartbeat está vencido pero hay commits → el heartbeat está desactualizado, no el PC. Anotar en <code>BLOQUEOS.md</code>, no bloquear trabajo.</div></div>
+
+  <div class="source">📂 Fuente canónica: <code>reciclean-rdo/mayordomo/COMO-TRABAJAR.md § Reglas de coherencia entre PCs</code></div>
+</section>
+
+<!-- SECCIÓN 6 — AUTORIZACIÓN PREVIA -->
+<section class="sec" id="s6">
+  <h2><span class="num">06</span>Regla de Autorización Previa (UI)</h2>
+  <p class="lead">Grabada 2026-05-20 20:15. Antes de pushear cualquier cambio visual o funcional sobre <code>panel-rdo*.html</code> o assets en <code>public/</code> — primero localhost, después push.</p>
+
+  <h3>Flujo obligatorio</h3>
+  <div class="flow">
+    <div class="flow-box"><div class="n">1</div>Cambio local en rama feature</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box"><div class="n">2</div><code>npm run dev</code> → localhost:5173</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box"><div class="n">3</div>Mostrar URL a Dusan</div>
+  </div>
+  <div class="flow">
+    <div class="flow-box"><div class="n">4</div>Esperar confirmación explícita</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color:var(--verde);background:rgba(5,150,105,0.05)"><div class="n" style="background:var(--verde)">5</div><strong>Recién entonces</strong>: git push + PR</div>
+    <div class="flow-arrow"></div>
+    <div></div>
+  </div>
+
+  <div class="dodont">
+    <div class="do">
+      <h4>✅ Aplica</h4>
+      <ul>
+        <li>Archivos <code>.html</code>, <code>.css</code>, <code>.js</code> de UI</li>
+        <li>Componentes, assets en <code>public/</code></li>
+        <li>Cambios al panel productivo</li>
+      </ul>
+    </div>
+    <div class="dont">
+      <h4>🚫 No aplica</h4>
+      <ul>
+        <li>Docs <code>.md</code> (este informe, planes, etc.)</li>
+        <li>Migraciones SQL</li>
+        <li>Edge Functions sin UI</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout info">💬 <div><strong>Excepción:</strong> si Dusan dice "pusheá directo" o "abrí el PR sin probar" en el mismo turno, se respeta — pero se anota en bitácora que se saltó localhost.</div></div>
+
+  <div class="source">📂 Fuente canónica: <code>reciclean-sistema/public/CLAUDE-VISUAL.md § REGLA DE AUTORIZACIÓN</code></div>
+</section>
+
+<!-- SECCIÓN 7 — INTERRUPCIÓN SEGURA -->
+<section class="sec" id="s7">
+  <h2><span class="num">07</span>Regla de Interrupción Segura</h2>
+  <p class="lead">Grabada 2026-05-22. Si el usuario escribe <code>PARAR</code> o <code>NUEVA TAREA</code>, el PC interrumpe inmediatamente — <strong>aplica aunque esté en autónomo continuo</strong>.</p>
+
+  <div class="flow" style="grid-template-columns:1fr auto 1fr auto 1fr">
+    <div class="flow-box" style="border-color:var(--rojo);background:rgba(220,38,38,0.05)"><div class="n" style="background:var(--rojo)">!</div><strong>PARAR</strong> o<br><strong>NUEVA TAREA</strong></div>
+    <div class="flow-arrow" style="color:var(--rojo)">→</div>
+    <div class="flow-box"><div class="n">1</div>Interrumpir loop<br>inmediato</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box"><div class="n">2</div>Guardar estado en<br><code>AVANCE-AUTONOMO.md</code></div>
+  </div>
+  <div class="flow" style="grid-template-columns:1fr auto 1fr auto 1fr;margin-top:8px">
+    <div></div><div></div>
+    <div class="flow-arrow">↓</div>
+    <div></div>
+    <div class="flow-box" style="border-color:var(--verde);background:rgba(5,150,105,0.05)"><div class="n" style="background:var(--verde)">3</div><strong>Stand-by</strong> esperando<br>nuevas instrucciones</div>
+  </div>
+
+  <div class="callout crit"><strong>⚠️ Aplica aunque esté en autónomo continuo.</strong> Sin importar la prioridad de la tarea ni si está a 30 segundos de terminar.</div>
+
+  <div class="source">📂 <code>reciclean-rdo/mayordomo/COMO-TRABAJAR.md</code> + <code>reciclean-sistema/public/CLAUDE.md</code> · 🗄️ <code>panel.config_ui.regla_interrupcion_segura_v1</code></div>
+</section>
+
+<!-- SECCIÓN 8 — 6W BANDEJA DIEGO -->
+<section class="sec" id="s8">
+  <h2><span class="num">08</span>Sistema 6W (Bandeja Diego)</h2>
+  <p class="lead">Mecanismo de mensajería entre Diego y los PCs. Cada mensaje en <code>panel.diego_bandeja</code> lleva los 6 campos. <strong>Trazabilidad obligatoria</strong>: <code>nota_resolucion</code> nunca queda vacío.</p>
+
+  <h3>Los 6 campos</h3>
+  <div class="w6-grid">
+    <div class="w6"><div class="lt">W</div><div class="nm">WHAT</div><div class="ex">qué pasó</div></div>
+    <div class="w6"><div class="lt">W</div><div class="nm">WHO</div><div class="ex">quién está involucrado</div></div>
+    <div class="w6"><div class="lt">W</div><div class="nm">WHEN</div><div class="ex">cuándo / urgencia</div></div>
+    <div class="w6"><div class="lt">W</div><div class="nm">WHERE</div><div class="ex">dónde / contexto</div></div>
+    <div class="w6"><div class="lt">W</div><div class="nm">WHY</div><div class="ex">por qué importa</div></div>
+    <div class="w6"><div class="lt">H</div><div class="nm">HOW</div><div class="ex">acción a ejecutar</div></div>
+  </div>
+
+  <h3>Protocolo por PC al iniciar sesión</h3>
+  <div class="flow" style="grid-template-columns:1fr auto 1fr auto 1fr">
+    <div class="flow-box"><div class="n">1</div>SELECT de<br><code>v_diego_pendientes</code></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box"><div class="n">2</div>Ejecutar acción<br>según campo <code>how_*</code></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box"><div class="n">3</div>UPDATE estado<br>+ <code>nota_resolucion</code></div>
+  </div>
+
+  <div class="callout warn">🔧 <div><strong>Auto-reparación</strong> ante inserts fallidos (401/403/timeout/RLS): registrar <code>mayordomo.incidentes</code> → diagnóstico estándar (<code>sbAnon</code> vs <code>sb</code> service_role + RLS + policies) → reparar → cerrar incidente. <strong>Patrón canónico:</strong> una EF crea <em>dos clientes Supabase</em> — anon para validar, service_role para escribir.</div></div>
+
+  <div class="source">📂 <code>reciclean-rdo/mayordomo/COMO-TRABAJAR.md § Sistema 6W · § Auto-reparación</code> · 🗄️ <code>panel.config_ui.reglas_diego_6w_v1</code></div>
+</section>
+
+<!-- SECCIÓN 9 — TRIPLE RESPALDO -->
+<section class="sec" id="s9">
+  <h2><span class="num">09</span>Triple Respaldo</h2>
+  <p class="lead">Cada regla operativa vive en <strong>3 lugares redundantes</strong>. Si una fuente cae, las otras dos hidratan al PC. Si las 3 divergen, la canónica (repo) manda.</p>
+
+  <div class="cols-3">
+    <div class="col-box">
+      <span class="canonical">CANÓNICA</span>
+      <div class="layer">Capa 1</div>
+      <h4>📂 Repo (git)</h4>
+      <p style="font-size:0.85rem;color:var(--txt2);margin:0">Archivos <code>.md</code> versionados en <code>reciclean-rdo/mayordomo/</code> + <code>reciclean-sistema/public/</code>. Diff visible, PR review.</p>
+    </div>
+    <div class="col-box">
+      <div class="layer">Capa 2</div>
+      <h4>🗄️ Supabase</h4>
+      <p style="font-size:0.85rem;color:var(--txt2);margin:0">Clave + valor breve en <code>panel.config_ui</code> apuntando al canónico. Lectura desde EF / SQL / panel sin clonar repo.</p>
+    </div>
+    <div class="col-box">
+      <div class="layer">Capa 3</div>
+      <h4>🧩 Skill local</h4>
+      <p style="font-size:0.85rem;color:var(--txt2);margin:0">Auto-activable en <code>~/.claude/skills/visual-oro/</code>. El PC aplica la regla sin leer un archivo — es instinto.</p>
+    </div>
+  </div>
+
+  <h3>Decisiones firmadas vigentes</h3>
+  <div class="chart-row" style="grid-template-columns:1.4fr 1fr">
+    <table style="margin:0">
+      <thead><tr><th>Firma</th><th>Fecha</th><th>Decisión</th></tr></thead>
+      <tbody>
+        <tr><td><code>D-VISUAL-ORO-001</code></td><td>22-may-2026</td><td>Activación skill auto-aplicable <code>visual_standard_v1</code></td></tr>
+        <tr><td><code>D-VISUAL-ORO-002</code></td><td>22-may-2026</td><td>Modo Visual Universal (catálogo + propuesta proactiva)</td></tr>
+        <tr><td><code>D-DIEGO-CHAT-V6</code></td><td>23-may-2026</td><td>FAB Diego v6 cableado end-to-end (PR #57)</td></tr>
+      </tbody>
+    </table>
+    <div class="chart-box"><h4>Redundancia por regla</h4><canvas id="ch6"></canvas></div>
+  </div>
+
+  <div class="source">📂 Este informe + commit <code>5e13d2f</code> (skill visual-oro v2) + <code>DECISIONES.md § D-VISUAL-ORO-001/002</code></div>
+</section>
+
+<!-- SECCIÓN 10 — STACK -->
+<section class="sec" id="s10">
+  <h2><span class="num">10</span>Stack mínimo del grupo</h2>
+  <p class="lead">Las tools que se usan en TODO output del grupo. Standalone, sin lock-in, replicables en cualquier canal (panel web, PPTX, Canva, imagen IA, PDF).</p>
+
+  <div class="stack-grid">
+    <div class="stack-item"><span class="stk-ico">📊</span><div class="stk-name">Chart.js 4</div><div class="stk-role">Charts panel + reportes</div></div>
+    <div class="stack-item"><span class="stk-ico">🗺️</span><div class="stk-name">Leaflet 1.9</div><div class="stk-role">Mapas (CartoDB Positron)</div></div>
+    <div class="stack-item"><span class="stk-ico">💨</span><div class="stk-name">Tailwind CDN</div><div class="stk-role">Layout panel productivo</div></div>
+    <div class="stack-item"><span class="stk-ico">🔤</span><div class="stk-name">Inter</div><div class="stk-role">Tipografía universal</div></div>
+    <div class="stack-item"><span class="stk-ico">🎨</span><div class="stk-name">Paleta hex</div><div class="stk-role">visual_standard_v1</div></div>
+    <div class="stack-item"><span class="stk-ico">🍌</span><div class="stk-name">Nanobanana / Gemini</div><div class="stk-role">Imagen IA</div></div>
+    <div class="stack-item"><span class="stk-ico">📑</span><div class="stk-name">Gamma / Canva / PPTX</div><div class="stk-role">Presentaciones</div></div>
+    <div class="stack-item"><span class="stk-ico">🟢🔴⏰</span><div class="stk-name">Emoji funcional</div><div class="stk-role">No decorativo</div></div>
+  </div>
+</section>
+
+<!-- SECCIÓN 11 — COMUNICACIÓN CLARA UNIVERSAL -->
+<section class="sec" id="s11" style="border:2px solid var(--verde);background:linear-gradient(180deg,rgba(5,150,105,0.03) 0%,var(--card) 60%)">
+  <h2><span class="num crit">11 ⚠️</span>Comunicación Clara Universal</h2>
+  <p class="lead"><strong>Regla grabada a fuego 2026-05-23 por Dusan.</strong> Vale para TODOS los PCs (1/2/3/4) en cualquier mensaje, documento, informe o explicación. Si Andrea, Cony o Dyana no lo entienden, no se publica.</p>
+
+  <h3>Los 6 puntos no negociables</h3>
+  <div class="cat-grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+    <div class="cat-card" style="border-color:var(--verde);background:rgba(5,150,105,0.04)">
+      <span class="icon">🚫</span>
+      <div class="ti">1 · Cero términos técnicos</div>
+      <div class="desc">Si Andrea / Cony / Dyana no lo entienden, no se usa. Si hay que usar uno, explicarlo en una línea.</div>
+    </div>
+    <div class="cat-card" style="border-color:var(--verde);background:rgba(5,150,105,0.04)">
+      <span class="icon">✂️</span>
+      <div class="ti">2 · Máximo 3 párrafos cortos</div>
+      <div class="desc">Por explicación. Si necesitás más, dividís en secciones con títulos.</div>
+    </div>
+    <div class="cat-card" style="border-color:var(--verde);background:rgba(5,150,105,0.04)">
+      <span class="icon">🎨</span>
+      <div class="ti">3 · Íconos + gráficos</div>
+      <div class="desc">Que reemplacen palabras siempre que se pueda. Suman a la pauta visual_standard_v1.</div>
+    </div>
+    <div class="cat-card" style="border-color:var(--verde);background:rgba(5,150,105,0.04)">
+      <span class="icon">🏭</span>
+      <div class="ti">4 · Ejemplos reales del grupo</div>
+      <div class="desc">Cerrillos / Maipú / Talca · Pincore / HUAL / Resimex · Andrea / Cony / Dyana · toneladas / facturación / UF.</div>
+    </div>
+    <div class="cat-card" style="border-color:var(--verde);background:rgba(5,150,105,0.04)">
+      <span class="icon">📝</span>
+      <div class="ti">5 · Resumen 5 puntos al inicio</div>
+      <div class="desc">De cualquier doc, una frase cada uno. Como elevator pitch del doc completo.</div>
+    </div>
+    <div class="cat-card" style="border-color:var(--verde);background:rgba(5,150,105,0.04)">
+      <span class="icon">⏱️</span>
+      <div class="ti">6 · Test 5 minutos</div>
+      <div class="desc">Cualquier persona nueva entiende todo en 5 minutos de lectura. Si no, se reescribe.</div>
+    </div>
+  </div>
+
+  <h3>Ejemplo del antes / después</h3>
+  <div class="dodont">
+    <div class="dont">
+      <h4>🚫 Antes (técnico, opaco)</h4>
+      <p style="margin:0;font-size:0.85rem;color:var(--txt2)"><em>"PR #57 merged a main, branch protection D-PROTEC-PROD-003 vigente, falta promo main→prod con bypass admin transitorio precedente D-PROTEC-PROD-002, EF diego-chat-process v4 ACTIVE con verify_jwt:true."</em></p>
+    </div>
+    <div class="do">
+      <h4>✅ Después (claro, accionable)</h4>
+      <p style="margin:0;font-size:0.85rem;color:var(--txt2)"><em>"Diego v6 ya está en el panel que ve Andrea. Falta un paso de seguridad para que también lo vea en producción. Cuando vos firmes, lo subo."</em></p>
+    </div>
+  </div>
+
+  <h3>Donde aplica · donde no</h3>
+  <div class="dodont">
+    <div class="do">
+      <h4>✅ Aplica a</h4>
+      <ul>
+        <li>Chats con Dusan / Pablo / equipo</li>
+        <li>Commits, comentarios de PR</li>
+        <li>Informes ejecutivos, presentaciones (Gamma / Canva / PPTX)</li>
+        <li>Imágenes IA · mails al equipo · mensajes WhatsApp</li>
+        <li>Comentarios HUMANOS en código (no la lógica)</li>
+      </ul>
+    </div>
+    <div class="dont">
+      <h4>🚫 No aplica a</h4>
+      <ul>
+        <li>Código fuente que se ejecuta (SQL / JS / Python) — va técnico</li>
+        <li>Specs muy detalladas para Pablo (puede usar jerga si está claro el contexto)</li>
+        <li>Logs internos del sistema</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout ok" style="background:linear-gradient(135deg,rgba(5,150,105,0.1),rgba(37,99,235,0.05));border-color:var(--verde)">
+    🧪 <div><strong>Cómo lo testeás vos mismo antes de mandar:</strong> leelo como si fueras Andrea cargando un pesaje a las 3 de la tarde con calor. Si no lo entendés en una pasada, no está listo.</div>
+  </div>
+
+  <div class="source">📂 Canónica: <code>reciclean-rdo/mayordomo/COMO-TRABAJAR.md § Comunicación clara</code> · <code>reciclean-sistema/public/CLAUDE-VISUAL.md § Comunicación clara</code> · Los 4 <code>CLAUDE-PC-*.md</code> · 🗄️ Supabase: <code>panel.config_ui.regla_comunicacion_clara_v1</code></div>
+</section>
+
+<!-- APÉNDICE A — MAPA FUENTES -->
+<section class="sec" id="apA">
+  <h2><span class="num">A</span>Apéndice A — Mapa de fuentes canónicas</h2>
+  <p class="lead">Para cambiar una regla: editar primero el archivo canónico (columna "Archivo"), después re-sincronizar Supabase y skill.</p>
+
+  <table>
+    <thead>
+      <tr><th>Regla</th><th>Archivo canónico</th><th>Espejo / Skill</th><th>Supabase clave</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Pauta visual</td><td><code>reciclean-sistema/public/CLAUDE-VISUAL.md</code></td><td>skill <code>visual-oro</code></td><td><code>visual_standard_v1</code></td></tr>
+      <tr><td>Catálogo visualizaciones</td><td><code>reciclean-rdo/mayordomo/skills/visual-oro/CATALOGO-VISUAL-UNIVERSAL.md</code></td><td><code>public/CATALOGO-VISUAL-UNIVERSAL.md</code></td><td><code>catalogo_visual_v1</code></td></tr>
+      <tr><td>Skill visual oro</td><td><code>~/.claude/skills/visual-oro/skill.md</code></td><td><code>mayordomo/skills/visual-oro/SKILL.md</code></td><td><code>visual_oro_skill_v1</code></td></tr>
+      <tr><td>Modo autónomo continuo</td><td><code>CLAUDE-VISUAL.md § Modo autónomo</code></td><td>—</td><td>—</td></tr>
+      <tr><td>Coherencia PCs</td><td><code>COMO-TRABAJAR.md § Reglas de coherencia</code></td><td>—</td><td>—</td></tr>
+      <tr><td>Autorización previa UI</td><td><code>CLAUDE-VISUAL.md § REGLA DE AUTORIZACIÓN</code></td><td>—</td><td>—</td></tr>
+      <tr><td>Interrupción segura</td><td><code>COMO-TRABAJAR.md + CLAUDE.md</code></td><td>—</td><td><code>regla_interrupcion_segura_v1</code></td></tr>
+      <tr><td>6W Bandeja Diego</td><td><code>COMO-TRABAJAR.md § 6W</code></td><td>—</td><td><code>reglas_diego_6w_v1</code></td></tr>
+      <tr><td>Reglas firma</td><td><code>REGLAS-FIRMA-V02.md</code> (vigente)</td><td>V01 archivada</td><td>—</td></tr>
+      <tr><td>Protocolo Mayordomo</td><td><code>PROTOCOLO-MAYORDOMO.md</code></td><td>—</td><td>—</td></tr>
+      <tr style="background:rgba(5,150,105,0.04)"><td><strong>Comunicación clara universal</strong></td><td><code>COMO-TRABAJAR.md § Comunicación clara</code> + 4 <code>CLAUDE-PC-*.md</code></td><td><code>CLAUDE-VISUAL.md § Comunicación clara</code></td><td><code>regla_comunicacion_clara_v1</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- APÉNDICE B — PLANTILLA -->
+<section class="sec" id="apB">
+  <h2><span class="num">B</span>Apéndice B — Plantilla de propuesta visual</h2>
+  <p class="lead">Cuando aparece un dato, número, comparación, tendencia, ranking o relación en cualquier respuesta — el PC propone proactivamente. <strong>Modo Visual Universal = instinto, no procedimiento.</strong></p>
+
+  <div class="callout info" style="background:linear-gradient(135deg,rgba(5,150,105,0.08),rgba(37,99,235,0.04));border-color:var(--verde);font-size:1rem">
+    💡 <div>
+      <em>"¿Querés que te muestre esto como <strong>[tipo de gráfico]</strong>? Es ideal para <strong>[razón en 1 línea]</strong>."</em>
+      <div style="margin-top:8px;font-size:0.78rem;color:var(--txt3)">Sin pedir permiso para proponer. Solo se ejecuta tras OK Dusan o si el contexto ya autoriza (panel, presentación, dashboard, etc.).</div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<footer>
+  Generado por PC Dusan · 2026-05-23 · Para actualizar este informe, editar primero el archivo canónico (Apéndice A) y re-sincronizar.<br>
+  <strong>Triple respaldo activo</strong> — repo + Supabase <code>panel.config_ui</code> + skill <code>visual-oro</code>
+</footer>
+
+<script>
+// ESTILO COMÚN CHART.JS
+Chart.defaults.font.family = "Inter, Calibri, Arial, sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#475569';
+Chart.defaults.plugins.legend.position = 'bottom';
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.padding = 14;
+
+const colors = {verde:'#059669',azul:'#2563eb',naranja:'#ea580c',purpura:'#9333ea',rojo:'#dc2626',ambar:'#d97706'};
+const fmt = (n) => n.toLocaleString('es-CL');
+const gridCfg = {grid:{display:true,color:'#e2e8f0',drawBorder:false},border:{display:false}};
+const gridNoVert = {grid:{display:false},border:{display:false}};
+
+// SPARKLINES (KPI demo)
+function spark(id, data, color){
+  new Chart(document.getElementById(id), {
+    type:'line',
+    data:{labels:data.map((_,i)=>i),datasets:[{data,borderColor:color,backgroundColor:color+'30',fill:true,tension:0.4,pointRadius:0,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}}
+  });
+}
+spark('spark1',[62,68,71,69,75,79,84],colors.verde);
+spark('spark2',[120,125,131,128,135,138,142],colors.azul);
+spark('spark3',[40520,40510,40495,40488,40472,40465,40459],colors.naranja);
+spark('spark4',[39,42,45,44,48,50,51],colors.rojo);
+
+// CHART 1 — LÍNEA
+new Chart(document.getElementById('ch1'),{
+  type:'line',
+  data:{
+    labels:['L','M','M','J','V','S','D'],
+    datasets:[{label:'Facturación',data:[12,18,15,22,28,24,30],borderColor:colors.verde,backgroundColor:colors.verde+'33',fill:true,tension:0.4,borderWidth:2,pointRadius:3}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,scales:{y:gridCfg,x:gridNoVert}}
+});
+
+// CHART 2 — BARRAS
+new Chart(document.getElementById('ch2'),{
+  type:'bar',
+  data:{
+    labels:['Cerrillos','Maipú','Talca'],
+    datasets:[{label:'Toneladas',data:[58,42,38],backgroundColor:[colors.verde,colors.azul,colors.naranja],borderRadius:6,borderSkipped:false}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:gridCfg,x:gridNoVert}}
+});
+
+// CHART 3 — DONUT
+new Chart(document.getElementById('ch3'),{
+  type:'doughnut',
+  data:{
+    labels:['Papel','Plástico','Vidrio','Aluminio'],
+    datasets:[{data:[45,28,15,12],backgroundColor:[colors.verde,colors.azul,colors.naranja,colors.purpura],borderWidth:0}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,cutout:'65%'}
+});
+
+// CHART 4 — MULTI-LÍNEA
+new Chart(document.getElementById('ch4'),{
+  type:'line',
+  data:{
+    labels:['Ene','Feb','Mar','Abr','May'],
+    datasets:[
+      {label:'Reciclean',data:[42,48,52,58,62],borderColor:colors.verde,backgroundColor:colors.verde+'20',fill:true,tension:0.4,borderWidth:2,pointRadius:3},
+      {label:'Farex',data:[28,32,30,35,38],borderColor:colors.azul,backgroundColor:colors.azul+'20',fill:true,tension:0.4,borderWidth:2,pointRadius:3}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,scales:{y:gridCfg,x:gridNoVert}}
+});
+
+// CHART 5 — POLAR/DONUT 3 fuentes coherencia
+new Chart(document.getElementById('ch5'),{
+  type:'doughnut',
+  data:{
+    labels:['Heartbeat','Bitácora','GitHub'],
+    datasets:[{data:[1,1,1],backgroundColor:[colors.verde,colors.azul,colors.naranja],borderWidth:0}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{tooltip:{enabled:false}}}
+});
+
+// CHART 6 — Redundancia triple respaldo (barras horizontales)
+new Chart(document.getElementById('ch6'),{
+  type:'bar',
+  data:{
+    labels:['Pauta visual','Catálogo','Interrupción','6W','Coherencia'],
+    datasets:[{label:'Capas',data:[3,3,2,2,1],backgroundColor:colors.verde,borderRadius:6,borderSkipped:false}]
+  },
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{...gridCfg,max:3,ticks:{stepSize:1}},y:gridNoVert}}
+});
+</script>
+</body>
+</html>
