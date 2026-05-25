@@ -392,6 +392,10 @@
           <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
           Manual
         </a>
+        <a href="#" data-v4-tab="mi_memoria" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          Mi memoria
+        </a>
         <a href="#" data-v4-tab="oportunidades" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
           <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
           Oportunidades
@@ -491,6 +495,7 @@
         <button data-tab="dieguito"    class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabDieguito">📎 Dieguito</button>
         <button data-tab="comunicados" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabComunicados">🎧 Comunicados</button>
         <button data-tab="manual" class="tab-btn py-3 px-3 text-stone-600"              role="tab" aria-selected="false" aria-controls="tabManual">📖 Manual</button>
+        <button data-tab="mi_memoria" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabMiMemoria">🧠 Mi memoria</button>
         <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabRdo">📈 RDO Resumen</button>
         <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
         <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCotizador">📋 Cotizador</button>
@@ -532,6 +537,15 @@
         <div>
           <h1 class="text-2xl font-bold text-slate-800">Buenos días, <span id="v4-saludoNombre">—</span> 👋</h1>
           <p class="text-sm text-slate-500 mt-1">Hoy es <span class="font-medium text-slate-700" id="v4-fechaCompleta">—</span> · <span id="v4-siloCtx" class="font-semibold text-emerald-700">Vista global</span> · UF <span id="v4-ufValor" class="font-semibold text-slate-700">$38.214</span></p>
+        </div>
+
+        <!-- 💡 DIEGO SUGIERE HOY (D-DIEGO-MEJORA-CONTINUA-001 CL-020 pipeline-ingresos) -->
+        <div id="diegoSugiereWidget" class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 hidden" role="article" aria-label="Sugerencias proactivas Diego">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold text-emerald-800 text-sm flex items-center gap-2">💡 Diego sugiere hoy</h3>
+            <span class="text-xs text-emerald-600" id="diegoSugiereCriterio">criterio: clientes inactivos &gt;60d</span>
+          </div>
+          <div id="diegoSugiereList" class="space-y-1 text-xs text-slate-700">Cargando…</div>
         </div>
 
         <!-- 🤖 INDICADOR SALUD DIEGO (monitoreo perpetuo D-DIEGO-MONITOREO-001) -->
@@ -2216,6 +2230,66 @@
       </div>
     </section>
 
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA MI MEMORIA (D-DIEGO-LEGAL-IA-001 · 2026-05-25)
+         Cumple Ley 19628 + 21719 + Proyecto Ley IA Chile.
+         Cada usuario ve solo su propia memoria + puede borrarla.
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabMiMemoria" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">🧠 Mi memoria</h2>
+          <p class="text-xs text-stone-500">Lo que Diego sabe de vos. Podés ver, borrar y retirar consentimiento en cualquier momento.</p>
+        </div>
+        <button onclick="initMiMemoria()" class="text-sm text-green-700 hover:underline" type="button">↺ Recargar</button>
+      </div>
+
+      <!-- Resumen perfil -->
+      <div class="bg-white p-5 rounded-lg shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-2">📇 Tu perfil registrado</h3>
+        <dl id="miMemoriaPerfil" class="text-sm grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-stone-700">
+          <div><dt class="text-xs text-stone-500">Email</dt><dd id="mmEmail">—</dd></div>
+          <div><dt class="text-xs text-stone-500">Nombre</dt><dd id="mmNombre">—</dd></div>
+          <div><dt class="text-xs text-stone-500">Rol</dt><dd id="mmRol">—</dd></div>
+          <div><dt class="text-xs text-stone-500">Sucursal</dt><dd id="mmSucursal">—</dd></div>
+          <div><dt class="text-xs text-stone-500">Consentimiento IA</dt><dd id="mmConsentimiento">—</dd></div>
+          <div><dt class="text-xs text-stone-500">Último login</dt><dd id="mmUltimoLogin">—</dd></div>
+        </dl>
+      </div>
+
+      <!-- Historial conversacional + memoria sesión -->
+      <div class="bg-white p-5 rounded-lg shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-2">💬 Historial con Diego</h3>
+        <p class="text-xs text-stone-400 mb-3" id="mmHistorialResumen">—</p>
+        <div id="mmHistorialLista" class="space-y-2 max-h-96 overflow-y-auto">
+          <p class="text-xs text-stone-400">Cargando…</p>
+        </div>
+      </div>
+
+      <!-- Memoria de sesión Diego (panel.diego_memoria_sesion) -->
+      <div class="bg-white p-5 rounded-lg shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-2">🧬 Resumen que Diego mantiene de vos</h3>
+        <pre id="mmMemoriaSesion" class="text-xs text-stone-600 bg-stone-50 p-3 rounded whitespace-pre-wrap">Sin memoria de sesión aún. La próxima vez que chatées con Diego, esta caja va a llenarse con un resumen.</pre>
+      </div>
+
+      <!-- Acciones -->
+      <div class="bg-amber-50 border border-amber-200 p-5 rounded-lg shadow-sm">
+        <h3 class="font-semibold text-amber-800 mb-2">⚠️ Acciones (irreversibles)</h3>
+        <div class="flex flex-wrap gap-2">
+          <button id="mmExportarJson" type="button" class="text-sm px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 rounded font-medium" title="CL-010 export memoria (Ley 21719 portabilidad)">📥 Exportar mis datos en JSON</button>
+          <button id="mmBorrarHistorial" type="button" class="text-sm px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded font-medium">🗑️ Borrar TODO mi historial</button>
+          <button id="mmBorrarMemoriaSesion" type="button" class="text-sm px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded font-medium">🧹 Limpiar resumen de sesión</button>
+          <button id="mmRetirarConsentimiento" type="button" class="text-sm px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-800 border border-red-300 rounded font-medium">🚫 Retirar consentimiento — desactivar Diego</button>
+        </div>
+        <div id="mmMsg" class="hidden text-xs p-2 rounded mt-3"></div>
+      </div>
+
+      <p class="text-xs text-stone-400 mt-4">
+        Esto cumple <a href="https://www.bcn.cl/leychile/navegar?idNorma=141599" target="_blank" class="text-emerald-700 hover:underline">Ley 19628</a> y <a href="https://www.bcn.cl/leychile/navegar?idNorma=1217150" target="_blank" class="text-emerald-700 hover:underline">Ley 21719</a> (datos personales) + Proyecto Ley IA Chile.
+        Cualquier duda, escribile a Dyana (DPO funcional del grupo).
+      </p>
+    </section>
+
     <!-- ===================================================== -->
     <!-- TAB COMERCIAL · CRM Impulsa (mig 046 · 22-may-2026)    -->
     <!-- Datos: panel.v_crm_impulsa_*  +  panel.v_crm_cliente_360 -->
@@ -2402,7 +2476,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'manual', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'admin'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'admin'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -2606,6 +2680,13 @@ async function hydrateSessionAndEnter(authUser) {
 
   document.getElementById('loginContainer').style.display = 'none';
   document.getElementById('appContainer').style.display = 'block';
+
+  // D-DIEGO-LEGAL-IA-001 · gate de consentimiento IA al primer login.
+  // Si aviso_ia_consentimiento es NULL → mostrar banner.
+  // Si false → ocultar FAB Diego de inmediato.
+  if (typeof window.checkConsentimientoIA === 'function') {
+    try { await window.checkConsentimientoIA(currentUser); } catch (e) { console.warn('consentimiento IA:', e); }
+  }
 
   if (currentProfile === 'dusan' || currentProfile === 'admin') {
     document.getElementById('adminTab').classList.remove('hidden');
@@ -2983,6 +3064,7 @@ window.logout = async function() {
 const TAB_SECTION_MAP = {
   bandeja_dieg: 'tabBandejaDiego',
   bandeja_precios: 'tabBandejaPrecios',
+  mi_memoria: 'tabMiMemoria',
   ops_diarias: 'tabOpsDiarias'
 };
 function setupTabs() {
@@ -3021,6 +3103,7 @@ function setupTabs() {
       if (tabId === 'dieguito')  initDieguito();
       if (tabId === 'comercial')  initTabComercial();
       if (tabId === 'manual')      initManual();
+      if (tabId === 'mi_memoria')  initMiMemoria();
     });
   });
 }
@@ -7990,7 +8073,17 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-msg.mine{align-self:flex-end;background:#ecfdf5;color:#064e3b;border-bottom-right-radius:4px}
   .diego-msg.theirs{align-self:flex-start;background:#fff;border:1px solid #e2e8f0;color:#0f172a;border-bottom-left-radius:4px}
   .diego-msg.diego{align-self:flex-start;background:#fff;border:1px solid #059669;color:#0f172a;border-bottom-left-radius:4px}
-  .diego-msg.thinking{align-self:flex-start;background:#fff;border:1px dashed #94a3b8;color:#64748b;font-style:italic}
+  .diego-msg.thinking{align-self:flex-start;background:#fff;border:1px dashed #94a3b8;color:#64748b;font-style:italic;display:inline-flex;align-items:center;gap:6px}
+  /* D-DIEGO-MEJORA-CONTINUA-001 CL-013 · indicador typing animado */
+  .diego-typing-dots{display:inline-flex;gap:3px}
+  .diego-typing-dots span{width:6px;height:6px;border-radius:50%;background:#059669;animation:diegoTypingBounce 1.4s infinite ease-in-out both}
+  .diego-typing-dots span:nth-child(1){animation-delay:-0.32s}
+  .diego-typing-dots span:nth-child(2){animation-delay:-0.16s}
+  @keyframes diegoTypingBounce{0%,80%,100%{transform:scale(0.6);opacity:0.5}40%{transform:scale(1);opacity:1}}
+  /* D-DIEGO-MEJORA-CONTINUA-001 CL-015 · chips onboarding */
+  .diego-onboarding-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+  .diego-onboarding-chips button{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;padding:5px 10px;border-radius:14px;font-size:11px;cursor:pointer;transition:all .15s ease}
+  .diego-onboarding-chips button:hover{background:#d1fae5;transform:translateY(-1px)}
   .diego-msg-meta{font-size:10px;color:#94a3b8;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;line-height:1.2}
   .diego-msg.mine + .diego-msg-meta,.diego-msg-meta.mine-meta{align-self:flex-end}
   .diego-msg-attach{font-size:11px;background:#f1f5f9;padding:2px 8px;border-radius:6px;color:#475569;margin-top:4px;display:inline-block}
@@ -8035,7 +8128,36 @@ document.addEventListener('DOMContentLoaded', () => {
     .diego-fab{right:16px;bottom:16px;width:54px;height:54px}
     .diego-msg{max-width:90%;font-size:13.5px}
   }
+  /* D-DIEGO-LEGAL-IA-001 · Modal banner consentimiento IA */
+  .ia-consent-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.85); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 16px; }
+  .ia-consent-overlay.open { display: flex; }
+  .ia-consent-card { background: #fff; max-width: 560px; width: 100%; border-radius: 16px; padding: 28px; box-shadow: 0 24px 64px rgba(0,0,0,.4); }
+  .ia-consent-card h2 { color: #047857; font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; }
+  .ia-consent-card p { color: #334155; font-size: 0.95rem; line-height: 1.5; margin-bottom: 12px; }
+  .ia-consent-card .ia-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; justify-content: flex-end; }
+  .ia-consent-card button { padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: 0; }
+  .ia-consent-card .accept { background: #047857; color: #fff; }
+  .ia-consent-card .accept:hover { background: #065f46; }
+  .ia-consent-card .reject { background: #f1f5f9; color: #475569; }
+  .ia-consent-card .reject:hover { background: #e2e8f0; }
+  .ia-consent-card .legal-footer { font-size: 0.75rem; color: #94a3b8; margin-top: 8px; }
+  .ia-consent-card .leyes { background: #ecfdf5; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; color: #064e3b; margin-top: 4px; }
 </style>
+
+<!-- D-DIEGO-LEGAL-IA-001 · Modal banner consentimiento IA (primer login) -->
+<div id="iaConsentOverlay" class="ia-consent-overlay" role="dialog" aria-modal="true" aria-labelledby="iaConsentTitle">
+  <div class="ia-consent-card">
+    <h2 id="iaConsentTitle">👋 Bienvenido al panel</h2>
+    <p>Acá vas a interactuar con <strong>Diego</strong>, un asistente de <strong>inteligencia artificial</strong> (no es una persona). Diego guarda memoria de tus conversaciones para acompañarte mejor en tu trabajo.</p>
+    <p>Vas a poder ver, editar y borrar todo lo que guarde sobre vos en cualquier momento desde el tab <strong>"🧠 Mi memoria"</strong>.</p>
+    <div class="leyes">Esto cumple <strong>Ley 19628</strong> (datos personales) y <strong>Ley 21719</strong> (modernización, vigor 1-dic-2026).</div>
+    <div class="ia-actions">
+      <button id="iaConsentReject" class="reject" type="button">No acepto — usar el panel sin Diego</button>
+      <button id="iaConsentAccept" class="accept" type="button">Acepto</button>
+    </div>
+    <div id="iaConsentMsg" class="legal-footer hidden"></div>
+  </div>
+</div>
 
 <button class="diego-fab" id="diegoFab" type="button" aria-label="Abrir chat Diego">
   <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
@@ -8151,10 +8273,34 @@ document.addEventListener('DOMContentLoaded', () => {
     catch { return ''; }
   }
 
+  // D-DIEGO-MEJORA-CONTINUA-001 CL-015 · chips onboarding (rol-aware best-effort)
+  function getOnboardingChips() {
+    let rol = '';
+    try { rol = (JSON.parse(localStorage.getItem('rf_session') || '{}').perfil || '').toLowerCase(); } catch {}
+    const email = (getUserEmail() || '').toLowerCase();
+    const isComercial = rol.includes('comercial') || email.includes('comercial') || email.includes('andrea');
+    const isOps      = rol.includes('operaciones') || email.includes('cony') || email.includes('ingrid');
+    const isFinanzas = rol.includes('contable') || rol.includes('finanzas') || email.includes('dyana') || email.includes('sercot');
+    if (isComercial) return ['Precio cartón blanco Maipú','¿Qué cobrar a Pincore?','Resumen oportunidades abiertas','Quién es responsable de Resimex'];
+    if (isOps)       return ['Viajes pendientes hoy','Licencias por vencer','Mantenciones de camiones','Pesajes con diferencia >5%'];
+    if (isFinanzas)  return ['Facturas pendientes de pago','Cierre del mes','Resumen IVA mayo','Retenciones SERCOT'];
+    return ['Precio cartón blanco Maipú','Resumen del día','¿Qué tareas tengo pendientes?','Diego del día'];
+  }
+
   function render() {
     if (!history.length) {
-      body.innerHTML = '<div class="diego-empty">¿En qué te ayudo? Probá: <em>"precio cartón Maipú"</em> · <em>"resumen facturación mayo"</em> · arrastrá una foto.</div>'
+      const chips = getOnboardingChips().map(c => `<button type="button" data-chip="${esc(c)}">${esc(c)}</button>`).join('');
+      body.innerHTML = '<div class="diego-empty">¿En qué te ayudo? Probá:'
+        + `<div class="diego-onboarding-chips">${chips}</div>`
+        + '<div style="margin-top:8px;font-size:11px;color:#94a3b8">o arrastrá una foto · audio · PDF</div></div>'
         + '<div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>';
+      body.querySelectorAll('button[data-chip]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          input.value = btn.getAttribute('data-chip') || '';
+          input.focus();
+          form.dispatchEvent(new Event('submit'));
+        });
+      });
       return;
     }
     const html = history.map(h => {
@@ -8168,8 +8314,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const sixW = h.six_w && (h.six_w.what || h.six_w.when)
         ? `<div class="diego-msg-meta">🧠 ${esc(h.six_w.what || '')}${h.six_w.when ? ' · ⏰ ' + esc(h.six_w.when) : ''}${h.six_w.who ? ' · 👤 ' + esc(h.six_w.who) : ''}</div>`
         : '';
+      // thinking row: el mensaje es HTML controlado (typing dots), no escapar — el resto sí.
+      const msgHtml = (cls === 'thinking') ? String(h.mensaje) : esc(h.mensaje);
       return `<div class="diego-msg ${cls}">
-        <div>${esc(h.mensaje)}</div>
+        <div>${msgHtml}</div>
         ${attach}
         ${actions}
         ${sixW}
@@ -8308,6 +8456,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   closeBtn.addEventListener('click', () => win.classList.remove('open'));
 
+  // D-DIEGO-MEJORA-CONTINUA-001 CL-013 · hotkey Ctrl/Cmd+K para abrir/cerrar FAB
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+      const tag = (e.target?.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea') return; // no interrumpir mientras escribís
+      e.preventDefault();
+      if (win.classList.contains('open')) { win.classList.remove('open'); }
+      else { fab.click(); }
+    }
+    // ESC cierra
+    if (e.key === 'Escape' && win.classList.contains('open')) {
+      const tag2 = (e.target?.tagName || '').toLowerCase();
+      if (tag2 !== 'textarea' && tag2 !== 'input') win.classList.remove('open');
+    }
+  });
+
   // -- Auto-grow textarea + Enter to send --
   input.addEventListener('input', () => {
     input.style.height = 'auto';
@@ -8328,7 +8492,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sendBtn.disabled = true;
     const attach = pendingFile;
     history.push({ role: 'user', mensaje: msg || `(adjunto)`, attach: attach?.file_name, ts: Date.now() });
-    history.push({ role: 'thinking', mensaje: 'Pensando…', ts: Date.now() });
+    history.push({ role: 'thinking', mensaje: 'Diego está escribiendo<span class="diego-typing-dots"><span></span><span></span><span></span></span>', ts: Date.now() });
     render();
     input.value = '';
     input.style.height = 'auto';
@@ -8361,6 +8525,88 @@ document.addEventListener('DOMContentLoaded', () => {
   // Refresh badge al cargar
   setTimeout(refreshBadge, 1500);
   setInterval(refreshBadge, 60000);
+})();
+</script>
+
+<!-- D-DIEGO-MEJORA-CONTINUA-001 CL-020 · widget "Diego sugiere hoy" -->
+<script>
+(function diegoSugiereWidget(){
+  'use strict';
+  function ready(){ return typeof sb !== 'undefined' && sb && sb.schema; }
+  function getPerfilLocal(){
+    try { return (JSON.parse(localStorage.getItem('rf_session')||'{}').perfil||'').toLowerCase(); } catch { return ''; }
+  }
+  async function getEmailReal(){
+    try {
+      const fromLS = JSON.parse(localStorage.getItem('rf_session')||'{}').email;
+      if (fromLS) return fromLS;
+      const s = await sb.auth.getSession();
+      return s?.data?.session?.user?.email || null;
+    } catch { return null; }
+  }
+  async function getPerfilFallback(){
+    const local = getPerfilLocal();
+    if (local) return local;
+    const email = await getEmailReal();
+    if (!email) return '';
+    try {
+      const { data } = await sb.schema('panel').from('usuarios_autorizados').select('perfil').eq('email', email).maybeSingle();
+      return (data?.perfil || '').toLowerCase();
+    } catch { return ''; }
+  }
+  async function loadDiegoSugiere(){
+    const widget = document.getElementById('diegoSugiereWidget');
+    const list   = document.getElementById('diegoSugiereList');
+    const crit   = document.getElementById('diegoSugiereCriterio');
+    if (!widget || !list || !ready()) return;
+    const perfil = await getPerfilFallback();
+    if (!['comercial','dusan','admin'].includes(perfil)) { widget.classList.add('hidden'); return; }
+    try {
+      const { data, error } = await sb.schema('panel').from('diego_pipeline_diario')
+        .select('inactivos, leads_top, cotizaciones_urgentes, estafetas_estancadas, decisiones_recientes, sucursales_comparativa, alertas_cruzadas_suc, generado_at')
+        .order('fecha', { ascending:false }).limit(1).maybeSingle();
+      if (error || !data) { widget.classList.add('hidden'); return; }
+      const emailMe = await getEmailReal();
+      const dec     = Array.isArray(data.decisiones_recientes) ? data.decisiones_recientes.slice(0,2) : [];
+      const estaf   = Array.isArray(data.estafetas_estancadas) ? data.estafetas_estancadas.slice(0,2) : [];
+      const sucAlert= Array.isArray(data.alertas_cruzadas_suc) ? data.alertas_cruzadas_suc.slice(0,2) : [];
+      const inact   = Array.isArray(data.inactivos) ? data.inactivos.slice(0,1) : [];
+      const leads   = Array.isArray(data.leads_top) ? data.leads_top.slice(0,1) : [];
+      const cot     = Array.isArray(data.cotizaciones_urgentes) ? data.cotizaciones_urgentes.slice(0,1) : [];
+      if (dec.length+estaf.length+sucAlert.length+inact.length+leads.length+cot.length === 0) { widget.classList.add('hidden'); return; }
+      const esc = (s)=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      let html = '';
+      // CL-022 decisiones recientes (top prioridad — todo el equipo debe verlas)
+      dec.forEach(d => {
+        const meAfecta = Array.isArray(d.afectados) ? d.afectados.includes(emailMe) : false;
+        const tag = meAfecta ? '📌👤 te afecta' : '📌';
+        html += `<div>· ${tag} <strong>${esc(d.decisor||'')}</strong> (${esc(d.area||'')}): ${esc((d.texto||'').slice(0,120))}</div>`;
+      });
+      // CL-019 estafetas
+      estaf.forEach(e => { html += `<div>· ⚠️ <strong>${esc(e.cliente_nombre||'')}</strong> · ${esc(e.dias_en_etapa)}d en "${esc(e.etapa_nombre||'')}" (${esc(e.responsable||'—')})</div>`; });
+      // CL-023 alertas cruzadas sucursales (precio divergente)
+      sucAlert.forEach(a => { html += `<div>· 🏬 <strong>${esc(a.material||'')}</strong> precio varía ${esc(a.gap_pct)}% entre ${esc(a.n_suc)} sucursales</div>`; });
+      // CL-020 inactivos, cotizaciones, leads
+      inact.forEach(i => { html += `<div>· 🌙 <strong>${esc(i.razon_social||'')}</strong> sin actividad hace ${esc(i.dias_inactivo)} días</div>`; });
+      cot.forEach(c => { html += `<div>· 📋 cotización ${esc(c.material||'')} sin respuesta ${Math.round(Number(c.horas_sin_actividad)||0)}h (ej: ${esc(c.ejecutivo_email||'')})</div>`; });
+      leads.forEach(l => { html += `<div>· 🎯 lead <strong>${esc(l.nombre||'')}</strong> · score ${esc(l.score_prioridad)}</div>`; });
+      list.innerHTML = html;
+      widget.classList.remove('hidden');
+      const fecha = data.generado_at ? new Date(data.generado_at).toLocaleString('es-CL',{hour:'2-digit',minute:'2-digit'}) : '';
+      if (crit) crit.textContent = `actualizado ${fecha} · criterio: días sin comprar / horas sin respuesta / score`;
+    } catch(e) { console.warn('[CL-020] widget fallo:', e); widget.classList.add('hidden'); }
+  }
+  // Reintentar carga hasta tener email (post-login Supabase Auth)
+  async function tryLoadWithRetry(attemptsLeft = 8) {
+    if (!ready()) { if (attemptsLeft > 0) setTimeout(() => tryLoadWithRetry(attemptsLeft - 1), 1000); return; }
+    const email = await getEmailReal();
+    if (email) { await loadDiegoSugiere(); }
+    else if (attemptsLeft > 0) setTimeout(() => tryLoadWithRetry(attemptsLeft - 1), 1000);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(() => tryLoadWithRetry(), 1500));
+  else setTimeout(() => tryLoadWithRetry(), 1500);
+  // Reload manual desde consola: window.reloadDiegoSugiere()
+  window.reloadDiegoSugiere = loadDiegoSugiere;
 })();
 </script>
 
@@ -9170,6 +9416,296 @@ document.addEventListener('DOMContentLoaded', () => {
     #manualContenido h3 { font-size: 0.95rem; }
   }
 </style>
+
+<!-- ============================================================
+     D-DIEGO-LEGAL-IA-001 · banner consentimiento + tab Mi memoria
+============================================================ -->
+<script>
+(function legalIaBootstrap() {
+  let _currentEmail = '';
+  let _userRow = null;
+  let _declaracion = null;
+
+  function getEmail() {
+    try {
+      const s = JSON.parse(localStorage.getItem('rf_session') || 'null');
+      return (s && s.email) ? String(s.email).toLowerCase() : '';
+    } catch { return ''; }
+  }
+
+  function esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  function showOverlay() { document.getElementById('iaConsentOverlay').classList.add('open'); }
+  function hideOverlay() { document.getElementById('iaConsentOverlay').classList.remove('open'); }
+
+  function hideFabDiego() {
+    const fab = document.getElementById('diegoFab');
+    if (fab) fab.style.display = 'none';
+    const chat = document.getElementById('diegoChat');
+    if (chat) chat.classList.remove('open');
+  }
+
+  function showFabDiego() {
+    const fab = document.getElementById('diegoFab');
+    if (fab) fab.style.display = '';
+  }
+
+  async function fetchUserRow(email) {
+    if (typeof sb === 'undefined' || !sb) return null;
+    const { data } = await sb.schema('panel').from('usuarios_autorizados')
+      .select('email, nombre, perfil, sucursal, ultimo_login, aviso_ia_consentimiento, aviso_ia_aceptado_at')
+      .ilike('email', email).maybeSingle();
+    return data;
+  }
+
+  async function checkConsentimientoIA(email) {
+    _currentEmail = (email || getEmail()).toLowerCase();
+    if (!_currentEmail) return;
+    _userRow = await fetchUserRow(_currentEmail);
+    if (!_userRow) return;  // user no autorizado: el panel ya rechazará el login
+
+    if (_userRow.aviso_ia_consentimiento === true) {
+      showFabDiego();
+      return;
+    }
+    if (_userRow.aviso_ia_consentimiento === false) {
+      hideFabDiego();
+      return;
+    }
+    // NULL → primera vez. Mostrar banner.
+    showOverlay();
+  }
+  window.checkConsentimientoIA = checkConsentimientoIA;
+
+  async function aceptarIA() {
+    if (!_currentEmail) return;
+    const btn = document.getElementById('iaConsentAccept');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      const { error } = await sb.schema('panel').from('usuarios_autorizados')
+        .update({ aviso_ia_consentimiento: true, aviso_ia_aceptado_at: new Date().toISOString() })
+        .ilike('email', _currentEmail);
+      if (error) throw error;
+      _userRow = { ..._userRow, aviso_ia_consentimiento: true, aviso_ia_aceptado_at: new Date().toISOString() };
+      hideOverlay();
+      showFabDiego();
+    } catch (e) {
+      const msg = document.getElementById('iaConsentMsg');
+      msg.textContent = 'Error: ' + (e.message || String(e)) + '. Refrescá la página e intentá de nuevo.';
+      msg.classList.remove('hidden');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Acepto';
+    }
+  }
+
+  async function rechazarIA() {
+    if (!_currentEmail) return;
+    const btn = document.getElementById('iaConsentReject');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      const { error } = await sb.schema('panel').from('usuarios_autorizados')
+        .update({ aviso_ia_consentimiento: false, aviso_ia_aceptado_at: new Date().toISOString() })
+        .ilike('email', _currentEmail);
+      if (error) throw error;
+      _userRow = { ..._userRow, aviso_ia_consentimiento: false };
+      hideOverlay();
+      hideFabDiego();
+    } catch (e) {
+      const msg = document.getElementById('iaConsentMsg');
+      msg.textContent = 'Error: ' + (e.message || String(e));
+      msg.classList.remove('hidden');
+    } finally {
+      btn.disabled = false; btn.textContent = 'No acepto — usar el panel sin Diego';
+    }
+  }
+
+  // ============= TAB MI MEMORIA =============
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    try { return new Date(iso).toLocaleString('es-CL', { dateStyle: 'medium', timeStyle: 'short' }); }
+    catch { return iso; }
+  }
+
+  async function loadHistorial() {
+    if (typeof sb === 'undefined' || !sb || !_currentEmail) return;
+    const { data, error } = await sb.schema('panel').from('diego_bandeja')
+      .select('id, mensaje, what, estado, creado_en, nota_resolucion')
+      .ilike('remitente', _currentEmail)
+      .order('creado_en', { ascending: false }).limit(100);
+    const lista = document.getElementById('mmHistorialLista');
+    const resumen = document.getElementById('mmHistorialResumen');
+    if (error) {
+      lista.innerHTML = `<p class="text-xs text-red-600">Error: ${esc(error.message)}</p>`;
+      return;
+    }
+    const rows = data || [];
+    resumen.textContent = rows.length === 0
+      ? 'Aún no tenés conversaciones con Diego.'
+      : `${rows.length} interacciones guardadas. La más reciente: ${fmtDate(rows[0].creado_en)}.`;
+    if (rows.length === 0) {
+      lista.innerHTML = '<p class="text-xs text-stone-400">Sin entradas.</p>';
+      return;
+    }
+    lista.innerHTML = rows.map((r) => `<div class="border border-stone-200 rounded p-3 text-xs flex justify-between items-start gap-3">
+      <div class="flex-1 min-w-0">
+        <div class="text-stone-700">${esc(r.mensaje || '(sin mensaje)').slice(0, 200)}</div>
+        <div class="text-stone-400 mt-1">${esc(r.what || '')} · ${fmtDate(r.creado_en)} · estado: ${esc(r.estado || '—')}</div>
+      </div>
+      <button onclick="window.mmBorrarEntrada('${r.id}')" class="text-stone-400 hover:text-red-600 text-xs" title="Borrar esta entrada">🗑️</button>
+    </div>`).join('');
+  }
+
+  async function loadMemoriaSesion() {
+    if (typeof sb === 'undefined' || !sb || !_currentEmail) return;
+    const { data } = await sb.rpc('diego_memoria_sesion_get', { p_usuario_email: _currentEmail, p_max_horas: 168 });
+    const el = document.getElementById('mmMemoriaSesion');
+    const mem = Array.isArray(data) && data.length > 0 ? data[0] : null;
+    if (!mem || !mem.resumen) {
+      el.textContent = 'Sin memoria de sesión aún. La próxima vez que chatées con Diego, esta caja va a llenarse con un resumen.';
+    } else {
+      el.textContent = mem.resumen;
+    }
+  }
+
+  async function initMiMemoria() {
+    // Preservar _currentEmail si ya fue seteado por checkConsentimientoIA al login.
+    // Fallback 1: variable global `currentUser` del panel.
+    // Fallback 2: rf_session de localStorage (sistema viejo).
+    // Fallback 3: sb.auth.getSession() de Supabase Auth.
+    if (!_currentEmail) {
+      if (typeof currentUser === 'string' && currentUser.includes('@')) _currentEmail = currentUser.toLowerCase();
+      else if (typeof currentUser === 'object' && currentUser && currentUser.email) _currentEmail = String(currentUser.email).toLowerCase();
+      else _currentEmail = getEmail();
+    }
+    if (!_currentEmail && typeof sb !== 'undefined' && sb && sb.auth) {
+      try {
+        const { data } = await sb.auth.getSession();
+        if (data?.session?.user?.email) _currentEmail = String(data.session.user.email).toLowerCase();
+      } catch {}
+    }
+    if (!_currentEmail) {
+      document.getElementById('mmEmail').textContent = '(no detectado — recargá la página)';
+      return;
+    }
+    if (!_userRow) _userRow = await fetchUserRow(_currentEmail);
+    if (_userRow) {
+      document.getElementById('mmEmail').textContent     = _userRow.email || _currentEmail;
+      document.getElementById('mmNombre').textContent    = _userRow.nombre || '—';
+      document.getElementById('mmRol').textContent       = _userRow.perfil || '—';
+      document.getElementById('mmSucursal').textContent  = _userRow.sucursal || '—';
+      document.getElementById('mmUltimoLogin').textContent = fmtDate(_userRow.ultimo_login);
+      const cons = _userRow.aviso_ia_consentimiento;
+      const consEl = document.getElementById('mmConsentimiento');
+      if (cons === true) consEl.innerHTML = `<span class="text-green-700 font-medium">Aceptado</span> · ${fmtDate(_userRow.aviso_ia_aceptado_at)}`;
+      else if (cons === false) consEl.innerHTML = `<span class="text-red-700 font-medium">Rechazado</span> · ${fmtDate(_userRow.aviso_ia_aceptado_at)}`;
+      else consEl.innerHTML = `<span class="text-amber-700 font-medium">Pendiente</span>`;
+    }
+    await loadHistorial();
+    await loadMemoriaSesion();
+  }
+  window.initMiMemoria = initMiMemoria;
+
+  async function mmBorrarEntrada(id) {
+    if (!confirm('¿Borrar esta entrada de tu historial? Es irreversible.')) return;
+    if (typeof sb === 'undefined' || !sb) return;
+    const { error } = await sb.schema('panel').from('diego_bandeja').delete().eq('id', id);
+    if (error) { mmMsg('Error: ' + error.message, false); return; }
+    mmMsg('✓ Entrada borrada.', true);
+    loadHistorial();
+  }
+  window.mmBorrarEntrada = mmBorrarEntrada;
+
+  function mmMsg(txt, ok) {
+    const el = document.getElementById('mmMsg');
+    el.textContent = txt;
+    el.className = 'text-xs p-2 rounded mt-3 ' + (ok ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+  }
+
+  async function mmBorrarHistorial() {
+    if (!confirm('⚠️ ¿Borrar TODO tu historial con Diego? Es irreversible y Diego empieza de cero la próxima vez que chatées.')) return;
+    if (typeof sb === 'undefined' || !sb) return;
+    const { error } = await sb.schema('panel').from('diego_bandeja').delete().ilike('remitente', _currentEmail);
+    if (error) { mmMsg('Error: ' + error.message, false); return; }
+    mmMsg('✓ Historial borrado completamente.', true);
+    loadHistorial();
+  }
+
+  async function mmBorrarMemoriaSesion() {
+    if (!confirm('¿Limpiar el resumen que Diego mantiene de vos? Las conversaciones individuales no se borran, solo el resumen.')) return;
+    try {
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/diego-chat-process`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_email: _currentEmail, mensaje: 'limpiame la cache de sesion', request_id: crypto.randomUUID() }),
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      mmMsg('✓ Resumen de sesión limpiado. Diego empieza la próxima conversación de cero.', true);
+      loadMemoriaSesion();
+    } catch (e) {
+      mmMsg('Error: ' + (e.message || String(e)), false);
+    }
+  }
+
+  async function mmRetirarConsentimiento() {
+    if (!confirm('⚠️ Esto desactiva Diego para vos. No vas a ver el botón verde del chat y no puede ayudarte hasta que vuelvas a dar consentimiento. ¿Confirmás?')) return;
+    if (typeof sb === 'undefined' || !sb) return;
+    const { error } = await sb.schema('panel').from('usuarios_autorizados')
+      .update({ aviso_ia_consentimiento: false, aviso_ia_aceptado_at: new Date().toISOString() })
+      .ilike('email', _currentEmail);
+    if (error) { mmMsg('Error: ' + error.message, false); return; }
+    _userRow = { ..._userRow, aviso_ia_consentimiento: false };
+    hideFabDiego();
+    mmMsg('✓ Consentimiento retirado. Diego está desactivado para vos. Recargá si querés volver a verlo (te aparecerá el banner de nuevo).', true);
+    initMiMemoria();
+  }
+
+  // Wire up
+  document.addEventListener('DOMContentLoaded', () => {
+    const accept = document.getElementById('iaConsentAccept');
+    const reject = document.getElementById('iaConsentReject');
+    if (accept) accept.addEventListener('click', aceptarIA);
+    if (reject) reject.addEventListener('click', rechazarIA);
+
+    const btnH  = document.getElementById('mmBorrarHistorial');
+    const btnMS = document.getElementById('mmBorrarMemoriaSesion');
+    const btnR  = document.getElementById('mmRetirarConsentimiento');
+    const btnEx = document.getElementById('mmExportarJson');
+    if (btnH)  btnH.addEventListener('click', mmBorrarHistorial);
+    if (btnMS) btnMS.addEventListener('click', mmBorrarMemoriaSesion);
+    if (btnR)  btnR.addEventListener('click', mmRetirarConsentimiento);
+    // D-DIEGO-MEJORA-CONTINUA-001 CL-010 · export JSON Ley 21719 portabilidad
+    if (btnEx) btnEx.addEventListener('click', async () => {
+      try {
+        const email = (JSON.parse(localStorage.getItem('rf_session') || '{}').email) || (await sb.auth.getSession())?.data?.session?.user?.email;
+        if (!email) { alert('No hay sesión activa.'); return; }
+        const [perfilQ, histQ, memQ] = await Promise.all([
+          sb.schema('panel').from('usuarios_autorizados').select('*').eq('email', email).maybeSingle(),
+          sb.schema('panel').from('diego_bandeja').select('*').eq('remitente', email).order('ts', { ascending: false }).limit(500),
+          sb.schema('panel').from('diego_memoria_sesion').select('*').eq('usuario_email', email).maybeSingle(),
+        ]);
+        const bundle = {
+          export_v: 1, generado_at: new Date().toISOString(),
+          ley_aplicable: ['Ley 19628', 'Ley 21719'],
+          email,
+          perfil: perfilQ.data || null,
+          historial_diego: histQ.data || [],
+          memoria_sesion: memQ.data || null,
+        };
+        const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `mi-memoria-diego-${email.replace(/[@.]/g,'_')}-${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      } catch (e) { alert('No se pudo exportar: ' + (e?.message || e)); }
+    });
+  });
+})();
+</script>
 
 <!-- E360 context menu (D-MISMATCH Mig 035 frontend) -->
 <script src="/js/e360-context-menu.js"></script>
