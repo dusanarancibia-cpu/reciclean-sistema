@@ -2267,6 +2267,7 @@
       <div class="bg-amber-50 border border-amber-200 p-5 rounded-lg shadow-sm">
         <h3 class="font-semibold text-amber-800 mb-2">⚠️ Acciones (irreversibles)</h3>
         <div class="flex flex-wrap gap-2">
+          <button id="mmExportarJson" type="button" class="text-sm px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 rounded font-medium" title="CL-010 export memoria (Ley 21719 portabilidad)">📥 Exportar mis datos en JSON</button>
           <button id="mmBorrarHistorial" type="button" class="text-sm px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded font-medium">🗑️ Borrar TODO mi historial</button>
           <button id="mmBorrarMemoriaSesion" type="button" class="text-sm px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded font-medium">🧹 Limpiar resumen de sesión</button>
           <button id="mmRetirarConsentimiento" type="button" class="text-sm px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-800 border border-red-300 rounded font-medium">🚫 Retirar consentimiento — desactivar Diego</button>
@@ -9582,9 +9583,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnH  = document.getElementById('mmBorrarHistorial');
     const btnMS = document.getElementById('mmBorrarMemoriaSesion');
     const btnR  = document.getElementById('mmRetirarConsentimiento');
+    const btnEx = document.getElementById('mmExportarJson');
     if (btnH)  btnH.addEventListener('click', mmBorrarHistorial);
     if (btnMS) btnMS.addEventListener('click', mmBorrarMemoriaSesion);
     if (btnR)  btnR.addEventListener('click', mmRetirarConsentimiento);
+    // D-DIEGO-MEJORA-CONTINUA-001 CL-010 · export JSON Ley 21719 portabilidad
+    if (btnEx) btnEx.addEventListener('click', async () => {
+      try {
+        const email = (JSON.parse(localStorage.getItem('rf_session') || '{}').email) || (await sb.auth.getSession())?.data?.session?.user?.email;
+        if (!email) { alert('No hay sesión activa.'); return; }
+        const [perfilQ, histQ, memQ] = await Promise.all([
+          sb.schema('panel').from('usuarios_autorizados').select('*').eq('email', email).maybeSingle(),
+          sb.schema('panel').from('diego_bandeja').select('*').eq('remitente', email).order('ts', { ascending: false }).limit(500),
+          sb.schema('panel').from('diego_memoria_sesion').select('*').eq('usuario_email', email).maybeSingle(),
+        ]);
+        const bundle = {
+          export_v: 1, generado_at: new Date().toISOString(),
+          ley_aplicable: ['Ley 19628', 'Ley 21719'],
+          email,
+          perfil: perfilQ.data || null,
+          historial_diego: histQ.data || [],
+          memoria_sesion: memQ.data || null,
+        };
+        const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `mi-memoria-diego-${email.replace(/[@.]/g,'_')}-${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      } catch (e) { alert('No se pudo exportar: ' + (e?.message || e)); }
+    });
   });
 })();
 </script>
