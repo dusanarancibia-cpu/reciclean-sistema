@@ -8465,10 +8465,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (win.classList.contains('open')) { win.classList.remove('open'); }
       else { fab.click(); }
     }
-    // ESC cierra
+    // ESC cierra (BUG-IA-CONSENT-004 fix: textarea autofocusea al abrir, antes ESC nunca cerraba)
     if (e.key === 'Escape' && win.classList.contains('open')) {
-      const tag2 = (e.target?.tagName || '').toLowerCase();
-      if (tag2 !== 'textarea' && tag2 !== 'input') win.classList.remove('open');
+      win.classList.remove('open');
     }
   });
 
@@ -9685,7 +9684,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!email) { alert('No hay sesión activa.'); return; }
         const [perfilQ, histQ, memQ] = await Promise.all([
           sb.schema('panel').from('usuarios_autorizados').select('*').eq('email', email).maybeSingle(),
-          sb.schema('panel').from('diego_bandeja').select('*').eq('remitente', email).order('ts', { ascending: false }).limit(500),
+          sb.schema('panel').from('diego_bandeja').select('*').eq('remitente', email).order('creado_en', { ascending: false }).limit(500),
           sb.schema('panel').from('diego_memoria_sesion').select('*').eq('usuario_email', email).maybeSingle(),
         ]);
         const bundle = {
