@@ -8563,17 +8563,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!['comercial','dusan','admin'].includes(perfil)) { widget.classList.add('hidden'); return; }
     try {
       const { data, error } = await sb.schema('panel').from('diego_pipeline_diario')
-        .select('inactivos, leads_top, cotizaciones_urgentes, estafetas_estancadas, generado_at')
+        .select('inactivos, leads_top, cotizaciones_urgentes, estafetas_estancadas, decisiones_recientes, generado_at')
         .order('fecha', { ascending:false }).limit(1).maybeSingle();
       if (error || !data) { widget.classList.add('hidden'); return; }
-      const estaf = Array.isArray(data.estafetas_estancadas) ? data.estafetas_estancadas.slice(0,3) : [];
+      const emailMe = await getEmailReal();
+      const dec   = Array.isArray(data.decisiones_recientes) ? data.decisiones_recientes.slice(0,2) : [];
+      const estaf = Array.isArray(data.estafetas_estancadas) ? data.estafetas_estancadas.slice(0,2) : [];
       const inact = Array.isArray(data.inactivos) ? data.inactivos.slice(0,2) : [];
       const leads = Array.isArray(data.leads_top) ? data.leads_top.slice(0,1) : [];
       const cot   = Array.isArray(data.cotizaciones_urgentes) ? data.cotizaciones_urgentes.slice(0,1) : [];
-      if (estaf.length+inact.length+leads.length+cot.length === 0) { widget.classList.add('hidden'); return; }
+      if (dec.length+estaf.length+inact.length+leads.length+cot.length === 0) { widget.classList.add('hidden'); return; }
       const esc = (s)=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       let html = '';
-      // CL-019 estafetas (prioridad alta, mostrarlas primero)
+      // CL-022 decisiones recientes (top prioridad — todo el equipo debe verlas)
+      dec.forEach(d => {
+        const meAfecta = Array.isArray(d.afectados) ? d.afectados.includes(emailMe) : false;
+        const tag = meAfecta ? '📌👤 te afecta' : '📌';
+        html += `<div>· ${tag} <strong>${esc(d.decisor||'')}</strong> (${esc(d.area||'')}): ${esc((d.texto||'').slice(0,120))}</div>`;
+      });
+      // CL-019 estafetas
       estaf.forEach(e => { html += `<div>· ⚠️ <strong>${esc(e.cliente_nombre||'')}</strong> · ${esc(e.dias_en_etapa)}d en "${esc(e.etapa_nombre||'')}" (${esc(e.responsable||'—')})</div>`; });
       // CL-020 inactivos, cotizaciones, leads
       inact.forEach(i => { html += `<div>· 🌙 <strong>${esc(i.razon_social||'')}</strong> sin actividad hace ${esc(i.dias_inactivo)} días</div>`; });
