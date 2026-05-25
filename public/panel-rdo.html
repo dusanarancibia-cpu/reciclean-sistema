@@ -539,6 +539,15 @@
           <p class="text-sm text-slate-500 mt-1">Hoy es <span class="font-medium text-slate-700" id="v4-fechaCompleta">—</span> · <span id="v4-siloCtx" class="font-semibold text-emerald-700">Vista global</span> · UF <span id="v4-ufValor" class="font-semibold text-slate-700">$38.214</span></p>
         </div>
 
+        <!-- 💡 DIEGO SUGIERE HOY (D-DIEGO-MEJORA-CONTINUA-001 CL-020 pipeline-ingresos) -->
+        <div id="diegoSugiereWidget" class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 hidden" role="article" aria-label="Sugerencias proactivas Diego">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold text-emerald-800 text-sm flex items-center gap-2">💡 Diego sugiere hoy</h3>
+            <span class="text-xs text-emerald-600" id="diegoSugiereCriterio">criterio: clientes inactivos &gt;60d</span>
+          </div>
+          <div id="diegoSugiereList" class="space-y-1 text-xs text-slate-700">Cargando…</div>
+        </div>
+
         <!-- 🤖 INDICADOR SALUD DIEGO (monitoreo perpetuo D-DIEGO-MONITOREO-001) -->
         <div id="v4-diego-health" class="bg-white border border-slate-200 rounded-2xl p-4 flex items-center gap-4" role="article" aria-label="Estado Diego">
           <div id="v4-health-icon" class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-2xl flex-shrink-0">⏳</div>
@@ -8516,6 +8525,88 @@ document.addEventListener('DOMContentLoaded', () => {
   // Refresh badge al cargar
   setTimeout(refreshBadge, 1500);
   setInterval(refreshBadge, 60000);
+})();
+</script>
+
+<!-- D-DIEGO-MEJORA-CONTINUA-001 CL-020 · widget "Diego sugiere hoy" -->
+<script>
+(function diegoSugiereWidget(){
+  'use strict';
+  function ready(){ return typeof sb !== 'undefined' && sb && sb.schema; }
+  function getPerfilLocal(){
+    try { return (JSON.parse(localStorage.getItem('rf_session')||'{}').perfil||'').toLowerCase(); } catch { return ''; }
+  }
+  async function getEmailReal(){
+    try {
+      const fromLS = JSON.parse(localStorage.getItem('rf_session')||'{}').email;
+      if (fromLS) return fromLS;
+      const s = await sb.auth.getSession();
+      return s?.data?.session?.user?.email || null;
+    } catch { return null; }
+  }
+  async function getPerfilFallback(){
+    const local = getPerfilLocal();
+    if (local) return local;
+    const email = await getEmailReal();
+    if (!email) return '';
+    try {
+      const { data } = await sb.schema('panel').from('usuarios_autorizados').select('perfil').eq('email', email).maybeSingle();
+      return (data?.perfil || '').toLowerCase();
+    } catch { return ''; }
+  }
+  async function loadDiegoSugiere(){
+    const widget = document.getElementById('diegoSugiereWidget');
+    const list   = document.getElementById('diegoSugiereList');
+    const crit   = document.getElementById('diegoSugiereCriterio');
+    if (!widget || !list || !ready()) return;
+    const perfil = await getPerfilFallback();
+    if (!['comercial','dusan','admin'].includes(perfil)) { widget.classList.add('hidden'); return; }
+    try {
+      const { data, error } = await sb.schema('panel').from('diego_pipeline_diario')
+        .select('inactivos, leads_top, cotizaciones_urgentes, estafetas_estancadas, decisiones_recientes, sucursales_comparativa, alertas_cruzadas_suc, generado_at')
+        .order('fecha', { ascending:false }).limit(1).maybeSingle();
+      if (error || !data) { widget.classList.add('hidden'); return; }
+      const emailMe = await getEmailReal();
+      const dec     = Array.isArray(data.decisiones_recientes) ? data.decisiones_recientes.slice(0,2) : [];
+      const estaf   = Array.isArray(data.estafetas_estancadas) ? data.estafetas_estancadas.slice(0,2) : [];
+      const sucAlert= Array.isArray(data.alertas_cruzadas_suc) ? data.alertas_cruzadas_suc.slice(0,2) : [];
+      const inact   = Array.isArray(data.inactivos) ? data.inactivos.slice(0,1) : [];
+      const leads   = Array.isArray(data.leads_top) ? data.leads_top.slice(0,1) : [];
+      const cot     = Array.isArray(data.cotizaciones_urgentes) ? data.cotizaciones_urgentes.slice(0,1) : [];
+      if (dec.length+estaf.length+sucAlert.length+inact.length+leads.length+cot.length === 0) { widget.classList.add('hidden'); return; }
+      const esc = (s)=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      let html = '';
+      // CL-022 decisiones recientes (top prioridad — todo el equipo debe verlas)
+      dec.forEach(d => {
+        const meAfecta = Array.isArray(d.afectados) ? d.afectados.includes(emailMe) : false;
+        const tag = meAfecta ? '📌👤 te afecta' : '📌';
+        html += `<div>· ${tag} <strong>${esc(d.decisor||'')}</strong> (${esc(d.area||'')}): ${esc((d.texto||'').slice(0,120))}</div>`;
+      });
+      // CL-019 estafetas
+      estaf.forEach(e => { html += `<div>· ⚠️ <strong>${esc(e.cliente_nombre||'')}</strong> · ${esc(e.dias_en_etapa)}d en "${esc(e.etapa_nombre||'')}" (${esc(e.responsable||'—')})</div>`; });
+      // CL-023 alertas cruzadas sucursales (precio divergente)
+      sucAlert.forEach(a => { html += `<div>· 🏬 <strong>${esc(a.material||'')}</strong> precio varía ${esc(a.gap_pct)}% entre ${esc(a.n_suc)} sucursales</div>`; });
+      // CL-020 inactivos, cotizaciones, leads
+      inact.forEach(i => { html += `<div>· 🌙 <strong>${esc(i.razon_social||'')}</strong> sin actividad hace ${esc(i.dias_inactivo)} días</div>`; });
+      cot.forEach(c => { html += `<div>· 📋 cotización ${esc(c.material||'')} sin respuesta ${Math.round(Number(c.horas_sin_actividad)||0)}h (ej: ${esc(c.ejecutivo_email||'')})</div>`; });
+      leads.forEach(l => { html += `<div>· 🎯 lead <strong>${esc(l.nombre||'')}</strong> · score ${esc(l.score_prioridad)}</div>`; });
+      list.innerHTML = html;
+      widget.classList.remove('hidden');
+      const fecha = data.generado_at ? new Date(data.generado_at).toLocaleString('es-CL',{hour:'2-digit',minute:'2-digit'}) : '';
+      if (crit) crit.textContent = `actualizado ${fecha} · criterio: días sin comprar / horas sin respuesta / score`;
+    } catch(e) { console.warn('[CL-020] widget fallo:', e); widget.classList.add('hidden'); }
+  }
+  // Reintentar carga hasta tener email (post-login Supabase Auth)
+  async function tryLoadWithRetry(attemptsLeft = 8) {
+    if (!ready()) { if (attemptsLeft > 0) setTimeout(() => tryLoadWithRetry(attemptsLeft - 1), 1000); return; }
+    const email = await getEmailReal();
+    if (email) { await loadDiegoSugiere(); }
+    else if (attemptsLeft > 0) setTimeout(() => tryLoadWithRetry(attemptsLeft - 1), 1000);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(() => tryLoadWithRetry(), 1500));
+  else setTimeout(() => tryLoadWithRetry(), 1500);
+  // Reload manual desde consola: window.reloadDiegoSugiere()
+  window.reloadDiegoSugiere = loadDiegoSugiere;
 })();
 </script>
 
