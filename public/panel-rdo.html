@@ -8563,15 +8563,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!['comercial','dusan','admin'].includes(perfil)) { widget.classList.add('hidden'); return; }
     try {
       const { data, error } = await sb.schema('panel').from('diego_pipeline_diario')
-        .select('inactivos, leads_top, cotizaciones_urgentes, generado_at')
+        .select('inactivos, leads_top, cotizaciones_urgentes, estafetas_estancadas, generado_at')
         .order('fecha', { ascending:false }).limit(1).maybeSingle();
       if (error || !data) { widget.classList.add('hidden'); return; }
-      const inact = Array.isArray(data.inactivos) ? data.inactivos.slice(0,3) : [];
-      const leads = Array.isArray(data.leads_top) ? data.leads_top.slice(0,2) : [];
-      const cot   = Array.isArray(data.cotizaciones_urgentes) ? data.cotizaciones_urgentes.slice(0,2) : [];
-      if (inact.length+leads.length+cot.length === 0) { widget.classList.add('hidden'); return; }
+      const estaf = Array.isArray(data.estafetas_estancadas) ? data.estafetas_estancadas.slice(0,3) : [];
+      const inact = Array.isArray(data.inactivos) ? data.inactivos.slice(0,2) : [];
+      const leads = Array.isArray(data.leads_top) ? data.leads_top.slice(0,1) : [];
+      const cot   = Array.isArray(data.cotizaciones_urgentes) ? data.cotizaciones_urgentes.slice(0,1) : [];
+      if (estaf.length+inact.length+leads.length+cot.length === 0) { widget.classList.add('hidden'); return; }
       const esc = (s)=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       let html = '';
+      // CL-019 estafetas (prioridad alta, mostrarlas primero)
+      estaf.forEach(e => { html += `<div>· ⚠️ <strong>${esc(e.cliente_nombre||'')}</strong> · ${esc(e.dias_en_etapa)}d en "${esc(e.etapa_nombre||'')}" (${esc(e.responsable||'—')})</div>`; });
+      // CL-020 inactivos, cotizaciones, leads
       inact.forEach(i => { html += `<div>· 🌙 <strong>${esc(i.razon_social||'')}</strong> sin actividad hace ${esc(i.dias_inactivo)} días</div>`; });
       cot.forEach(c => { html += `<div>· 📋 cotización ${esc(c.material||'')} sin respuesta ${Math.round(Number(c.horas_sin_actividad)||0)}h (ej: ${esc(c.ejecutivo_email||'')})</div>`; });
       leads.forEach(l => { html += `<div>· 🎯 lead <strong>${esc(l.nombre||'')}</strong> · score ${esc(l.score_prioridad)}</div>`; });
@@ -8581,9 +8585,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (crit) crit.textContent = `actualizado ${fecha} · criterio: días sin comprar / horas sin respuesta / score`;
     } catch(e) { console.warn('[CL-020] widget fallo:', e); widget.classList.add('hidden'); }
   }
-  // Cargar 1.5s después del load (esperar sb listo y rf_session hidratada)
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(loadDiegoSugiere, 1500));
-  else setTimeout(loadDiegoSugiere, 1500);
+  // Reintentar carga hasta tener email (post-login Supabase Auth)
+  async function tryLoadWithRetry(attemptsLeft = 8) {
+    if (!ready()) { if (attemptsLeft > 0) setTimeout(() => tryLoadWithRetry(attemptsLeft - 1), 1000); return; }
+    const email = await getEmailReal();
+    if (email) { await loadDiegoSugiere(); }
+    else if (attemptsLeft > 0) setTimeout(() => tryLoadWithRetry(attemptsLeft - 1), 1000);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(() => tryLoadWithRetry(), 1500));
+  else setTimeout(() => tryLoadWithRetry(), 1500);
   // Reload manual desde consola: window.reloadDiegoSugiere()
   window.reloadDiegoSugiere = loadDiegoSugiere;
 })();
