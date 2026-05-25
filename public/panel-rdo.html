@@ -2267,6 +2267,7 @@
       <div class="bg-amber-50 border border-amber-200 p-5 rounded-lg shadow-sm">
         <h3 class="font-semibold text-amber-800 mb-2">⚠️ Acciones (irreversibles)</h3>
         <div class="flex flex-wrap gap-2">
+          <button id="mmExportarJson" type="button" class="text-sm px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 rounded font-medium" title="CL-010 export memoria (Ley 21719 portabilidad)">📥 Exportar mis datos en JSON</button>
           <button id="mmBorrarHistorial" type="button" class="text-sm px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded font-medium">🗑️ Borrar TODO mi historial</button>
           <button id="mmBorrarMemoriaSesion" type="button" class="text-sm px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded font-medium">🧹 Limpiar resumen de sesión</button>
           <button id="mmRetirarConsentimiento" type="button" class="text-sm px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-800 border border-red-300 rounded font-medium">🚫 Retirar consentimiento — desactivar Diego</button>
@@ -8063,7 +8064,17 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-msg.mine{align-self:flex-end;background:#ecfdf5;color:#064e3b;border-bottom-right-radius:4px}
   .diego-msg.theirs{align-self:flex-start;background:#fff;border:1px solid #e2e8f0;color:#0f172a;border-bottom-left-radius:4px}
   .diego-msg.diego{align-self:flex-start;background:#fff;border:1px solid #059669;color:#0f172a;border-bottom-left-radius:4px}
-  .diego-msg.thinking{align-self:flex-start;background:#fff;border:1px dashed #94a3b8;color:#64748b;font-style:italic}
+  .diego-msg.thinking{align-self:flex-start;background:#fff;border:1px dashed #94a3b8;color:#64748b;font-style:italic;display:inline-flex;align-items:center;gap:6px}
+  /* D-DIEGO-MEJORA-CONTINUA-001 CL-013 · indicador typing animado */
+  .diego-typing-dots{display:inline-flex;gap:3px}
+  .diego-typing-dots span{width:6px;height:6px;border-radius:50%;background:#059669;animation:diegoTypingBounce 1.4s infinite ease-in-out both}
+  .diego-typing-dots span:nth-child(1){animation-delay:-0.32s}
+  .diego-typing-dots span:nth-child(2){animation-delay:-0.16s}
+  @keyframes diegoTypingBounce{0%,80%,100%{transform:scale(0.6);opacity:0.5}40%{transform:scale(1);opacity:1}}
+  /* D-DIEGO-MEJORA-CONTINUA-001 CL-015 · chips onboarding */
+  .diego-onboarding-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+  .diego-onboarding-chips button{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;padding:5px 10px;border-radius:14px;font-size:11px;cursor:pointer;transition:all .15s ease}
+  .diego-onboarding-chips button:hover{background:#d1fae5;transform:translateY(-1px)}
   .diego-msg-meta{font-size:10px;color:#94a3b8;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;line-height:1.2}
   .diego-msg.mine + .diego-msg-meta,.diego-msg-meta.mine-meta{align-self:flex-end}
   .diego-msg-attach{font-size:11px;background:#f1f5f9;padding:2px 8px;border-radius:6px;color:#475569;margin-top:4px;display:inline-block}
@@ -8253,10 +8264,34 @@ document.addEventListener('DOMContentLoaded', () => {
     catch { return ''; }
   }
 
+  // D-DIEGO-MEJORA-CONTINUA-001 CL-015 · chips onboarding (rol-aware best-effort)
+  function getOnboardingChips() {
+    let rol = '';
+    try { rol = (JSON.parse(localStorage.getItem('rf_session') || '{}').perfil || '').toLowerCase(); } catch {}
+    const email = (getUserEmail() || '').toLowerCase();
+    const isComercial = rol.includes('comercial') || email.includes('comercial') || email.includes('andrea');
+    const isOps      = rol.includes('operaciones') || email.includes('cony') || email.includes('ingrid');
+    const isFinanzas = rol.includes('contable') || rol.includes('finanzas') || email.includes('dyana') || email.includes('sercot');
+    if (isComercial) return ['Precio cartón blanco Maipú','¿Qué cobrar a Pincore?','Resumen oportunidades abiertas','Quién es responsable de Resimex'];
+    if (isOps)       return ['Viajes pendientes hoy','Licencias por vencer','Mantenciones de camiones','Pesajes con diferencia >5%'];
+    if (isFinanzas)  return ['Facturas pendientes de pago','Cierre del mes','Resumen IVA mayo','Retenciones SERCOT'];
+    return ['Precio cartón blanco Maipú','Resumen del día','¿Qué tareas tengo pendientes?','Diego del día'];
+  }
+
   function render() {
     if (!history.length) {
-      body.innerHTML = '<div class="diego-empty">¿En qué te ayudo? Probá: <em>"precio cartón Maipú"</em> · <em>"resumen facturación mayo"</em> · arrastrá una foto.</div>'
+      const chips = getOnboardingChips().map(c => `<button type="button" data-chip="${esc(c)}">${esc(c)}</button>`).join('');
+      body.innerHTML = '<div class="diego-empty">¿En qué te ayudo? Probá:'
+        + `<div class="diego-onboarding-chips">${chips}</div>`
+        + '<div style="margin-top:8px;font-size:11px;color:#94a3b8">o arrastrá una foto · audio · PDF</div></div>'
         + '<div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>';
+      body.querySelectorAll('button[data-chip]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          input.value = btn.getAttribute('data-chip') || '';
+          input.focus();
+          form.dispatchEvent(new Event('submit'));
+        });
+      });
       return;
     }
     const html = history.map(h => {
@@ -8270,8 +8305,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const sixW = h.six_w && (h.six_w.what || h.six_w.when)
         ? `<div class="diego-msg-meta">🧠 ${esc(h.six_w.what || '')}${h.six_w.when ? ' · ⏰ ' + esc(h.six_w.when) : ''}${h.six_w.who ? ' · 👤 ' + esc(h.six_w.who) : ''}</div>`
         : '';
+      // thinking row: el mensaje es HTML controlado (typing dots), no escapar — el resto sí.
+      const msgHtml = (cls === 'thinking') ? String(h.mensaje) : esc(h.mensaje);
       return `<div class="diego-msg ${cls}">
-        <div>${esc(h.mensaje)}</div>
+        <div>${msgHtml}</div>
         ${attach}
         ${actions}
         ${sixW}
@@ -8410,6 +8447,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   closeBtn.addEventListener('click', () => win.classList.remove('open'));
 
+  // D-DIEGO-MEJORA-CONTINUA-001 CL-013 · hotkey Ctrl/Cmd+K para abrir/cerrar FAB
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+      const tag = (e.target?.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea') return; // no interrumpir mientras escribís
+      e.preventDefault();
+      if (win.classList.contains('open')) { win.classList.remove('open'); }
+      else { fab.click(); }
+    }
+    // ESC cierra
+    if (e.key === 'Escape' && win.classList.contains('open')) {
+      const tag2 = (e.target?.tagName || '').toLowerCase();
+      if (tag2 !== 'textarea' && tag2 !== 'input') win.classList.remove('open');
+    }
+  });
+
   // -- Auto-grow textarea + Enter to send --
   input.addEventListener('input', () => {
     input.style.height = 'auto';
@@ -8430,7 +8483,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sendBtn.disabled = true;
     const attach = pendingFile;
     history.push({ role: 'user', mensaje: msg || `(adjunto)`, attach: attach?.file_name, ts: Date.now() });
-    history.push({ role: 'thinking', mensaje: 'Pensando…', ts: Date.now() });
+    history.push({ role: 'thinking', mensaje: 'Diego está escribiendo<span class="diego-typing-dots"><span></span><span></span><span></span></span>', ts: Date.now() });
     render();
     input.value = '';
     input.style.height = 'auto';
@@ -9530,9 +9583,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnH  = document.getElementById('mmBorrarHistorial');
     const btnMS = document.getElementById('mmBorrarMemoriaSesion');
     const btnR  = document.getElementById('mmRetirarConsentimiento');
+    const btnEx = document.getElementById('mmExportarJson');
     if (btnH)  btnH.addEventListener('click', mmBorrarHistorial);
     if (btnMS) btnMS.addEventListener('click', mmBorrarMemoriaSesion);
     if (btnR)  btnR.addEventListener('click', mmRetirarConsentimiento);
+    // D-DIEGO-MEJORA-CONTINUA-001 CL-010 · export JSON Ley 21719 portabilidad
+    if (btnEx) btnEx.addEventListener('click', async () => {
+      try {
+        const email = (JSON.parse(localStorage.getItem('rf_session') || '{}').email) || (await sb.auth.getSession())?.data?.session?.user?.email;
+        if (!email) { alert('No hay sesión activa.'); return; }
+        const [perfilQ, histQ, memQ] = await Promise.all([
+          sb.schema('panel').from('usuarios_autorizados').select('*').eq('email', email).maybeSingle(),
+          sb.schema('panel').from('diego_bandeja').select('*').eq('remitente', email).order('ts', { ascending: false }).limit(500),
+          sb.schema('panel').from('diego_memoria_sesion').select('*').eq('usuario_email', email).maybeSingle(),
+        ]);
+        const bundle = {
+          export_v: 1, generado_at: new Date().toISOString(),
+          ley_aplicable: ['Ley 19628', 'Ley 21719'],
+          email,
+          perfil: perfilQ.data || null,
+          historial_diego: histQ.data || [],
+          memoria_sesion: memQ.data || null,
+        };
+        const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `mi-memoria-diego-${email.replace(/[@.]/g,'_')}-${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      } catch (e) { alert('No se pudo exportar: ' + (e?.message || e)); }
+    });
   });
 })();
 </script>
