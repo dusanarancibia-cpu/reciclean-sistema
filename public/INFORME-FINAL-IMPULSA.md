@@ -1,5 +1,5 @@
 # INFORME FINAL — RESCATE CRM IMPULSA
-**Fecha:** 2026-05-25  |  **Corregido:** 2026-05-26 (adjuntos oportunidades completo)  |  **Estado:** COMPLETADO  |  **Verificacion cruzada:** APROBADA
+**Fecha:** 2026-05-25  |  **Corregido:** 2026-05-26 (adjuntos integrados en CLIENTES/)  |  **Estado:** COMPLETADO  |  **Verificacion cruzada:** APROBADA
 
 ---
 
@@ -91,14 +91,16 @@ impulsa-documentos/
   _INDICE.md                     <- mapa navegable de todo
   CLIENTES-SIN-DOCUMENTOS.md    <- 1,788 clientes CRM sin docs (corregido)
   AVANCE-AUTONOMO.md             <- log de sesion de rescate
-  CLIENTES/                      <- 1,981 carpetas de clientes (Fase 1-2)
-    NOMBRE CLIENTE/              <- 165 carpetas con docs PDF/JPG (144 con _ficha.json, 21 sin ficha)
-      _ficha.json                    (ausente en 21 casos por nombre truncado/puntos/tildes)
-      OPORTUNIDADES/
-        (FECHA) TITULO (op_NNNNN)/
-          [archivos reales]
-    NOMBRE CLIENTE (ID)/         <- 1,816 carpetas solo con ficha JSON
-      _ficha.json                    (incluye 10 carpetas-espejo de los 21 sin ficha)
+  CLIENTES/                      <- carpetas por nombre de cliente
+    NOMBRE CLIENTE/              <- con _ficha.json cuando hay datos CRM
+      _ficha.json
+      OPORTUNIDADES/             <- adjuntos de oportunidades integrados aqui (Fase 3)
+        (FECHA) TITULO (op_NNNNN)/   <- 3,053 carpetas de oportunidades con archivos
+          archivo1.pdf
+          archivo2.jpg
+          ...                    <- 15,552 archivos / 3.25 GB total
+    NOMBRE CLIENTE (ID)/         <- 1,816 carpetas solo con ficha JSON (sin docs en origen)
+      _ficha.json
   CONTACTOS/
     _todos-contactos.json        <- 1,516 contactos
   OPORTUNIDADES/
@@ -110,11 +112,6 @@ impulsa-documentos/
     _historial.md
   USUARIOS-SISTEMA/
     _usuarios.json               <- 14 usuarios del panel
-  ADJUNTOS_OPS/                  <- 3,053 carpetas de oportunidades con adjuntos (Fase 3)
-    op_[ID]/                     <- una carpeta por oportunidad
-      archivo1.pdf
-      archivo2.jpg
-      ...                        <- 15,552 archivos / 3.25 GB total
 ```
 
 ---
@@ -162,4 +159,4 @@ impulsa-documentos/
 
 ---
 
-*Cuenta Impulsa CRM cerrada. Rescate 100% completado. Firmado PC Camaras, 2026-05-26.*
+*Cuenta Impulsa CRM cerrada. Rescate 100% completado. Adjuntos integrados en CLIENTES/ por nombre de cliente (2026-05-26). Firmado PC Camaras, 2026-05-26.*
