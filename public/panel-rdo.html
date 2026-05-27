@@ -1701,6 +1701,16 @@
             <option value="">Todos</option>
           </select>
         </div>
+        <div>
+          <label for="oppFiltroEmbudo" class="block text-xs text-stone-500 mb-1">Embudo</label>
+          <select id="oppFiltroEmbudo" onchange="loadOportunidadesKanban()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todos los embudos</option>
+            <option value="Reciclean">Reciclean</option>
+            <option value="Farex">Farex</option>
+            <option value="Embudo perdido">Embudo perdido</option>
+          </select>
+        </div>
         <div class="flex items-end pb-1.5">
           <label class="flex items-center gap-1.5 text-sm text-stone-600 cursor-pointer select-none">
             <input type="checkbox" id="oppMostrarCerrados" onchange="loadOportunidadesKanban()" class="rounded">
@@ -1719,6 +1729,17 @@
         <div class="text-stone-400 col-span-full text-center py-6">Cargando…</div>
       </div>
 
+      <!-- Barra resumen Ganadas/Perdidas -->
+      <div id="oppCerradosBar" class="hidden mt-3 px-3 py-2 bg-stone-50 rounded-lg text-sm flex flex-wrap gap-4 items-center">
+        <span class="text-stone-500 text-xs">Fuera del embudo:</span>
+        <span id="oppBarGanadas" class="text-green-700 font-medium"></span>
+        <span id="oppBarPerdidas" class="text-red-600 font-medium"></span>
+        <label class="flex items-center gap-1 text-xs text-stone-500 cursor-pointer ml-auto">
+          <input type="checkbox" id="oppMostrarCerrados2" onchange="document.getElementById('oppMostrarCerrados').checked=this.checked;loadOportunidadesKanban();" class="rounded">
+          Mostrar en embudo
+        </label>
+      </div>
+
       <!-- Drawer oportunidad -->
       <div id="oppDrawer" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
         <div class="bg-white w-full max-w-md h-full overflow-y-auto p-5">
@@ -1732,7 +1753,8 @@
 
           <div id="oppDrawerTags" class="flex flex-wrap gap-2 mb-4"></div>
 
-          <div class="bg-stone-50 rounded p-3 mb-4">
+          <!-- Panel cambio de estado (solo ops RDO) -->
+          <div id="oppDrawerEstadoPanel" class="bg-stone-50 rounded p-3 mb-4">
             <div class="text-xs text-stone-500 mb-1">Estado actual</div>
             <div id="oppDrawerEstadoActual" class="font-medium text-stone-800 mb-2">—</div>
             <label for="oppDrawerEstadoSelect" class="block text-xs text-stone-500 mb-1">Cambiar a:</label>
@@ -1740,6 +1762,9 @@
                     class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none mb-2">
               <option value="recibida">Recibida</option>
               <option value="en_evaluacion">En evaluación</option>
+              <option value="activada">Activada</option>
+              <option value="monitoreo">Monitoreo</option>
+              <option value="respondida">Respondida</option>
               <option value="ganada">Ganada</option>
               <option value="perdida">Perdida</option>
             </select>
@@ -1750,8 +1775,14 @@
             <div id="oppDrawerMsg" class="hidden mt-2 text-xs p-2 rounded"></div>
           </div>
 
+          <!-- Badge solo lectura (ops Impulsa CRM) -->
+          <div id="oppDrawerCrmBadge" class="hidden bg-purple-50 border border-purple-200 rounded p-2 mb-4 text-xs text-purple-700">
+            Oportunidad del CRM Impulsa — solo lectura
+          </div>
+
           <dl class="text-sm space-y-2">
-            <div><dt class="text-xs text-stone-500">Monto estimado</dt><dd id="oppDrawerMonto" class="font-medium">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Monto estimado (UF)</dt><dd id="oppDrawerMonto" class="font-medium">—</dd></div>
+            <div id="oppDrawerTotalCrmRow" class="hidden"><dt class="text-xs text-stone-500">Monto Impulsa</dt><dd id="oppDrawerTotalCrm" class="font-medium">—</dd></div>
             <div><dt class="text-xs text-stone-500">Probabilidad</dt><dd id="oppDrawerProb">—</dd></div>
             <div><dt class="text-xs text-stone-500">Tipo / Origen</dt><dd id="oppDrawerTipo">—</dd></div>
             <div><dt class="text-xs text-stone-500">Responsable</dt><dd id="oppDrawerResp">—</dd></div>
@@ -1761,6 +1792,24 @@
             <div><dt class="text-xs text-stone-500">Viabilidad</dt><dd id="oppDrawerViabilidad">—</dd></div>
             <div><dt class="text-xs text-stone-500">Descripción</dt><dd id="oppDrawerDesc" class="whitespace-pre-line text-stone-700">—</dd></div>
           </dl>
+
+          <!-- Campos exclusivos Impulsa -->
+          <div id="oppDrawerImpulsaSection" class="hidden mt-4 pt-3 border-t border-stone-200">
+            <div class="text-xs font-semibold text-purple-700 mb-2">Datos CRM Impulsa</div>
+            <dl class="text-sm space-y-2">
+              <div><dt class="text-xs text-stone-500">Embudo</dt><dd id="oppDrawerEmbudo">—</dd></div>
+              <div id="oppDrawerRazonRow" class="hidden"><dt class="text-xs text-stone-500">Razón pérdida</dt><dd id="oppDrawerRazonPerdida">—</dd></div>
+              <div><dt class="text-xs text-stone-500">Tags</dt><dd id="oppDrawerTagsCrm">—</dd></div>
+              <div><dt class="text-xs text-stone-500">Unidad negocio</dt><dd id="oppDrawerUnidadNeg">—</dd></div>
+              <div><dt class="text-xs text-stone-500">ID Impulsa</dt><dd id="oppDrawerCrmId" class="font-mono text-xs">—</dd></div>
+            </dl>
+          </div>
+
+          <!-- Adjuntos -->
+          <div id="oppDrawerAdjuntosSection" class="hidden mt-4 pt-3 border-t border-stone-200">
+            <div class="text-xs font-semibold text-stone-600 mb-2">Documentos adjuntos</div>
+            <div id="oppDrawerAdjuntos" class="space-y-1 text-sm text-stone-600"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -6151,7 +6200,7 @@ window.carAplicarCategoria = async function() {
 };
 
 // ============================================================
-// TAB OPORTUNIDADES KANBAN (D-OP-12)
+// TAB OPORTUNIDADES KANBAN (D-OP-12) — v2 con Impulsa CRM
 // ============================================================
 const OPP_ESTADOS = [
   { id: 'recibida',      nombre: 'Recibida',      color: 'bg-stone-100' },
@@ -6162,9 +6211,11 @@ const OPP_ESTADOS = [
   { id: 'ganada',        nombre: 'Ganada',        color: 'bg-green-50' },
   { id: 'perdida',       nombre: 'Perdida',       color: 'bg-red-50' },
 ];
-let _oppDrawerId = null;
+let _oppDrawerId   = null;
+let _oppDrawerOrig = null;
 let _oppSucursalesMap = null;
-let _oppSearchTimer = null;
+let _oppSearchTimer   = null;
+
 function oppDebouncedSearch() {
   clearTimeout(_oppSearchTimer);
   _oppSearchTimer = setTimeout(() => loadOportunidadesKanban(), 300);
@@ -6180,10 +6231,8 @@ async function _v4LoadOppResumen() {
     const crmMatch = data?.crm?.matcheadas_rdo ?? 0;
     const fuzzyRes = await sb.from('v_crm_match_sugerido').select('*', { count:'exact', head:true });
     const fuzzyTot = fuzzyRes?.count ?? 0;
-    // RDO abiertas: count en curated.oportunidades con estado activo
     const oppAbiertasRes = await sb.schema('curated').from('oportunidades').select('*', { count:'exact', head:true }).neq('estado', 'cerrada_perdida').neq('estado', 'cerrada_ganada');
     const oppAbiertas = oppAbiertasRes?.count ?? 0;
-
     const setIf = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = (txt ?? 0).toLocaleString('es-CL'); };
     setIf('v4OppRdoAbiertas', oppAbiertas);
     setIf('v4OppCrmTotal', crmTotal);
@@ -6193,7 +6242,6 @@ async function _v4LoadOppResumen() {
 }
 
 async function initOportunidadesKanban() {
-  // N2-5: resumen pipeline once por sesión
   if (!window._v4OppResumenLoaded) { window._v4OppResumenLoaded = true; _v4LoadOppResumen(); }
   if (!_oppSucursalesMap) {
     const sucs = await ensureSucursalesCache();
@@ -6206,7 +6254,8 @@ async function loadOportunidadesKanban() {
   const cont = document.getElementById('oppKanban');
   cont.innerHTML = '<div class="text-stone-400 col-span-full text-center py-6">Cargando…</div>';
 
-  const origenFiltro = document.getElementById('oppFiltroOrigen')?.value ?? 'rdo';
+  const origenFiltro    = document.getElementById('oppFiltroOrigen')?.value ?? 'rdo';
+  const embudoFiltro    = document.getElementById('oppFiltroEmbudo')?.value ?? '';
   const mostrarCerrados = document.getElementById('oppMostrarCerrados')?.checked ?? false;
   const buscar = (document.getElementById('oppFiltroBuscar')?.value || '').trim();
 
@@ -6225,23 +6274,46 @@ async function loadOportunidadesKanban() {
   ]);
   if (error) { cont.innerHTML = `<div class="text-red-600 col-span-full">Error: ${escapeHtml(error.message)}</div>`; return; }
 
+  // Filtro embudo en JS (RDO no tiene embudo, siempre pasa)
+  const allOpps = (opps || []);
+  const filteredOpps = embudoFiltro
+    ? allOpps.filter(o => o.origen !== 'crm_impulsa' || o.embudo === embudoFiltro)
+    : allOpps;
+
+  // Barra resumen ganadas/perdidas
+  const totalGanadas = (kpis || []).reduce((s, k) => k.estado === 'ganada'  ? s + Number(k.cant) : s, 0);
+  const totalPerdidas = (kpis || []).reduce((s, k) => k.estado === 'perdida' ? s + Number(k.cant) : s, 0);
+  const barEl = document.getElementById('oppCerradosBar');
+  if (barEl) {
+    if (!mostrarCerrados && (totalGanadas > 0 || totalPerdidas > 0)) {
+      barEl.classList.remove('hidden');
+      const gEl = document.getElementById('oppBarGanadas');
+      const pEl = document.getElementById('oppBarPerdidas');
+      if (gEl) gEl.textContent = `✓ ${totalGanadas.toLocaleString('es-CL')} ganadas`;
+      if (pEl) pEl.textContent = `✗ ${totalPerdidas.toLocaleString('es-CL')} perdidas`;
+    } else {
+      barEl.classList.add('hidden');
+    }
+  }
+
   const LIMIT_PER_COL = 30;
   const porEstado = {};
   OPP_ESTADOS.forEach(e => porEstado[e.id] = []);
-  (opps || []).forEach(o => {
+  filteredOpps.forEach(o => {
     if (!porEstado[o.estado]) porEstado[o.estado] = [];
     porEstado[o.estado].push(o);
   });
 
   const estadosVisibles = mostrarCerrados ? OPP_ESTADOS : OPP_ESTADOS.filter(e => !['ganada','perdida'].includes(e.id));
   const kpisMap = new Map((kpis || []).map(k => [k.estado, k]));
-  const cols = mostrarCerrados ? 'xl:grid-cols-4' : 'xl:grid-cols-5';
-  cont.className = `grid grid-cols-1 md:grid-cols-2 ${cols} gap-3`;
+  const nCols = estadosVisibles.length;
+  const colsCls = nCols <= 4 ? 'xl:grid-cols-4' : 'xl:grid-cols-5';
+  cont.className = `grid grid-cols-1 md:grid-cols-2 ${colsCls} gap-3`;
 
   cont.innerHTML = estadosVisibles.map(e => {
     const k = kpisMap.get(e.id);
     const cant = k ? Number(k.cant) : 0;
-    const uf = k ? Number(k.uf_total) : 0;
+    const uf   = k ? Number(k.uf_total) : 0;
     const todos = porEstado[e.id] || [];
     const visible = todos.slice(0, LIMIT_PER_COL);
     const resto = todos.length - visible.length;
@@ -6249,7 +6321,8 @@ async function loadOportunidadesKanban() {
     const masBtn = resto > 0 ? `<div class="text-xs text-stone-400 italic py-2 text-center">+${resto.toLocaleString('es-CL')} más — usa búsqueda para filtrar</div>` : '';
     const emptyMsg = todos.length === 0 ? '<div class="text-xs text-stone-400 italic py-3 text-center">Sin oportunidades</div>' : '';
     return `
-      <div class="${e.color} rounded-lg p-3 min-h-[200px]">
+      <div class="${e.color} rounded-lg p-3 min-h-[200px]"
+           ondragover="event.preventDefault()" ondrop="oppDrop(event,'${e.id}')">
         <div class="flex justify-between items-baseline mb-2 pb-2 border-b border-stone-200">
           <h3 class="font-semibold text-stone-800">${escapeHtml(e.nombre)}</h3>
           <div class="text-xs text-stone-500">${cant.toLocaleString('es-CL')} · ${uf.toLocaleString('es-CL', { maximumFractionDigits: 1 })} UF</div>
@@ -6260,28 +6333,76 @@ async function loadOportunidadesKanban() {
 }
 
 function oppRenderCard(o) {
-  const monto = o.valor_estimado_uf ? Number(o.valor_estimado_uf).toLocaleString('es-CL', { maximumFractionDigits: 1 }) + ' UF' : '';
+  const esCrm  = o.origen === 'crm_impulsa';
+  const monto  = o.valor_estimado_uf
+    ? Number(o.valor_estimado_uf).toLocaleString('es-CL', { maximumFractionDigits: 1 }) + ' UF'
+    : (o.total_crm ? Number(o.total_crm).toLocaleString('es-CL', { maximumFractionDigits: 0 }) + ' ' + (o.divisa_crm || '') : '');
   const fechaRec = o.fecha_recepcion ? new Date(o.fecha_recepcion).toLocaleDateString('es-CL') : '';
+  const embudoBadge = o.embudo ? `<span class="text-xs px-1 py-0.5 bg-purple-100 text-purple-700 rounded">${escapeHtml(o.embudo)}</span>` : '';
+  const crmDot = esCrm ? '<span title="CRM Impulsa" class="inline-block w-2 h-2 rounded-full bg-purple-400 mr-1"></span>' : '';
   return `
     <div onclick="oppAbrirDrawer('${escapeHtml(o.oportunidad_id)}')"
+         draggable="true"
+         ondragstart="oppDragStart(event,'${escapeHtml(o.oportunidad_id)}','${escapeHtml(o.origen || '')}')"
          data-entity-type="oportunidad" data-entity-id="${escapeHtml(o.oportunidad_id)}" data-entity-nombre="${escapeHtml(o.titulo || '')}"
-         title="Click: detalle · Click-derecho: vínculos E360"
-         class="bg-white rounded shadow-sm p-2 cursor-pointer hover:shadow-md transition">
-      <div class="font-medium text-sm text-stone-800 mb-1">${escapeHtml(o.titulo || '(sin título)')}</div>
+         title="${esCrm ? 'CRM Impulsa · ' : ''}Click: detalle · Arrastrar: mover columna"
+         class="bg-white rounded shadow-sm p-2 cursor-pointer hover:shadow-md transition select-none">
+      <div class="font-medium text-sm text-stone-800 mb-1">${crmDot}${escapeHtml(o.titulo || '(sin título)')}</div>
       <div class="text-xs text-stone-600 mb-1 truncate">${escapeHtml(o.cliente_nombre || '')}</div>
       <div class="flex justify-between text-xs text-stone-500">
         <span>${escapeHtml(monto)}</span>
         <span>${escapeHtml(fechaRec)}</span>
       </div>
+      ${embudoBadge ? `<div class="mt-1">${embudoBadge}</div>` : ''}
       ${o.responsable ? `<div class="text-xs text-stone-400 mt-1">👤 ${escapeHtml(o.responsable)}</div>` : ''}
     </div>`;
 }
 
+// ── Drag and drop ────────────────────────────────────────────
+let _oppDragId     = null;
+let _oppDragOrigen = null;
+
+window.oppDragStart = function(event, oppId, origen) {
+  _oppDragId     = oppId;
+  _oppDragOrigen = origen;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', oppId);
+};
+
+window.oppDrop = async function(event, estadoDestino) {
+  event.preventDefault();
+  const oppId = _oppDragId;
+  const origen = _oppDragOrigen;
+  _oppDragId = null; _oppDragOrigen = null;
+  if (!oppId) return;
+
+  if (origen === 'crm_impulsa') {
+    const tmp = document.createElement('div');
+    tmp.className = 'fixed top-4 right-4 bg-purple-100 text-purple-800 text-sm px-4 py-2 rounded shadow z-50';
+    tmp.textContent = 'CRM Impulsa — solo lectura. El estado no se puede cambiar desde el panel.';
+    document.body.appendChild(tmp);
+    setTimeout(() => tmp.remove(), 3000);
+    return;
+  }
+
+  const { error } = await sb.schema('curated').from('oportunidades')
+    .update({ estado: estadoDestino, updated_by: (currentUser || 'desconocido') })
+    .eq('oportunidad_id', oppId);
+  if (!error) await loadOportunidadesKanban();
+};
+
+// ── Drawer ───────────────────────────────────────────────────
 window.oppAbrirDrawer = async function(oppId) {
   _oppDrawerId = oppId;
   document.getElementById('oppDrawer').classList.remove('hidden');
   document.getElementById('oppDrawerMsg').classList.add('hidden');
-  ['oppDrawerTitulo','oppDrawerCliente','oppDrawerEstadoActual','oppDrawerMonto','oppDrawerProb','oppDrawerTipo','oppDrawerResp','oppDrawerSucursal','oppDrawerFechaRec','oppDrawerFechaCierre','oppDrawerViabilidad','oppDrawerDesc'].forEach(id => document.getElementById(id).textContent = '—');
+
+  const resetIds = ['oppDrawerTitulo','oppDrawerCliente','oppDrawerEstadoActual',
+    'oppDrawerMonto','oppDrawerProb','oppDrawerTipo','oppDrawerResp','oppDrawerSucursal',
+    'oppDrawerFechaRec','oppDrawerFechaCierre','oppDrawerViabilidad','oppDrawerDesc',
+    'oppDrawerEmbudo','oppDrawerRazonPerdida','oppDrawerTagsCrm','oppDrawerUnidadNeg',
+    'oppDrawerCrmId','oppDrawerTotalCrm'];
+  resetIds.forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
   document.getElementById('oppDrawerTags').innerHTML = '';
 
   const { data: o, error } = await sb.schema('curated').from('vw_oportunidades_kanban').select('*').eq('oportunidad_id', oppId).maybeSingle();
@@ -6289,11 +6410,30 @@ window.oppAbrirDrawer = async function(oppId) {
     document.getElementById('oppDrawerTitulo').textContent = 'Error cargando oportunidad';
     return;
   }
+
+  const esCrm = o.origen === 'crm_impulsa';
+  _oppDrawerOrig = o.origen;
+
+  document.getElementById('oppDrawerEstadoPanel').classList.toggle('hidden', esCrm);
+  document.getElementById('oppDrawerCrmBadge').classList.toggle('hidden', !esCrm);
+
   document.getElementById('oppDrawerTitulo').textContent = o.titulo || '(sin título)';
   document.getElementById('oppDrawerCliente').textContent = o.cliente_nombre + (o.cliente_rut ? ' · ' + o.cliente_rut : '');
-  document.getElementById('oppDrawerEstadoActual').textContent = (OPP_ESTADOS.find(e => e.id === o.estado) || {}).nombre || o.estado;
-  document.getElementById('oppDrawerEstadoSelect').value = o.estado;
-  document.getElementById('oppDrawerMonto').textContent = o.valor_estimado_uf ? Number(o.valor_estimado_uf).toLocaleString('es-CL', { maximumFractionDigits: 2 }) + ' UF' : '—';
+  if (!esCrm) {
+    document.getElementById('oppDrawerEstadoActual').textContent = (OPP_ESTADOS.find(e => e.id === o.estado) || {}).nombre || o.estado;
+    document.getElementById('oppDrawerEstadoSelect').value = o.estado;
+  }
+
+  if (o.valor_estimado_uf) {
+    document.getElementById('oppDrawerMonto').textContent = Number(o.valor_estimado_uf).toLocaleString('es-CL', { maximumFractionDigits: 2 }) + ' UF';
+  }
+  const totalCrmRow = document.getElementById('oppDrawerTotalCrmRow');
+  if (o.total_crm && totalCrmRow) {
+    totalCrmRow.classList.remove('hidden');
+    document.getElementById('oppDrawerTotalCrm').textContent =
+      Number(o.total_crm).toLocaleString('es-CL', { maximumFractionDigits: 0 }) + ' ' + (o.divisa_crm || '');
+  } else if (totalCrmRow) { totalCrmRow.classList.add('hidden'); }
+
   document.getElementById('oppDrawerProb').textContent = o.probabilidad_pct != null ? o.probabilidad_pct + '%' : '—';
   document.getElementById('oppDrawerTipo').textContent = [o.tipo, o.origen].filter(Boolean).join(' / ') || '—';
   document.getElementById('oppDrawerResp').textContent = o.responsable || '—';
@@ -6306,16 +6446,52 @@ window.oppAbrirDrawer = async function(oppId) {
   const tags = [];
   if (o.viabilidad_resultado === 'viable') tags.push('<span class="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded">✓ viable</span>');
   if (o.viabilidad_resultado === 'no_viable') tags.push('<span class="text-xs px-2 py-0.5 bg-red-100 text-red-800 rounded">✗ no viable</span>');
+  if (esCrm) tags.push('<span class="text-xs px-2 py-0.5 bg-purple-100 text-purple-800 rounded">CRM Impulsa</span>');
   document.getElementById('oppDrawerTags').innerHTML = tags.join('');
+
+  const impulsaSection = document.getElementById('oppDrawerImpulsaSection');
+  if (esCrm && impulsaSection) {
+    impulsaSection.classList.remove('hidden');
+    document.getElementById('oppDrawerEmbudo').textContent = o.embudo || '—';
+    document.getElementById('oppDrawerTagsCrm').textContent = o.tags_crm || '—';
+    document.getElementById('oppDrawerUnidadNeg').textContent = o.unidad_negocio || '—';
+    document.getElementById('oppDrawerCrmId').textContent = o.external_crm_id || '—';
+    const razonRow = document.getElementById('oppDrawerRazonRow');
+    if (o.razon_perdida) {
+      razonRow.classList.remove('hidden');
+      document.getElementById('oppDrawerRazonPerdida').textContent = o.razon_perdida;
+    } else { razonRow.classList.add('hidden'); }
+  } else if (impulsaSection) { impulsaSection.classList.add('hidden'); }
+
+  const adjSection = document.getElementById('oppDrawerAdjuntosSection');
+  const adjDiv = document.getElementById('oppDrawerAdjuntos');
+  if (o.external_crm_id && adjSection && adjDiv) {
+    const { data: adjs } = await sb.schema('curated').from('oportunidades_adjuntos')
+      .select('nombre_archivo, extension, ruta_local')
+      .eq('external_crm_id', o.external_crm_id)
+      .limit(50);
+    if (adjs && adjs.length > 0) {
+      adjSection.classList.remove('hidden');
+      adjDiv.innerHTML = adjs.map(a =>
+        `<div class="flex items-center gap-2 text-xs text-stone-600 py-0.5">
+          <span class="text-stone-400">${escapeHtml(a.extension || '📄')}</span>
+          <span class="truncate">${escapeHtml(a.nombre_archivo)}</span>
+        </div>`
+      ).join('');
+    } else { adjSection.classList.add('hidden'); }
+  } else if (adjSection) { adjSection.classList.add('hidden'); }
 };
 
 window.oppCerrarDrawer = function() {
   document.getElementById('oppDrawer').classList.add('hidden');
-  _oppDrawerId = null;
+  _oppDrawerId   = null;
+  _oppDrawerOrig = null;
 };
 
 window.oppMoverEstado = async function() {
   if (!_oppDrawerId) return;
+  if (_oppDrawerOrig === 'crm_impulsa') return;
+
   const nuevoEstado = document.getElementById('oppDrawerEstadoSelect').value;
   const msg = document.getElementById('oppDrawerMsg');
   const btn = document.getElementById('oppDrawerMoverBtn');
