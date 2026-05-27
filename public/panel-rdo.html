@@ -2448,6 +2448,22 @@ Tip: en Excel "Guardar como" → CSV UTF-8 (delimitado por comas).</div>
         <div id="ingPesajesResultado" class="hidden text-sm p-3 rounded mb-3"></div>
         <div id="ingPesajesErrores" class="hidden mt-2 bg-amber-50 p-3 rounded text-xs max-h-48 overflow-y-auto"></div>
       </div>
+
+      <!-- D-PANEL-AUTH-001 F1c · 2FA enrollment voluntario (TOTP) -->
+      <div class="bg-white p-5 rounded-lg shadow-sm mt-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-bold text-stone-700">🔐 Seguridad de mi cuenta</h3>
+          <button onclick="window.loadMfaStatus()" class="text-xs text-green-700 hover:underline">↻ refrescar</button>
+        </div>
+        <div id="mfaStatusContent" class="text-sm text-stone-500">Cargando…</div>
+      </div>
+
+      <!-- Modal enrollment 2FA (oculto por default) -->
+      <div id="mfaEnrollModal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-5">
+          <div id="mfaEnrollContent">Cargando…</div>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -3087,7 +3103,7 @@ function setupTabs() {
       if (tabId === 'rdo') { loadRdoResumen(); loadKpiAnual(); loadTopClientes(); loadEvolucionAnual(); loadAlertasRdo(); }
       if (tabId === 'pesaje') { loadPesajesSucursal(); loadPesajeTopMateriales(); loadPesajeEvolucion(); }
       if (tabId === 'facturacion') { loadFacturacionCruceAlertas(); loadFacturacionTopClientes(); }
-      if (tabId === 'admin') loadAdminAudios();
+      if (tabId === 'admin') { loadAdminAudios(); if (window.loadMfaStatus) window.loadMfaStatus(); }
       if (tabId === 'negocios')  loadNegocios();
       if (tabId === 'cotizador') initCotizador();
       if (tabId === 'cierres')   loadCierres();
@@ -9708,5 +9724,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!-- E360 context menu (D-MISMATCH Mig 035 frontend) -->
 <script src="/js/e360-context-menu.js"></script>
+<script src="/js/mfa-enrollment.js" defer></script>
 </body>
 </html>
