@@ -91,6 +91,7 @@ flowchart LR
   H --> I[Estado: cerrada]
 ```
 
+<a id="proceso-negocio-expedicionario"></a>
 ### 2. NEGOCIO EXPEDICIONARIO (alta)
 
 | Las 6 W (en español) | Detalle |
@@ -115,6 +116,7 @@ flowchart TD
   H --> I[Habilita planificación viajes]
 ```
 
+<a id="proceso-planificacion-viaje"></a>
 ### 3. PLANIFICACIÓN DE VIAJE + ASIGNACIÓN DE CHOFER
 
 | Las 6 W (en español) | Detalle |
@@ -126,6 +128,7 @@ flowchart TD
 | **POR QUÉ** | Optimizar uso de flota + cumplir Ley 18.290 (licencia vigente, peso máx, restricción RM). |
 | **CÓMO** | (1) Ingrid filtra negocios "pendiente programar" en tab Negocios. (2) Verifica licencia chofer en `panel.conductores`. (3) Crea fila en `viaje_expedicionario` con `fecha_planificada`, `oferente_transporte_id`. (4) Notifica al chofer **por WhatsApp directo** (R-AUD-028 — los 3 choferes son canal WhatsApp). (5) Diego puede orquestar con tool futuro `enviar_whatsapp`. |
 
+<a id="proceso-pesaje"></a>
 ### 4. PESAJE ORIGEN / DESTINO
 
 | Las 6 W (en español) | Detalle |
@@ -150,6 +153,7 @@ flowchart LR
   F --> I
 ```
 
+<a id="proceso-guia-despacho"></a>
 ### 5. GUÍA DE DESPACHO (DTE)
 
 | Las 6 W (en español) | Detalle |
@@ -161,6 +165,7 @@ flowchart LR
 | **POR QUÉ** | Ley REP Art. 32 (trazabilidad). Ley 18.290 Art. 86 (documentación a bordo). Sin guía = riesgo retiro de circulación + multa SMA. |
 | **CÓMO** | (1) Después del pesaje, Ingrid/Cony emite DTE en sistema SII. (2) PDF + XML se cargan a `curated.guias_despacho` (manual hoy, ETL futuro). (3) Folio queda vinculado al `viaje_id`. (4) Si tipo=venta → cliente receptor + monto. Si tipo=compra → proveedor + monto. |
 
+<a id="proceso-factura-compra"></a>
 ### 6. FACTURA DE COMPRA (proveedor → Reciclean)
 
 | Las 6 W (en español) | Detalle |
@@ -172,6 +177,7 @@ flowchart LR
 | **POR QUÉ** | Cumplimiento SII (Art. 17 DTE electrónica obligatoria). Farex retiene IVA Art. 29. Base para PPM mensual F29. |
 | **CÓMO** | (1) Generador emite factura/guía vía SII. (2) DTE entra a `staging.dte_clientes` por sync diario SII (cron + EF). (3) Dyana valida y promueve a `curated.facturas`. (4) Si Farex retiene IVA, registra retención en F29. (5) Pago al proveedor se programa según condiciones (30/60/90 días). |
 
+<a id="proceso-factura-venta"></a>
 ### 7. FACTURA DE VENTA (Reciclean → cliente final)
 
 | Las 6 W (en español) | Detalle |
@@ -183,6 +189,7 @@ flowchart LR
 | **POR QUÉ** | Cumplimiento SII + cobranza programada. |
 | **CÓMO** | (1) Andrea confirma con cliente cantidad + precio. (2) Dyana emite DTE. (3) Folio se carga a `curated.facturas` con `tipo=venta`. (4) Cobranza queda en `panel.tesoreria_kpis.por_cobrar_clp`. |
 
+<a id="proceso-nota-credito"></a>
 ### 8. NOTA DE CRÉDITO
 
 | Las 6 W (en español) | Detalle |
@@ -194,6 +201,7 @@ flowchart LR
 | **POR QUÉ** | Corregir un DTE emitido por error sin alterar el original (Art. 17 Código Tributario). |
 | **CÓMO** | (1) Andrea o el cliente detectan el error. (2) Andrea registra en `panel.diego_bandeja` con tipo=`solicitud_nc`. (3) Diego avisa a Dusan para firma (R-AUD-029 + R6). (4) Dusan aprueba → Dyana emite NC. (5) Folio NC se vincula al folio original. |
 
+<a id="proceso-pago-cobranza"></a>
 ### 9. PAGO A PROVEEDOR / COBRANZA
 
 | Las 6 W (en español) | Detalle |
@@ -222,6 +230,7 @@ flowchart LR
   end
 ```
 
+<a id="proceso-rendicion-dinero"></a>
 ### 10. RENDICIÓN DE DINERO DEL EQUIPO
 
 | Las 6 W (en español) | Detalle |
@@ -233,6 +242,7 @@ flowchart LR
 | **POR QUÉ** | Trazabilidad gastos + auditoría + reembolso correcto. Sin rendición → descuento del sueldo. |
 | **CÓMO** | (1) Operario foto boleta → mensaje WhatsApp a Diego ("rindo $5.000 combustible camión Talca"). (2) Diego invoca `registrar_rendicion` → fila en `panel.rendiciones` con `factura_url` Storage. (3) Dyana revisa en tab Rendiciones, valida, marca `estado=calzado`. (4) Si diferencia >5% entre `monto_clp` y `factura_monto_clp`, alerta. (5) Diego también consulta `rendiciones_pendientes_por_persona` cuando alguien pregunta "¿cuánto debo rendir?". |
 
+<a id="proceso-rdo-diario"></a>
 ### 11. RDO DIARIO MMA (Ley REP)
 
 | Las 6 W (en español) | Detalle |
@@ -244,6 +254,7 @@ flowchart LR
 | **POR QUÉ** | Ley REP 20.920 Art. 22 (RETC). Multa hasta 10.000 UTM por omisión o falseo. |
 | **CÓMO** | (1) Cron EF consolida pesajes del día por material × sucursal. (2) Resultado a `curated.rdo_diario` con `email_texto` armado. (3) Card Portada muestra estado RDO. (4) Ingrid/Cony validan en tab RDO. (5) Dusan firma → flag `enviado_email=true`. (6) PDF + XML enviado al MMA. |
 
+<a id="proceso-liquidacion-sueldo"></a>
 ### 12. LIQUIDACIÓN DE SUELDO MENSUAL
 
 | Las 6 W (en español) | Detalle |
@@ -255,6 +266,7 @@ flowchart LR
 | **POR QUÉ** | Código del Trabajo Art. 22 (remuneración). Ley 16.744 (cotizaciones obligatorias). |
 | **CÓMO** | (1) Cony envía a Dyana por WhatsApp/email las novedades del mes (días trabajados, horas extra, ausencias). (2) Dyana calcula en SERCOT. (3) Genera liquidación PDF + ZIP a cada trabajador. (4) Pago vía transferencia bancaria. (5) Actualiza `curated.trabajadores.sueldo_liquido_clp` solo si hay reajuste. |
 
+<a id="proceso-asistencia"></a>
 ### 13. ASISTENCIA / TURNOS
 
 | Las 6 W (en español) | Detalle |
@@ -266,6 +278,7 @@ flowchart LR
 | **POR QUÉ** | Código del Trabajo Art. 22 (jornada máx 45h/sem). Calcular horas extra. Detectar ausentismo. |
 | **CÓMO** | **Hoy (manual):** WhatsApp grupal de sucursal con foto del trabajador al ingresar. **Propuesta:** tab Asistencia en panel con check-in vía Diego ("entré a trabajar Talca 8:15") → tabla nueva `panel.asistencias` (codigo_trabajador, fecha, entrada, salida, sucursal). Pendiente Pablo. |
 
+<a id="proceso-costos"></a>
 ### 14. COSTOS FIJOS / VARIABLES
 
 | Las 6 W (en español) | Detalle |
@@ -277,6 +290,7 @@ flowchart LR
 | **POR QUÉ** | Visibilidad de margen real por sucursal + decisiones de optimización. |
 | **CÓMO** | Dyana mantiene catálogo. La vista `vw_estructura_costos_mensual` agrega para card "Costos por Sucursal" en tab Cierres. |
 
+<a id="proceso-cierre-mes"></a>
 ### 15. CIERRE MES + INFORMES EXTERNOS
 
 | Las 6 W (en español) | Detalle |
@@ -288,6 +302,7 @@ flowchart LR
 | **POR QUÉ** | Cumplimiento legal (R-AUD-029): SII Art. 84 (PPM mensual día 12); REP Art. 22 (RDO 15 mes siguiente). |
 | **CÓMO** | (1) Día 1-5: Dyana cierra contable. (2) Día 5-12: arma F29 con DTEs + retenciones. (3) Día 12 sube SII. (4) Día 15: consolida RDO mes desde `curated.rdo_diario`. (5) Dusan firma. (6) Día último: liquidaciones + transferencias sueldos. |
 
+<a id="proceso-inteligencia-competitiva"></a>
 ### 16. INTELIGENCIA COMPETITIVA
 
 | Las 6 W (en español) | Detalle |
@@ -313,6 +328,7 @@ flowchart TD
   I -->|Sí| J[Escalación tarea<br/>cola_construccion alta]
 ```
 
+<a id="proceso-cumplimiento-legal"></a>
 ### 17. CUMPLIMIENTO LEGAL (R-AUD-029)
 
 | Las 6 W (en español) | Detalle |
@@ -324,6 +340,7 @@ flowchart TD
 | **POR QUÉ** | Multas potenciales por las 5 leyes: hasta $1.400M (Datos) + $700M (REP) + cárcel SII (delitos graves). |
 | **CÓMO** | Diego es vocero — responde con artículo exacto + autoridad + sanción. Si detecta incumplimiento, registra en `panel.cumplimiento_legal` con `estado='incumplido'` y avisa a Dusan. |
 
+<a id="proceso-recepcion-material-v2"></a>
 ### 18. RECEPCIÓN MATERIAL DE TERCEROS (V2)
 
 | Las 6 W (en español) | Detalle |
@@ -335,6 +352,7 @@ flowchart TD
 | **POR QUÉ** | Sin esta línea el material entra "fantasma" — sin trazabilidad MERR (viola Ley REP Art. 32). Hoy existe en práctica pero no está sistematizado. |
 | **CÓMO** | (1) Camión 3ro entra → operario identifica + RUT + tipo material → (2) **Acta recepción terceros** firmada (formato físico hoy, digital pendiente) → (3) Pesaje báscula → (4) Ticket pesaje origen=`tercero` → (5) Tipo: compra / donación / depósito gratuito → (6) DTE: factura compra o Declaración Donación. |
 
+<a id="proceso-prefactura-v2"></a>
 ### 19. PREFACTURA (V2)
 
 | Las 6 W (en español) | Detalle |
@@ -346,6 +364,7 @@ flowchart TD
 | **POR QUÉ** | Permite al cliente/proveedor ver el monto estimado ANTES del DTE, validar, evitar la mayoría de notas de crédito. Reduce fricción cobranza. |
 | **CÓMO** | (1) Andrea cierra → INSERT `curated.prefacturas`. (2) Pesaje real planta destino. (3) Si `delta <= 5%` → promueve a DTE con cantidad real. (4) Si `delta > 5%` → ajuste o nota de crédito. |
 
+<a id="proceso-planificacion-viaje-v2"></a>
 ### 20. PLANIFICACIÓN VIAJE + CHOFER (V2)
 
 | Las 6 W (en español) | Detalle |
@@ -357,6 +376,7 @@ flowchart TD
 | **POR QUÉ** | Sin asignación explícita el chofer no sabe qué viaje le toca + no se cumple Ley 18.290 (verificar licencia vigente). |
 | **CÓMO** | (1) Ingrid filtra negocios "pendiente programar". (2) Verifica licencia en `panel.conductores`. (3) Crea fila en `viaje_expedicionario`. (4) **Notifica chofer por WhatsApp directo** (R-AUD-027). (5) Diego v10.13 puede orquestar con tool `enviar_whatsapp` (pendiente Pablo). |
 
+<a id="proceso-rechazo-devolucion-v2"></a>
 ### 21. RECHAZO / DEVOLUCIÓN DESTINO FINAL (V2)
 
 | Las 6 W (en español) | Detalle |
@@ -368,6 +388,7 @@ flowchart TD
 | **POR QUÉ** | Sin flujo de devolución, la facturación queda inflada + el material queda "perdido" en libros. |
 | **CÓMO** | (1) Cliente rechaza → Andrea recibe. (2) `panel.diego_bandeja` tipo='rechazo_destino_final' + foto evidencia. (3) Diego escala a Dusan firma. (4) Dyana emite NC reverso. (5) Si material vuelve: nuevo viaje `estado='retorno'`. (6) Tarea Dusan: revisar causa raíz planta origen. |
 
+<a id="proceso-pago-proveedor-v2"></a>
 ### 22. PAGO PROVEEDOR (V2)
 
 | Las 6 W (en español) | Detalle |
@@ -379,6 +400,7 @@ flowchart TD
 | **POR QUÉ** | Mantener capital trabajo + cumplir compromisos proveedores + evitar intereses moratorios + auditoría SII. |
 | **CÓMO** | (1) Dyana arma planilla desde `curated.facturas` tipo='compra' + estado='pendiente_pago'. (2) Dusan firma. (3) Dyana ejecuta transferencias. (4) INSERT `curated.pagos_emitidos` por cada egreso. (5) UPDATE `curated.facturas` estado='pagado'. (6) Card "Egresos semana" en Portada Dusan. |
 
+<a id="proceso-cierre-viaje-v2"></a>
 ### 23. CIERRE VIAJE + RDO + RETC (V2)
 
 | Las 6 W (en español) | Detalle |
