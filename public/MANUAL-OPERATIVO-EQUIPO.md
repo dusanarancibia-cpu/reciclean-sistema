@@ -20,12 +20,12 @@
 ## CÓMO LEER ESTE MANUAL
 
 **6W:**
-- **WHAT** — el documento / acción concreta.
-- **WHO** — persona(s) responsable(s) por nombre (T01-T14).
-- **WHERE** — sucursal + sistema (tab del panel + tabla Supabase + EF).
-- **WHEN** — frecuencia (tiempo real / diario / semanal / mensual / por evento).
-- **WHY** — la razón de negocio o legal (link a ley aplicable cuando corresponda — R-AUD-029).
-- **HOW** — los pasos concretos.
+- **QUÉ** — el documento / acción concreta.
+- **QUIÉN** — persona(s) responsable(s) por nombre (T01-T14).
+- **DÓNDE** — sucursal + sistema (tab del panel + tabla Supabase + EF).
+- **CUÁNDO** — frecuencia (tiempo real / diario / semanal / mensual / por evento).
+- **POR QUÉ** — la razón de negocio o legal (link a ley aplicable cuando corresponda — R-AUD-029).
+- **CÓMO** — los pasos concretos.
 
 **RACI:**
 - **R** = Responsible (lo hace).
@@ -66,16 +66,17 @@
 
 ## PROCESOS 6W
 
+<a id="proceso-cotizacion"></a>
 ### 1. COTIZACIÓN + CIERRE COMERCIAL
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Cotización de retiro de material (compra a generador o venta a valorizador) → cierre con cliente. |
-| **WHO** | **Andrea Rivera (T11)** ejecuta. Dusan (T01) firma cotizaciones >100 UF o con margen <10%. |
-| **WHERE** | Panel tab **Cotizador** + **Cartera** + **Oportunidades**. Tablas: `curated.f_evaluar_retiro` (RPC), `curated.oportunidades`, `panel.v_cliente_360_full` (vista nueva mig 069). |
-| **WHEN** | Tiempo real — cada vez que llega un lead (WhatsApp Andrea +56961596938, llamada, email `servicios@`). |
-| **WHY** | Aceptar negocio sin margen = pérdida directa. `f_evaluar_retiro` calcula brecha UF en 2 segundos → decisión sí/no objetiva. |
-| **HOW** | (1) Andrea entra al tab Cotizador. (2) Ingresa km + kg + material. (3) RPC devuelve ranking vehículo + decisión. (4) Si decisión=ACEPTAR → registra oportunidad en `curated.oportunidades`. (5) Si decisión=NEGOCIAR → escala a Dusan vía Diego "Bandeja Dusan". (6) Cierre → cambia `estado` de la oportunidad a `cerrada`. |
+| **QUÉ** | Cotización de retiro de material (compra a generador o venta a valorizador) → cierre con cliente. |
+| **QUIÉN** | **Andrea Rivera (T11)** ejecuta. Dusan (T01) firma cotizaciones >100 UF o con margen <10%. |
+| **DÓNDE** | Panel tab **Cotizador** + **Cartera** + **Oportunidades**. Tablas: `curated.f_evaluar_retiro` (RPC), `curated.oportunidades`, `panel.v_cliente_360_full` (vista nueva mig 069). |
+| **CUÁNDO** | Tiempo real — cada vez que llega un lead (WhatsApp Andrea +56961596938, llamada, email `servicios@`). |
+| **POR QUÉ** | Aceptar negocio sin margen = pérdida directa. `f_evaluar_retiro` calcula brecha UF en 2 segundos → decisión sí/no objetiva. |
+| **CÓMO** | (1) Andrea entra al tab Cotizador. (2) Ingresa km + kg + material. (3) RPC devuelve ranking vehículo + decisión. (4) Si decisión=ACEPTAR → registra oportunidad en `curated.oportunidades`. (5) Si decisión=NEGOCIAR → escala a Dusan vía Diego "Bandeja Dusan". (6) Cierre → cambia `estado` de la oportunidad a `cerrada`. |
 
 ```mermaid
 flowchart LR
@@ -92,14 +93,14 @@ flowchart LR
 
 ### 2. NEGOCIO EXPEDICIONARIO (alta)
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Crear el contrato operativo: cliente × material × frecuencia × zonas → genera viajes recurrentes. |
-| **WHO** | **Andrea (T11)** crea el alta tras cerrar comercialmente. Cony (SERCOT) valida datos administrativos. |
-| **WHERE** | Tab **Negocios** del panel. Tabla `curated.negocio_expedicionario` (+ `_componente` + `_proyeccion`). |
-| **WHEN** | Por evento — al cerrar cada oportunidad nueva. |
-| **WHY** | Sin negocio dado de alta, no se pueden planificar viajes ni emitir guías. |
-| **HOW** | Pendiente form CREATE en panel (gap — hoy se hace via SQL o Excel). Mientras: Andrea pega los datos en `panel.diego_bandeja` con tipo=`alta_negocio`, Dyana o Pablo lo cargan. |
+| **QUÉ** | Crear el contrato operativo: cliente × material × frecuencia × zonas → genera viajes recurrentes. |
+| **QUIÉN** | **Andrea (T11)** crea el alta tras cerrar comercialmente. Cony (SERCOT) valida datos administrativos. |
+| **DÓNDE** | Tab **Negocios** del panel. Tabla `curated.negocio_expedicionario` (+ `_componente` + `_proyeccion`). |
+| **CUÁNDO** | Por evento — al cerrar cada oportunidad nueva. |
+| **POR QUÉ** | Sin negocio dado de alta, no se pueden planificar viajes ni emitir guías. |
+| **CÓMO** | Pendiente form CREATE en panel (gap — hoy se hace via SQL o Excel). Mientras: Andrea pega los datos en `panel.diego_bandeja` con tipo=`alta_negocio`, Dyana o Pablo lo cargan. |
 
 ```mermaid
 flowchart TD
@@ -116,25 +117,25 @@ flowchart TD
 
 ### 3. PLANIFICACIÓN DE VIAJE + ASIGNACIÓN DE CHOFER
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Programar 1 viaje específico (fecha, chofer, vehículo) sobre un negocio expedicionario. |
-| **WHO** | **Ingrid Cancino (T04)** en Talca. **Cony (SERCOT)** en Maipú/Cerrillos. |
-| **WHERE** | Tabla `curated.viaje_expedicionario`. Choferes asignables: `panel.conductores` (T08 Braniff Maipú · T09 Cordero Talca · T10 Valenzuela Talca). |
-| **WHEN** | Semanal — los lunes se planifican los viajes de la semana. Reactivo si entra retiro urgente. |
-| **WHY** | Optimizar uso de flota + cumplir Ley 18.290 (licencia vigente, peso máx, restricción RM). |
-| **HOW** | (1) Ingrid filtra negocios "pendiente programar" en tab Negocios. (2) Verifica licencia chofer en `panel.conductores`. (3) Crea fila en `viaje_expedicionario` con `fecha_planificada`, `oferente_transporte_id`. (4) Notifica al chofer **por WhatsApp directo** (R-AUD-028 — los 3 choferes son canal WhatsApp). (5) Diego puede orquestar con tool futuro `enviar_whatsapp`. |
+| **QUÉ** | Programar 1 viaje específico (fecha, chofer, vehículo) sobre un negocio expedicionario. |
+| **QUIÉN** | **Ingrid Cancino (T04)** en Talca. **Cony (SERCOT)** en Maipú/Cerrillos. |
+| **DÓNDE** | Tabla `curated.viaje_expedicionario`. Choferes asignables: `panel.conductores` (T08 Braniff Maipú · T09 Cordero Talca · T10 Valenzuela Talca). |
+| **CUÁNDO** | Semanal — los lunes se planifican los viajes de la semana. Reactivo si entra retiro urgente. |
+| **POR QUÉ** | Optimizar uso de flota + cumplir Ley 18.290 (licencia vigente, peso máx, restricción RM). |
+| **CÓMO** | (1) Ingrid filtra negocios "pendiente programar" en tab Negocios. (2) Verifica licencia chofer en `panel.conductores`. (3) Crea fila en `viaje_expedicionario` con `fecha_planificada`, `oferente_transporte_id`. (4) Notifica al chofer **por WhatsApp directo** (R-AUD-028 — los 3 choferes son canal WhatsApp). (5) Diego puede orquestar con tool futuro `enviar_whatsapp`. |
 
 ### 4. PESAJE ORIGEN / DESTINO
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Registrar el peso bruto+tara=neto del material en báscula al cargar (origen) y descargar (destino). |
-| **WHO** | **Operarios planta** (T03 Nicolás Cerrillos, T07 Carlos Iturra Maipú, T06 Cristian Montecinos Talca). **Choferes** (T08/T09/T10) confirman vía WhatsApp si están solos. |
-| **WHERE** | Báscula CMR física → CSV → `staging.pesajes` → `curated.pesajes`. Tab **Pesaje S1** del panel. |
-| **WHEN** | Tiempo real — cada vez que un camión cruza la báscula. |
-| **WHY** | Ley REP 20.920 Art. 32 (trazabilidad MERR). Base para facturación. Detecta mermas anómalas. |
-| **HOW** | (1) Báscula imprime ticket. (2) Operario carga ticket a `staging.pesajes` via tab Pesaje > Subir CSV. (3) PC Cámaras hace ETL diario a `curated.pesajes`. (4) Si la merma > 5%, alerta automática en `panel.diego_bandeja` para Ingrid + Dusan. (5) `viaje_expedicionario.peso_origen_kg` y `peso_destino_kg` se actualizan. |
+| **QUÉ** | Registrar el peso bruto+tara=neto del material en báscula al cargar (origen) y descargar (destino). |
+| **QUIÉN** | **Operarios planta** (T03 Nicolás Cerrillos, T07 Carlos Iturra Maipú, T06 Cristian Montecinos Talca). **Choferes** (T08/T09/T10) confirman vía WhatsApp si están solos. |
+| **DÓNDE** | Báscula CMR física → CSV → `staging.pesajes` → `curated.pesajes`. Tab **Pesaje S1** del panel. |
+| **CUÁNDO** | Tiempo real — cada vez que un camión cruza la báscula. |
+| **POR QUÉ** | Ley REP 20.920 Art. 32 (trazabilidad MERR). Base para facturación. Detecta mermas anómalas. |
+| **CÓMO** | (1) Báscula imprime ticket. (2) Operario carga ticket a `staging.pesajes` via tab Pesaje > Subir CSV. (3) PC Cámaras hace ETL diario a `curated.pesajes`. (4) Si la merma > 5%, alerta automática en `panel.diego_bandeja` para Ingrid + Dusan. (5) `viaje_expedicionario.peso_origen_kg` y `peso_destino_kg` se actualizan. |
 
 ```mermaid
 flowchart LR
@@ -151,58 +152,58 @@ flowchart LR
 
 ### 5. GUÍA DE DESPACHO (DTE)
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | DTE electrónico emitido por SII en cada movimiento de material (compra al generador o venta al valorizador). |
-| **WHO** | **Ingrid (T04)** emite en Talca. **Cony (SERCOT)** emite en RM. |
-| **WHERE** | Sistema externo SII Maipo / OpenFactura (no integrado al panel hoy). Tabla `curated.guias_despacho` recibe los datos post-emisión. |
-| **WHEN** | Por cada viaje — máximo 1 hora después del pesaje origen. |
-| **WHY** | Ley REP Art. 32 (trazabilidad). Ley 18.290 Art. 86 (documentación a bordo). Sin guía = riesgo retiro de circulación + multa SMA. |
-| **HOW** | (1) Después del pesaje, Ingrid/Cony emite DTE en sistema SII. (2) PDF + XML se cargan a `curated.guias_despacho` (manual hoy, ETL futuro). (3) Folio queda vinculado al `viaje_id`. (4) Si tipo=venta → cliente receptor + monto. Si tipo=compra → proveedor + monto. |
+| **QUÉ** | DTE electrónico emitido por SII en cada movimiento de material (compra al generador o venta al valorizador). |
+| **QUIÉN** | **Ingrid (T04)** emite en Talca. **Cony (SERCOT)** emite en RM. |
+| **DÓNDE** | Sistema externo SII Maipo / OpenFactura (no integrado al panel hoy). Tabla `curated.guias_despacho` recibe los datos post-emisión. |
+| **CUÁNDO** | Por cada viaje — máximo 1 hora después del pesaje origen. |
+| **POR QUÉ** | Ley REP Art. 32 (trazabilidad). Ley 18.290 Art. 86 (documentación a bordo). Sin guía = riesgo retiro de circulación + multa SMA. |
+| **CÓMO** | (1) Después del pesaje, Ingrid/Cony emite DTE en sistema SII. (2) PDF + XML se cargan a `curated.guias_despacho` (manual hoy, ETL futuro). (3) Folio queda vinculado al `viaje_id`. (4) Si tipo=venta → cliente receptor + monto. Si tipo=compra → proveedor + monto. |
 
 ### 6. FACTURA DE COMPRA (proveedor → Reciclean)
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | DTE recibido del generador/proveedor que vende material a Reciclean (chatarra, cartón, etc.). Farex es retenedor IVA 19%. |
-| **WHO** | **Dyana Pinto (T14)** SERCOT. Cony Maipú/Cerrillos completa registro físico. |
-| **WHERE** | SII → `staging.dte_clientes` → `curated.facturas`. Tab **Facturación S5** del panel (visible solo a comercial+admin+dusan). |
-| **WHEN** | Diario — Dyana descarga DTEs del día siguiente hábil. |
-| **WHY** | Cumplimiento SII (Art. 17 DTE electrónica obligatoria). Farex retiene IVA Art. 29. Base para PPM mensual F29. |
-| **HOW** | (1) Generador emite factura/guía vía SII. (2) DTE entra a `staging.dte_clientes` por sync diario SII (cron + EF). (3) Dyana valida y promueve a `curated.facturas`. (4) Si Farex retiene IVA, registra retención en F29. (5) Pago al proveedor se programa según condiciones (30/60/90 días). |
+| **QUÉ** | DTE recibido del generador/proveedor que vende material a Reciclean (chatarra, cartón, etc.). Farex es retenedor IVA 19%. |
+| **QUIÉN** | **Dyana Pinto (T14)** SERCOT. Cony Maipú/Cerrillos completa registro físico. |
+| **DÓNDE** | SII → `staging.dte_clientes` → `curated.facturas`. Tab **Facturación S5** del panel (visible solo a comercial+admin+dusan). |
+| **CUÁNDO** | Diario — Dyana descarga DTEs del día siguiente hábil. |
+| **POR QUÉ** | Cumplimiento SII (Art. 17 DTE electrónica obligatoria). Farex retiene IVA Art. 29. Base para PPM mensual F29. |
+| **CÓMO** | (1) Generador emite factura/guía vía SII. (2) DTE entra a `staging.dte_clientes` por sync diario SII (cron + EF). (3) Dyana valida y promueve a `curated.facturas`. (4) Si Farex retiene IVA, registra retención en F29. (5) Pago al proveedor se programa según condiciones (30/60/90 días). |
 
 ### 7. FACTURA DE VENTA (Reciclean → cliente final)
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | DTE emitido por Reciclean/Farex al valorizador final (FPC, HUAL, etc.) por venta del material recuperado. |
-| **WHO** | **Dyana (T14)** emite. Andrea (T11) confirma datos del cliente + monto. |
-| **WHERE** | Sistema SII externo → DTE registrado en `curated.facturas`. Tab **Facturación S5**. |
-| **WHEN** | Por cada venta — máximo 24h después de despacho. |
-| **WHY** | Cumplimiento SII + cobranza programada. |
-| **HOW** | (1) Andrea confirma con cliente cantidad + precio. (2) Dyana emite DTE. (3) Folio se carga a `curated.facturas` con `tipo=venta`. (4) Cobranza queda en `panel.tesoreria_kpis.por_cobrar_clp`. |
+| **QUÉ** | DTE emitido por Reciclean/Farex al valorizador final (FPC, HUAL, etc.) por venta del material recuperado. |
+| **QUIÉN** | **Dyana (T14)** emite. Andrea (T11) confirma datos del cliente + monto. |
+| **DÓNDE** | Sistema SII externo → DTE registrado en `curated.facturas`. Tab **Facturación S5**. |
+| **CUÁNDO** | Por cada venta — máximo 24h después de despacho. |
+| **POR QUÉ** | Cumplimiento SII + cobranza programada. |
+| **CÓMO** | (1) Andrea confirma con cliente cantidad + precio. (2) Dyana emite DTE. (3) Folio se carga a `curated.facturas` con `tipo=venta`. (4) Cobranza queda en `panel.tesoreria_kpis.por_cobrar_clp`. |
 
 ### 8. NOTA DE CRÉDITO
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | DTE que anula o ajusta una factura previa (devolución, ajuste de peso, error). |
-| **WHO** | **Dyana (T14)** emite. **Dusan (T01) firma autorización** si el monto > 1 UF (R6 confirmación irreversibles). |
-| **WHERE** | SII → `curated.facturas` con `tipo='nota_credito'` y referencia al folio original. |
-| **WHEN** | Por evento — cuando hay reclamo del cliente o error detectado. |
-| **WHY** | Corregir un DTE emitido por error sin alterar el original (Art. 17 Código Tributario). |
-| **HOW** | (1) Andrea o el cliente detectan el error. (2) Andrea registra en `panel.diego_bandeja` con tipo=`solicitud_nc`. (3) Diego avisa a Dusan para firma (R-AUD-029 + R6). (4) Dusan aprueba → Dyana emite NC. (5) Folio NC se vincula al folio original. |
+| **QUÉ** | DTE que anula o ajusta una factura previa (devolución, ajuste de peso, error). |
+| **QUIÉN** | **Dyana (T14)** emite. **Dusan (T01) firma autorización** si el monto > 1 UF (R6 confirmación irreversibles). |
+| **DÓNDE** | SII → `curated.facturas` con `tipo='nota_credito'` y referencia al folio original. |
+| **CUÁNDO** | Por evento — cuando hay reclamo del cliente o error detectado. |
+| **POR QUÉ** | Corregir un DTE emitido por error sin alterar el original (Art. 17 Código Tributario). |
+| **CÓMO** | (1) Andrea o el cliente detectan el error. (2) Andrea registra en `panel.diego_bandeja` con tipo=`solicitud_nc`. (3) Diego avisa a Dusan para firma (R-AUD-029 + R6). (4) Dusan aprueba → Dyana emite NC. (5) Folio NC se vincula al folio original. |
 
 ### 9. PAGO A PROVEEDOR / COBRANZA
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Salida bancaria al proveedor (compra material o servicio) y entrada bancaria por cobranza a cliente. |
-| **WHO** | **Dyana (T14)** gestiona ambos. **Dusan (T01) firma** transferencias >10 UF. **Andrea (T11)** hace seguimiento de cobranza. |
-| **WHERE** | Banco externo (no integrado al panel). Resumen agregado en `panel.tesoreria_kpis` (1 snapshot por día). |
-| **WHEN** | Pagos: programados según condiciones del proveedor (típico 30 días). Cobranza: seguimiento semanal por Andrea. |
-| **WHY** | Mantener capital de trabajo + cumplir compromisos + evitar atraso intereses moratorios. |
-| **HOW** | (1) Dyana arma planilla pagos semanal. (2) Dusan firma. (3) Dyana ejecuta transferencias. (4) Carga snapshot del saldo banco a `panel.tesoreria_kpis.saldo_banco_clp` (manual hoy, automatizable con API bancaria futura). (5) Andrea sigue las cuentas por cobrar `>30 días` en card Portada. |
+| **QUÉ** | Salida bancaria al proveedor (compra material o servicio) y entrada bancaria por cobranza a cliente. |
+| **QUIÉN** | **Dyana (T14)** gestiona ambos. **Dusan (T01) firma** transferencias >10 UF. **Andrea (T11)** hace seguimiento de cobranza. |
+| **DÓNDE** | Banco externo (no integrado al panel). Resumen agregado en `panel.tesoreria_kpis` (1 snapshot por día). |
+| **CUÁNDO** | Pagos: programados según condiciones del proveedor (típico 30 días). Cobranza: seguimiento semanal por Andrea. |
+| **POR QUÉ** | Mantener capital de trabajo + cumplir compromisos + evitar atraso intereses moratorios. |
+| **CÓMO** | (1) Dyana arma planilla pagos semanal. (2) Dusan firma. (3) Dyana ejecuta transferencias. (4) Carga snapshot del saldo banco a `panel.tesoreria_kpis.saldo_banco_clp` (manual hoy, automatizable con API bancaria futura). (5) Andrea sigue las cuentas por cobrar `>30 días` en card Portada. |
 
 ```mermaid
 flowchart LR
@@ -223,80 +224,80 @@ flowchart LR
 
 ### 10. RENDICIÓN DE DINERO DEL EQUIPO
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Comprobante de gasto operativo (combustible, peajes, comida en ruta) que el equipo rinde a tesorería. |
-| **WHO** | **Operarios + choferes** rinden. **Dyana (T14)** valida + calza. |
-| **WHERE** | Tabla `panel.rendiciones`. Diego tiene tool `registrar_rendicion(persona_email, monto_clp, motivo, factura_url)`. |
-| **WHEN** | Tiempo real — el operario sube la boleta vía Diego desde su celular. |
-| **WHY** | Trazabilidad gastos + auditoría + reembolso correcto. Sin rendición → descuento del sueldo. |
-| **HOW** | (1) Operario foto boleta → mensaje WhatsApp a Diego ("rindo $5.000 combustible camión Talca"). (2) Diego invoca `registrar_rendicion` → fila en `panel.rendiciones` con `factura_url` Storage. (3) Dyana revisa en tab Rendiciones, valida, marca `estado=calzado`. (4) Si diferencia >5% entre `monto_clp` y `factura_monto_clp`, alerta. (5) Diego también consulta `rendiciones_pendientes_por_persona` cuando alguien pregunta "¿cuánto debo rendir?". |
+| **QUÉ** | Comprobante de gasto operativo (combustible, peajes, comida en ruta) que el equipo rinde a tesorería. |
+| **QUIÉN** | **Operarios + choferes** rinden. **Dyana (T14)** valida + calza. |
+| **DÓNDE** | Tabla `panel.rendiciones`. Diego tiene tool `registrar_rendicion(persona_email, monto_clp, motivo, factura_url)`. |
+| **CUÁNDO** | Tiempo real — el operario sube la boleta vía Diego desde su celular. |
+| **POR QUÉ** | Trazabilidad gastos + auditoría + reembolso correcto. Sin rendición → descuento del sueldo. |
+| **CÓMO** | (1) Operario foto boleta → mensaje WhatsApp a Diego ("rindo $5.000 combustible camión Talca"). (2) Diego invoca `registrar_rendicion` → fila en `panel.rendiciones` con `factura_url` Storage. (3) Dyana revisa en tab Rendiciones, valida, marca `estado=calzado`. (4) Si diferencia >5% entre `monto_clp` y `factura_monto_clp`, alerta. (5) Diego también consulta `rendiciones_pendientes_por_persona` cuando alguien pregunta "¿cuánto debo rendir?". |
 
 ### 11. RDO DIARIO MMA (Ley REP)
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Reporte Diario de Operaciones (RDO) — formato MMA con kg recolectados, valorizados, eliminados por material. |
-| **WHO** | **Ingrid (T04)** Talca + **Cony** RM consolidan. **Dyana (T14)** revisa antes de envío. **Dusan (T01)** firma envío. **Cesar (T13)** sistema lo arma. |
-| **WHERE** | EF `rdo-builder` (cron diario) → tabla `curated.rdo_diario` → enviado por email al MMA. Tab **RDO Resumen**. |
-| **WHEN** | Diario — 8:00 CLT cron arma; 12:00 humano valida; 16:00 envío MMA. Consolidado mensual día 15 mes siguiente. |
-| **WHY** | Ley REP 20.920 Art. 22 (RETC). Multa hasta 10.000 UTM por omisión o falseo. |
-| **HOW** | (1) Cron EF consolida pesajes del día por material × sucursal. (2) Resultado a `curated.rdo_diario` con `email_texto` armado. (3) Card Portada muestra estado RDO. (4) Ingrid/Cony validan en tab RDO. (5) Dusan firma → flag `enviado_email=true`. (6) PDF + XML enviado al MMA. |
+| **QUÉ** | Reporte Diario de Operaciones (RDO) — formato MMA con kg recolectados, valorizados, eliminados por material. |
+| **QUIÉN** | **Ingrid (T04)** Talca + **Cony** RM consolidan. **Dyana (T14)** revisa antes de envío. **Dusan (T01)** firma envío. **Cesar (T13)** sistema lo arma. |
+| **DÓNDE** | EF `rdo-builder` (cron diario) → tabla `curated.rdo_diario` → enviado por email al MMA. Tab **RDO Resumen**. |
+| **CUÁNDO** | Diario — 8:00 CLT cron arma; 12:00 humano valida; 16:00 envío MMA. Consolidado mensual día 15 mes siguiente. |
+| **POR QUÉ** | Ley REP 20.920 Art. 22 (RETC). Multa hasta 10.000 UTM por omisión o falseo. |
+| **CÓMO** | (1) Cron EF consolida pesajes del día por material × sucursal. (2) Resultado a `curated.rdo_diario` con `email_texto` armado. (3) Card Portada muestra estado RDO. (4) Ingrid/Cony validan en tab RDO. (5) Dusan firma → flag `enviado_email=true`. (6) PDF + XML enviado al MMA. |
 
 ### 12. LIQUIDACIÓN DE SUELDO MENSUAL
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Cálculo de remuneración mensual + cotizaciones (AFP, salud, seguro) + impuestos + liquidación física. |
-| **WHO** | **Dyana (T14)** SERCOT externa. Cony entrega novedades del mes (horas extra, ausencias, bonos). |
-| **WHERE** | Sistema SERCOT externo. Datos canónicos en `curated.trabajadores` (sueldo_liquido_clp + costo_total_empresa_clp). |
-| **WHEN** | Mensual — día 25 cierre; día último liquidación + pago. |
-| **WHY** | Código del Trabajo Art. 22 (remuneración). Ley 16.744 (cotizaciones obligatorias). |
-| **HOW** | (1) Cony envía a Dyana por WhatsApp/email las novedades del mes (días trabajados, horas extra, ausencias). (2) Dyana calcula en SERCOT. (3) Genera liquidación PDF + ZIP a cada trabajador. (4) Pago vía transferencia bancaria. (5) Actualiza `curated.trabajadores.sueldo_liquido_clp` solo si hay reajuste. |
+| **QUÉ** | Cálculo de remuneración mensual + cotizaciones (AFP, salud, seguro) + impuestos + liquidación física. |
+| **QUIÉN** | **Dyana (T14)** SERCOT externa. Cony entrega novedades del mes (horas extra, ausencias, bonos). |
+| **DÓNDE** | Sistema SERCOT externo. Datos canónicos en `curated.trabajadores` (sueldo_liquido_clp + costo_total_empresa_clp). |
+| **CUÁNDO** | Mensual — día 25 cierre; día último liquidación + pago. |
+| **POR QUÉ** | Código del Trabajo Art. 22 (remuneración). Ley 16.744 (cotizaciones obligatorias). |
+| **CÓMO** | (1) Cony envía a Dyana por WhatsApp/email las novedades del mes (días trabajados, horas extra, ausencias). (2) Dyana calcula en SERCOT. (3) Genera liquidación PDF + ZIP a cada trabajador. (4) Pago vía transferencia bancaria. (5) Actualiza `curated.trabajadores.sueldo_liquido_clp` solo si hay reajuste. |
 
 ### 13. ASISTENCIA / TURNOS
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Registro de entrada/salida del personal operativo + control de horas extra. |
-| **WHO** | **Operarios** marcan. **Ingrid (T04)** y Cony supervisan. |
-| **WHERE** | **NO sistematizado hoy.** Tabla pendiente: `panel.asistencias` (no existe). Hoy se hace por WhatsApp del grupo de sucursal. |
-| **WHEN** | Tiempo real — cada inicio + cierre de turno. |
-| **WHY** | Código del Trabajo Art. 22 (jornada máx 45h/sem). Calcular horas extra. Detectar ausentismo. |
-| **HOW** | **Hoy (manual):** WhatsApp grupal de sucursal con foto del trabajador al ingresar. **Propuesta:** tab Asistencia en panel con check-in vía Diego ("entré a trabajar Talca 8:15") → tabla nueva `panel.asistencias` (codigo_trabajador, fecha, entrada, salida, sucursal). Pendiente Pablo. |
+| **QUÉ** | Registro de entrada/salida del personal operativo + control de horas extra. |
+| **QUIÉN** | **Operarios** marcan. **Ingrid (T04)** y Cony supervisan. |
+| **DÓNDE** | **NO sistematizado hoy.** Tabla pendiente: `panel.asistencias` (no existe). Hoy se hace por WhatsApp del grupo de sucursal. |
+| **CUÁNDO** | Tiempo real — cada inicio + cierre de turno. |
+| **POR QUÉ** | Código del Trabajo Art. 22 (jornada máx 45h/sem). Calcular horas extra. Detectar ausentismo. |
+| **CÓMO** | **Hoy (manual):** WhatsApp grupal de sucursal con foto del trabajador al ingresar. **Propuesta:** tab Asistencia en panel con check-in vía Diego ("entré a trabajar Talca 8:15") → tabla nueva `panel.asistencias` (codigo_trabajador, fecha, entrada, salida, sucursal). Pendiente Pablo. |
 
 ### 14. COSTOS FIJOS / VARIABLES
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Catálogo de gastos recurrentes (arriendo, servicios) y variables (combustible, repuestos). Base para cierre mes. |
-| **WHO** | **Dyana (T14)** mantiene. Dusan (T01) aprueba altas >5 UF/mes. |
-| **WHERE** | `curated.costos_fijos`, `curated.costos_variables`, vistas `vw_costos_*_vigente` + `vw_estructura_costos_mensual`. |
-| **WHEN** | Costos fijos: revisión mensual. Variables: registro por evento. |
-| **WHY** | Visibilidad de margen real por sucursal + decisiones de optimización. |
-| **HOW** | Dyana mantiene catálogo. La vista `vw_estructura_costos_mensual` agrega para card "Costos por Sucursal" en tab Cierres. |
+| **QUÉ** | Catálogo de gastos recurrentes (arriendo, servicios) y variables (combustible, repuestos). Base para cierre mes. |
+| **QUIÉN** | **Dyana (T14)** mantiene. Dusan (T01) aprueba altas >5 UF/mes. |
+| **DÓNDE** | `curated.costos_fijos`, `curated.costos_variables`, vistas `vw_costos_*_vigente` + `vw_estructura_costos_mensual`. |
+| **CUÁNDO** | Costos fijos: revisión mensual. Variables: registro por evento. |
+| **POR QUÉ** | Visibilidad de margen real por sucursal + decisiones de optimización. |
+| **CÓMO** | Dyana mantiene catálogo. La vista `vw_estructura_costos_mensual` agrega para card "Costos por Sucursal" en tab Cierres. |
 
 ### 15. CIERRE MES + INFORMES EXTERNOS
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Cierre contable mensual + 3 informes externos: F29 SII, RDO Mensual MMA, Liquidaciones DT. |
-| **WHO** | **Dyana (T14)** ejecuta los 3. **Dusan (T01) firma envíos**. |
-| **WHERE** | `curated.cierres`, `vw_cierre_mes_actual`. Externos: SII (F29), MMA (RDO consolidado), DT (sin tabla específica). |
-| **WHEN** | Mensual — día 5 cierre; día 12 F29 + PPM SII; día 15 RDO MMA; día último liquidaciones. |
-| **WHY** | Cumplimiento legal (R-AUD-029): SII Art. 84 (PPM mensual día 12); REP Art. 22 (RDO 15 mes siguiente). |
-| **HOW** | (1) Día 1-5: Dyana cierra contable. (2) Día 5-12: arma F29 con DTEs + retenciones. (3) Día 12 sube SII. (4) Día 15: consolida RDO mes desde `curated.rdo_diario`. (5) Dusan firma. (6) Día último: liquidaciones + transferencias sueldos. |
+| **QUÉ** | Cierre contable mensual + 3 informes externos: F29 SII, RDO Mensual MMA, Liquidaciones DT. |
+| **QUIÉN** | **Dyana (T14)** ejecuta los 3. **Dusan (T01) firma envíos**. |
+| **DÓNDE** | `curated.cierres`, `vw_cierre_mes_actual`. Externos: SII (F29), MMA (RDO consolidado), DT (sin tabla específica). |
+| **CUÁNDO** | Mensual — día 5 cierre; día 12 F29 + PPM SII; día 15 RDO MMA; día último liquidaciones. |
+| **POR QUÉ** | Cumplimiento legal (R-AUD-029): SII Art. 84 (PPM mensual día 12); REP Art. 22 (RDO 15 mes siguiente). |
+| **CÓMO** | (1) Día 1-5: Dyana cierra contable. (2) Día 5-12: arma F29 con DTEs + retenciones. (3) Día 12 sube SII. (4) Día 15: consolida RDO mes desde `curated.rdo_diario`. (5) Dusan firma. (6) Día último: liquidaciones + transferencias sueldos. |
 
 ### 16. INTELIGENCIA COMPETITIVA
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Registro de info de competidores (SOREPA, CMPC, otros) — precios, zonas, nuevos jugadores. |
-| **WHO** | **Andrea (T11)** y choferes (T08/T09/T10) reportan. Dusan (T01) decide acciones. |
-| **WHERE** | `curated.inteligencia_competitiva` + `panel.inteligencia_competitiva`. Diego tool `registrar_inteligencia_competitiva`. |
-| **WHEN** | Tiempo real — cuando alguien escucha algo en terreno. |
-| **WHY** | Detectar amenazas antes que se materialicen + ajustar precios + escalar a Dusan. |
-| **HOW** | (1) Andrea o chofer le dice a Diego: "Vi camión SOREPA en planta Pincore". (2) Diego ejecuta flujo IC: empatiza → pide respaldo (foto/factura) → registra. (3) Card portada Dusan: "Inteligencia competitiva 24h" + escalación si reincidente. |
+| **QUÉ** | Registro de info de competidores (SOREPA, CMPC, otros) — precios, zonas, nuevos jugadores. |
+| **QUIÉN** | **Andrea (T11)** y choferes (T08/T09/T10) reportan. Dusan (T01) decide acciones. |
+| **DÓNDE** | `curated.inteligencia_competitiva` + `panel.inteligencia_competitiva`. Diego tool `registrar_inteligencia_competitiva`. |
+| **CUÁNDO** | Tiempo real — cuando alguien escucha algo en terreno. |
+| **POR QUÉ** | Detectar amenazas antes que se materialicen + ajustar precios + escalar a Dusan. |
+| **CÓMO** | (1) Andrea o chofer le dice a Diego: "Vi camión SOREPA en planta Pincore". (2) Diego ejecuta flujo IC: empatiza → pide respaldo (foto/factura) → registra. (3) Card portada Dusan: "Inteligencia competitiva 24h" + escalación si reincidente. |
 
 ```mermaid
 flowchart TD
@@ -314,80 +315,80 @@ flowchart TD
 
 ### 17. CUMPLIMIENTO LEGAL (R-AUD-029)
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Estado de cumplimiento por artículo de las 5 leyes que rigen al grupo (REP, Datos, Tránsito, SII, Laboral). |
-| **WHO** | **Dyana (T14)** verifica los 20 artículos con obligación directa. **Dusan (T01)** firma estado. |
-| **WHERE** | `panel.leyes_aplicables` (5) + `panel.articulos_ley` (25) + `panel.cumplimiento_legal` (20) + `panel.v_cumplimiento_legal` (dashboard). |
-| **WHEN** | Mensual — Dyana actualiza estado por artículo. Diario para artículos con plazo (ej: licencia chofer, MERR). |
-| **WHY** | Multas potenciales por las 5 leyes: hasta $1.400M (Datos) + $700M (REP) + cárcel SII (delitos graves). |
-| **HOW** | Diego es vocero — responde con artículo exacto + autoridad + sanción. Si detecta incumplimiento, registra en `panel.cumplimiento_legal` con `estado='incumplido'` y avisa a Dusan. |
+| **QUÉ** | Estado de cumplimiento por artículo de las 5 leyes que rigen al grupo (REP, Datos, Tránsito, SII, Laboral). |
+| **QUIÉN** | **Dyana (T14)** verifica los 20 artículos con obligación directa. **Dusan (T01)** firma estado. |
+| **DÓNDE** | `panel.leyes_aplicables` (5) + `panel.articulos_ley` (25) + `panel.cumplimiento_legal` (20) + `panel.v_cumplimiento_legal` (dashboard). |
+| **CUÁNDO** | Mensual — Dyana actualiza estado por artículo. Diario para artículos con plazo (ej: licencia chofer, MERR). |
+| **POR QUÉ** | Multas potenciales por las 5 leyes: hasta $1.400M (Datos) + $700M (REP) + cárcel SII (delitos graves). |
+| **CÓMO** | Diego es vocero — responde con artículo exacto + autoridad + sanción. Si detecta incumplimiento, registra en `panel.cumplimiento_legal` con `estado='incumplido'` y avisa a Dusan. |
 
 ### 18. RECEPCIÓN MATERIAL DE TERCEROS (V2)
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Material que llega a planta sin retiro previo (un tercero lo TRAE). |
-| **WHO** | Operario planta (T03/T05/T06/T07) recibe + identifica. Ingrid (T04) / Cony aprueban montos. |
-| **WHERE** | Báscula entrada + tab Pesaje + `staging.pesajes.origen='recepcion_terceros'`. Tabla complementaria pendiente: `curated.actas_recepcion_terceros` (mig pendiente). |
-| **WHEN** | Horario recepción planta (8:00-18:00 lunes-sábado). |
-| **WHY** | Sin esta línea el material entra "fantasma" — sin trazabilidad MERR (viola Ley REP Art. 32). Hoy existe en práctica pero no está sistematizado. |
-| **HOW** | (1) Camión 3ro entra → operario identifica + RUT + tipo material → (2) **Acta recepción terceros** firmada (formato físico hoy, digital pendiente) → (3) Pesaje báscula → (4) Ticket pesaje origen=`tercero` → (5) Tipo: compra / donación / depósito gratuito → (6) DTE: factura compra o Declaración Donación. |
+| **QUÉ** | Material que llega a planta sin retiro previo (un tercero lo TRAE). |
+| **QUIÉN** | Operario planta (T03/T05/T06/T07) recibe + identifica. Ingrid (T04) / Cony aprueban montos. |
+| **DÓNDE** | Báscula entrada + tab Pesaje + `staging.pesajes.origen='recepcion_terceros'`. Tabla complementaria pendiente: `curated.actas_recepcion_terceros` (mig pendiente). |
+| **CUÁNDO** | Horario recepción planta (8:00-18:00 lunes-sábado). |
+| **POR QUÉ** | Sin esta línea el material entra "fantasma" — sin trazabilidad MERR (viola Ley REP Art. 32). Hoy existe en práctica pero no está sistematizado. |
+| **CÓMO** | (1) Camión 3ro entra → operario identifica + RUT + tipo material → (2) **Acta recepción terceros** firmada (formato físico hoy, digital pendiente) → (3) Pesaje báscula → (4) Ticket pesaje origen=`tercero` → (5) Tipo: compra / donación / depósito gratuito → (6) DTE: factura compra o Declaración Donación. |
 
 ### 19. PREFACTURA (V2)
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Documento preliminar entre cierre comercial y emisión DTE definitivo, con cantidad estimada × precio acordado. |
-| **WHO** | **Andrea (T11)** genera tras cerrar comercial. **Dyana (T14)** la promueve a factura formal una vez pesada. |
-| **WHERE** | **Tabla nueva pendiente:** `curated.prefacturas` (spec en `BANDEJA-PABLO-PREFACTURAS-PAGOS.md` mig 070). |
-| **WHEN** | Entre cierre comercial y emisión DTE definitivo. Típicamente 1-3 días hábiles. |
-| **WHY** | Permite al cliente/proveedor ver el monto estimado ANTES del DTE, validar, evitar la mayoría de notas de crédito. Reduce fricción cobranza. |
-| **HOW** | (1) Andrea cierra → INSERT `curated.prefacturas`. (2) Pesaje real planta destino. (3) Si `delta <= 5%` → promueve a DTE con cantidad real. (4) Si `delta > 5%` → ajuste o nota de crédito. |
+| **QUÉ** | Documento preliminar entre cierre comercial y emisión DTE definitivo, con cantidad estimada × precio acordado. |
+| **QUIÉN** | **Andrea (T11)** genera tras cerrar comercial. **Dyana (T14)** la promueve a factura formal una vez pesada. |
+| **DÓNDE** | **Tabla nueva pendiente:** `curated.prefacturas` (spec en `BANDEJA-PABLO-PREFACTURAS-PAGOS.md` mig 070). |
+| **CUÁNDO** | Entre cierre comercial y emisión DTE definitivo. Típicamente 1-3 días hábiles. |
+| **POR QUÉ** | Permite al cliente/proveedor ver el monto estimado ANTES del DTE, validar, evitar la mayoría de notas de crédito. Reduce fricción cobranza. |
+| **CÓMO** | (1) Andrea cierra → INSERT `curated.prefacturas`. (2) Pesaje real planta destino. (3) Si `delta <= 5%` → promueve a DTE con cantidad real. (4) Si `delta > 5%` → ajuste o nota de crédito. |
 
 ### 20. PLANIFICACIÓN VIAJE + CHOFER (V2)
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Asignar chofer + vehículo + fecha al viaje específico que va a hacer el retiro. |
-| **WHO** | **Ingrid (T04)** en Talca · **Cony (SERCOT)** en Maipú/Cerrillos. |
-| **WHERE** | `curated.viaje_expedicionario` (`oferente_transporte_id`, `fecha_planificada`). Lista de choferes: `panel.conductores` (T08 Braniff Maipú · T09 Cordero Talca · T10 Valenzuela Talca). |
-| **WHEN** | Semanal (lunes planifica semana) + reactivo si entra urgente. |
-| **WHY** | Sin asignación explícita el chofer no sabe qué viaje le toca + no se cumple Ley 18.290 (verificar licencia vigente). |
-| **HOW** | (1) Ingrid filtra negocios "pendiente programar". (2) Verifica licencia en `panel.conductores`. (3) Crea fila en `viaje_expedicionario`. (4) **Notifica chofer por WhatsApp directo** (R-AUD-027). (5) Diego v10.13 puede orquestar con tool `enviar_whatsapp` (pendiente Pablo). |
+| **QUÉ** | Asignar chofer + vehículo + fecha al viaje específico que va a hacer el retiro. |
+| **QUIÉN** | **Ingrid (T04)** en Talca · **Cony (SERCOT)** en Maipú/Cerrillos. |
+| **DÓNDE** | `curated.viaje_expedicionario` (`oferente_transporte_id`, `fecha_planificada`). Lista de choferes: `panel.conductores` (T08 Braniff Maipú · T09 Cordero Talca · T10 Valenzuela Talca). |
+| **CUÁNDO** | Semanal (lunes planifica semana) + reactivo si entra urgente. |
+| **POR QUÉ** | Sin asignación explícita el chofer no sabe qué viaje le toca + no se cumple Ley 18.290 (verificar licencia vigente). |
+| **CÓMO** | (1) Ingrid filtra negocios "pendiente programar". (2) Verifica licencia en `panel.conductores`. (3) Crea fila en `viaje_expedicionario`. (4) **Notifica chofer por WhatsApp directo** (R-AUD-027). (5) Diego v10.13 puede orquestar con tool `enviar_whatsapp` (pendiente Pablo). |
 
 ### 21. RECHAZO / DEVOLUCIÓN DESTINO FINAL (V2)
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Cliente final rechaza el material entregado (calidad fuera de spec, contaminación, peso menor). |
-| **WHO** | Cliente reporta → Andrea (T11) recibe → escala Dusan (T01) → Dyana (T14) emite NC. |
-| **WHERE** | `curated.viaje_expedicionario.estado='rechazado'` + `curated.facturas` tipo='nota_credito' + `panel.diego_bandeja` tarea Dusan. |
-| **WHEN** | Por evento (típicamente <48h después de despacho). |
-| **WHY** | Sin flujo de devolución, la facturación queda inflada + el material queda "perdido" en libros. |
-| **HOW** | (1) Cliente rechaza → Andrea recibe. (2) `panel.diego_bandeja` tipo='rechazo_destino_final' + foto evidencia. (3) Diego escala a Dusan firma. (4) Dyana emite NC reverso. (5) Si material vuelve: nuevo viaje `estado='retorno'`. (6) Tarea Dusan: revisar causa raíz planta origen. |
+| **QUÉ** | Cliente final rechaza el material entregado (calidad fuera de spec, contaminación, peso menor). |
+| **QUIÉN** | Cliente reporta → Andrea (T11) recibe → escala Dusan (T01) → Dyana (T14) emite NC. |
+| **DÓNDE** | `curated.viaje_expedicionario.estado='rechazado'` + `curated.facturas` tipo='nota_credito' + `panel.diego_bandeja` tarea Dusan. |
+| **CUÁNDO** | Por evento (típicamente <48h después de despacho). |
+| **POR QUÉ** | Sin flujo de devolución, la facturación queda inflada + el material queda "perdido" en libros. |
+| **CÓMO** | (1) Cliente rechaza → Andrea recibe. (2) `panel.diego_bandeja` tipo='rechazo_destino_final' + foto evidencia. (3) Diego escala a Dusan firma. (4) Dyana emite NC reverso. (5) Si material vuelve: nuevo viaje `estado='retorno'`. (6) Tarea Dusan: revisar causa raíz planta origen. |
 
 ### 22. PAGO PROVEEDOR (V2)
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Egreso bancario al proveedor por compra de material (chatarra, cartón, etc.) o por servicio (peoneta, jaulas, transporte externo). |
-| **WHO** | **Dyana (T14)** prepara planilla pagos semanal. **Dusan (T01) firma** transferencias > 10 UF. |
-| **WHERE** | **Tabla nueva pendiente:** `curated.pagos_emitidos` (spec en `BANDEJA-PABLO-PREFACTURAS-PAGOS.md` mig 070). Hoy solo agregado en `panel.tesoreria_kpis.pagos_programados_clp`. |
-| **WHEN** | Semanal (martes Dyana prepara, miércoles Dusan firma, jueves transferencia). |
-| **WHY** | Mantener capital trabajo + cumplir compromisos proveedores + evitar intereses moratorios + auditoría SII. |
-| **HOW** | (1) Dyana arma planilla desde `curated.facturas` tipo='compra' + estado='pendiente_pago'. (2) Dusan firma. (3) Dyana ejecuta transferencias. (4) INSERT `curated.pagos_emitidos` por cada egreso. (5) UPDATE `curated.facturas` estado='pagado'. (6) Card "Egresos semana" en Portada Dusan. |
+| **QUÉ** | Egreso bancario al proveedor por compra de material (chatarra, cartón, etc.) o por servicio (peoneta, jaulas, transporte externo). |
+| **QUIÉN** | **Dyana (T14)** prepara planilla pagos semanal. **Dusan (T01) firma** transferencias > 10 UF. |
+| **DÓNDE** | **Tabla nueva pendiente:** `curated.pagos_emitidos` (spec en `BANDEJA-PABLO-PREFACTURAS-PAGOS.md` mig 070). Hoy solo agregado en `panel.tesoreria_kpis.pagos_programados_clp`. |
+| **CUÁNDO** | Semanal (martes Dyana prepara, miércoles Dusan firma, jueves transferencia). |
+| **POR QUÉ** | Mantener capital trabajo + cumplir compromisos proveedores + evitar intereses moratorios + auditoría SII. |
+| **CÓMO** | (1) Dyana arma planilla desde `curated.facturas` tipo='compra' + estado='pendiente_pago'. (2) Dusan firma. (3) Dyana ejecuta transferencias. (4) INSERT `curated.pagos_emitidos` por cada egreso. (5) UPDATE `curated.facturas` estado='pagado'. (6) Card "Egresos semana" en Portada Dusan. |
 
 ### 23. CIERRE VIAJE + RDO + RETC (V2)
 
-| 6W | Detalle |
+| Las 6 W (en español) | Detalle |
 |---|---|
-| **WHAT** | Cierre formal del viaje cuando todos los pesajes + facturas + pagos están conciliados. Cálculo de margen real. Reporte RDO diario al MMA (RETC). |
-| **WHO** | **Dyana (T14)** cierra viaje contable. **Ingrid + Cony** consolidan RDO sucursal. **Dusan (T01) firma** envío MMA. **Cesar (T13)** sistema cron lo arma. |
-| **WHERE** | `curated.viaje_expedicionario.margen_real_clp` + `curated.rdo_diario` + EF `rdo-builder` (cron 8:00 CLT). |
-| **WHEN** | Diario para RDO (8:00 cron + 12:00 humano valida + 16:00 envío MMA). Mensual día 15 para RDO consolidado MMA. |
-| **WHY** | Ley REP Art. 22 (RETC) — multa hasta 10.000 UTM por omisión. Cierre viaje permite calcular margen real por sucursal × material × cliente. |
-| **HOW** | (1) Diario 8:00 cron EF consolida. (2) `curated.rdo_diario` con `email_texto` armado. (3) Ingrid/Cony validan en tab RDO. (4) Dusan firma → `enviado_email=true`. (5) Día 15: RDO mes al MMA + planilla RETC. (6) Por cada viaje cerrado: `margen_real_clp = ingreso - costos_logistica - costos_estadia`. (7) Cierre 360 = viaje + factura + cobranza + pago todos OK. |
+| **QUÉ** | Cierre formal del viaje cuando todos los pesajes + facturas + pagos están conciliados. Cálculo de margen real. Reporte RDO diario al MMA (RETC). |
+| **QUIÉN** | **Dyana (T14)** cierra viaje contable. **Ingrid + Cony** consolidan RDO sucursal. **Dusan (T01) firma** envío MMA. **Cesar (T13)** sistema cron lo arma. |
+| **DÓNDE** | `curated.viaje_expedicionario.margen_real_clp` + `curated.rdo_diario` + EF `rdo-builder` (cron 8:00 CLT). |
+| **CUÁNDO** | Diario para RDO (8:00 cron + 12:00 humano valida + 16:00 envío MMA). Mensual día 15 para RDO consolidado MMA. |
+| **POR QUÉ** | Ley REP Art. 22 (RETC) — multa hasta 10.000 UTM por omisión. Cierre viaje permite calcular margen real por sucursal × material × cliente. |
+| **CÓMO** | (1) Diario 8:00 cron EF consolida. (2) `curated.rdo_diario` con `email_texto` armado. (3) Ingrid/Cony validan en tab RDO. (4) Dusan firma → `enviado_email=true`. (5) Día 15: RDO mes al MMA + planilla RETC. (6) Por cada viaje cerrado: `margen_real_clp = ingreso - costos_logistica - costos_estadia`. (7) Cierre 360 = viaje + factura + cobranza + pago todos OK. |
 
 ---
 
