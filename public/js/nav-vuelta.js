@@ -49,17 +49,29 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     `;
     bar.innerHTML = `
-      <button id="navBtnVolver" type="button" title="Volver al tab anterior"
-              style="padding:6px 12px; font-size:13px; font-weight:600; color:#374151; background:#f3f4f6; border:none; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
-        ← Volver
+      <button id="navBtnVolver" type="button" title="Volver al tab anterior" aria-label="Volver"
+              style="padding:8px 12px; font-size:13px; font-weight:600; color:#374151; background:#f3f4f6; border:none; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; min-height:38px;">
+        <span style="font-size:16px;">←</span>
+        <span class="nav-txt-volver">Volver</span>
       </button>
-      <button id="navBtnHome" type="button" title="Ir a portada"
-              style="padding:6px 12px; font-size:13px; font-weight:700; color:white; background:var(--amor-verde-medio); border:none; border-radius:8px; cursor:pointer;">
-        🏠 Portada
+      <button id="navBtnHome" type="button" title="Ir a portada" aria-label="Portada"
+              style="padding:8px 12px; font-size:13px; font-weight:700; color:white; background:var(--amor-verde-medio); border:none; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; min-height:38px;">
+        <span style="font-size:16px;">🏠</span>
+        <span class="nav-txt-portada">Portada</span>
       </button>
-      <div id="navBreadcrumb" style="flex:1; font-size:12px; color:#6b7280; padding:0 8px;">—</div>
-      <div id="navAcciones" style="display:flex; gap:6px;"></div>
+      <div id="navBreadcrumb" style="flex:1; min-width: 0; font-size:12px; color:#6b7280; padding:0 8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">—</div>
+      <div id="navAcciones" style="display:flex; gap:6px; flex-shrink:0;"></div>
     `;
+    // Estilos responsive inyectados (ocultar texto en mobile)
+    const style = document.createElement('style');
+    style.textContent = `
+      @media (max-width: 540px) {
+        #navVueltaBar { padding: 6px 10px; gap: 6px; }
+        #navVueltaBar .nav-txt-volver, #navVueltaBar .nav-txt-portada { display: none; }
+        #navBreadcrumb { font-size: 11px; }
+      }
+    `;
+    document.head.appendChild(style);
     // Insertar antes del primer .tab-content
     const primerTab = document.querySelector('section.tab-content');
     if (primerTab) {
