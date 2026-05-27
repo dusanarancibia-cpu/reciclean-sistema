@@ -42,11 +42,11 @@
     const bar = document.createElement('div');
     bar.id = 'navVueltaBar';
     bar.style.cssText = `
-      position: sticky; top: 0; z-index: 30;
-      background: white; border-bottom: 1px solid #e5e7eb;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 45;
+      background: white; border-bottom: 2px solid var(--amor-verde-medio);
       padding: 8px 14px; display: flex; align-items: center; gap: 10px;
-      flex-wrap: wrap;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      flex-wrap: nowrap;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     `;
     bar.innerHTML = `
       <button id="navBtnVolver" type="button" title="Volver al tab anterior" aria-label="Volver"
@@ -72,13 +72,16 @@
       }
     `;
     document.head.appendChild(style);
-    // Insertar antes del primer .tab-content
-    const primerTab = document.querySelector('section.tab-content');
-    if (primerTab) {
-      primerTab.parentNode.insertBefore(bar, primerTab);
-    } else {
-      document.body.appendChild(bar);
-    }
+    // Fixed arriba de todo · al body
+    document.body.appendChild(bar);
+    // Empujar el contenido principal hacia abajo para no taparlo
+    setTimeout(() => {
+      const h = bar.getBoundingClientRect().height || 50;
+      document.body.style.paddingTop = (parseInt(getComputedStyle(document.body).paddingTop) || 0) + h + 'px';
+      // Como alternativa más segura, agregar margen al main
+      const main = document.querySelector('main, #mainContent');
+      if (main) main.style.scrollMarginTop = h + 'px';
+    }, 50);
 
     document.getElementById('navBtnVolver').addEventListener('click', volverAtras);
     document.getElementById('navBtnHome').addEventListener('click', irPortada);
