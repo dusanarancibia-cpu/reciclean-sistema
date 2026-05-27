@@ -179,6 +179,27 @@
     state.marker.textContent = emojiForScore(state.score);
   }
 
+  // Animación visible del marcador + flash chip cuando se mueve
+  function animarMovimiento(delta, razon) {
+    if (!state.marker || delta === 0) return;
+    const claseRebote = delta > 0 ? 'moviendose-amor' : 'moviendose-divorcio';
+    state.marker.classList.remove('moviendose-amor', 'moviendose-divorcio');
+    // re-trigger animation
+    void state.marker.offsetWidth;
+    state.marker.classList.add(claseRebote);
+    setTimeout(() => state.marker.classList.remove(claseRebote), 1300);
+
+    // Flash chip arriba de la aguja
+    const flash = document.createElement('div');
+    flash.className = 'amor-aguja-flash';
+    const deltaTxt = delta > 0 ? '+' + delta + ' ' + emojiForScore(state.score) : delta + ' 💔';
+    flash.style.color = delta > 0 ? 'var(--amor-verde-medio)' : 'var(--divorcio-rojo)';
+    flash.textContent = deltaTxt;
+    flash.title = razon || '';
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 2300);
+  }
+
   function colorForScore(s) {
     if (s >= 70) return 'var(--amor-verde-medio)';
     if (s >= 40) return 'var(--tibieza-amarillo)';
@@ -224,6 +245,7 @@
       state.history = state.history.slice(-50);
       saveState();
       renderAguja();
+      animarMovimiento(delta, razon);
       // Si bajó al umbral de divorcio · pop-up
       if (state.score <= POPUP_THRESHOLD && Date.now() - state.lastPopup > POPUP_COOLDOWN_MS) {
         mostrarPopupRomantico();
