@@ -1546,7 +1546,13 @@
     <section id="tabCartera" class="tab-content hidden">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold text-stone-800">👥 Cartera de clientes</h2>
-        <button onclick="loadCartera()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+        <div class="flex gap-2">
+          <button onclick="carNuevoCliente()"
+                  class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded text-sm font-semibold">
+            + Nuevo cliente
+          </button>
+          <button onclick="loadCartera()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+        </div>
       </div>
 
       <!-- N2-3 · Resumen cobertura cartera (backend Pablo f_panel_cartera_cobertura) -->
@@ -1661,6 +1667,275 @@
             <h4 class="text-sm font-semibold text-stone-700 mb-1">Oportunidades CRM Impulsa (top 5)</h4>
             <div id="carDrawerOpCrm" class="text-xs text-stone-600">—</div>
           </div>
+
+          <div class="mt-5 pt-4 border-t border-stone-100">
+            <button id="carDrawerEditBtn" onclick="carAbrirEditar(_cartDrawerClienteId)"
+                    class="w-full bg-stone-700 hover:bg-stone-800 text-white text-sm py-2 rounded font-semibold">
+              ✏️ Editar datos completos
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Modal edición / creación de cliente ── -->
+      <div id="clienteEditModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-start justify-center overflow-y-auto py-6">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4">
+
+          <!-- Header modal -->
+          <div class="flex justify-between items-center px-6 py-4 border-b border-stone-200">
+            <h3 id="clienteEditModalTitulo" class="text-lg font-bold text-stone-800">Nuevo cliente</h3>
+            <button onclick="carCerrarEditar()" class="text-stone-400 hover:text-stone-700 text-2xl leading-none" aria-label="Cerrar">×</button>
+          </div>
+
+          <div class="px-6 py-4 space-y-5">
+
+            <!-- Sección 1: Básico -->
+            <details open>
+              <summary class="font-semibold text-stone-700 cursor-pointer select-none mb-3">🏢 Básico</summary>
+              <div class="grid grid-cols-2 gap-3 mt-2">
+                <div class="col-span-2">
+                  <label class="block text-xs text-stone-500 mb-1">Razón Social *</label>
+                  <input id="cliRazonSocial" type="text" placeholder="Nombre o razón social"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">RUT</label>
+                  <input id="cliRut" type="text" placeholder="12.345.678-9"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Sucursal principal</label>
+                  <select id="cliSucursal"
+                          class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                    <option value="">— Sin sucursal —</option>
+                    <option value="cerrillos">Cerrillos</option>
+                    <option value="maipu">Maipú</option>
+                    <option value="talca">Talca</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Estado</label>
+                  <select id="cliActivo"
+                          class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                    <option value="true">Activo</option>
+                    <option value="false">Inactivo</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Cliente para</label>
+                  <select id="cliClientePara"
+                          class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                    <option value="">— Seleccionar —</option>
+                    <option value="Reciclean">Reciclean</option>
+                    <option value="Farex">Farex</option>
+                    <option value="Todas">Todas</option>
+                    <option value="Farex, Reciclean">Farex + Reciclean</option>
+                    <option value="5R">5R</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Segmento</label>
+                  <select id="cliSegmento"
+                          class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                    <option value="">— Sin segmento —</option>
+                    <option value="EMPRESA_FORMAL">Empresa formal</option>
+                    <option value="EMPRESA_INFORMAL">Empresa informal</option>
+                    <option value="PERSONA_NATURAL">Persona natural</option>
+                    <option value="CONSTRUCTORA">Constructora</option>
+                    <option value="MAESTRANZAS">Maestranzas</option>
+                    <option value="COLEGIOS">Colegios</option>
+                    <option value="UNIVERSIDADES">Universidades</option>
+                    <option value="MUNICIPALIDADES">Municipalidades</option>
+                    <option value="MINI MARKETS">Mini markets</option>
+                    <option value="ALMACENES">Almacenes</option>
+                    <option value="HOGARES PREOCUPADOS POR EL MEDIO AMBIENTE">Hogares medio ambiente</option>
+                    <option value="EMPRESA FABRICANTE">Empresa fabricante</option>
+                    <option value="EMPRESA DISTRIBUIDORA">Empresa distribuidora</option>
+                    <option value="EMPRESAS MANUFACTURERAS">Empresa manufacturera</option>
+                    <option value="EMPRESAS QUE RECICLAN Y NO REQUIEREN DE PAGO">Empresa que recicla sin pago</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Responsable</label>
+                  <input id="cliResponsable" type="text" placeholder="Ej. Andrea Rivera"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Tags</label>
+                  <input id="cliTags" type="text" placeholder="Ej. MERR, REP, contrato"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+              </div>
+            </details>
+
+            <!-- Sección 2: Contacto -->
+            <details>
+              <summary class="font-semibold text-stone-700 cursor-pointer select-none mb-3">📞 Contacto</summary>
+              <div class="grid grid-cols-2 gap-3 mt-2">
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Teléfono</label>
+                  <input id="cliTelefono" type="text" placeholder="+56 9 1234 5678"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Email</label>
+                  <input id="cliEmail" type="email" placeholder="contacto@empresa.cl"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-xs text-stone-500 mb-1">Dirección</label>
+                  <input id="cliDireccion" type="text" placeholder="Av. Principal 123, Santiago"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Ciudad</label>
+                  <input id="cliCiudad" type="text" placeholder="Santiago"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Región</label>
+                  <input id="cliRegion" type="text" placeholder="Metropolitana"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Sitio web</label>
+                  <input id="cliSitioWeb" type="text" placeholder="www.empresa.cl"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Forma de pago</label>
+                  <select id="cliFormaPago"
+                          class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                    <option value="">— Sin especificar —</option>
+                    <option value="Transferencia">Transferencia</option>
+                    <option value="Cheque">Cheque</option>
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Crédito">Crédito</option>
+                  </select>
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-xs text-stone-500 mb-1">Comentarios</label>
+                  <textarea id="cliComentarios" rows="2" placeholder="Notas internas sobre este cliente…"
+                            class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none resize-none"></textarea>
+                </div>
+              </div>
+            </details>
+
+            <!-- Sección 3: Servicios Reciclean -->
+            <details>
+              <summary class="font-semibold text-stone-700 cursor-pointer select-none mb-3">⚙️ Servicios Reciclean</summary>
+              <div class="grid grid-cols-2 gap-3 mt-2">
+                <div class="col-span-2">
+                  <label class="block text-xs text-stone-500 mb-1">Servicio de retiro</label>
+                  <input id="cliServRetiro" type="text" placeholder="Ej. Retiro en 3/4 Hiunday: 1,8 UF x 10 km"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Retiro gratis</label>
+                  <input id="cliServRetiroGratis" type="text" placeholder="Sí / No / N/A"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Arriendo contenedor</label>
+                  <input id="cliServContenedor" type="text" placeholder="Ej. 0,19 UF por día"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Certificación</label>
+                  <input id="cliServCert" type="text" placeholder="Ej. 2,7 UF anual + IVA"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Certificado mensual / fecha inicio</label>
+                  <input id="cliServCertFecha" type="text" placeholder="Ej. 2024-01-01"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-xs text-stone-500 mb-1">Segregación por impurezas</label>
+                  <input id="cliServSegregacion" type="text"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Frecuencia de cobro</label>
+                  <select id="cliCobroFrecuencia"
+                          class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                    <option value="">— Sin especificar —</option>
+                    <option value="N/A (No aplica)">N/A</option>
+                    <option value="Por evento">Por evento</option>
+                    <option value="Cobro previo y por evento">Cobro previo y por evento</option>
+                    <option value="Cada mes (los 5 primeros días)">Mensual (primeros 5 días)</option>
+                    <option value="Sin cobro, autorizado por gerencia">Sin cobro (gerencia)</option>
+                    <option value="Otro, por definir">Otro, por definir</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Cobro por material en planta</label>
+                  <input id="cliCobroMaterial" type="text"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Condiciones de pago</label>
+                  <input id="cliCondicionesPago" type="text" placeholder="Ej. A 30 días contra factura"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Compra / donación / venta</label>
+                  <input id="cliCompraDonacion" type="text"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-xs text-stone-500 mb-1">Detalle de envío de info al terminar servicio</label>
+                  <textarea id="cliDetalleEnvio" rows="2"
+                            class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none resize-none"></textarea>
+                </div>
+              </div>
+            </details>
+
+            <!-- Sección 4: Bancario -->
+            <details>
+              <summary class="font-semibold text-stone-700 cursor-pointer select-none mb-3">🏦 Datos bancarios</summary>
+              <div class="grid grid-cols-2 gap-3 mt-2">
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Banco</label>
+                  <input id="cliBanco" type="text" placeholder="Ej. Banco de Chile"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">Tipo de cuenta</label>
+                  <select id="cliTipoCuenta"
+                          class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                    <option value="">— Sin especificar —</option>
+                    <option value="Cuenta corriente">Cuenta corriente</option>
+                    <option value="Cuenta vista">Cuenta vista</option>
+                    <option value="Cuenta ahorro">Cuenta ahorro</option>
+                    <option value="Cuenta RUT">Cuenta RUT</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs text-stone-500 mb-1">N° cuenta</label>
+                  <input id="cliNroCuenta" type="text" placeholder="123456789"
+                         class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+                </div>
+              </div>
+            </details>
+
+          </div><!-- /px-6 py-4 -->
+
+          <!-- Footer modal -->
+          <div class="px-6 py-4 border-t border-stone-200 flex justify-between items-center">
+            <div id="clienteEditMsg" class="text-sm hidden"></div>
+            <div class="flex gap-2 ml-auto">
+              <button onclick="carCerrarEditar()"
+                      class="px-4 py-2 text-sm rounded border border-stone-300 text-stone-600 hover:bg-stone-50">
+                Cancelar
+              </button>
+              <button onclick="carGuardarCliente()" id="clienteEditGuardarBtn"
+                      class="px-5 py-2 text-sm rounded bg-green-700 hover:bg-green-800 text-white font-semibold">
+                Guardar
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
@@ -6146,6 +6421,160 @@ window.carAbrirDrawer = async function(clienteId) {
 window.carCerrarDrawer = function() {
   document.getElementById('carDrawer').classList.add('hidden');
   _cartDrawerClienteId = null;
+};
+
+// ── Crear / Editar cliente ────────────────────────────────────────────────────
+
+let _cliEditando = null; // cliente_id si edición, null si creación
+
+window.carNuevoCliente = function() {
+  _cliEditando = null;
+  document.getElementById('clienteEditModalTitulo').textContent = 'Nuevo cliente';
+  ['cliRazonSocial','cliRut','cliTelefono','cliEmail','cliDireccion','cliCiudad','cliRegion',
+   'cliSitioWeb','cliComentarios','cliResponsable','cliTags','cliServRetiro','cliServRetiroGratis',
+   'cliServContenedor','cliServCert','cliServCertFecha','cliServSegregacion','cliCobroMaterial',
+   'cliCondicionesPago','cliCompraDonacion','cliDetalleEnvio','cliBanco','cliNroCuenta']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['cliSucursal','cliActivo','cliClientePara','cliSegmento','cliFormaPago','cliCobroFrecuencia','cliTipoCuenta']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('cliActivo').value = 'true';
+  const msg = document.getElementById('clienteEditMsg');
+  msg.classList.add('hidden');
+  document.getElementById('clienteEditModal').classList.remove('hidden');
+};
+
+window.carAbrirEditar = async function(clienteId) {
+  if (!clienteId) return;
+  _cliEditando = clienteId;
+  document.getElementById('clienteEditModalTitulo').textContent = 'Editar cliente';
+  const msg = document.getElementById('clienteEditMsg');
+  msg.classList.add('hidden');
+
+  const { data: c, error } = await sb.schema('curated').from('clientes').select('*').eq('cliente_id', clienteId).maybeSingle();
+  if (error || !c) {
+    alert('Error cargando datos del cliente');
+    return;
+  }
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  set('cliRazonSocial', c.razon_social);
+  set('cliRut', c.rut);
+  set('cliSucursal', c.sucursal_principal);
+  document.getElementById('cliActivo').value = c.activo ? 'true' : 'false';
+  set('cliClientePara', c.cliente_para);
+  set('cliSegmento', c.segmento);
+  set('cliResponsable', c.responsable_cliente);
+  set('cliTags', c.tags);
+  set('cliTelefono', c.telefono);
+  set('cliEmail', c.email);
+  set('cliDireccion', c.direccion);
+  set('cliCiudad', c.ciudad);
+  set('cliRegion', c.region);
+  set('cliSitioWeb', c.sitio_web);
+  set('cliComentarios', c.comentarios);
+  set('cliFormaPago', c.forma_pago);
+  set('cliServRetiro', c.serv_retiro);
+  set('cliServRetiroGratis', c.serv_retiro_gratis);
+  set('cliServContenedor', c.serv_contenedor);
+  set('cliServCert', c.serv_certificacion);
+  set('cliServCertFecha', c.serv_certificado_fecha);
+  set('cliServSegregacion', c.serv_segregacion);
+  set('cliCobroFrecuencia', c.cobro_frecuencia);
+  set('cliCobroMaterial', c.cobro_material);
+  set('cliCondicionesPago', c.condiciones_pago);
+  set('cliCompraDonacion', c.compra_donacion_venta);
+  set('cliDetalleEnvio', c.detalle_envio);
+  set('cliBanco', c.banco);
+  set('cliTipoCuenta', c.tipo_cuenta_bancaria);
+  set('cliNroCuenta', c.nro_cuenta_bancaria);
+
+  document.getElementById('clienteEditModal').classList.remove('hidden');
+};
+
+window.carCerrarEditar = function() {
+  document.getElementById('clienteEditModal').classList.add('hidden');
+  _cliEditando = null;
+};
+
+window.carGuardarCliente = async function() {
+  const razonSocial = document.getElementById('cliRazonSocial').value.trim();
+  if (!razonSocial) {
+    const msg = document.getElementById('clienteEditMsg');
+    msg.textContent = 'La razón social es obligatoria.';
+    msg.className = 'text-sm text-red-600 bg-red-50 px-3 py-1.5 rounded';
+    msg.classList.remove('hidden');
+    return;
+  }
+
+  const btn = document.getElementById('clienteEditGuardarBtn');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+
+  const val = id => { const el = document.getElementById(id); return el ? (el.value.trim() || null) : null; };
+
+  const payload = {
+    razon_social:          razonSocial,
+    rut:                   val('cliRut'),
+    sucursal_principal:    val('cliSucursal'),
+    activo:                document.getElementById('cliActivo').value === 'true',
+    cliente_para:          val('cliClientePara'),
+    segmento:              val('cliSegmento'),
+    responsable_cliente:   val('cliResponsable'),
+    tags:                  val('cliTags'),
+    telefono:              val('cliTelefono'),
+    email:                 val('cliEmail'),
+    direccion:             val('cliDireccion'),
+    ciudad:                val('cliCiudad'),
+    region:                val('cliRegion'),
+    sitio_web:             val('cliSitioWeb'),
+    comentarios:           val('cliComentarios'),
+    forma_pago:            val('cliFormaPago'),
+    serv_retiro:           val('cliServRetiro'),
+    serv_retiro_gratis:    val('cliServRetiroGratis'),
+    serv_contenedor:       val('cliServContenedor'),
+    serv_certificacion:    val('cliServCert'),
+    serv_certificado_fecha:val('cliServCertFecha'),
+    serv_segregacion:      val('cliServSegregacion'),
+    cobro_frecuencia:      val('cliCobroFrecuencia'),
+    cobro_material:        val('cliCobroMaterial'),
+    condiciones_pago:      val('cliCondicionesPago'),
+    compra_donacion_venta: val('cliCompraDonacion'),
+    detalle_envio:         val('cliDetalleEnvio'),
+    banco:                 val('cliBanco'),
+    tipo_cuenta_bancaria:  val('cliTipoCuenta'),
+    nro_cuenta_bancaria:   val('cliNroCuenta'),
+    updated_by:            currentUser || 'panel-rdo',
+    updated_at:            new Date().toISOString(),
+  };
+
+  let error;
+  if (_cliEditando) {
+    // Edición
+    ({ error } = await sb.schema('curated').from('clientes').update(payload).eq('cliente_id', _cliEditando));
+  } else {
+    // Creación — generar ID tipo 'cli_<timestamp>'
+    payload.cliente_id = 'cli_' + Date.now();
+    payload.created_by = currentUser || 'panel-rdo';
+    ({ error } = await sb.schema('curated').from('clientes').insert(payload));
+  }
+
+  btn.disabled = false; btn.textContent = 'Guardar';
+
+  const msg = document.getElementById('clienteEditMsg');
+  if (error) {
+    msg.textContent = 'Error: ' + error.message;
+    msg.className = 'text-sm text-red-600 bg-red-50 px-3 py-1.5 rounded';
+    msg.classList.remove('hidden');
+    return;
+  }
+
+  msg.textContent = _cliEditando ? '✓ Cliente actualizado.' : '✓ Cliente creado.';
+  msg.className = 'text-sm text-green-700 bg-green-50 px-3 py-1.5 rounded';
+  msg.classList.remove('hidden');
+
+  setTimeout(() => {
+    carCerrarEditar();
+    loadCartera();
+  }, 1200);
 };
 
 window.carAplicarCategoria = async function() {
