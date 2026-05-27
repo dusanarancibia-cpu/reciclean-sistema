@@ -1845,6 +1845,32 @@
         <button onclick="loadBandejaDiego()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
       </div>
 
+      <!-- ═══════════════════════════════════════════════════════════
+           Tarjetas priorizadas · "Diego procesa, no acumula"
+           (Capa Amor Verde · 26-may-2026)
+           Diego completa las 6W antes y propone destino. Usuario decide rápido.
+      ═══════════════════════════════════════════════════════════ -->
+      <div id="bdPrioritarias" class="mb-5">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-bold text-stone-700 flex items-center gap-2">
+            <span class="amor-badge verde">⚡ TOP HOY</span> Las que mueven el negocio
+          </h3>
+          <span class="text-xs text-stone-500">Diego ya completó las 6W · vos resolvés en 2 minutos</span>
+        </div>
+        <div id="bdPrioritariasLista" class="space-y-2">
+          <!-- Placeholder mientras carga · lo llena bandeja-diego-priorizada.js -->
+          <div class="amor-notif-card" style="opacity:0.55;">
+            <div class="flex justify-between items-start gap-3">
+              <div class="flex-1">
+                <div class="text-xs text-stone-500 mb-1">📥 Esperando que Diego procese la cola…</div>
+                <div class="text-sm text-stone-600">Las notificaciones aparecen acá pre-completadas, con remitente, qué se pide, por qué urge y cómo resolverlo. Vos sólo decidís: Resolver · Asignar · Pedir contexto · Devolver.</div>
+              </div>
+              <span class="text-xs text-emerald-700 font-bold">Diego procesa</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- KPI bar -->
       <div id="bdKpiBar" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div class="bg-white p-3 rounded shadow-sm">
@@ -2192,6 +2218,68 @@
 
       <!-- Vista Manual -->
       <div id="manualVistaManual">
+
+        <!-- ═══════════════════════════════════════════════════════════
+             Landing 6W (Capa Amor Verde · 26-may-2026)
+             6 preguntas que estructuran cada proceso del Manual.
+             Cards llevan al primer proceso de la sección PROCESOS 6W.
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="bg-gradient-to-br from-emerald-50 via-white to-emerald-50 rounded-2xl p-6 mb-6 border border-emerald-100">
+          <div class="text-center mb-4">
+            <div class="inline-flex items-center gap-2 text-xs text-emerald-700 font-bold tracking-widest uppercase">
+              <span>🌱</span> Cómo entender cada proceso <span>🌱</span>
+            </div>
+            <h3 class="text-2xl font-extrabold text-emerald-900 mt-2">Las 6 preguntas</h3>
+            <p class="text-sm text-stone-600 mt-1">Cada proceso del manual responde estas 6 preguntas en orden. Clic en una para entender qué buscar.</p>
+          </div>
+
+          <div class="amor-manual-6w">
+            <a href="#proceso-cotizacion" class="amor-6w-card" data-w="que">
+              <span class="icono">📋</span>
+              <div class="titulo">¿Qué?</div>
+              <div class="desc">La acción concreta · ej. "cotizar retiro 5 ton cartón"</div>
+            </a>
+            <a href="#proceso-cotizacion" class="amor-6w-card" data-w="quien">
+              <span class="icono">👤</span>
+              <div class="titulo">¿Quién?</div>
+              <div class="desc">Persona responsable · ej. Andrea cotiza, Dyana firma</div>
+            </a>
+            <a href="#proceso-cotizacion" class="amor-6w-card" data-w="cuando">
+              <span class="icono">⏰</span>
+              <div class="titulo">¿Cuándo?</div>
+              <div class="desc">Tiempo o plazo · ej. dentro de las 4 horas hábiles</div>
+            </a>
+            <a href="#proceso-cotizacion" class="amor-6w-card" data-w="donde">
+              <span class="icono">📍</span>
+              <div class="titulo">¿Dónde?</div>
+              <div class="desc">Lugar o sistema · ej. Panel Cotizador · Cerrillos</div>
+            </a>
+            <a href="#proceso-cotizacion" class="amor-6w-card" data-w="porque">
+              <span class="icono">💡</span>
+              <div class="titulo">¿Por qué?</div>
+              <div class="desc">Razón del proceso · ej. cerrar negocio antes que la competencia</div>
+            </a>
+            <a href="#proceso-cotizacion" class="amor-6w-card" data-w="como">
+              <span class="icono">🛠️</span>
+              <div class="titulo">¿Cómo?</div>
+              <div class="desc">Paso a paso técnico · usar f_evaluar_retiro + firmar Andrea</div>
+            </a>
+          </div>
+
+          <!-- 6 silos por color (alineado a SPEC-MANUAL-PANEL-V2) -->
+          <div class="mt-6">
+            <div class="text-center text-xs text-stone-500 font-semibold tracking-widest uppercase mb-3">⬇ O elegí por silo de tu trabajo ⬇</div>
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-2">
+              <button data-silo="comercial" class="manual-silo px-3 py-2 text-sm font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition" type="button">💼 Comercial</button>
+              <button data-silo="operaciones" class="manual-silo px-3 py-2 text-sm font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition" type="button">⚙️ Operaciones</button>
+              <button data-silo="finanzas" class="manual-silo px-3 py-2 text-sm font-semibold rounded-lg bg-amber-600 hover:bg-amber-700 text-white transition" type="button">💰 Finanzas</button>
+              <button data-silo="rrhh" class="manual-silo px-3 py-2 text-sm font-semibold rounded-lg bg-rose-600 hover:bg-rose-700 text-white transition" type="button">🤝 RRHH</button>
+              <button data-silo="cumplimiento" class="manual-silo px-3 py-2 text-sm font-semibold rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition" type="button">⚖️ Cumplimiento</button>
+              <button data-silo="tecnico" class="manual-silo px-3 py-2 text-sm font-semibold rounded-lg bg-slate-700 hover:bg-slate-800 text-white transition" type="button">🛠️ Técnico</button>
+            </div>
+          </div>
+        </div>
+
         <div id="manualContenido" class="bg-white rounded-lg shadow-sm p-5 prose prose-sm max-w-none">
           <p class="text-sm text-stone-500">Cargando manual…</p>
         </div>
@@ -9712,5 +9800,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- ═══ Capa Amor Verde · branch claude/panel-amor-verde-26may ═══ -->
 <script src="/js/amor-divorcio.js" defer></script>
 <script src="/js/semaforo-features.js" defer></script>
+<script src="/js/bandeja-diego-priorizada.js" defer></script>
+<script src="/js/mayordomo-monitor.js" defer></script>
 </body>
 </html>
