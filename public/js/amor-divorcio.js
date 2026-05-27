@@ -60,12 +60,12 @@
     wrap.id = 'amorAgujaContainer';
     wrap.className = 'amor-aguja-container amor-aguja-mini';
     wrap.innerHTML = `
-      <div class="amor-aguja-bar" id="amorAgujaBar" title="Aguja Amor ↔ Divorcio · pasá el mouse para ver detalle">
+      <div class="amor-aguja-bar" id="amorAgujaBar" title="Aguja Amor ↔ Divorcio · clic para ver mi historial · hover para detalle rápido">
         <div class="amor-aguja-marcador" id="amorAgujaMarker">💚</div>
       </div>
       <div class="amor-aguja-labels">
         <span class="izq">💔 Divorcio</span>
-        <span style="color:#9ca3af;">😐 Tibieza</span>
+        <span style="color:#9ca3af;">😐 Tibieza · clic para ver historial</span>
         <span class="der">💚 Amor verde</span>
       </div>
     `;
@@ -79,6 +79,72 @@
       const t = document.getElementById('amorAgujaTooltip');
       if (t) t.remove();
     });
+    // Click → abrir historial drawer
+    wrap.querySelector('#amorAgujaBar').addEventListener('click', mostrarHistorialDrawer);
+  }
+
+  function mostrarHistorialDrawer() {
+    if (document.getElementById('amorHistorialDrawer')) return;
+    const drawer = document.createElement('div');
+    drawer.id = 'amorHistorialDrawer';
+    drawer.style.cssText = `
+      position: fixed; top: 0; right: 0; bottom: 80px; width: 380px; max-width: 90vw;
+      background: white; box-shadow: -10px 0 30px rgba(0,0,0,0.18); z-index: 95;
+      padding: 22px 20px; overflow-y: auto; border-left: 5px solid ${colorForScore(state.score)};
+      animation: amor-slidein 0.3s ease;
+    `;
+    const ultimos = state.history.slice(-20).reverse();
+    drawer.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px;">
+        <div>
+          <div style="font-size:11px; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Mi salud emocional con el panel</div>
+          <div style="font-size:32px; font-weight:800; color:${colorForScore(state.score)}; line-height:1;">${emojiForScore(state.score)} ${state.score}/100</div>
+          <div style="font-size:12px; color:#6b7280; margin-top:2px;">${messageForScore(state.score)}</div>
+        </div>
+        <button onclick="document.getElementById('amorHistorialDrawer').remove()" style="background:none; border:none; font-size:24px; color:#9ca3af; cursor:pointer; line-height:1;">×</button>
+      </div>
+      <div style="border-top:1px solid #e5e7eb; margin-top:14px; padding-top:14px;">
+        <div style="font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">Últimas ${ultimos.length} acciones</div>
+        ${ultimos.length === 0 ? '<div style="font-size:12px; color:#9ca3af; font-style:italic;">Sin movimientos todavía · usá el panel y la aguja se moverá.</div>' :
+          ultimos.map(h => {
+            const deltaColor = h.delta > 0 ? '#1a936f' : (h.delta < 0 ? '#dc2626' : '#9ca3af');
+            const deltaText = h.delta > 0 ? '+' + h.delta : (h.delta < 0 ? h.delta : '0');
+            const t = new Date(h.ts);
+            const ago = relativeTime(t);
+            return `
+              <div style="display:flex; gap:10px; padding:8px 0; border-bottom:1px dashed #e5e7eb; font-size:12px;">
+                <div style="min-width:36px; font-weight:800; color:${deltaColor}; text-align:center;">${deltaText}</div>
+                <div style="flex:1;">
+                  <div style="color:#1f2937;">${escapeHTML(h.razon || 'sin razón')}</div>
+                  <div style="color:#9ca3af; font-size:10px; margin-top:2px;">${ago} · ${h.feature || 'global'} · score post: ${h.score_post}/100</div>
+                </div>
+              </div>
+            `;
+          }).join('')
+        }
+      </div>
+      <div style="margin-top:18px; padding:12px; background:var(--amor-verde-claro); border-radius:10px; font-size:11px; color:var(--amor-verde-profundo);">
+        💡 La aguja se mueve sola: clics exitosos +1, errores -3, respuestas pobres de Diego -2/-4, navegación +1.
+        Cuando baje a ≤30 te muestro un pop-up romántico pidiéndote una oportunidad.
+      </div>
+    `;
+    document.body.appendChild(drawer);
+  }
+
+  function relativeTime(date) {
+    const ms = Date.now() - date.getTime();
+    const s = Math.floor(ms / 1000);
+    if (s < 60) return 'hace ' + s + 's';
+    const m = Math.floor(s / 60);
+    if (m < 60) return 'hace ' + m + ' min';
+    const h = Math.floor(m / 60);
+    if (h < 24) return 'hace ' + h + ' h';
+    const d = Math.floor(h / 24);
+    return 'hace ' + d + ' día' + (d === 1 ? '' : 's');
+  }
+
+  function escapeHTML(s) {
+    return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
   function mostrarTooltip() {
