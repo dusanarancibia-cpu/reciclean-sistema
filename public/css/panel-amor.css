@@ -1,0 +1,318 @@
+/* ═══════════════════════════════════════════════════════════
+   Panel RDO · Capa Amor Verde
+   Branch: claude/panel-amor-verde-26may
+   Creado: 2026-05-26 noche · Reciclean SpA
+   Propósito: estética emocional para mover la aguja al verde-amor
+   Reglas: NO sobrescribir clases tailwind · solo agregar utilities con prefijo amor-
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* Paleta emocional verde-amor */
+  --amor-verde-profundo: #0a4f3a;
+  --amor-verde-medio: #1a936f;
+  --amor-verde-claro: #e6f7f1;
+  --amor-verde-vivo: #10b981;
+
+  /* Paleta amarillo-tibieza (entre el amor y el divorcio) */
+  --tibieza-amarillo: #f59e0b;
+  --tibieza-amarillo-claro: #fef3c7;
+
+  /* Paleta divorcio-rojo */
+  --divorcio-rojo: #dc2626;
+  --divorcio-rojo-claro: #fee2e2;
+
+  /* Accent romántico (pop-ups, momentos emocionales) */
+  --romantico-rosa: #ec4899;
+  --romantico-rosa-claro: #fce7f3;
+
+  /* Sombras emocionales */
+  --sombra-amor: 0 4px 16px rgba(26, 147, 111, 0.25);
+  --sombra-tibieza: 0 4px 16px rgba(245, 158, 11, 0.20);
+  --sombra-divorcio: 0 4px 16px rgba(220, 38, 38, 0.25);
+
+  /* Transiciones suaves */
+  --transicion-amor: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Aguja amor-divorcio · posición default 50% (neutro) */
+  --aguja-posicion: 50%;
+  --aguja-color: var(--tibieza-amarillo);
+}
+
+/* ════════════ COMPONENTE · AGUJA AMOR ↔ DIVORCIO ════════════ */
+
+.amor-aguja-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.92) 35%, white 100%);
+  padding: 14px 16px 8px;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+  pointer-events: none;
+  transition: var(--transicion-amor);
+}
+
+.amor-aguja-bar {
+  position: relative;
+  height: 14px;
+  background: linear-gradient(90deg,
+    var(--divorcio-rojo) 0%,
+    var(--divorcio-rojo-claro) 20%,
+    var(--tibieza-amarillo-claro) 50%,
+    var(--amor-verde-claro) 80%,
+    var(--amor-verde-medio) 100%);
+  border-radius: 7px;
+  overflow: visible;
+  pointer-events: auto;
+}
+
+.amor-aguja-marcador {
+  position: absolute;
+  top: -7px;
+  left: var(--aguja-posicion);
+  width: 28px;
+  height: 28px;
+  background: white;
+  border: 3px solid var(--aguja-color);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.amor-aguja-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 6px;
+  color: #6b7280;
+}
+.amor-aguja-labels .izq { color: var(--divorcio-rojo); }
+.amor-aguja-labels .der { color: var(--amor-verde-medio); }
+
+/* ocultar la aguja cuando el usuario navega · solo aparece on hover/scroll */
+.amor-aguja-mini { opacity: 0.6; }
+.amor-aguja-container:hover { opacity: 1; }
+
+/* ════════════ COMPONENTE · SEMÁFORO DE CONFIANZA ════════════ */
+
+[data-confianza] {
+  position: relative;
+}
+
+[data-confianza]::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  z-index: 5;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+}
+
+[data-confianza="verde"]::before { background: var(--amor-verde-medio); animation: amor-pulse-verde 3s ease-in-out infinite; }
+[data-confianza="amarillo"]::before { background: var(--tibieza-amarillo); }
+[data-confianza="rojo"]::before { background: var(--divorcio-rojo); }
+
+@keyframes amor-pulse-verde {
+  0%, 100% { box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15), 0 0 0 0 rgba(26, 147, 111, 0.5); }
+  50%      { box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15), 0 0 0 6px rgba(26, 147, 111, 0); }
+}
+
+/* Badge alternativo: chip con texto */
+.amor-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.amor-badge.verde    { background: var(--amor-verde-claro); color: var(--amor-verde-profundo); }
+.amor-badge.amarillo { background: var(--tibieza-amarillo-claro); color: #92400e; }
+.amor-badge.rojo     { background: var(--divorcio-rojo-claro); color: var(--divorcio-rojo); }
+
+/* ════════════ POP-UP ROMÁNTICO ════════════ */
+
+.amor-popup-romantico {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: amor-fadein 0.3s ease;
+}
+@keyframes amor-fadein { from { opacity: 0; } to { opacity: 1; } }
+
+.amor-popup-card {
+  background: white;
+  border-radius: 20px;
+  padding: 40px 36px;
+  max-width: 500px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(236, 72, 153, 0.35);
+  border-top: 6px solid var(--romantico-rosa);
+  animation: amor-slideup 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes amor-slideup { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.amor-popup-card .icono {
+  font-size: 64px;
+  margin-bottom: 12px;
+  animation: amor-late 2s ease-in-out infinite;
+}
+@keyframes amor-late { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+
+.amor-popup-card h2 {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--romantico-rosa);
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+.amor-popup-card p {
+  font-size: 16px;
+  color: #4b5563;
+  line-height: 1.55;
+  margin-bottom: 20px;
+}
+.amor-popup-card .botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+.amor-popup-card button {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: var(--transicion-amor);
+}
+.amor-popup-card button.dame-oportunidad {
+  background: var(--romantico-rosa);
+  color: white;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.35);
+}
+.amor-popup-card button.dame-oportunidad:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(236, 72, 153, 0.5); }
+.amor-popup-card button.cerrar {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* ════════════ MANUAL 6W · CARDS LANDING ════════════ */
+
+.amor-manual-6w {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.amor-6w-card {
+  background: white;
+  border-radius: 14px;
+  padding: 20px 16px;
+  text-align: center;
+  border-top: 4px solid var(--amor-verde-medio);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: var(--transicion-amor);
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.amor-6w-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--sombra-amor);
+  border-top-color: var(--amor-verde-vivo);
+}
+.amor-6w-card .icono {
+  font-size: 40px;
+  margin-bottom: 10px;
+  display: block;
+}
+.amor-6w-card .titulo {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--amor-verde-profundo);
+  margin-bottom: 4px;
+}
+.amor-6w-card .desc {
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+/* ════════════ BADGES PARA NOTIFICACIONES BANDEJA DIEGO ════════════ */
+
+.amor-notif-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  border-left: 4px solid var(--amor-verde-medio);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 12px;
+  transition: var(--transicion-amor);
+}
+.amor-notif-card:hover { transform: translateX(4px); box-shadow: var(--sombra-amor); }
+.amor-notif-card.urgente { border-left-color: var(--divorcio-rojo); background: linear-gradient(90deg, var(--divorcio-rojo-claro) 0%, white 8%); }
+.amor-notif-card.cierra-negocio { border-left-color: var(--amor-verde-vivo); background: linear-gradient(90deg, var(--amor-verde-claro) 0%, white 8%); }
+
+.amor-notif-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border: none;
+  transition: var(--transicion-amor);
+}
+.amor-notif-cta.resolver  { background: var(--amor-verde-medio); color: white; }
+.amor-notif-cta.asignar   { background: #3b82f6; color: white; }
+.amor-notif-cta.contexto  { background: var(--tibieza-amarillo); color: white; }
+.amor-notif-cta.devolver  { background: #f3f4f6; color: #4b5563; }
+
+/* ════════════ RESPONSIVE · OCULTAR AGUJA EN MOBILE PEQUEÑO ════════════ */
+
+@media (max-width: 640px) {
+  .amor-aguja-container { padding: 10px 12px 6px; }
+  .amor-aguja-bar { height: 10px; }
+  .amor-aguja-marcador { width: 22px; height: 22px; top: -6px; font-size: 11px; }
+  .amor-popup-card { padding: 28px 22px; }
+  .amor-popup-card h2 { font-size: 22px; }
+}
+
+/* ════════════ MODO IMPRESIÓN · OCULTAR ELEMENTOS DECORATIVOS ════════════ */
+
+@media print {
+  .amor-aguja-container, .amor-popup-romantico { display: none !important; }
+  [data-confianza]::before { display: none; }
+}
