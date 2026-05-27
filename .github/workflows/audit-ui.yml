@@ -1,0 +1,49 @@
+name: R-AUD-034 · Auditoría UI vs Permisos
+# Bloquea merge a main/prod si el sidebar v4 olvida links a pestañas que el backend asigna.
+# Origen: INCIDENTE-MEGAPOL-2026-05-27 — Andrea bloqueada 6h por sidebar olvidado.
+
+on:
+  pull_request:
+    branches: [main, prod]
+    paths:
+      - 'public/panel-rdo.html'
+      - 'tools/audit-ui-vs-permisos.mjs'
+  push:
+    branches: [main]
+    paths:
+      - 'public/panel-rdo.html'
+
+jobs:
+  audit-build-time:
+    name: Capa 1 · build-time (panel-rdo.html vs panel.silo_pestanas)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run audit
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_URL: https://eknmtsrtfkzroxnovfqn.supabase.co
+        run: |
+          node tools/audit-ui-vs-permisos.mjs --json > audit-report.json
+          AUDIT_EXIT=$?
+          echo ""
+          node tools/audit-ui-vs-permisos.mjs   # output bonito para logs
+          if [ $AUDIT_EXIT -ne 0 ]; then
+            echo ""
+            echo "::error title=R-AUD-034 audit failed::Tabs huérfanos detectados en panel-rdo.html. Revisar audit-report.json adjunto. Origen: INCIDENTE-MEGAPOL-2026-05-27."
+            exit 1
+          fi
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-report-${{ github.run_id }}
+          path: audit-report.json
+          retention-days: 30
