@@ -12,8 +12,11 @@
  */
 (function () {
   'use strict';
-  const sb = window.sb || window.supabase;
-  if (!sb) { console.warn('[plan-evolucion] window.sb no disponible'); return; }
+
+  // Fix bootstrap timing 2026-05-28: el script `defer` corre antes que window.sb
+  // esté inicializado. Reintenta hasta 3× con 500ms entre intentos antes de
+  // declararlo no disponible.
+  let sb = null;
 
   const COLORS = { verde: '#059669', gris: '#64748b', rojo: '#dc2626', ambar: '#d97706', azul: '#3b82f6' };
 
@@ -327,9 +330,27 @@
     setInterval(loadDashboard, 60000); // refresco cada minuto
   }
 
+  // Espera a que window.sb esté disponible · reintento cada 500ms hasta 3×.
+  // Si tras 3 intentos sigue sin sb, registra warning y sale (el setInterval
+  // del refresh ya está armado dentro de boot · sin sb nunca se llega allí).
+  function waitForSbThenBoot(intento) {
+    intento = intento || 1;
+    const candidate = window.sb || window.supabase;
+    if (candidate && typeof candidate.rpc === 'function') {
+      sb = candidate;
+      boot();
+      return;
+    }
+    if (intento >= 3) {
+      console.warn('[plan-evolucion] window.sb no disponible tras 3 intentos · tab Evolución no se inicializará');
+      return;
+    }
+    setTimeout(function () { waitForSbThenBoot(intento + 1); }, 500);
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
+    document.addEventListener('DOMContentLoaded', function () { waitForSbThenBoot(1); });
   } else {
-    boot();
+    waitForSbThenBoot(1);
   }
 })();
