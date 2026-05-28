@@ -2973,6 +2973,9 @@ async function ensureSucursalesCache() {
 
 function initSupabase() {
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Exponer cliente a scripts externos (plan-evolucion, e360-context-menu, mfa-enrollment, etc.)
+  // que viven en otro <script> scope y sólo pueden acceder via window.sb.
+  window.sb = sb;
 }
 
 // ---------- helpers ----------
