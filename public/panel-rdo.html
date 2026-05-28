@@ -6100,9 +6100,29 @@ async function guardarCotizacion() {
     return;
   }
 
+  // ============================================================
+  // Quick win PDF 2026-05-28 · genera PDF + signed URL post-INSERT
+  // ============================================================
   resDiv.className = 'text-sm p-3 rounded bg-green-50 text-green-800';
-  resDiv.textContent = `✅ Cotización guardada (ID: ${data.oportunidad_id.slice(0,8)}…). Visible en pestaña Negocios.`;
+  const opId = data.oportunidad_id;
+  resDiv.innerHTML = `✅ <strong>Cotización guardada</strong> (ID: ${opId.slice(0,8)}…). Visible en pestaña Negocios.<br><span id="cotPdfStatus" class="text-xs inline-flex items-center gap-2 mt-2"><span class="inline-block w-3 h-3 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></span> Generando PDF…</span>`;
   resDiv.classList.remove('hidden');
+
+  // NO reseteo el formulario inmediatamente para que Andrea pueda ver el botón "Descargar PDF"
+  // hasta que aprete descargar o cierre el mensaje.
+  generarPdfCotizacion(opId).then((pdfRes) => {
+    const statusEl = document.getElementById('cotPdfStatus');
+    if (!statusEl) return;
+    if (pdfRes && pdfRes.ok && pdfRes.signed_url) {
+      statusEl.outerHTML = `<a id="cotPdfBtn" href="${pdfRes.signed_url}" target="_blank" rel="noopener" download="cotizacion-${opId.slice(0,8)}.pdf" class="inline-block mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded px-4 py-2 text-sm shadow">📄 Descargar PDF (${(pdfRes.size_bytes/1024).toFixed(1)} KB)</a>`;
+    } else {
+      const errMsg = pdfRes?.error ? String(pdfRes.error).slice(0, 100) : 'desconocido';
+      statusEl.outerHTML = `<span class="mt-2 inline-block text-amber-700 text-xs">⚠️ No se pudo generar el PDF. Pedile a Diego que lo intente. <span class="text-stone-400">(${errMsg})</span></span>`;
+    }
+  }).catch((e) => {
+    const statusEl = document.getElementById('cotPdfStatus');
+    if (statusEl) statusEl.outerHTML = `<span class="mt-2 inline-block text-amber-700 text-xs">⚠️ No se pudo generar el PDF. Pedile a Diego que lo intente. <span class="text-stone-400">(${String(e?.message || e).slice(0,80)})</span></span>`;
+  });
 
   // Reset formulario
   document.getElementById('cotTitulo').value = '';
@@ -6112,9 +6132,38 @@ async function guardarCotizacion() {
   document.getElementById('cotSucursal').value = '';
   document.getElementById('cotServicio').value = '';
   document.getElementById('cotNotas').value = '';
+  if (typeof cotTituloEditadoManual !== 'undefined') window.cotTituloEditadoManual = false;
+  const traeMat = document.getElementById('cotClienteTraeMaterial');
+  if (traeMat && traeMat.checked) { traeMat.checked = false; if (typeof cotToggleClienteTraeMaterial === 'function') cotToggleClienteTraeMaterial(false); }
   _cotLineas = [];
   agregarLineaCot();
   cotRecalcular();
+}
+
+// Llama a la EF generar-pdf-cotizacion y devuelve { ok, signed_url, size_bytes, error? }
+async function generarPdfCotizacion(oportunidad_id) {
+  try {
+    const SUPA_URL = 'https://eknmtsrtfkzroxnovfqn.supabase.co';
+    const ANON = (window.sb?.supabaseKey) || (typeof SUPABASE_ANON_KEY !== 'undefined' ? SUPABASE_ANON_KEY : null);
+    const headers = { 'Content-Type': 'application/json' };
+    if (ANON) { headers['apikey'] = ANON; headers['Authorization'] = `Bearer ${ANON}`; }
+    const sess = await (window.sb?.auth?.getSession?.() ?? Promise.resolve({ data: { session: null } }));
+    const tok = sess?.data?.session?.access_token;
+    if (tok) headers['Authorization'] = `Bearer ${tok}`;
+    const r = await fetch(`${SUPA_URL}/functions/v1/generar-pdf-cotizacion`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ oportunidad_id })
+    });
+    if (!r.ok) {
+      let bodyTxt = '';
+      try { bodyTxt = await r.text(); } catch {}
+      return { ok: false, error: `HTTP ${r.status}: ${bodyTxt.slice(0,120)}` };
+    }
+    return await r.json();
+  } catch (e) {
+    return { ok: false, error: String(e?.message || e) };
+  }
 }
 
 // ============================================================
