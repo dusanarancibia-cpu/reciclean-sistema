@@ -564,6 +564,96 @@
       </div>
       <div id="portadaAlertas" class="hidden"></div>
 
+      <!-- ═══════════════════════════════════════════════════════════════ -->
+      <!-- 🔐 BÓVEDA 2026 · 4 widgets · firmada 2026-05-28 · mig 128+129    -->
+      <!-- Sin estos widgets, eslabones 9-12 del bucle quedan ABIERTOS.     -->
+      <!-- ═══════════════════════════════════════════════════════════════ -->
+      <div id="boveda-2026-widgets" class="mb-6 space-y-4">
+        <div class="flex items-center justify-between bg-slate-900 text-white rounded-xl px-4 py-3">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">🔐</span>
+            <span class="font-bold text-sm tracking-wide">BÓVEDA 2026</span>
+            <span class="text-xs text-slate-400">Verificación circular activa</span>
+          </div>
+          <div class="flex items-center gap-3 text-xs">
+            <span class="px-2 py-0.5 rounded-full bg-emerald-600" id="boveda-status">Bucle: <span id="boveda-bucle-estado">CARGANDO…</span></span>
+            <span class="text-slate-300" id="boveda-bucle-ok">— / 15 eslabones</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <!-- Widget 1 · Tablero estado vivo de subproyectos -->
+          <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-bold text-sm text-slate-700">📊 Estado vivo · 10 subproyectos</h3>
+              <span class="text-xs text-slate-400" id="boveda-estado-updated">—</span>
+            </div>
+            <div id="boveda-tablero-estado" class="grid grid-cols-2 gap-2 text-xs">
+              <div class="text-slate-400 col-span-2 text-center py-4">Cargando…</div>
+            </div>
+          </div>
+
+          <!-- Widget 2 · Tablero trifásico Comité de IAs -->
+          <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-bold text-sm text-slate-700">🚦 Comité de IAs · 3 capas</h3>
+              <span class="text-xs text-slate-400">Confianza · costo</span>
+            </div>
+            <div class="grid grid-cols-3 gap-3 text-center">
+              <div class="border border-slate-200 rounded-lg p-3">
+                <div class="w-8 h-8 mx-auto rounded-full bg-emerald-500" title="Capa 1 OK"></div>
+                <div class="text-xs font-bold mt-2 text-slate-700">Capa 1</div>
+                <div class="text-[10px] text-slate-500">DeepSeek + Gemini Flash</div>
+                <div class="text-[10px] text-slate-400 mt-1">>90% solos</div>
+              </div>
+              <div class="border border-slate-200 rounded-lg p-3">
+                <div class="w-8 h-8 mx-auto rounded-full bg-amber-400" title="Capa 2 pendiente"></div>
+                <div class="text-xs font-bold mt-2 text-slate-700">Capa 2</div>
+                <div class="text-[10px] text-slate-500">+ Claude Sonnet</div>
+                <div class="text-[10px] text-slate-400 mt-1">60-90%</div>
+              </div>
+              <div class="border border-slate-200 rounded-lg p-3">
+                <div class="w-8 h-8 mx-auto rounded-full bg-slate-300" title="Capa 3 pendiente"></div>
+                <div class="text-xs font-bold mt-2 text-slate-700">Capa 3</div>
+                <div class="text-[10px] text-slate-500">+ 2da IA externa</div>
+                <div class="text-[10px] text-slate-400 mt-1">&lt;60% · escala Dusan</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Widget 3 · Sección Archivos (buscador docs) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm md:col-span-1">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-bold text-sm text-slate-700">📁 Archivos indexados</h3>
+              <span class="text-xs text-slate-400" id="boveda-docs-count">— docs</span>
+            </div>
+            <input type="text" id="boveda-buscador-docs" placeholder="Buscar por nombre, silo o proyecto…"
+                   class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm focus:border-emerald-600 focus:outline-none mb-3">
+            <div id="boveda-docs-resultados" class="max-h-40 overflow-y-auto text-xs">
+              <div class="text-slate-400 text-center py-4">Escribí algo para buscar…</div>
+            </div>
+            <button onclick="bovedaIndexarDocs()" class="mt-3 w-full text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold rounded px-3 py-1.5 border border-emerald-200">↻ Re-indexar ahora</button>
+          </div>
+
+          <!-- Widget 4 · Bucle verificación detalle -->
+          <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm md:col-span-1">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-bold text-sm text-slate-700">🔄 Bucle de Verificación</h3>
+              <button onclick="bovedaEjecutarBucle()" class="text-xs bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded px-3 py-1 transition">Ejecutar ahora</button>
+            </div>
+            <div id="boveda-bucle-eslabones" class="space-y-1 text-xs max-h-44 overflow-y-auto">
+              <div class="text-slate-400 text-center py-4">Cargando eslabones…</div>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-3 italic">cron: */15 * * * * · función: panel.ejecutar_bucle_verificacion()</p>
+          </div>
+
+        </div>
+      </div>
+      <!-- ═══════════════════════════════════════════════════════════════ -->
+      <!-- /BÓVEDA 2026                                                     -->
+      <!-- ═══════════════════════════════════════════════════════════════ -->
+
       <!-- =================================================== -->
       <!-- v4-design F3 · Dashboard hero (saludo + alertas +    -->
       <!-- acciones rápidas + KPIs sparkline)                   -->
@@ -9858,5 +9948,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="/js/onboarding-tour.js" defer></script>
 <!-- D-REVISION-CAPA-001 · Capa de Revisión (solo preview / ?revision=1) -->
 <script src="/js/revision-overlay.js" defer></script>
+<!-- 🔐 BÓVEDA 2026 · widgets Portada (4 paneles) · firmada 2026-05-28 madrugada -->
+<script src="/js/boveda-2026.js" defer></script>
 </body>
 </html>
