@@ -20,6 +20,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <!-- D-GANTT-VIVA-001 · Frappe Gantt CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.css">
+  <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.umd.js" defer></script>
   <style>
     .app-container { display: none; }
     .login-container { display: flex; }
@@ -577,6 +580,7 @@
         <button data-tab="bandeja_dieg"   class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabBandejaDiego">📥 Bandeja Diego</button>
         <button data-tab="ops_diarias"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabOpsDiarias">🌅 Operaciones Día</button>
         <button data-tab="comercial"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabComercial">💼 Comercial</button>
+        <button data-tab="gantt"          class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabGantt">📊 Gantt Viva</button>
         <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabAdmin">⚙️ Admin</button>
       </div>
       <span class="chevron-more" aria-hidden="true">›</span>
@@ -2867,6 +2871,83 @@
       </div>
     </section>
 
+    <!-- D-GANTT-VIVA-001 · Tab Gantt Viva (PC2 Pablo 2026-05-29 PM) -->
+    <section id="tabGantt" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-bold text-stone-800">📊 Gantt Viva</h2>
+        <div id="ganttResumenBadge" class="text-sm text-stone-600">Cargando…</div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="bg-white p-3 rounded-lg shadow-sm mb-3 flex flex-wrap items-end gap-3 text-sm">
+        <div>
+          <label for="ganttFiltroTipo" class="block text-xs text-stone-500 mb-1">Eje</label>
+          <select id="ganttFiltroTipo" class="border border-stone-300 rounded px-2 py-1 text-sm">
+            <option value="">Todos</option>
+            <option value="iniciativa">Iniciativas (D-NNN)</option>
+            <option value="tarea">Tareas en cola</option>
+            <option value="card">Cards portada</option>
+            <option value="silo">Silos</option>
+            <option value="pc">PCs</option>
+          </select>
+        </div>
+        <div>
+          <label for="ganttFiltroSilo" class="block text-xs text-stone-500 mb-1">Silo</label>
+          <select id="ganttFiltroSilo" class="border border-stone-300 rounded px-2 py-1 text-sm">
+            <option value="">Todos</option>
+            <option value="01">01 Comercial</option>
+            <option value="02">02 Operaciones</option>
+            <option value="03">03 Planta</option>
+            <option value="04">04 Manifiestos</option>
+            <option value="05">05 Cumplimiento</option>
+            <option value="06">06 Tecnología</option>
+            <option value="07">07 Admin/Finanzas</option>
+            <option value="08">08 RRHH</option>
+            <option value="09">09 Marketing</option>
+            <option value="10">10 Dirección</option>
+            <option value="11">11 Personales</option>
+          </select>
+        </div>
+        <div>
+          <label for="ganttFiltroColor" class="block text-xs text-stone-500 mb-1">Color</label>
+          <select id="ganttFiltroColor" class="border border-stone-300 rounded px-2 py-1 text-sm">
+            <option value="">Todos</option>
+            <option value="rojo">🔴 Solo rojo</option>
+            <option value="amarillo">🟡 Amarillo</option>
+            <option value="verde">🟢 Verde</option>
+          </select>
+        </div>
+        <button id="ganttRefreshBtn" type="button" class="bg-green-700 hover:bg-green-800 text-white px-3 py-1.5 rounded text-sm font-semibold">↻ Refrescar</button>
+        <span id="ganttLastUpdate" class="text-xs text-stone-400 ml-auto">—</span>
+      </div>
+
+      <!-- Container Frappe Gantt -->
+      <div class="bg-white rounded-lg shadow-sm p-3 overflow-x-auto">
+        <div id="ganttContainer" style="min-height: 480px;">
+          <div class="text-sm text-stone-500 p-6 text-center">Cargando carta gantt…</div>
+        </div>
+      </div>
+
+      <!-- Leyenda + nota -->
+      <div class="mt-3 text-xs text-stone-500 flex flex-wrap gap-4">
+        <span><span class="inline-block w-3 h-3 rounded mr-1" style="background:#059669"></span>Verde — al día</span>
+        <span><span class="inline-block w-3 h-3 rounded mr-1" style="background:#d97706"></span>Amarillo — atrasado &gt; SLA verde</span>
+        <span><span class="inline-block w-3 h-3 rounded mr-1" style="background:#dc2626"></span>Rojo — vencido / fantasma / sancionado</span>
+        <span class="ml-auto">D-GANTT-VIVA-001 · refresh auto cada 60s</span>
+      </div>
+
+      <style>
+        #ganttContainer .gantt .bar-verde rect.bar { fill: #059669; }
+        #ganttContainer .gantt .bar-verde rect.bar-progress { fill: #047857; }
+        #ganttContainer .gantt .bar-amarillo rect.bar { fill: #d97706; }
+        #ganttContainer .gantt .bar-amarillo rect.bar-progress { fill: #b45309; }
+        #ganttContainer .gantt .bar-rojo rect.bar { fill: #dc2626; }
+        #ganttContainer .gantt .bar-rojo rect.bar-progress { fill: #991b1b; }
+        #ganttContainer .gantt .bar-sindatos rect.bar { fill: #9ca3af; }
+        #ganttContainer .gantt .bar-sindatos rect.bar-progress { fill: #6b7280; }
+      </style>
+    </section>
+
     <section id="tabAdmin" class="tab-content hidden">
       <h2 class="text-xl font-bold mb-3 text-stone-800">Administración</h2>
       <div class="bg-white p-5 rounded-lg shadow-sm mb-4">
@@ -2965,7 +3046,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'admin'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'gantt', 'admin'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -10695,5 +10776,125 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- 📈 Plan 2026 · tab Evolución (Bloque C · firmado 2026-05-28) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
 <script src="/js/plan-evolucion.js" defer></script>
+
+<!-- D-GANTT-VIVA-001 · Bootstrap tab Gantt Viva (PC2 Pablo 2026-05-29 PM) -->
+<script>
+(function () {
+  const EF_URL = '/functions/v1/gantt-viva-feed';
+  let ganttInstance = null;
+  let pollTimer = null;
+  let lastFetchAt = null;
+
+  function buildQS() {
+    const tipo  = document.getElementById('ganttFiltroTipo')?.value || '';
+    const silo  = document.getElementById('ganttFiltroSilo')?.value || '';
+    const color = document.getElementById('ganttFiltroColor')?.value || '';
+    const qs = new URLSearchParams();
+    if (tipo)  qs.set('tipo', tipo);
+    if (silo)  qs.set('silo', silo);
+    if (color) qs.set('color', color);
+    return qs.toString();
+  }
+
+  async function fetchFeed() {
+    try {
+      const session = await sb.auth.getSession();
+      const token = session?.data?.session?.access_token || SUPABASE_ANON_KEY;
+      const qs = buildQS();
+      const url = `${SUPABASE_URL}${EF_URL}${qs ? '?' + qs : ''}`;
+      const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch (e) {
+      console.warn('[GanttViva] fetch error:', e);
+      return null;
+    }
+  }
+
+  function renderResumen(resumen) {
+    const el = document.getElementById('ganttResumenBadge');
+    if (!el || !resumen) return;
+    const r = resumen.rojo || 0, a = resumen.amarillo || 0, v = resumen.verde || 0, s = resumen.sin_datos || 0, t = resumen.total || 0;
+    el.innerHTML = `<span class="text-red-600 font-semibold">🔴 ${r}</span> · <span class="text-amber-600 font-semibold">🟡 ${a}</span> · <span class="text-emerald-700 font-semibold">🟢 ${v}</span> · <span class="text-stone-400">⬜ ${s}</span> · <span class="text-stone-500">Σ ${t}</span>`;
+  }
+
+  function renderGantt(rows) {
+    const container = document.getElementById('ganttContainer');
+    if (!container) return;
+    if (!rows || rows.length === 0) {
+      container.innerHTML = '<div class="text-sm text-stone-500 p-6 text-center">Sin elementos para los filtros actuales.</div>';
+      ganttInstance = null;
+      return;
+    }
+    if (typeof Gantt === 'undefined') {
+      container.innerHTML = '<div class="text-sm text-amber-700 p-6 text-center">Frappe Gantt no cargó. Verificá conexión CDN.</div>';
+      return;
+    }
+    const tasks = rows
+      .filter(r => r.start && r.end)
+      .map(r => ({ id: r.id, name: r.name, start: r.start, end: r.end, progress: r.progress, custom_class: r.custom_class, dependencies: '' }));
+    if (tasks.length === 0) {
+      container.innerHTML = '<div class="text-sm text-stone-500 p-6 text-center">Hay elementos pero sin fechas mapeables (silos / PCs agregados).</div>';
+      return;
+    }
+    container.innerHTML = '<svg id="ganttSvg" width="100%" height="480"></svg>';
+    try {
+      ganttInstance = new Gantt('#ganttSvg', tasks, {
+        view_mode: 'Week',
+        bar_height: 22,
+        bar_corner_radius: 4,
+        padding: 14,
+        date_format: 'YYYY-MM-DD',
+        custom_popup_html: (t) => `<div style="padding:6px 10px;background:#fff;border:1px solid #d6d3d1;border-radius:6px;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.1)"><strong>${t.name}</strong><br><span style="color:#78716c">${t.start} → ${t.end}</span><br><span style="color:#78716c">${t.progress}%</span></div>`
+      });
+    } catch (e) {
+      console.error('[GanttViva] Gantt render error:', e);
+      container.innerHTML = `<div class="text-sm text-red-600 p-6 text-center">Error renderizando Gantt: ${e.message}</div>`;
+    }
+  }
+
+  function updateLastUpdate() {
+    const el = document.getElementById('ganttLastUpdate');
+    if (el) el.textContent = lastFetchAt ? `Última actualización: ${lastFetchAt.toLocaleTimeString('es-CL')}` : '—';
+  }
+
+  async function refrescar() {
+    const data = await fetchFeed();
+    if (!data || !data.ok) return;
+    lastFetchAt = new Date();
+    updateLastUpdate();
+    renderResumen(data.resumen);
+    renderGantt(data.rows);
+  }
+
+  function startPolling() {
+    stopPolling();
+    pollTimer = setInterval(() => { if (isTabActive()) refrescar(); }, 60_000);
+  }
+  function stopPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
+  function isTabActive() {
+    const sec = document.getElementById('tabGantt');
+    return sec && !sec.classList.contains('hidden');
+  }
+
+  function init() {
+    document.querySelector('button[data-tab="gantt"]')?.addEventListener('click', () => {
+      setTimeout(() => { refrescar(); startPolling(); }, 100);
+    });
+    document.getElementById('ganttRefreshBtn')?.addEventListener('click', refrescar);
+    ['ganttFiltroTipo','ganttFiltroSilo','ganttFiltroColor'].forEach(id => {
+      document.getElementById(id)?.addEventListener('change', refrescar);
+    });
+    document.querySelectorAll('button[data-tab]:not([data-tab="gantt"])').forEach(b => b.addEventListener('click', stopPolling));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
 </body>
 </html>
