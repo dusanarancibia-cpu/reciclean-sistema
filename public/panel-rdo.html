@@ -1323,8 +1323,7 @@
       </div>
 
       <p class="text-xs text-stone-400 mt-3">
-        Fuente: <code>staging.v_bandeja_precios</code> · Click una fila para ver detalle y aprobar/rechazar.
-        Aprobación atómica via <code>/functions/v1/precio-aplicar</code> (cierre vigencia anterior + INSERT nueva + log histórico).
+        Click una fila para ver el detalle y aprobar o rechazar la propuesta.
       </p>
 
       <!-- Drawer aprobar/rechazar -->
@@ -9981,7 +9980,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     tbody.innerHTML = rows.map(r => {
       const lockActive = r.lock_until && new Date(r.lock_until).getTime() > Date.now();
-      const lockTag = lockActive ? `<span class="ml-1 text-[10px] text-amber-700">🔒 ${esc(r.revisando_por ?? '?')}</span>` : '';
+      const lockTag = lockActive ? `<span class="ml-1 text-[10px] text-amber-700">🔒 Editando: ${esc(r.revisando_por ?? '?')}</span>` : '';
       const deltaCls = r.desviacion_pct == null ? 'text-stone-400'
                     : Math.abs(Number(r.desviacion_pct)) > 30 ? 'text-red-700'
                     : Math.abs(Number(r.desviacion_pct)) > 15 ? 'text-amber-700'
@@ -10027,7 +10026,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const lockActive = r.lock_until && new Date(r.lock_until).getTime() > Date.now();
     const lockWarn = document.getElementById('bpDrawerLockWarn');
     if (lockActive && r.revisando_por && r.revisando_por !== (currentUser ?? '')) {
-      lockWarn.textContent = `🔒 Esta propuesta la está revisando ${r.revisando_por} desde ${fmtEdad(r.lock_until)} (lock expira en breve).`;
+      lockWarn.textContent = `🔒 Esta propuesta la está editando ${r.revisando_por} desde hace ${fmtEdad(r.lock_until)}. Vas a poder editarla en unos minutos.`;
       lockWarn.classList.remove('hidden');
     } else {
       lockWarn.classList.add('hidden');
