@@ -20,9 +20,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-  <!-- D-GANTT-VIVA-001 · Frappe Gantt CDN -->
+  <!-- D-GANTT-VIVA-001 · Frappe Gantt CDN (PC1 fix 31-may PM: umd.js→min.js · umd.js devuelve 404 en v0.6.1) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.css">
-  <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.umd.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.js" defer></script>
   <style>
     .app-container { display: none; }
     .login-container { display: flex; }
@@ -3951,7 +3951,11 @@ const TAB_SECTION_MAP = {
   bandeja_precios: 'tabBandejaPrecios',
   mi_memoria: 'tabMiMemoria',
   mi_bandeja: 'tabMiBandeja',
-  ops_diarias: 'tabOpsDiarias'
+  ops_diarias: 'tabOpsDiarias',
+  // PC1 fix 31-may PM: tabs con `_` o dígito que rompen el auto-CamelCase
+  // (pcs_vivo→tabPcs_vivo ❌ real=tabPcsVivo · plan_2026→tabPlan_2026 ❌ real=tabPlan2026)
+  pcs_vivo: 'tabPcsVivo',
+  plan_2026: 'tabPlan2026'
 };
 function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -11292,7 +11296,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     if (typeof Gantt === 'undefined') {
-      container.innerHTML = '<div class="text-sm text-amber-700 p-6 text-center">Frappe Gantt no cargó. Verificá conexión CDN.</div>';
+      // PC1 fix 31-may PM: mensaje accionable + auto-retry una vez (CDN suele resolver con un reintento)
+      container.innerHTML = '<div class="text-sm text-amber-700 p-6 text-center">Frappe Gantt no cargó (CDN jsdelivr). Reintentando…<br><span class="text-xs text-stone-500">Si persiste: refrescar página con Ctrl+F5. Los KPIs de arriba sí están vivos.</span></div>';
+      setTimeout(() => { if (typeof Gantt !== 'undefined') renderGantt(rows); }, 1500);
       return;
     }
     const tasks = rows
