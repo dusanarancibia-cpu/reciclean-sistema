@@ -446,6 +446,10 @@
           <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
           Estado vivo 4 PCs
         </a>
+        <a href="#" data-v4-tab="plan_2026" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+          <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          Plan 2026
+        </a>
       </div>
     </nav>
 
@@ -581,6 +585,7 @@
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
         <button data-tab="oportunidades" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabOportunidades">🎯 Oportunidades</button>
         <button data-tab="entregables"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabEntregables">📤 Entregables</button>
+        <button data-tab="plan_2026"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPlan2026">🗳️ Plan 2026</button>
         <button data-tab="bandeja_dieg"   class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabBandejaDiego">📥 Bandeja Diego</button>
         <button data-tab="ops_diarias"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabOpsDiarias">🌅 Operaciones Día</button>
         <button data-tab="comercial"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabComercial">💼 Comercial</button>
@@ -1323,8 +1328,7 @@
       </div>
 
       <p class="text-xs text-stone-400 mt-3">
-        Fuente: <code>staging.v_bandeja_precios</code> · Click una fila para ver detalle y aprobar/rechazar.
-        Aprobación atómica via <code>/functions/v1/precio-aplicar</code> (cierre vigencia anterior + INSERT nueva + log histórico).
+        Click una fila para ver el detalle y aprobar o rechazar la propuesta.
       </p>
 
       <!-- Drawer aprobar/rechazar -->
@@ -2926,6 +2930,61 @@
       </style>
     </section>
 
+    <!-- R-AUD-032 + R-AUD-033 · Tab Cuestionario Plan 2026 (PC2 Pablo 2026-05-31 tarea 6dc97ab6) -->
+    <section id="tabPlan2026" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-bold text-stone-800">🗳️ Cuestionario Plan 2026</h2>
+        <div id="plan2026Resumen" class="text-sm text-stone-600">Cargando…</div>
+      </div>
+
+      <p class="text-xs text-stone-500 mb-3">
+        39 preguntas en 10 bloques. Datos en vivo de Supabase (<code>panel.cuestionario_plan_2026</code>).
+        Para editar respuestas: abrí el formulario completo en <code>mayordomo/PLAN-2026/cuestionario-decisiones-dusan.html</code> y los cambios sincronizan automático.
+      </p>
+
+      <!-- Card progreso global -->
+      <div class="bg-white p-4 rounded-lg shadow-sm mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-semibold text-stone-700">Progreso global</span>
+          <span id="plan2026ProgresoTexto" class="text-sm text-stone-600">— / 39</span>
+        </div>
+        <div class="w-full bg-stone-200 rounded-full h-3 overflow-hidden">
+          <div id="plan2026ProgresoBar" class="h-3 bg-emerald-600 transition-all" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Grid bloques -->
+      <div id="plan2026Bloques" class="space-y-3">
+        <div class="text-stone-400 text-center py-8">Cargando bloques…</div>
+      </div>
+
+      <!-- Modal detalle pregunta -->
+      <div id="plan2026Modal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full p-5 max-h-[85vh] overflow-y-auto">
+          <div class="flex items-center justify-between mb-3 border-b pb-2">
+            <h3 class="font-bold text-stone-800">Pregunta <span id="plan2026ModalNum"></span></h3>
+            <button onclick="plan2026CerrarModal()" class="text-stone-400 hover:text-stone-700 text-xl">×</button>
+          </div>
+          <div id="plan2026ModalBody"></div>
+          <div class="mt-4 text-right">
+            <button onclick="plan2026CerrarModal()" class="px-3 py-1.5 text-sm text-stone-600 hover:bg-stone-100 rounded">Cerrar</button>
+          </div>
+        </div>
+      </div>
+
+      <style>
+        .p26-bloque { background:#fff; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+        .p26-bloque-header { padding:.75rem 1rem; cursor:pointer; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #f3f4f6; }
+        .p26-bloque-header:hover { background:#fafaf9; }
+        .p26-preguntas { padding:.5rem 0; }
+        .p26-pregunta { padding:.5rem 1rem; cursor:pointer; display:flex; align-items:start; gap:.5rem; border-top:1px solid #f3f4f6; }
+        .p26-pregunta:hover { background:#fafaf9; }
+        .p26-badge-ok { background:#d1fae5; color:#065f46; padding:1px 6px; border-radius:999px; font-size:.65rem; font-weight:600; flex-shrink:0; }
+        .p26-badge-pendiente { background:#fef3c7; color:#92400e; padding:1px 6px; border-radius:999px; font-size:.65rem; font-weight:600; flex-shrink:0; }
+        .p26-pct { font-family: 'Inter', system-ui, sans-serif; font-weight:700; }
+      </style>
+    </section>
+
     <!-- D-GANTT-VIVA-001 · Tab Gantt Viva (PC2 Pablo 2026-05-29 PM) -->
     <section id="tabGantt" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3">
@@ -3101,7 +3160,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'gantt', 'admin'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -9981,7 +10040,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     tbody.innerHTML = rows.map(r => {
       const lockActive = r.lock_until && new Date(r.lock_until).getTime() > Date.now();
-      const lockTag = lockActive ? `<span class="ml-1 text-[10px] text-amber-700">🔒 ${esc(r.revisando_por ?? '?')}</span>` : '';
+      const lockTag = lockActive ? `<span class="ml-1 text-[10px] text-amber-700">🔒 Editando: ${esc(r.revisando_por ?? '?')}</span>` : '';
       const deltaCls = r.desviacion_pct == null ? 'text-stone-400'
                     : Math.abs(Number(r.desviacion_pct)) > 30 ? 'text-red-700'
                     : Math.abs(Number(r.desviacion_pct)) > 15 ? 'text-amber-700'
@@ -10027,7 +10086,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const lockActive = r.lock_until && new Date(r.lock_until).getTime() > Date.now();
     const lockWarn = document.getElementById('bpDrawerLockWarn');
     if (lockActive && r.revisando_por && r.revisando_por !== (currentUser ?? '')) {
-      lockWarn.textContent = `🔒 Esta propuesta la está revisando ${r.revisando_por} desde ${fmtEdad(r.lock_until)} (lock expira en breve).`;
+      lockWarn.textContent = `🔒 Esta propuesta la está editando ${r.revisando_por} desde hace ${fmtEdad(r.lock_until)}. Vas a poder editarla en unos minutos.`;
       lockWarn.classList.remove('hidden');
     } else {
       lockWarn.classList.add('hidden');
@@ -11124,5 +11183,146 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 })();
 </script>
+
+<!-- R-AUD-032 + R-AUD-033 · Bootstrap tab Cuestionario Plan 2026 (PC2 Pablo 2026-05-31 tarea 6dc97ab6) -->
+<script>
+(function () {
+  let bloquesAbiertos = new Set();
+  let dataActual = [];
+
+  function esc(s) {
+    return (s ?? '').toString()
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  }
+
+  async function cargarCuestionario() {
+    try {
+      const { data, error } = await sb
+        .schema('panel')
+        .from('cuestionario_plan_2026')
+        .select('id, bloque, bloque_nombre, pregunta, por_que, opciones, recomendacion_pc1, confidence, que_se_graba, impacto_plan_2026, aclaracion_diego, asignado_a, estado, respuesta_opcion, respuesta_justificacion, pendiente_de_carga_razon, respondido_por, respondido_en')
+        .order('id', { ascending: true });
+      if (error) {
+        document.getElementById('plan2026Bloques').innerHTML = `<div class="text-red-600 p-4">Error cargando: ${esc(error.message)}</div>`;
+        document.getElementById('plan2026Resumen').textContent = 'Error';
+        return;
+      }
+      dataActual = data || [];
+      renderResumen(dataActual);
+      renderBloques(dataActual);
+    } catch (e) {
+      document.getElementById('plan2026Bloques').innerHTML = `<div class="text-red-600 p-4">Excepción: ${esc(String(e))}</div>`;
+    }
+  }
+
+  function renderResumen(rows) {
+    const total = rows.length;
+    const ok = rows.filter(r => r.respuesta_opcion != null).length;
+    const pct = total ? Math.round(100 * ok / total) : 0;
+    document.getElementById('plan2026Resumen').innerHTML =
+      `<span class="p26-pct">${ok}/${total}</span> respondidas · <span class="text-emerald-700 font-semibold">${pct}%</span>`;
+    document.getElementById('plan2026ProgresoTexto').innerHTML = `<span class="p26-pct">${ok}</span> / ${total} (${pct}%)`;
+    document.getElementById('plan2026ProgresoBar').style.width = pct + '%';
+  }
+
+  function renderBloques(rows) {
+    const grupos = new Map();
+    for (const r of rows) {
+      const key = r.bloque;
+      if (!grupos.has(key)) grupos.set(key, { nombre: r.bloque_nombre, preguntas: [] });
+      grupos.get(key).preguntas.push(r);
+    }
+    const html = [...grupos.entries()].map(([num, g]) => {
+      const total = g.preguntas.length;
+      const ok = g.preguntas.filter(r => r.respuesta_opcion != null).length;
+      const pct = total ? Math.round(100 * ok / total) : 0;
+      const colorPct = pct === 100 ? 'text-emerald-700' : pct >= 50 ? 'text-amber-600' : 'text-red-600';
+      const abierto = bloquesAbiertos.has(num);
+      const chevron = abierto ? '▼' : '▶';
+      const preguntasHtml = abierto ? `<div class="p26-preguntas">${g.preguntas.map(renderPregunta).join('')}</div>` : '';
+      return `
+        <div class="p26-bloque" data-bloque="${num}">
+          <div class="p26-bloque-header" onclick="plan2026ToggleBloque(${num})">
+            <div class="flex items-center gap-2">
+              <span class="text-stone-400">${chevron}</span>
+              <span class="font-semibold text-stone-700">Bloque ${num}: ${esc(g.nombre)}</span>
+            </div>
+            <div class="text-xs">
+              <span class="p26-pct ${colorPct}">${ok}/${total}</span> · ${pct}%
+            </div>
+          </div>
+          ${preguntasHtml}
+        </div>`;
+    }).join('');
+    document.getElementById('plan2026Bloques').innerHTML = html;
+  }
+
+  function renderPregunta(r) {
+    const badge = r.respuesta_opcion != null
+      ? '<span class="p26-badge-ok">RESPONDIDA</span>'
+      : '<span class="p26-badge-pendiente">PENDIENTE</span>';
+    const corta = (r.pregunta || '').slice(0, 90) + ((r.pregunta || '').length > 90 ? '…' : '');
+    return `
+      <div class="p26-pregunta" onclick="plan2026AbrirModal(${r.id})">
+        ${badge}
+        <div class="flex-1 text-sm text-stone-700">
+          <div><span class="font-semibold">#${r.id}.</span> ${esc(corta)}</div>
+          ${r.respuesta_opcion != null ? `<div class="text-xs text-stone-500 mt-1">→ ${esc(r.respuesta_opcion)}</div>` : ''}
+        </div>
+      </div>`;
+  }
+
+  window.plan2026ToggleBloque = function (num) {
+    if (bloquesAbiertos.has(num)) bloquesAbiertos.delete(num);
+    else bloquesAbiertos.add(num);
+    renderBloques(dataActual);
+  };
+
+  window.plan2026AbrirModal = function (id) {
+    const r = dataActual.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('plan2026ModalNum').textContent = `#${r.id} · Bloque ${r.bloque} ${esc(r.bloque_nombre || '')}`;
+    const body = document.getElementById('plan2026ModalBody');
+    const opciones = Array.isArray(r.opciones)
+      ? r.opciones.map((o, i) => `<li class="text-sm text-stone-600">${esc(typeof o === 'string' ? o : JSON.stringify(o))}</li>`).join('')
+      : '<li class="text-xs text-stone-400">Sin opciones cargadas</li>';
+    body.innerHTML = `
+      <div class="space-y-3 text-sm">
+        <div><span class="font-semibold text-stone-700">Pregunta:</span><div class="mt-1 text-stone-800">${esc(r.pregunta)}</div></div>
+        ${r.por_que ? `<div><span class="font-semibold text-stone-700">¿Por qué importa?</span><div class="mt-1 text-stone-600 text-xs">${esc(r.por_que)}</div></div>` : ''}
+        <div><span class="font-semibold text-stone-700">Opciones:</span><ul class="list-disc pl-5 mt-1">${opciones}</ul></div>
+        ${r.recomendacion_pc1 ? `<div><span class="font-semibold text-stone-700">Recomendación PC1:</span><div class="mt-1 text-stone-600">${esc(r.recomendacion_pc1)} ${r.confidence ? `<span class="text-xs text-stone-400">(confianza ${esc(r.confidence)})</span>` : ''}</div></div>` : ''}
+        ${r.respuesta_opcion != null
+          ? `<div class="bg-emerald-50 border border-emerald-200 rounded p-3">
+              <div><span class="font-semibold text-emerald-800">Respuesta firmada:</span> ${esc(r.respuesta_opcion)}</div>
+              ${r.respuesta_justificacion ? `<div class="text-xs text-emerald-700 mt-1">${esc(r.respuesta_justificacion)}</div>` : ''}
+              ${r.respondido_por ? `<div class="text-xs text-stone-500 mt-1">Por ${esc(r.respondido_por)}${r.respondido_en ? ' · ' + new Date(r.respondido_en).toLocaleString('es-CL') : ''}</div>` : ''}
+            </div>`
+          : `<div class="bg-amber-50 border border-amber-200 rounded p-3">
+              <div><span class="font-semibold text-amber-800">PENDIENTE de carga</span></div>
+              ${r.pendiente_de_carga_razon ? `<div class="text-xs text-amber-700 mt-1">${esc(r.pendiente_de_carga_razon)}</div>` : ''}
+              ${r.asignado_a ? `<div class="text-xs text-stone-500 mt-1">Asignado a: ${esc(r.asignado_a)}</div>` : ''}
+            </div>`}
+        ${r.impacto_plan_2026 ? `<div><span class="font-semibold text-stone-700">Impacto Plan 2026:</span><div class="mt-1 text-stone-600 text-xs">${esc(r.impacto_plan_2026)}</div></div>` : ''}
+      </div>`;
+    document.getElementById('plan2026Modal').classList.remove('hidden');
+  };
+
+  window.plan2026CerrarModal = function () {
+    document.getElementById('plan2026Modal').classList.add('hidden');
+  };
+
+  function init() {
+    document.querySelector('button[data-tab="plan_2026"]')?.addEventListener('click', () => {
+      setTimeout(cargarCuestionario, 100);
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+
 </body>
 </html>
