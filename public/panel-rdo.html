@@ -2,7 +2,7 @@
 <html lang="es-CL">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Panel RDO — Gestión REP Chile</title>
   <!-- Favicon e íconos Gestión REP Chile (logo verde/amarillo) -->
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -44,6 +44,11 @@
        con offset para no chocar con focus:ring-* donde ya existe. */
     :focus-visible { outline: 2px solid #2C5F2D !important; outline-offset: 2px; border-radius: 3px; }
     :focus:not(:focus-visible) { outline: none; }
+    /* DeepSeek 6-mejoras · skeletons cargando (reemplazo Cargando…) */
+    @keyframes pulse { 0%,100% { opacity: 0.6 } 50% { opacity: 1 } }
+    .skeleton { display: inline-block; height: 1.2em; width: 80%; background: #e0e0e0; border-radius: 4px; animation: pulse 1.5s infinite; }
+    /* DeepSeek 6-mejoras · table-responsive wrapper para tablas con scroll horizontal en mobile */
+    .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     /* Skip-nav link (a11y) — visible solo cuando tiene focus. */
     .skip-nav {
       position: absolute; left: -9999px; top: 0;
@@ -932,7 +937,7 @@
             <h3 class="text-sm font-semibold text-slate-800 mb-1">⚡ Actividad reciente</h3>
             <p class="text-xs text-slate-400 mb-3">Últimas transacciones (datos en vivo)</p>
             <div id="v4-actividad-feed" class="space-y-2 overflow-y-auto" style="max-height:280px;">
-              <div class="text-xs text-slate-400 text-center py-6">Cargando...</div>
+              <div class="skeleton" aria-busy="true"></div>
             </div>
           </div>
         </div>
@@ -1165,7 +1170,7 @@
 
     <section id="tabRdo" class="tab-content hidden">
       <h2 class="text-xl font-bold mb-3 text-stone-800">📈 RDO Resumen</h2>
-      <div id="rdoResumen" class="mb-4"><p class="text-xs text-stone-400">Cargando...</p></div>
+      <div id="rdoResumen" class="mb-4"><div class="skeleton" aria-busy="true"></div></div>
       <div id="kpiAnual" class="mb-4"></div>
       <div id="topClientes" class="mb-4"></div>
       <div id="evolucionAnual" class="mb-4"></div>
@@ -1317,7 +1322,7 @@
           <span id="v4PrecDispCount" class="badge bg-amber-200 text-amber-800">cargando…</span>
         </div>
         <p class="text-xs text-amber-700 mb-2">Posibles causas: descuento sin firma (revisar D-OP-06 matriz), cliente VIP con precio especial, o error de captura (ej. 120 vs 1200). Top 8 por dispersión:</p>
-        <div id="v4PrecDispTable" class="text-xs"><div class="text-stone-400 text-center py-3">Cargando…</div></div>
+        <div id="v4PrecDispTable" class="text-xs"><div class="skeleton" aria-busy="true"></div></div>
       </div>
 
       <!-- Filtros -->
@@ -1637,7 +1642,7 @@
           <span id="v4RecFuzzyCount" class="badge bg-emerald-200 text-emerald-800">cargando…</span>
         </div>
         <p class="text-xs text-emerald-700 mb-3">Clientes CRM Impulsa con alta probabilidad de ser el mismo cliente RDO. Confirmar acepta el match (UPDATE external_id_crm). Rechazar marca como falso positivo.</p>
-        <div id="v4RecFuzzyList" class="space-y-1 text-xs text-stone-700"><div class="text-stone-400 text-center py-3">Cargando…</div></div>
+        <div id="v4RecFuzzyList" class="space-y-1 text-xs text-stone-700"><div class="skeleton" aria-busy="true"></div></div>
       </div>
 
       <!-- KPI bar -->
@@ -1707,7 +1712,7 @@
               <th class="px-3 py-2">Embudo</th>
               <th class="px-3 py-2">Estado</th>
               <th class="px-3 py-2 text-right">Monto</th>
-              <th class="px-3 py-2">Match RDO</th>
+              <th class="px-3 py-2" title="Cruce entre oportunidad Impulsa y registro RDO. Verde = match exacto, amarillo = fuzzy, rojo = sin match.">Match RDO</th>
               <th class="px-3 py-2">Bucket</th>
               <th class="px-3 py-2">Acción</th>
             </tr>
@@ -2175,7 +2180,7 @@
             <div class="text-center"><div class="text-xs text-blue-700">Opor RDO abiertas</div><div id="v4OppRdoAbiertas" class="text-2xl font-bold text-blue-800">—</div></div>
             <div class="text-center"><div class="text-xs text-blue-700">CRM Impulsa</div><div id="v4OppCrmTotal" class="text-2xl font-bold text-blue-800">—</div></div>
             <div class="text-center"><div class="text-xs text-emerald-700">Matcheadas RDO</div><div id="v4OppMatched" class="text-2xl font-bold text-emerald-700">—</div></div>
-            <div class="text-center"><div class="text-xs text-amber-700">Fuzzy sin reconciliar</div><div id="v4OppFuzzy" class="text-2xl font-bold text-amber-700">—</div></div>
+            <div class="text-center" title="Match aproximado por nombre cliente. Requiere validación manual antes de marcar verificada_ok."><div class="text-xs text-amber-700">Fuzzy sin reconciliar</div><div id="v4OppFuzzy" class="text-2xl font-bold text-amber-700">—</div></div>
           </div>
         </div>
       </div>
@@ -2216,7 +2221,7 @@
       </div>
 
       <div id="oppKanban" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-        <div class="text-stone-400 col-span-full text-center py-6">Cargando…</div>
+        <div class="skeleton" aria-busy="true"></div>
       </div>
 
       <!-- Barra resumen Ganadas/Perdidas -->
@@ -2272,14 +2277,14 @@
 
           <dl class="text-sm space-y-2">
             <div><dt class="text-xs text-stone-500">Monto estimado (UF)</dt><dd id="oppDrawerMonto" class="font-medium">—</dd></div>
-            <div id="oppDrawerTotalCrmRow" class="hidden"><dt class="text-xs text-stone-500">Monto Impulsa</dt><dd id="oppDrawerTotalCrm" class="font-medium">—</dd></div>
-            <div><dt class="text-xs text-stone-500">Probabilidad</dt><dd id="oppDrawerProb">—</dd></div>
+            <div id="oppDrawerTotalCrmRow" class="hidden"><dt class="text-xs text-stone-500" title="Monto del CRM Impulsa importado. Puede no coincidir con RDO si hay reconciliación pendiente.">Monto Impulsa</dt><dd id="oppDrawerTotalCrm" class="font-medium">—</dd></div>
+            <div><dt class="text-xs text-stone-500" title="Probabilidad de cierre estimada por el ejecutivo. Editable desde la ficha de oportunidad.">Probabilidad</dt><dd id="oppDrawerProb">—</dd></div>
             <div><dt class="text-xs text-stone-500">Tipo / Origen</dt><dd id="oppDrawerTipo">—</dd></div>
             <div><dt class="text-xs text-stone-500">Responsable</dt><dd id="oppDrawerResp">—</dd></div>
             <div><dt class="text-xs text-stone-500">Sucursal</dt><dd id="oppDrawerSucursal">—</dd></div>
             <div><dt class="text-xs text-stone-500">Fecha recepción</dt><dd id="oppDrawerFechaRec">—</dd></div>
             <div><dt class="text-xs text-stone-500">Fecha cierre</dt><dd id="oppDrawerFechaCierre">—</dd></div>
-            <div><dt class="text-xs text-stone-500">Viabilidad</dt><dd id="oppDrawerViabilidad">—</dd></div>
+            <div><dt class="text-xs text-stone-500" title="Score 0-100 que cruza margen × volumen × histórico cliente.">Viabilidad</dt><dd id="oppDrawerViabilidad">—</dd></div>
             <div><dt class="text-xs text-stone-500">Descripción</dt><dd id="oppDrawerDesc" class="whitespace-pre-line text-stone-700">—</dd></div>
           </dl>
 
@@ -2335,7 +2340,7 @@
 
       <!-- Matriz -->
       <div id="entMatriz" class="bg-white rounded shadow-sm overflow-x-auto">
-        <div class="text-stone-400 text-center py-6">Cargando…</div>
+        <div class="skeleton" aria-busy="true"></div>
       </div>
 
       <!-- Drawer entregable -->
@@ -2608,10 +2613,12 @@
         </div>
         <div class="bg-white rounded-xl shadow-sm p-5 border border-stone-200">
           <h3 class="text-sm font-semibold text-stone-700 mb-3">Hoy vs Ayer</h3>
+          <div class="table-responsive">
           <table class="w-full text-sm">
             <thead><tr class="text-xs text-stone-500"><th class="text-left py-2">Métrica</th><th class="text-right py-2">Ayer</th><th class="text-right py-2">Hoy</th><th class="text-right py-2">Δ</th></tr></thead>
             <tbody id="plev_barras"></tbody>
           </table>
+          </div>
         </div>
       </div>
 
@@ -2884,7 +2891,7 @@
         <h3 class="font-semibold text-stone-700 mb-2">💬 Historial con Diego</h3>
         <p class="text-xs text-stone-400 mb-3" id="mmHistorialResumen">—</p>
         <div id="mmHistorialLista" class="space-y-2 max-h-96 overflow-y-auto">
-          <p class="text-xs text-stone-400">Cargando…</p>
+          <div class="skeleton" aria-busy="true"></div>
         </div>
       </div>
 
@@ -3133,6 +3140,7 @@
 
       <h3 class="font-semibold text-stone-700 mb-2">Reglas con incidencias (24h)</h3>
       <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="table-responsive">
         <table class="w-full text-sm">
           <thead class="bg-stone-50 text-stone-500 text-xs uppercase tracking-wider">
             <tr><th class="text-left py-2 px-3">Detector</th><th class="text-right py-2 px-3">Hits</th><th class="text-right py-2 px-3">Críticos</th><th class="text-left py-2 px-3">PCs afectados</th></tr>
@@ -3141,6 +3149,7 @@
             <tr><td colspan="4" class="text-stone-400 italic py-3 text-center">Cargando…</td></tr>
           </tbody>
         </table>
+        </div>
       </div>
 
       <small id="bucleVivoConsultadoEn" class="block mt-3 text-xs text-stone-400">—</small>
@@ -3177,13 +3186,13 @@
         <div class="bg-white rounded-lg shadow-sm p-4">
           <h3 class="font-semibold text-stone-700 mb-2">Etapas SDLC + criterios entrada/salida</h3>
           <div id="dodEtapasLista" class="space-y-2 text-sm">
-            <div class="text-stone-400 italic">Cargando…</div>
+            <div class="skeleton" aria-busy="true"></div>
           </div>
         </div>
         <div class="bg-white rounded-lg shadow-sm p-4">
           <h3 class="font-semibold text-stone-700 mb-2">Métricas calidad por categoría</h3>
           <div id="dodMetricasLista" class="space-y-2 text-sm">
-            <div class="text-stone-400 italic">Cargando…</div>
+            <div class="skeleton" aria-busy="true"></div>
           </div>
         </div>
       </div>
@@ -3218,7 +3227,7 @@
         <div class="bg-white rounded-lg shadow-sm p-4">
           <h3 class="font-semibold text-stone-700 mb-2">📤 Avisos planificados próximas 12h</h3>
           <div id="diegoCoordPlanificados" class="space-y-2 max-h-72 overflow-y-auto">
-            <div class="text-xs text-stone-400 italic">Cargando…</div>
+            <div class="skeleton" aria-busy="true"></div>
           </div>
         </div>
 
@@ -3226,7 +3235,7 @@
         <div class="bg-white rounded-lg shadow-sm p-4">
           <h3 class="font-semibold text-stone-700 mb-2">📨 Histórico avisos 7d</h3>
           <div id="diegoCoordHistorico" class="space-y-2 max-h-72 overflow-y-auto">
-            <div class="text-xs text-stone-400 italic">Cargando…</div>
+            <div class="skeleton" aria-busy="true"></div>
           </div>
         </div>
 
@@ -3234,7 +3243,7 @@
         <div class="bg-white rounded-lg shadow-sm p-4">
           <h3 class="font-semibold text-stone-700 mb-2">⚠️ Atascos en bandejas</h3>
           <div id="diegoCoordAtascos" class="space-y-2 max-h-72 overflow-y-auto">
-            <div class="text-xs text-stone-400 italic">Cargando…</div>
+            <div class="skeleton" aria-busy="true"></div>
           </div>
         </div>
 
@@ -4357,6 +4366,7 @@ async function loadAdminAudios() {
   if (error) { div.innerHTML = `<p class="text-red-600">${escapeHtml(error.message)}</p>`; return; }
   if (!data || data.length === 0) { div.innerHTML = '<p>No hay audios.</p>'; return; }
   div.innerHTML = `
+    <div class="table-responsive">
     <table class="w-full text-sm">
       <thead><tr class="border-b text-stone-500">
         <th class="text-left p-2">Título</th><th class="p-2">Autor</th>
@@ -4374,6 +4384,7 @@ async function loadAdminAudios() {
       `).join('')}
       </tbody>
     </table>`;
+    </div>
 }
 
 // ---------- UPLOADS (S1, S5, Dieguito) ----------
@@ -4853,6 +4864,7 @@ async function loadRdoResumen() {
   ${(data.tendencia_7d || []).length > 1 ? `
   <div class="bg-white rounded-lg p-3 shadow-sm mt-3">
     <div class="text-xs font-semibold text-stone-500 mb-2">TENDENCIA 7 DÍAS</div>
+    <div class="table-responsive">
     <table class="w-full text-xs">
       <thead><tr class="text-stone-400 border-b">
         <th class="text-left py-1">Fecha</th>
@@ -4869,6 +4881,7 @@ async function loadRdoResumen() {
         </tr>`).join('')}
       </tbody>
     </table>
+    </div>
   </div>` : ''}`;
 }
 
@@ -4885,6 +4898,7 @@ async function loadKpiAnual() {
   div.innerHTML = `
   <div class="bg-white rounded-lg p-3 shadow-sm">
     <div class="text-xs font-semibold text-stone-500 mb-2">EVOLUCIÓN ANUAL GRUPO</div>
+    <div class="table-responsive">
     <table class="w-full text-xs">
       <thead><tr class="text-stone-400 border-b">
         <th class="text-left py-1">Año</th><th class="text-right">Ventas</th>
@@ -4900,6 +4914,7 @@ async function loadKpiAnual() {
         </tr>`).join('')}
       </tbody>
     </table>
+    </div>
   </div>`;
 }
 
@@ -4940,6 +4955,7 @@ async function loadEvolucionAnual() {
   div.innerHTML = Object.entries(byEmpresa).map(([emp, rows]) => `
     <div class="bg-white rounded-lg p-3 shadow-sm mb-2">
       <div class="text-xs font-semibold text-stone-500 mb-2">${escapeHtml(emp)} — EVOLUCIÓN VENTAS / COMPRAS</div>
+      <div class="table-responsive">
       <table class="w-full text-xs">
         <thead><tr class="text-stone-400 border-b">
           <th class="text-left py-1">Año</th><th class="text-right">Libro</th>
@@ -4954,6 +4970,7 @@ async function loadEvolucionAnual() {
           </tr>`).join('')}
         </tbody>
       </table>
+      </div>
     </div>`).join('');
 }
 
@@ -5354,6 +5371,7 @@ async function loadFacturacionTopClientes() {
     ${Object.entries(byEmpresa).map(([emp, rows]) => `
     <div class="bg-white rounded-lg p-3 shadow-sm">
       <div class="text-xs font-semibold text-stone-500 mb-2">${escapeHtml(emp)} — Top clientes ${anno}</div>
+      <div class="table-responsive">
       <table class="w-full text-xs">
         <thead><tr class="text-stone-400 border-b">
           <th class="text-left py-1">Cliente</th><th class="text-right">Docs</th><th class="text-right">Monto</th>
@@ -5366,6 +5384,7 @@ async function loadFacturacionTopClientes() {
           </tr>`).join('')}
         </tbody>
       </table>
+      </div>
     </div>`).join('')}
   </div>`;
 }
@@ -5400,6 +5419,7 @@ async function loadPesajeTopMateriales() {
         ${sorted.map(g => `
         <div>
           <div class="text-xs font-medium text-stone-600 mb-1">${escapeHtml(g.sucursal)} — ${escapeHtml(g.tipo)}</div>
+          <div class="table-responsive">
           <table class="w-full text-xs">
             <thead><tr class="text-stone-400 border-b">
               <th class="text-left py-1">Material</th>
@@ -5414,6 +5434,7 @@ async function loadPesajeTopMateriales() {
               </tr>`).join('')}
             </tbody>
           </table>
+          </div>
         </div>`).join('')}
       </div>
     </div>`;
@@ -5494,6 +5515,7 @@ async function loadPesajeEvolucion() {
   ${Object.entries(bySuc).map(([suc, rows]) => `
     <div class="bg-white rounded-lg p-3 shadow-sm mb-2">
       <div class="text-xs font-semibold text-stone-500 mb-2">${escapeHtml(suc)}</div>
+      <div class="table-responsive">
       <table class="w-full text-xs">
         <thead><tr class="text-stone-400 border-b">
           <th class="text-left py-1">Mes</th><th class="text-right">Tickets</th><th class="text-right">Ton</th><th class="text-right">Monto</th>
@@ -5507,6 +5529,7 @@ async function loadPesajeEvolucion() {
           </tr>`).join('')}
         </tbody>
       </table>
+      </div>
     </div>`).join('')}`;
 }
 
@@ -5524,7 +5547,7 @@ function loadNegociosBuscar(val) {
 
 async function loadNegocios(buscarOverride) {
   const div = document.getElementById('negociosTabla');
-  div.innerHTML = '<p class="text-stone-400">Cargando…</p>';
+  div.innerHTML = '<div class="skeleton" aria-busy="true"></div>';
 
   const estado        = document.getElementById('negEstado')?.value  || '';
   const tipo          = document.getElementById('negTipo')?.value    || '';
@@ -5580,6 +5603,7 @@ async function loadNegocios(buscarOverride) {
   ).join('');
 
   div.innerHTML = `
+    <div class="table-responsive">
     <table class="w-full text-sm min-w-max">
       <thead>
         <tr class="border-b text-stone-500 text-xs">
@@ -5636,6 +5660,7 @@ async function loadNegocios(buscarOverride) {
         }).join('')}
       </tbody>
     </table>
+    </div>
     <p class="text-xs text-stone-400 p-3">${data.length} negocio(s) encontrado(s)${sinSucursal ? ' · filtro: sin sucursal' : ''}</p>`;
 }
 
@@ -5780,7 +5805,7 @@ function fmtPct(n) {
 
 async function loadCierres() {
   const div = document.getElementById('cierresTabla');
-  div.innerHTML = '<p class="text-stone-400">Cargando…</p>';
+  div.innerHTML = '<div class="skeleton" aria-busy="true"></div>';
 
   // Cache empresas+sucursales en paralelo con la query principal
   const empresasP = sb.schema('curated').from('empresas_grupo').select('empresa_id, razon_social');
@@ -5855,6 +5880,7 @@ async function loadCierres() {
   }).join('');
 
   div.innerHTML = `
+    <div class="table-responsive">
     <table class="min-w-full text-sm">
       <thead class="bg-stone-50 text-stone-500 text-xs uppercase tracking-wide">
         <tr>
@@ -5869,6 +5895,7 @@ async function loadCierres() {
       </thead>
       <tbody>${rowsHtml}</tbody>
     </table>
+    </div>
     <p class="text-xs text-stone-400 p-3">${data.length} fila(s) · mes actual · click en una fila para ver el detalle diario</p>`;
 }
 
@@ -5877,7 +5904,7 @@ async function verCierresDetalle(empresaId, sucursalId, empNom, sucNom) {
   const title  = document.getElementById('cierresDetalleTitle');
   const cont   = document.getElementById('cierresDetalleContenido');
   title.textContent = `${empNom}${sucNom ? ' · ' + sucNom : ' · consolidado'} — detalle diario`;
-  cont.innerHTML = '<p class="text-stone-400">Cargando…</p>';
+  cont.innerHTML = '<div class="skeleton" aria-busy="true"></div>';
   drawer.classList.remove('hidden');
   drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
@@ -5905,6 +5932,7 @@ async function verCierresDetalle(empresaId, sucursalId, empNom, sucNom) {
   }
 
   cont.innerHTML = `
+    <div class="table-responsive">
     <table class="min-w-full text-sm">
       <thead class="bg-stone-50 text-stone-500 text-xs uppercase tracking-wide">
         <tr>
@@ -5934,6 +5962,7 @@ async function verCierresDetalle(empresaId, sucursalId, empNom, sucNom) {
         }).join('')}
       </tbody>
     </table>
+    </div>
     <p class="text-xs text-stone-400 p-3">${data.length} día(s) cerrado(s) este mes · ordenado más reciente primero</p>`;
 }
 
@@ -6046,7 +6075,7 @@ function loadPreciosBuscar(val) {
 
 async function loadPrecios() {
   const div = document.getElementById('preciosTabla');
-  div.innerHTML = '<p class="text-stone-400">Cargando…</p>';
+  div.innerHTML = '<div class="skeleton" aria-busy="true"></div>';
 
   // R-AUD-020 fix: cargar permisos ANTES de la query. Default seguro.
   const perm = await _loadPermisosUsuarioActual();
@@ -6167,6 +6196,7 @@ async function loadPrecios() {
 
   div.innerHTML = `
     ${lockNote}
+    <div class="table-responsive">
     <table class="min-w-full text-sm">
       <thead class="bg-stone-50 text-stone-500 text-xs uppercase tracking-wide">
         <tr>
@@ -6181,6 +6211,7 @@ async function loadPrecios() {
       </thead>
       <tbody>${rowsHtml}</tbody>
     </table>
+    </div>
     <p class="text-xs text-stone-400 p-3">${rows.length} fila(s)${verMargenes ? ' · margen rojo &lt;30% · ámbar 30-50% · verde ≥50%' : ''}</p>`;
 }
 
@@ -6238,7 +6269,7 @@ async function initOperativos() {
 
 async function loadOperativosLista() {
   const div = document.getElementById('operativosTabla');
-  div.innerHTML = '<p class="text-stone-400">Cargando…</p>';
+  div.innerHTML = '<div class="skeleton" aria-busy="true"></div>';
 
   const fEmp = document.getElementById('opFiltroEmpresa')?.value || '';
   const fAnio = document.getElementById('opFiltroAnio')?.value || '';
@@ -6294,6 +6325,7 @@ async function loadOperativosLista() {
   </tr>`).join('');
 
   div.innerHTML = `
+    <div class="table-responsive">
     <table class="min-w-full text-sm">
       <thead class="bg-stone-50 text-stone-500 text-xs uppercase tracking-wide">
         <tr>
@@ -6308,6 +6340,7 @@ async function loadOperativosLista() {
       </thead>
       <tbody>${rows}</tbody>
     </table>
+    </div>
     <p class="text-xs text-stone-400 p-3">${data.length} PDF(s) · más recientes primero · top 200</p>`;
 }
 
@@ -6505,7 +6538,7 @@ function renderLineasCot() {
       <td class="py-1 px-2 text-center">
         <button onclick="eliminarLineaCot(${i})"
                 aria-label="Eliminar línea ${i + 1}"
-                class="text-stone-300 hover:text-red-500 text-base leading-none">×</button>
+                class="text-slate-600 hover:text-red-500 text-base leading-none">×</button>
       </td>
     </tr>
   `).join('');
@@ -7559,7 +7592,7 @@ async function initOportunidadesKanban() {
 
 async function loadOportunidadesKanban() {
   const cont = document.getElementById('oppKanban');
-  cont.innerHTML = '<div class="text-stone-400 col-span-full text-center py-6">Cargando…</div>';
+  cont.innerHTML = '<div class="skeleton" aria-busy="true"></div>';
 
   const origenFiltro    = document.getElementById('oppFiltroOrigen')?.value ?? 'rdo';
   const embudoFiltro    = document.getElementById('oppFiltroEmbudo')?.value ?? '';
@@ -7937,7 +7970,7 @@ async function initEntregables() {
 
 async function loadEntregables() {
   const cont = document.getElementById('entMatriz');
-  cont.innerHTML = '<div class="text-stone-400 text-center py-6">Cargando…</div>';
+  cont.innerHTML = '<div class="skeleton" aria-busy="true"></div>';
 
   const { data, error } = await sb.schema('curated').from('vw_entregables_estado_matriz').select('*');
   if (error) { cont.innerHTML = `<div class="text-red-600 p-4">Error: ${escapeHtml(error.message)}</div>`; return; }
@@ -8295,6 +8328,7 @@ async function loadOpsDiarias() {
     document.getElementById('opsPesajesPorSuc').innerHTML = '<span class="text-stone-400 italic">Sin pesajes ese día.</span>';
   } else {
     document.getElementById('opsPesajesPorSuc').innerHTML = `
+      <div class="table-responsive">
       <table class="w-full text-sm"><thead class="text-xs text-stone-500"><tr>
         <th class="text-left py-1">Sucursal</th><th class="text-right py-1">Tickets</th><th class="text-right py-1">Toneladas</th>
       </tr></thead><tbody>${sucs.map(s => `
@@ -8302,6 +8336,7 @@ async function loadOpsDiarias() {
           <td class="text-right py-1">${s.n}</td>
           <td class="text-right py-1">${Number(s.t || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 })} t</td></tr>`).join('')}
       </tbody></table>`;
+      </div>
   }
 
   // Cierres
@@ -9578,6 +9613,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return `<div class="text-center text-stone-400 py-6 text-sm">Sin datos.</div>`;
     }
     return `
+      <div class="table-responsive">
       <table class="w-full text-sm">
         <thead class="bg-stone-50 text-stone-600 text-xs uppercase tracking-wide">
           <tr>${headers.map(h => `<th class="text-left px-3 py-2">${esc(h)}</th>`).join('')}</tr>
@@ -9586,6 +9622,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ${data.map(r => `<tr class="border-t border-stone-100">${rowFn(r).map(c => `<td class="px-3 py-2 text-stone-700">${c == null ? '—' : (String(c).startsWith('<') ? c : esc(c))}</td>`).join('')}</tr>`).join('')}
         </tbody>
       </table>`;
+      </div>
   }
 
   function badge(estado) {
