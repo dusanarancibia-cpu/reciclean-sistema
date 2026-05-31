@@ -417,6 +417,10 @@
             <span class="v4-emoji" aria-hidden="true">🎯</span>
             Oportunidades
           </a>
+          <a href="#" data-v4-tab="comercial" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">💼</span>
+            Comercial (CRM Impulsa)
+          </a>
           <a href="#" data-v4-tab="negocios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">💼</span>
             Negocios
@@ -505,6 +509,10 @@
           <a href="#" data-v4-tab="plan_2026" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
             <span class="v4-emoji" aria-hidden="true">🗳️</span>
             Plan 2026
+          </a>
+          <a href="#" data-v4-tab="gantt" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">📊</span>
+            Gantt Viva
           </a>
         </div>
       </details>
@@ -4739,6 +4747,14 @@ window.loadDiegoAgenda = async function loadDiegoAgenda() {
 
   try {
     const { data: { session } } = await sb.auth.getSession();
+    // Guard pre-login (R-AUD-002): sin sesión, RLS sobre panel.diego_tareas devuelve 42501.
+    // Mostrar placeholder en vez de loguear error confuso en consola.
+    if (!session) {
+      lista.innerHTML = '<div class="text-xs text-slate-400 italic py-4 text-center">Esperando sesión…</div>';
+      if (total) total.textContent = '—';
+      if (sub) sub.textContent = 'Iniciá sesión para ver tu agenda';
+      return;
+    }
     const userEmail = (session?.user?.email || '').toLowerCase();
     const personMatch = _EMAIL_TO_NOMBRE[userEmail] || (userEmail.split('@')[0] || '');
 
