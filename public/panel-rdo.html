@@ -3308,6 +3308,9 @@ async function hydrateSessionAndEnter(authUser) {
 
   document.getElementById('loginContainer').style.display = 'none';
   document.getElementById('appContainer').style.display = 'block';
+  // [PC1-AUDIT F18+F19] FAB Diego visible solo post-login. Antes del login estaba expuesto.
+  const _fabDiegoShow = document.getElementById('diegoFab');
+  if (_fabDiegoShow) _fabDiegoShow.style.display = '';
 
   // D-DIEGO-LEGAL-IA-001 · gate de consentimiento IA al primer login.
   // Si aviso_ia_consentimiento es NULL → mostrar banner.
@@ -3717,6 +3720,9 @@ window.logout = async function() {
   document.getElementById('loginPassword').value = '';
   document.getElementById('appContainer').style.display = 'none';
   document.getElementById('loginContainer').style.display = 'flex';
+  // [PC1-AUDIT F18+F19] FAB Diego oculto en logout (consistencia con guard inicial).
+  const _fabDiegoHide = document.getElementById('diegoFab');
+  if (_fabDiegoHide) _fabDiegoHide.style.display = 'none';
   showSignin();
 };
 
@@ -9278,7 +9284,7 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-<button class="diego-fab" id="diegoFab" type="button" aria-label="Abrir chat Diego">
+<button class="diego-fab" id="diegoFab" type="button" aria-label="Abrir chat Diego" style="display:none">
   <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
   <span class="diego-fab-label">Diego — pregúntame</span>
   <span class="diego-fab-badge hidden" id="diegoFabBadge" role="button" tabindex="0" aria-label="Ver tareas pendientes">0</span>
