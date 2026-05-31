@@ -14,6 +14,10 @@
   <meta name="apple-mobile-web-app-title" content="Gestión REP Chile">
   <meta name="application-name" content="Gestión REP Chile">
   <link rel="stylesheet" href="/tailwind.css">
+  <!-- D-VISUAL-ORO · Inter font (pauta visual oro Reciclean) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
   <!-- DeepSeek ronda 2 perf mobile · preconnect hints CDNs pesadas (gana ~150ms LCP mobile) -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
@@ -104,7 +108,14 @@
     .audio-recorder { border: 1px solid #e5e7eb; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: #fff; }
     .recording { background-color: #ffe4e4; }
     .tab-btn.active { color: #2C5F2D; border-bottom: 2px solid #2C5F2D; }
-    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Calibri, Arial; }
+    /* D-VISUAL-ORO: Inter como font principal (fallback system) */
+    body { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Calibri, Arial; }
+    /* Helpers pauta visual oro Reciclean para Bandeja Precios y futuras tabs */
+    .vo-bg-verde-rec { background-color: #059669 !important; }
+    .vo-bg-verde-rec:hover { background-color: #047857 !important; }
+    .vo-text-verde-rec { color: #059669 !important; }
+    .vo-border-verde-rec { border-color: #059669 !important; }
+    .vo-rounded { border-radius: 6px !important; }
     /* ── Dieguito ── */
     .dieg-dropzone { border: 2px dashed #d6d3d1; border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all .2s; background: #fafaf9; }
     .dieg-dropzone.drag-over { border-color: #2C5F2D; background: #f0fdf4; }
@@ -1466,26 +1477,27 @@
          Click Aprobar → POST /functions/v1/precio-aplicar → abre nueva vigencia atómica.
     ═══════════════════════════════════════════════════════════ -->
     <section id="tabBandejaPrecios" class="tab-content hidden">
+      <!-- D-VISUAL-ORO fix tarea 61941445 (3 gaps): Inter aplicado via body, verde Reciclean #059669, rounded-md -->
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold text-stone-800">📨 Bandeja Precios — propuestas para aprobación</h2>
-        <button onclick="loadBandejaPrecios()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+        <button onclick="loadBandejaPrecios()" class="text-sm vo-text-verde-rec hover:underline">↺ Recargar</button>
       </div>
 
-      <!-- KPI bar -->
+      <!-- KPI bar (rounded-md + verde Reciclean) -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-        <div class="bg-white p-3 rounded shadow-sm">
+        <div class="bg-white p-3 rounded-md shadow-sm">
           <div class="text-xs text-stone-500">Pendientes</div>
           <div id="bpKpiPend" class="text-2xl font-bold text-amber-600">—</div>
         </div>
-        <div class="bg-white p-3 rounded shadow-sm">
+        <div class="bg-white p-3 rounded-md shadow-sm">
           <div class="text-xs text-stone-500">Aplicados hoy</div>
-          <div id="bpKpiHoy" class="text-2xl font-bold text-green-700">—</div>
+          <div id="bpKpiHoy" class="text-2xl font-bold vo-text-verde-rec">—</div>
         </div>
-        <div class="bg-white p-3 rounded shadow-sm">
+        <div class="bg-white p-3 rounded-md shadow-sm">
           <div class="text-xs text-stone-500">Ruta auto</div>
           <div id="bpKpiAuto" class="text-2xl font-bold text-sky-700">—</div>
         </div>
-        <div class="bg-white p-3 rounded shadow-sm">
+        <div class="bg-white p-3 rounded-md shadow-sm">
           <div class="text-xs text-stone-500">Escalados Dusan</div>
           <div id="bpKpiDusan" class="text-2xl font-bold text-red-700">—</div>
         </div>
@@ -1581,7 +1593,7 @@
             <button id="bpBtnAprobar" onclick="bpAprobar()"
                     title="Aplica el precio propuesto · abre nueva vigencia atómica + dispara notificación a Andrea"
                     aria-label="Aprobar y aplicar precio propuesto"
-                    class="bg-green-700 hover:bg-green-800 text-white text-sm px-3 py-1.5 rounded">
+                    class="vo-bg-verde-rec text-white text-sm px-3 py-1.5 vo-rounded font-medium">
               ✓ Aprobar y aplicar
             </button>
             <button id="bpBtnRechazar" onclick="bpRechazar()"
