@@ -14,15 +14,90 @@
   <meta name="apple-mobile-web-app-title" content="Gestión REP Chile">
   <meta name="application-name" content="Gestión REP Chile">
   <link rel="stylesheet" href="/tailwind.css">
+  <!-- DeepSeek ronda 2 perf mobile · preconnect hints CDNs pesadas (gana ~150ms LCP mobile) -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="preconnect" href="https://eknmtsrtfkzroxnovfqn.supabase.co" crossorigin>
+  <link rel="dns-prefetch" href="https://graph.facebook.com">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/page-logger.js"></script>
-  <!-- v4-design F1 · CDNs Chart.js + Leaflet (defer para no bloquear render) -->
+  <!-- v4-design F1 · CDNs Chart.js + Leaflet (defer para no bloquear render)
+       DeepSeek ronda 2: Chart.js cargado 1 sola vez (antes había duplicado L11298 → quitado). -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" media="print" onload="this.media='all'">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-  <!-- D-GANTT-VIVA-001 · Frappe Gantt CDN (PC1 fix 31-may PM: umd.js→min.js · umd.js devuelve 404 en v0.6.1) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.css">
+  <!-- D-GANTT-VIVA-001 · Frappe Gantt CDN (PC1 fix 31-may PM: umd.js→min.js · umd.js devuelve 404 en v0.6.1)
+       DeepSeek ronda 2: CSS con media=print + onload swap (no bloquea first paint mobile). -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.css" media="print" onload="this.media='all'">
   <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.js" defer></script>
+
+  <!-- DeepSeek ronda 2 · Sistema toast global (HTML/CSS puro, sin dep nueva).
+       Uso: showToast('Texto', 'success'|'error'|'info'|'warning', 4000)
+       Andrea/Cony/Dyana ven feedback inmediato en acciones principales. -->
+  <style>
+    .pc-toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+    .pc-toast { background:#fff; border-left:4px solid; border-radius:6px; padding:12px 16px; min-width:240px; max-width:380px;
+                box-shadow:0 4px 12px -2px rgba(0,0,0,.18); font-size:14px; color:#1f2937; display:flex; align-items:flex-start; gap:10px;
+                pointer-events:auto; opacity:0; transform:translateY(8px); transition:opacity .25s ease, transform .25s ease; }
+    .pc-toast.show { opacity:1; transform:translateY(0); }
+    .pc-toast.hide { opacity:0; transform:translateY(8px); }
+    .pc-toast.success { border-left-color:#16a34a; }
+    .pc-toast.success::before { content:'✓'; color:#16a34a; font-weight:700; font-size:18px; }
+    .pc-toast.error { border-left-color:#dc2626; }
+    .pc-toast.error::before { content:'✕'; color:#dc2626; font-weight:700; font-size:18px; }
+    .pc-toast.info { border-left-color:#2563eb; }
+    .pc-toast.info::before { content:'ℹ'; color:#2563eb; font-weight:700; font-size:18px; }
+    .pc-toast.warning { border-left-color:#d97706; }
+    .pc-toast.warning::before { content:'⚠'; color:#d97706; font-weight:700; font-size:18px; }
+    .pc-toast-close { margin-left:auto; cursor:pointer; color:#9ca3af; font-size:18px; line-height:1; background:none; border:0; padding:0 0 0 8px; }
+    .pc-toast-close:hover { color:#374151; }
+    @media (max-width: 640px) { .pc-toast-container { right:12px; left:12px; bottom:12px; }
+                                .pc-toast { max-width:none; } }
+    @media (prefers-reduced-motion: reduce) { .pc-toast { transition:none; } }
+  </style>
+  <script>
+    // DeepSeek ronda 2 · showToast() helper. Llamar desde cualquier handler:
+    //   showToast('Precio aplicado a 87 registros', 'success');
+    //   showToast('Error: usuario sin permisos', 'error', 6000);
+    (function () {
+      let container = null;
+      function getContainer() {
+        if (container) return container;
+        container = document.createElement('div');
+        container.className = 'pc-toast-container';
+        container.setAttribute('role', 'status');
+        container.setAttribute('aria-live', 'polite');
+        document.body.appendChild(container);
+        return container;
+      }
+      window.showToast = function (text, type, duration) {
+        type = type || 'info';
+        duration = duration || 4000;
+        const t = document.createElement('div');
+        t.className = 'pc-toast ' + type;
+        const span = document.createElement('span');
+        span.textContent = String(text || '');
+        span.style.flex = '1';
+        t.appendChild(span);
+        const btn = document.createElement('button');
+        btn.className = 'pc-toast-close';
+        btn.setAttribute('aria-label', 'Cerrar notificación');
+        btn.textContent = '×';
+        btn.onclick = () => removeToast(t);
+        t.appendChild(btn);
+        getContainer().appendChild(t);
+        requestAnimationFrame(() => t.classList.add('show'));
+        setTimeout(() => removeToast(t), duration);
+        return t;
+      };
+      function removeToast(t) {
+        if (!t || !t.parentNode) return;
+        t.classList.remove('show');
+        t.classList.add('hide');
+        setTimeout(() => { if (t.parentNode) t.parentNode.removeChild(t); }, 300);
+      }
+    })();
+  </script>
   <style>
     .app-container { display: none; }
     .login-container { display: flex; }
@@ -1503,10 +1578,16 @@
           </div>
 
           <div class="flex flex-wrap gap-2 mb-3">
-            <button id="bpBtnAprobar" onclick="bpAprobar()" class="bg-green-700 hover:bg-green-800 text-white text-sm px-3 py-1.5 rounded">
+            <button id="bpBtnAprobar" onclick="bpAprobar()"
+                    title="Aplica el precio propuesto · abre nueva vigencia atómica + dispara notificación a Andrea"
+                    aria-label="Aprobar y aplicar precio propuesto"
+                    class="bg-green-700 hover:bg-green-800 text-white text-sm px-3 py-1.5 rounded">
               ✓ Aprobar y aplicar
             </button>
-            <button id="bpBtnRechazar" onclick="bpRechazar()" class="bg-red-100 hover:bg-red-200 text-red-800 text-sm px-3 py-1.5 rounded">
+            <button id="bpBtnRechazar" onclick="bpRechazar()"
+                    title="Marca la propuesta como rechazada · no cambia precio actual"
+                    aria-label="Rechazar propuesta"
+                    class="bg-red-100 hover:bg-red-200 text-red-800 text-sm px-3 py-1.5 rounded">
               ✗ Rechazar
             </button>
           </div>
@@ -3078,7 +3159,7 @@
         <h2 class="text-xl font-bold text-stone-800">📥 Mi Bandeja Personal</h2>
         <div class="flex items-center gap-2 text-sm">
           <span id="miBandejaUserEmail" class="text-stone-500">—</span>
-          <button id="miBandejaRefreshBtn" type="button" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded text-sm font-semibold">↻ Refrescar</button>
+          <button id="miBandejaRefreshBtn" type="button" title="Recarga lista de tus tareas desde el servidor · usá si alguien te asignó algo recién" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded text-sm font-semibold">↻ Refrescar</button>
         </div>
       </div>
 
@@ -3116,7 +3197,7 @@
         <h2 class="text-xl font-bold text-stone-800">🔁 Bucle automático runtime</h2>
         <div class="flex items-center gap-2 text-sm">
           <span id="bucleVivoSemaforo" class="text-xs px-2.5 py-1 rounded-full font-semibold bg-stone-200 text-stone-600">⚪ Cargando…</span>
-          <button id="bucleVivoRefreshBtn" type="button" class="bg-indigo-700 hover:bg-indigo-800 text-white px-3 py-1.5 rounded text-sm font-semibold">↻ Refrescar</button>
+          <button id="bucleVivoRefreshBtn" type="button" title="Re-consulta v_bucle_estado · polling automático cada 10s ya activo en tab visible" class="bg-indigo-700 hover:bg-indigo-800 text-white px-3 py-1.5 rounded text-sm font-semibold">↻ Refrescar</button>
         </div>
       </div>
       <p class="text-xs text-stone-500 mb-4">Polling 10s. Lee <code>panel.v_bucle_estado</code> (mig 157). Solo Dusan/admin.</p>
@@ -3159,7 +3240,7 @@
     <section id="tabDodDashboard" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
         <h2 class="text-xl font-bold text-stone-800">✅ DoD + DORA + SPACE dashboard</h2>
-        <button id="dodRefreshBtn" type="button" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded text-sm font-semibold">↻ Refrescar</button>
+        <button id="dodRefreshBtn" type="button" title="Re-lee schema dod (13 tablas) · catálogo cambia poco, polling manual solamente" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded text-sm font-semibold">↻ Refrescar</button>
       </div>
       <p class="text-xs text-stone-500 mb-4">Esquema <code>dod</code> 13 tablas (mig 153 SPEC-MIGRACION-CAJAS FASE A.1). Solo Dusan/admin.</p>
 
@@ -3208,7 +3289,7 @@
         <h2 class="text-xl font-bold text-stone-800">🎭 Diego Coordinador</h2>
         <div class="flex items-center gap-2 text-sm">
           <span id="diegoCoordKpi" class="text-stone-500">—</span>
-          <button id="diegoCoordRefreshBtn" type="button" class="bg-indigo-700 hover:bg-indigo-800 text-white px-3 py-1.5 rounded text-sm font-semibold">↻ Refrescar</button>
+          <button id="diegoCoordRefreshBtn" type="button" title="Re-consulta las 5 vistas Diego (planificados + histórico + KPI + atascos + métricas) · polling auto cada 30s" class="bg-indigo-700 hover:bg-indigo-800 text-white px-3 py-1.5 rounded text-sm font-semibold">↻ Refrescar</button>
         </div>
       </div>
       <p class="text-xs text-stone-500 mb-4">Supervisión Diego (no mensajero). Vista CEO solo Dusan/admin. Polling 30s.</p>
@@ -4283,7 +4364,9 @@ function setupRecorder() {
       return;
     }
 
-    alert("✅ Audio guardado");
+    // DeepSeek ronda 2 · toast en vez de alert bloqueante
+    if (window.showToast) window.showToast('Audio guardado', 'success');
+    else alert("✅ Audio guardado");
     document.getElementById('audioTitulo').value = '';
     document.getElementById('audioTexto').value = '';
     discardBtn.click();
@@ -10550,6 +10633,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const j = await resp.json();
       if (resp.ok && j.ok) {
         bpMsg(`✓ Aplicado. Nueva vigencia desde ${j.vigencia_desde ?? '—'} a ${fmtCLP(j.precio_venta_clp)}.`, true);
+        // DeepSeek ronda 2 · feedback inmediato Andrea
+        if (window.showToast) window.showToast(`Precio aplicado · ${fmtCLP(j.precio_venta_clp)}`, 'success');
         // Disparar feed Andrea (best-effort, no bloquea)
         try {
           fetch(`${SUPABASE_URL}/functions/v1/notif-precios`, {
@@ -11294,8 +11379,9 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- E360 context menu (D-MISMATCH Mig 035 frontend) -->
 <script src="/js/e360-context-menu.js"></script>
 <script src="/js/mfa-enrollment.js" defer></script>
-<!-- 📈 Plan 2026 · tab Evolución (Bloque C · firmado 2026-05-28) -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+<!-- 📈 Plan 2026 · tab Evolución (Bloque C · firmado 2026-05-28)
+     DeepSeek ronda 2 fix: Chart.js DUPLICADO removido (ya cargado L23 del head).
+     Cargar 2 veces el mismo script desperdicia ~95KB transfer + parse mobile. -->
 <script src="/js/plan-evolucion.js" defer></script>
 
 <!-- R-AUD-042 · Bootstrap tab Estado vivo 4 PCs (PC2 Pablo 2026-05-29 PM) -->
@@ -11684,8 +11770,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
           <div class="flex flex-wrap gap-2 mt-2 pt-2 border-t border-stone-100">
-            ${t.estado !== 'cerrada' ? `<button type="button" class="mi-bandeja-cerrar bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded font-semibold" data-id="${t.id}">✓ Marcar cerrada</button>` : ''}
-            <button type="button" class="mi-bandeja-comentar bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs px-3 py-1.5 rounded" data-id="${t.id}">💬 Comentar</button>
+            ${t.estado !== 'cerrada' ? `<button type="button" class="mi-bandeja-cerrar bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded font-semibold" data-id="${t.id}" title="Marcar la tarea como completada · queda registrada en historial con timestamp">✓ Marcar cerrada</button>` : ''}
+            <button type="button" class="mi-bandeja-comentar bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs px-3 py-1.5 rounded" data-id="${t.id}" title="Agregar nota visible para Dusan y otros · útil cuando algo te bloquea o tenés duda">💬 Comentar</button>
           </div>
         </div>
       `).join('');
@@ -11703,10 +11789,13 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const { data, error } = await sb.rpc('cerrar_mi_tarea', { p_id: id, p_notas: notas });
       if (error) throw error;
-      alert(`✓ Tarea cerrada: ${data.titulo}`);
+      // DeepSeek ronda 2 · toast en lugar de alert bloqueante
+      if (window.showToast) window.showToast(`Tarea cerrada: ${data.titulo}`, 'success');
+      else alert(`✓ Tarea cerrada: ${data.titulo}`);
       refrescar();
     } catch (e) {
-      alert('Error cerrando tarea: ' + (e.message || e));
+      if (window.showToast) window.showToast('Error cerrando tarea: ' + (e.message || e), 'error', 6000);
+      else alert('Error cerrando tarea: ' + (e.message || e));
     }
   }
 
@@ -11716,9 +11805,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const { error } = await sb.rpc('comentar_mi_tarea', { p_id: id, p_comentario: texto.trim() });
       if (error) throw error;
+      if (window.showToast) window.showToast('Comentario agregado', 'success');
       refrescar();
     } catch (e) {
-      alert('Error comentando: ' + (e.message || e));
+      if (window.showToast) window.showToast('Error comentando: ' + (e.message || e), 'error', 6000);
+      else alert('Error comentando: ' + (e.message || e));
     }
   }
 
