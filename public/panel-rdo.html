@@ -472,6 +472,11 @@
             <span class="v4-emoji" aria-hidden="true">📥</span>
             Bandeja Diego
           </a>
+          <a href="#" data-v4-tab="mi_bandeja" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📥</span>
+            <span>Mi Bandeja</span>
+            <span id="v4-mi-bandeja-badge" class="ml-auto text-[10px] font-bold bg-emerald-100 text-emerald-700 rounded-full px-2 py-0.5 hidden"></span>
+          </a>
           <a href="#" data-v4-tab="mi_memoria" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🧠</span>
             Mi memoria
@@ -686,6 +691,7 @@
         <button data-tab="comunicados" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabComunicados">🎧 Comunicados</button>
         <button data-tab="manual" class="tab-btn py-3 px-3 text-stone-600"              role="tab" aria-selected="false" aria-controls="tabManual">📖 Manual</button>
         <button data-tab="mi_memoria" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabMiMemoria">🧠 Mi memoria</button>
+        <button data-tab="mi_bandeja" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabMiBandeja">📥 Mi Bandeja</button>
         <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabRdo">📈 RDO Resumen</button>
         <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
         <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCotizador">📋 Cotizador</button>
@@ -3043,6 +3049,44 @@
       </style>
     </section>
 
+    <!-- D-DIEGO-PANEL-INTEGRADO-001 F11 F1 · Tab Mi Bandeja Personal (PC2 Pablo 2026-06-01 mig 160) -->
+    <section id="tabMiBandeja" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">📥 Mi Bandeja Personal</h2>
+        <div class="flex items-center gap-2 text-sm">
+          <span id="miBandejaUserEmail" class="text-stone-500">—</span>
+          <button id="miBandejaRefreshBtn" type="button" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded text-sm font-semibold">↻ Refrescar</button>
+        </div>
+      </div>
+
+      <div class="bg-white p-3 rounded-lg shadow-sm mb-3 flex flex-wrap items-end gap-3 text-sm">
+        <label class="flex items-center gap-2">
+          <input type="checkbox" id="miBandejaSoloAbiertas" checked class="rounded">
+          <span class="text-stone-600">Solo abiertas</span>
+        </label>
+        <div>
+          <label for="miBandejaPrioridad" class="block text-xs text-stone-500 mb-1">Prioridad</label>
+          <select id="miBandejaPrioridad" class="border border-stone-300 rounded px-2 py-1 text-sm">
+            <option value="">Todas</option>
+            <option value="critica">🚨 Crítica</option>
+            <option value="alta">🔴 Alta</option>
+            <option value="media">🟡 Media</option>
+            <option value="baja">🟢 Baja</option>
+          </select>
+        </div>
+        <div id="miBandejaResumen" class="ml-auto text-xs text-stone-500">—</div>
+      </div>
+
+      <div id="miBandejaLista" class="space-y-3">
+        <div class="text-sm text-stone-500 p-6 text-center bg-white rounded-lg">Cargando tus tareas…</div>
+      </div>
+
+      <div class="mt-4 text-xs text-stone-400 text-center">
+        Tu bandeja muestra solo TUS tareas. RLS Supabase garantiza privacidad.
+        Comentarios y cierres quedan registrados en <code>panel.tareas_personales</code>.
+      </div>
+    </section>
+
     <!-- R-AUD-032 + R-AUD-033 · Tab Cuestionario Plan 2026 (PC2 Pablo 2026-05-31 tarea 6dc97ab6) -->
     <section id="tabPlan2026" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3">
@@ -3906,6 +3950,7 @@ const TAB_SECTION_MAP = {
   bandeja_dieg: 'tabBandejaDiego',
   bandeja_precios: 'tabBandejaPrecios',
   mi_memoria: 'tabMiMemoria',
+  mi_bandeja: 'tabMiBandeja',
   ops_diarias: 'tabOpsDiarias'
 };
 function setupTabs() {
@@ -11307,6 +11352,164 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById(id)?.addEventListener('change', refrescar);
     });
     document.querySelectorAll('button[data-tab]:not([data-tab="gantt"])').forEach(b => b.addEventListener('click', stopPolling));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+<!-- D-DIEGO-PANEL-INTEGRADO-001 F11 F1 · Bootstrap tab Mi Bandeja (PC2 Pablo 2026-06-01 mig 160) -->
+<script>
+(function () {
+  let cargandoBandeja = false;
+
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+
+  function prioridadBadge(p) {
+    const colors = {
+      critica: 'bg-red-100 text-red-800',
+      alta:    'bg-orange-100 text-orange-800',
+      media:   'bg-yellow-100 text-yellow-800',
+      baja:    'bg-emerald-100 text-emerald-800'
+    };
+    const icons = { critica:'🚨', alta:'🔴', media:'🟡', baja:'🟢' };
+    return `<span class="text-xs px-2 py-0.5 rounded font-semibold ${colors[p] || 'bg-stone-100 text-stone-700'}">${icons[p] || ''} ${p}</span>`;
+  }
+
+  function plazoBadge(diasAlPlazo, plazo) {
+    if (plazo == null) return '<span class="text-xs text-stone-400">sin plazo</span>';
+    if (diasAlPlazo == null) return '';
+    if (diasAlPlazo < 0)  return `<span class="text-xs px-2 py-0.5 bg-red-100 text-red-800 rounded font-semibold">⚠️ atrasada ${-diasAlPlazo}d</span>`;
+    if (diasAlPlazo === 0) return `<span class="text-xs px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-semibold">⏰ vence hoy</span>`;
+    if (diasAlPlazo <= 3)  return `<span class="text-xs px-2 py-0.5 bg-amber-50 text-amber-700 rounded">en ${diasAlPlazo}d</span>`;
+    return `<span class="text-xs text-stone-500">en ${diasAlPlazo}d</span>`;
+  }
+
+  function getUserEmail() {
+    try {
+      const lsSes = JSON.parse(localStorage.getItem('rf_session') || 'null');
+      if (lsSes?.email) return lsSes.email;
+    } catch {}
+    try { return window.currentUser?.email || null; } catch {}
+    return null;
+  }
+
+  async function refrescar() {
+    if (cargandoBandeja) return;
+    cargandoBandeja = true;
+    const lista = document.getElementById('miBandejaLista');
+    const resumen = document.getElementById('miBandejaResumen');
+    const userEl = document.getElementById('miBandejaUserEmail');
+    const badge = document.getElementById('v4-mi-bandeja-badge');
+    const soloAbiertas = document.getElementById('miBandejaSoloAbiertas')?.checked ?? true;
+    const prioridad = document.getElementById('miBandejaPrioridad')?.value || null;
+
+    try {
+      const emailNow = (await sb.auth.getSession())?.data?.session?.user?.email || getUserEmail();
+      if (userEl) userEl.textContent = emailNow || '(sin sesión)';
+
+      const { data, error } = await sb.rpc('mis_tareas_personales', {
+        p_solo_abiertas: soloAbiertas,
+        p_prioridad: prioridad
+      });
+
+      if (error) throw error;
+
+      const rows = data || [];
+      const abiertasCount = rows.filter(r => r.estado !== 'cerrada').length;
+      const criticasCount = rows.filter(r => (r.prioridad === 'critica' || r.prioridad === 'alta') && r.estado !== 'cerrada').length;
+      const atrasadas = rows.filter(r => r.dias_al_plazo != null && r.dias_al_plazo < 0 && r.estado !== 'cerrada').length;
+
+      if (resumen) resumen.innerHTML = `<strong>${rows.length}</strong> tareas · <span class="text-red-700 font-semibold">${criticasCount} críticas/altas</span> · <span class="text-amber-700">${atrasadas} atrasadas</span>`;
+
+      if (badge) {
+        if (abiertasCount > 0) {
+          badge.textContent = abiertasCount;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+
+      if (rows.length === 0) {
+        lista.innerHTML = '<div class="bg-white rounded-lg shadow-sm p-8 text-center text-stone-500">🎉 No tienes tareas abiertas. ¡Buen trabajo!</div>';
+        return;
+      }
+
+      lista.innerHTML = rows.map(t => `
+        <div class="bg-white rounded-lg shadow-sm border border-stone-200 p-4" data-tarea-id="${t.id}">
+          <div class="flex items-start justify-between gap-3 mb-2">
+            <div class="flex-1 min-w-0">
+              <h3 class="font-semibold text-stone-800 mb-1">${escapeHtml(t.titulo)}</h3>
+              <div class="flex flex-wrap items-center gap-2 mb-2">
+                ${prioridadBadge(t.prioridad)}
+                ${plazoBadge(t.dias_al_plazo, t.plazo)}
+                <span class="text-xs text-stone-500">estado: <strong>${t.estado}</strong></span>
+                ${t.firmada_por ? `<span class="text-xs text-stone-500">firmada por: ${escapeHtml(t.firmada_por)}</span>` : ''}
+                ${t.comentarios_count > 0 ? `<span class="text-xs text-stone-500">💬 ${t.comentarios_count}</span>` : ''}
+              </div>
+              ${t.descripcion ? `<p class="text-sm text-stone-600 mb-2">${escapeHtml(t.descripcion)}</p>` : ''}
+              ${t.bloqueada_por ? `<p class="text-xs text-amber-700 mb-2">⛔ Bloqueada por: ${escapeHtml(t.bloqueada_por)}</p>` : ''}
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-2 pt-2 border-t border-stone-100">
+            ${t.estado !== 'cerrada' ? `<button type="button" class="mi-bandeja-cerrar bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded font-semibold" data-id="${t.id}">✓ Marcar cerrada</button>` : ''}
+            <button type="button" class="mi-bandeja-comentar bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs px-3 py-1.5 rounded" data-id="${t.id}">💬 Comentar</button>
+          </div>
+        </div>
+      `).join('');
+
+    } catch (e) {
+      console.error('[MiBandeja] fetch error:', e);
+      lista.innerHTML = `<div class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">Error cargando tus tareas: ${escapeHtml(e.message || e)}. Verificá tu sesión.</div>`;
+    } finally {
+      cargandoBandeja = false;
+    }
+  }
+
+  async function cerrarTarea(id) {
+    const notas = prompt('Notas de cierre (opcional):', '') || null;
+    try {
+      const { data, error } = await sb.rpc('cerrar_mi_tarea', { p_id: id, p_notas: notas });
+      if (error) throw error;
+      alert(`✓ Tarea cerrada: ${data.titulo}`);
+      refrescar();
+    } catch (e) {
+      alert('Error cerrando tarea: ' + (e.message || e));
+    }
+  }
+
+  async function comentarTarea(id) {
+    const texto = prompt('Tu comentario:');
+    if (!texto || !texto.trim()) return;
+    try {
+      const { error } = await sb.rpc('comentar_mi_tarea', { p_id: id, p_comentario: texto.trim() });
+      if (error) throw error;
+      refrescar();
+    } catch (e) {
+      alert('Error comentando: ' + (e.message || e));
+    }
+  }
+
+  function init() {
+    document.querySelector('button[data-tab="mi_bandeja"]')?.addEventListener('click', () => setTimeout(refrescar, 100));
+    document.querySelector('a[data-v4-tab="mi_bandeja"]')?.addEventListener('click', () => setTimeout(refrescar, 100));
+    document.getElementById('miBandejaRefreshBtn')?.addEventListener('click', refrescar);
+    document.getElementById('miBandejaSoloAbiertas')?.addEventListener('change', refrescar);
+    document.getElementById('miBandejaPrioridad')?.addEventListener('change', refrescar);
+    document.addEventListener('click', (e) => {
+      const cerrarBtn = e.target.closest('.mi-bandeja-cerrar');
+      if (cerrarBtn) { cerrarTarea(cerrarBtn.dataset.id); return; }
+      const comBtn = e.target.closest('.mi-bandeja-comentar');
+      if (comBtn) { comentarTarea(comBtn.dataset.id); return; }
+    });
+    refrescar().catch(() => {});
   }
 
   if (document.readyState === 'loading') {
