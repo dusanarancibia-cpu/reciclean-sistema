@@ -511,6 +511,15 @@
             <span class="v4-emoji" aria-hidden="true">🟢</span>
             Estado vivo 4 PCs
           </a>
+          <a href="#" data-v4-tab="bucle_vivo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">🔁</span>
+            Bucle vivo
+            <span id="v4-bucle-vivo-badge" class="ml-auto text-[10px] font-bold rounded-full px-2 py-0.5 hidden"></span>
+          </a>
+          <a href="#" data-v4-tab="dod_dashboard" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">✅</span>
+            DoD dashboard
+          </a>
           <a href="#" data-v4-tab="diego_coord" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
             <span class="v4-emoji" aria-hidden="true">🎭</span>
             Diego Coordinador
@@ -714,6 +723,8 @@
         <button data-tab="comercial"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabComercial">💼 Comercial</button>
         <button data-tab="pcs_vivo"       class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPcsVivo">🟢 Estado vivo 4 PCs</button>
         <button data-tab="diego_coord"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabDiegoCoord">🎭 Diego Coordinador</button>
+        <button data-tab="bucle_vivo"     class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabBucleVivo">🔁 Bucle vivo</button>
+        <button data-tab="dod_dashboard"  class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabDodDashboard">✅ DoD dashboard</button>
         <button data-tab="gantt"          class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabGantt">📊 Gantt Viva</button>
         <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabAdmin">⚙️ Admin</button>
       </div>
@@ -3092,6 +3103,96 @@
       </div>
     </section>
 
+    <!-- SPEC-BUCLE-AUTOMATICO-RUNTIME-V1 FASE 3 · Tab Bucle vivo (PC2 Pablo 2026-06-02 mig 157+163) - SOLO Dusan/admin -->
+    <section id="tabBucleVivo" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🔁 Bucle automático runtime</h2>
+        <div class="flex items-center gap-2 text-sm">
+          <span id="bucleVivoSemaforo" class="text-xs px-2.5 py-1 rounded-full font-semibold bg-stone-200 text-stone-600">⚪ Cargando…</span>
+          <button id="bucleVivoRefreshBtn" type="button" class="bg-indigo-700 hover:bg-indigo-800 text-white px-3 py-1.5 rounded text-sm font-semibold">↻ Refrescar</button>
+        </div>
+      </div>
+      <p class="text-xs text-stone-500 mb-4">Polling 10s. Lee <code>panel.v_bucle_estado</code> (mig 157). Solo Dusan/admin.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="bg-white rounded-lg shadow-sm p-4">
+          <div class="text-xs text-stone-500 uppercase tracking-wider mb-1">Estado bucle</div>
+          <div class="text-lg font-semibold text-stone-800" id="bucleVivoEstado">—</div>
+          <div class="text-xs text-stone-500 mt-1" id="bucleVivoUltimaVerif">—</div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm p-4">
+          <div class="text-xs text-stone-500 uppercase tracking-wider mb-1">Acciones hoy</div>
+          <div class="text-2xl font-bold text-stone-800" id="bucleVivoAccionesTotal">0</div>
+          <div class="text-xs text-stone-500"><span id="bucleVivoBloqueadas">0</span> bloqueadas · <span id="bucleVivoFailOpen">0</span> fail-open</div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm p-4">
+          <div class="text-xs text-stone-500 uppercase tracking-wider mb-1">Score promedio PCs (24h)</div>
+          <ul id="bucleVivoScorePcs" class="text-sm space-y-0.5"><li class="text-stone-400 italic">sin hits 24h</li></ul>
+        </div>
+      </div>
+
+      <h3 class="font-semibold text-stone-700 mb-2">Reglas con incidencias (24h)</h3>
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-stone-50 text-stone-500 text-xs uppercase tracking-wider">
+            <tr><th class="text-left py-2 px-3">Detector</th><th class="text-right py-2 px-3">Hits</th><th class="text-right py-2 px-3">Críticos</th><th class="text-left py-2 px-3">PCs afectados</th></tr>
+          </thead>
+          <tbody id="bucleVivoReglasTbody">
+            <tr><td colspan="4" class="text-stone-400 italic py-3 text-center">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <small id="bucleVivoConsultadoEn" class="block mt-3 text-xs text-stone-400">—</small>
+    </section>
+
+    <!-- esquema-dod-dora-space-v1 · Tab DoD dashboard (PC2 Pablo 2026-06-02 mig 153) - SOLO Dusan/admin -->
+    <section id="tabDodDashboard" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">✅ DoD + DORA + SPACE dashboard</h2>
+        <button id="dodRefreshBtn" type="button" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded text-sm font-semibold">↻ Refrescar</button>
+      </div>
+      <p class="text-xs text-stone-500 mb-4">Esquema <code>dod</code> 13 tablas (mig 153 SPEC-MIGRACION-CAJAS FASE A.1). Solo Dusan/admin.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+        <div class="bg-white rounded-lg shadow-sm p-4 text-center">
+          <div class="text-xs text-stone-500 uppercase tracking-wider mb-1">Equipos</div>
+          <div class="text-3xl font-bold text-stone-800" id="dodEquiposCount">—</div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm p-4 text-center">
+          <div class="text-xs text-stone-500 uppercase tracking-wider mb-1">Proyectos activos</div>
+          <div class="text-3xl font-bold text-stone-800" id="dodProyectosCount">—</div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm p-4 text-center">
+          <div class="text-xs text-stone-500 uppercase tracking-wider mb-1">Criterios DoD</div>
+          <div class="text-3xl font-bold text-stone-800" id="dodCriteriosCount">—</div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm p-4 text-center">
+          <div class="text-xs text-stone-500 uppercase tracking-wider mb-1">Métricas catálogo</div>
+          <div class="text-3xl font-bold text-stone-800" id="dodMetricasCount">—</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white rounded-lg shadow-sm p-4">
+          <h3 class="font-semibold text-stone-700 mb-2">Etapas SDLC + criterios entrada/salida</h3>
+          <div id="dodEtapasLista" class="space-y-2 text-sm">
+            <div class="text-stone-400 italic">Cargando…</div>
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm p-4">
+          <h3 class="font-semibold text-stone-700 mb-2">Métricas calidad por categoría</h3>
+          <div id="dodMetricasLista" class="space-y-2 text-sm">
+            <div class="text-stone-400 italic">Cargando…</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-900">
+        💡 Catálogo cargado, sin mediciones aún. Para registrar resultados: <code>INSERT INTO dod.resultados_metricas</code> o <code>dod.metricas_dora</code>. Próxima iteración: integrar con cola_construccion para DoD compliance automática.
+      </div>
+    </section>
+
     <!-- D-DIEGO-PANEL-INTEGRADO-001 F11 F3 · Tab Diego Coordinador (PC2 Pablo 2026-06-01 mig 162) - SOLO Dusan/admin -->
     <section id="tabDiegoCoord" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -4030,6 +4131,8 @@ const TAB_SECTION_MAP = {
   mi_memoria: 'tabMiMemoria',
   mi_bandeja: 'tabMiBandeja',
   diego_coord: 'tabDiegoCoord',
+  bucle_vivo: 'tabBucleVivo',
+  dod_dashboard: 'tabDodDashboard',
   ops_diarias: 'tabOpsDiarias',
   // PC1 fix 31-may PM: tabs con `_` o dígito que rompen el auto-CamelCase
   // (pcs_vivo→tabPcs_vivo ❌ real=tabPcsVivo · plan_2026→tabPlan_2026 ❌ real=tabPlan2026)
@@ -11602,6 +11705,168 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     init();
   }
+})();
+</script>
+
+<!-- SPEC-BUCLE-AUTOMATICO-RUNTIME-V1 FASE 3 · Bootstrap tab Bucle vivo (PC2 Pablo 2026-06-02 mig 157+163) -->
+<script>
+(function () {
+  const POLL_MS = 10_000;
+  let pollTimer = null;
+
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+  function semaforoChip(s) {
+    const m = { verde:['🟢 Cerrado','bg-emerald-100 text-emerald-800'],
+                amarillo:['🟡 Incidencias','bg-amber-100 text-amber-800'],
+                rojo:['🔴 Crítico','bg-red-100 text-red-800'],
+                gris:['⚪ Sin datos','bg-stone-200 text-stone-600'] };
+    return m[s || 'gris'] || m.gris;
+  }
+
+  async function refrescar() {
+    try {
+      const { data, error } = await sb.from('v_bucle_estado').select('*').single();
+      if (error) throw error;
+      const sem = semaforoChip(data.semaforo_global);
+      const semEl = document.getElementById('bucleVivoSemaforo');
+      if (semEl) { semEl.textContent = sem[0]; semEl.className = 'text-xs px-2.5 py-1 rounded-full font-semibold ' + sem[1]; }
+
+      const badge = document.getElementById('v4-bucle-vivo-badge');
+      if (badge) {
+        if (data.semaforo_global === 'rojo' || data.semaforo_global === 'amarillo') {
+          badge.textContent = data.semaforo_global === 'rojo' ? '!' : '·';
+          badge.className = 'ml-auto text-[10px] font-bold rounded-full px-2 py-0.5 ' +
+            (data.semaforo_global === 'rojo' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+
+      document.getElementById('bucleVivoEstado').textContent = data.bucle_cerrado
+        ? `CERRADO (${data.reglas_aprobadas}/${data.reglas_evaluadas} reglas)`
+        : `ABIERTO (${data.reglas_falladas} falladas)`;
+      document.getElementById('bucleVivoUltimaVerif').textContent = data.ultima_verificacion
+        ? 'Última verificación: ' + new Date(data.ultima_verificacion).toLocaleString('es-CL')
+        : 'Sin verificaciones';
+      document.getElementById('bucleVivoAccionesTotal').textContent = data.acciones_hoy || 0;
+      document.getElementById('bucleVivoBloqueadas').textContent = data.acciones_bloqueadas_hoy || 0;
+      document.getElementById('bucleVivoFailOpen').textContent = data.acciones_fail_open_hoy || 0;
+
+      const scoreEl = document.getElementById('bucleVivoScorePcs');
+      const scorePcs = data.score_promedio_pcs || {};
+      const entries = Object.entries(scorePcs);
+      scoreEl.innerHTML = entries.length
+        ? entries.map(([pc, s]) => `<li><strong class="text-stone-700">${escapeHtml(pc)}</strong>: <span class="${s >= 70 ? 'text-red-700 font-bold' : s >= 50 ? 'text-amber-700' : 'text-stone-600'}">${s}</span></li>`).join('')
+        : '<li class="text-stone-400 italic">sin hits 24h</li>';
+
+      const reglasTbody = document.getElementById('bucleVivoReglasTbody');
+      const reglas = data.reglas_con_incidencias || [];
+      reglasTbody.innerHTML = reglas.length
+        ? reglas.map(r => `<tr class="border-t border-stone-100"><td class="py-2 px-3"><code class="text-xs">${escapeHtml(r.detector)}</code></td><td class="text-right py-2 px-3">${r.hits}</td><td class="text-right py-2 px-3">${r.criticos > 0 ? '<strong class="text-red-700">' + r.criticos + '</strong>' : '0'}</td><td class="py-2 px-3 text-xs text-stone-600">${escapeHtml(r.pcs || '—')}</td></tr>`).join('')
+        : '<tr><td colspan="4" class="text-stone-400 italic py-3 text-center">Sin incidencias últimas 24h ✅</td></tr>';
+
+      document.getElementById('bucleVivoConsultadoEn').textContent = 'Snapshot a las ' + new Date(data.consultado_en).toLocaleTimeString('es-CL');
+    } catch (e) {
+      console.error('[BucleVivo]', e);
+      const semEl = document.getElementById('bucleVivoSemaforo');
+      if (semEl) { semEl.textContent = '⚪ Error'; semEl.className = 'text-xs px-2.5 py-1 rounded-full font-semibold bg-stone-200 text-stone-600'; }
+      document.getElementById('bucleVivoEstado').textContent = 'Error: ' + (e.message || e);
+    }
+  }
+
+  function start() { stop(); refrescar(); pollTimer = setInterval(refrescar, POLL_MS); }
+  function stop()  { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
+  function init() {
+    document.querySelector('button[data-tab="bucle_vivo"]')?.addEventListener('click', start);
+    document.querySelector('a[data-v4-tab="bucle_vivo"]')?.addEventListener('click', start);
+    document.querySelectorAll('button[data-tab]:not([data-tab="bucle_vivo"])').forEach(b => b.addEventListener('click', stop));
+    document.querySelectorAll('a[data-v4-tab]:not([data-v4-tab="bucle_vivo"])').forEach(a => a.addEventListener('click', stop));
+    document.getElementById('bucleVivoRefreshBtn')?.addEventListener('click', refrescar);
+    refrescar().catch(() => {});  // pre-cargar badge
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+
+<!-- esquema-dod-dora-space-v1 · Bootstrap tab DoD dashboard (PC2 Pablo 2026-06-02 mig 153) -->
+<script>
+(function () {
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+
+  async function refrescar() {
+    try {
+      const [equipos, proyectos, criterios, metricas, etapas, criteriosEs] = await Promise.all([
+        sb.schema('dod').from('equipos').select('id', { count: 'exact', head: true }),
+        sb.schema('dod').from('proyectos').select('id', { count: 'exact', head: true }).eq('estado', 'activo'),
+        sb.schema('dod').from('criterios_generales').select('id', { count: 'exact', head: true }).eq('activo', true),
+        sb.schema('dod').from('metricas_calidad').select('id, nombre, categoria, unidad, umbral_minimo, umbral_maximo, direccion_optima').eq('activo', true).order('categoria').order('nombre'),
+        sb.schema('dod').from('etapas_ciclo_vida').select('id, nombre, orden, descripcion').order('orden'),
+        sb.schema('dod').from('criterios_entrada_salida').select('id, etapa_id, tipo, descripcion, es_obligatorio')
+      ]);
+
+      document.getElementById('dodEquiposCount').textContent = equipos.count ?? '—';
+      document.getElementById('dodProyectosCount').textContent = proyectos.count ?? '—';
+      document.getElementById('dodCriteriosCount').textContent = criterios.count ?? '—';
+      document.getElementById('dodMetricasCount').textContent = metricas.data?.length ?? '—';
+
+      // Etapas con sus criterios
+      const etapasEl = document.getElementById('dodEtapasLista');
+      const etapasRows = etapas.data || [];
+      const criteriosEsRows = criteriosEs.data || [];
+      if (!etapasRows.length) {
+        etapasEl.innerHTML = '<div class="text-stone-400 italic">Sin etapas configuradas</div>';
+      } else {
+        etapasEl.innerHTML = etapasRows.map(e => {
+          const entradas = criteriosEsRows.filter(c => c.etapa_id === e.id && c.tipo === 'entrada');
+          const salidas = criteriosEsRows.filter(c => c.etapa_id === e.id && c.tipo === 'salida');
+          return `<div class="border border-stone-200 rounded p-2">
+            <div class="font-semibold text-stone-800 text-sm">${escapeHtml(e.nombre)}</div>
+            <div class="text-xs text-stone-500 mb-1">${escapeHtml(e.descripcion || '')}</div>
+            ${entradas.length ? `<div class="text-xs"><strong class="text-blue-700">entrada (${entradas.length}):</strong> ${entradas.map(c => escapeHtml(c.descripcion)).join(' · ')}</div>` : ''}
+            ${salidas.length ? `<div class="text-xs"><strong class="text-emerald-700">salida (${salidas.length}):</strong> ${salidas.map(c => escapeHtml(c.descripcion)).join(' · ')}</div>` : ''}
+          </div>`;
+        }).join('');
+      }
+
+      // Métricas por categoría
+      const metEl = document.getElementById('dodMetricasLista');
+      const metRows = metricas.data || [];
+      const porCat = {};
+      metRows.forEach(m => { (porCat[m.categoria] = porCat[m.categoria] || []).push(m); });
+      const catEmoji = { codigo:'💻', sistema:'⚙️', producto:'📦', proceso:'🔄' };
+      metEl.innerHTML = Object.entries(porCat).map(([cat, ms]) => `
+        <div class="border border-stone-200 rounded p-2">
+          <div class="font-semibold text-stone-700 text-sm mb-1">${catEmoji[cat] || ''} ${cat} (${ms.length})</div>
+          <ul class="text-xs space-y-0.5">
+            ${ms.map(m => {
+              const umbralTxt = m.direccion_optima === 'mayor_mejor' && m.umbral_minimo != null
+                ? `≥ ${m.umbral_minimo} ${m.unidad}`
+                : m.direccion_optima === 'menor_mejor' && m.umbral_maximo != null
+                  ? `≤ ${m.umbral_maximo} ${m.unidad}`
+                  : 'sin umbral';
+              return `<li><strong>${escapeHtml(m.nombre)}</strong> · <span class="text-stone-500">${umbralTxt}</span></li>`;
+            }).join('')}
+          </ul>
+        </div>`).join('') || '<div class="text-stone-400 italic">Sin métricas</div>';
+    } catch (e) {
+      console.error('[DoD]', e);
+      document.getElementById('dodEtapasLista').innerHTML = `<div class="text-red-600 text-sm">Error: ${escapeHtml(e.message || e)}</div>`;
+    }
+  }
+
+  function init() {
+    document.querySelector('button[data-tab="dod_dashboard"]')?.addEventListener('click', refrescar);
+    document.querySelector('a[data-v4-tab="dod_dashboard"]')?.addEventListener('click', refrescar);
+    document.getElementById('dodRefreshBtn')?.addEventListener('click', refrescar);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
 </script>
 
