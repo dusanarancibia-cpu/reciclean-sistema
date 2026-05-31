@@ -511,6 +511,10 @@
             <span class="v4-emoji" aria-hidden="true">🟢</span>
             Estado vivo 4 PCs
           </a>
+          <a href="#" data-v4-tab="diego_coord" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">🎭</span>
+            Diego Coordinador
+          </a>
           <a href="#" data-v4-tab="plan_2026" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
             <span class="v4-emoji" aria-hidden="true">🗳️</span>
             Plan 2026
@@ -709,6 +713,7 @@
         <button data-tab="ops_diarias"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabOpsDiarias">🌅 Operaciones Día</button>
         <button data-tab="comercial"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabComercial">💼 Comercial</button>
         <button data-tab="pcs_vivo"       class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPcsVivo">🟢 Estado vivo 4 PCs</button>
+        <button data-tab="diego_coord"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabDiegoCoord">🎭 Diego Coordinador</button>
         <button data-tab="gantt"          class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabGantt">📊 Gantt Viva</button>
         <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabAdmin">⚙️ Admin</button>
       </div>
@@ -3087,6 +3092,79 @@
       </div>
     </section>
 
+    <!-- D-DIEGO-PANEL-INTEGRADO-001 F11 F3 · Tab Diego Coordinador (PC2 Pablo 2026-06-01 mig 162) - SOLO Dusan/admin -->
+    <section id="tabDiegoCoord" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🎭 Diego Coordinador</h2>
+        <div class="flex items-center gap-2 text-sm">
+          <span id="diegoCoordKpi" class="text-stone-500">—</span>
+          <button id="diegoCoordRefreshBtn" type="button" class="bg-indigo-700 hover:bg-indigo-800 text-white px-3 py-1.5 rounded text-sm font-semibold">↻ Refrescar</button>
+        </div>
+      </div>
+      <p class="text-xs text-stone-500 mb-4">Supervisión Diego (no mensajero). Vista CEO solo Dusan/admin. Polling 30s.</p>
+
+      <!-- KPI Banner -->
+      <div id="diegoCoordKpiBanner" class="bg-white rounded-lg shadow-sm p-4 mb-4 border-l-4 border-stone-300">
+        <div class="text-xs text-stone-500 uppercase tracking-wider mb-1">🔄 Ciclo cerrado (7d)</div>
+        <div class="text-3xl font-bold text-stone-800" id="diegoCoordKpiPct">—</div>
+        <div class="text-xs text-stone-500" id="diegoCoordKpiDetalle">Cargando…</div>
+      </div>
+
+      <!-- 5 secciones en grid 2 columnas (responsive 1 col en mobile) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        <!-- 📤 Avisos planificados -->
+        <div class="bg-white rounded-lg shadow-sm p-4">
+          <h3 class="font-semibold text-stone-700 mb-2">📤 Avisos planificados próximas 12h</h3>
+          <div id="diegoCoordPlanificados" class="space-y-2 max-h-72 overflow-y-auto">
+            <div class="text-xs text-stone-400 italic">Cargando…</div>
+          </div>
+        </div>
+
+        <!-- 📨 Histórico -->
+        <div class="bg-white rounded-lg shadow-sm p-4">
+          <h3 class="font-semibold text-stone-700 mb-2">📨 Histórico avisos 7d</h3>
+          <div id="diegoCoordHistorico" class="space-y-2 max-h-72 overflow-y-auto">
+            <div class="text-xs text-stone-400 italic">Cargando…</div>
+          </div>
+        </div>
+
+        <!-- ⚠️ Atascos -->
+        <div class="bg-white rounded-lg shadow-sm p-4">
+          <h3 class="font-semibold text-stone-700 mb-2">⚠️ Atascos en bandejas</h3>
+          <div id="diegoCoordAtascos" class="space-y-2 max-h-72 overflow-y-auto">
+            <div class="text-xs text-stone-400 italic">Cargando…</div>
+          </div>
+        </div>
+
+        <!-- 📊 Métricas semanales -->
+        <div class="bg-white rounded-lg shadow-sm p-4">
+          <h3 class="font-semibold text-stone-700 mb-2">📊 Métricas 7d por persona</h3>
+          <div class="overflow-x-auto max-h-72 overflow-y-auto">
+            <table class="w-full text-xs">
+              <thead class="text-stone-500 border-b border-stone-200">
+                <tr>
+                  <th class="text-left py-1 px-1">Persona</th>
+                  <th class="text-right py-1 px-1">Creadas</th>
+                  <th class="text-right py-1 px-1">Cerradas</th>
+                  <th class="text-right py-1 px-1">% panel</th>
+                  <th class="text-right py-1 px-1">⏱ hr</th>
+                </tr>
+              </thead>
+              <tbody id="diegoCoordMetricasTbody">
+                <tr><td colspan="5" class="text-stone-400 italic py-2 text-center">Cargando…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3 text-xs text-stone-400 text-center">
+        Diego NUNCA mensajero – solo supervisor. R-AUD-032 panel única oficina.
+        Botón cancelar disponible solo para avisos pendientes (no enviados).
+      </div>
+    </section>
+
     <!-- R-AUD-032 + R-AUD-033 · Tab Cuestionario Plan 2026 (PC2 Pablo 2026-05-31 tarea 6dc97ab6) -->
     <section id="tabPlan2026" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3">
@@ -3951,6 +4029,7 @@ const TAB_SECTION_MAP = {
   bandeja_precios: 'tabBandejaPrecios',
   mi_memoria: 'tabMiMemoria',
   mi_bandeja: 'tabMiBandeja',
+  diego_coord: 'tabDiegoCoord',
   ops_diarias: 'tabOpsDiarias',
   // PC1 fix 31-may PM: tabs con `_` o dígito que rompen el auto-CamelCase
   // (pcs_vivo→tabPcs_vivo ❌ real=tabPcsVivo · plan_2026→tabPlan_2026 ❌ real=tabPlan2026)
@@ -11516,6 +11595,189 @@ document.addEventListener('DOMContentLoaded', () => {
       if (comBtn) { comentarTarea(comBtn.dataset.id); return; }
     });
     refrescar().catch(() => {});
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+<!-- D-DIEGO-PANEL-INTEGRADO-001 F11 F3 · Bootstrap tab Diego Coordinador (PC2 Pablo 2026-06-01 mig 162) -->
+<script>
+(function () {
+  const POLL_MS = 30_000;
+  let pollTimer = null;
+
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+
+  function tipoEmoji(tipo) {
+    return ({nueva_tarea:'🆕',plazo_proximo:'⏰',plazo_hoy:'🔥',tarea_atrasada:'⚠️',tarea_bloqueada:'⛔',cierre_dependencia:'✅'})[tipo] || '📝';
+  }
+
+  function estadoBadge(estado) {
+    const map = {
+      listo_para_enviar:    'bg-emerald-100 text-emerald-800',
+      sin_telefono:         'bg-amber-100 text-amber-800',
+      bloqueado_creds_meta: 'bg-red-100 text-red-800',
+      agotado_intentos:     'bg-stone-100 text-stone-700'
+    };
+    return `<span class="text-[10px] px-1.5 py-0.5 rounded ${map[estado] || 'bg-stone-100 text-stone-600'}">${estado.replace(/_/g,' ')}</span>`;
+  }
+
+  function semaforoColor(s) {
+    return ({verde:'border-emerald-500',amarillo:'border-amber-500',rojo:'border-red-500',sin_datos:'border-stone-300',sin_data:'border-stone-300'})[s] || 'border-stone-300';
+  }
+
+  async function refrescar() {
+    const userEmail = (await sb.auth.getSession())?.data?.session?.user?.email?.toLowerCase() || '';
+    const esAdmin = userEmail === 'dusan.arancibia@gmail.com' || userEmail === 'recepcion01@gestionrepchile.cl';
+
+    try {
+      const [kpi, plani, hist, atascos, metricas] = await Promise.all([
+        sb.from('v_diego_ciclo_cerrado_kpi').select('*').single(),
+        sb.from('v_diego_avisos_planificados').select('*').limit(50),
+        sb.from('v_diego_avisos_historico').select('*').limit(30),
+        sb.from('v_diego_atascos').select('*').limit(30),
+        sb.from('v_diego_metricas_semanales').select('*').limit(20)
+      ]);
+
+      // KPI Banner
+      const kData = kpi.data || {};
+      const kPctEl = document.getElementById('diegoCoordKpiPct');
+      const kDetEl = document.getElementById('diegoCoordKpiDetalle');
+      const kBanner = document.getElementById('diegoCoordKpiBanner');
+      const kpiTop = document.getElementById('diegoCoordKpi');
+      if (kBanner) {
+        kBanner.className = `bg-white rounded-lg shadow-sm p-4 mb-4 border-l-4 ${semaforoColor(kData.semaforo)}`;
+      }
+      if (kPctEl) kPctEl.textContent = kData.pct_ciclo_cerrado != null ? `${kData.pct_ciclo_cerrado}%` : '—';
+      if (kDetEl) kDetEl.textContent = `${kData.avisos_con_cierre_24h || 0} de ${kData.avisos_enviados_7d || 0} avisos terminaron en cierre 24h (objetivo SPEC >70%)`;
+      if (kpiTop) kpiTop.textContent = `KPI: ${kData.pct_ciclo_cerrado || 0}% ciclo cerrado`;
+
+      // Planificados
+      const planEl = document.getElementById('diegoCoordPlanificados');
+      const planRows = plani.data || [];
+      if (!planRows.length) {
+        planEl.innerHTML = '<div class="text-xs text-stone-400 italic py-2 text-center">Sin avisos pendientes ✅</div>';
+      } else {
+        planEl.innerHTML = planRows.map(r => `
+          <div class="border border-stone-200 rounded p-2 text-xs">
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <span class="font-semibold">${tipoEmoji(r.tipo_aviso)} ${escapeHtml(r.nombre_persona)}</span>
+              ${estadoBadge(r.estado_dispatch)}
+            </div>
+            <div class="text-stone-500">${escapeHtml(r.tipo_aviso)} · ${r.tareas_count} tarea(s)</div>
+            ${esAdmin && r.estado_dispatch === 'listo_para_enviar'
+              ? `<button class="diego-coord-cancelar mt-1 text-[10px] text-red-700 hover:underline" data-id="${r.id}">✕ Cancelar aviso</button>`
+              : ''}
+          </div>`).join('');
+      }
+
+      // Histórico
+      const histEl = document.getElementById('diegoCoordHistorico');
+      const histRows = hist.data || [];
+      if (!histRows.length) {
+        histEl.innerHTML = '<div class="text-xs text-stone-400 italic py-2 text-center">Sin envíos en últimos 7 días</div>';
+      } else {
+        histEl.innerHTML = histRows.map(r => {
+          const cierreBadge = r.resultado_ciclo === 'cerro_post_aviso'
+            ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">✓ cerró</span>'
+            : r.resultado_ciclo === 'sin_cierre_24h'
+              ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">sin cierre</span>'
+              : '<span class="text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-700">esperando</span>';
+          return `
+            <div class="border border-stone-200 rounded p-2 text-xs">
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <span class="font-semibold">${tipoEmoji(r.tipo_aviso)} ${escapeHtml(r.nombre_persona)}</span>
+                ${cierreBadge}
+              </div>
+              <div class="text-stone-500">${new Date(r.enviado_en).toLocaleString('es-CL')}</div>
+            </div>`;
+        }).join('');
+      }
+
+      // Atascos
+      const atascosEl = document.getElementById('diegoCoordAtascos');
+      const atascosRows = atascos.data || [];
+      if (!atascosRows.length) {
+        atascosEl.innerHTML = '<div class="text-xs text-stone-400 italic py-2 text-center">Sin atascos ✅</div>';
+      } else {
+        atascosEl.innerHTML = atascosRows.map(r => {
+          const tipoBadge = ({
+            bloqueada:           'bg-stone-100 text-stone-800',
+            atrasada:            'bg-red-100 text-red-800',
+            sin_movimiento_7d:   'bg-amber-100 text-amber-800',
+            lenta_3d:            'bg-yellow-50 text-yellow-700'
+          })[r.tipo_atasco] || 'bg-stone-100 text-stone-600';
+          return `
+            <div class="border border-stone-200 rounded p-2 text-xs">
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <span class="font-semibold truncate">${escapeHtml(r.titulo)}</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded ${tipoBadge}">${r.tipo_atasco.replace(/_/g,' ')}</span>
+              </div>
+              <div class="text-stone-500">${escapeHtml(r.nombre_persona)} · sin mov ${r.dias_sin_movimiento}d</div>
+              ${r.ultima_razon_reportada ? `<div class="text-[11px] text-stone-600 italic mt-1">"${escapeHtml(r.ultima_razon_reportada.substring(0,120))}"</div>` : ''}
+            </div>`;
+        }).join('');
+      }
+
+      // Métricas
+      const metricasTbody = document.getElementById('diegoCoordMetricasTbody');
+      const metRows = metricas.data || [];
+      if (!metRows.length) {
+        metricasTbody.innerHTML = '<tr><td colspan="5" class="text-stone-400 italic py-2 text-center">Sin actividad 7d</td></tr>';
+      } else {
+        const colors = {verde:'text-emerald-700',amarillo:'text-amber-700',rojo:'text-red-700',sin_data:'text-stone-400'};
+        metricasTbody.innerHTML = metRows.map(r => `
+          <tr class="border-b border-stone-100">
+            <td class="py-1 px-1 ${colors[r.semaforo_productividad]} font-medium">${escapeHtml(r.nombre_persona)}</td>
+            <td class="text-right py-1 px-1">${r.creadas_7d}</td>
+            <td class="text-right py-1 px-1">${r.cerradas_7d}</td>
+            <td class="text-right py-1 px-1">${r.pct_cierre_desde_panel != null ? r.pct_cierre_desde_panel + '%' : '—'}</td>
+            <td class="text-right py-1 px-1">${r.horas_promedio_cierre}</td>
+          </tr>`).join('');
+      }
+
+    } catch (e) {
+      console.error('[DiegoCoord] error:', e);
+    }
+  }
+
+  async function cancelarAviso(id) {
+    const razon = prompt('Razón cancelación (opcional):', '') || null;
+    try {
+      const { error } = await sb.rpc('diego_cancelar_aviso', { p_aviso_id: id, p_razon: razon });
+      if (error) throw error;
+      refrescar();
+    } catch (e) {
+      alert('Error: ' + (e.message || e));
+    }
+  }
+
+  function startPolling() {
+    stopPolling();
+    refrescar();
+    pollTimer = setInterval(refrescar, POLL_MS);
+  }
+  function stopPolling() {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  }
+
+  function init() {
+    document.querySelector('button[data-tab="diego_coord"]')?.addEventListener('click', startPolling);
+    document.querySelector('a[data-v4-tab="diego_coord"]')?.addEventListener('click', startPolling);
+    document.querySelectorAll('button[data-tab]:not([data-tab="diego_coord"])').forEach(b => b.addEventListener('click', stopPolling));
+    document.querySelectorAll('a[data-v4-tab]:not([data-v4-tab="diego_coord"])').forEach(a => a.addEventListener('click', stopPolling));
+    document.getElementById('diegoCoordRefreshBtn')?.addEventListener('click', refrescar);
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.diego-coord-cancelar');
+      if (btn) cancelarAviso(btn.dataset.id);
+    });
   }
 
   if (document.readyState === 'loading') {
