@@ -4080,12 +4080,20 @@ async function loadAudios() {
 }
 
 async function loadPortadaAudio() {
+  const container = document.getElementById('portadaAudioPlayer');
+  if (!container) return;
+  // Guard pre-login (R-AUD-002): sin sesión, RLS sobre panel.mensajes_audio devuelve 42501.
+  // Mostrar placeholder en vez de loguear error confuso en consola.
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    container.innerHTML = '<p class="text-stone-400 italic text-sm">Iniciá sesión para ver mensajes.</p>';
+    return;
+  }
   const { data, error } = await sb
     .schema('panel').from('mensajes_audio').select('*')
     .eq('activo', true)
     .contains('zonas_visibles', ['portada'])
     .order('fecha', { ascending: false }).limit(3);
-  const container = document.getElementById('portadaAudioPlayer');
   if (error) { container.innerHTML = `<p class="text-red-600">Error: ${escapeHtml(error.message)}</p>`; return; }
   if (!data || data.length === 0) {
     container.innerHTML = '<p class="text-stone-500">No hay mensajes destacados.</p>';
@@ -4911,6 +4919,10 @@ window.setupDiegoAgenda = function setupDiegoAgenda() {
 async function loadAlertasPortada() {
   const div = document.getElementById('portadaAlertas');
   if (!div) return;
+  // Guard pre-login (R-AUD-002): sin sesión, RLS sobre v_alertas_panel devuelve 42501.
+  // Ocultar bloque hasta tener sesión válida.
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { div.innerHTML = ''; return; }
   const { data, error } = await sb.from('v_alertas_panel')
     .select('tipo_alerta,nivel,titulo,descripcion,fecha,valor')
     .order('nivel');
