@@ -707,6 +707,10 @@
             <span class="v4-emoji" aria-hidden="true">📥</span>
             Bandeja Diego
           </a>
+          <a href="#" data-v4-tab="mis_reportes" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📬</span>
+            <span>Mis reportes Diego</span>
+          </a>
           <a href="#" data-v4-tab="mi_bandeja" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📥</span>
             <span>Mi Bandeja</span>
@@ -944,6 +948,7 @@
         <button data-tab="manual" class="tab-btn py-3 px-3 text-stone-600"              role="tab" aria-selected="false" aria-controls="tabManual">📖 Manual</button>
         <button data-tab="mi_memoria" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabMiMemoria">🧠 Mi memoria</button>
         <button data-tab="mi_bandeja" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabMiBandeja">📥 Mi Bandeja</button>
+        <button data-tab="mis_reportes" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabMisReportes">📬 Mis reportes</button>
         <button data-tab="mis_archivos" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabMisArchivos">📦 Mis archivos</button>
         <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabRdo">📈 RDO Resumen</button>
         <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
@@ -3397,6 +3402,37 @@
       <small id="bucleVivoConsultadoEn" class="block mt-3 text-xs text-stone-400">—</small>
     </section>
 
+    <!-- D-DIEGO-CARTERO-001 · Tab Mis reportes Diego (PC2 Pablo 2026-06-01 mig 169/170 backend) -->
+    <section id="tabMisReportes" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">📬 Mis reportes Diego</h2>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-stone-500" id="misReportesCount">—</span>
+          <button id="misReportesRefresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
+      </div>
+      <p class="text-sm text-stone-500 mb-4">Acá ves los mensajes que mandaste a Diego (FAB modal 4 categorías) y en qué estado están.</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-amber-700" id="misReportesKpiRecibido">0</div>
+          <div class="text-xs text-stone-500">🟡 Recibido</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-blue-700" id="misReportesKpiEnCurso">0</div>
+          <div class="text-xs text-stone-500">🔵 En curso</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-emerald-700" id="misReportesKpiResuelto">0</div>
+          <div class="text-xs text-stone-500">🟢 Resuelto</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-stone-500" id="misReportesKpiCerrado">0</div>
+          <div class="text-xs text-stone-500">⚫ Cerrado sin acción</div>
+        </div>
+      </div>
+      <div id="misReportesLista" class="space-y-2"></div>
+    </section>
+
     <!-- R-AUD-040 · Tab Mis archivos (PC2 Pablo 2026-06-02 mig 167 backend) - lectura para todos -->
     <section id="tabMisArchivos" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -4437,6 +4473,7 @@ const TAB_SECTION_MAP = {
   bandeja_precios: 'tabBandejaPrecios',
   mi_memoria: 'tabMiMemoria',
   mi_bandeja: 'tabMiBandeja',
+  mis_reportes: 'tabMisReportes',
   mis_archivos: 'tabMisArchivos',
   diego_coord: 'tabDiegoCoord',
   bucle_vivo: 'tabBucleVivo',
@@ -12355,11 +12392,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const [kpi, plani, hist, atascos, metricas] = await Promise.all([
-        sb.from('v_diego_ciclo_cerrado_kpi').select('*').single(),
-        sb.from('v_diego_avisos_planificados').select('*').limit(50),
-        sb.from('v_diego_avisos_historico').select('*').limit(30),
-        sb.from('v_diego_atascos').select('*').limit(30),
-        sb.from('v_diego_metricas_semanales').select('*').limit(20)
+        sb.schema('panel').from('v_diego_ciclo_cerrado_kpi').select('*').single(),
+        sb.schema('panel').from('v_diego_avisos_planificados').select('*').limit(50),
+        sb.schema('panel').from('v_diego_avisos_historico').select('*').limit(30),
+        sb.schema('panel').from('v_diego_atascos').select('*').limit(30),
+        sb.schema('panel').from('v_diego_metricas_semanales').select('*').limit(20)
       ]);
 
       // KPI Banner
@@ -12478,7 +12515,7 @@ document.addEventListener('DOMContentLoaded', () => {
       : (prompt('Razón cancelación (opcional):', '') || null);
     if (razon === null) return;  // canceló el modal
     try {
-      const { error } = await sb.rpc('diego_cancelar_aviso', { p_aviso_id: id, p_razon: razon || null });
+      const { error } = await sb.schema('panel').rpc('diego_cancelar_aviso', { p_aviso_id: id, p_razon: razon || null });
       if (error) throw error;
       if (window.showToast) window.showToast('Aviso cancelado', 'success');
       refrescar();
@@ -12654,6 +12691,350 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
+})();
+</script>
+
+<!-- ============================================================================
+     D-DIEGO-CARTERO-001 (firma Dusan 2026-06-01 16:32 CLT "si, me parece")
+     Modal 4 categorías intercepta click FAB Diego. Cartero captura feedback +
+     INSERT panel.diego_inbox + sin LLM en runtime.
+     Realtime: notificación naranja en panel Dusan/Pablo cuando entra feedback.
+     Implementado por PC Pablo autónomo 2026-06-01 ~12:00 CLT.
+============================================================================ -->
+<style>
+  #diegoCarteroModal { display:none; position:fixed; inset:0; background:rgba(15,23,42,.6); z-index:60; align-items:center; justify-content:center; padding:1rem; }
+  #diegoCarteroModal.open { display:flex; }
+  #diegoCarteroModal .dcm-box { background:#fff; border-radius:.75rem; padding:1.25rem 1.5rem; max-width:480px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,.25); max-height:90vh; overflow-y:auto; }
+  #diegoCarteroModal .dcm-title { font-family:'Inter',sans-serif; font-weight:700; font-size:1.15rem; color:#0f172a; margin:0 0 .25rem; }
+  #diegoCarteroModal .dcm-sub { color:#64748b; font-size:.85rem; margin:0 0 1rem; }
+  #diegoCarteroModal .dcm-cats { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-bottom:1rem; }
+  #diegoCarteroModal .dcm-cat-btn { padding:.875rem; border:2px solid #e2e8f0; background:#fff; border-radius:.5rem; cursor:pointer; font-size:.875rem; text-align:left; transition:all .15s; font-family:inherit; }
+  #diegoCarteroModal .dcm-cat-btn:hover { border-color:#059669; background:#f0fdf4; }
+  #diegoCarteroModal .dcm-cat-btn.selected { border-color:#059669; background:#dcfce7; }
+  #diegoCarteroModal .dcm-cat-emoji { display:block; font-size:1.25rem; margin-bottom:.125rem; }
+  #diegoCarteroModal textarea { width:100%; min-height:90px; padding:.625rem .75rem; border:1px solid #cbd5e1; border-radius:.375rem; font-family:'Inter',sans-serif; font-size:.875rem; resize:vertical; box-sizing:border-box; }
+  #diegoCarteroModal textarea:focus { outline:none; border-color:#059669; box-shadow:0 0 0 3px rgba(5,150,105,.1); }
+  #diegoCarteroModal .dcm-counter { text-align:right; font-size:.75rem; color:#94a3b8; margin-top:.125rem; }
+  #diegoCarteroModal .dcm-actions { display:flex; gap:.5rem; margin-top:1rem; align-items:center; }
+  #diegoCarteroModal .dcm-chat-link { font-size:.75rem; color:#0284c7; text-decoration:underline; cursor:pointer; flex:1; }
+  #diegoCarteroModal .dcm-cancel { padding:.5rem 1rem; background:#fff; border:1px solid #cbd5e1; border-radius:.375rem; cursor:pointer; font-size:.875rem; font-family:inherit; color:#475569; }
+  #diegoCarteroModal .dcm-submit { padding:.5rem 1.25rem; background:#059669; color:#fff; border:none; border-radius:.375rem; cursor:pointer; font-size:.875rem; font-weight:600; font-family:inherit; }
+  #diegoCarteroModal .dcm-submit:disabled { background:#94a3b8; cursor:not-allowed; }
+  #diegoCarteroResp { display:none; padding:.75rem; background:#dcfce7; border:1px solid #16a34a; border-radius:.375rem; color:#14532d; font-size:.875rem; margin-top:1rem; }
+  #diegoCarteroNotif { display:none; position:fixed; top:1rem; right:1rem; z-index:70; background:#fef3c7; border:2px solid #f59e0b; border-radius:.5rem; padding:.75rem 1rem; box-shadow:0 10px 25px -5px rgba(0,0,0,.2); max-width:380px; font-family:'Inter',sans-serif; }
+  #diegoCarteroNotif .dcn-title { font-weight:600; color:#92400e; font-size:.875rem; margin-bottom:.125rem; }
+  #diegoCarteroNotif .dcn-preview { font-size:.8rem; color:#78350f; }
+  #diegoCarteroNotif .dcn-close { position:absolute; top:.25rem; right:.5rem; cursor:pointer; color:#92400e; background:none; border:none; font-size:1.25rem; }
+</style>
+
+<div id="diegoCarteroModal" role="dialog" aria-labelledby="dcmTitle" aria-modal="true">
+  <div class="dcm-box">
+    <h3 id="dcmTitle" class="dcm-title">📬 Mandale algo a Diego</h3>
+    <p class="dcm-sub">Diego lo entrega a la persona indicada. Recibís respuesta apenas alguien lo vea.</p>
+    <div class="dcm-cats" role="radiogroup" aria-label="Categoría del mensaje">
+      <button type="button" class="dcm-cat-btn" data-cat="algo_no_funciona" role="radio" aria-checked="false">
+        <span class="dcm-cat-emoji">🔴</span><strong>Algo no funciona</strong>
+      </button>
+      <button type="button" class="dcm-cat-btn" data-cat="idea" role="radio" aria-checked="false">
+        <span class="dcm-cat-emoji">💡</span><strong>Tengo una idea</strong>
+      </button>
+      <button type="button" class="dcm-cat-btn" data-cat="no_se_como" role="radio" aria-checked="false">
+        <span class="dcm-cat-emoji">❓</span><strong>No sé cómo se hace</strong>
+      </button>
+      <button type="button" class="dcm-cat-btn" data-cat="urgente" role="radio" aria-checked="false">
+        <span class="dcm-cat-emoji">🚨</span><strong>Es urgente</strong>
+      </button>
+    </div>
+    <label for="dcmTextarea" style="font-size:.8rem;color:#475569;display:block;margin-bottom:.25rem;">Contale a Diego</label>
+    <textarea id="dcmTextarea" maxlength="500" placeholder="Describí lo que querés contar (máx 500)…" aria-label="Mensaje"></textarea>
+    <div class="dcm-counter"><span id="dcmCount">0</span>/500</div>
+    <div id="diegoCarteroResp" role="status"></div>
+    <div class="dcm-actions">
+      <a class="dcm-chat-link" id="dcmChatLink">o hablar con Diego (chat IA)</a>
+      <button type="button" class="dcm-cancel" id="dcmCancel">Cancelar</button>
+      <button type="button" class="dcm-submit" id="dcmSubmit" disabled>Enviar</button>
+    </div>
+  </div>
+</div>
+
+<div id="diegoCarteroNotif" role="alert" aria-live="polite">
+  <button class="dcn-close" id="dcnClose" aria-label="Cerrar notificación">×</button>
+  <div class="dcn-title" id="dcnTitle">📬 Nuevo feedback Diego</div>
+  <div class="dcn-preview" id="dcnPreview"></div>
+</div>
+
+<script>
+(function () {
+  // === D-DIEGO-CARTERO-001 frontend cartero ===
+  function ready() { return typeof sb !== 'undefined' && sb && sb.schema; }
+  function resolveEmail() {
+    if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase();
+    try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
+    try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
+    return null;
+  }
+  function resolveSucursalTab() {
+    var tabEl = document.querySelector('.tab-content:not(.hidden)');
+    var tab = tabEl ? tabEl.id : null;
+    var suc = (typeof currentSilo !== 'undefined') ? currentSilo : null;
+    return { sucursal: suc, tab_actual: tab };
+  }
+
+  var modal = document.getElementById('diegoCarteroModal');
+  var modalBox = modal.querySelector('.dcm-box');
+  var catBtns = modal.querySelectorAll('.dcm-cat-btn');
+  var textarea = document.getElementById('dcmTextarea');
+  var counter = document.getElementById('dcmCount');
+  var resp = document.getElementById('diegoCarteroResp');
+  var submitBtn = document.getElementById('dcmSubmit');
+  var cancelBtn = document.getElementById('dcmCancel');
+  var chatLink = document.getElementById('dcmChatLink');
+  var selectedCat = null;
+
+  function open() {
+    selectedCat = null;
+    catBtns.forEach(function (b) { b.classList.remove('selected'); b.setAttribute('aria-checked', 'false'); });
+    textarea.value = '';
+    counter.textContent = '0';
+    resp.style.display = 'none';
+    resp.textContent = '';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviar';
+    modal.classList.add('open');
+    setTimeout(function () { textarea.focus(); }, 80);
+  }
+  function close() {
+    modal.classList.remove('open');
+  }
+
+  function updateSubmitState() {
+    submitBtn.disabled = !(selectedCat && textarea.value.trim().length > 0);
+  }
+
+  catBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      catBtns.forEach(function (b) { b.classList.remove('selected'); b.setAttribute('aria-checked', 'false'); });
+      btn.classList.add('selected');
+      btn.setAttribute('aria-checked', 'true');
+      selectedCat = btn.getAttribute('data-cat');
+      updateSubmitState();
+    });
+  });
+
+  textarea.addEventListener('input', function () {
+    counter.textContent = String(textarea.value.length);
+    updateSubmitState();
+  });
+
+  cancelBtn.addEventListener('click', close);
+
+  modal.addEventListener('click', function (e) {
+    if (e.target === modal) close();
+  });
+
+  chatLink.addEventListener('click', function () {
+    close();
+    var origFab = document.getElementById('diegoFab');
+    if (origFab) {
+      window.__diegoCarteroBypass = true;
+      origFab.click();
+      setTimeout(function () { window.__diegoCarteroBypass = false; }, 200);
+    }
+  });
+
+  submitBtn.addEventListener('click', async function () {
+    if (!selectedCat || !textarea.value.trim()) return;
+    var email = resolveEmail();
+    if (!email) {
+      resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
+      resp.textContent = 'No detecto tu sesión. Recargá la página y volvé a iniciar sesión.';
+      resp.style.display = 'block';
+      return;
+    }
+    var ctx = resolveSucursalTab();
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviando…';
+    try {
+      var SUPA = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : 'https://eknmtsrtfkzroxnovfqn.supabase.co';
+      var ANON = (typeof SUPABASE_ANON_KEY !== 'undefined') ? SUPABASE_ANON_KEY : '';
+      var r = await fetch(SUPA + '/functions/v1/diego-chat-process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ANON },
+        body: JSON.stringify({
+          mode: 'feedback_cartero',
+          user_email: email,
+          categoria: selectedCat,
+          mensaje: textarea.value.trim(),
+          sucursal: ctx.sucursal,
+          tab_actual: ctx.tab_actual,
+        }),
+      });
+      var data = await r.json().catch(function () { return null; });
+      if (!r.ok || !data || !data.ok) {
+        resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
+        resp.textContent = (data && data.error) ? data.error : 'No pude enviar. Probá de nuevo en un minuto.';
+        resp.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enviar';
+        return;
+      }
+      resp.style.background = '#dcfce7'; resp.style.color = '#14532d'; resp.style.borderColor = '#16a34a';
+      resp.textContent = data.mensaje_respuesta || 'Recibido. Te avisamos.';
+      resp.style.display = 'block';
+      submitBtn.textContent = '✓ Enviado';
+      setTimeout(close, 2200);
+    } catch (e) {
+      resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
+      resp.textContent = 'Error de red. Verificá conexión y probá de nuevo.';
+      resp.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar';
+    }
+  });
+
+  // -- Interceptar click FAB Diego para abrir modal en vez de chat directo --
+  function attachFabInterceptor() {
+    var fab = document.getElementById('diegoFab');
+    if (!fab) { setTimeout(attachFabInterceptor, 500); return; }
+    fab.addEventListener('click', function (e) {
+      if (window.__diegoCarteroBypass) return; // chatLink: dejá pasar al handler original
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      open();
+    }, true); // capture=true: corre ANTES del handler chat existente
+  }
+  attachFabInterceptor();
+
+  // -- Realtime: notificación naranja para Dusan/Pablo cuando entra feedback --
+  function notifShow(titulo, preview) {
+    var notif = document.getElementById('diegoCarteroNotif');
+    document.getElementById('dcnTitle').textContent = titulo || '📬 Nuevo feedback Diego';
+    document.getElementById('dcnPreview').textContent = preview || '';
+    notif.style.display = 'block';
+    setTimeout(function () { notif.style.display = 'none'; }, 12000);
+  }
+  document.getElementById('dcnClose').addEventListener('click', function () {
+    document.getElementById('diegoCarteroNotif').style.display = 'none';
+  });
+
+  function subscribeRealtime() {
+    if (!ready()) { setTimeout(subscribeRealtime, 1000); return; }
+    var email = resolveEmail();
+    if (!email) { setTimeout(subscribeRealtime, 2000); return; }
+    var ADMINS = ['dusan.arancibia@gmail.com', 'gerencia@gestionrepchile.cl', 'sistemas@gestionrepchile.cl', 'recepcion01@gestionrepchile.cl'];
+    if (!ADMINS.includes(email)) return; // solo admins reciben notificación
+    try {
+      sb.channel('diego_inbox_cartero_' + email)
+        .on('postgres_changes', { event: 'INSERT', schema: 'panel', table: 'diego_inbox' }, function (payload) {
+          var row = payload?.new;
+          if (!row) return;
+          var emojis = { algo_no_funciona: '🔴', idea: '💡', no_se_como: '❓', urgente: '🚨' };
+          var emoji = emojis[row.categoria] || '📬';
+          notifShow(emoji + ' ' + (row.categoria || 'feedback') + ' · ' + (row.usuario_email || 'anónimo'), (row.mensaje || '').slice(0, 120));
+        })
+        .subscribe();
+    } catch (e) {
+      console.warn('[diego-cartero] Realtime subscribe error:', e?.message || e);
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', subscribeRealtime);
+  else setTimeout(subscribeRealtime, 1500);
+})();
+</script>
+
+<!-- D-DIEGO-CARTERO-001 · Handler tab "📬 Mis reportes" -->
+<script>
+(function () {
+  function ready() { return typeof sb !== 'undefined' && sb && sb.schema; }
+  function resolveEmail() {
+    if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase();
+    try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
+    try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
+    return null;
+  }
+  function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function estadoBadge(estado) {
+    var map = {
+      recibido:            { color: 'bg-amber-100 text-amber-800', label: '🟡 Recibido' },
+      respondida_faq_auto: { color: 'bg-emerald-100 text-emerald-800', label: '🟢 Respondida (FAQ)' },
+      ruteado_pc:          { color: 'bg-amber-100 text-amber-800', label: '🟡 Esperando' },
+      en_curso:            { color: 'bg-blue-100 text-blue-800', label: '🔵 En curso' },
+      resuelto:            { color: 'bg-emerald-100 text-emerald-800', label: '🟢 Resuelto' },
+      cerrado_sin_accion:  { color: 'bg-stone-100 text-stone-700', label: '⚫ Cerrado' },
+    };
+    var m = map[estado] || { color: 'bg-stone-100 text-stone-600', label: estado || '?' };
+    return '<span class="text-[10px] px-1.5 py-0.5 rounded ' + m.color + '">' + m.label + '</span>';
+  }
+  function categoriaEmoji(c) {
+    return ({ algo_no_funciona: '🔴', idea: '💡', no_se_como: '❓', urgente: '🚨' })[c] || '📬';
+  }
+
+  async function loadMisReportes() {
+    if (!ready()) return;
+    var email = resolveEmail();
+    var lista = document.getElementById('misReportesLista');
+    var countEl = document.getElementById('misReportesCount');
+    if (!email) {
+      if (lista) lista.innerHTML = '<div class="text-xs text-stone-400 italic py-2 text-center">No detecto tu sesión. Recargá la página.</div>';
+      return;
+    }
+    try {
+      var resp = await sb.schema('panel').from('diego_inbox')
+        .select('id, categoria, mensaje, estado, creado_en, resuelto_en, resolucion_descripcion, commit_hash, payload_extra')
+        .eq('usuario_email', email)
+        .order('creado_en', { ascending: false })
+        .limit(100);
+      if (resp.error) throw resp.error;
+      var rows = resp.data || [];
+
+      // KPIs
+      var kRecibido = 0, kEnCurso = 0, kResuelto = 0, kCerrado = 0;
+      rows.forEach(function (r) {
+        if (r.estado === 'recibido' || r.estado === 'ruteado_pc') kRecibido++;
+        else if (r.estado === 'en_curso') kEnCurso++;
+        else if (r.estado === 'resuelto' || r.estado === 'respondida_faq_auto') kResuelto++;
+        else if (r.estado === 'cerrado_sin_accion') kCerrado++;
+      });
+      document.getElementById('misReportesKpiRecibido').textContent = kRecibido;
+      document.getElementById('misReportesKpiEnCurso').textContent = kEnCurso;
+      document.getElementById('misReportesKpiResuelto').textContent = kResuelto;
+      document.getElementById('misReportesKpiCerrado').textContent = kCerrado;
+      if (countEl) countEl.textContent = rows.length + ' reportes';
+
+      if (!rows.length) {
+        lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Aún no mandaste nada a Diego. Usá el botón verde abajo a la derecha para reportar algo.</div>';
+        return;
+      }
+      lista.innerHTML = rows.map(function (r) {
+        var ts = new Date(r.creado_en);
+        var tsStr = ts.toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' });
+        var respAuto = r.payload_extra && r.payload_extra.respuesta_auto;
+        var resolucion = r.resolucion_descripcion;
+        var commit = r.commit_hash;
+        return '<div class="bg-white border border-stone-200 rounded p-3">' +
+          '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+            '<span class="font-semibold text-sm">' + categoriaEmoji(r.categoria) + ' ' + escapeHtml(r.categoria.replace(/_/g, ' ')) + '</span>' +
+            estadoBadge(r.estado) +
+          '</div>' +
+          '<div class="text-stone-700 text-sm mb-1">' + escapeHtml(r.mensaje) + '</div>' +
+          '<div class="text-xs text-stone-400">' + tsStr + '</div>' +
+          (respAuto ? '<div class="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-900">💬 ' + escapeHtml(respAuto) + '</div>' : '') +
+          (resolucion ? '<div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-900">✅ ' + escapeHtml(resolucion) + (commit ? ' <span class="text-stone-500">· commit ' + escapeHtml(commit.slice(0, 8)) + '</span>' : '') + '</div>' : '') +
+        '</div>';
+      }).join('');
+    } catch (e) {
+      console.error('[MisReportes] error:', e);
+      if (lista) lista.innerHTML = '<div class="text-xs text-red-700 italic py-2 text-center">Error al cargar tus reportes: ' + escapeHtml(e?.message || String(e)) + '</div>';
+    }
+  }
+
+  function init() {
+    document.querySelector('button[data-tab="mis_reportes"]')?.addEventListener('click', function () { setTimeout(loadMisReportes, 100); });
+    document.querySelector('a[data-v4-tab="mis_reportes"]')?.addEventListener('click', function () { setTimeout(loadMisReportes, 100); });
+    var refreshBtn = document.getElementById('misReportesRefresh');
+    if (refreshBtn) refreshBtn.addEventListener('click', loadMisReportes);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
 
