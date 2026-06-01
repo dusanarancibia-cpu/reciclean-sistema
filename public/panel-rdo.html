@@ -4467,6 +4467,15 @@ async function loadSilos() {
     currentSilo = v === '__global__' ? null : v;
     localStorage.setItem(LS_KEY_SILO, v);
     applySiloTabs();
+    // BUG [6] fix · feedback Cartero 12:10 comercial@ sucursal 02:
+    // "Porque si yo cambio de silo no se cambia la pantalla de portada".
+    // applySiloTabs() solo gestiona visibilidad de tabs, NO refresca contenido.
+    // Solución: disparar el handler del tab activo simulando click sobre su botón.
+    // Eso ejecuta el switch tabId→loaders (línea ~4623) y refresca portada/rdo/pesaje/etc.
+    try {
+      const activeBtn = document.querySelector('.tab-btn.active');
+      if (activeBtn) activeBtn.click();
+    } catch (e) { console.warn('[silo-change refresh]', e); }
   });
 }
 
