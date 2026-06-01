@@ -728,6 +728,10 @@
             <span class="v4-emoji" aria-hidden="true">📬</span>
             <span>Mis reportes Diego</span>
           </a>
+          <a href="#" data-v4-tab="mis_envios_diego" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📤</span>
+            <span>Mis envíos a Diego</span>
+          </a>
           <a href="#" data-v4-tab="material_nuevo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🆕</span>
             <span>Material nuevo</span>
@@ -986,6 +990,7 @@
         <button data-tab="mi_memoria" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabMiMemoria">🧠 Mi memoria</button>
         <button data-tab="mi_bandeja" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabMiBandeja">📥 Mi Bandeja</button>
         <button data-tab="mis_reportes" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabMisReportes">📬 Mis reportes</button>
+        <button data-tab="mis_envios_diego" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabMisEnviosDiego">📤 Mis envíos a Diego</button>
         <button data-tab="material_nuevo" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabMaterialNuevo">🆕 Material nuevo</button>
         <button data-tab="despacho_coord" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabDespachoCoord">🚚 Coord. despacho</button>
         <button data-tab="incidentes_op" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabIncidentesOp">🛠️ Incidentes</button>
@@ -3475,6 +3480,40 @@
       <div id="misReportesLista" class="space-y-2"></div>
     </section>
 
+    <!-- D-FEATURE-CARTERO-010 · Tab Mis envíos a Diego (PC2 Pablo 2026-06-01 mig 180+181 backend) -->
+    <section id="tabMisEnviosDiego" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">📤 Mis envíos a Diego</h2>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-stone-500" id="misEnviosCount">—</span>
+          <button id="misEnviosRefresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
+      </div>
+      <p class="text-sm text-stone-500 mb-4">Acá ves lo que le pediste a Diego (tareas + archivos) y en qué estado quedó cada uno.</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-amber-700" id="misEnviosKpiTareasPend">0</div>
+          <div class="text-xs text-stone-500">🟡 Tareas pendientes</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-emerald-700" id="misEnviosKpiTareasOk">0</div>
+          <div class="text-xs text-stone-500">🟢 Tareas completadas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-blue-700" id="misEnviosKpiArchivos">0</div>
+          <div class="text-xs text-stone-500">📎 Archivos enviados</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-stone-700" id="misEnviosKpiTotal">0</div>
+          <div class="text-xs text-stone-500">Total envíos</div>
+        </div>
+      </div>
+      <h3 class="text-sm font-bold text-stone-700 mb-2">📋 Tareas que pediste</h3>
+      <div id="misEnviosTareasLista" class="space-y-2 mb-5"></div>
+      <h3 class="text-sm font-bold text-stone-700 mb-2">📎 Archivos enviados a Diego (WhatsApp)</h3>
+      <div id="misEnviosArchivosLista" class="space-y-2"></div>
+    </section>
+
     <!-- D-FEATURE-CARTERO-005 · Tab Material nuevo (PC2 Pablo 2026-06-01 mig 174+175 backend) -->
     <section id="tabMaterialNuevo" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -4666,6 +4705,7 @@ const TAB_SECTION_MAP = {
   mi_memoria: 'tabMiMemoria',
   mi_bandeja: 'tabMiBandeja',
   mis_reportes: 'tabMisReportes',
+  mis_envios_diego: 'tabMisEnviosDiego',
   material_nuevo: 'tabMaterialNuevo',
   despacho_coord: 'tabDespachoCoord',
   incidentes_op: 'tabIncidentesOp',
@@ -13265,6 +13305,123 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('a[data-v4-tab="mis_reportes"]')?.addEventListener('click', function () { setTimeout(loadMisReportes, 100); });
     var refreshBtn = document.getElementById('misReportesRefresh');
     if (refreshBtn) refreshBtn.addEventListener('click', loadMisReportes);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- D-FEATURE-CARTERO-010 · Handler tab "📤 Mis envíos a Diego" (PC2 Pablo 2026-06-01 mig 180+181) -->
+<script>
+(function () {
+  function ready() { return typeof sb !== 'undefined' && sb && sb.rpc; }
+  function resolveEmail() {
+    if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase();
+    try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
+    try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
+    try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    try {
+      var sbKey = 'sb-eknmtsrtfkzroxnovfqn-auth-token';
+      var sbTok = JSON.parse(localStorage.getItem(sbKey) || 'null');
+      var em = sbTok?.user?.email || sbTok?.currentSession?.user?.email;
+      if (em) return String(em).toLowerCase();
+    } catch (e) {}
+    return null;
+  }
+  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function fmtFecha(ts) { if (!ts) return '—'; try { return new Date(ts).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return ts; } }
+  function tareaBadge(estado) {
+    var map = {
+      pendiente:  { c: 'bg-amber-100 text-amber-800', l: '🟡 Pendiente' },
+      en_curso:   { c: 'bg-blue-100 text-blue-800',   l: '🔵 En curso' },
+      completada: { c: 'bg-emerald-100 text-emerald-800', l: '🟢 Completada' },
+      cancelada:  { c: 'bg-stone-100 text-stone-700', l: '⚫ Cancelada' },
+    };
+    var m = map[estado] || { c: 'bg-stone-100 text-stone-600', l: estado || '?' };
+    return '<span class="text-[10px] px-1.5 py-0.5 rounded ' + m.c + '">' + m.l + '</span>';
+  }
+  function prioBadge(p) {
+    var map = { alta: 'bg-red-100 text-red-800', media: 'bg-amber-100 text-amber-800', baja: 'bg-stone-100 text-stone-600' };
+    return '<span class="text-[10px] px-1.5 py-0.5 rounded ' + (map[p] || 'bg-stone-100 text-stone-600') + '">' + esc(p || 'media') + '</span>';
+  }
+
+  async function loadMisEnviosDiego() {
+    if (!ready()) return;
+    var email = resolveEmail();
+    var listaT = document.getElementById('misEnviosTareasLista');
+    var listaA = document.getElementById('misEnviosArchivosLista');
+    var countEl = document.getElementById('misEnviosCount');
+    if (!email) {
+      if (listaT) listaT.innerHTML = '<div class="text-xs text-stone-400 italic py-2 text-center">No detecto tu sesión. Recargá la página.</div>';
+      return;
+    }
+    try {
+      var resp = await sb.rpc('diego_mis_envios_resumen', { p_email: email });
+      if (resp.error) throw resp.error;
+      var data = resp.data || {};
+      var stats = data.stats || {};
+      var tareas = data.tareas || [];
+      var archivos = data.archivos || [];
+
+      // KPIs
+      document.getElementById('misEnviosKpiTareasPend').textContent = stats.tareas_pendientes || 0;
+      document.getElementById('misEnviosKpiTareasOk').textContent = stats.tareas_completadas || 0;
+      document.getElementById('misEnviosKpiArchivos').textContent = stats.archivos_total || 0;
+      document.getElementById('misEnviosKpiTotal').textContent = (stats.tareas_total || 0) + (stats.archivos_total || 0);
+      if (countEl) countEl.textContent = ((stats.tareas_total || 0) + (stats.archivos_total || 0)) + ' envíos' + (stats.es_admin ? ' (vista admin)' : '');
+
+      // Tareas
+      if (!tareas.length) {
+        listaT.innerHTML = '<div class="text-xs text-stone-400 italic py-3 text-center">Aún no le pediste tareas a Diego.</div>';
+      } else {
+        listaT.innerHTML = tareas.map(function (t) {
+          var asignadaA = t.destinatario || t.contacto_externo || '—';
+          return '<div class="bg-white border border-stone-200 rounded p-3">' +
+            '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+              '<span class="font-semibold text-sm">' + esc(t.titulo || t.tipo || 'Tarea') + '</span>' +
+              '<div class="flex gap-1">' + prioBadge(t.prioridad) + tareaBadge(t.estado) + '</div>' +
+            '</div>' +
+            (t.descripcion ? '<div class="text-stone-700 text-xs mb-1">' + esc(t.descripcion) + '</div>' : '') +
+            '<div class="text-xs text-stone-500 flex flex-wrap gap-x-3">' +
+              '<span>👤 Asignado a: <b>' + esc(asignadaA) + '</b></span>' +
+              (t.deadline ? '<span>📅 Deadline: ' + esc(t.deadline) + '</span>' : '') +
+              '<span>🕐 ' + fmtFecha(t.created_at) + '</span>' +
+              (t.completada_en ? '<span class="text-emerald-700">✓ ' + fmtFecha(t.completada_en) + '</span>' : '') +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
+
+      // Archivos
+      if (!archivos.length) {
+        listaA.innerHTML = '<div class="text-xs text-stone-400 italic py-3 text-center">No mandaste archivos a Diego por WhatsApp todavía.</div>';
+      } else {
+        listaA.innerHTML = archivos.map(function (a) {
+          var estado = a.resuelto ? '🟢 Procesado' : (a.status_inferido || '🟡 Pendiente');
+          return '<div class="bg-white border border-stone-200 rounded p-3">' +
+            '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+              '<span class="font-semibold text-sm">📎 ' + esc(a.archivo_nombre || 'archivo') + '</span>' +
+              '<span class="text-[10px] px-1.5 py-0.5 rounded ' + (a.resuelto ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800') + '">' + esc(estado) + '</span>' +
+            '</div>' +
+            '<div class="text-xs text-stone-500 flex flex-wrap gap-x-3">' +
+              (a.archivo_tipo ? '<span>tipo: ' + esc(a.archivo_tipo) + '</span>' : '') +
+              '<span>🕐 ' + fmtFecha(a.created_at) + '</span>' +
+              (a.archivo_url ? '<a class="text-sky-700 underline" href="' + esc(a.archivo_url) + '" target="_blank" rel="noopener">ver</a>' : '') +
+            '</div>' +
+            (a.decision_dusan ? '<div class="mt-1 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-900">📝 ' + esc(a.decision_dusan) + '</div>' : '') +
+          '</div>';
+        }).join('');
+      }
+    } catch (e) {
+      console.error('[MisEnviosDiego] error:', e);
+      if (listaT) listaT.innerHTML = '<div class="text-xs text-red-700 italic py-2 text-center">Error: ' + esc(e?.message || String(e)) + '</div>';
+    }
+  }
+
+  function init() {
+    document.querySelector('button[data-tab="mis_envios_diego"]')?.addEventListener('click', function () { setTimeout(loadMisEnviosDiego, 100); });
+    document.querySelector('a[data-v4-tab="mis_envios_diego"]')?.addEventListener('click', function () { setTimeout(loadMisEnviosDiego, 100); });
+    var refreshBtn = document.getElementById('misEnviosRefresh');
+    if (refreshBtn) refreshBtn.addEventListener('click', loadMisEnviosDiego);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
