@@ -2956,15 +2956,17 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 
               <div class="md:col-span-2">
-                <label for="cotTitulo" class="block text-xs text-stone-500 mb-1">Título de la cotización * <span class="text-xs text-stone-400 italic">(se completa solo al elegir cliente + sucursal + material)</span></label>
+                <label for="cotTitulo" class="block text-xs text-stone-500 mb-1" title="Título visible en la lista de negocios y reportes">Título de la cotización * <span class="text-xs text-stone-400 italic">(se completa solo al elegir cliente + sucursal + material)</span></label>
                 <input type="text" id="cotTitulo" placeholder="Se autogenera al completar los datos…"
+                       title="Se autogenera con [servicio] · [cliente] · [sucursal]. Editalo solo si querés un nombre distinto."
                        oninput="cotRecalcular(); cotTituloEditadoManual = true;"
                        class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
               </div>
 
               <div>
-                <label for="cotClienteBuscar" class="block text-xs text-stone-500 mb-1">Cliente *</label>
+                <label for="cotClienteBuscar" class="block text-xs text-stone-500 mb-1" title="Cliente al que le estás cotizando">Cliente *</label>
                 <input type="text" id="cotClienteBuscar" placeholder="Buscar por nombre o RUT…"
+                       title="Escribí 2+ letras para ver sugerencias del catálogo. Si no existe, lo creás luego."
                        oninput="buscarClienteCotizador(this.value)"
                        autocomplete="off"
                        aria-autocomplete="list" aria-controls="cotClienteSugerencias"
@@ -2976,32 +2978,36 @@
               </div>
 
               <div>
-                <label for="cotSucursal" class="block text-xs text-stone-500 mb-1">Sucursal *</label>
+                <label for="cotSucursal" class="block text-xs text-stone-500 mb-1" title="Sucursal Reciclean que ejecuta el servicio">Sucursal *</label>
                 <select id="cotSucursal"
+                        title="Sucursal Reciclean (Cerrillos · Maipú · Talca · Pto Montt). Define los kilómetros al cliente."
                         class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
                   <option value="">Seleccionar…</option>
                 </select>
               </div>
 
               <div id="cotServicioBlock">
-                <label for="cotServicio" class="block text-xs text-stone-500 mb-1">Servicio *</label>
+                <label for="cotServicio" class="block text-xs text-stone-500 mb-1" title="Tipo de servicio a cotizar">Servicio *</label>
                 <select id="cotServicio" onchange="cotRecalcular()"
+                        title="Servicio del catálogo: retiro, arriendo, pesaje, etc."
                         class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
                   <option value="">Seleccionar…</option>
                 </select>
               </div>
 
               <div id="cotTarifaBlock">
-                <label for="cotTarifa" class="block text-xs text-stone-500 mb-1">Tarifa UF base</label>
+                <label for="cotTarifa" class="block text-xs text-stone-500 mb-1" title="Tarifa UF base del servicio elegido">Tarifa UF base</label>
                 <select id="cotTarifa" onchange="cotRecalcular()"
+                        title="Precio en UF del servicio vigente (ej. Camión 3/4 base = 2.1 UF). Opcional si lo cobrás todo en las líneas."
                         class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
                   <option value="">Sin tarifa fija</option>
                 </select>
               </div>
 
               <div class="md:col-span-2">
-                <label for="cotNotas" class="block text-xs text-stone-500 mb-1">Notas / contexto</label>
+                <label for="cotNotas" class="block text-xs text-stone-500 mb-1" title="Contexto que Diego usa al armar el entregable PDF">Notas / contexto</label>
                 <textarea id="cotNotas" rows="2" placeholder="Contexto adicional…"
+                          title="Diego incluye estas notas en el PDF que enviás al cliente (sección Observaciones)."
                           class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none"></textarea>
               </div>
             </div>
@@ -3016,22 +3022,28 @@
                 + Agregar línea
               </button>
             </div>
+            <style>
+              /* SPEC V1.1 H11 · inputs numéricos del cotizador con cifras siempre visibles */
+              #cotLineas .cot-num { min-width: 90px; text-align: right; font-variant-numeric: tabular-nums; }
+              #cotLineas .cot-unidad { min-width: 70px; }
+            </style>
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead>
                   <tr class="border-b text-stone-500 text-xs">
-                    <th class="text-left py-2 pr-2">Material / Descripción</th>
-                    <th class="text-right py-2 px-2 w-32">Cantidad <span class="text-stone-400">(en kg)</span></th>
-                    <th class="text-right py-2 px-2 w-36">Precio <span class="text-stone-400">(UF / u)</span></th>
-                    <th class="text-right py-2 px-2 w-20">Desc. %</th>
-                    <th class="text-right py-2 px-2 w-24">Subtotal UF</th>
+                    <th class="text-left py-2 pr-2" title="Nombre del material o servicio cotizado">Material / Descripción</th>
+                    <th class="text-right py-2 px-2 w-24" title="Cantidad numérica (la unidad la elegís en la columna siguiente)">Cantidad</th>
+                    <th class="text-center py-2 px-2 w-20" title="Unidad de medida: kg, t (toneladas), u (unidades), m³ o litros">Unidad</th>
+                    <th class="text-right py-2 px-2 w-36" title="Precio en UF por unidad. Ej: 0.05 UF por kg, 50 UF por tonelada">Precio <span class="text-stone-400">(UF / u)</span></th>
+                    <th class="text-right py-2 px-2 w-20" title="Descuento aplicado a esta línea (0-100%)">Desc. %</th>
+                    <th class="text-right py-2 px-2 w-24" title="Cantidad × Precio × (1 − Descuento). Se recalcula solo">Subtotal UF</th>
                     <th class="py-2 w-8"></th>
                   </tr>
                 </thead>
                 <tbody id="cotLineas"></tbody>
               </table>
               <p class="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
-                💡 <strong>Cantidad:</strong> escribí en kg (5 toneladas = 5000 kg). <strong>Precio:</strong> es en UF por unidad. Para compra de material a $30 CLP/kg con UF $40.543 → poné ~0.00074 UF/kg.<br>
+                💡 <strong>Cantidad + Unidad:</strong> 5 toneladas = ponés <em>5</em> con unidad <em>t</em>. <strong>Precio:</strong> es en UF por la unidad elegida. Ej: 5 t × 50 UF/t = 250 UF.<br>
                 <strong>Múltiples servicios:</strong> agregá una línea por cada servicio con <em>+ Agregar línea</em> (ej. notario + destrucción + transporte = 3 líneas).
               </p>
             </div>
@@ -3051,19 +3063,22 @@
                 <span class="text-stone-500">Descuento prom.</span>
                 <span id="cotDescProm" class="font-semibold">0,0%</span>
               </div>
-              <div class="flex justify-between items-center pt-2 border-t border-stone-100">
-                <span class="text-stone-500">Piso descuento</span>
-                <span id="cotPisoStatus" class="text-xs font-semibold px-2 py-1 rounded">—</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-stone-500">Margen estimado</span>
-                <span id="cotMargenStatus" class="text-xs font-semibold px-2 py-1 rounded">—</span>
+              <!-- SPEC V1.1 H14 · solo visible si usuario tiene ver_margenes=true -->
+              <div id="cotMargenesMetaBlock" class="hidden">
+                <div class="flex justify-between items-center pt-2 border-t border-stone-100">
+                  <span class="text-stone-500" title="Validación del descuento contra los topes de la categoría del cliente">Piso descuento</span>
+                  <span id="cotPisoStatus" class="text-xs font-semibold px-2 py-1 rounded">—</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-stone-500" title="Margen estimado vs el mínimo meta por categoría de material">Margen estimado</span>
+                  <span id="cotMargenStatus" class="text-xs font-semibold px-2 py-1 rounded">—</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Pisos y márgenes (data de BD) -->
-          <div class="bg-stone-50 p-4 rounded-lg text-xs text-stone-500">
+          <!-- Pisos y márgenes (data de BD) - solo admin con ver_margenes -->
+          <div id="cotParamsVigentesBlock" class="hidden bg-stone-50 p-4 rounded-lg text-xs text-stone-500">
             <p class="font-semibold text-stone-600 mb-2">Parámetros vigentes</p>
             <div id="cotParamsVigentes">Cargando...</div>
           </div>
@@ -3607,8 +3622,14 @@
       </div>
       <p class="text-sm text-stone-500 mb-3">Cargá acá los documentos que necesitan firma de Dusan (o de quien indiques). Cuando lo firme, ves estado + link al firmado.</p>
       <div id="firmaForm" class="hidden bg-white border border-stone-200 rounded p-3 mb-3 space-y-2">
+        <input type="hidden" id="fp_edit_id">
         <input id="fp_titulo" type="text" placeholder="Título del documento (ej: Declaración Ética Salcobland)" class="w-full px-2 py-1 border border-stone-300 rounded text-sm" maxlength="200">
-        <input id="fp_link" type="url" placeholder="Link al documento (SharePoint, Drive, etc.)" class="w-full px-2 py-1 border border-stone-300 rounded text-sm">
+        <div>
+          <label class="block text-[10px] text-stone-500 mb-1">📎 Subir archivo (opcional · pdf, doc, xls, img, etc.)</label>
+          <input id="fp_archivo" type="file" accept="*/*" class="w-full text-xs">
+          <div id="fp_archivo_actual" class="text-[10px] text-stone-500 mt-1 hidden"></div>
+        </div>
+        <input id="fp_link" type="url" placeholder="O pegá link externo (SharePoint, Drive, etc.) — opcional si subiste archivo" class="w-full px-2 py-1 border border-stone-300 rounded text-sm">
         <div class="grid grid-cols-2 gap-2">
           <select id="fp_tipo" class="px-2 py-1 border border-stone-300 rounded text-sm">
             <option value="firma_digital">Firma digital</option>
@@ -6378,6 +6399,24 @@ function fmtPct(n) {
   return Number(n).toFixed(1) + '%';
 }
 
+// SPEC V1.1 H09 · regla decimales central para el cotizador.
+// tipo ∈ {kg, t, u, m3, lt, UF, CLP, pct}. Default = number.
+window.fmtNum = function (n, tipo) {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return '—';
+  const v = Number(n);
+  switch (tipo) {
+    case 'kg':  return Math.round(v).toLocaleString('es-CL');
+    case 't':   return v.toFixed(2).replace('.', ',');
+    case 'u':   return Math.round(v).toLocaleString('es-CL');
+    case 'm3':  return v.toFixed(2).replace('.', ',');
+    case 'lt':  return Math.round(v).toLocaleString('es-CL');
+    case 'UF':  return v.toFixed(4).replace('.', ',');
+    case 'CLP': return '$' + Math.round(v).toLocaleString('es-CL');
+    case 'pct': return v.toFixed(1).replace('.', ',') + '%';
+    default:    return v.toLocaleString('es-CL');
+  }
+};
+
 async function loadCierres() {
   const div = document.getElementById('cierresTabla');
   div.innerHTML = '<div class="skeleton" aria-busy="true"></div>';
@@ -7006,6 +7045,31 @@ async function initCotizador() {
   if (_cotizadorIniciado) return;
   _cotizadorIniciado = true;
 
+  // SPEC V1.1 H14 · resolver permisos del usuario para mostrar/ocultar márgenes meta
+  try {
+    const __cotResolveEmail = () => {
+      try { if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase(); } catch (e) {}
+      try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
+      try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+      try {
+        var sbTok = JSON.parse(localStorage.getItem('sb-eknmtsrtfkzroxnovfqn-auth-token') || 'null');
+        var em = sbTok?.user?.email || sbTok?.currentSession?.user?.email;
+        if (em) return String(em).toLowerCase();
+      } catch (e) {}
+      return null;
+    };
+    const __email = __cotResolveEmail();
+    if (__email) {
+      const __permRes = await sb.rpc('cotizador_permisos', { p_email: __email });
+      const __perm = __permRes?.data || { ver_margenes: false, es_admin: false };
+      const __ver = !!(__perm.ver_margenes || __perm.es_admin);
+      const __metaBlock = document.getElementById('cotMargenesMetaBlock');
+      const __paramsBlock = document.getElementById('cotParamsVigentesBlock');
+      if (__metaBlock) __metaBlock.classList.toggle('hidden', !__ver);
+      if (__paramsBlock) __paramsBlock.classList.toggle('hidden', !__ver);
+    }
+  } catch (e) { console.warn('[H14] cotizador_permisos error (fallback hidden):', e); }
+
   // Cargar catálogos en paralelo
   const [sucRes, srvRes, tarRes, pisoRes, marRes] = await Promise.all([
     sb.schema('curated').from('sucursales').select('sucursal_id, nombre').eq('activa', true).order('nombre'),
@@ -7068,8 +7132,7 @@ async function initCotizador() {
 }
 
 function agregarLineaCot() {
-  const idx = _cotLineas.length;
-  _cotLineas.push({ desc: '', qty: 1, precioUF: 0, descPct: 0 });
+  _cotLineas.push({ desc: '', qty: 1, unidad: 'kg', precioUF: 0, descPct: 0 });
   renderLineasCot();
 }
 
@@ -7081,42 +7144,59 @@ function eliminarLineaCot(idx) {
 
 function renderLineasCot() {
   const tbody = document.getElementById('cotLineas');
-  tbody.innerHTML = _cotLineas.map((l, i) => `
+  const UNIDADES = ['kg','t','u','m3','lt'];
+  tbody.innerHTML = _cotLineas.map((l, i) => {
+    if (!l.unidad) l.unidad = 'kg';
+    const opts = UNIDADES.map(u => `<option value="${u}"${l.unidad===u?' selected':''}>${u}</option>`).join('');
+    return `
     <tr class="border-b border-stone-100">
       <td class="py-1 pr-2">
         <input type="text" value="${escapeHtml(l.desc)}" placeholder="Descripción…"
                aria-label="Descripción de la línea ${i + 1}"
+               title="Nombre del material o servicio (ej: cartón, polipropileno, retiro especial)"
                oninput="_cotLineas[${i}].desc = this.value"
                class="w-full border border-stone-200 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none">
       </td>
       <td class="py-1 px-2">
         <input type="number" value="${l.qty}" min="0" step="any" inputmode="decimal"
                aria-label="Cantidad de la línea ${i + 1}"
+               title="Cantidad numérica (sin importar la unidad)"
                oninput="_cotLineas[${i}].qty = parseFloat(this.value)||0; cotRecalcular()"
-               class="w-full border border-stone-200 rounded px-2 py-1 text-sm text-right focus:border-green-700 focus:outline-none">
+               class="cot-num border border-stone-200 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none">
+      </td>
+      <td class="py-1 px-2 text-center">
+        <select aria-label="Unidad de la línea ${i + 1}"
+                title="Unidad de medida: kg, t (toneladas), u (unidades), m³, litros"
+                onchange="_cotLineas[${i}].unidad = this.value; cotRecalcular()"
+                class="cot-unidad border border-stone-200 rounded px-1 py-1 text-sm focus:border-green-700 focus:outline-none">
+          ${opts}
+        </select>
       </td>
       <td class="py-1 px-2">
         <input type="number" value="${l.precioUF}" min="0" step="any" inputmode="decimal"
                aria-label="Precio UF de la línea ${i + 1}"
+               title="Precio en UF por unidad (la unidad elegida en la columna anterior)"
                oninput="_cotLineas[${i}].precioUF = parseFloat(this.value)||0; cotRecalcular()"
-               class="w-full border border-stone-200 rounded px-2 py-1 text-sm text-right focus:border-green-700 focus:outline-none">
+               class="cot-num border border-stone-200 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none">
       </td>
       <td class="py-1 px-2">
         <input type="number" value="${l.descPct}" min="0" max="100" step="0.1"
                aria-label="Descuento porcentual de la línea ${i + 1}"
+               title="Descuento aplicado a esta línea (0-100%)"
                oninput="_cotLineas[${i}].descPct = parseFloat(this.value)||0; cotRecalcular()"
-               class="w-full border border-stone-200 rounded px-2 py-1 text-sm text-right focus:border-green-700 focus:outline-none">
+               class="cot-num border border-stone-200 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none">
       </td>
-      <td class="py-1 px-2 text-right font-mono text-stone-700">
-        ${(l.qty * l.precioUF * (1 - l.descPct / 100)).toFixed(4)}
+      <td class="py-1 px-2 text-right font-mono text-stone-700 cot-num" style="min-width: 90px;">
+        ${window.fmtNum(l.qty * l.precioUF * (1 - l.descPct / 100), 'UF')}
       </td>
       <td class="py-1 px-2 text-center">
         <button onclick="eliminarLineaCot(${i})"
                 aria-label="Eliminar línea ${i + 1}"
+                title="Quitar esta línea de la cotización"
                 class="text-slate-600 hover:text-red-500 text-base leading-none">×</button>
       </td>
     </tr>
-  `).join('');
+  `;}).join('');
 }
 
 // D-OP-04-v2 Ola 1.4 — mapeo perfil del panel → nivel_autorizacion de mig 029.
@@ -7180,8 +7260,9 @@ function cotRecalcular() {
   const brutoUF = _cotLineas.reduce((acc, l) => acc + l.qty * l.precioUF, 0);
   const descProm = brutoUF > 0 ? (1 - totalUF / brutoUF) * 100 : 0;
 
-  document.getElementById('cotTotalUF').textContent = totalUF.toFixed(4) + ' UF';
-  document.getElementById('cotDescProm').textContent = descProm.toFixed(1) + '%';
+  // SPEC V1.1 H09 · usar fmtNum central
+  document.getElementById('cotTotalUF').textContent = window.fmtNum(totalUF, 'UF') + ' UF';
+  document.getElementById('cotDescProm').textContent = window.fmtNum(descProm, 'pct');
 
   // D-OP-04-v2 Ola 1.4 — validación cruzada via curated.f_validar_descuento (mig 029 D-OP-06).
   // Si hay cliente seleccionado: pide veredicto real por categoría del cliente + rol del usuario.
@@ -13436,6 +13517,12 @@ document.addEventListener('DOMContentLoaded', () => {
     try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
     try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
     try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    try {
+      var sbKey = 'sb-eknmtsrtfkzroxnovfqn-auth-token';
+      var sbTok = JSON.parse(localStorage.getItem(sbKey) || 'null');
+      var em = sbTok?.user?.email || sbTok?.currentSession?.user?.email;
+      if (em) return String(em).toLowerCase();
+    } catch (e) {}
     return null;
   }
   function esc(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
@@ -13705,6 +13792,12 @@ document.addEventListener('DOMContentLoaded', () => {
     try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
     try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
     try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    try {
+      var sbKey = 'sb-eknmtsrtfkzroxnovfqn-auth-token';
+      var sbTok = JSON.parse(localStorage.getItem(sbKey) || 'null');
+      var em = sbTok?.user?.email || sbTok?.currentSession?.user?.email;
+      if (em) return String(em).toLowerCase();
+    } catch (e) {}
     return null;
   }
   function esc(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
@@ -13715,6 +13808,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ===== FIRMAS PENDIENTES =====
   var fpColor = { pendiente: 'bg-amber-100 text-amber-800', en_revision: 'bg-blue-100 text-blue-800', firmado: 'bg-emerald-100 text-emerald-800', rechazado: 'bg-red-100 text-red-800' };
+  var _firmasRows = [];
+  function fmtKB(b) { if (b == null) return ''; if (b < 1024) return b + ' B'; if (b < 1048576) return Math.round(b/1024) + ' KB'; return (b/1048576).toFixed(1) + ' MB'; }
+
+  async function descargarArchivoFirma(bucketPath, fallbackName) {
+    if (!bucketPath) return;
+    try {
+      var r = await sb.storage.from('firmas-documentos').createSignedUrl(bucketPath, 600);
+      if (r.error) throw r.error;
+      var a = document.createElement('a');
+      a.href = r.data.signedUrl;
+      a.download = fallbackName || 'archivo';
+      a.target = '_blank';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (e) { alert('No se pudo descargar: ' + (e?.message || e)); }
+  }
+
   async function loadFirmas() {
     var lista = document.getElementById('firmaLista');
     if (!ready()) { showError(lista, 'Sesión no detectada.'); return; }
@@ -13724,24 +13836,41 @@ document.addEventListener('DOMContentLoaded', () => {
       var resp = await sb.rpc('firma_listar', { p_email: email, p_solo_pendientes: false });
       if (resp.error) throw resp.error;
       var rows = resp.data || [];
+      _firmasRows = rows;
       if (!rows.length) { lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Sin firmas pendientes.</div>'; return; }
       var admin = isAdmin(email);
       lista.innerHTML = rows.map(function (r) {
         var puedeActuar = (r.destinatario_email === email || admin) && r.estado === 'pendiente';
+        var puedeEditar = (r.solicitante_email === email || admin) && r.estado !== 'firmado';
+        var linkOriginal = '';
+        if (r.archivo_path) {
+          linkOriginal = '<button class="fp-descargar text-blue-600 underline text-xs" data-path="' + esc(r.archivo_path) + '" data-name="' + esc(r.archivo_nombre || 'documento') + '">📄 Descargar original (' + esc(r.archivo_nombre || 'archivo') + (r.archivo_size ? ' · ' + fmtKB(r.archivo_size) : '') + ')</button>';
+        } else if (r.documento_link) {
+          linkOriginal = '<a href="' + esc(r.documento_link) + '" target="_blank" class="text-blue-600 underline text-xs">📄 Abrir documento original (link externo)</a>';
+        }
+        var linkFirmado = '';
+        if (r.firmado_archivo_path) {
+          linkFirmado = '<button class="fp-descargar text-emerald-700 underline font-semibold text-xs" data-path="' + esc(r.firmado_archivo_path) + '" data-name="' + esc(r.firmado_archivo_nombre || 'firmado') + '">✅ Descargar firmado (' + esc(r.firmado_archivo_nombre || 'archivo') + ')</button>';
+        } else if (r.link_firmado) {
+          linkFirmado = '<a href="' + esc(r.link_firmado) + '" target="_blank" class="text-emerald-700 underline font-semibold text-xs">✅ Abrir documento firmado (link externo)</a>';
+        }
         return '<div class="bg-white border border-stone-200 rounded p-3">' +
           '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
             '<span class="font-semibold text-sm">📝 ' + esc(r.documento_titulo) + '</span>' +
             '<span class="text-[10px] px-1.5 py-0.5 rounded ' + (fpColor[r.estado] || 'bg-stone-100 text-stone-700') + '">' + esc(r.estado.replace(/_/g,' ')) + '</span>' +
           '</div>' +
           '<div class="text-xs text-stone-600">' + esc(r.solicitante_email) + ' → ' + esc(r.destinatario_email) + ' · ' + esc(r.tipo.replace(/_/g,' ')) + '</div>' +
-          '<div class="text-xs mt-1"><a href="' + esc(r.documento_link) + '" target="_blank" class="text-blue-600 underline">📄 Abrir documento original</a></div>' +
-          (r.link_firmado ? '<div class="text-xs mt-1"><a href="' + esc(r.link_firmado) + '" target="_blank" class="text-emerald-700 underline font-semibold">✅ Abrir documento firmado</a></div>' : '') +
+          (linkOriginal ? '<div class="text-xs mt-1">' + linkOriginal + '</div>' : '') +
+          (linkFirmado ? '<div class="text-xs mt-1">' + linkFirmado + '</div>' : '') +
           (r.notas ? '<div class="text-xs text-stone-700 italic mt-1">"' + esc(r.notas) + '"</div>' : '') +
           (r.comentarios_firmante ? '<div class="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-900">💬 ' + esc(r.comentarios_firmante) + '</div>' : '') +
           '<div class="text-[10px] text-stone-400 mt-1">solicitado ' + fmtFecha(r.created_at) + (r.firmado_en ? ' · firmado ' + fmtFecha(r.firmado_en) : '') + '</div>' +
-          (puedeActuar ? '<div class="mt-2 flex gap-1"><button class="fp-firmar text-[10px] px-2 py-0.5 bg-emerald-600 text-white rounded" data-id="' + esc(r.id) + '">✓ Marcar firmado</button>' +
-                                                            '<button class="fp-revisar text-[10px] px-2 py-0.5 bg-blue-600 text-white rounded" data-id="' + esc(r.id) + '">📋 En revisión</button>' +
-                                                            '<button class="fp-rechazar text-[10px] px-2 py-0.5 bg-red-600 text-white rounded" data-id="' + esc(r.id) + '">✕ Rechazar</button></div>' : '') +
+          '<div class="mt-2 flex gap-1 flex-wrap">' +
+            (puedeEditar ? '<button class="fp-editar text-[10px] px-2 py-0.5 bg-stone-200 text-stone-700 rounded" data-id="' + esc(r.id) + '">✏ Editar</button>' : '') +
+            (puedeActuar ? '<button class="fp-firmar text-[10px] px-2 py-0.5 bg-emerald-600 text-white rounded" data-id="' + esc(r.id) + '">✓ Marcar firmado</button>' +
+                           '<button class="fp-revisar text-[10px] px-2 py-0.5 bg-blue-600 text-white rounded" data-id="' + esc(r.id) + '">📋 En revisión</button>' +
+                           '<button class="fp-rechazar text-[10px] px-2 py-0.5 bg-red-600 text-white rounded" data-id="' + esc(r.id) + '">✕ Rechazar</button>' : '') +
+          '</div>' +
         '</div>';
       }).join('');
     } catch (e) {
@@ -13749,14 +13878,54 @@ document.addEventListener('DOMContentLoaded', () => {
       showError(lista, 'Error: ' + (e?.message || e));
     }
   }
+
+  function abrirEditFirma(id) {
+    var r = _firmasRows.find(function (x) { return x.id === id; });
+    if (!r) return;
+    document.getElementById('fp_edit_id').value = id;
+    document.getElementById('fp_titulo').value = r.documento_titulo || '';
+    document.getElementById('fp_link').value = r.documento_link || '';
+    document.getElementById('fp_tipo').value = r.tipo || 'firma_digital';
+    document.getElementById('fp_destinatario').value = r.destinatario_email || '';
+    document.getElementById('fp_notas').value = r.notas || '';
+    document.getElementById('fp_archivo').value = '';
+    var act = document.getElementById('fp_archivo_actual');
+    if (r.archivo_path) {
+      act.textContent = '📎 Archivo actual: ' + (r.archivo_nombre || 'archivo') + (r.archivo_size ? ' (' + fmtKB(r.archivo_size) + ')' : '') + ' · subí uno nuevo para reemplazar';
+      act.classList.remove('hidden');
+    } else { act.classList.add('hidden'); }
+    document.getElementById('fp_enviar').textContent = 'Guardar cambios';
+    document.getElementById('firmaForm').classList.remove('hidden');
+    document.getElementById('firmaForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function resetFirmaForm() {
+    ['fp_titulo','fp_link','fp_notas','fp_archivo','fp_edit_id'].forEach(function (id) { var el = document.getElementById(id); if (el) el.value = ''; });
+    document.getElementById('fp_archivo_actual')?.classList.add('hidden');
+    document.getElementById('fp_destinatario').value = 'dusan.arancibia@gmail.com';
+    document.getElementById('fp_tipo').value = 'firma_digital';
+    document.getElementById('fp_enviar').textContent = 'Solicitar firma';
+  }
+
+  async function subirArchivoFirma(file) {
+    var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    var path = 'firmas/' + Date.now() + '_' + safeName;
+    var up = await sb.storage.from('firmas-documentos').upload(path, file, { upsert: false, contentType: file.type || 'application/octet-stream' });
+    if (up.error) throw up.error;
+    return { path: path, nombre: file.name, mime: file.type || null, size: file.size };
+  }
+
   async function actualizarFirma(id, estado) {
     var email = resolveEmail();
     var linkFirmado = null;
     var coment = null;
     if (estado === 'firmado') {
-      linkFirmado = prompt('Link al documento FIRMADO (SharePoint, Drive, etc):', '');
-      if (linkFirmado === null) return;
-      if (!linkFirmado.trim()) { alert('El link al firmado es requerido para marcar como firmado.'); return; }
+      var modo = confirm('¿Marcar firmado con LINK externo? (Cancelar = lo seguís editando luego con archivo)');
+      if (modo) {
+        linkFirmado = prompt('Link al documento FIRMADO:', '');
+        if (linkFirmado === null) return;
+        if (!linkFirmado.trim()) { alert('Link requerido.'); return; }
+      }
     } else if (estado === 'rechazado') {
       coment = prompt('Razón del rechazo:', '');
       if (coment === null) return;
@@ -13765,7 +13934,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (coment === null) return;
     }
     try {
-      var resp = await sb.rpc('firma_actualizar', { p_id: id, p_firmante_email: email, p_nuevo_estado: estado, p_link_firmado: linkFirmado, p_comentarios: coment || null });
+      var resp = await sb.rpc('firma_actualizar', { p_id: id, p_firmante_email: email, p_nuevo_estado: estado, p_link_firmado: linkFirmado, p_comentarios: coment || null, p_firmado_archivo_path: null, p_firmado_archivo_nombre: null });
       if (resp.error) throw resp.error;
       loadFirmas();
     } catch (e) { alert('Error: ' + (e?.message || e)); }
@@ -13829,28 +13998,66 @@ document.addEventListener('DOMContentLoaded', () => {
     bind('tarifas_ext', loadTarifas);
 
     // Form Firma
-    document.getElementById('firmaNuevaBtn')?.addEventListener('click', function () { document.getElementById('firmaForm').classList.toggle('hidden'); });
-    document.getElementById('fp_cancelar')?.addEventListener('click', function () { document.getElementById('firmaForm').classList.add('hidden'); });
+    document.getElementById('firmaNuevaBtn')?.addEventListener('click', function () {
+      resetFirmaForm();
+      document.getElementById('firmaForm').classList.toggle('hidden');
+    });
+    document.getElementById('fp_cancelar')?.addEventListener('click', function () {
+      resetFirmaForm();
+      document.getElementById('firmaForm').classList.add('hidden');
+    });
     document.getElementById('fp_enviar')?.addEventListener('click', async function () {
+      var editId = document.getElementById('fp_edit_id').value;
       var titulo = document.getElementById('fp_titulo').value.trim();
       var link = document.getElementById('fp_link').value.trim();
-      if (!titulo || !link) { alert('Título y link son requeridos'); return; }
+      var fileInput = document.getElementById('fp_archivo');
+      var file = fileInput.files && fileInput.files[0];
+      if (!titulo) { alert('Título requerido.'); return; }
+      if (!editId && !link && !file) { alert('Subí un archivo o pegá un link.'); return; }
       var email = resolveEmail();
       if (!email) { alert('No detecto sesión'); return; }
+      var btn = this;
+      btn.disabled = true;
+      var orig = btn.textContent;
       try {
-        var resp = await sb.rpc('firma_solicitar', {
-          p_solicitante_email: email,
-          p_documento_titulo: titulo,
-          p_documento_link: link,
-          p_tipo: document.getElementById('fp_tipo').value || 'firma_digital',
-          p_destinatario_email: document.getElementById('fp_destinatario').value.trim() || 'dusan.arancibia@gmail.com',
-          p_notas: document.getElementById('fp_notas').value.trim() || null
-        });
-        if (resp.error) throw resp.error;
-        ['fp_titulo','fp_link','fp_notas'].forEach(function (id) { document.getElementById(id).value = ''; });
+        var archivoData = null;
+        if (file) { btn.textContent = 'Subiendo archivo…'; archivoData = await subirArchivoFirma(file); }
+        if (editId) {
+          btn.textContent = 'Guardando cambios…';
+          var resp = await sb.rpc('firma_editar_solicitud', {
+            p_email: email, p_id: editId,
+            p_documento_titulo: titulo,
+            p_documento_link: link || null,
+            p_tipo: document.getElementById('fp_tipo').value || null,
+            p_destinatario_email: document.getElementById('fp_destinatario').value.trim() || null,
+            p_notas: document.getElementById('fp_notas').value.trim() || null,
+            p_archivo_path:   archivoData ? archivoData.path   : null,
+            p_archivo_nombre: archivoData ? archivoData.nombre : null,
+            p_archivo_mime:   archivoData ? archivoData.mime   : null,
+            p_archivo_size:   archivoData ? archivoData.size   : null
+          });
+          if (resp.error) throw resp.error;
+        } else {
+          btn.textContent = 'Creando…';
+          var resp2 = await sb.rpc('firma_solicitar', {
+            p_solicitante_email: email,
+            p_documento_titulo: titulo,
+            p_documento_link: link || null,
+            p_tipo: document.getElementById('fp_tipo').value || 'firma_digital',
+            p_destinatario_email: document.getElementById('fp_destinatario').value.trim() || 'dusan.arancibia@gmail.com',
+            p_notas: document.getElementById('fp_notas').value.trim() || null,
+            p_archivo_path:   archivoData ? archivoData.path   : null,
+            p_archivo_nombre: archivoData ? archivoData.nombre : null,
+            p_archivo_mime:   archivoData ? archivoData.mime   : null,
+            p_archivo_size:   archivoData ? archivoData.size   : null
+          });
+          if (resp2.error) throw resp2.error;
+        }
+        resetFirmaForm();
         document.getElementById('firmaForm').classList.add('hidden');
         loadFirmas();
       } catch (e) { alert('Error: ' + (e?.message || e)); }
+      finally { btn.disabled = false; btn.textContent = orig; }
     });
 
     // Form Tarifa
@@ -13890,11 +14097,303 @@ document.addEventListener('DOMContentLoaded', () => {
     // Delegated clicks
     document.addEventListener('click', function (e) {
       var b;
-      if ((b = e.target.closest('.fp-firmar')))   actualizarFirma(b.dataset.id, 'firmado');
-      else if ((b = e.target.closest('.fp-revisar')))  actualizarFirma(b.dataset.id, 'en_revision');
-      else if ((b = e.target.closest('.fp-rechazar'))) actualizarFirma(b.dataset.id, 'rechazado');
-      else if ((b = e.target.closest('.te-edit')))     editarTarifa(b.dataset.id, b.dataset.precio);
+      if ((b = e.target.closest('.fp-firmar')))         actualizarFirma(b.dataset.id, 'firmado');
+      else if ((b = e.target.closest('.fp-revisar')))   actualizarFirma(b.dataset.id, 'en_revision');
+      else if ((b = e.target.closest('.fp-rechazar')))  actualizarFirma(b.dataset.id, 'rechazado');
+      else if ((b = e.target.closest('.fp-editar')))    abrirEditFirma(b.dataset.id);
+      else if ((b = e.target.closest('.fp-descargar'))) descargarArchivoFirma(b.dataset.path, b.dataset.name);
+      else if ((b = e.target.closest('.te-edit')))      editarTarifa(b.dataset.id, b.dataset.precio);
     });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- D-CRM-IMPULSA-OPORT-NUEVA-001 · Modal Nueva oportunidad + sección adjuntos panel (Pablo 01-jun PM) -->
+<div id="crmNuevaOppOverlay" class="hidden fixed inset-0 z-[60] bg-stone-900/60 items-center justify-center p-4">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <header class="p-4 border-b border-stone-200 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-stone-800">➕ Nueva oportunidad</h3>
+      <button id="crmNuevaOppCerrar" class="text-stone-500 hover:text-stone-700 text-xl leading-none">×</button>
+    </header>
+    <div class="p-4 space-y-3 text-sm">
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Cliente</label>
+        <div id="crmNuevaOppCliente" class="px-2 py-1.5 bg-stone-50 border border-stone-200 rounded text-stone-800">—</div>
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Tipo *</label>
+        <select id="crmNuevaOppTipo" class="w-full px-2 py-1.5 border border-stone-300 rounded">
+          <option value="cotizacion">Cotización</option>
+          <option value="necesidad">Necesidad</option>
+          <option value="accion">Acción</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Título *</label>
+        <input type="text" id="crmNuevaOppTitulo" maxlength="200" placeholder="Ej: Retiro mensual cartón"
+               class="w-full px-2 py-1.5 border border-stone-300 rounded">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Sucursal</label>
+          <input type="text" id="crmNuevaOppSucursal" maxlength="20" placeholder="01/02/03..."
+                 class="w-full px-2 py-1.5 border border-stone-300 rounded">
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Valor estimado (UF)</label>
+          <input type="number" id="crmNuevaOppValorUF" step="0.01" placeholder="3.5"
+                 class="w-full px-2 py-1.5 border border-stone-300 rounded">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Descripción</label>
+        <textarea id="crmNuevaOppDescripcion" rows="2" maxlength="500"
+                  class="w-full px-2 py-1.5 border border-stone-300 rounded"></textarea>
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">📎 Adjuntos (opcional, se suben al crear)</label>
+        <input type="file" id="crmNuevaOppFiles" multiple class="w-full text-xs">
+        <div class="text-[10px] text-stone-400 mt-1">Podés agregar más adjuntos después desde la oportunidad creada.</div>
+      </div>
+      <div id="crmNuevaOppMsg" class="hidden text-xs"></div>
+      <div class="flex justify-end gap-2 pt-2 border-t border-stone-100">
+        <button id="crmNuevaOppCancelar" class="px-3 py-1.5 text-stone-600 text-sm">Cancelar</button>
+        <button id="crmNuevaOppCrear" class="px-3 py-1.5 bg-emerald-600 text-white rounded text-sm">Crear oportunidad</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  function ready() { return typeof sb !== 'undefined' && sb && sb.rpc && sb.storage; }
+  function resolveEmail() {
+    if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase();
+    try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
+    try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
+    try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    try {
+      var sbKey = 'sb-eknmtsrtfkzroxnovfqn-auth-token';
+      var sbTok = JSON.parse(localStorage.getItem(sbKey) || 'null');
+      var em = sbTok?.user?.email || sbTok?.currentSession?.user?.email;
+      if (em) return String(em).toLowerCase();
+    } catch (e) {}
+    return null;
+  }
+  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function fmtFecha(ts) { if (!ts) return '—'; try { return new Date(ts).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return ts; } }
+  function fmtKB(b) { if (b == null) return '—'; if (b < 1024) return b + ' B'; if (b < 1048576) return Math.round(b/1024) + ' KB'; return (b/1048576).toFixed(1) + ' MB'; }
+
+  // Inyecta sección "Oportunidades del panel" + botón "+ Nueva" cuando se entra a subtab oportunidades
+  function injectarPanelOportunidades() {
+    var body = document.getElementById('crmFichaBody');
+    if (!body) return;
+    var fc = (window.COM && window.COM.fichaCache) || null;
+    if (!fc || !fc.id) return;
+    var externalCrm = fc.id;
+    if (document.getElementById('crmOppPanelSection')) return;
+
+    var header = document.createElement('div');
+    header.id = 'crmOppPanelSection';
+    header.className = 'mt-6 pt-4 border-t-2 border-emerald-200';
+    header.innerHTML =
+      '<div class="flex items-center justify-between mb-3 flex-wrap gap-2">' +
+        '<h4 class="text-sm font-bold text-emerald-700">➕ Oportunidades creadas desde el panel</h4>' +
+        '<button id="crmAbrirNuevaOpp" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold">+ Nueva oportunidad</button>' +
+      '</div>' +
+      '<div id="crmOppPanelLista" class="space-y-2"><div class="text-xs text-stone-400 italic py-2 text-center">Cargando…</div></div>';
+    body.appendChild(header);
+
+    document.getElementById('crmAbrirNuevaOpp').addEventListener('click', function () { abrirModalNueva(externalCrm, fc); });
+    cargarOportunidadesPanel(externalCrm);
+  }
+
+  async function cargarOportunidadesPanel(externalCrm) {
+    var lista = document.getElementById('crmOppPanelLista');
+    if (!ready()) { lista.innerHTML = '<div class="text-xs text-red-700">Sesión no detectada.</div>'; return; }
+    try {
+      var resp = await sb.rpc('crm_oportunidades_por_cliente', { p_external_id_crm: externalCrm });
+      if (resp.error) throw resp.error;
+      var data = resp.data || {};
+      var oports = (data.oportunidades || []).filter(function (o) { return o.origen === 'panel_crm_nueva'; });
+      if (!oports.length) {
+        lista.innerHTML = '<div class="text-xs text-stone-400 italic py-3 text-center">Aún no creaste oportunidades nuevas para este cliente.</div>';
+        return;
+      }
+      lista.innerHTML = oports.map(function (o) {
+        return '<div class="bg-white border border-emerald-200 rounded p-3" data-oport="' + esc(o.oportunidad_id) + '">' +
+          '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+            '<span class="font-semibold text-sm">' + esc(o.titulo) + '</span>' +
+            '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">' + esc(o.tipo) + ' · ' + esc(o.estado) + '</span>' +
+          '</div>' +
+          '<div class="text-xs text-stone-500 mb-2">🕐 ' + fmtFecha(o.fecha_recepcion) + ' · ' + esc(o.responsable || '—') + (o.valor_estimado_uf ? ' · ' + Number(o.valor_estimado_uf).toFixed(2) + ' UF' : '') + '</div>' +
+          '<div class="crm-opp-adj-zone border-t border-stone-100 pt-2 mt-2">' +
+            '<div class="flex items-center justify-between gap-2 mb-1">' +
+              '<span class="text-xs font-semibold text-stone-700">📎 Adjuntos</span>' +
+              '<label class="cursor-pointer text-[11px] text-emerald-700 hover:underline">' +
+                '+ Subir archivo' +
+                '<input type="file" class="hidden crm-opp-adj-file" data-oport="' + esc(o.oportunidad_id) + '">' +
+              '</label>' +
+            '</div>' +
+            '<div class="crm-opp-adj-lista space-y-1" data-oport="' + esc(o.oportunidad_id) + '"><div class="text-[10px] text-stone-400 italic">Cargando…</div></div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      oports.forEach(function (o) { cargarAdjuntos(o.oportunidad_id); });
+    } catch (e) {
+      console.error('[crm-panel-opp] error:', e);
+      lista.innerHTML = '<div class="text-xs text-red-700">Error: ' + esc(e?.message || String(e)) + '</div>';
+    }
+  }
+
+  async function cargarAdjuntos(oportunidadId) {
+    var cont = document.querySelector('.crm-opp-adj-lista[data-oport="' + oportunidadId + '"]');
+    if (!cont) return;
+    try {
+      var resp = await sb.rpc('opp_adjuntos_listar', { p_oportunidad_id: oportunidadId });
+      if (resp.error) throw resp.error;
+      var data = resp.data || {};
+      var panel = data.panel || [];
+      var etl = data.etl || [];
+      if (!panel.length && !etl.length) {
+        cont.innerHTML = '<div class="text-[10px] text-stone-400 italic">Sin archivos.</div>';
+        return;
+      }
+      var html = '';
+      panel.forEach(function (a) {
+        html += '<div class="flex items-center justify-between gap-2 text-xs bg-stone-50 px-2 py-1 rounded">' +
+          '<span class="truncate flex-1">📄 ' + esc(a.nombre) + ' <span class="text-stone-400">' + fmtKB(a.tamano_bytes) + '</span></span>' +
+          '<button class="crm-opp-adj-ver text-sky-700 text-[11px] hover:underline" data-path="' + esc(a.bucket_path) + '">ver</button>' +
+          '<button class="crm-opp-adj-del text-red-600 text-[11px] hover:underline" data-id="' + esc(a.id) + '" data-oport="' + oportunidadId + '">borrar</button>' +
+        '</div>';
+      });
+      etl.forEach(function (a) {
+        html += '<div class="flex items-center gap-2 text-xs bg-stone-50 px-2 py-1 rounded opacity-70">' +
+          '<span class="truncate flex-1">📄 ' + esc(a.nombre) + ' <span class="text-stone-400">(' + esc(a.extension || 'etl') + ')</span></span>' +
+          '<span class="text-[10px] text-stone-400">CRM</span>' +
+        '</div>';
+      });
+      cont.innerHTML = html;
+    } catch (e) {
+      console.warn('[crm-adj] error:', e);
+      cont.innerHTML = '<div class="text-[10px] text-red-700">Error cargando adjuntos.</div>';
+    }
+  }
+
+  async function subirArchivo(oportunidadId, file) {
+    if (!ready() || !file) return;
+    var email = resolveEmail();
+    if (!email) { alert('No detecto tu sesión.'); return; }
+    try {
+      var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      var path = oportunidadId + '/' + Date.now() + '_' + safeName;
+      var up = await sb.storage.from('impulsa-documentos').upload(path, file, { upsert: false, contentType: file.type || 'application/octet-stream' });
+      if (up.error) throw up.error;
+      var reg = await sb.rpc('opp_adjunto_registrar', {
+        p_email: email, p_oportunidad_id: oportunidadId, p_bucket_path: path,
+        p_nombre: file.name, p_mime: file.type || null, p_size: file.size
+      });
+      if (reg.error) throw reg.error;
+      cargarAdjuntos(oportunidadId);
+    } catch (e) {
+      console.error('[crm-adj] upload error:', e);
+      alert('Error subiendo: ' + (e?.message || String(e)));
+    }
+  }
+
+  async function borrarAdjunto(adjuntoId, oportunidadId) {
+    if (!confirm('¿Borrar este adjunto?')) return;
+    var email = resolveEmail();
+    if (!email) return;
+    try {
+      var r = await sb.rpc('opp_adjunto_borrar', { p_email: email, p_adjunto_id: adjuntoId });
+      if (r.error) throw r.error;
+      cargarAdjuntos(oportunidadId);
+    } catch (e) {
+      alert('Error: ' + (e?.message || String(e)));
+    }
+  }
+
+  async function verArchivo(bucketPath) {
+    try {
+      var s = await sb.storage.from('impulsa-documentos').createSignedUrl(bucketPath, 300);
+      if (s.error) throw s.error;
+      window.open(s.data.signedUrl, '_blank');
+    } catch (e) { alert('No se pudo abrir: ' + (e?.message || String(e))); }
+  }
+
+  // Modal
+  function abrirModalNueva(externalCrm, fc) {
+    var overlay = document.getElementById('crmNuevaOppOverlay');
+    overlay.classList.remove('hidden'); overlay.classList.add('flex');
+    document.getElementById('crmNuevaOppCliente').textContent = (fc?.cFull?.razon_social || fc?.c360?.razon_social || externalCrm);
+    document.getElementById('crmNuevaOppTitulo').value = '';
+    document.getElementById('crmNuevaOppSucursal').value = '';
+    document.getElementById('crmNuevaOppValorUF').value = '';
+    document.getElementById('crmNuevaOppDescripcion').value = '';
+    document.getElementById('crmNuevaOppFiles').value = '';
+    document.getElementById('crmNuevaOppMsg').classList.add('hidden');
+    document.getElementById('crmNuevaOppCrear').dataset.externalCrm = externalCrm;
+  }
+  function cerrarModal() {
+    var overlay = document.getElementById('crmNuevaOppOverlay');
+    overlay.classList.add('hidden'); overlay.classList.remove('flex');
+  }
+  async function crearOportunidad() {
+    var btn = document.getElementById('crmNuevaOppCrear');
+    var msg = document.getElementById('crmNuevaOppMsg');
+    var externalCrm = btn.dataset.externalCrm;
+    var titulo = document.getElementById('crmNuevaOppTitulo').value.trim();
+    var tipo = document.getElementById('crmNuevaOppTipo').value;
+    var sucursal = document.getElementById('crmNuevaOppSucursal').value.trim() || null;
+    var valor = parseFloat(document.getElementById('crmNuevaOppValorUF').value) || null;
+    var descripcion = document.getElementById('crmNuevaOppDescripcion').value.trim() || null;
+    var files = document.getElementById('crmNuevaOppFiles').files;
+    if (!titulo) { msg.className = 'text-xs text-red-700'; msg.textContent = 'Título requerido.'; msg.classList.remove('hidden'); return; }
+    var email = resolveEmail();
+    if (!email) { msg.className = 'text-xs text-red-700'; msg.textContent = 'No detecto tu sesión.'; msg.classList.remove('hidden'); return; }
+    btn.disabled = true; btn.textContent = 'Creando…';
+    try {
+      var r = await sb.rpc('crm_crear_oportunidad', {
+        p_email: email, p_external_id_crm: externalCrm, p_tipo: tipo,
+        p_titulo: titulo, p_descripcion: descripcion, p_sucursal_id: sucursal,
+        p_valor_estimado_uf: valor, p_metadata: {}
+      });
+      if (r.error) throw r.error;
+      var oportId = r.data;
+      for (var i = 0; i < files.length; i++) { await subirArchivo(oportId, files[i]); }
+      cerrarModal();
+      cargarOportunidadesPanel(externalCrm);
+    } catch (e) {
+      msg.className = 'text-xs text-red-700'; msg.textContent = 'Error: ' + (e?.message || String(e));
+      msg.classList.remove('hidden');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Crear oportunidad';
+    }
+  }
+
+  function init() {
+    document.addEventListener('click', function (e) {
+      var b;
+      if ((b = e.target.closest('.crm-subtab')) && b.getAttribute('data-subtab') === 'oportunidades') {
+        setTimeout(injectarPanelOportunidades, 250);
+      } else if ((b = e.target.closest('.crm-opp-adj-del'))) {
+        borrarAdjunto(b.dataset.id, b.dataset.oport);
+      } else if ((b = e.target.closest('.crm-opp-adj-ver'))) {
+        verArchivo(b.dataset.path);
+      }
+    });
+    document.addEventListener('change', function (e) {
+      var input = e.target.closest('.crm-opp-adj-file');
+      if (input && input.files && input.files[0]) {
+        subirArchivo(input.dataset.oport, input.files[0]);
+        input.value = '';
+      }
+    });
+    document.getElementById('crmNuevaOppCerrar')?.addEventListener('click', cerrarModal);
+    document.getElementById('crmNuevaOppCancelar')?.addEventListener('click', cerrarModal);
+    document.getElementById('crmNuevaOppCrear')?.addEventListener('click', crearOportunidad);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
