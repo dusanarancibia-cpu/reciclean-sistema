@@ -13436,6 +13436,12 @@ document.addEventListener('DOMContentLoaded', () => {
     try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
     try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
     try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    try {
+      var sbKey = 'sb-eknmtsrtfkzroxnovfqn-auth-token';
+      var sbTok = JSON.parse(localStorage.getItem(sbKey) || 'null');
+      var em = sbTok?.user?.email || sbTok?.currentSession?.user?.email;
+      if (em) return String(em).toLowerCase();
+    } catch (e) {}
     return null;
   }
   function esc(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
@@ -13705,6 +13711,12 @@ document.addEventListener('DOMContentLoaded', () => {
     try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
     try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
     try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    try {
+      var sbKey = 'sb-eknmtsrtfkzroxnovfqn-auth-token';
+      var sbTok = JSON.parse(localStorage.getItem(sbKey) || 'null');
+      var em = sbTok?.user?.email || sbTok?.currentSession?.user?.email;
+      if (em) return String(em).toLowerCase();
+    } catch (e) {}
     return null;
   }
   function esc(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
