@@ -27,9 +27,35 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" media="print" onload="this.media='all'">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
   <!-- D-GANTT-VIVA-001 · Frappe Gantt CDN (PC1 fix 31-may PM: umd.js→min.js · umd.js devuelve 404 en v0.6.1)
-       DeepSeek ronda 2: CSS con media=print + onload swap (no bloquea first paint mobile). -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.css" media="print" onload="this.media='all'">
-  <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.js" defer></script>
+       DeepSeek ronda 3 LAZY: NO cargar en initial bundle. Se carga on-demand cuando
+       usuario abre tab Gantt Viva (~80KB script + ~8KB CSS no se descargan al login).
+       Ver bootstrap Gantt Viva L~11550 que llama window.__loadFrappeGanttOnce() antes
+       de renderGantt. -->
+  <script>
+    // DeepSeek ronda 3 · loadScriptOnce helper genérico
+    window.__loadScriptOnce = window.__loadScriptOnce || function (src, globalCheck) {
+      if (globalCheck && window[globalCheck]) return Promise.resolve();
+      window.__loadingScripts = window.__loadingScripts || {};
+      if (window.__loadingScripts[src]) return window.__loadingScripts[src];
+      return window.__loadingScripts[src] = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src; s.async = true;
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('No se pudo cargar ' + src));
+        document.head.appendChild(s);
+      });
+    };
+    window.__loadStylesheetOnce = window.__loadStylesheetOnce || function (href) {
+      if (document.querySelector(`link[href="${href}"]`)) return;
+      const l = document.createElement('link');
+      l.rel = 'stylesheet'; l.href = href;
+      document.head.appendChild(l);
+    };
+    window.__loadFrappeGanttOnce = function () {
+      window.__loadStylesheetOnce('https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.css');
+      return window.__loadScriptOnce('https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.js', 'Gantt');
+    };
+  </script>
 
   <!-- DeepSeek ronda 2 · Sistema toast global (HTML/CSS puro, sin dep nueva).
        Uso: showToast('Texto', 'success'|'error'|'info'|'warning', 4000)
@@ -11753,6 +11779,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function refrescar() {
+    // DeepSeek ronda 3 LAZY: cargar Frappe Gantt on-demand antes de renderizar
+    if (window.__loadFrappeGanttOnce) {
+      try { await window.__loadFrappeGanttOnce(); }
+      catch (e) { console.warn('[GanttViva] no se pudo cargar Frappe Gantt:', e); }
+    }
     const data = await fetchFeed();
     if (!data || !data.ok) return;
     lastFetchAt = new Date();
