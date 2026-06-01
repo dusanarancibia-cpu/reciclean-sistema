@@ -557,6 +557,10 @@
             <span>Mi Bandeja</span>
             <span id="v4-mi-bandeja-badge" class="ml-auto text-[10px] font-bold bg-emerald-100 text-emerald-700 rounded-full px-2 py-0.5 hidden"></span>
           </a>
+          <a href="#" data-v4-tab="mis_archivos" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📦</span>
+            <span>Mis archivos</span>
+          </a>
           <a href="#" data-v4-tab="mi_memoria" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🧠</span>
             Mi memoria
@@ -785,6 +789,7 @@
         <button data-tab="manual" class="tab-btn py-3 px-3 text-stone-600"              role="tab" aria-selected="false" aria-controls="tabManual">📖 Manual</button>
         <button data-tab="mi_memoria" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabMiMemoria">🧠 Mi memoria</button>
         <button data-tab="mi_bandeja" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabMiBandeja">📥 Mi Bandeja</button>
+        <button data-tab="mis_archivos" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabMisArchivos">📦 Mis archivos</button>
         <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabRdo">📈 RDO Resumen</button>
         <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
         <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCotizador">📋 Cotizador</button>
@@ -3236,6 +3241,62 @@
       <small id="bucleVivoConsultadoEn" class="block mt-3 text-xs text-stone-400">—</small>
     </section>
 
+    <!-- R-AUD-040 · Tab Mis archivos (PC2 Pablo 2026-06-02 mig 167 backend) - lectura para todos -->
+    <section id="tabMisArchivos" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">📦 Mis archivos</h2>
+        <div class="flex items-center gap-2 text-sm">
+          <button id="misArchivosRefreshBtn" type="button" title="Re-consulta lista de archivos" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded text-sm font-semibold">↻ Refrescar</button>
+        </div>
+      </div>
+      <p class="text-xs text-stone-500 mb-4">R-AUD-040 destino archivos descargables. Solo ves archivos públicos + tuyos + de tu silo. (Bucket Storage en próximo sprint - hoy registro y catálogo solo.)</p>
+
+      <div class="bg-white p-3 rounded-md shadow-sm mb-3 flex flex-wrap items-end gap-3 text-sm">
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Tipo</label>
+          <select id="misArchivosTipo" class="border border-stone-300 rounded px-2 py-1 text-sm">
+            <option value="">Todos</option>
+            <option value="pdf">📄 PDF</option>
+            <option value="docx">📝 Word</option>
+            <option value="xlsx">📊 Excel</option>
+            <option value="pptx">🎞️ PowerPoint</option>
+            <option value="png">🖼️ PNG</option>
+            <option value="jpg">🖼️ JPG</option>
+            <option value="svg">✨ SVG</option>
+            <option value="html">🌐 HTML</option>
+            <option value="md">📑 Markdown</option>
+            <option value="csv">📋 CSV</option>
+            <option value="txt">📄 Texto</option>
+            <option value="audio">🔊 Audio</option>
+            <option value="video">🎥 Video</option>
+            <option value="otro">📦 Otro</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Días atrás</label>
+          <select id="misArchivosDias" class="border border-stone-300 rounded px-2 py-1 text-sm">
+            <option value="7">Última semana</option>
+            <option value="30" selected>Último mes</option>
+            <option value="90">Últimos 3 meses</option>
+            <option value="365">Último año</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Tema (libre)</label>
+          <input id="misArchivosTema" type="text" placeholder="Ej: cotizacion, reporte" class="border border-stone-300 rounded px-2 py-1 text-sm">
+        </div>
+        <div id="misArchivosResumen" class="ml-auto text-xs text-stone-500">—</div>
+      </div>
+
+      <div id="misArchivosLista" class="space-y-2">
+        <div class="text-sm text-stone-500 p-6 text-center bg-white rounded-md">Cargando archivos…</div>
+      </div>
+
+      <div class="mt-4 text-xs text-stone-400 text-center">
+        Cualquier PC/EF puede registrar archivo con <code>SELECT panel.registrar_archivo(...)</code>. Storage real próximo sprint.
+      </div>
+    </section>
+
     <!-- esquema-dod-dora-space-v1 · Tab DoD dashboard (PC2 Pablo 2026-06-02 mig 153) - SOLO Dusan/admin -->
     <section id="tabDodDashboard" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -4220,6 +4281,7 @@ const TAB_SECTION_MAP = {
   bandeja_precios: 'tabBandejaPrecios',
   mi_memoria: 'tabMiMemoria',
   mi_bandeja: 'tabMiBandeja',
+  mis_archivos: 'tabMisArchivos',
   diego_coord: 'tabDiegoCoord',
   bucle_vivo: 'tabBucleVivo',
   dod_dashboard: 'tabDodDashboard',
@@ -11670,6 +11732,85 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     init();
   }
+})();
+</script>
+
+<!-- R-AUD-040 · Bootstrap tab Mis archivos (PC2 Pablo 2026-06-02 mig 167 backend) -->
+<script>
+(function () {
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+  function tipoEmoji(tipo) {
+    return ({pdf:'📄',docx:'📝',xlsx:'📊',pptx:'🎞️',png:'🖼️',jpg:'🖼️',svg:'✨',html:'🌐',md:'📑',csv:'📋',txt:'📄',audio:'🔊',video:'🎥',otro:'📦'})[tipo] || '📦';
+  }
+  function fmtSize(bytes) {
+    if (bytes == null) return '—';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+    return (bytes/(1024*1024)).toFixed(1) + ' MB';
+  }
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    try { return new Date(iso).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }); }
+    catch { return iso; }
+  }
+
+  async function refrescar() {
+    const lista = document.getElementById('misArchivosLista');
+    const resumen = document.getElementById('misArchivosResumen');
+    const tipo = document.getElementById('misArchivosTipo')?.value || null;
+    const tema = document.getElementById('misArchivosTema')?.value?.trim() || null;
+    const dias = parseInt(document.getElementById('misArchivosDias')?.value || '30', 10);
+
+    try {
+      const { data, error } = await sb.rpc('mis_archivos', {
+        p_tipo: tipo, p_tema: tema, p_silo: null, p_dias_atras: dias
+      });
+      if (error) throw error;
+      const rows = data || [];
+      if (resumen) resumen.innerHTML = `<strong>${rows.length}</strong> archivos`;
+
+      if (!rows.length) {
+        lista.innerHTML = '<div class="bg-white rounded-md shadow-sm p-8 text-center text-stone-500">📭 No hay archivos con esos filtros. Ajustá filtros o esperá a que algún PC registre uno con <code>SELECT panel.registrar_archivo(...)</code>.</div>';
+        return;
+      }
+      lista.innerHTML = rows.map(a => `
+        <div class="bg-white rounded-md shadow-sm border border-stone-200 p-3 flex items-center gap-3">
+          <div class="text-2xl">${tipoEmoji(a.tipo)}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-stone-800 truncate" title="${escapeHtml(a.nombre)}">${escapeHtml(a.nombre)}</div>
+            <div class="text-xs text-stone-500 flex flex-wrap gap-2">
+              <span>${escapeHtml(a.tipo)}</span>
+              <span>· ${escapeHtml(a.autor)}</span>
+              ${a.tema ? `<span>· ${escapeHtml(a.tema)}</span>` : ''}
+              ${a.silo ? `<span>· silo ${escapeHtml(a.silo)}</span>` : '<span>· público</span>'}
+              <span>· ${fmtSize(a.size_bytes)}</span>
+              <span>· ${fmtDate(a.creado_en)}</span>
+              ${a.descargas > 0 ? `<span>· ⬇ ${a.descargas}</span>` : ''}
+            </div>
+          </div>
+          <div class="flex-shrink-0">
+            <a href="${escapeHtml(a.path)}" target="_blank" rel="noopener" title="Abrir / descargar archivo" class="vo-bg-verde-rec text-white text-xs px-3 py-1.5 rounded font-medium hover:opacity-90 inline-block">↗ Abrir</a>
+          </div>
+        </div>
+      `).join('');
+    } catch (e) {
+      console.error('[MisArchivos]', e);
+      lista.innerHTML = `<div class="bg-red-50 border border-red-200 rounded-md p-4 text-red-700 text-sm">Error cargando archivos: ${escapeHtml(e.message || e)}. Verificá tu sesión.</div>`;
+    }
+  }
+
+  function init() {
+    document.querySelector('button[data-tab="mis_archivos"]')?.addEventListener('click', () => setTimeout(refrescar, 100));
+    document.querySelector('a[data-v4-tab="mis_archivos"]')?.addEventListener('click', () => setTimeout(refrescar, 100));
+    document.getElementById('misArchivosRefreshBtn')?.addEventListener('click', refrescar);
+    ['misArchivosTipo','misArchivosDias','misArchivosTema'].forEach(id => {
+      document.getElementById(id)?.addEventListener('change', refrescar);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
 </script>
 
