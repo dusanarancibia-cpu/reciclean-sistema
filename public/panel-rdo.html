@@ -13022,10 +13022,24 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       resp.style.background = '#dcfce7'; resp.style.color = '#14532d'; resp.style.borderColor = '#16a34a';
-      resp.textContent = data.mensaje_respuesta || 'Recibido. Te avisamos.';
+      // Bug [7] fix · feedback Cartero 12:10 comercial@: "Como voy a saber a donde me responde los urgentes".
+      // Incluir link clickeable a tab "📬 Mis reportes Diego" para discoverability.
+      resp.innerHTML = '<div>' + (data.mensaje_respuesta || 'Recibido. Te avisamos.') + '</div>' +
+        '<div style="margin-top:.5rem;font-size:.75rem;">Para ver respuestas y estado: ' +
+        '<a id="dcmGoMisReportes" href="#" style="color:#0284c7;text-decoration:underline;cursor:pointer;">abrir tab 📬 Mis reportes Diego</a></div>';
       resp.style.display = 'block';
       submitBtn.textContent = '✓ Enviado';
-      setTimeout(close, 2200);
+      // Click handler para llevar al usuario directo al tab Mis reportes
+      setTimeout(function () {
+        var goLink = document.getElementById('dcmGoMisReportes');
+        if (goLink) goLink.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          close();
+          var tabBtn = document.querySelector('button[data-tab="mis_reportes"]') || document.querySelector('a[data-v4-tab="mis_reportes"]');
+          if (tabBtn) tabBtn.click();
+        });
+      }, 50);
+      setTimeout(close, 3500); // un poco más de tiempo para que vea el link
     } catch (e) {
       resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
       resp.textContent = 'Error de red. Verificá conexión y probá de nuevo.';
