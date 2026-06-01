@@ -12355,11 +12355,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const [kpi, plani, hist, atascos, metricas] = await Promise.all([
-        sb.from('v_diego_ciclo_cerrado_kpi').select('*').single(),
-        sb.from('v_diego_avisos_planificados').select('*').limit(50),
-        sb.from('v_diego_avisos_historico').select('*').limit(30),
-        sb.from('v_diego_atascos').select('*').limit(30),
-        sb.from('v_diego_metricas_semanales').select('*').limit(20)
+        sb.schema('panel').from('v_diego_ciclo_cerrado_kpi').select('*').single(),
+        sb.schema('panel').from('v_diego_avisos_planificados').select('*').limit(50),
+        sb.schema('panel').from('v_diego_avisos_historico').select('*').limit(30),
+        sb.schema('panel').from('v_diego_atascos').select('*').limit(30),
+        sb.schema('panel').from('v_diego_metricas_semanales').select('*').limit(20)
       ]);
 
       // KPI Banner
@@ -12478,7 +12478,7 @@ document.addEventListener('DOMContentLoaded', () => {
       : (prompt('Razón cancelación (opcional):', '') || null);
     if (razon === null) return;  // canceló el modal
     try {
-      const { error } = await sb.rpc('diego_cancelar_aviso', { p_aviso_id: id, p_razon: razon || null });
+      const { error } = await sb.schema('panel').rpc('diego_cancelar_aviso', { p_aviso_id: id, p_razon: razon || null });
       if (error) throw error;
       if (window.showToast) window.showToast('Aviso cancelado', 'success');
       refrescar();
