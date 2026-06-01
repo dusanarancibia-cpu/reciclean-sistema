@@ -1,0 +1,64 @@
+name: E2E Playwright nightly
+
+# SPEC: mayordomo/SPEC-E2E-PLAYWRIGHT-MVP.md (firma Dusan 31-may opción 1)
+# Detector #9 detect-e2e-playwright-regresiones en catalogo bucle.
+# Falla del test => INSERT panel.sesgos_detectados via REST + artifact playwright-report.
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # 03:00 UTC = 23:00 CLT (post promo prod del día)
+  workflow_dispatch:      # ejecución manual desde GitHub UI
+
+jobs:
+  e2e:
+    name: E2E chromium contra prod
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers (chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        env:
+          QA_EMAIL: ${{ secrets.QA_EMAIL }}
+          QA_PASSWORD: ${{ secrets.QA_PASSWORD }}
+          E2E_BASE_URL: https://reciclean-sistema.vercel.app
+        run: npm run test:e2e -- --reporter=html,list
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 30
+
+      - name: Notify detector bucle si falla (detector #9)
+        if: failure() && secrets.SUPABASE_URL != '' && secrets.SUPABASE_SERVICE_ROLE != ''
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          curl -sS --max-time 10 -X POST "$SUPABASE_URL/rest/v1/sesgos_detectados" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d "{\"detector\":\"detect-e2e-playwright-regresiones\",\"score\":85,\"pc_afectado\":\"PC2_pablo\",\"mensaje\":\"E2E nightly falló - ver artifact playwright-report\",\"evidencia\":{\"run_url\":\"$RUN_URL\"}}" \
+            || echo "POST a sesgos_detectados falló (no crítico, el test fail ya es la señal)"
