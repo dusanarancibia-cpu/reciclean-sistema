@@ -12161,7 +12161,7 @@ document.addEventListener('DOMContentLoaded', () => {
       : (prompt('Notas de cierre (opcional):', '') || null);
     if (notas === null) return;  // canceló
     try {
-      const { data, error } = await sb.rpc('cerrar_mi_tarea', { p_id: id, p_notas: notas || null });
+      const { data, error } = await sb.schema('panel').rpc('cerrar_mi_tarea', { p_id: id, p_notas: notas || null });
       if (error) throw error;
       if (window.showToast) window.showToast(`Tarea cerrada: ${data.titulo}`, 'success');
       else alert(`✓ Tarea cerrada: ${data.titulo}`);
