@@ -740,6 +740,14 @@
             <span class="v4-emoji" aria-hidden="true">🛠️</span>
             <span>Incidentes</span>
           </a>
+          <a href="#" data-v4-tab="firmas_pend" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📝</span>
+            <span>Firmas pendientes</span>
+          </a>
+          <a href="#" data-v4-tab="tarifas_ext" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">💰</span>
+            <span>Tarifas externas</span>
+          </a>
           <a href="#" data-v4-tab="mi_bandeja" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📥</span>
             <span>Mi Bandeja</span>
@@ -981,6 +989,8 @@
         <button data-tab="material_nuevo" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabMaterialNuevo">🆕 Material nuevo</button>
         <button data-tab="despacho_coord" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabDespachoCoord">🚚 Coord. despacho</button>
         <button data-tab="incidentes_op" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabIncidentesOp">🛠️ Incidentes</button>
+        <button data-tab="firmas_pend" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabFirmasPend">📝 Firmas pendientes</button>
+        <button data-tab="tarifas_ext" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabTarifasExt">💰 Tarifas externas</button>
         <button data-tab="mis_archivos" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabMisArchivos">📦 Mis archivos</button>
         <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabRdo">📈 RDO Resumen</button>
         <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
@@ -3550,6 +3560,62 @@
       <div id="incidenteLista" class="space-y-2"></div>
     </section>
 
+    <!-- D-FEATURE-CARTERO-006 · Firmas pendientes -->
+    <section id="tabFirmasPend" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">📝 Firmas pendientes</h2>
+        <button id="firmaNuevaBtn" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">+ Nueva solicitud</button>
+      </div>
+      <p class="text-sm text-stone-500 mb-3">Cargá acá los documentos que necesitan firma de Dusan (o de quien indiques). Cuando lo firme, ves estado + link al firmado.</p>
+      <div id="firmaForm" class="hidden bg-white border border-stone-200 rounded p-3 mb-3 space-y-2">
+        <input id="fp_titulo" type="text" placeholder="Título del documento (ej: Declaración Ética Salcobland)" class="w-full px-2 py-1 border border-stone-300 rounded text-sm" maxlength="200">
+        <input id="fp_link" type="url" placeholder="Link al documento (SharePoint, Drive, etc.)" class="w-full px-2 py-1 border border-stone-300 rounded text-sm">
+        <div class="grid grid-cols-2 gap-2">
+          <select id="fp_tipo" class="px-2 py-1 border border-stone-300 rounded text-sm">
+            <option value="firma_digital">Firma digital</option>
+            <option value="firma_fisica">Firma física</option>
+            <option value="escaneo">Escaneo</option>
+            <option value="otro">Otro</option>
+          </select>
+          <input id="fp_destinatario" type="email" placeholder="Email firmante" value="dusan.arancibia@gmail.com" class="px-2 py-1 border border-stone-300 rounded text-sm">
+        </div>
+        <textarea id="fp_notas" placeholder="Notas / contexto" rows="2" maxlength="500" class="w-full px-2 py-1 border border-stone-300 rounded text-sm"></textarea>
+        <div class="flex gap-2 justify-end">
+          <button id="fp_cancelar" class="px-3 py-1 text-stone-600 text-xs">Cancelar</button>
+          <button id="fp_enviar" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs">Solicitar firma</button>
+        </div>
+      </div>
+      <div id="firmaLista" class="space-y-2"></div>
+    </section>
+
+    <!-- D-FEATURE-CARTERO-007 · Tarifas externas -->
+    <section id="tabTarifasExt" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">💰 Tarifas externas</h2>
+        <button id="tarifaNuevaBtn" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">+ Nueva tarifa</button>
+      </div>
+      <p class="text-sm text-stone-500 mb-3">Catálogo de precios de proveedores externos (notaría, destrucción material, transporte). Cualquiera consulta, solo admin actualiza.</p>
+      <input id="te_filtro" type="search" placeholder="🔍 Filtrar por servicio..." class="w-full px-2 py-1 border border-stone-300 rounded text-sm mb-3">
+      <div id="tarifaForm" class="hidden bg-white border border-stone-200 rounded p-3 mb-3 space-y-2">
+        <input id="te_servicio" type="text" placeholder="Servicio (ej: Notaría firma documentos)" class="w-full px-2 py-1 border border-stone-300 rounded text-sm" maxlength="200">
+        <input id="te_proveedor" type="text" placeholder="Proveedor (nombre notaría / empresa)" class="w-full px-2 py-1 border border-stone-300 rounded text-sm" maxlength="200">
+        <div class="grid grid-cols-2 gap-2">
+          <input id="te_precio" type="number" step="1" placeholder="Precio CLP" class="px-2 py-1 border border-stone-300 rounded text-sm">
+          <input id="te_unidad" type="text" placeholder="Unidad (por_documento, por_kg, etc)" value="unidad" class="px-2 py-1 border border-stone-300 rounded text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <input id="te_desde" type="date" class="px-2 py-1 border border-stone-300 rounded text-sm" placeholder="Vigencia desde">
+          <input id="te_hasta" type="date" class="px-2 py-1 border border-stone-300 rounded text-sm" placeholder="Vigencia hasta">
+        </div>
+        <textarea id="te_notas" placeholder="Notas (condiciones, descuentos)" rows="2" maxlength="500" class="w-full px-2 py-1 border border-stone-300 rounded text-sm"></textarea>
+        <div class="flex gap-2 justify-end">
+          <button id="te_cancelar" class="px-3 py-1 text-stone-600 text-xs">Cancelar</button>
+          <button id="te_enviar" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs">Guardar tarifa</button>
+        </div>
+      </div>
+      <div id="tarifaLista" class="space-y-2"></div>
+    </section>
+
     <!-- R-AUD-040 · Tab Mis archivos (PC2 Pablo 2026-06-02 mig 167 backend) - lectura para todos -->
     <section id="tabMisArchivos" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -4603,6 +4669,8 @@ const TAB_SECTION_MAP = {
   material_nuevo: 'tabMaterialNuevo',
   despacho_coord: 'tabDespachoCoord',
   incidentes_op: 'tabIncidentesOp',
+  firmas_pend: 'tabFirmasPend',
+  tarifas_ext: 'tabTarifasExt',
   mis_archivos: 'tabMisArchivos',
   diego_coord: 'tabDiegoCoord',
   bucle_vivo: 'tabBucleVivo',
@@ -13465,6 +13533,210 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('incidenteForm').classList.add('hidden');
         loadIncidentes();
       } catch (e) { alert('Error: ' + (e?.message || e)); }
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- D-FEATURE-CARTERO-006/007 · Handlers Firmas + Tarifas (Pablo PM 2026-06-01) -->
+<script>
+(function () {
+  function ready() { return typeof sb !== 'undefined' && sb && sb.rpc; }
+  function resolveEmail() {
+    if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase();
+    try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
+    try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
+    try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    return null;
+  }
+  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function fmtFecha(ts) { if (!ts) return '—'; try { return new Date(ts).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return ts; } }
+  function fmtCLP(n) { if (n == null) return '—'; return '$' + Number(n).toLocaleString('es-CL'); }
+  function showError(el, msg) { el.innerHTML = '<div class="text-xs text-red-700 italic py-2 text-center bg-red-50 border border-red-200 rounded p-2">' + esc(msg) + '</div>'; }
+  function isAdmin(email) { return ['dusan.arancibia@gmail.com','gerencia@gestionrepchile.cl','sistemas@gestionrepchile.cl','recepcion01@gestionrepchile.cl','soporte@gestionrepchile.cl'].includes(email); }
+
+  // ===== FIRMAS PENDIENTES =====
+  var fpColor = { pendiente: 'bg-amber-100 text-amber-800', en_revision: 'bg-blue-100 text-blue-800', firmado: 'bg-emerald-100 text-emerald-800', rechazado: 'bg-red-100 text-red-800' };
+  async function loadFirmas() {
+    var lista = document.getElementById('firmaLista');
+    if (!ready()) { showError(lista, 'Sesión no detectada.'); return; }
+    var email = resolveEmail();
+    if (!email) { showError(lista, 'No detecto tu sesión.'); return; }
+    try {
+      var resp = await sb.rpc('firma_listar', { p_email: email, p_solo_pendientes: false });
+      if (resp.error) throw resp.error;
+      var rows = resp.data || [];
+      if (!rows.length) { lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Sin firmas pendientes.</div>'; return; }
+      var admin = isAdmin(email);
+      lista.innerHTML = rows.map(function (r) {
+        var puedeActuar = (r.destinatario_email === email || admin) && r.estado === 'pendiente';
+        return '<div class="bg-white border border-stone-200 rounded p-3">' +
+          '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+            '<span class="font-semibold text-sm">📝 ' + esc(r.documento_titulo) + '</span>' +
+            '<span class="text-[10px] px-1.5 py-0.5 rounded ' + (fpColor[r.estado] || 'bg-stone-100 text-stone-700') + '">' + esc(r.estado.replace(/_/g,' ')) + '</span>' +
+          '</div>' +
+          '<div class="text-xs text-stone-600">' + esc(r.solicitante_email) + ' → ' + esc(r.destinatario_email) + ' · ' + esc(r.tipo.replace(/_/g,' ')) + '</div>' +
+          '<div class="text-xs mt-1"><a href="' + esc(r.documento_link) + '" target="_blank" class="text-blue-600 underline">📄 Abrir documento original</a></div>' +
+          (r.link_firmado ? '<div class="text-xs mt-1"><a href="' + esc(r.link_firmado) + '" target="_blank" class="text-emerald-700 underline font-semibold">✅ Abrir documento firmado</a></div>' : '') +
+          (r.notas ? '<div class="text-xs text-stone-700 italic mt-1">"' + esc(r.notas) + '"</div>' : '') +
+          (r.comentarios_firmante ? '<div class="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-900">💬 ' + esc(r.comentarios_firmante) + '</div>' : '') +
+          '<div class="text-[10px] text-stone-400 mt-1">solicitado ' + fmtFecha(r.created_at) + (r.firmado_en ? ' · firmado ' + fmtFecha(r.firmado_en) : '') + '</div>' +
+          (puedeActuar ? '<div class="mt-2 flex gap-1"><button class="fp-firmar text-[10px] px-2 py-0.5 bg-emerald-600 text-white rounded" data-id="' + esc(r.id) + '">✓ Marcar firmado</button>' +
+                                                            '<button class="fp-revisar text-[10px] px-2 py-0.5 bg-blue-600 text-white rounded" data-id="' + esc(r.id) + '">📋 En revisión</button>' +
+                                                            '<button class="fp-rechazar text-[10px] px-2 py-0.5 bg-red-600 text-white rounded" data-id="' + esc(r.id) + '">✕ Rechazar</button></div>' : '') +
+        '</div>';
+      }).join('');
+    } catch (e) {
+      console.error('[firmas] error:', e);
+      showError(lista, 'Error: ' + (e?.message || e));
+    }
+  }
+  async function actualizarFirma(id, estado) {
+    var email = resolveEmail();
+    var linkFirmado = null;
+    var coment = null;
+    if (estado === 'firmado') {
+      linkFirmado = prompt('Link al documento FIRMADO (SharePoint, Drive, etc):', '');
+      if (linkFirmado === null) return;
+      if (!linkFirmado.trim()) { alert('El link al firmado es requerido para marcar como firmado.'); return; }
+    } else if (estado === 'rechazado') {
+      coment = prompt('Razón del rechazo:', '');
+      if (coment === null) return;
+    } else if (estado === 'en_revision') {
+      coment = prompt('Notas / qué falta para firmar (opcional):', '');
+      if (coment === null) return;
+    }
+    try {
+      var resp = await sb.rpc('firma_actualizar', { p_id: id, p_firmante_email: email, p_nuevo_estado: estado, p_link_firmado: linkFirmado, p_comentarios: coment || null });
+      if (resp.error) throw resp.error;
+      loadFirmas();
+    } catch (e) { alert('Error: ' + (e?.message || e)); }
+  }
+
+  // ===== TARIFAS EXTERNAS =====
+  var _tarifasFiltro = '';
+  async function loadTarifas() {
+    var lista = document.getElementById('tarifaLista');
+    if (!ready()) { showError(lista, 'Sesión no detectada.'); return; }
+    var email = resolveEmail();
+    try {
+      var resp = await sb.rpc('tarifa_listar', { p_solo_activas: true, p_filtro_servicio: _tarifasFiltro || null });
+      if (resp.error) throw resp.error;
+      var rows = resp.data || [];
+      if (!rows.length) { lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Sin tarifas cargadas.</div>'; return; }
+      var admin = isAdmin(email);
+      lista.innerHTML = rows.map(function (r) {
+        return '<div class="bg-white border border-stone-200 rounded p-3">' +
+          '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+            '<span class="font-semibold text-sm">💰 ' + esc(r.servicio) + '</span>' +
+            '<span class="text-sm font-bold text-emerald-700">' + fmtCLP(r.precio_clp) + (r.unidad && r.unidad !== 'unidad' ? ' / ' + esc(r.unidad.replace(/_/g,' ')) : '') + '</span>' +
+          '</div>' +
+          (r.proveedor ? '<div class="text-xs text-stone-600">proveedor: ' + esc(r.proveedor) + '</div>' : '') +
+          (r.vigencia_desde || r.vigencia_hasta ? '<div class="text-xs text-stone-500">vigencia: ' + (r.vigencia_desde || '—') + ' a ' + (r.vigencia_hasta || '—') + '</div>' : '') +
+          (r.notas ? '<div class="text-xs text-stone-700 italic mt-1">"' + esc(r.notas) + '"</div>' : '') +
+          '<div class="text-[10px] text-stone-400 mt-1">actualizado ' + fmtFecha(r.ultima_actualizacion) + ' · ' + esc(r.actualizado_por) + '</div>' +
+          (admin ? '<div class="mt-2"><button class="te-edit text-[10px] px-2 py-0.5 bg-blue-600 text-white rounded" data-id="' + esc(r.id) + '" data-precio="' + esc(r.precio_clp ?? '') + '">✏ Actualizar precio</button></div>' : '') +
+        '</div>';
+      }).join('');
+    } catch (e) {
+      console.error('[tarifas] error:', e);
+      showError(lista, 'Error: ' + (e?.message || e));
+    }
+  }
+  async function editarTarifa(id, precioActual) {
+    var nuevoPrecio = prompt('Nuevo precio CLP (deja vacío para no cambiar):', precioActual || '');
+    if (nuevoPrecio === null) return;
+    var notas = prompt('Notas / razón del cambio (opcional):', '');
+    var email = resolveEmail();
+    try {
+      var resp = await sb.rpc('tarifa_actualizar', {
+        p_id: id,
+        p_actualizado_por: email,
+        p_precio_clp: nuevoPrecio.trim() ? parseFloat(nuevoPrecio) : null,
+        p_notas: notas || null,
+        p_activo: null, p_vigencia_hasta: null
+      });
+      if (resp.error) throw resp.error;
+      loadTarifas();
+    } catch (e) { alert('Error: ' + (e?.message || e)); }
+  }
+
+  // ===== INIT =====
+  function init() {
+    var bind = function (tab, loader) {
+      document.querySelector('button[data-tab="' + tab + '"]')?.addEventListener('click', function () { setTimeout(loader, 100); });
+      document.querySelector('a[data-v4-tab="' + tab + '"]')?.addEventListener('click', function () { setTimeout(loader, 100); });
+    };
+    bind('firmas_pend', loadFirmas);
+    bind('tarifas_ext', loadTarifas);
+
+    // Form Firma
+    document.getElementById('firmaNuevaBtn')?.addEventListener('click', function () { document.getElementById('firmaForm').classList.toggle('hidden'); });
+    document.getElementById('fp_cancelar')?.addEventListener('click', function () { document.getElementById('firmaForm').classList.add('hidden'); });
+    document.getElementById('fp_enviar')?.addEventListener('click', async function () {
+      var titulo = document.getElementById('fp_titulo').value.trim();
+      var link = document.getElementById('fp_link').value.trim();
+      if (!titulo || !link) { alert('Título y link son requeridos'); return; }
+      var email = resolveEmail();
+      if (!email) { alert('No detecto sesión'); return; }
+      try {
+        var resp = await sb.rpc('firma_solicitar', {
+          p_solicitante_email: email,
+          p_documento_titulo: titulo,
+          p_documento_link: link,
+          p_tipo: document.getElementById('fp_tipo').value || 'firma_digital',
+          p_destinatario_email: document.getElementById('fp_destinatario').value.trim() || 'dusan.arancibia@gmail.com',
+          p_notas: document.getElementById('fp_notas').value.trim() || null
+        });
+        if (resp.error) throw resp.error;
+        ['fp_titulo','fp_link','fp_notas'].forEach(function (id) { document.getElementById(id).value = ''; });
+        document.getElementById('firmaForm').classList.add('hidden');
+        loadFirmas();
+      } catch (e) { alert('Error: ' + (e?.message || e)); }
+    });
+
+    // Form Tarifa
+    document.getElementById('tarifaNuevaBtn')?.addEventListener('click', function () { document.getElementById('tarifaForm').classList.toggle('hidden'); });
+    document.getElementById('te_cancelar')?.addEventListener('click', function () { document.getElementById('tarifaForm').classList.add('hidden'); });
+    document.getElementById('te_enviar')?.addEventListener('click', async function () {
+      var servicio = document.getElementById('te_servicio').value.trim();
+      if (!servicio) { alert('Servicio es requerido'); return; }
+      var email = resolveEmail();
+      if (!email) { alert('No detecto sesión'); return; }
+      try {
+        var resp = await sb.rpc('tarifa_crear', {
+          p_actualizado_por: email,
+          p_servicio: servicio,
+          p_proveedor: document.getElementById('te_proveedor').value.trim() || null,
+          p_precio_clp: parseFloat(document.getElementById('te_precio').value) || null,
+          p_unidad: document.getElementById('te_unidad').value.trim() || 'unidad',
+          p_vigencia_desde: document.getElementById('te_desde').value || null,
+          p_vigencia_hasta: document.getElementById('te_hasta').value || null,
+          p_notas: document.getElementById('te_notas').value.trim() || null
+        });
+        if (resp.error) throw resp.error;
+        ['te_servicio','te_proveedor','te_precio','te_desde','te_hasta','te_notas'].forEach(function (id) { document.getElementById(id).value = ''; });
+        document.getElementById('te_unidad').value = 'unidad';
+        document.getElementById('tarifaForm').classList.add('hidden');
+        loadTarifas();
+      } catch (e) { alert('Error: ' + (e?.message || e)); }
+    });
+
+    // Filtro tarifas
+    document.getElementById('te_filtro')?.addEventListener('input', function (e) {
+      _tarifasFiltro = e.target.value.trim();
+      clearTimeout(window.__teFiltroTimer);
+      window.__teFiltroTimer = setTimeout(loadTarifas, 300);
+    });
+
+    // Delegated clicks
+    document.addEventListener('click', function (e) {
+      var b;
+      if ((b = e.target.closest('.fp-firmar')))   actualizarFirma(b.dataset.id, 'firmado');
+      else if ((b = e.target.closest('.fp-revisar')))  actualizarFirma(b.dataset.id, 'en_revision');
+      else if ((b = e.target.closest('.fp-rechazar'))) actualizarFirma(b.dataset.id, 'rechazado');
+      else if ((b = e.target.closest('.te-edit')))     editarTarifa(b.dataset.id, b.dataset.precio);
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
