@@ -23,8 +23,25 @@
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link rel="preconnect" href="https://eknmtsrtfkzroxnovfqn.supabase.co" crossorigin>
   <link rel="dns-prefetch" href="https://graph.facebook.com">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/js/page-logger.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="/js/page-logger.js" defer></script>
+  <script>
+    // SPEC-PERF-MOBILE-REFACTOR-V1 PASO A · bootstrap promise para defer-safe initSupabase
+    // Permite que el script Supabase CDN (línea 26) tenga defer sin romper línea 8703 initSupabase().
+    window.__supabaseReady = new Promise((resolve) => {
+      if (window.supabase) return resolve();
+      var tag = document.querySelector('script[src*="supabase-js"]');
+      if (tag) {
+        tag.addEventListener('load',  function () { resolve(); }, { once: true });
+        tag.addEventListener('error', function () { resolve(); }, { once: true });
+      } else {
+        var tick = setInterval(function () {
+          if (window.supabase) { clearInterval(tick); resolve(); }
+        }, 20);
+        setTimeout(function () { clearInterval(tick); resolve(); }, 5000);
+      }
+    });
+  </script>
   <!-- v4-design F1 · CDNs Chart.js + Leaflet (defer para no bloquear render)
        DeepSeek ronda 2: Chart.js cargado 1 sola vez (antes había duplicado L11298 → quitado). -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
@@ -8699,12 +8716,19 @@ async function loadOpsDiarias() {
     <span class="${Number(al.contraparte) > 0 ? 'text-amber-700' : 'text-stone-600'}">${al.contraparte || 0} contrapartes con discrepancia</span>`;
 }
 
-// ---------- INIT ----------
-initSupabase();
-setupTabs();
-setupRecorder();
-setupAuthListener();
-bootstrapAuth();
+// ---------- INIT ---------- (SPEC-PERF-MOBILE-REFACTOR-V1 PASO A+B · defer-safe)
+// Wrap en async IIFE para esperar window.__supabaseReady (bootstrap promise en líneas 26-44)
+// antes de inicializar Supabase client. Permite defer en línea 26 sin romper.
+(async function () {
+  if (window.__supabaseReady) {
+    await window.__supabaseReady;
+  }
+  initSupabase();
+  setupTabs();
+  setupRecorder();
+  setupAuthListener();
+  bootstrapAuth();
+})();
 
 // Enter handlers para los 3 paneles de auth
 document.getElementById('loginEmail').addEventListener('keypress', e => {
