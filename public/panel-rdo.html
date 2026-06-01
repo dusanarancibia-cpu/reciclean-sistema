@@ -23,8 +23,25 @@
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link rel="preconnect" href="https://eknmtsrtfkzroxnovfqn.supabase.co" crossorigin>
   <link rel="dns-prefetch" href="https://graph.facebook.com">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/js/page-logger.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="/js/page-logger.js" defer></script>
+  <script>
+    // SPEC-PERF-MOBILE-REFACTOR-V1 PASO A · bootstrap promise para defer-safe initSupabase
+    // Permite que el script Supabase CDN (línea 26) tenga defer sin romper línea 8703 initSupabase().
+    window.__supabaseReady = new Promise((resolve) => {
+      if (window.supabase) return resolve();
+      var tag = document.querySelector('script[src*="supabase-js"]');
+      if (tag) {
+        tag.addEventListener('load',  function () { resolve(); }, { once: true });
+        tag.addEventListener('error', function () { resolve(); }, { once: true });
+      } else {
+        var tick = setInterval(function () {
+          if (window.supabase) { clearInterval(tick); resolve(); }
+        }, 20);
+        setTimeout(function () { clearInterval(tick); resolve(); }, 5000);
+      }
+    });
+  </script>
   <!-- v4-design F1 · CDNs Chart.js + Leaflet (defer para no bloquear render)
        DeepSeek ronda 2: Chart.js cargado 1 sola vez (antes había duplicado L11298 → quitado). -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
@@ -711,6 +728,30 @@
             <span class="v4-emoji" aria-hidden="true">📬</span>
             <span>Mis reportes Diego</span>
           </a>
+          <a href="#" data-v4-tab="mis_envios_diego" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📤</span>
+            <span>Mis envíos a Diego</span>
+          </a>
+          <a href="#" data-v4-tab="material_nuevo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🆕</span>
+            <span>Material nuevo</span>
+          </a>
+          <a href="#" data-v4-tab="despacho_coord" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🚚</span>
+            <span>Coord. despacho</span>
+          </a>
+          <a href="#" data-v4-tab="incidentes_op" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🛠️</span>
+            <span>Incidentes</span>
+          </a>
+          <a href="#" data-v4-tab="firmas_pend" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📝</span>
+            <span>Firmas pendientes</span>
+          </a>
+          <a href="#" data-v4-tab="tarifas_ext" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">💰</span>
+            <span>Tarifas externas</span>
+          </a>
           <a href="#" data-v4-tab="mi_bandeja" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📥</span>
             <span>Mi Bandeja</span>
@@ -949,6 +990,12 @@
         <button data-tab="mi_memoria" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabMiMemoria">🧠 Mi memoria</button>
         <button data-tab="mi_bandeja" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabMiBandeja">📥 Mi Bandeja</button>
         <button data-tab="mis_reportes" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabMisReportes">📬 Mis reportes</button>
+        <button data-tab="mis_envios_diego" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabMisEnviosDiego">📤 Mis envíos a Diego</button>
+        <button data-tab="material_nuevo" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabMaterialNuevo">🆕 Material nuevo</button>
+        <button data-tab="despacho_coord" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabDespachoCoord">🚚 Coord. despacho</button>
+        <button data-tab="incidentes_op" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabIncidentesOp">🛠️ Incidentes</button>
+        <button data-tab="firmas_pend" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabFirmasPend">📝 Firmas pendientes</button>
+        <button data-tab="tarifas_ext" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabTarifasExt">💰 Tarifas externas</button>
         <button data-tab="mis_archivos" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabMisArchivos">📦 Mis archivos</button>
         <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabRdo">📈 RDO Resumen</button>
         <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
@@ -3433,6 +3480,181 @@
       <div id="misReportesLista" class="space-y-2"></div>
     </section>
 
+    <!-- D-FEATURE-CARTERO-010 · Tab Mis envíos a Diego (PC2 Pablo 2026-06-01 mig 180+181 backend) -->
+    <section id="tabMisEnviosDiego" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">📤 Mis envíos a Diego</h2>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-stone-500" id="misEnviosCount">—</span>
+          <button id="misEnviosRefresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
+      </div>
+      <p class="text-sm text-stone-500 mb-4">Acá ves lo que le pediste a Diego (tareas + archivos) y en qué estado quedó cada uno.</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-amber-700" id="misEnviosKpiTareasPend">0</div>
+          <div class="text-xs text-stone-500">🟡 Tareas pendientes</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-emerald-700" id="misEnviosKpiTareasOk">0</div>
+          <div class="text-xs text-stone-500">🟢 Tareas completadas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-blue-700" id="misEnviosKpiArchivos">0</div>
+          <div class="text-xs text-stone-500">📎 Archivos enviados</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-stone-700" id="misEnviosKpiTotal">0</div>
+          <div class="text-xs text-stone-500">Total envíos</div>
+        </div>
+      </div>
+      <h3 class="text-sm font-bold text-stone-700 mb-2">📋 Tareas que pediste</h3>
+      <div id="misEnviosTareasLista" class="space-y-2 mb-5"></div>
+      <h3 class="text-sm font-bold text-stone-700 mb-2">📎 Archivos enviados a Diego (WhatsApp)</h3>
+      <div id="misEnviosArchivosLista" class="space-y-2"></div>
+    </section>
+
+    <!-- D-FEATURE-CARTERO-005 · Tab Material nuevo (PC2 Pablo 2026-06-01 mig 174+175 backend) -->
+    <section id="tabMaterialNuevo" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🆕 Material nuevo</h2>
+        <button id="materialNuevoNuevoBtn" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">+ Nueva solicitud</button>
+      </div>
+      <p class="text-sm text-stone-500 mb-3">Solicitá aprobación a Dusan para vender un material que no está en el catálogo. Mientras se decide, queda visible para vos y para Dusan.</p>
+      <div id="materialNuevoForm" class="hidden bg-white border border-stone-200 rounded p-3 mb-3 space-y-2">
+        <input id="mn_material" type="text" placeholder="Nombre del material (ej: uñas del gato)" class="w-full px-2 py-1 border border-stone-300 rounded text-sm" maxlength="120">
+        <div class="grid grid-cols-2 gap-2">
+          <input id="mn_kg" type="number" step="0.01" placeholder="Kg estimado" class="px-2 py-1 border border-stone-300 rounded text-sm">
+          <input id="mn_precio" type="number" step="1" placeholder="Precio propuesto CLP" class="px-2 py-1 border border-stone-300 rounded text-sm">
+        </div>
+        <input id="mn_sucursal" type="text" placeholder="Sucursal (01/02/03...)" maxlength="6" class="w-full px-2 py-1 border border-stone-300 rounded text-sm">
+        <input id="mn_cliente" type="text" placeholder="Cliente / razón social" class="w-full px-2 py-1 border border-stone-300 rounded text-sm">
+        <textarea id="mn_motivo" placeholder="Motivo / contexto (qué pidió el cliente, urgencia)" rows="2" maxlength="400" class="w-full px-2 py-1 border border-stone-300 rounded text-sm"></textarea>
+        <div class="flex gap-2 justify-end">
+          <button id="mn_cancelar" class="px-3 py-1 text-stone-600 text-xs">Cancelar</button>
+          <button id="mn_enviar" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs">Enviar a Dusan</button>
+        </div>
+      </div>
+      <div id="materialNuevoLista" class="space-y-2"></div>
+    </section>
+
+    <!-- D-FEATURE-CARTERO-003 · Tab Coordinación despacho -->
+    <section id="tabDespachoCoord" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🚚 Coordinación despacho</h2>
+        <button id="despachoNuevoBtn" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">+ Nuevo despacho</button>
+      </div>
+      <p class="text-sm text-stone-500 mb-3">Programá despachos de material reciclado para reflejarlos en el panel RDO.</p>
+      <div id="despachoForm" class="hidden bg-white border border-stone-200 rounded p-3 mb-3 space-y-2">
+        <input id="dc_material" type="text" placeholder="Material (ej: cartón mix, plástico HDPE)" class="w-full px-2 py-1 border border-stone-300 rounded text-sm" maxlength="120">
+        <div class="grid grid-cols-2 gap-2">
+          <input id="dc_kg" type="number" step="0.01" placeholder="Kg estimado" class="px-2 py-1 border border-stone-300 rounded text-sm">
+          <input id="dc_fecha" type="date" class="px-2 py-1 border border-stone-300 rounded text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <input id="dc_sucursal" type="text" placeholder="Sucursal origen" maxlength="6" class="px-2 py-1 border border-stone-300 rounded text-sm">
+          <input id="dc_destino" type="text" placeholder="Destino" class="px-2 py-1 border border-stone-300 rounded text-sm">
+        </div>
+        <input id="dc_cliente" type="text" placeholder="Cliente" class="w-full px-2 py-1 border border-stone-300 rounded text-sm">
+        <select id="dc_transporte" class="w-full px-2 py-1 border border-stone-300 rounded text-sm">
+          <option value="">Tipo transporte</option>
+          <option value="camion_propio">Camión propio</option>
+          <option value="cliente_retira">Cliente retira</option>
+          <option value="contratado">Transporte contratado</option>
+        </select>
+        <textarea id="dc_notas" placeholder="Notas (carga, contacto, ventana horaria)" rows="2" maxlength="400" class="w-full px-2 py-1 border border-stone-300 rounded text-sm"></textarea>
+        <div class="flex gap-2 justify-end">
+          <button id="dc_cancelar" class="px-3 py-1 text-stone-600 text-xs">Cancelar</button>
+          <button id="dc_enviar" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs">Programar</button>
+        </div>
+      </div>
+      <div id="despachoLista" class="space-y-2"></div>
+    </section>
+
+    <!-- D-FEATURE-CARTERO-004 · Tab Incidentes operativos -->
+    <section id="tabIncidentesOp" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🛠️ Incidentes operativos</h2>
+        <button id="incidenteNuevoBtn" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">+ Reportar incidente</button>
+      </div>
+      <p class="text-sm text-stone-500 mb-3">Registrá incidentes operativos (equipos rotos, problemas de producción) + solución cuando se resuelvan.</p>
+      <div id="incidenteForm" class="hidden bg-white border border-stone-200 rounded p-3 mb-3 space-y-2">
+        <textarea id="io_descripcion" placeholder="Qué pasó (descripción del incidente)" rows="2" maxlength="500" class="w-full px-2 py-1 border border-stone-300 rounded text-sm"></textarea>
+        <div class="grid grid-cols-2 gap-2">
+          <input id="io_equipo" type="text" placeholder="Equipo afectado" maxlength="120" class="px-2 py-1 border border-stone-300 rounded text-sm">
+          <input id="io_sucursal" type="text" placeholder="Sucursal" maxlength="6" class="px-2 py-1 border border-stone-300 rounded text-sm">
+        </div>
+        <select id="io_severidad" class="w-full px-2 py-1 border border-stone-300 rounded text-sm">
+          <option value="media">Severidad: Media</option>
+          <option value="baja">Severidad: Baja</option>
+          <option value="alta">Severidad: Alta</option>
+          <option value="critica">Severidad: Crítica</option>
+        </select>
+        <input id="io_costo" type="number" step="1" placeholder="Costo estimado CLP (opcional)" class="w-full px-2 py-1 border border-stone-300 rounded text-sm">
+        <div class="flex gap-2 justify-end">
+          <button id="io_cancelar" class="px-3 py-1 text-stone-600 text-xs">Cancelar</button>
+          <button id="io_enviar" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs">Reportar</button>
+        </div>
+      </div>
+      <div id="incidenteLista" class="space-y-2"></div>
+    </section>
+
+    <!-- D-FEATURE-CARTERO-006 · Firmas pendientes -->
+    <section id="tabFirmasPend" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">📝 Firmas pendientes</h2>
+        <button id="firmaNuevaBtn" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">+ Nueva solicitud</button>
+      </div>
+      <p class="text-sm text-stone-500 mb-3">Cargá acá los documentos que necesitan firma de Dusan (o de quien indiques). Cuando lo firme, ves estado + link al firmado.</p>
+      <div id="firmaForm" class="hidden bg-white border border-stone-200 rounded p-3 mb-3 space-y-2">
+        <input id="fp_titulo" type="text" placeholder="Título del documento (ej: Declaración Ética Salcobland)" class="w-full px-2 py-1 border border-stone-300 rounded text-sm" maxlength="200">
+        <input id="fp_link" type="url" placeholder="Link al documento (SharePoint, Drive, etc.)" class="w-full px-2 py-1 border border-stone-300 rounded text-sm">
+        <div class="grid grid-cols-2 gap-2">
+          <select id="fp_tipo" class="px-2 py-1 border border-stone-300 rounded text-sm">
+            <option value="firma_digital">Firma digital</option>
+            <option value="firma_fisica">Firma física</option>
+            <option value="escaneo">Escaneo</option>
+            <option value="otro">Otro</option>
+          </select>
+          <input id="fp_destinatario" type="email" placeholder="Email firmante" value="dusan.arancibia@gmail.com" class="px-2 py-1 border border-stone-300 rounded text-sm">
+        </div>
+        <textarea id="fp_notas" placeholder="Notas / contexto" rows="2" maxlength="500" class="w-full px-2 py-1 border border-stone-300 rounded text-sm"></textarea>
+        <div class="flex gap-2 justify-end">
+          <button id="fp_cancelar" class="px-3 py-1 text-stone-600 text-xs">Cancelar</button>
+          <button id="fp_enviar" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs">Solicitar firma</button>
+        </div>
+      </div>
+      <div id="firmaLista" class="space-y-2"></div>
+    </section>
+
+    <!-- D-FEATURE-CARTERO-007 · Tarifas externas -->
+    <section id="tabTarifasExt" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">💰 Tarifas externas</h2>
+        <button id="tarifaNuevaBtn" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">+ Nueva tarifa</button>
+      </div>
+      <p class="text-sm text-stone-500 mb-3">Catálogo de precios de proveedores externos (notaría, destrucción material, transporte). Cualquiera consulta, solo admin actualiza.</p>
+      <input id="te_filtro" type="search" placeholder="🔍 Filtrar por servicio..." class="w-full px-2 py-1 border border-stone-300 rounded text-sm mb-3">
+      <div id="tarifaForm" class="hidden bg-white border border-stone-200 rounded p-3 mb-3 space-y-2">
+        <input id="te_servicio" type="text" placeholder="Servicio (ej: Notaría firma documentos)" class="w-full px-2 py-1 border border-stone-300 rounded text-sm" maxlength="200">
+        <input id="te_proveedor" type="text" placeholder="Proveedor (nombre notaría / empresa)" class="w-full px-2 py-1 border border-stone-300 rounded text-sm" maxlength="200">
+        <div class="grid grid-cols-2 gap-2">
+          <input id="te_precio" type="number" step="1" placeholder="Precio CLP" class="px-2 py-1 border border-stone-300 rounded text-sm">
+          <input id="te_unidad" type="text" placeholder="Unidad (por_documento, por_kg, etc)" value="unidad" class="px-2 py-1 border border-stone-300 rounded text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <input id="te_desde" type="date" class="px-2 py-1 border border-stone-300 rounded text-sm" placeholder="Vigencia desde">
+          <input id="te_hasta" type="date" class="px-2 py-1 border border-stone-300 rounded text-sm" placeholder="Vigencia hasta">
+        </div>
+        <textarea id="te_notas" placeholder="Notas (condiciones, descuentos)" rows="2" maxlength="500" class="w-full px-2 py-1 border border-stone-300 rounded text-sm"></textarea>
+        <div class="flex gap-2 justify-end">
+          <button id="te_cancelar" class="px-3 py-1 text-stone-600 text-xs">Cancelar</button>
+          <button id="te_enviar" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs">Guardar tarifa</button>
+        </div>
+      </div>
+      <div id="tarifaLista" class="space-y-2"></div>
+    </section>
+
     <!-- R-AUD-040 · Tab Mis archivos (PC2 Pablo 2026-06-02 mig 167 backend) - lectura para todos -->
     <section id="tabMisArchivos" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -4350,6 +4572,15 @@ async function loadSilos() {
     currentSilo = v === '__global__' ? null : v;
     localStorage.setItem(LS_KEY_SILO, v);
     applySiloTabs();
+    // BUG [6] fix · feedback Cartero 12:10 comercial@ sucursal 02:
+    // "Porque si yo cambio de silo no se cambia la pantalla de portada".
+    // applySiloTabs() solo gestiona visibilidad de tabs, NO refresca contenido.
+    // Solución: disparar el handler del tab activo simulando click sobre su botón.
+    // Eso ejecuta el switch tabId→loaders (línea ~4623) y refresca portada/rdo/pesaje/etc.
+    try {
+      const activeBtn = document.querySelector('.tab-btn.active');
+      if (activeBtn) activeBtn.click();
+    } catch (e) { console.warn('[silo-change refresh]', e); }
   });
 }
 
@@ -4474,6 +4705,12 @@ const TAB_SECTION_MAP = {
   mi_memoria: 'tabMiMemoria',
   mi_bandeja: 'tabMiBandeja',
   mis_reportes: 'tabMisReportes',
+  mis_envios_diego: 'tabMisEnviosDiego',
+  material_nuevo: 'tabMaterialNuevo',
+  despacho_coord: 'tabDespachoCoord',
+  incidentes_op: 'tabIncidentesOp',
+  firmas_pend: 'tabFirmasPend',
+  tarifas_ext: 'tabTarifasExt',
   mis_archivos: 'tabMisArchivos',
   diego_coord: 'tabDiegoCoord',
   bucle_vivo: 'tabBucleVivo',
@@ -8699,12 +8936,19 @@ async function loadOpsDiarias() {
     <span class="${Number(al.contraparte) > 0 ? 'text-amber-700' : 'text-stone-600'}">${al.contraparte || 0} contrapartes con discrepancia</span>`;
 }
 
-// ---------- INIT ----------
-initSupabase();
-setupTabs();
-setupRecorder();
-setupAuthListener();
-bootstrapAuth();
+// ---------- INIT ---------- (SPEC-PERF-MOBILE-REFACTOR-V1 PASO A+B · defer-safe)
+// Wrap en async IIFE para esperar window.__supabaseReady (bootstrap promise en líneas 26-44)
+// antes de inicializar Supabase client. Permite defer en línea 26 sin romper.
+(async function () {
+  if (window.__supabaseReady) {
+    await window.__supabaseReady;
+  }
+  initSupabase();
+  setupTabs();
+  setupRecorder();
+  setupAuthListener();
+  bootstrapAuth();
+})();
 
 // Enter handlers para los 3 paneles de auth
 document.getElementById('loginEmail').addEventListener('keypress', e => {
@@ -12137,7 +12381,7 @@ document.addEventListener('DOMContentLoaded', () => {
       : (prompt('Notas de cierre (opcional):', '') || null);
     if (notas === null) return;  // canceló
     try {
-      const { data, error } = await sb.rpc('cerrar_mi_tarea', { p_id: id, p_notas: notas || null });
+      const { data, error } = await sb.schema('panel').rpc('cerrar_mi_tarea', { p_id: id, p_notas: notas || null });
       if (error) throw error;
       if (window.showToast) window.showToast(`Tarea cerrada: ${data.titulo}`, 'success');
       else alert(`✓ Tarea cerrada: ${data.titulo}`);
@@ -12746,8 +12990,8 @@ document.addEventListener('DOMContentLoaded', () => {
       </button>
     </div>
     <label for="dcmTextarea" style="font-size:.8rem;color:#475569;display:block;margin-bottom:.25rem;">Contale a Diego</label>
-    <textarea id="dcmTextarea" maxlength="500" placeholder="Describí lo que querés contar (máx 500)…" aria-label="Mensaje"></textarea>
-    <div class="dcm-counter"><span id="dcmCount">0</span>/500</div>
+    <textarea id="dcmTextarea" maxlength="5000" placeholder="Describí lo que querés contar (máx 5000)…" aria-label="Mensaje" rows="6"></textarea>
+    <div class="dcm-counter"><span id="dcmCount">0</span>/5000</div>
     <div id="diegoCarteroResp" role="status"></div>
     <div class="dcm-actions">
       <a class="dcm-chat-link" id="dcmChatLink">o hablar con Diego (chat IA)</a>
@@ -12771,6 +13015,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase();
     try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
     try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
+    try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    try {
+      var sbKey = 'sb-eknmtsrtfkzroxnovfqn-auth-token';
+      var sbTok = JSON.parse(localStorage.getItem(sbKey) || 'null');
+      var em = sbTok?.user?.email || sbTok?.currentSession?.user?.email;
+      if (em) return String(em).toLowerCase();
+    } catch (e) {}
     return null;
   }
   function resolveSucursalTab() {
@@ -12879,10 +13130,24 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       resp.style.background = '#dcfce7'; resp.style.color = '#14532d'; resp.style.borderColor = '#16a34a';
-      resp.textContent = data.mensaje_respuesta || 'Recibido. Te avisamos.';
+      // Bug [7] fix · feedback Cartero 12:10 comercial@: "Como voy a saber a donde me responde los urgentes".
+      // Incluir link clickeable a tab "📬 Mis reportes Diego" para discoverability.
+      resp.innerHTML = '<div>' + (data.mensaje_respuesta || 'Recibido. Te avisamos.') + '</div>' +
+        '<div style="margin-top:.5rem;font-size:.75rem;">Para ver respuestas y estado: ' +
+        '<a id="dcmGoMisReportes" href="#" style="color:#0284c7;text-decoration:underline;cursor:pointer;">abrir tab 📬 Mis reportes Diego</a></div>';
       resp.style.display = 'block';
       submitBtn.textContent = '✓ Enviado';
-      setTimeout(close, 2200);
+      // Click handler para llevar al usuario directo al tab Mis reportes
+      setTimeout(function () {
+        var goLink = document.getElementById('dcmGoMisReportes');
+        if (goLink) goLink.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          close();
+          var tabBtn = document.querySelector('button[data-tab="mis_reportes"]') || document.querySelector('a[data-v4-tab="mis_reportes"]');
+          if (tabBtn) tabBtn.click();
+        });
+      }, 50);
+      setTimeout(close, 3500); // un poco más de tiempo para que vea el link
     } catch (e) {
       resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
       resp.textContent = 'Error de red. Verificá conexión y probá de nuevo.';
@@ -12950,6 +13215,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase();
     try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
     try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
+    try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    try {
+      var sbKey = 'sb-eknmtsrtfkzroxnovfqn-auth-token';
+      var sbTok = JSON.parse(localStorage.getItem(sbKey) || 'null');
+      var em = sbTok?.user?.email || sbTok?.currentSession?.user?.email;
+      if (em) return String(em).toLowerCase();
+    } catch (e) {}
     return null;
   }
   function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
@@ -13033,6 +13305,596 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('a[data-v4-tab="mis_reportes"]')?.addEventListener('click', function () { setTimeout(loadMisReportes, 100); });
     var refreshBtn = document.getElementById('misReportesRefresh');
     if (refreshBtn) refreshBtn.addEventListener('click', loadMisReportes);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- D-FEATURE-CARTERO-010 · Handler tab "📤 Mis envíos a Diego" (PC2 Pablo 2026-06-01 mig 180+181) -->
+<script>
+(function () {
+  function ready() { return typeof sb !== 'undefined' && sb && sb.rpc; }
+  function resolveEmail() {
+    if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase();
+    try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
+    try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
+    try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    try {
+      var sbKey = 'sb-eknmtsrtfkzroxnovfqn-auth-token';
+      var sbTok = JSON.parse(localStorage.getItem(sbKey) || 'null');
+      var em = sbTok?.user?.email || sbTok?.currentSession?.user?.email;
+      if (em) return String(em).toLowerCase();
+    } catch (e) {}
+    return null;
+  }
+  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function fmtFecha(ts) { if (!ts) return '—'; try { return new Date(ts).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return ts; } }
+  function tareaBadge(estado) {
+    var map = {
+      pendiente:  { c: 'bg-amber-100 text-amber-800', l: '🟡 Pendiente' },
+      en_curso:   { c: 'bg-blue-100 text-blue-800',   l: '🔵 En curso' },
+      completada: { c: 'bg-emerald-100 text-emerald-800', l: '🟢 Completada' },
+      cancelada:  { c: 'bg-stone-100 text-stone-700', l: '⚫ Cancelada' },
+    };
+    var m = map[estado] || { c: 'bg-stone-100 text-stone-600', l: estado || '?' };
+    return '<span class="text-[10px] px-1.5 py-0.5 rounded ' + m.c + '">' + m.l + '</span>';
+  }
+  function prioBadge(p) {
+    var map = { alta: 'bg-red-100 text-red-800', media: 'bg-amber-100 text-amber-800', baja: 'bg-stone-100 text-stone-600' };
+    return '<span class="text-[10px] px-1.5 py-0.5 rounded ' + (map[p] || 'bg-stone-100 text-stone-600') + '">' + esc(p || 'media') + '</span>';
+  }
+
+  async function loadMisEnviosDiego() {
+    if (!ready()) return;
+    var email = resolveEmail();
+    var listaT = document.getElementById('misEnviosTareasLista');
+    var listaA = document.getElementById('misEnviosArchivosLista');
+    var countEl = document.getElementById('misEnviosCount');
+    if (!email) {
+      if (listaT) listaT.innerHTML = '<div class="text-xs text-stone-400 italic py-2 text-center">No detecto tu sesión. Recargá la página.</div>';
+      return;
+    }
+    try {
+      var resp = await sb.rpc('diego_mis_envios_resumen', { p_email: email });
+      if (resp.error) throw resp.error;
+      var data = resp.data || {};
+      var stats = data.stats || {};
+      var tareas = data.tareas || [];
+      var archivos = data.archivos || [];
+
+      // KPIs
+      document.getElementById('misEnviosKpiTareasPend').textContent = stats.tareas_pendientes || 0;
+      document.getElementById('misEnviosKpiTareasOk').textContent = stats.tareas_completadas || 0;
+      document.getElementById('misEnviosKpiArchivos').textContent = stats.archivos_total || 0;
+      document.getElementById('misEnviosKpiTotal').textContent = (stats.tareas_total || 0) + (stats.archivos_total || 0);
+      if (countEl) countEl.textContent = ((stats.tareas_total || 0) + (stats.archivos_total || 0)) + ' envíos' + (stats.es_admin ? ' (vista admin)' : '');
+
+      // Tareas
+      if (!tareas.length) {
+        listaT.innerHTML = '<div class="text-xs text-stone-400 italic py-3 text-center">Aún no le pediste tareas a Diego.</div>';
+      } else {
+        listaT.innerHTML = tareas.map(function (t) {
+          var asignadaA = t.destinatario || t.contacto_externo || '—';
+          return '<div class="bg-white border border-stone-200 rounded p-3">' +
+            '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+              '<span class="font-semibold text-sm">' + esc(t.titulo || t.tipo || 'Tarea') + '</span>' +
+              '<div class="flex gap-1">' + prioBadge(t.prioridad) + tareaBadge(t.estado) + '</div>' +
+            '</div>' +
+            (t.descripcion ? '<div class="text-stone-700 text-xs mb-1">' + esc(t.descripcion) + '</div>' : '') +
+            '<div class="text-xs text-stone-500 flex flex-wrap gap-x-3">' +
+              '<span>👤 Asignado a: <b>' + esc(asignadaA) + '</b></span>' +
+              (t.deadline ? '<span>📅 Deadline: ' + esc(t.deadline) + '</span>' : '') +
+              '<span>🕐 ' + fmtFecha(t.created_at) + '</span>' +
+              (t.completada_en ? '<span class="text-emerald-700">✓ ' + fmtFecha(t.completada_en) + '</span>' : '') +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
+
+      // Archivos
+      if (!archivos.length) {
+        listaA.innerHTML = '<div class="text-xs text-stone-400 italic py-3 text-center">No mandaste archivos a Diego por WhatsApp todavía.</div>';
+      } else {
+        listaA.innerHTML = archivos.map(function (a) {
+          var estado = a.resuelto ? '🟢 Procesado' : (a.status_inferido || '🟡 Pendiente');
+          return '<div class="bg-white border border-stone-200 rounded p-3">' +
+            '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+              '<span class="font-semibold text-sm">📎 ' + esc(a.archivo_nombre || 'archivo') + '</span>' +
+              '<span class="text-[10px] px-1.5 py-0.5 rounded ' + (a.resuelto ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800') + '">' + esc(estado) + '</span>' +
+            '</div>' +
+            '<div class="text-xs text-stone-500 flex flex-wrap gap-x-3">' +
+              (a.archivo_tipo ? '<span>tipo: ' + esc(a.archivo_tipo) + '</span>' : '') +
+              '<span>🕐 ' + fmtFecha(a.created_at) + '</span>' +
+              (a.archivo_url ? '<a class="text-sky-700 underline" href="' + esc(a.archivo_url) + '" target="_blank" rel="noopener">ver</a>' : '') +
+            '</div>' +
+            (a.decision_dusan ? '<div class="mt-1 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-900">📝 ' + esc(a.decision_dusan) + '</div>' : '') +
+          '</div>';
+        }).join('');
+      }
+    } catch (e) {
+      console.error('[MisEnviosDiego] error:', e);
+      if (listaT) listaT.innerHTML = '<div class="text-xs text-red-700 italic py-2 text-center">Error: ' + esc(e?.message || String(e)) + '</div>';
+    }
+  }
+
+  function init() {
+    document.querySelector('button[data-tab="mis_envios_diego"]')?.addEventListener('click', function () { setTimeout(loadMisEnviosDiego, 100); });
+    document.querySelector('a[data-v4-tab="mis_envios_diego"]')?.addEventListener('click', function () { setTimeout(loadMisEnviosDiego, 100); });
+    var refreshBtn = document.getElementById('misEnviosRefresh');
+    if (refreshBtn) refreshBtn.addEventListener('click', loadMisEnviosDiego);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- D-FEATURE-CARTERO-003/004/005 · Handlers 3 features firmadas Dusan 2026-06-01 -->
+<script>
+(function () {
+  function ready() { return typeof sb !== 'undefined' && sb && sb.rpc; }
+  function resolveEmail() {
+    if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase();
+    try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
+    try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
+    try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    return null;
+  }
+  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function fmtFecha(ts) { if (!ts) return '—'; try { return new Date(ts).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return ts; } }
+  function fmtCLP(n) { if (n == null) return '—'; return '$' + Number(n).toLocaleString('es-CL'); }
+  function badge(estado, mapColor) {
+    var color = mapColor[estado] || 'bg-stone-100 text-stone-700';
+    return '<span class="text-[10px] px-1.5 py-0.5 rounded ' + color + '">' + esc(estado.replace(/_/g, ' ')) + '</span>';
+  }
+  function showError(el, msg) {
+    el.innerHTML = '<div class="text-xs text-red-700 italic py-2 text-center bg-red-50 border border-red-200 rounded p-2">' + esc(msg) + '</div>';
+  }
+  function isAdmin(email) {
+    return ['dusan.arancibia@gmail.com','gerencia@gestionrepchile.cl','sistemas@gestionrepchile.cl','recepcion01@gestionrepchile.cl','soporte@gestionrepchile.cl'].includes(email);
+  }
+
+  // ===== FEATURE [5] MATERIAL NUEVO =====
+  var mnColorMap = { pendiente: 'bg-amber-100 text-amber-800', en_busqueda_precio: 'bg-blue-100 text-blue-800', aprobada: 'bg-emerald-100 text-emerald-800', rechazada: 'bg-red-100 text-red-800' };
+  async function loadMaterialNuevo() {
+    var lista = document.getElementById('materialNuevoLista');
+    if (!ready()) { showError(lista, 'Sesión no detectada. Recargá.'); return; }
+    var email = resolveEmail();
+    if (!email) { showError(lista, 'No detecto tu sesión.'); return; }
+    try {
+      var resp = await sb.rpc('material_nuevo_listar', { p_email: email, p_solo_pendientes: false });
+      if (resp.error) throw resp.error;
+      var rows = resp.data || [];
+      if (!rows.length) { lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Aún no hay solicitudes.</div>'; return; }
+      var admin = isAdmin(email);
+      lista.innerHTML = rows.map(function (r) {
+        var puedeDecidir = admin && r.estado === 'pendiente';
+        return '<div class="bg-white border border-stone-200 rounded p-3">' +
+          '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+            '<span class="font-semibold text-sm">🆕 ' + esc(r.material_nombre) + '</span>' +
+            badge(r.estado, mnColorMap) +
+          '</div>' +
+          '<div class="text-xs text-stone-600">' + esc(r.solicitante_email) + ' · sucursal ' + esc(r.sucursal_codigo || '—') + (r.cliente_razon_social ? ' · cliente ' + esc(r.cliente_razon_social) : '') + '</div>' +
+          '<div class="text-xs text-stone-500 mt-1">' + (r.kg_estimado ? esc(r.kg_estimado) + ' kg · ' : '') + (r.precio_propuesto_clp ? 'propuesto ' + fmtCLP(r.precio_propuesto_clp) : 'sin precio') + '</div>' +
+          (r.motivo ? '<div class="text-xs text-stone-700 italic mt-1">"' + esc(r.motivo) + '"</div>' : '') +
+          (r.comentarios_aprobador ? '<div class="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-900">💬 ' + esc(r.comentarios_aprobador) + '</div>' : '') +
+          '<div class="text-[10px] text-stone-400 mt-1">' + fmtFecha(r.created_at) + (r.decided_at ? ' · decidido ' + fmtFecha(r.decided_at) : '') + '</div>' +
+          (puedeDecidir ? '<div class="mt-2 flex gap-1"><button class="mn-aprobar text-[10px] px-2 py-0.5 bg-emerald-600 text-white rounded" data-id="' + esc(r.id) + '">✓ Aprobar</button>' +
+                                                            '<button class="mn-buscar text-[10px] px-2 py-0.5 bg-blue-600 text-white rounded" data-id="' + esc(r.id) + '">🔍 Buscar precio</button>' +
+                                                            '<button class="mn-rechazar text-[10px] px-2 py-0.5 bg-red-600 text-white rounded" data-id="' + esc(r.id) + '">✕ Rechazar</button></div>' : '') +
+        '</div>';
+      }).join('');
+    } catch (e) {
+      console.error('[material_nuevo] error:', e);
+      showError(lista, 'Error al cargar: ' + (e?.message || e));
+    }
+  }
+  async function decidirMaterial(id, decision) {
+    var email = resolveEmail();
+    var coment = prompt(decision === 'rechazada' ? 'Razón del rechazo (opcional):' : decision === 'en_busqueda_precio' ? 'Notas para el solicitante (opcional):' : 'Comentarios (opcional):', '');
+    try {
+      var resp = await sb.rpc('material_nuevo_decidir', { p_id: id, p_aprobador_email: email, p_decision: decision, p_comentarios: coment || null });
+      if (resp.error) throw resp.error;
+      loadMaterialNuevo();
+    } catch (e) { alert('Error: ' + (e?.message || e)); }
+  }
+
+  // ===== FEATURE [3] DESPACHO COORD =====
+  var dcColorMap = { programado: 'bg-amber-100 text-amber-800', en_ejecucion: 'bg-blue-100 text-blue-800', ejecutado: 'bg-emerald-100 text-emerald-800', cancelado: 'bg-stone-100 text-stone-700' };
+  async function loadDespachoCoord() {
+    var lista = document.getElementById('despachoLista');
+    if (!ready()) { showError(lista, 'Sesión no detectada.'); return; }
+    try {
+      var resp = await sb.rpc('despacho_coord_listar', { p_solo_activos: false });
+      if (resp.error) throw resp.error;
+      var rows = resp.data || [];
+      if (!rows.length) { lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Aún no hay despachos programados.</div>'; return; }
+      lista.innerHTML = rows.map(function (r) {
+        return '<div class="bg-white border border-stone-200 rounded p-3">' +
+          '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+            '<span class="font-semibold text-sm">🚚 ' + esc(r.material_nombre || '(sin material)') + '</span>' +
+            badge(r.estado, dcColorMap) +
+          '</div>' +
+          '<div class="text-xs text-stone-600">' + esc(r.solicitante_email) + ' · suc ' + esc(r.sucursal_codigo || '—') + (r.cliente_razon_social ? ' · ' + esc(r.cliente_razon_social) : '') + '</div>' +
+          '<div class="text-xs text-stone-500 mt-1">' + (r.kg_estimado ? esc(r.kg_estimado) + ' kg · ' : '') + (r.fecha_programada ? 'fecha ' + esc(r.fecha_programada) : 'sin fecha') + (r.transporte_tipo ? ' · ' + esc(r.transporte_tipo.replace(/_/g, ' ')) : '') + '</div>' +
+          (r.destino ? '<div class="text-xs text-stone-500">destino: ' + esc(r.destino) + '</div>' : '') +
+          (r.notas ? '<div class="text-xs text-stone-700 italic mt-1">"' + esc(r.notas) + '"</div>' : '') +
+          '<div class="text-[10px] text-stone-400 mt-1">' + fmtFecha(r.created_at) + (r.ejecutado_at ? ' · ejecutado ' + fmtFecha(r.ejecutado_at) : '') + '</div>' +
+          (r.estado === 'programado' || r.estado === 'en_ejecucion' ? '<div class="mt-2 flex gap-1">' +
+            (r.estado === 'programado' ? '<button class="dc-ejec text-[10px] px-2 py-0.5 bg-blue-600 text-white rounded" data-id="' + esc(r.id) + '">▶ En ejecución</button>' : '') +
+            '<button class="dc-done text-[10px] px-2 py-0.5 bg-emerald-600 text-white rounded" data-id="' + esc(r.id) + '">✓ Ejecutado</button>' +
+            '<button class="dc-cancel text-[10px] px-2 py-0.5 bg-red-600 text-white rounded" data-id="' + esc(r.id) + '">✕ Cancelar</button>' +
+          '</div>' : '') +
+        '</div>';
+      }).join('');
+    } catch (e) {
+      console.error('[despacho_coord] error:', e);
+      showError(lista, 'Error: ' + (e?.message || e));
+    }
+  }
+  async function actualizarDespacho(id, nuevo) {
+    var motivo = nuevo === 'cancelado' ? prompt('Motivo cancelación (opcional):', '') : null;
+    try {
+      var resp = await sb.rpc('despacho_coord_actualizar', { p_id: id, p_nuevo_estado: nuevo, p_motivo: motivo });
+      if (resp.error) throw resp.error;
+      loadDespachoCoord();
+    } catch (e) { alert('Error: ' + (e?.message || e)); }
+  }
+
+  // ===== FEATURE [4] INCIDENTES =====
+  var ioColorMap = { abierto: 'bg-red-100 text-red-800', en_proceso: 'bg-amber-100 text-amber-800', resuelto: 'bg-emerald-100 text-emerald-800', cerrado_sin_solucion: 'bg-stone-100 text-stone-700' };
+  var ioSevMap = { critica: '🆘', alta: '🔴', media: '🟡', baja: '🟢' };
+  async function loadIncidentes() {
+    var lista = document.getElementById('incidenteLista');
+    if (!ready()) { showError(lista, 'Sesión no detectada.'); return; }
+    try {
+      var resp = await sb.rpc('incidente_op_listar', { p_solo_abiertos: false });
+      if (resp.error) throw resp.error;
+      var rows = resp.data || [];
+      if (!rows.length) { lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Sin incidentes registrados.</div>'; return; }
+      lista.innerHTML = rows.map(function (r) {
+        var puedeResolver = r.estado === 'abierto' || r.estado === 'en_proceso';
+        return '<div class="bg-white border border-stone-200 rounded p-3">' +
+          '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+            '<span class="font-semibold text-sm">' + (ioSevMap[r.severidad] || '🛠️') + ' ' + esc(r.equipo || '(sin equipo)') + '</span>' +
+            badge(r.estado, ioColorMap) +
+          '</div>' +
+          '<div class="text-xs text-stone-700">' + esc(r.descripcion) + '</div>' +
+          '<div class="text-xs text-stone-500 mt-1">' + esc(r.reportado_por) + ' · suc ' + esc(r.sucursal_codigo || '—') + (r.costo_estimado_clp ? ' · costo ' + fmtCLP(r.costo_estimado_clp) : '') + '</div>' +
+          (r.solucion ? '<div class="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-900">✅ <strong>Solución:</strong> ' + esc(r.solucion) + (r.resuelto_por ? ' <span class="text-stone-500">(' + esc(r.resuelto_por) + ')</span>' : '') + '</div>' : '') +
+          '<div class="text-[10px] text-stone-400 mt-1">ocurrió ' + fmtFecha(r.fecha_ocurrencia) + (r.fecha_resuelto ? ' · resuelto ' + fmtFecha(r.fecha_resuelto) : '') + '</div>' +
+          (puedeResolver ? '<div class="mt-2"><button class="io-resolver text-[10px] px-2 py-0.5 bg-emerald-600 text-white rounded" data-id="' + esc(r.id) + '">✓ Registrar solución</button></div>' : '') +
+        '</div>';
+      }).join('');
+    } catch (e) {
+      console.error('[incidentes_op] error:', e);
+      showError(lista, 'Error: ' + (e?.message || e));
+    }
+  }
+  async function resolverIncidente(id) {
+    var sol = prompt('¿Qué solución se aplicó?', '');
+    if (sol === null) return;
+    if (!sol.trim()) { alert('Solución no puede estar vacía.'); return; }
+    var email = resolveEmail();
+    try {
+      var resp = await sb.rpc('incidente_op_resolver', { p_id: id, p_resuelto_por: email, p_solucion: sol.trim(), p_estado_final: 'resuelto' });
+      if (resp.error) throw resp.error;
+      loadIncidentes();
+    } catch (e) { alert('Error: ' + (e?.message || e)); }
+  }
+
+  // ===== INIT + handlers de form =====
+  function init() {
+    // Tabs
+    var bind = function (tab, sectionId, loader) {
+      document.querySelector('button[data-tab="' + tab + '"]')?.addEventListener('click', function () { setTimeout(loader, 100); });
+      document.querySelector('a[data-v4-tab="' + tab + '"]')?.addEventListener('click', function () { setTimeout(loader, 100); });
+    };
+    bind('material_nuevo', 'tabMaterialNuevo', loadMaterialNuevo);
+    bind('despacho_coord', 'tabDespachoCoord', loadDespachoCoord);
+    bind('incidentes_op',  'tabIncidentesOp',  loadIncidentes);
+
+    // FEATURE [5] form material nuevo
+    document.getElementById('materialNuevoNuevoBtn')?.addEventListener('click', function () {
+      document.getElementById('materialNuevoForm').classList.toggle('hidden');
+    });
+    document.getElementById('mn_cancelar')?.addEventListener('click', function () {
+      document.getElementById('materialNuevoForm').classList.add('hidden');
+    });
+    document.getElementById('mn_enviar')?.addEventListener('click', async function () {
+      var material = document.getElementById('mn_material').value.trim();
+      if (!material) { alert('Material es requerido'); return; }
+      var email = resolveEmail();
+      if (!email) { alert('No detecto sesión'); return; }
+      try {
+        var resp = await sb.rpc('material_nuevo_solicitar', {
+          p_solicitante_email: email,
+          p_material_nombre: material,
+          p_sucursal_codigo: document.getElementById('mn_sucursal').value.trim() || null,
+          p_cliente_razon_social: document.getElementById('mn_cliente').value.trim() || null,
+          p_kg_estimado: parseFloat(document.getElementById('mn_kg').value) || null,
+          p_precio_propuesto_clp: parseFloat(document.getElementById('mn_precio').value) || null,
+          p_motivo: document.getElementById('mn_motivo').value.trim() || null
+        });
+        if (resp.error) throw resp.error;
+        ['mn_material','mn_kg','mn_precio','mn_sucursal','mn_cliente','mn_motivo'].forEach(function (id) { document.getElementById(id).value = ''; });
+        document.getElementById('materialNuevoForm').classList.add('hidden');
+        loadMaterialNuevo();
+      } catch (e) { alert('Error: ' + (e?.message || e)); }
+    });
+    document.addEventListener('click', function (e) {
+      var b;
+      if ((b = e.target.closest('.mn-aprobar')))  decidirMaterial(b.dataset.id, 'aprobada');
+      else if ((b = e.target.closest('.mn-buscar')))   decidirMaterial(b.dataset.id, 'en_busqueda_precio');
+      else if ((b = e.target.closest('.mn-rechazar'))) decidirMaterial(b.dataset.id, 'rechazada');
+      else if ((b = e.target.closest('.dc-ejec')))     actualizarDespacho(b.dataset.id, 'en_ejecucion');
+      else if ((b = e.target.closest('.dc-done')))     actualizarDespacho(b.dataset.id, 'ejecutado');
+      else if ((b = e.target.closest('.dc-cancel')))   actualizarDespacho(b.dataset.id, 'cancelado');
+      else if ((b = e.target.closest('.io-resolver'))) resolverIncidente(b.dataset.id);
+    });
+
+    // FEATURE [3] form despacho
+    document.getElementById('despachoNuevoBtn')?.addEventListener('click', function () {
+      document.getElementById('despachoForm').classList.toggle('hidden');
+    });
+    document.getElementById('dc_cancelar')?.addEventListener('click', function () {
+      document.getElementById('despachoForm').classList.add('hidden');
+    });
+    document.getElementById('dc_enviar')?.addEventListener('click', async function () {
+      var material = document.getElementById('dc_material').value.trim();
+      if (!material) { alert('Material es requerido'); return; }
+      var email = resolveEmail();
+      if (!email) { alert('No detecto sesión'); return; }
+      try {
+        var resp = await sb.rpc('despacho_coord_crear', {
+          p_solicitante_email: email,
+          p_material_nombre: material,
+          p_sucursal_codigo: document.getElementById('dc_sucursal').value.trim() || null,
+          p_cliente_razon_social: document.getElementById('dc_cliente').value.trim() || null,
+          p_kg_estimado: parseFloat(document.getElementById('dc_kg').value) || null,
+          p_fecha_programada: document.getElementById('dc_fecha').value || null,
+          p_transporte_tipo: document.getElementById('dc_transporte').value || null,
+          p_destino: document.getElementById('dc_destino').value.trim() || null,
+          p_notas: document.getElementById('dc_notas').value.trim() || null
+        });
+        if (resp.error) throw resp.error;
+        ['dc_material','dc_kg','dc_fecha','dc_sucursal','dc_cliente','dc_destino','dc_notas'].forEach(function (id) { document.getElementById(id).value = ''; });
+        document.getElementById('dc_transporte').value = '';
+        document.getElementById('despachoForm').classList.add('hidden');
+        loadDespachoCoord();
+      } catch (e) { alert('Error: ' + (e?.message || e)); }
+    });
+
+    // FEATURE [4] form incidente
+    document.getElementById('incidenteNuevoBtn')?.addEventListener('click', function () {
+      document.getElementById('incidenteForm').classList.toggle('hidden');
+    });
+    document.getElementById('io_cancelar')?.addEventListener('click', function () {
+      document.getElementById('incidenteForm').classList.add('hidden');
+    });
+    document.getElementById('io_enviar')?.addEventListener('click', async function () {
+      var descr = document.getElementById('io_descripcion').value.trim();
+      if (!descr) { alert('Descripción es requerida'); return; }
+      var email = resolveEmail();
+      if (!email) { alert('No detecto sesión'); return; }
+      try {
+        var resp = await sb.rpc('incidente_op_crear', {
+          p_reportado_por: email,
+          p_descripcion: descr,
+          p_sucursal_codigo: document.getElementById('io_sucursal').value.trim() || null,
+          p_equipo: document.getElementById('io_equipo').value.trim() || null,
+          p_severidad: document.getElementById('io_severidad').value || 'media',
+          p_costo_estimado_clp: parseFloat(document.getElementById('io_costo').value) || null
+        });
+        if (resp.error) throw resp.error;
+        ['io_descripcion','io_equipo','io_sucursal','io_costo'].forEach(function (id) { document.getElementById(id).value = ''; });
+        document.getElementById('io_severidad').value = 'media';
+        document.getElementById('incidenteForm').classList.add('hidden');
+        loadIncidentes();
+      } catch (e) { alert('Error: ' + (e?.message || e)); }
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- D-FEATURE-CARTERO-006/007 · Handlers Firmas + Tarifas (Pablo PM 2026-06-01) -->
+<script>
+(function () {
+  function ready() { return typeof sb !== 'undefined' && sb && sb.rpc; }
+  function resolveEmail() {
+    if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase();
+    try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
+    try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
+    try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    return null;
+  }
+  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function fmtFecha(ts) { if (!ts) return '—'; try { return new Date(ts).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return ts; } }
+  function fmtCLP(n) { if (n == null) return '—'; return '$' + Number(n).toLocaleString('es-CL'); }
+  function showError(el, msg) { el.innerHTML = '<div class="text-xs text-red-700 italic py-2 text-center bg-red-50 border border-red-200 rounded p-2">' + esc(msg) + '</div>'; }
+  function isAdmin(email) { return ['dusan.arancibia@gmail.com','gerencia@gestionrepchile.cl','sistemas@gestionrepchile.cl','recepcion01@gestionrepchile.cl','soporte@gestionrepchile.cl'].includes(email); }
+
+  // ===== FIRMAS PENDIENTES =====
+  var fpColor = { pendiente: 'bg-amber-100 text-amber-800', en_revision: 'bg-blue-100 text-blue-800', firmado: 'bg-emerald-100 text-emerald-800', rechazado: 'bg-red-100 text-red-800' };
+  async function loadFirmas() {
+    var lista = document.getElementById('firmaLista');
+    if (!ready()) { showError(lista, 'Sesión no detectada.'); return; }
+    var email = resolveEmail();
+    if (!email) { showError(lista, 'No detecto tu sesión.'); return; }
+    try {
+      var resp = await sb.rpc('firma_listar', { p_email: email, p_solo_pendientes: false });
+      if (resp.error) throw resp.error;
+      var rows = resp.data || [];
+      if (!rows.length) { lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Sin firmas pendientes.</div>'; return; }
+      var admin = isAdmin(email);
+      lista.innerHTML = rows.map(function (r) {
+        var puedeActuar = (r.destinatario_email === email || admin) && r.estado === 'pendiente';
+        return '<div class="bg-white border border-stone-200 rounded p-3">' +
+          '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+            '<span class="font-semibold text-sm">📝 ' + esc(r.documento_titulo) + '</span>' +
+            '<span class="text-[10px] px-1.5 py-0.5 rounded ' + (fpColor[r.estado] || 'bg-stone-100 text-stone-700') + '">' + esc(r.estado.replace(/_/g,' ')) + '</span>' +
+          '</div>' +
+          '<div class="text-xs text-stone-600">' + esc(r.solicitante_email) + ' → ' + esc(r.destinatario_email) + ' · ' + esc(r.tipo.replace(/_/g,' ')) + '</div>' +
+          '<div class="text-xs mt-1"><a href="' + esc(r.documento_link) + '" target="_blank" class="text-blue-600 underline">📄 Abrir documento original</a></div>' +
+          (r.link_firmado ? '<div class="text-xs mt-1"><a href="' + esc(r.link_firmado) + '" target="_blank" class="text-emerald-700 underline font-semibold">✅ Abrir documento firmado</a></div>' : '') +
+          (r.notas ? '<div class="text-xs text-stone-700 italic mt-1">"' + esc(r.notas) + '"</div>' : '') +
+          (r.comentarios_firmante ? '<div class="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-900">💬 ' + esc(r.comentarios_firmante) + '</div>' : '') +
+          '<div class="text-[10px] text-stone-400 mt-1">solicitado ' + fmtFecha(r.created_at) + (r.firmado_en ? ' · firmado ' + fmtFecha(r.firmado_en) : '') + '</div>' +
+          (puedeActuar ? '<div class="mt-2 flex gap-1"><button class="fp-firmar text-[10px] px-2 py-0.5 bg-emerald-600 text-white rounded" data-id="' + esc(r.id) + '">✓ Marcar firmado</button>' +
+                                                            '<button class="fp-revisar text-[10px] px-2 py-0.5 bg-blue-600 text-white rounded" data-id="' + esc(r.id) + '">📋 En revisión</button>' +
+                                                            '<button class="fp-rechazar text-[10px] px-2 py-0.5 bg-red-600 text-white rounded" data-id="' + esc(r.id) + '">✕ Rechazar</button></div>' : '') +
+        '</div>';
+      }).join('');
+    } catch (e) {
+      console.error('[firmas] error:', e);
+      showError(lista, 'Error: ' + (e?.message || e));
+    }
+  }
+  async function actualizarFirma(id, estado) {
+    var email = resolveEmail();
+    var linkFirmado = null;
+    var coment = null;
+    if (estado === 'firmado') {
+      linkFirmado = prompt('Link al documento FIRMADO (SharePoint, Drive, etc):', '');
+      if (linkFirmado === null) return;
+      if (!linkFirmado.trim()) { alert('El link al firmado es requerido para marcar como firmado.'); return; }
+    } else if (estado === 'rechazado') {
+      coment = prompt('Razón del rechazo:', '');
+      if (coment === null) return;
+    } else if (estado === 'en_revision') {
+      coment = prompt('Notas / qué falta para firmar (opcional):', '');
+      if (coment === null) return;
+    }
+    try {
+      var resp = await sb.rpc('firma_actualizar', { p_id: id, p_firmante_email: email, p_nuevo_estado: estado, p_link_firmado: linkFirmado, p_comentarios: coment || null });
+      if (resp.error) throw resp.error;
+      loadFirmas();
+    } catch (e) { alert('Error: ' + (e?.message || e)); }
+  }
+
+  // ===== TARIFAS EXTERNAS =====
+  var _tarifasFiltro = '';
+  async function loadTarifas() {
+    var lista = document.getElementById('tarifaLista');
+    if (!ready()) { showError(lista, 'Sesión no detectada.'); return; }
+    var email = resolveEmail();
+    try {
+      var resp = await sb.rpc('tarifa_listar', { p_solo_activas: true, p_filtro_servicio: _tarifasFiltro || null });
+      if (resp.error) throw resp.error;
+      var rows = resp.data || [];
+      if (!rows.length) { lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Sin tarifas cargadas.</div>'; return; }
+      var admin = isAdmin(email);
+      lista.innerHTML = rows.map(function (r) {
+        return '<div class="bg-white border border-stone-200 rounded p-3">' +
+          '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+            '<span class="font-semibold text-sm">💰 ' + esc(r.servicio) + '</span>' +
+            '<span class="text-sm font-bold text-emerald-700">' + fmtCLP(r.precio_clp) + (r.unidad && r.unidad !== 'unidad' ? ' / ' + esc(r.unidad.replace(/_/g,' ')) : '') + '</span>' +
+          '</div>' +
+          (r.proveedor ? '<div class="text-xs text-stone-600">proveedor: ' + esc(r.proveedor) + '</div>' : '') +
+          (r.vigencia_desde || r.vigencia_hasta ? '<div class="text-xs text-stone-500">vigencia: ' + (r.vigencia_desde || '—') + ' a ' + (r.vigencia_hasta || '—') + '</div>' : '') +
+          (r.notas ? '<div class="text-xs text-stone-700 italic mt-1">"' + esc(r.notas) + '"</div>' : '') +
+          '<div class="text-[10px] text-stone-400 mt-1">actualizado ' + fmtFecha(r.ultima_actualizacion) + ' · ' + esc(r.actualizado_por) + '</div>' +
+          (admin ? '<div class="mt-2"><button class="te-edit text-[10px] px-2 py-0.5 bg-blue-600 text-white rounded" data-id="' + esc(r.id) + '" data-precio="' + esc(r.precio_clp ?? '') + '">✏ Actualizar precio</button></div>' : '') +
+        '</div>';
+      }).join('');
+    } catch (e) {
+      console.error('[tarifas] error:', e);
+      showError(lista, 'Error: ' + (e?.message || e));
+    }
+  }
+  async function editarTarifa(id, precioActual) {
+    var nuevoPrecio = prompt('Nuevo precio CLP (deja vacío para no cambiar):', precioActual || '');
+    if (nuevoPrecio === null) return;
+    var notas = prompt('Notas / razón del cambio (opcional):', '');
+    var email = resolveEmail();
+    try {
+      var resp = await sb.rpc('tarifa_actualizar', {
+        p_id: id,
+        p_actualizado_por: email,
+        p_precio_clp: nuevoPrecio.trim() ? parseFloat(nuevoPrecio) : null,
+        p_notas: notas || null,
+        p_activo: null, p_vigencia_hasta: null
+      });
+      if (resp.error) throw resp.error;
+      loadTarifas();
+    } catch (e) { alert('Error: ' + (e?.message || e)); }
+  }
+
+  // ===== INIT =====
+  function init() {
+    var bind = function (tab, loader) {
+      document.querySelector('button[data-tab="' + tab + '"]')?.addEventListener('click', function () { setTimeout(loader, 100); });
+      document.querySelector('a[data-v4-tab="' + tab + '"]')?.addEventListener('click', function () { setTimeout(loader, 100); });
+    };
+    bind('firmas_pend', loadFirmas);
+    bind('tarifas_ext', loadTarifas);
+
+    // Form Firma
+    document.getElementById('firmaNuevaBtn')?.addEventListener('click', function () { document.getElementById('firmaForm').classList.toggle('hidden'); });
+    document.getElementById('fp_cancelar')?.addEventListener('click', function () { document.getElementById('firmaForm').classList.add('hidden'); });
+    document.getElementById('fp_enviar')?.addEventListener('click', async function () {
+      var titulo = document.getElementById('fp_titulo').value.trim();
+      var link = document.getElementById('fp_link').value.trim();
+      if (!titulo || !link) { alert('Título y link son requeridos'); return; }
+      var email = resolveEmail();
+      if (!email) { alert('No detecto sesión'); return; }
+      try {
+        var resp = await sb.rpc('firma_solicitar', {
+          p_solicitante_email: email,
+          p_documento_titulo: titulo,
+          p_documento_link: link,
+          p_tipo: document.getElementById('fp_tipo').value || 'firma_digital',
+          p_destinatario_email: document.getElementById('fp_destinatario').value.trim() || 'dusan.arancibia@gmail.com',
+          p_notas: document.getElementById('fp_notas').value.trim() || null
+        });
+        if (resp.error) throw resp.error;
+        ['fp_titulo','fp_link','fp_notas'].forEach(function (id) { document.getElementById(id).value = ''; });
+        document.getElementById('firmaForm').classList.add('hidden');
+        loadFirmas();
+      } catch (e) { alert('Error: ' + (e?.message || e)); }
+    });
+
+    // Form Tarifa
+    document.getElementById('tarifaNuevaBtn')?.addEventListener('click', function () { document.getElementById('tarifaForm').classList.toggle('hidden'); });
+    document.getElementById('te_cancelar')?.addEventListener('click', function () { document.getElementById('tarifaForm').classList.add('hidden'); });
+    document.getElementById('te_enviar')?.addEventListener('click', async function () {
+      var servicio = document.getElementById('te_servicio').value.trim();
+      if (!servicio) { alert('Servicio es requerido'); return; }
+      var email = resolveEmail();
+      if (!email) { alert('No detecto sesión'); return; }
+      try {
+        var resp = await sb.rpc('tarifa_crear', {
+          p_actualizado_por: email,
+          p_servicio: servicio,
+          p_proveedor: document.getElementById('te_proveedor').value.trim() || null,
+          p_precio_clp: parseFloat(document.getElementById('te_precio').value) || null,
+          p_unidad: document.getElementById('te_unidad').value.trim() || 'unidad',
+          p_vigencia_desde: document.getElementById('te_desde').value || null,
+          p_vigencia_hasta: document.getElementById('te_hasta').value || null,
+          p_notas: document.getElementById('te_notas').value.trim() || null
+        });
+        if (resp.error) throw resp.error;
+        ['te_servicio','te_proveedor','te_precio','te_desde','te_hasta','te_notas'].forEach(function (id) { document.getElementById(id).value = ''; });
+        document.getElementById('te_unidad').value = 'unidad';
+        document.getElementById('tarifaForm').classList.add('hidden');
+        loadTarifas();
+      } catch (e) { alert('Error: ' + (e?.message || e)); }
+    });
+
+    // Filtro tarifas
+    document.getElementById('te_filtro')?.addEventListener('input', function (e) {
+      _tarifasFiltro = e.target.value.trim();
+      clearTimeout(window.__teFiltroTimer);
+      window.__teFiltroTimer = setTimeout(loadTarifas, 300);
+    });
+
+    // Delegated clicks
+    document.addEventListener('click', function (e) {
+      var b;
+      if ((b = e.target.closest('.fp-firmar')))   actualizarFirma(b.dataset.id, 'firmado');
+      else if ((b = e.target.closest('.fp-revisar')))  actualizarFirma(b.dataset.id, 'en_revision');
+      else if ((b = e.target.closest('.fp-rechazar'))) actualizarFirma(b.dataset.id, 'rechazado');
+      else if ((b = e.target.closest('.te-edit')))     editarTarifa(b.dataset.id, b.dataset.precio);
+    });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
