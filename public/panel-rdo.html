@@ -98,6 +98,124 @@
       }
     })();
   </script>
+
+  <!-- DeepSeek ronda 3 · Sistema modal global (reemplaza prompt() nativo feo).
+       Uso: const v = await showModalInput({title, message, placeholder, multiline, required, okLabel, cancelLabel})
+       Devuelve string con el valor o null si canceló. ESC cierra. -->
+  <style>
+    .pc-modal-backdrop { position:fixed; inset:0; background:rgba(15,23,42,.55); z-index:10000;
+                         display:flex; align-items:center; justify-content:center; padding:16px;
+                         opacity:0; transition:opacity .2s ease; }
+    .pc-modal-backdrop.show { opacity:1; }
+    .pc-modal { background:#fff; border-radius:10px; box-shadow:0 20px 50px -10px rgba(0,0,0,.3);
+                width:100%; max-width:480px; padding:20px 22px 18px;
+                transform:scale(.96); transition:transform .2s ease; }
+    .pc-modal-backdrop.show .pc-modal { transform:scale(1); }
+    .pc-modal h3 { margin:0 0 6px; font-size:17px; font-weight:600; color:#1f2937; }
+    .pc-modal .pc-modal-msg { margin:0 0 12px; font-size:13px; color:#6b7280; }
+    .pc-modal-input { width:100%; box-sizing:border-box; border:1px solid #d1d5db; border-radius:6px;
+                      padding:10px 12px; font-size:14px; font-family:inherit; color:#111827;
+                      outline:none; transition:border-color .15s; }
+    .pc-modal-input:focus { border-color:#059669; box-shadow:0 0 0 3px rgba(5,150,105,.15); }
+    .pc-modal-input.error { border-color:#dc2626; }
+    .pc-modal textarea.pc-modal-input { resize:vertical; min-height:80px; max-height:200px; }
+    .pc-modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:14px; }
+    .pc-modal-btn { padding:8px 16px; border-radius:6px; font-size:14px; font-weight:500;
+                    cursor:pointer; border:0; transition:background .15s; }
+    .pc-modal-btn-cancel { background:#f3f4f6; color:#374151; }
+    .pc-modal-btn-cancel:hover { background:#e5e7eb; }
+    .pc-modal-btn-ok { background:#059669; color:#fff; }
+    .pc-modal-btn-ok:hover { background:#047857; }
+    .pc-modal-btn-ok:disabled { background:#d1d5db; cursor:not-allowed; }
+    .pc-modal-error-msg { color:#dc2626; font-size:12px; margin-top:6px; min-height:16px; }
+    @media (max-width: 640px) { .pc-modal { max-width:none; } .pc-modal-actions { flex-direction:column-reverse; }
+                                .pc-modal-btn { width:100%; padding:12px; } }
+    @media (prefers-reduced-motion: reduce) { .pc-modal-backdrop, .pc-modal { transition:none; } }
+  </style>
+  <script>
+    // DeepSeek ronda 3 · showModalInput()
+    // Devuelve Promise<string|null>. null si canceló (ESC / Cancelar / click backdrop).
+    (function () {
+      window.showModalInput = function (opts) {
+        opts = opts || {};
+        const title       = opts.title       || 'Ingresar valor';
+        const message     = opts.message     || '';
+        const placeholder = opts.placeholder || '';
+        const initialVal  = opts.initialValue|| '';
+        const multiline   = opts.multiline === true;
+        const required    = opts.required === true;
+        const okLabel     = opts.okLabel     || 'Confirmar';
+        const cancelLabel = opts.cancelLabel || 'Cancelar';
+        const maxLength   = opts.maxLength   || 1000;
+
+        return new Promise((resolve) => {
+          const backdrop = document.createElement('div');
+          backdrop.className = 'pc-modal-backdrop';
+          backdrop.setAttribute('role','dialog');
+          backdrop.setAttribute('aria-modal','true');
+
+          const modal = document.createElement('div');
+          modal.className = 'pc-modal';
+
+          const h3 = document.createElement('h3'); h3.textContent = title; modal.appendChild(h3);
+          if (message) {
+            const p = document.createElement('p'); p.className = 'pc-modal-msg'; p.textContent = message;
+            modal.appendChild(p);
+          }
+
+          const input = document.createElement(multiline ? 'textarea' : 'input');
+          input.className = 'pc-modal-input';
+          if (!multiline) input.type = 'text';
+          input.placeholder = placeholder;
+          input.value = initialVal;
+          input.maxLength = maxLength;
+          modal.appendChild(input);
+
+          const errMsg = document.createElement('div');
+          errMsg.className = 'pc-modal-error-msg';
+          modal.appendChild(errMsg);
+
+          const actions = document.createElement('div'); actions.className = 'pc-modal-actions';
+          const btnCancel = document.createElement('button');
+          btnCancel.type='button'; btnCancel.className='pc-modal-btn pc-modal-btn-cancel'; btnCancel.textContent=cancelLabel;
+          const btnOk = document.createElement('button');
+          btnOk.type='button'; btnOk.className='pc-modal-btn pc-modal-btn-ok'; btnOk.textContent=okLabel;
+          actions.appendChild(btnCancel); actions.appendChild(btnOk);
+          modal.appendChild(actions);
+          backdrop.appendChild(modal);
+          document.body.appendChild(backdrop);
+          requestAnimationFrame(() => backdrop.classList.add('show'));
+          setTimeout(() => input.focus(), 50);
+
+          function close(val) {
+            backdrop.classList.remove('show');
+            document.removeEventListener('keydown', onKey);
+            setTimeout(() => { if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop); }, 200);
+            resolve(val);
+          }
+          function tryConfirm() {
+            const v = input.value.trim();
+            if (required && !v) {
+              input.classList.add('error');
+              errMsg.textContent = 'Este campo es obligatorio';
+              input.focus();
+              return;
+            }
+            close(v);
+          }
+          function onKey(e) {
+            if (e.key === 'Escape') { e.preventDefault(); close(null); }
+            else if (e.key === 'Enter' && !multiline) { e.preventDefault(); tryConfirm(); }
+            else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); tryConfirm(); }
+          }
+          btnCancel.onclick = () => close(null);
+          btnOk.onclick = tryConfirm;
+          backdrop.onclick = (e) => { if (e.target === backdrop) close(null); };
+          document.addEventListener('keydown', onKey);
+        });
+      };
+    })();
+  </script>
   <style>
     .app-container { display: none; }
     .login-container { display: flex; }
@@ -11785,11 +11903,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function cerrarTarea(id) {
-    const notas = prompt('Notas de cierre (opcional):', '') || null;
+    // DeepSeek ronda 3 · modal en lugar de prompt() nativo feo
+    const notas = window.showModalInput
+      ? await window.showModalInput({
+          title: '✓ Cerrar tarea',
+          message: 'Opcional: agregá una nota breve sobre cómo cerraste esto. Queda visible para Dusan.',
+          placeholder: 'Ej: deployado a prod commit abc1234',
+          multiline: true,
+          okLabel: 'Cerrar tarea',
+          cancelLabel: 'Cancelar'
+        })
+      : (prompt('Notas de cierre (opcional):', '') || null);
+    if (notas === null) return;  // canceló
     try {
-      const { data, error } = await sb.rpc('cerrar_mi_tarea', { p_id: id, p_notas: notas });
+      const { data, error } = await sb.rpc('cerrar_mi_tarea', { p_id: id, p_notas: notas || null });
       if (error) throw error;
-      // DeepSeek ronda 2 · toast en lugar de alert bloqueante
       if (window.showToast) window.showToast(`Tarea cerrada: ${data.titulo}`, 'success');
       else alert(`✓ Tarea cerrada: ${data.titulo}`);
       refrescar();
@@ -11800,7 +11928,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function comentarTarea(id) {
-    const texto = prompt('Tu comentario:');
+    // DeepSeek ronda 3 · modal en lugar de prompt() nativo feo
+    const texto = window.showModalInput
+      ? await window.showModalInput({
+          title: '💬 Comentar tarea',
+          message: 'Dejá un comentario que Dusan/PC1 puedan ver. Útil para bloqueos, dudas, avances.',
+          placeholder: 'Tu comentario…',
+          multiline: true,
+          required: true,
+          okLabel: 'Agregar comentario',
+          cancelLabel: 'Cancelar'
+        })
+      : prompt('Tu comentario:');
     if (!texto || !texto.trim()) return;
     try {
       const { error } = await sb.rpc('comentar_mi_tarea', { p_id: id, p_comentario: texto.trim() });
@@ -12142,13 +12281,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function cancelarAviso(id) {
-    const razon = prompt('Razón cancelación (opcional):', '') || null;
+    // DeepSeek ronda 3 · modal en lugar de prompt() nativo
+    const razon = window.showModalInput
+      ? await window.showModalInput({
+          title: '✕ Cancelar aviso Diego',
+          message: 'El aviso se marca como no enviado. Razón opcional para registro.',
+          placeholder: 'Ej: ya resuelto manual / aviso duplicado',
+          multiline: false,
+          okLabel: 'Cancelar aviso',
+          cancelLabel: 'Volver'
+        })
+      : (prompt('Razón cancelación (opcional):', '') || null);
+    if (razon === null) return;  // canceló el modal
     try {
-      const { error } = await sb.rpc('diego_cancelar_aviso', { p_aviso_id: id, p_razon: razon });
+      const { error } = await sb.rpc('diego_cancelar_aviso', { p_aviso_id: id, p_razon: razon || null });
       if (error) throw error;
+      if (window.showToast) window.showToast('Aviso cancelado', 'success');
       refrescar();
     } catch (e) {
-      alert('Error: ' + (e.message || e));
+      if (window.showToast) window.showToast('Error: ' + (e.message || e), 'error', 6000);
+      else alert('Error: ' + (e.message || e));
     }
   }
 
