@@ -3622,8 +3622,14 @@
       </div>
       <p class="text-sm text-stone-500 mb-3">Cargá acá los documentos que necesitan firma de Dusan (o de quien indiques). Cuando lo firme, ves estado + link al firmado.</p>
       <div id="firmaForm" class="hidden bg-white border border-stone-200 rounded p-3 mb-3 space-y-2">
+        <input type="hidden" id="fp_edit_id">
         <input id="fp_titulo" type="text" placeholder="Título del documento (ej: Declaración Ética Salcobland)" class="w-full px-2 py-1 border border-stone-300 rounded text-sm" maxlength="200">
-        <input id="fp_link" type="url" placeholder="Link al documento (SharePoint, Drive, etc.)" class="w-full px-2 py-1 border border-stone-300 rounded text-sm">
+        <div>
+          <label class="block text-[10px] text-stone-500 mb-1">📎 Subir archivo (opcional · pdf, doc, xls, img, etc.)</label>
+          <input id="fp_archivo" type="file" accept="*/*" class="w-full text-xs">
+          <div id="fp_archivo_actual" class="text-[10px] text-stone-500 mt-1 hidden"></div>
+        </div>
+        <input id="fp_link" type="url" placeholder="O pegá link externo (SharePoint, Drive, etc.) — opcional si subiste archivo" class="w-full px-2 py-1 border border-stone-300 rounded text-sm">
         <div class="grid grid-cols-2 gap-2">
           <select id="fp_tipo" class="px-2 py-1 border border-stone-300 rounded text-sm">
             <option value="firma_digital">Firma digital</option>
@@ -13802,6 +13808,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ===== FIRMAS PENDIENTES =====
   var fpColor = { pendiente: 'bg-amber-100 text-amber-800', en_revision: 'bg-blue-100 text-blue-800', firmado: 'bg-emerald-100 text-emerald-800', rechazado: 'bg-red-100 text-red-800' };
+  var _firmasRows = [];
+  function fmtKB(b) { if (b == null) return ''; if (b < 1024) return b + ' B'; if (b < 1048576) return Math.round(b/1024) + ' KB'; return (b/1048576).toFixed(1) + ' MB'; }
+
+  async function descargarArchivoFirma(bucketPath, fallbackName) {
+    if (!bucketPath) return;
+    try {
+      var r = await sb.storage.from('firmas-documentos').createSignedUrl(bucketPath, 600);
+      if (r.error) throw r.error;
+      var a = document.createElement('a');
+      a.href = r.data.signedUrl;
+      a.download = fallbackName || 'archivo';
+      a.target = '_blank';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (e) { alert('No se pudo descargar: ' + (e?.message || e)); }
+  }
+
   async function loadFirmas() {
     var lista = document.getElementById('firmaLista');
     if (!ready()) { showError(lista, 'Sesión no detectada.'); return; }
@@ -13811,24 +13836,41 @@ document.addEventListener('DOMContentLoaded', () => {
       var resp = await sb.rpc('firma_listar', { p_email: email, p_solo_pendientes: false });
       if (resp.error) throw resp.error;
       var rows = resp.data || [];
+      _firmasRows = rows;
       if (!rows.length) { lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Sin firmas pendientes.</div>'; return; }
       var admin = isAdmin(email);
       lista.innerHTML = rows.map(function (r) {
         var puedeActuar = (r.destinatario_email === email || admin) && r.estado === 'pendiente';
+        var puedeEditar = (r.solicitante_email === email || admin) && r.estado !== 'firmado';
+        var linkOriginal = '';
+        if (r.archivo_path) {
+          linkOriginal = '<button class="fp-descargar text-blue-600 underline text-xs" data-path="' + esc(r.archivo_path) + '" data-name="' + esc(r.archivo_nombre || 'documento') + '">📄 Descargar original (' + esc(r.archivo_nombre || 'archivo') + (r.archivo_size ? ' · ' + fmtKB(r.archivo_size) : '') + ')</button>';
+        } else if (r.documento_link) {
+          linkOriginal = '<a href="' + esc(r.documento_link) + '" target="_blank" class="text-blue-600 underline text-xs">📄 Abrir documento original (link externo)</a>';
+        }
+        var linkFirmado = '';
+        if (r.firmado_archivo_path) {
+          linkFirmado = '<button class="fp-descargar text-emerald-700 underline font-semibold text-xs" data-path="' + esc(r.firmado_archivo_path) + '" data-name="' + esc(r.firmado_archivo_nombre || 'firmado') + '">✅ Descargar firmado (' + esc(r.firmado_archivo_nombre || 'archivo') + ')</button>';
+        } else if (r.link_firmado) {
+          linkFirmado = '<a href="' + esc(r.link_firmado) + '" target="_blank" class="text-emerald-700 underline font-semibold text-xs">✅ Abrir documento firmado (link externo)</a>';
+        }
         return '<div class="bg-white border border-stone-200 rounded p-3">' +
           '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
             '<span class="font-semibold text-sm">📝 ' + esc(r.documento_titulo) + '</span>' +
             '<span class="text-[10px] px-1.5 py-0.5 rounded ' + (fpColor[r.estado] || 'bg-stone-100 text-stone-700') + '">' + esc(r.estado.replace(/_/g,' ')) + '</span>' +
           '</div>' +
           '<div class="text-xs text-stone-600">' + esc(r.solicitante_email) + ' → ' + esc(r.destinatario_email) + ' · ' + esc(r.tipo.replace(/_/g,' ')) + '</div>' +
-          '<div class="text-xs mt-1"><a href="' + esc(r.documento_link) + '" target="_blank" class="text-blue-600 underline">📄 Abrir documento original</a></div>' +
-          (r.link_firmado ? '<div class="text-xs mt-1"><a href="' + esc(r.link_firmado) + '" target="_blank" class="text-emerald-700 underline font-semibold">✅ Abrir documento firmado</a></div>' : '') +
+          (linkOriginal ? '<div class="text-xs mt-1">' + linkOriginal + '</div>' : '') +
+          (linkFirmado ? '<div class="text-xs mt-1">' + linkFirmado + '</div>' : '') +
           (r.notas ? '<div class="text-xs text-stone-700 italic mt-1">"' + esc(r.notas) + '"</div>' : '') +
           (r.comentarios_firmante ? '<div class="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-900">💬 ' + esc(r.comentarios_firmante) + '</div>' : '') +
           '<div class="text-[10px] text-stone-400 mt-1">solicitado ' + fmtFecha(r.created_at) + (r.firmado_en ? ' · firmado ' + fmtFecha(r.firmado_en) : '') + '</div>' +
-          (puedeActuar ? '<div class="mt-2 flex gap-1"><button class="fp-firmar text-[10px] px-2 py-0.5 bg-emerald-600 text-white rounded" data-id="' + esc(r.id) + '">✓ Marcar firmado</button>' +
-                                                            '<button class="fp-revisar text-[10px] px-2 py-0.5 bg-blue-600 text-white rounded" data-id="' + esc(r.id) + '">📋 En revisión</button>' +
-                                                            '<button class="fp-rechazar text-[10px] px-2 py-0.5 bg-red-600 text-white rounded" data-id="' + esc(r.id) + '">✕ Rechazar</button></div>' : '') +
+          '<div class="mt-2 flex gap-1 flex-wrap">' +
+            (puedeEditar ? '<button class="fp-editar text-[10px] px-2 py-0.5 bg-stone-200 text-stone-700 rounded" data-id="' + esc(r.id) + '">✏ Editar</button>' : '') +
+            (puedeActuar ? '<button class="fp-firmar text-[10px] px-2 py-0.5 bg-emerald-600 text-white rounded" data-id="' + esc(r.id) + '">✓ Marcar firmado</button>' +
+                           '<button class="fp-revisar text-[10px] px-2 py-0.5 bg-blue-600 text-white rounded" data-id="' + esc(r.id) + '">📋 En revisión</button>' +
+                           '<button class="fp-rechazar text-[10px] px-2 py-0.5 bg-red-600 text-white rounded" data-id="' + esc(r.id) + '">✕ Rechazar</button>' : '') +
+          '</div>' +
         '</div>';
       }).join('');
     } catch (e) {
@@ -13836,14 +13878,54 @@ document.addEventListener('DOMContentLoaded', () => {
       showError(lista, 'Error: ' + (e?.message || e));
     }
   }
+
+  function abrirEditFirma(id) {
+    var r = _firmasRows.find(function (x) { return x.id === id; });
+    if (!r) return;
+    document.getElementById('fp_edit_id').value = id;
+    document.getElementById('fp_titulo').value = r.documento_titulo || '';
+    document.getElementById('fp_link').value = r.documento_link || '';
+    document.getElementById('fp_tipo').value = r.tipo || 'firma_digital';
+    document.getElementById('fp_destinatario').value = r.destinatario_email || '';
+    document.getElementById('fp_notas').value = r.notas || '';
+    document.getElementById('fp_archivo').value = '';
+    var act = document.getElementById('fp_archivo_actual');
+    if (r.archivo_path) {
+      act.textContent = '📎 Archivo actual: ' + (r.archivo_nombre || 'archivo') + (r.archivo_size ? ' (' + fmtKB(r.archivo_size) + ')' : '') + ' · subí uno nuevo para reemplazar';
+      act.classList.remove('hidden');
+    } else { act.classList.add('hidden'); }
+    document.getElementById('fp_enviar').textContent = 'Guardar cambios';
+    document.getElementById('firmaForm').classList.remove('hidden');
+    document.getElementById('firmaForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function resetFirmaForm() {
+    ['fp_titulo','fp_link','fp_notas','fp_archivo','fp_edit_id'].forEach(function (id) { var el = document.getElementById(id); if (el) el.value = ''; });
+    document.getElementById('fp_archivo_actual')?.classList.add('hidden');
+    document.getElementById('fp_destinatario').value = 'dusan.arancibia@gmail.com';
+    document.getElementById('fp_tipo').value = 'firma_digital';
+    document.getElementById('fp_enviar').textContent = 'Solicitar firma';
+  }
+
+  async function subirArchivoFirma(file) {
+    var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    var path = 'firmas/' + Date.now() + '_' + safeName;
+    var up = await sb.storage.from('firmas-documentos').upload(path, file, { upsert: false, contentType: file.type || 'application/octet-stream' });
+    if (up.error) throw up.error;
+    return { path: path, nombre: file.name, mime: file.type || null, size: file.size };
+  }
+
   async function actualizarFirma(id, estado) {
     var email = resolveEmail();
     var linkFirmado = null;
     var coment = null;
     if (estado === 'firmado') {
-      linkFirmado = prompt('Link al documento FIRMADO (SharePoint, Drive, etc):', '');
-      if (linkFirmado === null) return;
-      if (!linkFirmado.trim()) { alert('El link al firmado es requerido para marcar como firmado.'); return; }
+      var modo = confirm('¿Marcar firmado con LINK externo? (Cancelar = lo seguís editando luego con archivo)');
+      if (modo) {
+        linkFirmado = prompt('Link al documento FIRMADO:', '');
+        if (linkFirmado === null) return;
+        if (!linkFirmado.trim()) { alert('Link requerido.'); return; }
+      }
     } else if (estado === 'rechazado') {
       coment = prompt('Razón del rechazo:', '');
       if (coment === null) return;
@@ -13852,7 +13934,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (coment === null) return;
     }
     try {
-      var resp = await sb.rpc('firma_actualizar', { p_id: id, p_firmante_email: email, p_nuevo_estado: estado, p_link_firmado: linkFirmado, p_comentarios: coment || null });
+      var resp = await sb.rpc('firma_actualizar', { p_id: id, p_firmante_email: email, p_nuevo_estado: estado, p_link_firmado: linkFirmado, p_comentarios: coment || null, p_firmado_archivo_path: null, p_firmado_archivo_nombre: null });
       if (resp.error) throw resp.error;
       loadFirmas();
     } catch (e) { alert('Error: ' + (e?.message || e)); }
@@ -13916,28 +13998,66 @@ document.addEventListener('DOMContentLoaded', () => {
     bind('tarifas_ext', loadTarifas);
 
     // Form Firma
-    document.getElementById('firmaNuevaBtn')?.addEventListener('click', function () { document.getElementById('firmaForm').classList.toggle('hidden'); });
-    document.getElementById('fp_cancelar')?.addEventListener('click', function () { document.getElementById('firmaForm').classList.add('hidden'); });
+    document.getElementById('firmaNuevaBtn')?.addEventListener('click', function () {
+      resetFirmaForm();
+      document.getElementById('firmaForm').classList.toggle('hidden');
+    });
+    document.getElementById('fp_cancelar')?.addEventListener('click', function () {
+      resetFirmaForm();
+      document.getElementById('firmaForm').classList.add('hidden');
+    });
     document.getElementById('fp_enviar')?.addEventListener('click', async function () {
+      var editId = document.getElementById('fp_edit_id').value;
       var titulo = document.getElementById('fp_titulo').value.trim();
       var link = document.getElementById('fp_link').value.trim();
-      if (!titulo || !link) { alert('Título y link son requeridos'); return; }
+      var fileInput = document.getElementById('fp_archivo');
+      var file = fileInput.files && fileInput.files[0];
+      if (!titulo) { alert('Título requerido.'); return; }
+      if (!editId && !link && !file) { alert('Subí un archivo o pegá un link.'); return; }
       var email = resolveEmail();
       if (!email) { alert('No detecto sesión'); return; }
+      var btn = this;
+      btn.disabled = true;
+      var orig = btn.textContent;
       try {
-        var resp = await sb.rpc('firma_solicitar', {
-          p_solicitante_email: email,
-          p_documento_titulo: titulo,
-          p_documento_link: link,
-          p_tipo: document.getElementById('fp_tipo').value || 'firma_digital',
-          p_destinatario_email: document.getElementById('fp_destinatario').value.trim() || 'dusan.arancibia@gmail.com',
-          p_notas: document.getElementById('fp_notas').value.trim() || null
-        });
-        if (resp.error) throw resp.error;
-        ['fp_titulo','fp_link','fp_notas'].forEach(function (id) { document.getElementById(id).value = ''; });
+        var archivoData = null;
+        if (file) { btn.textContent = 'Subiendo archivo…'; archivoData = await subirArchivoFirma(file); }
+        if (editId) {
+          btn.textContent = 'Guardando cambios…';
+          var resp = await sb.rpc('firma_editar_solicitud', {
+            p_email: email, p_id: editId,
+            p_documento_titulo: titulo,
+            p_documento_link: link || null,
+            p_tipo: document.getElementById('fp_tipo').value || null,
+            p_destinatario_email: document.getElementById('fp_destinatario').value.trim() || null,
+            p_notas: document.getElementById('fp_notas').value.trim() || null,
+            p_archivo_path:   archivoData ? archivoData.path   : null,
+            p_archivo_nombre: archivoData ? archivoData.nombre : null,
+            p_archivo_mime:   archivoData ? archivoData.mime   : null,
+            p_archivo_size:   archivoData ? archivoData.size   : null
+          });
+          if (resp.error) throw resp.error;
+        } else {
+          btn.textContent = 'Creando…';
+          var resp2 = await sb.rpc('firma_solicitar', {
+            p_solicitante_email: email,
+            p_documento_titulo: titulo,
+            p_documento_link: link || null,
+            p_tipo: document.getElementById('fp_tipo').value || 'firma_digital',
+            p_destinatario_email: document.getElementById('fp_destinatario').value.trim() || 'dusan.arancibia@gmail.com',
+            p_notas: document.getElementById('fp_notas').value.trim() || null,
+            p_archivo_path:   archivoData ? archivoData.path   : null,
+            p_archivo_nombre: archivoData ? archivoData.nombre : null,
+            p_archivo_mime:   archivoData ? archivoData.mime   : null,
+            p_archivo_size:   archivoData ? archivoData.size   : null
+          });
+          if (resp2.error) throw resp2.error;
+        }
+        resetFirmaForm();
         document.getElementById('firmaForm').classList.add('hidden');
         loadFirmas();
       } catch (e) { alert('Error: ' + (e?.message || e)); }
+      finally { btn.disabled = false; btn.textContent = orig; }
     });
 
     // Form Tarifa
@@ -13977,10 +14097,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Delegated clicks
     document.addEventListener('click', function (e) {
       var b;
-      if ((b = e.target.closest('.fp-firmar')))   actualizarFirma(b.dataset.id, 'firmado');
-      else if ((b = e.target.closest('.fp-revisar')))  actualizarFirma(b.dataset.id, 'en_revision');
-      else if ((b = e.target.closest('.fp-rechazar'))) actualizarFirma(b.dataset.id, 'rechazado');
-      else if ((b = e.target.closest('.te-edit')))     editarTarifa(b.dataset.id, b.dataset.precio);
+      if ((b = e.target.closest('.fp-firmar')))         actualizarFirma(b.dataset.id, 'firmado');
+      else if ((b = e.target.closest('.fp-revisar')))   actualizarFirma(b.dataset.id, 'en_revision');
+      else if ((b = e.target.closest('.fp-rechazar')))  actualizarFirma(b.dataset.id, 'rechazado');
+      else if ((b = e.target.closest('.fp-editar')))    abrirEditFirma(b.dataset.id);
+      else if ((b = e.target.closest('.fp-descargar'))) descargarArchivoFirma(b.dataset.path, b.dataset.name);
+      else if ((b = e.target.closest('.te-edit')))      editarTarifa(b.dataset.id, b.dataset.precio);
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
