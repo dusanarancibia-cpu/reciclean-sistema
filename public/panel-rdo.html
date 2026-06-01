@@ -2956,15 +2956,17 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 
               <div class="md:col-span-2">
-                <label for="cotTitulo" class="block text-xs text-stone-500 mb-1">Título de la cotización * <span class="text-xs text-stone-400 italic">(se completa solo al elegir cliente + sucursal + material)</span></label>
+                <label for="cotTitulo" class="block text-xs text-stone-500 mb-1" title="Título visible en la lista de negocios y reportes">Título de la cotización * <span class="text-xs text-stone-400 italic">(se completa solo al elegir cliente + sucursal + material)</span></label>
                 <input type="text" id="cotTitulo" placeholder="Se autogenera al completar los datos…"
+                       title="Se autogenera con [servicio] · [cliente] · [sucursal]. Editalo solo si querés un nombre distinto."
                        oninput="cotRecalcular(); cotTituloEditadoManual = true;"
                        class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
               </div>
 
               <div>
-                <label for="cotClienteBuscar" class="block text-xs text-stone-500 mb-1">Cliente *</label>
+                <label for="cotClienteBuscar" class="block text-xs text-stone-500 mb-1" title="Cliente al que le estás cotizando">Cliente *</label>
                 <input type="text" id="cotClienteBuscar" placeholder="Buscar por nombre o RUT…"
+                       title="Escribí 2+ letras para ver sugerencias del catálogo. Si no existe, lo creás luego."
                        oninput="buscarClienteCotizador(this.value)"
                        autocomplete="off"
                        aria-autocomplete="list" aria-controls="cotClienteSugerencias"
@@ -2976,32 +2978,36 @@
               </div>
 
               <div>
-                <label for="cotSucursal" class="block text-xs text-stone-500 mb-1">Sucursal *</label>
+                <label for="cotSucursal" class="block text-xs text-stone-500 mb-1" title="Sucursal Reciclean que ejecuta el servicio">Sucursal *</label>
                 <select id="cotSucursal"
+                        title="Sucursal Reciclean (Cerrillos · Maipú · Talca · Pto Montt). Define los kilómetros al cliente."
                         class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
                   <option value="">Seleccionar…</option>
                 </select>
               </div>
 
               <div id="cotServicioBlock">
-                <label for="cotServicio" class="block text-xs text-stone-500 mb-1">Servicio *</label>
+                <label for="cotServicio" class="block text-xs text-stone-500 mb-1" title="Tipo de servicio a cotizar">Servicio *</label>
                 <select id="cotServicio" onchange="cotRecalcular()"
+                        title="Servicio del catálogo: retiro, arriendo, pesaje, etc."
                         class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
                   <option value="">Seleccionar…</option>
                 </select>
               </div>
 
               <div id="cotTarifaBlock">
-                <label for="cotTarifa" class="block text-xs text-stone-500 mb-1">Tarifa UF base</label>
+                <label for="cotTarifa" class="block text-xs text-stone-500 mb-1" title="Tarifa UF base del servicio elegido">Tarifa UF base</label>
                 <select id="cotTarifa" onchange="cotRecalcular()"
+                        title="Precio en UF del servicio vigente (ej. Camión 3/4 base = 2.1 UF). Opcional si lo cobrás todo en las líneas."
                         class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
                   <option value="">Sin tarifa fija</option>
                 </select>
               </div>
 
               <div class="md:col-span-2">
-                <label for="cotNotas" class="block text-xs text-stone-500 mb-1">Notas / contexto</label>
+                <label for="cotNotas" class="block text-xs text-stone-500 mb-1" title="Contexto que Diego usa al armar el entregable PDF">Notas / contexto</label>
                 <textarea id="cotNotas" rows="2" placeholder="Contexto adicional…"
+                          title="Diego incluye estas notas en el PDF que enviás al cliente (sección Observaciones)."
                           class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none"></textarea>
               </div>
             </div>
@@ -3016,22 +3022,28 @@
                 + Agregar línea
               </button>
             </div>
+            <style>
+              /* SPEC V1.1 H11 · inputs numéricos del cotizador con cifras siempre visibles */
+              #cotLineas .cot-num { min-width: 90px; text-align: right; font-variant-numeric: tabular-nums; }
+              #cotLineas .cot-unidad { min-width: 70px; }
+            </style>
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead>
                   <tr class="border-b text-stone-500 text-xs">
-                    <th class="text-left py-2 pr-2">Material / Descripción</th>
-                    <th class="text-right py-2 px-2 w-32">Cantidad <span class="text-stone-400">(en kg)</span></th>
-                    <th class="text-right py-2 px-2 w-36">Precio <span class="text-stone-400">(UF / u)</span></th>
-                    <th class="text-right py-2 px-2 w-20">Desc. %</th>
-                    <th class="text-right py-2 px-2 w-24">Subtotal UF</th>
+                    <th class="text-left py-2 pr-2" title="Nombre del material o servicio cotizado">Material / Descripción</th>
+                    <th class="text-right py-2 px-2 w-24" title="Cantidad numérica (la unidad la elegís en la columna siguiente)">Cantidad</th>
+                    <th class="text-center py-2 px-2 w-20" title="Unidad de medida: kg, t (toneladas), u (unidades), m³ o litros">Unidad</th>
+                    <th class="text-right py-2 px-2 w-36" title="Precio en UF por unidad. Ej: 0.05 UF por kg, 50 UF por tonelada">Precio <span class="text-stone-400">(UF / u)</span></th>
+                    <th class="text-right py-2 px-2 w-20" title="Descuento aplicado a esta línea (0-100%)">Desc. %</th>
+                    <th class="text-right py-2 px-2 w-24" title="Cantidad × Precio × (1 − Descuento). Se recalcula solo">Subtotal UF</th>
                     <th class="py-2 w-8"></th>
                   </tr>
                 </thead>
                 <tbody id="cotLineas"></tbody>
               </table>
               <p class="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
-                💡 <strong>Cantidad:</strong> escribí en kg (5 toneladas = 5000 kg). <strong>Precio:</strong> es en UF por unidad. Para compra de material a $30 CLP/kg con UF $40.543 → poné ~0.00074 UF/kg.<br>
+                💡 <strong>Cantidad + Unidad:</strong> 5 toneladas = ponés <em>5</em> con unidad <em>t</em>. <strong>Precio:</strong> es en UF por la unidad elegida. Ej: 5 t × 50 UF/t = 250 UF.<br>
                 <strong>Múltiples servicios:</strong> agregá una línea por cada servicio con <em>+ Agregar línea</em> (ej. notario + destrucción + transporte = 3 líneas).
               </p>
             </div>
@@ -3051,19 +3063,22 @@
                 <span class="text-stone-500">Descuento prom.</span>
                 <span id="cotDescProm" class="font-semibold">0,0%</span>
               </div>
-              <div class="flex justify-between items-center pt-2 border-t border-stone-100">
-                <span class="text-stone-500">Piso descuento</span>
-                <span id="cotPisoStatus" class="text-xs font-semibold px-2 py-1 rounded">—</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-stone-500">Margen estimado</span>
-                <span id="cotMargenStatus" class="text-xs font-semibold px-2 py-1 rounded">—</span>
+              <!-- SPEC V1.1 H14 · solo visible si usuario tiene ver_margenes=true -->
+              <div id="cotMargenesMetaBlock" class="hidden">
+                <div class="flex justify-between items-center pt-2 border-t border-stone-100">
+                  <span class="text-stone-500" title="Validación del descuento contra los topes de la categoría del cliente">Piso descuento</span>
+                  <span id="cotPisoStatus" class="text-xs font-semibold px-2 py-1 rounded">—</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-stone-500" title="Margen estimado vs el mínimo meta por categoría de material">Margen estimado</span>
+                  <span id="cotMargenStatus" class="text-xs font-semibold px-2 py-1 rounded">—</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Pisos y márgenes (data de BD) -->
-          <div class="bg-stone-50 p-4 rounded-lg text-xs text-stone-500">
+          <!-- Pisos y márgenes (data de BD) - solo admin con ver_margenes -->
+          <div id="cotParamsVigentesBlock" class="hidden bg-stone-50 p-4 rounded-lg text-xs text-stone-500">
             <p class="font-semibold text-stone-600 mb-2">Parámetros vigentes</p>
             <div id="cotParamsVigentes">Cargando...</div>
           </div>
@@ -6378,6 +6393,24 @@ function fmtPct(n) {
   return Number(n).toFixed(1) + '%';
 }
 
+// SPEC V1.1 H09 · regla decimales central para el cotizador.
+// tipo ∈ {kg, t, u, m3, lt, UF, CLP, pct}. Default = number.
+window.fmtNum = function (n, tipo) {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return '—';
+  const v = Number(n);
+  switch (tipo) {
+    case 'kg':  return Math.round(v).toLocaleString('es-CL');
+    case 't':   return v.toFixed(2).replace('.', ',');
+    case 'u':   return Math.round(v).toLocaleString('es-CL');
+    case 'm3':  return v.toFixed(2).replace('.', ',');
+    case 'lt':  return Math.round(v).toLocaleString('es-CL');
+    case 'UF':  return v.toFixed(4).replace('.', ',');
+    case 'CLP': return '$' + Math.round(v).toLocaleString('es-CL');
+    case 'pct': return v.toFixed(1).replace('.', ',') + '%';
+    default:    return v.toLocaleString('es-CL');
+  }
+};
+
 async function loadCierres() {
   const div = document.getElementById('cierresTabla');
   div.innerHTML = '<div class="skeleton" aria-busy="true"></div>';
@@ -7006,6 +7039,31 @@ async function initCotizador() {
   if (_cotizadorIniciado) return;
   _cotizadorIniciado = true;
 
+  // SPEC V1.1 H14 · resolver permisos del usuario para mostrar/ocultar márgenes meta
+  try {
+    const __cotResolveEmail = () => {
+      try { if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase(); } catch (e) {}
+      try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
+      try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+      try {
+        var sbTok = JSON.parse(localStorage.getItem('sb-eknmtsrtfkzroxnovfqn-auth-token') || 'null');
+        var em = sbTok?.user?.email || sbTok?.currentSession?.user?.email;
+        if (em) return String(em).toLowerCase();
+      } catch (e) {}
+      return null;
+    };
+    const __email = __cotResolveEmail();
+    if (__email) {
+      const __permRes = await sb.rpc('cotizador_permisos', { p_email: __email });
+      const __perm = __permRes?.data || { ver_margenes: false, es_admin: false };
+      const __ver = !!(__perm.ver_margenes || __perm.es_admin);
+      const __metaBlock = document.getElementById('cotMargenesMetaBlock');
+      const __paramsBlock = document.getElementById('cotParamsVigentesBlock');
+      if (__metaBlock) __metaBlock.classList.toggle('hidden', !__ver);
+      if (__paramsBlock) __paramsBlock.classList.toggle('hidden', !__ver);
+    }
+  } catch (e) { console.warn('[H14] cotizador_permisos error (fallback hidden):', e); }
+
   // Cargar catálogos en paralelo
   const [sucRes, srvRes, tarRes, pisoRes, marRes] = await Promise.all([
     sb.schema('curated').from('sucursales').select('sucursal_id, nombre').eq('activa', true).order('nombre'),
@@ -7068,8 +7126,7 @@ async function initCotizador() {
 }
 
 function agregarLineaCot() {
-  const idx = _cotLineas.length;
-  _cotLineas.push({ desc: '', qty: 1, precioUF: 0, descPct: 0 });
+  _cotLineas.push({ desc: '', qty: 1, unidad: 'kg', precioUF: 0, descPct: 0 });
   renderLineasCot();
 }
 
@@ -7081,42 +7138,59 @@ function eliminarLineaCot(idx) {
 
 function renderLineasCot() {
   const tbody = document.getElementById('cotLineas');
-  tbody.innerHTML = _cotLineas.map((l, i) => `
+  const UNIDADES = ['kg','t','u','m3','lt'];
+  tbody.innerHTML = _cotLineas.map((l, i) => {
+    if (!l.unidad) l.unidad = 'kg';
+    const opts = UNIDADES.map(u => `<option value="${u}"${l.unidad===u?' selected':''}>${u}</option>`).join('');
+    return `
     <tr class="border-b border-stone-100">
       <td class="py-1 pr-2">
         <input type="text" value="${escapeHtml(l.desc)}" placeholder="Descripción…"
                aria-label="Descripción de la línea ${i + 1}"
+               title="Nombre del material o servicio (ej: cartón, polipropileno, retiro especial)"
                oninput="_cotLineas[${i}].desc = this.value"
                class="w-full border border-stone-200 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none">
       </td>
       <td class="py-1 px-2">
         <input type="number" value="${l.qty}" min="0" step="any" inputmode="decimal"
                aria-label="Cantidad de la línea ${i + 1}"
+               title="Cantidad numérica (sin importar la unidad)"
                oninput="_cotLineas[${i}].qty = parseFloat(this.value)||0; cotRecalcular()"
-               class="w-full border border-stone-200 rounded px-2 py-1 text-sm text-right focus:border-green-700 focus:outline-none">
+               class="cot-num border border-stone-200 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none">
+      </td>
+      <td class="py-1 px-2 text-center">
+        <select aria-label="Unidad de la línea ${i + 1}"
+                title="Unidad de medida: kg, t (toneladas), u (unidades), m³, litros"
+                onchange="_cotLineas[${i}].unidad = this.value; cotRecalcular()"
+                class="cot-unidad border border-stone-200 rounded px-1 py-1 text-sm focus:border-green-700 focus:outline-none">
+          ${opts}
+        </select>
       </td>
       <td class="py-1 px-2">
         <input type="number" value="${l.precioUF}" min="0" step="any" inputmode="decimal"
                aria-label="Precio UF de la línea ${i + 1}"
+               title="Precio en UF por unidad (la unidad elegida en la columna anterior)"
                oninput="_cotLineas[${i}].precioUF = parseFloat(this.value)||0; cotRecalcular()"
-               class="w-full border border-stone-200 rounded px-2 py-1 text-sm text-right focus:border-green-700 focus:outline-none">
+               class="cot-num border border-stone-200 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none">
       </td>
       <td class="py-1 px-2">
         <input type="number" value="${l.descPct}" min="0" max="100" step="0.1"
                aria-label="Descuento porcentual de la línea ${i + 1}"
+               title="Descuento aplicado a esta línea (0-100%)"
                oninput="_cotLineas[${i}].descPct = parseFloat(this.value)||0; cotRecalcular()"
-               class="w-full border border-stone-200 rounded px-2 py-1 text-sm text-right focus:border-green-700 focus:outline-none">
+               class="cot-num border border-stone-200 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none">
       </td>
-      <td class="py-1 px-2 text-right font-mono text-stone-700">
-        ${(l.qty * l.precioUF * (1 - l.descPct / 100)).toFixed(4)}
+      <td class="py-1 px-2 text-right font-mono text-stone-700 cot-num" style="min-width: 90px;">
+        ${window.fmtNum(l.qty * l.precioUF * (1 - l.descPct / 100), 'UF')}
       </td>
       <td class="py-1 px-2 text-center">
         <button onclick="eliminarLineaCot(${i})"
                 aria-label="Eliminar línea ${i + 1}"
+                title="Quitar esta línea de la cotización"
                 class="text-slate-600 hover:text-red-500 text-base leading-none">×</button>
       </td>
     </tr>
-  `).join('');
+  `;}).join('');
 }
 
 // D-OP-04-v2 Ola 1.4 — mapeo perfil del panel → nivel_autorizacion de mig 029.
@@ -7180,8 +7254,9 @@ function cotRecalcular() {
   const brutoUF = _cotLineas.reduce((acc, l) => acc + l.qty * l.precioUF, 0);
   const descProm = brutoUF > 0 ? (1 - totalUF / brutoUF) * 100 : 0;
 
-  document.getElementById('cotTotalUF').textContent = totalUF.toFixed(4) + ' UF';
-  document.getElementById('cotDescProm').textContent = descProm.toFixed(1) + '%';
+  // SPEC V1.1 H09 · usar fmtNum central
+  document.getElementById('cotTotalUF').textContent = window.fmtNum(totalUF, 'UF') + ' UF';
+  document.getElementById('cotDescProm').textContent = window.fmtNum(descProm, 'pct');
 
   // D-OP-04-v2 Ola 1.4 — validación cruzada via curated.f_validar_descuento (mig 029 D-OP-06).
   // Si hay cliente seleccionado: pide veredicto real por categoría del cliente + rol del usuario.
