@@ -2956,11 +2956,16 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 
               <div class="md:col-span-2">
-                <label for="cotTitulo" class="block text-xs text-stone-500 mb-1" title="Título visible en la lista de negocios y reportes">Título de la cotización * <span class="text-xs text-stone-400 italic">(se completa solo al elegir cliente + sucursal + material)</span></label>
-                <input type="text" id="cotTitulo" placeholder="Se autogenera al completar los datos…"
-                       title="Se autogenera con [servicio] · [cliente] · [sucursal]. Editalo solo si querés un nombre distinto."
-                       oninput="cotRecalcular(); cotTituloEditadoManual = true;"
-                       class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
+                <label for="cotTitulo" class="block text-xs text-stone-500 mb-1" title="Título visible en la lista de negocios y reportes">Título de la cotización * <span class="text-xs text-stone-400 italic">(se autogenera · podés editarlo)</span></label>
+                <div class="flex gap-1">
+                  <input type="text" id="cotTitulo" placeholder="Se autogenera al completar los datos…"
+                         title="Se autogenera con [servicio] · [cliente] · [sucursal]. Botón ↻ vuelve a generarlo automáticamente."
+                         oninput="cotRecalcular(); cotTituloEditadoManual = true;"
+                         class="flex-1 border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
+                  <button type="button" id="cotTituloRegenerar"
+                          title="Volver al título automático ([servicio] · [cliente])"
+                          class="px-3 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded text-sm">↻</button>
+                </div>
               </div>
 
               <div>
@@ -7145,9 +7150,56 @@ async function initCotizador() {
 }
 
 function agregarLineaCot() {
-  _cotLineas.push({ desc: '', qty: 1, unidad: 'kg', precioUF: 0, descPct: 0 });
+  _cotLineas.push({ desc: '', material_id: null, qty: 1, unidad: 'kg', precioUF: 0, descPct: 0 });
   renderLineasCot();
 }
+
+// SPEC V1.1 H10 · autocomplete materiales por línea (usa RPC diego_buscar_material)
+window._cotMatTimers = {};
+window.cotMaterialBuscar = function (idx, val) {
+  clearTimeout(window._cotMatTimers[idx]);
+  const sug = document.getElementById('cotMaterialSug-' + idx);
+  if (!sug) return;
+  if (!val || val.trim().length < 2) { sug.classList.add('hidden'); sug.innerHTML = ''; return; }
+  window._cotMatTimers[idx] = setTimeout(async () => {
+    try {
+      const { data, error } = await sb.rpc('diego_buscar_material', { p_query: val.trim(), p_limit: 6 });
+      if (error) throw error;
+      const rows = data || [];
+      if (!rows.length) {
+        sug.innerHTML = '<div class="px-2 py-1 text-[10px] text-stone-400 italic">Sin coincidencias en catálogo · podés escribir libre</div>';
+        sug.classList.remove('hidden');
+        return;
+      }
+      sug.innerHTML = rows.map(r =>
+        `<div class="cot-mat-opt px-2 py-1 hover:bg-emerald-50 cursor-pointer text-xs border-b border-stone-100 last:border-0"
+              data-idx="${idx}" data-id="${escapeHtml(r.material_id)}" data-nombre="${escapeHtml(r.nombre)}">
+           <span class="font-medium">${escapeHtml(r.nombre)}</span>
+           <span class="text-stone-400 text-[10px] ml-1">${escapeHtml(r.categoria || '')} · ${r.match_type}</span>
+         </div>`
+      ).join('');
+      sug.classList.remove('hidden');
+    } catch (e) {
+      console.warn('[H10] buscar material:', e);
+    }
+  }, 300);
+};
+window.cotMaterialSeleccionar = function (idx, id, nombre) {
+  if (!_cotLineas[idx]) return;
+  _cotLineas[idx].desc = nombre;
+  _cotLineas[idx].material_id = id;
+  const sug = document.getElementById('cotMaterialSug-' + idx);
+  if (sug) { sug.classList.add('hidden'); sug.innerHTML = ''; }
+  renderLineasCot();
+  cotRecalcular();
+};
+// Delegated click para opciones (sobrevive al re-render del tbody)
+document.addEventListener('click', function (e) {
+  const op = e.target.closest('.cot-mat-opt');
+  if (op) {
+    window.cotMaterialSeleccionar(parseInt(op.dataset.idx, 10), op.dataset.id, op.dataset.nombre);
+  }
+});
 
 function eliminarLineaCot(idx) {
   _cotLineas.splice(idx, 1);
@@ -7163,12 +7215,15 @@ function renderLineasCot() {
     const opts = UNIDADES.map(u => `<option value="${u}"${l.unidad===u?' selected':''}>${u}</option>`).join('');
     return `
     <tr class="border-b border-stone-100">
-      <td class="py-1 pr-2">
-        <input type="text" value="${escapeHtml(l.desc)}" placeholder="Descripción…"
+      <td class="py-1 pr-2 relative">
+        <input type="text" value="${escapeHtml(l.desc)}" placeholder="Descripción / material…"
                aria-label="Descripción de la línea ${i + 1}"
-               title="Nombre del material o servicio (ej: cartón, polipropileno, retiro especial)"
-               oninput="_cotLineas[${i}].desc = this.value"
+               title="Escribí 2+ letras para ver sugerencias del catálogo. Si no aparece, escribilo libre."
+               oninput="_cotLineas[${i}].desc = this.value; _cotLineas[${i}].material_id = null; window.cotMaterialBuscar(${i}, this.value)"
+               autocomplete="off"
                class="w-full border border-stone-200 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none">
+        ${l.material_id ? '<span class="absolute right-2 top-2 text-emerald-600 text-xs" title="Vinculado a catálogo">✓</span>' : ''}
+        <div id="cotMaterialSug-${i}" class="hidden absolute left-0 right-0 top-full mt-0.5 border border-stone-200 rounded bg-white shadow-lg z-30 max-h-48 overflow-y-auto"></div>
       </td>
       <td class="py-1 px-2">
         <input type="number" value="${l.qty}" min="0" step="any" inputmode="decimal"
@@ -7385,6 +7440,11 @@ window.cotAutogenerarTitulo = function () {
   const el = document.getElementById(id);
   if (el) el.addEventListener('change', cotAutogenerarTitulo);
   if (el) el.addEventListener('input', cotAutogenerarTitulo);
+});
+// SPEC V1.1 H04 · botón ↻ regenera título y vuelve a modo auto
+document.getElementById('cotTituloRegenerar')?.addEventListener('click', () => {
+  window.cotTituloEditadoManual = false;
+  cotAutogenerarTitulo();
 });
 
 function cotRecalcular() {
