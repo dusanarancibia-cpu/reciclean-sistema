@@ -14,6 +14,10 @@
   <meta name="apple-mobile-web-app-title" content="Gestión REP Chile">
   <meta name="application-name" content="Gestión REP Chile">
   <link rel="stylesheet" href="/tailwind.css">
+  <!-- D-VISUAL-ORO · Inter font (pauta visual oro Reciclean) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
   <!-- DeepSeek ronda 2 perf mobile · preconnect hints CDNs pesadas (gana ~150ms LCP mobile) -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
@@ -27,9 +31,35 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" media="print" onload="this.media='all'">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
   <!-- D-GANTT-VIVA-001 · Frappe Gantt CDN (PC1 fix 31-may PM: umd.js→min.js · umd.js devuelve 404 en v0.6.1)
-       DeepSeek ronda 2: CSS con media=print + onload swap (no bloquea first paint mobile). -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.css" media="print" onload="this.media='all'">
-  <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.js" defer></script>
+       DeepSeek ronda 3 LAZY: NO cargar en initial bundle. Se carga on-demand cuando
+       usuario abre tab Gantt Viva (~80KB script + ~8KB CSS no se descargan al login).
+       Ver bootstrap Gantt Viva L~11550 que llama window.__loadFrappeGanttOnce() antes
+       de renderGantt. -->
+  <script>
+    // DeepSeek ronda 3 · loadScriptOnce helper genérico
+    window.__loadScriptOnce = window.__loadScriptOnce || function (src, globalCheck) {
+      if (globalCheck && window[globalCheck]) return Promise.resolve();
+      window.__loadingScripts = window.__loadingScripts || {};
+      if (window.__loadingScripts[src]) return window.__loadingScripts[src];
+      return window.__loadingScripts[src] = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src; s.async = true;
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('No se pudo cargar ' + src));
+        document.head.appendChild(s);
+      });
+    };
+    window.__loadStylesheetOnce = window.__loadStylesheetOnce || function (href) {
+      if (document.querySelector(`link[href="${href}"]`)) return;
+      const l = document.createElement('link');
+      l.rel = 'stylesheet'; l.href = href;
+      document.head.appendChild(l);
+    };
+    window.__loadFrappeGanttOnce = function () {
+      window.__loadStylesheetOnce('https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.css');
+      return window.__loadScriptOnce('https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.js', 'Gantt');
+    };
+  </script>
 
   <!-- DeepSeek ronda 2 · Sistema toast global (HTML/CSS puro, sin dep nueva).
        Uso: showToast('Texto', 'success'|'error'|'info'|'warning', 4000)
@@ -98,13 +128,138 @@
       }
     })();
   </script>
+
+  <!-- DeepSeek ronda 3 · Sistema modal global (reemplaza prompt() nativo feo).
+       Uso: const v = await showModalInput({title, message, placeholder, multiline, required, okLabel, cancelLabel})
+       Devuelve string con el valor o null si canceló. ESC cierra. -->
+  <style>
+    .pc-modal-backdrop { position:fixed; inset:0; background:rgba(15,23,42,.55); z-index:10000;
+                         display:flex; align-items:center; justify-content:center; padding:16px;
+                         opacity:0; transition:opacity .2s ease; }
+    .pc-modal-backdrop.show { opacity:1; }
+    .pc-modal { background:#fff; border-radius:10px; box-shadow:0 20px 50px -10px rgba(0,0,0,.3);
+                width:100%; max-width:480px; padding:20px 22px 18px;
+                transform:scale(.96); transition:transform .2s ease; }
+    .pc-modal-backdrop.show .pc-modal { transform:scale(1); }
+    .pc-modal h3 { margin:0 0 6px; font-size:17px; font-weight:600; color:#1f2937; }
+    .pc-modal .pc-modal-msg { margin:0 0 12px; font-size:13px; color:#6b7280; }
+    .pc-modal-input { width:100%; box-sizing:border-box; border:1px solid #d1d5db; border-radius:6px;
+                      padding:10px 12px; font-size:14px; font-family:inherit; color:#111827;
+                      outline:none; transition:border-color .15s; }
+    .pc-modal-input:focus { border-color:#059669; box-shadow:0 0 0 3px rgba(5,150,105,.15); }
+    .pc-modal-input.error { border-color:#dc2626; }
+    .pc-modal textarea.pc-modal-input { resize:vertical; min-height:80px; max-height:200px; }
+    .pc-modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:14px; }
+    .pc-modal-btn { padding:8px 16px; border-radius:6px; font-size:14px; font-weight:500;
+                    cursor:pointer; border:0; transition:background .15s; }
+    .pc-modal-btn-cancel { background:#f3f4f6; color:#374151; }
+    .pc-modal-btn-cancel:hover { background:#e5e7eb; }
+    .pc-modal-btn-ok { background:#059669; color:#fff; }
+    .pc-modal-btn-ok:hover { background:#047857; }
+    .pc-modal-btn-ok:disabled { background:#d1d5db; cursor:not-allowed; }
+    .pc-modal-error-msg { color:#dc2626; font-size:12px; margin-top:6px; min-height:16px; }
+    @media (max-width: 640px) { .pc-modal { max-width:none; } .pc-modal-actions { flex-direction:column-reverse; }
+                                .pc-modal-btn { width:100%; padding:12px; } }
+    @media (prefers-reduced-motion: reduce) { .pc-modal-backdrop, .pc-modal { transition:none; } }
+  </style>
+  <script>
+    // DeepSeek ronda 3 · showModalInput()
+    // Devuelve Promise<string|null>. null si canceló (ESC / Cancelar / click backdrop).
+    (function () {
+      window.showModalInput = function (opts) {
+        opts = opts || {};
+        const title       = opts.title       || 'Ingresar valor';
+        const message     = opts.message     || '';
+        const placeholder = opts.placeholder || '';
+        const initialVal  = opts.initialValue|| '';
+        const multiline   = opts.multiline === true;
+        const required    = opts.required === true;
+        const okLabel     = opts.okLabel     || 'Confirmar';
+        const cancelLabel = opts.cancelLabel || 'Cancelar';
+        const maxLength   = opts.maxLength   || 1000;
+
+        return new Promise((resolve) => {
+          const backdrop = document.createElement('div');
+          backdrop.className = 'pc-modal-backdrop';
+          backdrop.setAttribute('role','dialog');
+          backdrop.setAttribute('aria-modal','true');
+
+          const modal = document.createElement('div');
+          modal.className = 'pc-modal';
+
+          const h3 = document.createElement('h3'); h3.textContent = title; modal.appendChild(h3);
+          if (message) {
+            const p = document.createElement('p'); p.className = 'pc-modal-msg'; p.textContent = message;
+            modal.appendChild(p);
+          }
+
+          const input = document.createElement(multiline ? 'textarea' : 'input');
+          input.className = 'pc-modal-input';
+          if (!multiline) input.type = 'text';
+          input.placeholder = placeholder;
+          input.value = initialVal;
+          input.maxLength = maxLength;
+          modal.appendChild(input);
+
+          const errMsg = document.createElement('div');
+          errMsg.className = 'pc-modal-error-msg';
+          modal.appendChild(errMsg);
+
+          const actions = document.createElement('div'); actions.className = 'pc-modal-actions';
+          const btnCancel = document.createElement('button');
+          btnCancel.type='button'; btnCancel.className='pc-modal-btn pc-modal-btn-cancel'; btnCancel.textContent=cancelLabel;
+          const btnOk = document.createElement('button');
+          btnOk.type='button'; btnOk.className='pc-modal-btn pc-modal-btn-ok'; btnOk.textContent=okLabel;
+          actions.appendChild(btnCancel); actions.appendChild(btnOk);
+          modal.appendChild(actions);
+          backdrop.appendChild(modal);
+          document.body.appendChild(backdrop);
+          requestAnimationFrame(() => backdrop.classList.add('show'));
+          setTimeout(() => input.focus(), 50);
+
+          function close(val) {
+            backdrop.classList.remove('show');
+            document.removeEventListener('keydown', onKey);
+            setTimeout(() => { if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop); }, 200);
+            resolve(val);
+          }
+          function tryConfirm() {
+            const v = input.value.trim();
+            if (required && !v) {
+              input.classList.add('error');
+              errMsg.textContent = 'Este campo es obligatorio';
+              input.focus();
+              return;
+            }
+            close(v);
+          }
+          function onKey(e) {
+            if (e.key === 'Escape') { e.preventDefault(); close(null); }
+            else if (e.key === 'Enter' && !multiline) { e.preventDefault(); tryConfirm(); }
+            else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); tryConfirm(); }
+          }
+          btnCancel.onclick = () => close(null);
+          btnOk.onclick = tryConfirm;
+          backdrop.onclick = (e) => { if (e.target === backdrop) close(null); };
+          document.addEventListener('keydown', onKey);
+        });
+      };
+    })();
+  </script>
   <style>
     .app-container { display: none; }
     .login-container { display: flex; }
     .audio-recorder { border: 1px solid #e5e7eb; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: #fff; }
     .recording { background-color: #ffe4e4; }
     .tab-btn.active { color: #2C5F2D; border-bottom: 2px solid #2C5F2D; }
-    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Calibri, Arial; }
+    /* D-VISUAL-ORO: Inter como font principal (fallback system) */
+    body { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Calibri, Arial; }
+    /* Helpers pauta visual oro Reciclean para Bandeja Precios y futuras tabs */
+    .vo-bg-verde-rec { background-color: #059669 !important; }
+    .vo-bg-verde-rec:hover { background-color: #047857 !important; }
+    .vo-text-verde-rec { color: #059669 !important; }
+    .vo-border-verde-rec { border-color: #059669 !important; }
+    .vo-rounded { border-radius: 6px !important; }
     /* ── Dieguito ── */
     .dieg-dropzone { border: 2px dashed #d6d3d1; border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all .2s; background: #fafaf9; }
     .dieg-dropzone.drag-over { border-color: #2C5F2D; background: #f0fdf4; }
@@ -557,6 +712,10 @@
             <span>Mi Bandeja</span>
             <span id="v4-mi-bandeja-badge" class="ml-auto text-[10px] font-bold bg-emerald-100 text-emerald-700 rounded-full px-2 py-0.5 hidden"></span>
           </a>
+          <a href="#" data-v4-tab="mis_archivos" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📦</span>
+            <span>Mis archivos</span>
+          </a>
           <a href="#" data-v4-tab="mi_memoria" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🧠</span>
             Mi memoria
@@ -785,6 +944,7 @@
         <button data-tab="manual" class="tab-btn py-3 px-3 text-stone-600"              role="tab" aria-selected="false" aria-controls="tabManual">📖 Manual</button>
         <button data-tab="mi_memoria" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabMiMemoria">🧠 Mi memoria</button>
         <button data-tab="mi_bandeja" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabMiBandeja">📥 Mi Bandeja</button>
+        <button data-tab="mis_archivos" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabMisArchivos">📦 Mis archivos</button>
         <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabRdo">📈 RDO Resumen</button>
         <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
         <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCotizador">📋 Cotizador</button>
@@ -1466,26 +1626,27 @@
          Click Aprobar → POST /functions/v1/precio-aplicar → abre nueva vigencia atómica.
     ═══════════════════════════════════════════════════════════ -->
     <section id="tabBandejaPrecios" class="tab-content hidden">
+      <!-- D-VISUAL-ORO fix tarea 61941445 (3 gaps): Inter aplicado via body, verde Reciclean #059669, rounded-md -->
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold text-stone-800">📨 Bandeja Precios — propuestas para aprobación</h2>
-        <button onclick="loadBandejaPrecios()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+        <button onclick="loadBandejaPrecios()" class="text-sm vo-text-verde-rec hover:underline">↺ Recargar</button>
       </div>
 
-      <!-- KPI bar -->
+      <!-- KPI bar (rounded-md + verde Reciclean) -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-        <div class="bg-white p-3 rounded shadow-sm">
+        <div class="bg-white p-3 rounded-md shadow-sm">
           <div class="text-xs text-stone-500">Pendientes</div>
           <div id="bpKpiPend" class="text-2xl font-bold text-amber-600">—</div>
         </div>
-        <div class="bg-white p-3 rounded shadow-sm">
+        <div class="bg-white p-3 rounded-md shadow-sm">
           <div class="text-xs text-stone-500">Aplicados hoy</div>
-          <div id="bpKpiHoy" class="text-2xl font-bold text-green-700">—</div>
+          <div id="bpKpiHoy" class="text-2xl font-bold vo-text-verde-rec">—</div>
         </div>
-        <div class="bg-white p-3 rounded shadow-sm">
+        <div class="bg-white p-3 rounded-md shadow-sm">
           <div class="text-xs text-stone-500">Ruta auto</div>
           <div id="bpKpiAuto" class="text-2xl font-bold text-sky-700">—</div>
         </div>
-        <div class="bg-white p-3 rounded shadow-sm">
+        <div class="bg-white p-3 rounded-md shadow-sm">
           <div class="text-xs text-stone-500">Escalados Dusan</div>
           <div id="bpKpiDusan" class="text-2xl font-bold text-red-700">—</div>
         </div>
@@ -1581,7 +1742,7 @@
             <button id="bpBtnAprobar" onclick="bpAprobar()"
                     title="Aplica el precio propuesto · abre nueva vigencia atómica + dispara notificación a Andrea"
                     aria-label="Aprobar y aplicar precio propuesto"
-                    class="bg-green-700 hover:bg-green-800 text-white text-sm px-3 py-1.5 rounded">
+                    class="vo-bg-verde-rec text-white text-sm px-3 py-1.5 vo-rounded font-medium">
               ✓ Aprobar y aplicar
             </button>
             <button id="bpBtnRechazar" onclick="bpRechazar()"
@@ -3236,6 +3397,62 @@
       <small id="bucleVivoConsultadoEn" class="block mt-3 text-xs text-stone-400">—</small>
     </section>
 
+    <!-- R-AUD-040 · Tab Mis archivos (PC2 Pablo 2026-06-02 mig 167 backend) - lectura para todos -->
+    <section id="tabMisArchivos" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">📦 Mis archivos</h2>
+        <div class="flex items-center gap-2 text-sm">
+          <button id="misArchivosRefreshBtn" type="button" title="Re-consulta lista de archivos" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded text-sm font-semibold">↻ Refrescar</button>
+        </div>
+      </div>
+      <p class="text-xs text-stone-500 mb-4">R-AUD-040 destino archivos descargables. Solo ves archivos públicos + tuyos + de tu silo. (Bucket Storage en próximo sprint - hoy registro y catálogo solo.)</p>
+
+      <div class="bg-white p-3 rounded-md shadow-sm mb-3 flex flex-wrap items-end gap-3 text-sm">
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Tipo</label>
+          <select id="misArchivosTipo" class="border border-stone-300 rounded px-2 py-1 text-sm">
+            <option value="">Todos</option>
+            <option value="pdf">📄 PDF</option>
+            <option value="docx">📝 Word</option>
+            <option value="xlsx">📊 Excel</option>
+            <option value="pptx">🎞️ PowerPoint</option>
+            <option value="png">🖼️ PNG</option>
+            <option value="jpg">🖼️ JPG</option>
+            <option value="svg">✨ SVG</option>
+            <option value="html">🌐 HTML</option>
+            <option value="md">📑 Markdown</option>
+            <option value="csv">📋 CSV</option>
+            <option value="txt">📄 Texto</option>
+            <option value="audio">🔊 Audio</option>
+            <option value="video">🎥 Video</option>
+            <option value="otro">📦 Otro</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Días atrás</label>
+          <select id="misArchivosDias" class="border border-stone-300 rounded px-2 py-1 text-sm">
+            <option value="7">Última semana</option>
+            <option value="30" selected>Último mes</option>
+            <option value="90">Últimos 3 meses</option>
+            <option value="365">Último año</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Tema (libre)</label>
+          <input id="misArchivosTema" type="text" placeholder="Ej: cotizacion, reporte" class="border border-stone-300 rounded px-2 py-1 text-sm">
+        </div>
+        <div id="misArchivosResumen" class="ml-auto text-xs text-stone-500">—</div>
+      </div>
+
+      <div id="misArchivosLista" class="space-y-2">
+        <div class="text-sm text-stone-500 p-6 text-center bg-white rounded-md">Cargando archivos…</div>
+      </div>
+
+      <div class="mt-4 text-xs text-stone-400 text-center">
+        Cualquier PC/EF puede registrar archivo con <code>SELECT panel.registrar_archivo(...)</code>. Storage real próximo sprint.
+      </div>
+    </section>
+
     <!-- esquema-dod-dora-space-v1 · Tab DoD dashboard (PC2 Pablo 2026-06-02 mig 153) - SOLO Dusan/admin -->
     <section id="tabDodDashboard" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -4220,6 +4437,7 @@ const TAB_SECTION_MAP = {
   bandeja_precios: 'tabBandejaPrecios',
   mi_memoria: 'tabMiMemoria',
   mi_bandeja: 'tabMiBandeja',
+  mis_archivos: 'tabMisArchivos',
   diego_coord: 'tabDiegoCoord',
   bucle_vivo: 'tabBucleVivo',
   dod_dashboard: 'tabDodDashboard',
@@ -11635,6 +11853,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function refrescar() {
+    // DeepSeek ronda 3 LAZY: cargar Frappe Gantt on-demand antes de renderizar
+    if (window.__loadFrappeGanttOnce) {
+      try { await window.__loadFrappeGanttOnce(); }
+      catch (e) { console.warn('[GanttViva] no se pudo cargar Frappe Gantt:', e); }
+    }
     const data = await fetchFeed();
     if (!data || !data.ok) return;
     lastFetchAt = new Date();
@@ -11670,6 +11893,85 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     init();
   }
+})();
+</script>
+
+<!-- R-AUD-040 · Bootstrap tab Mis archivos (PC2 Pablo 2026-06-02 mig 167 backend) -->
+<script>
+(function () {
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+  function tipoEmoji(tipo) {
+    return ({pdf:'📄',docx:'📝',xlsx:'📊',pptx:'🎞️',png:'🖼️',jpg:'🖼️',svg:'✨',html:'🌐',md:'📑',csv:'📋',txt:'📄',audio:'🔊',video:'🎥',otro:'📦'})[tipo] || '📦';
+  }
+  function fmtSize(bytes) {
+    if (bytes == null) return '—';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+    return (bytes/(1024*1024)).toFixed(1) + ' MB';
+  }
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    try { return new Date(iso).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }); }
+    catch { return iso; }
+  }
+
+  async function refrescar() {
+    const lista = document.getElementById('misArchivosLista');
+    const resumen = document.getElementById('misArchivosResumen');
+    const tipo = document.getElementById('misArchivosTipo')?.value || null;
+    const tema = document.getElementById('misArchivosTema')?.value?.trim() || null;
+    const dias = parseInt(document.getElementById('misArchivosDias')?.value || '30', 10);
+
+    try {
+      const { data, error } = await sb.rpc('mis_archivos', {
+        p_tipo: tipo, p_tema: tema, p_silo: null, p_dias_atras: dias
+      });
+      if (error) throw error;
+      const rows = data || [];
+      if (resumen) resumen.innerHTML = `<strong>${rows.length}</strong> archivos`;
+
+      if (!rows.length) {
+        lista.innerHTML = '<div class="bg-white rounded-md shadow-sm p-8 text-center text-stone-500">📭 No hay archivos con esos filtros. Ajustá filtros o esperá a que algún PC registre uno con <code>SELECT panel.registrar_archivo(...)</code>.</div>';
+        return;
+      }
+      lista.innerHTML = rows.map(a => `
+        <div class="bg-white rounded-md shadow-sm border border-stone-200 p-3 flex items-center gap-3">
+          <div class="text-2xl">${tipoEmoji(a.tipo)}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-stone-800 truncate" title="${escapeHtml(a.nombre)}">${escapeHtml(a.nombre)}</div>
+            <div class="text-xs text-stone-500 flex flex-wrap gap-2">
+              <span>${escapeHtml(a.tipo)}</span>
+              <span>· ${escapeHtml(a.autor)}</span>
+              ${a.tema ? `<span>· ${escapeHtml(a.tema)}</span>` : ''}
+              ${a.silo ? `<span>· silo ${escapeHtml(a.silo)}</span>` : '<span>· público</span>'}
+              <span>· ${fmtSize(a.size_bytes)}</span>
+              <span>· ${fmtDate(a.creado_en)}</span>
+              ${a.descargas > 0 ? `<span>· ⬇ ${a.descargas}</span>` : ''}
+            </div>
+          </div>
+          <div class="flex-shrink-0">
+            <a href="${escapeHtml(a.path)}" target="_blank" rel="noopener" title="Abrir / descargar archivo" class="vo-bg-verde-rec text-white text-xs px-3 py-1.5 rounded font-medium hover:opacity-90 inline-block">↗ Abrir</a>
+          </div>
+        </div>
+      `).join('');
+    } catch (e) {
+      console.error('[MisArchivos]', e);
+      lista.innerHTML = `<div class="bg-red-50 border border-red-200 rounded-md p-4 text-red-700 text-sm">Error cargando archivos: ${escapeHtml(e.message || e)}. Verificá tu sesión.</div>`;
+    }
+  }
+
+  function init() {
+    document.querySelector('button[data-tab="mis_archivos"]')?.addEventListener('click', () => setTimeout(refrescar, 100));
+    document.querySelector('a[data-v4-tab="mis_archivos"]')?.addEventListener('click', () => setTimeout(refrescar, 100));
+    document.getElementById('misArchivosRefreshBtn')?.addEventListener('click', refrescar);
+    ['misArchivosTipo','misArchivosDias','misArchivosTema'].forEach(id => {
+      document.getElementById(id)?.addEventListener('change', refrescar);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
 </script>
 
@@ -11785,11 +12087,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function cerrarTarea(id) {
-    const notas = prompt('Notas de cierre (opcional):', '') || null;
+    // DeepSeek ronda 3 · modal en lugar de prompt() nativo feo
+    const notas = window.showModalInput
+      ? await window.showModalInput({
+          title: '✓ Cerrar tarea',
+          message: 'Opcional: agregá una nota breve sobre cómo cerraste esto. Queda visible para Dusan.',
+          placeholder: 'Ej: deployado a prod commit abc1234',
+          multiline: true,
+          okLabel: 'Cerrar tarea',
+          cancelLabel: 'Cancelar'
+        })
+      : (prompt('Notas de cierre (opcional):', '') || null);
+    if (notas === null) return;  // canceló
     try {
-      const { data, error } = await sb.rpc('cerrar_mi_tarea', { p_id: id, p_notas: notas });
+      const { data, error } = await sb.rpc('cerrar_mi_tarea', { p_id: id, p_notas: notas || null });
       if (error) throw error;
-      // DeepSeek ronda 2 · toast en lugar de alert bloqueante
       if (window.showToast) window.showToast(`Tarea cerrada: ${data.titulo}`, 'success');
       else alert(`✓ Tarea cerrada: ${data.titulo}`);
       refrescar();
@@ -11800,7 +12112,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function comentarTarea(id) {
-    const texto = prompt('Tu comentario:');
+    // DeepSeek ronda 3 · modal en lugar de prompt() nativo feo
+    const texto = window.showModalInput
+      ? await window.showModalInput({
+          title: '💬 Comentar tarea',
+          message: 'Dejá un comentario que Dusan/PC1 puedan ver. Útil para bloqueos, dudas, avances.',
+          placeholder: 'Tu comentario…',
+          multiline: true,
+          required: true,
+          okLabel: 'Agregar comentario',
+          cancelLabel: 'Cancelar'
+        })
+      : prompt('Tu comentario:');
     if (!texto || !texto.trim()) return;
     try {
       const { error } = await sb.rpc('comentar_mi_tarea', { p_id: id, p_comentario: texto.trim() });
@@ -12142,13 +12465,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function cancelarAviso(id) {
-    const razon = prompt('Razón cancelación (opcional):', '') || null;
+    // DeepSeek ronda 3 · modal en lugar de prompt() nativo
+    const razon = window.showModalInput
+      ? await window.showModalInput({
+          title: '✕ Cancelar aviso Diego',
+          message: 'El aviso se marca como no enviado. Razón opcional para registro.',
+          placeholder: 'Ej: ya resuelto manual / aviso duplicado',
+          multiline: false,
+          okLabel: 'Cancelar aviso',
+          cancelLabel: 'Volver'
+        })
+      : (prompt('Razón cancelación (opcional):', '') || null);
+    if (razon === null) return;  // canceló el modal
     try {
-      const { error } = await sb.rpc('diego_cancelar_aviso', { p_aviso_id: id, p_razon: razon });
+      const { error } = await sb.rpc('diego_cancelar_aviso', { p_aviso_id: id, p_razon: razon || null });
       if (error) throw error;
+      if (window.showToast) window.showToast('Aviso cancelado', 'success');
       refrescar();
     } catch (e) {
-      alert('Error: ' + (e.message || e));
+      if (window.showToast) window.showToast('Error: ' + (e.message || e), 'error', 6000);
+      else alert('Error: ' + (e.message || e));
     }
   }
 
