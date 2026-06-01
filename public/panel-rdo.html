@@ -13912,5 +13912,295 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+<!-- D-CRM-IMPULSA-OPORT-NUEVA-001 · Modal Nueva oportunidad + sección adjuntos panel (Pablo 01-jun PM) -->
+<div id="crmNuevaOppOverlay" class="hidden fixed inset-0 z-[60] bg-stone-900/60 items-center justify-center p-4">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <header class="p-4 border-b border-stone-200 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-stone-800">➕ Nueva oportunidad</h3>
+      <button id="crmNuevaOppCerrar" class="text-stone-500 hover:text-stone-700 text-xl leading-none">×</button>
+    </header>
+    <div class="p-4 space-y-3 text-sm">
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Cliente</label>
+        <div id="crmNuevaOppCliente" class="px-2 py-1.5 bg-stone-50 border border-stone-200 rounded text-stone-800">—</div>
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Tipo *</label>
+        <select id="crmNuevaOppTipo" class="w-full px-2 py-1.5 border border-stone-300 rounded">
+          <option value="cotizacion">Cotización</option>
+          <option value="necesidad">Necesidad</option>
+          <option value="accion">Acción</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Título *</label>
+        <input type="text" id="crmNuevaOppTitulo" maxlength="200" placeholder="Ej: Retiro mensual cartón"
+               class="w-full px-2 py-1.5 border border-stone-300 rounded">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Sucursal</label>
+          <input type="text" id="crmNuevaOppSucursal" maxlength="20" placeholder="01/02/03..."
+                 class="w-full px-2 py-1.5 border border-stone-300 rounded">
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Valor estimado (UF)</label>
+          <input type="number" id="crmNuevaOppValorUF" step="0.01" placeholder="3.5"
+                 class="w-full px-2 py-1.5 border border-stone-300 rounded">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Descripción</label>
+        <textarea id="crmNuevaOppDescripcion" rows="2" maxlength="500"
+                  class="w-full px-2 py-1.5 border border-stone-300 rounded"></textarea>
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">📎 Adjuntos (opcional, se suben al crear)</label>
+        <input type="file" id="crmNuevaOppFiles" multiple class="w-full text-xs">
+        <div class="text-[10px] text-stone-400 mt-1">Podés agregar más adjuntos después desde la oportunidad creada.</div>
+      </div>
+      <div id="crmNuevaOppMsg" class="hidden text-xs"></div>
+      <div class="flex justify-end gap-2 pt-2 border-t border-stone-100">
+        <button id="crmNuevaOppCancelar" class="px-3 py-1.5 text-stone-600 text-sm">Cancelar</button>
+        <button id="crmNuevaOppCrear" class="px-3 py-1.5 bg-emerald-600 text-white rounded text-sm">Crear oportunidad</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  function ready() { return typeof sb !== 'undefined' && sb && sb.rpc && sb.storage; }
+  function resolveEmail() {
+    if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase();
+    try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
+    try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
+    try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    try {
+      var sbKey = 'sb-eknmtsrtfkzroxnovfqn-auth-token';
+      var sbTok = JSON.parse(localStorage.getItem(sbKey) || 'null');
+      var em = sbTok?.user?.email || sbTok?.currentSession?.user?.email;
+      if (em) return String(em).toLowerCase();
+    } catch (e) {}
+    return null;
+  }
+  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function fmtFecha(ts) { if (!ts) return '—'; try { return new Date(ts).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return ts; } }
+  function fmtKB(b) { if (b == null) return '—'; if (b < 1024) return b + ' B'; if (b < 1048576) return Math.round(b/1024) + ' KB'; return (b/1048576).toFixed(1) + ' MB'; }
+
+  // Inyecta sección "Oportunidades del panel" + botón "+ Nueva" cuando se entra a subtab oportunidades
+  function injectarPanelOportunidades() {
+    var body = document.getElementById('crmFichaBody');
+    if (!body) return;
+    var fc = (window.COM && window.COM.fichaCache) || null;
+    if (!fc || !fc.id) return;
+    var externalCrm = fc.id;
+    if (document.getElementById('crmOppPanelSection')) return;
+
+    var header = document.createElement('div');
+    header.id = 'crmOppPanelSection';
+    header.className = 'mt-6 pt-4 border-t-2 border-emerald-200';
+    header.innerHTML =
+      '<div class="flex items-center justify-between mb-3 flex-wrap gap-2">' +
+        '<h4 class="text-sm font-bold text-emerald-700">➕ Oportunidades creadas desde el panel</h4>' +
+        '<button id="crmAbrirNuevaOpp" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold">+ Nueva oportunidad</button>' +
+      '</div>' +
+      '<div id="crmOppPanelLista" class="space-y-2"><div class="text-xs text-stone-400 italic py-2 text-center">Cargando…</div></div>';
+    body.appendChild(header);
+
+    document.getElementById('crmAbrirNuevaOpp').addEventListener('click', function () { abrirModalNueva(externalCrm, fc); });
+    cargarOportunidadesPanel(externalCrm);
+  }
+
+  async function cargarOportunidadesPanel(externalCrm) {
+    var lista = document.getElementById('crmOppPanelLista');
+    if (!ready()) { lista.innerHTML = '<div class="text-xs text-red-700">Sesión no detectada.</div>'; return; }
+    try {
+      var resp = await sb.rpc('crm_oportunidades_por_cliente', { p_external_id_crm: externalCrm });
+      if (resp.error) throw resp.error;
+      var data = resp.data || {};
+      var oports = (data.oportunidades || []).filter(function (o) { return o.origen === 'panel_crm_nueva'; });
+      if (!oports.length) {
+        lista.innerHTML = '<div class="text-xs text-stone-400 italic py-3 text-center">Aún no creaste oportunidades nuevas para este cliente.</div>';
+        return;
+      }
+      lista.innerHTML = oports.map(function (o) {
+        return '<div class="bg-white border border-emerald-200 rounded p-3" data-oport="' + esc(o.oportunidad_id) + '">' +
+          '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+            '<span class="font-semibold text-sm">' + esc(o.titulo) + '</span>' +
+            '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">' + esc(o.tipo) + ' · ' + esc(o.estado) + '</span>' +
+          '</div>' +
+          '<div class="text-xs text-stone-500 mb-2">🕐 ' + fmtFecha(o.fecha_recepcion) + ' · ' + esc(o.responsable || '—') + (o.valor_estimado_uf ? ' · ' + Number(o.valor_estimado_uf).toFixed(2) + ' UF' : '') + '</div>' +
+          '<div class="crm-opp-adj-zone border-t border-stone-100 pt-2 mt-2">' +
+            '<div class="flex items-center justify-between gap-2 mb-1">' +
+              '<span class="text-xs font-semibold text-stone-700">📎 Adjuntos</span>' +
+              '<label class="cursor-pointer text-[11px] text-emerald-700 hover:underline">' +
+                '+ Subir archivo' +
+                '<input type="file" class="hidden crm-opp-adj-file" data-oport="' + esc(o.oportunidad_id) + '">' +
+              '</label>' +
+            '</div>' +
+            '<div class="crm-opp-adj-lista space-y-1" data-oport="' + esc(o.oportunidad_id) + '"><div class="text-[10px] text-stone-400 italic">Cargando…</div></div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      oports.forEach(function (o) { cargarAdjuntos(o.oportunidad_id); });
+    } catch (e) {
+      console.error('[crm-panel-opp] error:', e);
+      lista.innerHTML = '<div class="text-xs text-red-700">Error: ' + esc(e?.message || String(e)) + '</div>';
+    }
+  }
+
+  async function cargarAdjuntos(oportunidadId) {
+    var cont = document.querySelector('.crm-opp-adj-lista[data-oport="' + oportunidadId + '"]');
+    if (!cont) return;
+    try {
+      var resp = await sb.rpc('opp_adjuntos_listar', { p_oportunidad_id: oportunidadId });
+      if (resp.error) throw resp.error;
+      var data = resp.data || {};
+      var panel = data.panel || [];
+      var etl = data.etl || [];
+      if (!panel.length && !etl.length) {
+        cont.innerHTML = '<div class="text-[10px] text-stone-400 italic">Sin archivos.</div>';
+        return;
+      }
+      var html = '';
+      panel.forEach(function (a) {
+        html += '<div class="flex items-center justify-between gap-2 text-xs bg-stone-50 px-2 py-1 rounded">' +
+          '<span class="truncate flex-1">📄 ' + esc(a.nombre) + ' <span class="text-stone-400">' + fmtKB(a.tamano_bytes) + '</span></span>' +
+          '<button class="crm-opp-adj-ver text-sky-700 text-[11px] hover:underline" data-path="' + esc(a.bucket_path) + '">ver</button>' +
+          '<button class="crm-opp-adj-del text-red-600 text-[11px] hover:underline" data-id="' + esc(a.id) + '" data-oport="' + oportunidadId + '">borrar</button>' +
+        '</div>';
+      });
+      etl.forEach(function (a) {
+        html += '<div class="flex items-center gap-2 text-xs bg-stone-50 px-2 py-1 rounded opacity-70">' +
+          '<span class="truncate flex-1">📄 ' + esc(a.nombre) + ' <span class="text-stone-400">(' + esc(a.extension || 'etl') + ')</span></span>' +
+          '<span class="text-[10px] text-stone-400">CRM</span>' +
+        '</div>';
+      });
+      cont.innerHTML = html;
+    } catch (e) {
+      console.warn('[crm-adj] error:', e);
+      cont.innerHTML = '<div class="text-[10px] text-red-700">Error cargando adjuntos.</div>';
+    }
+  }
+
+  async function subirArchivo(oportunidadId, file) {
+    if (!ready() || !file) return;
+    var email = resolveEmail();
+    if (!email) { alert('No detecto tu sesión.'); return; }
+    try {
+      var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      var path = oportunidadId + '/' + Date.now() + '_' + safeName;
+      var up = await sb.storage.from('impulsa-documentos').upload(path, file, { upsert: false, contentType: file.type || 'application/octet-stream' });
+      if (up.error) throw up.error;
+      var reg = await sb.rpc('opp_adjunto_registrar', {
+        p_email: email, p_oportunidad_id: oportunidadId, p_bucket_path: path,
+        p_nombre: file.name, p_mime: file.type || null, p_size: file.size
+      });
+      if (reg.error) throw reg.error;
+      cargarAdjuntos(oportunidadId);
+    } catch (e) {
+      console.error('[crm-adj] upload error:', e);
+      alert('Error subiendo: ' + (e?.message || String(e)));
+    }
+  }
+
+  async function borrarAdjunto(adjuntoId, oportunidadId) {
+    if (!confirm('¿Borrar este adjunto?')) return;
+    var email = resolveEmail();
+    if (!email) return;
+    try {
+      var r = await sb.rpc('opp_adjunto_borrar', { p_email: email, p_adjunto_id: adjuntoId });
+      if (r.error) throw r.error;
+      cargarAdjuntos(oportunidadId);
+    } catch (e) {
+      alert('Error: ' + (e?.message || String(e)));
+    }
+  }
+
+  async function verArchivo(bucketPath) {
+    try {
+      var s = await sb.storage.from('impulsa-documentos').createSignedUrl(bucketPath, 300);
+      if (s.error) throw s.error;
+      window.open(s.data.signedUrl, '_blank');
+    } catch (e) { alert('No se pudo abrir: ' + (e?.message || String(e))); }
+  }
+
+  // Modal
+  function abrirModalNueva(externalCrm, fc) {
+    var overlay = document.getElementById('crmNuevaOppOverlay');
+    overlay.classList.remove('hidden'); overlay.classList.add('flex');
+    document.getElementById('crmNuevaOppCliente').textContent = (fc?.cFull?.razon_social || fc?.c360?.razon_social || externalCrm);
+    document.getElementById('crmNuevaOppTitulo').value = '';
+    document.getElementById('crmNuevaOppSucursal').value = '';
+    document.getElementById('crmNuevaOppValorUF').value = '';
+    document.getElementById('crmNuevaOppDescripcion').value = '';
+    document.getElementById('crmNuevaOppFiles').value = '';
+    document.getElementById('crmNuevaOppMsg').classList.add('hidden');
+    document.getElementById('crmNuevaOppCrear').dataset.externalCrm = externalCrm;
+  }
+  function cerrarModal() {
+    var overlay = document.getElementById('crmNuevaOppOverlay');
+    overlay.classList.add('hidden'); overlay.classList.remove('flex');
+  }
+  async function crearOportunidad() {
+    var btn = document.getElementById('crmNuevaOppCrear');
+    var msg = document.getElementById('crmNuevaOppMsg');
+    var externalCrm = btn.dataset.externalCrm;
+    var titulo = document.getElementById('crmNuevaOppTitulo').value.trim();
+    var tipo = document.getElementById('crmNuevaOppTipo').value;
+    var sucursal = document.getElementById('crmNuevaOppSucursal').value.trim() || null;
+    var valor = parseFloat(document.getElementById('crmNuevaOppValorUF').value) || null;
+    var descripcion = document.getElementById('crmNuevaOppDescripcion').value.trim() || null;
+    var files = document.getElementById('crmNuevaOppFiles').files;
+    if (!titulo) { msg.className = 'text-xs text-red-700'; msg.textContent = 'Título requerido.'; msg.classList.remove('hidden'); return; }
+    var email = resolveEmail();
+    if (!email) { msg.className = 'text-xs text-red-700'; msg.textContent = 'No detecto tu sesión.'; msg.classList.remove('hidden'); return; }
+    btn.disabled = true; btn.textContent = 'Creando…';
+    try {
+      var r = await sb.rpc('crm_crear_oportunidad', {
+        p_email: email, p_external_id_crm: externalCrm, p_tipo: tipo,
+        p_titulo: titulo, p_descripcion: descripcion, p_sucursal_id: sucursal,
+        p_valor_estimado_uf: valor, p_metadata: {}
+      });
+      if (r.error) throw r.error;
+      var oportId = r.data;
+      for (var i = 0; i < files.length; i++) { await subirArchivo(oportId, files[i]); }
+      cerrarModal();
+      cargarOportunidadesPanel(externalCrm);
+    } catch (e) {
+      msg.className = 'text-xs text-red-700'; msg.textContent = 'Error: ' + (e?.message || String(e));
+      msg.classList.remove('hidden');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Crear oportunidad';
+    }
+  }
+
+  function init() {
+    document.addEventListener('click', function (e) {
+      var b;
+      if ((b = e.target.closest('.crm-subtab')) && b.getAttribute('data-subtab') === 'oportunidades') {
+        setTimeout(injectarPanelOportunidades, 250);
+      } else if ((b = e.target.closest('.crm-opp-adj-del'))) {
+        borrarAdjunto(b.dataset.id, b.dataset.oport);
+      } else if ((b = e.target.closest('.crm-opp-adj-ver'))) {
+        verArchivo(b.dataset.path);
+      }
+    });
+    document.addEventListener('change', function (e) {
+      var input = e.target.closest('.crm-opp-adj-file');
+      if (input && input.files && input.files[0]) {
+        subirArchivo(input.dataset.oport, input.files[0]);
+        input.value = '';
+      }
+    });
+    document.getElementById('crmNuevaOppCerrar')?.addEventListener('click', cerrarModal);
+    document.getElementById('crmNuevaOppCancelar')?.addEventListener('click', cerrarModal);
+    document.getElementById('crmNuevaOppCrear')?.addEventListener('click', crearOportunidad);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
 </body>
 </html>
