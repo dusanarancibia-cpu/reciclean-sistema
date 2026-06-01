@@ -85,13 +85,36 @@ Total Supabase: **84 tablas** + **11 vistas**.
 
 ---
 
-## Progreso diario (baseline)
+## Progreso diario
 
 | Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
 |---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| 22-abr-2026 (baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **01-jun-2026** | 68+ | — | — | — | — | — |
 
-> _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+### Detalle 01-jun-2026 — 20 commits · 11 hrs (06:32→17:37)
+
+**Pablo (2 tareas):**
+- Fix tab Diego Coordinador — faltaba `.schema('panel')` en 6 queries
+- Frontend Cartero Diego desde cero — modal 4 categorías + Realtime + tab Mis reportes
+
+**Dusan (18 tareas):**
+- Destrabar login (3 divs huérfanos)
+- Merge PRs Pablo (#172 + #174)
+- Perf mobile: defer Supabase CDN + bootstrap promise
+- Fix Mi Bandeja `.schema('panel')`
+- Desbloqueo Jair FAB Diego (resolveEmail 3→4 fuentes)
+- 3 features Cartero firmadas (material nuevo, despacho, incidentes)
+- Bug [6] refresh silo · Bug [7] toast discoverability · Bug [9] límite chars 500→2000→5000
+- 2 tabs firmas pendientes + tarifas externas
+- Tab "Mis envíos a Diego" (feedback Ingrid [10])
+- Fix resolveEmail chain en handlers Firmas+Tarifas+Cartero
+- CRM Impulsa: botón Nueva oportunidad + adjuntos
+- Cotizador SPEC V1.1 Tier 1 (H08+H09+H11+H14+H15)
+- Firmas pendientes: subir/editar/descargar archivos
+- Cotizador SPEC V1.1 Tier 2 (H05 cards + H07 km auto)
+
+**Totales:** 10 features nuevas · 7 bugs corregidos · 2 mejoras performance
 
 ---
 
