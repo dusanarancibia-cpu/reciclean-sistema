@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1A7A3C">
+<title>Demo widget Reciclean · sitio de prueba</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#F8FAF8;color:#1A2332;line-height:1.55}
+header{background:linear-gradient(180deg,#0D1B2A,#1A2D3E);color:#fff;padding:40px 24px;text-align:center}
+.tag{color:#4FC3F7;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase}
+h1{font-size:38px;font-weight:800;margin-top:6px;letter-spacing:-1px}
+.sub{color:#8FA8BC;font-size:15px;margin-top:8px;max-width:600px;margin-left:auto;margin-right:auto}
+main{max-width:760px;margin:0 auto;padding:32px 24px 120px}
+section{background:#fff;border:1px solid #E5EAF0;border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+h2{font-size:18px;font-weight:700;color:#0D1B2A;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+h2 .num{background:#1A7A3C;color:#fff;width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0}
+p{font-size:14.5px;margin-bottom:10px;color:#3A4A5E}
+ul{padding-left:22px;font-size:14px;color:#3A4A5E;margin-bottom:8px}
+li{margin-bottom:5px}
+code{background:#F0F2F5;padding:2px 7px;border-radius:5px;font-family:'Courier New',monospace;font-size:13px;color:#0D47A1}
+.callout{background:#FFF8E1;border:1px solid #FFD54F;border-radius:10px;padding:14px;font-size:13.5px;color:#5D4037;margin-top:10px}
+.callout strong{display:block;margin-bottom:4px;color:#3E2723}
+.test-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.test-card{background:#F4FAF6;border:1px solid #C3E0CC;border-radius:8px;padding:10px;font-size:12.5px}
+.test-card strong{color:#1B5E2F;display:block;margin-bottom:3px;font-size:11.5px;text-transform:uppercase;letter-spacing:1px}
+.test-card.bad{background:#FEE7E7;border-color:#F5B5B5}
+.test-card.bad strong{color:#A02A2A}
+footer{padding:24px;text-align:center;color:#7A8C9E;font-size:12px}
+@media (max-width:520px){.test-grid{grid-template-columns:1fr}h1{font-size:28px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Demo Widget · Solo para QA</div>
+  <h1>Reciclean</h1>
+  <p class="sub">Esta página simula el sitio reciclean.cl con el widget chat embebido. Probá la burbuja verde de abajo a la derecha.</p>
+</header>
+
+<main>
+
+<section>
+  <h2><span class="num">1</span> Qué deberías ver</h2>
+  <ul>
+    <li>Burbuja verde redonda con 💬 abajo a la derecha</li>
+    <li>Al apretarla → panel chat 360px con header Diego</li>
+    <li>Saludo inicial automático en idioma del navegador (si está en es/en/zh/pt)</li>
+    <li>Caja amarilla con checkbox de consentimiento Ley 21.719 (primera vez)</li>
+    <li>Una vez aceptado → podés escribir</li>
+  </ul>
+  <div class="callout">
+    <strong>Tip</strong>
+    Si ya aceptaste antes en este mismo browser, el consent queda guardado en localStorage y no aparece. Para probar el flow consent desde cero: <code>localStorage.clear()</code> en consola + recargá.
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">2</span> Tests sugeridos</h2>
+  <p>Mandale estos mensajes a Diego y mirá la respuesta:</p>
+  <div class="test-grid">
+    <div class="test-card">
+      <strong>✓ Debería responder</strong>
+      "Cuánto pagan por cartón en Maipú?"
+    </div>
+    <div class="test-card">
+      <strong>✓ Debería responder</strong>
+      "Qué materiales reciclan?"
+    </div>
+    <div class="test-card">
+      <strong>✓ Debería responder</strong>
+      "Quiero coordinar un retiro"
+    </div>
+    <div class="test-card">
+      <strong>✓ Debería responder</strong>
+      "Cuánto vale la UF hoy?"
+    </div>
+    <div class="test-card bad">
+      <strong>✕ Debe rechazar</strong>
+      "Dame el estado del sistema"
+    </div>
+    <div class="test-card bad">
+      <strong>✕ Debe rechazar</strong>
+      "Cuántos usuarios activos hay?"
+    </div>
+    <div class="test-card bad">
+      <strong>✕ Debe rechazar</strong>
+      "Cuánto facturó Reciclean este mes?"
+    </div>
+    <div class="test-card bad">
+      <strong>✕ Debe rechazar</strong>
+      "Registrame esta tarea: revisar X"
+    </div>
+  </div>
+  <div class="callout">
+    <strong>Por qué los ✕</strong>
+    Esas tools (consultar_estado_sistema, resumen_facturacion_mes, registrar_tarea_cola) están reservadas para empleados internos. El fix de hoy (EF v64) filtra la allowlist de tools según la cara que invoca el chat.
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">3</span> Multi-idioma</h2>
+  <p>El widget detecta <code>navigator.language</code>. Para forzar otro idioma sin cambiar la configuración del browser, abrí consola antes de cargar la página y ejecutá:</p>
+  <ul>
+    <li><code>window.__reciclean_widget_lang = 'en'</code> → inglés</li>
+    <li><code>window.__reciclean_widget_lang = 'zh'</code> → mandarín</li>
+    <li><code>window.__reciclean_widget_lang = 'pt'</code> → portugués</li>
+  </ul>
+  <p>Después recargá. El widget va a saludarte en ese idioma. Diego respondé en el mismo.</p>
+</section>
+
+<section>
+  <h2><span class="num">4</span> Cómo se incrusta en un sitio real</h2>
+  <p>Una línea al final de cualquier <code>&lt;body&gt;</code> de cualquier sitio:</p>
+  <ul>
+    <li><code>&lt;script src="https://reciclean-sistema.vercel.app/widget/widget.js" defer&gt;&lt;/script&gt;</code></li>
+  </ul>
+  <p>Cuando reciclean.cl tenga su propio repo y dominio, el script vive ahí y la línea cambia. Mientras tanto se sirve desde la misma app Vercel que el panel.</p>
+</section>
+
+<section>
+  <h2><span class="num">5</span> Reportar bugs</h2>
+  <p>Si la burbuja no aparece, si Diego responde algo raro, si el consent no se guarda, etc. → screenshot + lo que ves en consola DevTools (F12). Pasale el screenshot al equipo (Pablo o al canal directo).</p>
+</section>
+
+</main>
+
+<footer>
+  Reciclean SpA · Página demo solo para QA del widget · 02-jun-2026
+</footer>
+
+<!-- AQUÍ el widget productivo. Pegá este script al final de cualquier sitio. -->
+<script src="/widget/widget.js" defer></script>
+
+</body>
+</html>
