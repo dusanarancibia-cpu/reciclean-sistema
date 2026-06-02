@@ -15,6 +15,25 @@
   var SUPABASE_URL = 'https://eknmtsrtfkzroxnovfqn.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_y-ivpVdiL141kz4ZASje5g_SYG7do5z';
 
+  // D.4: detectar idioma del visitante (es/en/zh/pt). Override con window.__reciclean_widget_lang
+  var IDIOMAS_SOPORTADOS = ['es', 'en', 'zh', 'pt'];
+  function detectarIdioma() {
+    var override = window.__reciclean_widget_lang;
+    if (override && IDIOMAS_SOPORTADOS.indexOf(String(override).slice(0,2)) !== -1) return String(override).slice(0,2);
+    var nav = (navigator.language || navigator.userLanguage || 'es').toLowerCase().slice(0, 2);
+    return IDIOMAS_SOPORTADOS.indexOf(nav) !== -1 ? nav : 'es';
+  }
+  var idioma = detectarIdioma();
+
+  // Strings UI por idioma
+  var I18N = {
+    es: {fab_aria:'Abrir chat con Diego', name:'Diego', sub:'Respondo al toque', tag:'Asistente Reciclean', close:'Cerrar', placeholder:'Escribí tu pregunta…', greeting:'Hola 👋 Soy Diego, asistente comercial de Reciclean. ¿En qué te ayudo? Precios, retiros, consultas, lo que necesites.', consent_title:'Antes de chatear con Diego', consent_body:'Necesitamos tu autorización para tratar tus mensajes (Ley 21.719 Chile).', consent_label:'Acepto el tratamiento de mis datos conforme a Ley 21.719.', consent_required:'Marcá la casilla de consentimiento arriba ☝️', consent_thanks:'¡Gracias! Ya podés escribirme.', thinking:'Diego está pensando…', error_conn:'Sin conexión. Probá de nuevo.'},
+    en: {fab_aria:'Open chat with Diego', name:'Diego', sub:'Quick replies', tag:'Reciclean Assistant', close:'Close', placeholder:'Type your question…', greeting:"Hi 👋 I'm Diego, Reciclean's commercial assistant. How can I help? Prices, pickups, info, anything you need.", consent_title:'Before chatting with Diego', consent_body:'We need your authorization to process your messages (Chile Law 21.719).', consent_label:'I accept the processing of my data under Law 21.719.', consent_required:'Check the consent box above ☝️', consent_thanks:'Thanks! You can write to me now.', thinking:'Diego is thinking…', error_conn:'No connection. Try again.'},
+    zh: {fab_aria:'与 Diego 开始聊天', name:'Diego', sub:'快速回复', tag:'Reciclean 助手', close:'关闭', placeholder:'输入您的问题…', greeting:'您好 👋 我是 Diego，Reciclean 的商业助理。有什么可以帮您？价格、取货、咨询，应有尽有。', consent_title:'与 Diego 聊天前', consent_body:'我们需要您的授权来处理您的消息（智利 21.719 法）。', consent_label:'我接受按照 21.719 法处理我的数据。', consent_required:'请勾选上方同意框 ☝️', consent_thanks:'谢谢！现在您可以给我留言了。', thinking:'Diego 正在思考…', error_conn:'无连接。请重试。'},
+    pt: {fab_aria:'Abrir chat com o Diego', name:'Diego', sub:'Respondo na hora', tag:'Assistente Reciclean', close:'Fechar', placeholder:'Escreva sua pergunta…', greeting:'Olá 👋 Sou o Diego, assistente comercial da Reciclean. Como posso ajudar? Preços, retiradas, consultas, o que precisar.', consent_title:'Antes de conversar com o Diego', consent_body:'Precisamos da sua autorização para tratar suas mensagens (Lei 21.719 Chile).', consent_label:'Aceito o tratamento dos meus dados conforme a Lei 21.719.', consent_required:'Marque a caixa de consentimento acima ☝️', consent_thanks:'Obrigado! Já pode me escrever.', thinking:'Diego está pensando…', error_conn:'Sem conexão. Tente de novo.'},
+  };
+  var T = I18N[idioma];
+
   // Identidad anónima por visitante (D.3): localStorage key con UUID
   var WIDGET_VISITOR_KEY = 'reciclean_widget_visitor_id';
   var visitorId = (function () {
@@ -71,29 +90,28 @@
   // FAB
   var fab = document.createElement('button');
   fab.id = 'reciclean-widget-fab';
-  fab.setAttribute('aria-label', 'Abrir chat con Diego');
+  fab.setAttribute('aria-label', T.fab_aria);
   fab.textContent = '💬';
   document.body.appendChild(fab);
 
   // Panel
   var panel = document.createElement('div');
   panel.id = 'reciclean-widget-panel';
-  panel.innerHTML = '\
-    <div class="rwp-header">\
-      <div class="icon">🤖</div>\
-      <div class="info">\
-        <div class="tag">Asistente Reciclean</div>\
-        <div class="name">Diego</div>\
-        <div class="sub">Respondo al toque</div>\
-      </div>\
-      <button class="close" id="rwp-close" type="button" aria-label="Cerrar">×</button>\
-    </div>\
-    <div class="rwp-chat" id="rwp-chat"></div>\
-    <div class="rwp-input-row">\
-      <textarea class="rwp-input" id="rwp-input" placeholder="Escribí tu pregunta…" rows="1" maxlength="2000"></textarea>\
-      <button class="rwp-send" id="rwp-send" type="button" aria-label="Enviar">→</button>\
-    </div>\
-  ';
+  panel.innerHTML =
+    '<div class="rwp-header">' +
+      '<div class="icon">🤖</div>' +
+      '<div class="info">' +
+        '<div class="tag">' + T.tag + '</div>' +
+        '<div class="name">' + T.name + '</div>' +
+        '<div class="sub">' + T.sub + '</div>' +
+      '</div>' +
+      '<button class="close" id="rwp-close" type="button" aria-label="' + T.close + '">×</button>' +
+    '</div>' +
+    '<div class="rwp-chat" id="rwp-chat"></div>' +
+    '<div class="rwp-input-row">' +
+      '<textarea class="rwp-input" id="rwp-input" placeholder="' + T.placeholder + '" rows="1" maxlength="2000"></textarea>' +
+      '<button class="rwp-send" id="rwp-send" type="button" aria-label="Send">→</button>' +
+    '</div>';
   document.body.appendChild(panel);
 
   var chatEl = panel.querySelector('#rwp-chat');
@@ -112,11 +130,10 @@
   function showConsent() {
     var box = document.createElement('div');
     box.className = 'rwp-consent';
-    box.innerHTML = '\
-      <strong>Antes de chatear con Diego</strong><br>\
-      Necesitamos tu autorización para tratar tus mensajes (Ley 21.719 Chile).<br><br>\
-      <label><input type="checkbox" id="rwp-consent-cb"> Acepto el tratamiento de mis datos conforme a <a href="https://www.bcn.cl/leychile/navegar?idNorma=1217150" target="_blank">Ley 21.719</a>.</label>\
-    ';
+    box.innerHTML =
+      '<strong>' + T.consent_title + '</strong><br>' +
+      T.consent_body + '<br><br>' +
+      '<label><input type="checkbox" id="rwp-consent-cb"> ' + T.consent_label + ' <a href="https://www.bcn.cl/leychile/navegar?idNorma=1217150" target="_blank">Ley 21.719</a></label>';
     chatEl.appendChild(box);
     chatEl.scrollTop = chatEl.scrollHeight;
     var cb = box.querySelector('#rwp-consent-cb');
@@ -124,7 +141,7 @@
       if (cb.checked) {
         setConsent();
         box.remove();
-        bubble('¡Gracias! Ya podés escribirme.', 'diego');
+        bubble(T.consent_thanks, 'diego');
         inputEl.focus();
       }
     });
@@ -134,7 +151,7 @@
     panel.classList.add('open');
     fab.classList.add('hidden');
     if (chatEl.children.length === 0) {
-      bubble('Hola 👋 Soy Diego, asistente comercial de Reciclean. ¿En qué te ayudo? Precios, retiros, consultas, lo que necesites.', 'diego');
+      bubble(T.greeting, 'diego');
       if (!hasConsent()) showConsent();
     }
   }
@@ -154,12 +171,12 @@
   async function enviar() {
     var texto = inputEl.value.trim();
     if (!texto) return;
-    if (!hasConsent()) { bubble('Marcá la casilla de consentimiento arriba ☝️', 'error'); return; }
+    if (!hasConsent()) { bubble(T.consent_required, 'error'); return; }
     sendBtn.disabled = true;
     bubble(texto, 'user');
     inputEl.value = '';
     inputEl.style.height = 'auto';
-    var thinking = bubble('Diego está pensando…', 'thinking');
+    var thinking = bubble(T.thinking, 'thinking');
     try {
       var resp = await fetch(SUPABASE_URL + '/functions/v1/diego-chat-process', {
         method: 'POST',
@@ -170,6 +187,7 @@
         },
         body: JSON.stringify({
           widget_visitor_id: visitorId,
+          idioma: idioma,
           mensaje: texto,
           request_id: 'wid-' + Date.now(),
         }),
@@ -183,7 +201,7 @@
       }
     } catch (e) {
       thinking.remove();
-      bubble('Sin conexión. Probá de nuevo.', 'error');
+      bubble(T.error_conn, 'error');
     } finally {
       sendBtn.disabled = false;
       inputEl.focus();
