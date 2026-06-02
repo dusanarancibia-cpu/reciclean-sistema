@@ -13518,6 +13518,15 @@ document.addEventListener('DOMContentLoaded', () => {
         <span class="dcm-cat-emoji">🚨</span><strong>Es urgente</strong>
       </button>
     </div>
+    <!-- Campos contexto obligatorios cuando categoria=urgente (R-AUD-NO-CARGA-DUSAN 02-jun) -->
+    <div id="dcmUrgenteFields" style="display:none;background:#fef3c7;border:1px solid #f59e0b;border-radius:.375rem;padding:.625rem .75rem;margin-bottom:.75rem;">
+      <div style="font-size:.75rem;color:#92400e;font-weight:600;margin-bottom:.375rem;">🚨 Para resolver rápido necesitamos 2 cosas:</div>
+      <label for="dcmUrgCliente" style="font-size:.7rem;color:#78350f;display:block;margin-bottom:.125rem;">Cliente o asunto</label>
+      <input type="text" id="dcmUrgCliente" maxlength="200" placeholder="Ej: Megapol · cotización Talca · firma Abastible" aria-label="Cliente o asunto" style="width:100%;padding:.4rem .55rem;border:1px solid #cbd5e1;border-radius:.25rem;font-family:'Inter',sans-serif;font-size:.85rem;box-sizing:border-box;margin-bottom:.5rem;">
+      <label for="dcmUrgRazon" style="font-size:.7rem;color:#78350f;display:block;margin-bottom:.125rem;">¿Qué pasa si no se resuelve hoy?</label>
+      <input type="text" id="dcmUrgRazon" maxlength="200" placeholder="Ej: cliente se pierde · pierdo el camión · queda parada la planta" aria-label="Que pasa si no se resuelve hoy" style="width:100%;padding:.4rem .55rem;border:1px solid #cbd5e1;border-radius:.25rem;font-family:'Inter',sans-serif;font-size:.85rem;box-sizing:border-box;">
+    </div>
+
     <label for="dcmTextarea" style="font-size:.8rem;color:#475569;display:block;margin-bottom:.25rem;">Contale a Diego</label>
     <textarea id="dcmTextarea" maxlength="5000" placeholder="Describí lo que querés contar (máx 5000)…" aria-label="Mensaje" rows="6"></textarea>
     <div class="dcm-counter"><span id="dcmCount">0</span>/5000</div>
@@ -13580,6 +13589,12 @@ document.addEventListener('DOMContentLoaded', () => {
     resp.textContent = '';
     submitBtn.disabled = true;
     submitBtn.textContent = 'Enviar';
+    var uf = document.getElementById('dcmUrgenteFields');
+    if (uf) uf.style.display = 'none';
+    var uc = document.getElementById('dcmUrgCliente');
+    var ur = document.getElementById('dcmUrgRazon');
+    if (uc) uc.value = '';
+    if (ur) ur.value = '';
     modal.classList.add('open');
     setTimeout(function () { textarea.focus(); }, 80);
   }
@@ -13587,8 +13602,31 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.classList.remove('open');
   }
 
+  // R-AUD-NO-CARGA-DUSAN · campos contexto solo para urgente
+  var urgFields = document.getElementById('dcmUrgenteFields');
+  var urgClienteIn = document.getElementById('dcmUrgCliente');
+  var urgRazonIn = document.getElementById('dcmUrgRazon');
+
+  function urgenteCamposOk() {
+    if (selectedCat !== 'urgente') return true;
+    var c = (urgClienteIn && urgClienteIn.value || '').trim();
+    var r = (urgRazonIn && urgRazonIn.value || '').trim();
+    return c.length >= 3 && r.length >= 3;
+  }
+
   function updateSubmitState() {
-    submitBtn.disabled = !(selectedCat && textarea.value.trim().length > 0);
+    submitBtn.disabled = !(selectedCat && textarea.value.trim().length > 0 && urgenteCamposOk());
+  }
+
+  function refreshUrgenteFields() {
+    if (!urgFields) return;
+    if (selectedCat === 'urgente') {
+      urgFields.style.display = 'block';
+    } else {
+      urgFields.style.display = 'none';
+      if (urgClienteIn) urgClienteIn.value = '';
+      if (urgRazonIn) urgRazonIn.value = '';
+    }
   }
 
   catBtns.forEach(function (btn) {
@@ -13597,6 +13635,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.classList.add('selected');
       btn.setAttribute('aria-checked', 'true');
       selectedCat = btn.getAttribute('data-cat');
+      refreshUrgenteFields();
       updateSubmitState();
     });
   });
@@ -13605,6 +13644,8 @@ document.addEventListener('DOMContentLoaded', () => {
     counter.textContent = String(textarea.value.length);
     updateSubmitState();
   });
+  if (urgClienteIn) urgClienteIn.addEventListener('input', updateSubmitState);
+  if (urgRazonIn) urgRazonIn.addEventListener('input', updateSubmitState);
 
   cancelBtn.addEventListener('click', close);
 
@@ -13624,6 +13665,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   submitBtn.addEventListener('click', async function () {
     if (!selectedCat || !textarea.value.trim()) return;
+    if (selectedCat === 'urgente' && !urgenteCamposOk()) {
+      resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
+      resp.textContent = 'Para urgente necesitamos cliente/asunto y que pasa si no se resuelve hoy.';
+      resp.style.display = 'block';
+      return;
+    }
     var email = resolveEmail();
     if (!email) {
       resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
@@ -13632,6 +13679,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     var ctx = resolveSucursalTab();
+    // R-AUD-NO-CARGA-DUSAN · si urgente, prepend contexto al mensaje para que PC/Dusan
+    // tengan info accionable sin tener que re-preguntar al operativo.
+    var mensajeFinal = textarea.value.trim();
+    if (selectedCat === 'urgente') {
+      var uc = (urgClienteIn && urgClienteIn.value || '').trim();
+      var ur = (urgRazonIn && urgRazonIn.value || '').trim();
+      mensajeFinal = '[CLIENTE/ASUNTO]: ' + uc + '\n[SI NO SE RESUELVE HOY]: ' + ur + '\n---\n' + mensajeFinal;
+    }
     submitBtn.disabled = true;
     submitBtn.textContent = 'Enviando…';
     try {
@@ -13644,7 +13699,7 @@ document.addEventListener('DOMContentLoaded', () => {
           mode: 'feedback_cartero',
           user_email: email,
           categoria: selectedCat,
-          mensaje: textarea.value.trim(),
+          mensaje: mensajeFinal,
           sucursal: ctx.sucursal,
           tab_actual: ctx.tab_actual,
         }),
