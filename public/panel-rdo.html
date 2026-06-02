@@ -7770,29 +7770,23 @@ async function guardarCotizacion() {
   btn.disabled = true;
   btn.textContent = '⏳ Guardando…';
 
-  const payload = {
-    tipo: 'cotizacion',
-    titulo,
-    estado: 'recibida',
-    responsable: currentUser,
-    valor_estimado_uf: totalUF,
-    created_by: currentUser,
-    updated_by: currentUser,
-    metadata: {
-      lineas: _cotLineas,
-      servicio_id: servicioId || null,
-      notas,
-    },
-  };
-
-  if (clienteId) {
-    payload.cliente_id = clienteId;
-  } else {
-    payload.cliente_nombre_libre = clienteNombreLibre;
-  }
-  if (sucursalId) payload.sucursal_id = sucursalId;
-
-  const { data, error } = await sb.schema('curated').from('oportunidades').insert(payload).select('oportunidad_id').single();
+  // F4 mig 169 · RPC cotizador_guardar_v1 SECURITY DEFINER.
+  // Atomico: INSERT curated.oportunidades + encola sync Impulsa async +
+  // registra afirmacion R-AUD-024. Reemplaza INSERT directo (R-AUD-032).
+  const traeMaterial = !!document.getElementById('cotClienteTraeMaterial')?.checked;
+  const rpcRes = await sb.rpc('cotizador_guardar_v1', {
+    p_titulo: titulo,
+    p_cliente_id: clienteId || null,
+    p_cliente_nombre_libre: clienteId ? null : (clienteNombreLibre || null),
+    p_sucursal_id: sucursalId,
+    p_servicio_id: servicioId || null,
+    p_notas: notas || null,
+    p_cliente_trae_material: traeMaterial,
+    p_lineas: _cotLineas,
+    p_valor_estimado_uf: totalUF
+  });
+  const data = rpcRes.data;
+  const error = rpcRes.error || ((data && data.ok === false) ? { message: String(data.error || 'desconocido') } : null);
 
   btn.disabled = false;
   btn.textContent = '✅ Guardar cotización';
@@ -7802,7 +7796,15 @@ async function guardarCotizacion() {
     const msgTec = String(error.message || '');
     let humano = msgTec;
     let sugerencia = '';
-    if (/permission denied/i.test(msgTec)) {
+    if (/titulo_requerido/i.test(msgTec)) {
+      humano = 'Falta completar el título de la cotización';
+    } else if (/sucursal_requerida/i.test(msgTec)) {
+      humano = 'Falta elegir una sucursal';
+    } else if (/cliente_requerido/i.test(msgTec)) {
+      humano = 'Falta elegir o escribir el cliente';
+    } else if (/lineas_requeridas/i.test(msgTec)) {
+      humano = 'Agregá al menos una línea de cotización';
+    } else if (/permission denied/i.test(msgTec)) {
       humano = 'No tenés permiso para guardar cotizaciones todavía';
       sugerencia = 'Avisale a Pablo o pedile a Diego: "no puedo guardar cotizaciones".';
     } else if (/foreign key|violates foreign/i.test(msgTec)) {
