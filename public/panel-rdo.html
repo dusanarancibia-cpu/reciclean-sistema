@@ -2996,12 +2996,17 @@
 
               <div>
                 <label for="cotClienteBuscar" class="block text-xs text-stone-500 mb-1" title="Cliente al que le estás cotizando">Cliente *</label>
-                <input type="text" id="cotClienteBuscar" placeholder="Buscar por nombre o RUT…"
-                       title="Escribí 2+ letras para ver sugerencias del catálogo. Si no existe, lo creás luego."
-                       oninput="buscarClienteCotizador(this.value)"
-                       autocomplete="off"
-                       aria-autocomplete="list" aria-controls="cotClienteSugerencias"
-                       class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
+                <div class="flex gap-1">
+                  <input type="text" id="cotClienteBuscar" placeholder="Buscar por nombre o RUT..."
+                         title="Escribí 2+ letras para ver sugerencias del catálogo. Si no existe, lo creás luego."
+                         oninput="buscarClienteCotizador(this.value)"
+                         autocomplete="off"
+                         aria-autocomplete="list" aria-controls="cotClienteSugerencias"
+                         class="flex-1 border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
+                  <button type="button" id="cotClienteEditarBtn" onclick="cotEditarCliente()" disabled
+                          title="Editar datos del cliente seleccionado (modal unico R-AUD-035)"
+                          class="px-3 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded text-sm disabled:opacity-40 disabled:cursor-not-allowed">✏️</button>
+                </div>
                 <div id="cotClienteSugerencias" role="listbox" aria-label="Sugerencias de clientes"
                      class="hidden border border-stone-200 rounded mt-1 bg-white shadow-md z-10 max-h-40 overflow-y-auto"></div>
                 <input type="hidden" id="cotClienteId">
@@ -6466,6 +6471,7 @@ function cotizarDesdeFilaNegocio(opId, titulo, clienteId, clienteNombre) {
       document.getElementById('cotClienteSeleccionado').textContent = '✔ ' + (clienteNombre || clienteId);
       document.getElementById('cotClienteBuscar').value = clienteNombre || clienteId;
     }
+    if (typeof cotRefrescarEditarClienteBtn === 'function') cotRefrescarEditarClienteBtn();
   }, 300);
 }
 
@@ -7585,6 +7591,23 @@ window.cotToggleClienteTraeMaterial = function (checked) {
   if (typeof cotAutogenerarTitulo === 'function') cotAutogenerarTitulo();
 };
 
+// F2 R-AUD-035 · Boton "Editar cliente" abre modal unico carAbrirEditar (reusa
+// el de tab Cartera). Habilitado solo cuando hay cliente_id del catalogo.
+window.cotEditarCliente = function () {
+  const id = document.getElementById('cotClienteId')?.value;
+  if (!id) return;
+  if (typeof window.carAbrirEditar === 'function') {
+    window.carAbrirEditar(id);
+  } else {
+    alert('Editor de cliente no disponible aun. Probar desde pestana Cartera.');
+  }
+};
+window.cotRefrescarEditarClienteBtn = function () {
+  const btn = document.getElementById('cotClienteEditarBtn');
+  if (!btn) return;
+  btn.disabled = !document.getElementById('cotClienteId')?.value;
+};
+
 // H04 · autogenerar título a partir de cliente + sucursal + servicio
 window.cotTituloEditadoManual = false;
 window.cotAutogenerarTitulo = function () {
@@ -7724,6 +7747,7 @@ function seleccionarClienteCot(id, nombre) {
   document.getElementById('cotClienteBuscar').value = nombre;
   document.getElementById('cotClienteSeleccionado').textContent = '✔ ' + nombre;
   document.getElementById('cotClienteSugerencias').classList.add('hidden');
+  if (typeof cotRefrescarEditarClienteBtn === 'function') cotRefrescarEditarClienteBtn();
   // D-OP-04-v2 Ola 1.4 — re-disparar validación con cliente recién elegido.
   if (typeof cotRecalcular === 'function') cotRecalcular();
   // SPEC V1.1 H07 · disparar cálculo km con cliente nuevo
@@ -7852,6 +7876,7 @@ async function guardarCotizacion() {
   document.getElementById('cotClienteId').value = '';
   document.getElementById('cotClienteBuscar').value = '';
   document.getElementById('cotClienteSeleccionado').textContent = '';
+  if (typeof cotRefrescarEditarClienteBtn === 'function') cotRefrescarEditarClienteBtn();
   document.getElementById('cotSucursal').value = '';
   document.getElementById('cotServicio').value = '';
   document.getElementById('cotNotas').value = '';
