@@ -14399,6 +14399,34 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (r.link_firmado) {
           linkFirmado = '<a href="' + esc(r.link_firmado) + '" target="_blank" class="text-emerald-700 underline font-semibold text-xs">✅ Abrir documento firmado (link externo)</a>';
         }
+        // Wave 4 PR-J · seccion Analisis legal IA si esta disponible
+        var analisisLegal = '';
+        if (r.analisis_legal) {
+          var a = r.analisis_legal;
+          var rg = String(a.nivel_riesgo || '').toUpperCase();
+          var rgCls = rg === 'ALTO' ? 'bg-red-100 text-red-800 border-red-300'
+                    : rg === 'MEDIO' ? 'bg-amber-100 text-amber-800 border-amber-300'
+                    : rg === 'BAJO' ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                    : 'bg-stone-100 text-stone-700 border-stone-300';
+          var lista = function (arr) { return Array.isArray(arr) && arr.length ? '<ul class="list-disc pl-4 text-xs space-y-0.5">' + arr.map(function (x) { return '<li>' + esc(String(x)) + '</li>'; }).join('') + '</ul>' : '<span class="text-stone-400 italic">—</span>'; };
+          analisisLegal = '<details class="mt-2 border rounded p-2 ' + rgCls + '">' +
+            '<summary class="text-xs font-semibold cursor-pointer">🤖 Análisis legal IA · riesgo ' + esc(rg || 'NO_DETERMINABLE') + ' · ' + esc(String(a.recomendacion || '').slice(0, 60)) + '</summary>' +
+            '<div class="text-xs mt-2 space-y-2">' +
+              '<div><strong>Resumen:</strong> ' + esc(a.resumen || '—') + '</div>' +
+              (a.tipo_documento ? '<div><strong>Tipo:</strong> ' + esc(a.tipo_documento) + (a.contraparte ? ' · ' + esc(a.contraparte) : '') + '</div>' : '') +
+              (a.vencimiento ? '<div><strong>Vence:</strong> ' + esc(a.vencimiento) + '</div>' : '') +
+              '<div><strong>Compromisos:</strong> ' + lista(a.compromisos) + '</div>' +
+              '<div><strong>Plazos:</strong> ' + lista(a.plazos) + '</div>' +
+              '<div><strong>Penalidades:</strong> ' + lista(a.penalidades) + '</div>' +
+              '<div><strong>⚠ Riesgos:</strong> ' + lista(a.riesgos_detectados) + '</div>' +
+              '<div class="font-semibold mt-1">Recomendación: ' + esc(a.recomendacion || '—') + '</div>' +
+              (r.analizado_en ? '<div class="text-[10px] text-stone-500">analizado ' + fmtFecha(r.analizado_en) + '</div>' : '') +
+            '</div>' +
+          '</details>';
+        } else if (r.archivo_path) {
+          analisisLegal = '<div class="mt-2 text-xs text-stone-400 italic">🤖 Análisis legal IA pendiente · se genera automático al subir archivo.</div>';
+        }
+
         return '<div class="bg-white border border-stone-200 rounded p-3">' +
           '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
             '<span class="font-semibold text-sm">📝 ' + esc(r.documento_titulo) + '</span>' +
@@ -14409,6 +14437,7 @@ document.addEventListener('DOMContentLoaded', () => {
           (linkFirmado ? '<div class="text-xs mt-1">' + linkFirmado + '</div>' : '') +
           (r.notas ? '<div class="text-xs text-stone-700 italic mt-1">"' + esc(r.notas) + '"</div>' : '') +
           (r.comentarios_firmante ? '<div class="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-900">💬 ' + esc(r.comentarios_firmante) + '</div>' : '') +
+          analisisLegal +
           '<div class="text-[10px] text-stone-400 mt-1">solicitado ' + fmtFecha(r.created_at) + (r.firmado_en ? ' · firmado ' + fmtFecha(r.firmado_en) : '') + '</div>' +
           '<div class="mt-2 flex gap-1 flex-wrap">' +
             (puedeEditar ? '<button class="fp-editar text-[10px] px-2 py-0.5 bg-stone-200 text-stone-700 rounded" data-id="' + esc(r.id) + '">✏ Editar</button>' : '') +
