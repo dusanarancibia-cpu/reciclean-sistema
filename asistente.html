@@ -166,8 +166,8 @@ select.neg-input option{background:#1A2D3E;color:#fff}
       <div class="brand-desc">Ingresa con tu teléfono y PIN</div>
     </div>
     <div class="login-field">
-      <label>Teléfono WhatsApp</label>
-      <input class="login-input" id="login-tel" type="tel" inputmode="tel" placeholder="+56912345678" autocomplete="tel">
+      <label>Teléfono WhatsApp o email</label>
+      <input class="login-input" id="login-tel" type="text" inputmode="text" placeholder="+56912345678 o tu email" autocomplete="username">
     </div>
     <div class="login-field">
       <label>PIN</label>
@@ -472,29 +472,35 @@ function showLoginError(msg) {
 }
 
 async function doLogin() {
-  const tel = document.getElementById('login-tel').value.trim();
+  const raw = document.getElementById('login-tel').value.trim();
   const pin = document.getElementById('login-pin').value.trim();
-  if(!tel || !pin) { showLoginError('Ingresa tu teléfono y PIN'); return; }
+  if(!raw || !pin) { showLoginError('Ingresa tu teléfono o email + PIN'); return; }
 
   const btn = document.getElementById('login-btn');
   btn.disabled = true;
   btn.textContent = '⏳ Verificando...';
   document.getElementById('login-error').style.display = 'none';
 
-  const telNorm = normTel(tel);
+  // Fix bug 8cb84248: aceptar email O teléfono en el mismo input.
+  const isEmail = raw.includes('@');
+  const telNorm = isEmail ? null : normTel(raw);
+  const emailNorm = isEmail ? raw.toLowerCase() : null;
 
-  // Intentar con teléfono normalizado, y también con el valor original
-  const {data, error} = await _supa
+  let query = _supa
     .from('usuarios_autorizados')
     .select('*')
-    .or(`telefono.eq.${telNorm},telefono.eq.${tel}`)
     .eq('pin', pin)
     .eq('activo', true)
-    .eq('acceso_asistente', true)
-    .maybeSingle();
+    .eq('acceso_asistente', true);
+
+  query = isEmail
+    ? query.eq('email', emailNorm)
+    : query.or(`telefono.eq.${telNorm},telefono.eq.${raw}`);
+
+  const {data, error} = await query.maybeSingle();
 
   if(error || !data) {
-    showLoginError('Teléfono o PIN incorrecto');
+    showLoginError(isEmail ? 'Email o PIN incorrecto' : 'Teléfono o PIN incorrecto');
     return;
   }
 
