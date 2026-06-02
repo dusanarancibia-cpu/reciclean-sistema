@@ -148,7 +148,16 @@
 
   <div id="install-prompt" class="install-prompt">📲 Tip: tocá el botón ⋮ del navegador y elegí "Agregar a inicio" para instalar la app.</div>
 
-  <div class="card">
+  <div id="bienvenida" class="card" style="display:none">
+    <h2 id="bienvenida-title">Bienvenido</h2>
+    <ul>
+      <li id="bienvenida-empresa" style="display:none"></li>
+      <li>Tu sesión queda activa en este celular</li>
+      <li>Tu cuenta cumple Ley 21.719 — gestionás tus datos en Mi memoria</li>
+    </ul>
+  </div>
+
+  <div id="sin-sesion" class="card">
     <h2>Qué viene</h2>
     <ul>
       <li>Cotizá retiros y compras directo desde el celular</li>
@@ -159,7 +168,10 @@
   </div>
 
   <button class="cta" id="cta-instalar" type="button">📲 Instalar app</button>
-  <a class="cta-secondary" href="/asistente.html">Ya tenés cuenta · ir al asistente</a>
+  <a id="cta-signup" class="cta-secondary" href="/app/signup.html">Crear cuenta gratis →</a>
+  <a id="cta-login" class="cta-secondary" href="/app/login.html">Ya tengo cuenta · iniciar sesión</a>
+  <a id="cta-logout" class="cta-secondary" href="#" style="display:none">Cerrar sesión</a>
+  <a class="cta-secondary" href="/asistente.html" style="margin-top:6px;font-size:11px;opacity:.7">Asistente comercial interno (empleados)</a>
 </main>
 
 <footer>
@@ -183,6 +195,33 @@ window.addEventListener('beforeinstallprompt', (e) => {
   deferredPrompt = e;
   const promo = document.getElementById('install-prompt');
   if (promo) promo.classList.add('show');
+});
+
+// Sub-PR B.2: detectar sesión existente (sessionStorage)
+(function () {
+  try {
+    const raw = sessionStorage.getItem('reciclean_app_user');
+    if (!raw) return;
+    const u = JSON.parse(raw);
+    if (!u || !u.telefono) return;
+    document.getElementById('bienvenida').style.display = 'block';
+    document.getElementById('sin-sesion').style.display = 'none';
+    document.getElementById('cta-signup').style.display = 'none';
+    document.getElementById('cta-login').style.display = 'none';
+    document.getElementById('cta-logout').style.display = 'block';
+    document.getElementById('bienvenida-title').textContent = 'Hola, ' + (u.nombre || u.telefono);
+    if (u.empresa) {
+      const li = document.getElementById('bienvenida-empresa');
+      li.textContent = 'Empresa: ' + u.empresa;
+      li.style.display = 'flex';
+    }
+  } catch (e) { console.warn('[Reciclean App] sesión parse error:', e); }
+})();
+
+document.getElementById('cta-logout').addEventListener('click', (e) => {
+  e.preventDefault();
+  sessionStorage.removeItem('reciclean_app_user');
+  window.location.reload();
 });
 
 document.getElementById('cta-instalar').addEventListener('click', async () => {
