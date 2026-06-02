@@ -3762,7 +3762,15 @@
           <option value="atrasada">Atrasada</option>
           <option value="no_aplica">No aplica</option>
         </select>
-        <input id="cump_filtro_texto" type="search" placeholder="🔍 Buscar en notas o responsable..." class="flex-1 px-2 py-1 border border-stone-300 rounded text-sm min-w-48">
+        <select id="cump_filtro_sucursal" class="px-2 py-1 border border-stone-300 rounded text-sm">
+          <option value="">Todas las sucursales</option>
+          <option value="__transversal__">Solo transversales (sin sucursal)</option>
+          <option value="cerrillos">Cerrillos</option>
+          <option value="maipu">Maipu</option>
+          <option value="talca">Talca</option>
+          <option value="puerto_montt">Puerto Montt</option>
+        </select>
+        <input id="cump_filtro_texto" type="search" placeholder="Buscar en notas o responsable..." class="flex-1 px-2 py-1 border border-stone-300 rounded text-sm min-w-48">
       </div>
 
       <div id="cump_form" class="hidden bg-white border border-emerald-300 rounded p-3 mb-3 space-y-2">
@@ -3779,6 +3787,19 @@
           <input id="cump_responsable" type="text" placeholder="Responsable (ej: Dyana)" class="px-2 py-1 border border-stone-300 rounded text-sm">
         </div>
         <input id="cump_evidencia_url" type="url" placeholder="Link al documento (SharePoint, Drive, PDF) — opcional" class="w-full px-2 py-1 border border-stone-300 rounded text-sm">
+        <div class="grid grid-cols-2 gap-2 items-center">
+          <select id="cump_sucursal" class="px-2 py-1 border border-stone-300 rounded text-sm">
+            <option value="">Transversal (todas las sucursales)</option>
+            <option value="cerrillos">Cerrillos</option>
+            <option value="maipu">Maipu</option>
+            <option value="talca">Talca</option>
+            <option value="puerto_montt">Puerto Montt</option>
+          </select>
+          <label class="text-xs flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="cump_requiere_aprob" class="w-4 h-4 accent-amber-600">
+            <span>Requiere aprobacion gerencia</span>
+          </label>
+        </div>
         <input id="cump_fecha_verificacion" type="date" class="px-2 py-1 border border-stone-300 rounded text-sm">
         <textarea id="cump_notas" placeholder="Notas / contexto" rows="2" maxlength="1000" class="w-full px-2 py-1 border border-stone-300 rounded text-sm"></textarea>
         <div class="flex gap-2 justify-end">
@@ -14653,10 +14674,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!lista) return;
     var fLey = $$('cump_filtro_ley') ? $$('cump_filtro_ley').value : '';
     var fEst = $$('cump_filtro_estado') ? $$('cump_filtro_estado').value : '';
+    var fSuc = $$('cump_filtro_sucursal') ? $$('cump_filtro_sucursal').value : '';
     var fTxt = ($$('cump_filtro_texto') ? $$('cump_filtro_texto').value : '').toLowerCase().trim();
     var rows = _cumpRows;
     if (fLey) rows = rows.filter(function (r) { return r.ley_id === fLey; });
     if (fEst) rows = rows.filter(function (r) { return r.estado === fEst; });
+    if (fSuc === '__transversal__') rows = rows.filter(function (r) { return !r.sucursal_id; });
+    else if (fSuc) rows = rows.filter(function (r) { return r.sucursal_id === fSuc; });
     if (fTxt) rows = rows.filter(function (r) { return (String(r.notas || '').toLowerCase().indexOf(fTxt) >= 0) || (String(r.responsable || '').toLowerCase().indexOf(fTxt) >= 0); });
     if ($$('cump_kpi_total')) $$('cump_kpi_total').textContent = _cumpRows.length;
     if ($$('cump_kpi_pendientes')) $$('cump_kpi_pendientes').textContent = _cumpRows.filter(function (r) { return r.estado === 'pendiente'; }).length;
@@ -14671,11 +14695,18 @@ document.addEventListener('DOMContentLoaded', () => {
       var evidencia = r.evidencia_url
         ? '<a href="' + esc(r.evidencia_url) + '" target="_blank" rel="noopener" class="text-blue-600 underline text-xs">📄 Ver documento</a>'
         : '<span class="text-xs text-stone-400 italic">sin evidencia</span>';
+      var badgeSuc = r.sucursal_id
+        ? '<span class="inline-block bg-sky-100 text-sky-800 px-2 py-0.5 rounded text-[10px] uppercase">' + esc(r.sucursal_id) + '</span>'
+        : '<span class="inline-block bg-stone-100 text-stone-600 px-2 py-0.5 rounded text-[10px]">transversal</span>';
+      var badgeAprob = r.requiere_aprobacion_gerencia
+        ? '<span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px]" title="Requiere aprobacion gerencia antes de marcar cumplida">requiere gerencia</span>'
+        : '';
       return '<div class="bg-white border border-stone-200 rounded p-3" data-id="' + r.id + '">'
         + '<div class="flex items-start justify-between gap-2 flex-wrap">'
         + '<div class="flex-1 min-w-0">'
         + '<div class="font-semibold text-sm text-stone-800">' + esc(r.ley_id) + ' · Art. ' + esc(r.articulo_id) + '</div>'
         + '<div class="text-xs text-stone-500 mt-0.5">Responsable: ' + esc(r.responsable || '—') + ' · Verificado: ' + esc(fechaVer) + '</div>'
+        + '<div class="flex gap-1 mt-1 flex-wrap">' + badgeSuc + badgeAprob + '</div>'
         + '</div>'
         + '<div class="flex items-center gap-2">' + badgeEstado(r.estado)
         + '<button class="cump-editar px-2 py-1 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded text-xs" data-id="' + r.id + '">✏️ Editar</button>'
@@ -14694,6 +14725,8 @@ document.addEventListener('DOMContentLoaded', () => {
     $$('cump_estado').value = row.estado || 'pendiente';
     $$('cump_responsable').value = row.responsable || '';
     $$('cump_evidencia_url').value = row.evidencia_url || '';
+    if ($$('cump_sucursal')) $$('cump_sucursal').value = row.sucursal_id || '';
+    if ($$('cump_requiere_aprob')) $$('cump_requiere_aprob').checked = !!row.requiere_aprobacion_gerencia;
     $$('cump_fecha_verificacion').value = row.fecha_verificacion || '';
     $$('cump_notas').value = row.notas || '';
     $$('cump_form').classList.remove('hidden');
@@ -14706,6 +14739,8 @@ document.addEventListener('DOMContentLoaded', () => {
       estado: $$('cump_estado').value,
       responsable: $$('cump_responsable').value.trim() || null,
       evidencia_url: $$('cump_evidencia_url').value.trim() || null,
+      sucursal_id: ($$('cump_sucursal') ? $$('cump_sucursal').value : '') || null,
+      requiere_aprobacion_gerencia: !!($$('cump_requiere_aprob') && $$('cump_requiere_aprob').checked),
       fecha_verificacion: $$('cump_fecha_verificacion').value || null,
       notas: $$('cump_notas').value.trim() || null,
       updated_at: new Date().toISOString()
@@ -14727,6 +14762,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $$('cump_guardar')?.addEventListener('click', guardarCumplimiento);
     $$('cump_filtro_ley')?.addEventListener('change', renderCumplimiento);
     $$('cump_filtro_estado')?.addEventListener('change', renderCumplimiento);
+    $$('cump_filtro_sucursal')?.addEventListener('change', renderCumplimiento);
     $$('cump_filtro_texto')?.addEventListener('input', renderCumplimiento);
     $$('cump_lista')?.addEventListener('click', function (e) {
       var btn = e.target.closest('.cump-editar');
