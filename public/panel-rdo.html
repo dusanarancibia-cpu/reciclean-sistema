@@ -5244,11 +5244,9 @@ async function initDieguito() {
   _diegIniciado = true;
 
   // D-OP-04-v2 Ola 1.1 — cargar destinos + top-20 clientes en paralelo.
-  const destinosP = sb.schema('staging')
-    .from('dieguito_destinations')
-    .select('id,slug,label,kind,color')
-    .eq('active', true)
-    .order('sort_order');
+  // Wave 1 PR-B: usar RPC public.dieguito_destinations_activos() en vez de
+  // staging directo (resuelve 9bc5b1dd + ef870b22 403 staging RLS).
+  const destinosP = sb.rpc('dieguito_destinations_activos');
 
   // Top clientes: vigentes ordenados por categoría (mejor → menos → poco → en_prueba → critica)
   // y por contribucion si está presente. cap a 20.
