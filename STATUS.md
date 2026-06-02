@@ -85,13 +85,14 @@ Total Supabase: **84 tablas** + **11 vistas**.
 
 ---
 
-## Progreso diario (baseline)
+## Progreso diario
 
-| Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
+| Fecha | Temas totales | % promedio | Superados | En revision | En build | En diseno/spec |
 |---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **22-abr-2026** (baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **02-jun-2026** | 68 | ~35% | 3 | 5 | 8 | 52 |
 
-> _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+> _20 PRs en un dia (13 codigo + 7 promocion prod). Detalle en seccion "Resumen 02-jun-2026" abajo._
 
 ---
 
@@ -133,3 +134,83 @@ Si este archivo y la tabla divergen, la tabla manda.
 ---
 
 _Repo público. Contenido comercial sensible va en rutas locales OneDrive, solo path referenciado aquí. Archivos nunca publicados en repo._
+
+---
+
+## Resumen 02-jun-2026 — En palabras sencillas
+
+**Dia muy productivo: 20 PRs procesados (13 de codigo nuevo + 7 promociones a produccion).**
+
+---
+
+### Que hizo Pablo (codigo + desarrollo tecnico)
+
+Pablo fue el motor tecnico del dia. Escribio, probo y envio 13 cambios de codigo:
+
+| # | Que se hizo | Para que sirve en palabras simples | PR |
+|---|---|---|---|
+| 1 | **Cotizador: guardar via RPC** | Las cotizaciones ahora se guardan de forma segura en la base de datos, sin saltarse permisos | #211 |
+| 2 | **Cotizador: modal Editar cliente** | Boton para editar datos del cliente directo desde la cotizacion, sin salir de la pantalla | #213 |
+| 3 | **Cotizador: tests automaticos** | Se crearon pruebas automaticas para que el cotizador no se rompa con cambios futuros | #215 |
+| 4 | **Tab Cumplimiento Legal (MVP)** | Nueva pestana en el panel para llevar control de permisos, resoluciones y obligaciones legales de cada sucursal | #217 |
+| 5 | **FAB Diego: campos obligatorios urgente** | Cuando alguien del equipo marca un tema como "urgente" en Diego, ahora DEBE poner el cliente y explicar que pasa si no se resuelve hoy. Elimina urgentes sin contexto | #219 |
+| 6 | **Cumplimiento: filtro por sucursal** | La pestana de cumplimiento ahora permite filtrar por sucursal (ej: ver solo Talca). Muestra badge amarillo si requiere aprobacion de gerencia (Dusan) | #221 |
+| 7 | **Fix login Asistente: aceptar email** | Ingrid y Juan no podian entrar al Asistente Comercial porque ponian su email en vez del telefono. Ahora acepta ambos | #223 |
+| 8 | **Cotizador: multi-servicio por linea** | Cada linea de una cotizacion puede tener un servicio distinto (ej: 3 contenedores arriendo + 6 retiros chatarra en la misma cotizacion). Caso real: AVO II SPA | #225 |
+| 9 | **CRM: boton "Ir al Cotizador"** | Cuando servicios@ no encontraba como crear oportunidad nueva (caso EMERSON), ahora hay un boton directo al cotizador desde el CRM | #227 |
+| 10 | **Fix Dieguito: RPC seguro** | Diego (el chatbot interno) ya no se bloquea al consultar destinatarios activos. Error 403 resuelto | #229 |
+| 11 | **CI: validacion automatica de JS** | Cada vez que se sube codigo, GitHub revisa automaticamente que los archivos JavaScript no tengan errores de sintaxis. 22 scripts validados | #231 |
+| 12 | **Fix DoD: wrappers publicos** | El dashboard de Definition of Done (checklist de calidad) ahora usa vistas seguras, evita errores de permisos | #233 |
+| 13 | **Firmas: analisis legal con IA** | Las firmas pendientes ahora muestran un analisis legal generado por IA con nivel de riesgo (alto/medio/bajo) | #235 |
+
+---
+
+### Que hizo Dusan (revision, aprobacion y gestion)
+
+Dusan fue el filtro de calidad y el que puso todo en produccion:
+
+| # | Tarea | Detalle |
+|---|---|---|
+| 1 | **Reviso y aprobo 13 PRs** | Cada cambio de Pablo paso por revision de Dusan antes de entrar a `main` |
+| 2 | **Creo 7 PRs de promocion a produccion** | Movio los cambios desde `main` (pruebas) a `prod` (lo que ve el equipo en reciclean-sistema.vercel.app) — PRs #218, #220, #222, #224, #226, #228, #230, #232, #234, #236 |
+| 3 | **Abrio PR #237 (pendiente)** | Fix para agregar link de Cumplimiento en el sidebar del panel — unica tarea abierta del dia |
+| 4 | **Priorizacion por urgencias reales** | El orden del dia no fue al azar: se resolvieron primero los tickets urgentes del equipo (Ingrid no podia entrar, servicios@ no podia cotizar, urgentes sin contexto) |
+
+---
+
+### Resumen de impacto en el negocio
+
+En palabras de calle:
+
+1. **El equipo ya puede cotizar mejor**: multiples servicios por cotizacion, editar clientes, boton directo desde CRM. Caso real AVO II SPA resuelto.
+2. **Cumplimiento legal tiene su casa**: nueva pestana donde Jair y el equipo pueden trackear permisos SEREMI, extintores, EPP, etc. Filtrable por sucursal.
+3. **Menos ruido en urgentes**: el equipo ya no puede mandar un "URGENTE" a Diego sin explicar que pasa. Obliga contexto.
+4. **Ingrid y Juan pueden entrar**: fix del login del Asistente Comercial. Aceptaba solo telefono, ahora acepta email tambien.
+5. **Analisis legal automatico**: las firmas pendientes se analizan con IA automaticamente.
+6. **El codigo se cuida solo**: validacion automatica de JavaScript en cada push.
+
+---
+
+### Nivel de avance actualizado (estimacion)
+
+| Area | Antes (22-abr) | Hoy (02-jun) | Cambio |
+|---|---|---|---|
+| Cotizador | 10% | 60% | +50% — RPC + modal + multi-servicio + tests |
+| Cumplimiento Legal | 0% | 40% | +40% — MVP + filtro sucursal + badges |
+| CRM Impulsa | 15% | 30% | +15% — CTA cotizador + gestiones |
+| Diego/Dieguito | 30% | 40% | +10% — FAB urgente + fix RPC |
+| Asistente Comercial | 80% | 85% | +5% — fix login email |
+| CI/Calidad | 5% | 25% | +20% — js-parse-check + DoD wrappers |
+| Panel RDO (firmas) | 50% | 60% | +10% — analisis legal IA |
+
+**Promedio general estimado: ~35%** (subio desde 15.9% del baseline)
+
+---
+
+### Pendiente para manana
+
+- [ ] Mergear PR #237 (link Cumplimiento en sidebar)
+- [ ] Verificar en produccion que los 7 deploys estan funcionando correctamente
+- [ ] Test manual: Ingrid y Juan prueban login con email
+- [ ] Test manual: servicios@ prueba cotizacion multi-servicio
+- [ ] Test manual: Andrea prueba FAB urgente con campos obligatorios
