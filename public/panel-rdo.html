@@ -10760,7 +10760,12 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="text-center py-8">
             <div class="text-4xl mb-2">📝</div>
             <p class="text-stone-700 font-medium mb-1">Sin gestiones registradas</p>
-            <p class="text-xs text-stone-500 max-w-md mx-auto">El registro de nuevas gestiones requiere la tabla <code class="bg-stone-100 px-1 rounded">panel.crm_gestiones</code>, pendiente de firma <code>D-CRM-GESTIONES</code> por Dusan. Una vez firmada, este panel mostrará el historial cronológico y permitirá agregar entradas nuevas.</p>
+            <p class="text-xs text-stone-500 max-w-md mx-auto mb-3">El registro de gestiones esta pendiente de firma <code class="bg-stone-100 px-1 rounded">D-CRM-GESTIONES</code> por Dusan.</p>
+            <p class="text-xs text-emerald-700 max-w-md mx-auto mb-3"><strong>Mientras tanto:</strong> si necesitas crear una <strong>nueva oportunidad</strong> para este cliente, anda al tab Cotizador. Si el cliente no esta en el catalogo (ej. EMERSON), podes escribirlo libre en el campo "Cliente" y guardar igual la cotizacion.</p>
+            <button onclick="document.querySelector('button[data-tab=\\'cotizador\\']')?.click() || document.querySelector('a[data-v4-tab=\\'cotizador\\']')?.click()"
+                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold">
+              💼 Ir al Cotizador para crear oportunidad
+            </button>
           </div>`;
       }
     } catch (e) {
