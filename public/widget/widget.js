@@ -48,13 +48,15 @@
 
   // Inyectar estilos
   var styles = '\
-  #reciclean-widget-fab{position:fixed;bottom:20px;right:20px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#1A7A3C,#0F5A2C);box-shadow:0 4px 16px rgba(26,122,60,0.4);cursor:pointer;z-index:2147483647;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;border:none;transition:transform .15s ease}\
-  #reciclean-widget-fab:hover{transform:scale(1.05)}\
+  #reciclean-widget-fab{position:fixed;bottom:20px;right:20px;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 36% 32%,rgba(255,255,255,0.55) 0%,transparent 52%),radial-gradient(circle at 66% 72%,rgba(0,220,130,0.35) 0%,transparent 50%),linear-gradient(145deg,#1E90FF 0%,#00C853 100%);box-shadow:0 14px 40px rgba(0,180,90,0.45),0 4px 12px rgba(30,144,255,0.3),inset 0 1px 1px rgba(255,255,255,0.45),inset 0 -10px 24px rgba(0,0,0,0.16);cursor:pointer;z-index:2147483647;display:flex;align-items:center;justify-content:center;border:none;animation:rwFloat 3s ease-in-out infinite;transition:transform .25s cubic-bezier(.4,0,.2,1),box-shadow .25s ease;overflow:visible}\
+  #reciclean-widget-fab::before{content:"";position:absolute;top:9px;left:13px;width:28px;height:15px;background:radial-gradient(ellipse,rgba(255,255,255,0.65) 0%,transparent 70%);border-radius:50%;pointer-events:none}\
+  @keyframes rwFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}\
+  #reciclean-widget-fab:hover{transform:scale(1.08) translateY(-3px)!important;box-shadow:0 18px 48px rgba(0,180,90,0.55),0 6px 16px rgba(30,144,255,0.35),inset 0 1px 1px rgba(255,255,255,0.5),inset 0 -10px 24px rgba(0,0,0,0.16)}\
   #reciclean-widget-fab.hidden{display:none}\
   #reciclean-widget-panel{position:fixed;bottom:90px;right:20px;width:360px;max-width:calc(100vw - 40px);height:520px;max-height:calc(100vh - 120px);background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.25);z-index:2147483647;display:none;flex-direction:column;overflow:hidden;font-family:"Segoe UI",system-ui,sans-serif}\
   #reciclean-widget-panel.open{display:flex}\
   .rwp-header{background:linear-gradient(135deg,#0D1B2A,#1A2D3E);padding:14px 16px;display:flex;align-items:center;gap:10px;color:#fff}\
-  .rwp-header .icon{width:36px;height:36px;border-radius:50%;background:#1A7A3C;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}\
+  .rwp-header .icon{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 38% 34%,rgba(255,255,255,0.45) 0%,transparent 55%),linear-gradient(145deg,#1E90FF 0%,#00C853 100%);box-shadow:0 4px 12px rgba(0,180,90,0.4),inset 0 1px 0 rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}\
   .rwp-header .info{flex:1;min-width:0}\
   .rwp-header .tag{color:#4FC3F7;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase}\
   .rwp-header .name{font-size:14px;font-weight:700;color:#fff;line-height:1.2}\
@@ -91,7 +93,7 @@
   var fab = document.createElement('button');
   fab.id = 'reciclean-widget-fab';
   fab.setAttribute('aria-label', T.fab_aria);
-  fab.textContent = '💬';
+  fab.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,0.25))"><path d="M20 2H4C2.9 2 2 2.9 2 4v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="rgba(255,255,255,0.92)"/></svg>';
   document.body.appendChild(fab);
 
   // Panel
