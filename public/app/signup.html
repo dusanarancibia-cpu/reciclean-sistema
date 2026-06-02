@@ -171,6 +171,10 @@ document.getElementById('signup-form').addEventListener('submit', async (e) => {
     if (data && data.ok) {
       showOk('✓ Cuenta creada · ya podés iniciar sesión.');
       sessionStorage.setItem('reciclean_app_user', JSON.stringify({ telefono: data.telefono, nombre: data.nombre }));
+      // B.4: auto-link con tabla piloto si email o teléfono matchea cliente piloto invitado
+      try {
+        await sb.rpc('app_pwa_piloto_link_auto', { p_telefono: data.telefono, p_email: payload.p_email || null });
+      } catch (_) { /* fire and forget */ }
       setTimeout(() => { window.location.href = '/app/'; }, 1500);
     } else {
       showErr((data && data.mensaje) || 'No se pudo crear cuenta.');
