@@ -2944,9 +2944,9 @@
       <div class="bg-sky-50 border border-sky-200 rounded-lg p-3 mb-4">
         <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
           <h3 class="text-sm font-semibold text-sky-900">✍️ Pizarra — pegá lo que te contó el cliente</h3>
-          <button id="cotPizarraToggle" type="button" class="text-xs text-sky-700 hover:underline" title="Mostrar/ocultar la pizarra">ocultar</button>
+          <button id="cotPizarraToggle" type="button" class="text-xs text-sky-700 hover:underline" title="Mostrar/ocultar la pizarra">mostrar</button>
         </div>
-        <div id="cotPizarraBody">
+        <div id="cotPizarraBody" class="hidden">
           <textarea id="cotPizarraTexto" rows="3" maxlength="4000"
                     placeholder="Ej: Llamó Pedro de Green Cup, tienen 5 toneladas de cilindros de cartón en Maipú, lo traen ellos, quieren saber el precio"
                     class="w-full px-2 py-1 border border-sky-300 rounded text-sm focus:border-sky-600 focus:outline-none"></textarea>
@@ -2961,14 +2961,13 @@
         </div>
       </div>
 
-      <!-- 🟢 Quick win H02 · Toggle "cliente trae material" -->
-      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-4 flex items-center gap-3">
+      <!-- R-AUD-013 · Toggle H02 compacto (no cuenta como seccion separada) -->
+      <div class="bg-emerald-50 border border-emerald-200 rounded p-2 mb-3 flex items-center gap-2 text-sm">
         <input type="checkbox" id="cotClienteTraeMaterial" onchange="cotToggleClienteTraeMaterial(this.checked)"
-               class="w-5 h-5 accent-emerald-700">
-        <label for="cotClienteTraeMaterial" class="text-sm font-medium text-emerald-900 cursor-pointer flex-1">
-          ☝️ <strong>El cliente trae el material él mismo</strong> — sin servicio de retiro · solo compramos material
+               class="w-4 h-4 accent-emerald-700">
+        <label for="cotClienteTraeMaterial" class="text-emerald-900 cursor-pointer flex-1">
+          <strong>El cliente trae el material el mismo</strong> <span class="text-xs text-emerald-700">(oculta servicio + tarifa)</span>
         </label>
-        <span class="text-xs text-emerald-700 italic">(oculta servicio + tarifa)</span>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
