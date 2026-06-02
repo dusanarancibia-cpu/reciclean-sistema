@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1A7A3C">
+<title>Reciclean · Consentimiento Ley 21.719</title>
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:#F0F2F5;
+  color:#1A2332;
+  min-height:100vh;
+  padding:24px 16px;
+  max-width:560px;
+  margin:0 auto;
+}
+header{margin-bottom:20px;text-align:center}
+.tag{color:#1A7A3C;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.title{font-size:22px;font-weight:800;margin-top:4px;color:#0D1B2A}
+.sub{color:#5A6B7D;font-size:13px;margin-top:4px}
+.card{
+  background:#fff;
+  border-radius:14px;
+  padding:20px;
+  margin-bottom:16px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.05);
+}
+.card h2{
+  font-size:13px;
+  color:#1A7A3C;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  margin-bottom:10px;
+}
+.card p{font-size:14px;line-height:1.55;color:#3A4A5E;margin-bottom:8px}
+.card ul{padding-left:20px;font-size:13px;line-height:1.6;color:#3A4A5E}
+.card li{margin-bottom:4px}
+.field{margin-bottom:14px}
+label{display:block;color:#5A6B7D;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+input{
+  width:100%;
+  padding:12px 14px;
+  border-radius:10px;
+  border:1.5px solid #D4DCE5;
+  background:#fff;
+  color:#1A2332;
+  font-size:15px;
+  outline:none;
+}
+input:focus{border-color:#1A7A3C}
+input:disabled{background:#F0F2F5;color:#7A8C9E}
+.checkbox-row{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  background:#F4FAF6;
+  border:1px solid #C3E0CC;
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:14px;
+  cursor:pointer;
+}
+.checkbox-row input[type=checkbox]{width:20px;height:20px;margin-top:1px;accent-color:#1A7A3C;flex-shrink:0;cursor:pointer}
+.checkbox-row label{font-size:13px;color:#1A2332;font-weight:600;text-transform:none;letter-spacing:0;line-height:1.5;cursor:pointer}
+.checkbox-row a{color:#1A7A3C;text-decoration:underline}
+.btn{
+  width:100%;
+  padding:14px;
+  border-radius:11px;
+  border:none;
+  background:linear-gradient(135deg,#1A7A3C,#0F5A2C);
+  color:#fff;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:6px;
+}
+.btn:active{opacity:.85}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.error{
+  background:#FEE7E7;
+  border:1px solid #F5B5B5;
+  color:#A02A2A;
+  border-radius:8px;
+  padding:10px 13px;
+  font-size:13px;
+  margin-top:10px;
+  display:none;
+}
+.success{
+  background:#E7F7EB;
+  border:1px solid #A8D9B7;
+  color:#1B5E2F;
+  border-radius:8px;
+  padding:14px;
+  font-size:14px;
+  margin-top:10px;
+  display:none;
+  text-align:center;
+}
+.success strong{display:block;font-size:16px;margin-bottom:4px}
+footer{text-align:center;padding:20px 0;color:#7A8C9E;font-size:11px}
+footer a{color:#1A7A3C;text-decoration:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Reciclean</div>
+  <h1 class="title">Consentimiento Ley 21.719</h1>
+  <p class="sub">Tu autorización para que conversemos por WhatsApp</p>
+</header>
+
+<div class="card">
+  <h2>📋 Para qué es esto</h2>
+  <p>Por ley en Chile, antes de que nuestro asistente Diego pueda procesar tus mensajes en WhatsApp, necesitamos tu autorización explícita.</p>
+  <p>Una vez que firmes, Diego te responderá automáticamente a tus consultas (precios, retiros, info general).</p>
+</div>
+
+<div class="card">
+  <h2>🔒 Qué hacemos con tus datos</h2>
+  <ul>
+    <li>Guardamos tu número y los mensajes para responderte</li>
+    <li>NO los compartimos con terceros</li>
+    <li>Podés retirar este consentimiento cuando quieras escribiendo "BAJA" en WhatsApp</li>
+    <li>Cumplimos <a href="https://www.bcn.cl/leychile/navegar?idNorma=1217150" target="_blank">Ley 21.719</a> y <a href="https://www.bcn.cl/leychile/navegar?idNorma=141599" target="_blank">Ley 19.628</a></li>
+  </ul>
+</div>
+
+<form id="form" autocomplete="off">
+  <div class="field">
+    <label for="phone">Tu teléfono WhatsApp</label>
+    <input type="tel" id="phone" required minlength="9" maxlength="20" placeholder="+56 9 1234 5678" inputmode="tel">
+  </div>
+  <div class="field">
+    <label for="name">Tu nombre (opcional)</label>
+    <input type="text" id="name" maxlength="80" placeholder="María González">
+  </div>
+
+  <div class="checkbox-row">
+    <input type="checkbox" id="consent" required>
+    <label for="consent">Acepto que Reciclean trate mis datos personales (teléfono, mensajes, fotos) para responderme y darme servicio comercial, conforme a Ley 21.719 y Ley 19.628.</label>
+  </div>
+
+  <button class="btn" id="submit" type="submit">Firmar y volver a WhatsApp →</button>
+  <div class="error" id="err"></div>
+  <div class="success" id="ok">
+    <strong>✓ Listo, gracias!</strong>
+    Ya podés volver a WhatsApp y mandarle mensajes a Diego. Te va a responder al toque.
+  </div>
+</form>
+
+<footer>
+  Reciclean SpA · <a href="https://reciclean.cl">reciclean.cl</a><br>
+  Si tenés dudas, escribinos a <a href="mailto:comercial@gestionrepchile.cl">comercial@gestionrepchile.cl</a>
+</footer>
+
+<script>
+const SUPABASE_URL = 'https://eknmtsrtfkzroxnovfqn.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_y-ivpVdiL141kz4ZASje5g_SYG7do5z';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Pre-llenar teléfono si viene en la URL
+const urlPhone = new URLSearchParams(window.location.search).get('phone');
+if (urlPhone) {
+  const phoneEl = document.getElementById('phone');
+  phoneEl.value = urlPhone.startsWith('+') ? urlPhone : '+' + urlPhone;
+}
+
+function showErr(msg) {
+  const el = document.getElementById('err');
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('ok').style.display = 'none';
+}
+function showOk() {
+  document.getElementById('ok').style.display = 'block';
+  document.getElementById('err').style.display = 'none';
+  document.getElementById('phone').disabled = true;
+  document.getElementById('name').disabled = true;
+  document.getElementById('consent').disabled = true;
+  document.getElementById('submit').disabled = true;
+  document.getElementById('submit').textContent = '✓ Firmado';
+}
+
+document.getElementById('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('submit');
+  btn.disabled = true;
+  btn.textContent = 'Firmando…';
+  try {
+    const { data, error } = await sb.rpc('consent_aceptar_whatsapp', {
+      p_phone: document.getElementById('phone').value,
+      p_name: document.getElementById('name').value.trim() || null,
+      p_evidence: 'consentimiento.html · ' + navigator.userAgent.slice(0, 100),
+    });
+    if (error) throw error;
+    if (data && data.ok) {
+      showOk();
+    } else {
+      showErr((data && data.error) || 'No se pudo registrar tu consentimiento.');
+      btn.disabled = false;
+      btn.textContent = 'Firmar y volver a WhatsApp →';
+    }
+  } catch (e) {
+    showErr('Error: ' + (e?.message || e));
+    btn.disabled = false;
+    btn.textContent = 'Firmar y volver a WhatsApp →';
+  }
+});
+</script>
+</body>
+</html>
