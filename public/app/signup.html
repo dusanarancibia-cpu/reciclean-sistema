@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1A7A3C">
+<title>Reciclean · Crear cuenta</title>
+<link rel="manifest" href="/app/manifest.json">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:linear-gradient(180deg,#0D1B2A 0%,#1A2D3E 100%);
+  color:#fff;
+  min-height:100vh;
+  padding:24px 20px;
+  max-width:480px;
+  margin:0 auto;
+}
+header{margin-bottom:24px}
+.tag{color:#4FC3F7;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+h1{font-size:24px;font-weight:800;margin-top:6px}
+.sub{color:#6B8FA8;font-size:13px;margin-top:4px}
+.field{margin-bottom:14px}
+label{display:block;color:#4FC3F7;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+input{
+  width:100%;
+  padding:13px 14px;
+  border-radius:10px;
+  border:1.5px solid #2C3E50;
+  background:#1A2D3E;
+  color:#fff;
+  font-size:15px;
+  outline:none;
+}
+input:focus{border-color:#4FC3F7}
+.consent{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(79,195,247,0.2);
+  border-radius:10px;
+  padding:14px;
+  margin:14px 0;
+  font-size:12px;
+  color:#B0C4D4;
+  line-height:1.55;
+}
+.consent label{display:flex;align-items:flex-start;gap:10px;cursor:pointer;color:#fff;text-transform:none;letter-spacing:0;font-size:13px;font-weight:600}
+.consent input[type=checkbox]{width:20px;height:20px;margin-top:1px;accent-color:#1A7A3C;flex-shrink:0}
+.consent p{margin-top:10px;font-size:11px;color:#6B8FA8}
+.consent a{color:#4FC3F7;text-decoration:none}
+.btn{
+  width:100%;
+  padding:15px;
+  border-radius:11px;
+  border:none;
+  background:linear-gradient(135deg,#1A7A3C,#0F5A2C);
+  color:#fff;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:6px;
+}
+.btn:active{opacity:.85}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.alt{text-align:center;margin-top:18px;color:#6B8FA8;font-size:13px}
+.alt a{color:#4FC3F7;text-decoration:none;font-weight:700}
+.error{
+  background:#4A1A1A;
+  border:1px solid #8B3A3A;
+  border-radius:8px;
+  padding:10px 13px;
+  color:#FF8080;
+  font-size:12px;
+  margin-top:10px;
+  display:none;
+}
+.ok{
+  background:#1A4A2C;
+  border:1px solid #2E7D32;
+  border-radius:8px;
+  padding:10px 13px;
+  color:#7FE5A0;
+  font-size:13px;
+  margin-top:10px;
+  display:none;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Reciclean App</div>
+  <h1>Crear cuenta</h1>
+  <p class="sub">Tu teléfono va a ser tu usuario. Elegí un PIN seguro de 4-12 caracteres.</p>
+</header>
+
+<form id="signup-form" autocomplete="off">
+  <div class="field">
+    <label for="nombre">Tu nombre</label>
+    <input type="text" id="nombre" required minlength="2" maxlength="80" placeholder="María González">
+  </div>
+  <div class="field">
+    <label for="empresa">Empresa (opcional)</label>
+    <input type="text" id="empresa" maxlength="100" placeholder="Pincore SpA">
+  </div>
+  <div class="field">
+    <label for="telefono">Teléfono</label>
+    <input type="tel" id="telefono" required minlength="9" maxlength="15" placeholder="+56 9 1234 5678" inputmode="tel">
+  </div>
+  <div class="field">
+    <label for="email">Email (opcional)</label>
+    <input type="email" id="email" maxlength="120" placeholder="maria@empresa.cl">
+  </div>
+  <div class="field">
+    <label for="pin">PIN (4 a 12 caracteres)</label>
+    <input type="password" id="pin" required minlength="4" maxlength="12" placeholder="••••" inputmode="numeric">
+  </div>
+
+  <div class="consent">
+    <label>
+      <input type="checkbox" id="consent" required>
+      <span>Acepto que Reciclean trate mis datos personales conforme a la <a href="https://www.bcn.cl/leychile/navegar?idNorma=1217150" target="_blank">Ley 21.719</a> y <a href="https://www.bcn.cl/leychile/navegar?idNorma=141599" target="_blank">Ley 19.628</a> de protección de datos personales.</span>
+    </label>
+    <p>Vas a poder ver, exportar o borrar tus datos en cualquier momento desde la sección "Mi memoria" de la app. Sin consentimiento no podemos crear tu cuenta.</p>
+  </div>
+
+  <button class="btn" id="submit-btn" type="submit">Crear cuenta →</button>
+  <div class="error" id="err"></div>
+  <div class="ok" id="ok"></div>
+
+  <p class="alt">¿Ya tenés cuenta? <a href="/app/login.html">Iniciar sesión</a></p>
+</form>
+
+<script>
+const SUPABASE_URL = 'https://eknmtsrtfkzroxnovfqn.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_y-ivpVdiL141kz4ZASje5g_SYG7do5z';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function normTel(t) {
+  const d = (t || '').replace(/\s+/g,'').replace(/[^\d+]/g,'');
+  if (d.startsWith('+')) return d;
+  if (d.startsWith('56')) return '+' + d;
+  if (d.length <= 9) return '+56' + d;
+  return '+' + d;
+}
+function showErr(msg) { const el = document.getElementById('err'); el.textContent = msg; el.style.display = 'block'; document.getElementById('ok').style.display = 'none'; }
+function showOk(msg) { const el = document.getElementById('ok'); el.textContent = msg; el.style.display = 'block'; document.getElementById('err').style.display = 'none'; }
+
+document.getElementById('signup-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = 'Creando…';
+
+  const payload = {
+    p_telefono: normTel(document.getElementById('telefono').value),
+    p_pin: document.getElementById('pin').value,
+    p_nombre: document.getElementById('nombre').value.trim(),
+    p_consent: document.getElementById('consent').checked,
+    p_empresa: document.getElementById('empresa').value.trim() || null,
+    p_email: document.getElementById('email').value.trim() || null,
+    p_user_agent: navigator.userAgent.slice(0, 200),
+  };
+
+  try {
+    const { data, error } = await sb.rpc('app_cliente_signup', payload);
+    if (error) throw error;
+    if (data && data.ok) {
+      showOk('✓ Cuenta creada · ya podés iniciar sesión.');
+      sessionStorage.setItem('reciclean_app_user', JSON.stringify({ telefono: data.telefono, nombre: data.nombre }));
+      setTimeout(() => { window.location.href = '/app/'; }, 1500);
+    } else {
+      showErr((data && data.mensaje) || 'No se pudo crear cuenta.');
+      btn.disabled = false; btn.textContent = 'Crear cuenta →';
+    }
+  } catch (e) {
+    showErr('Error: ' + (e?.message || e));
+    btn.disabled = false; btn.textContent = 'Crear cuenta →';
+  }
+});
+
+// Auto-uppercase tel display sin afectar value
+document.getElementById('telefono').addEventListener('blur', (e) => {
+  e.target.value = normTel(e.target.value);
+});
+</script>
+</body>
+</html>
