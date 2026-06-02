@@ -12188,41 +12188,37 @@ document.addEventListener('DOMContentLoaded', () => {
     el.className = 'text-xs p-2 rounded mt-3 ' + (ok ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
   }
 
+  // Sub-PR A.2 D-DIEGO-50X-V4 Ola A · Mi memoria V2 derecho rectificación.
+  // Los 4 handlers ahora llaman RPCs SECURITY DEFINER (mig 191) que borran TODA
+  // la PII en 6 tablas + auditan en panel.diego_borrados_auditoria (Ley 21.719).
   async function mmBorrarHistorial() {
     if (!confirm('⚠️ ¿Borrar TODO tu historial con Diego? Es irreversible y Diego empieza de cero la próxima vez que chatées.')) return;
     if (typeof sb === 'undefined' || !sb) return;
-    const { error } = await sb.schema('panel').from('diego_bandeja').delete().ilike('remitente', _currentEmail);
+    const { data, error } = await sb.rpc('mi_memoria_borrar_historial', { p_email: _currentEmail });
     if (error) { mmMsg('Error: ' + error.message, false); return; }
-    mmMsg('✓ Historial borrado completamente.', true);
+    const total = data?.total ?? 0;
+    mmMsg('✓ Historial borrado completamente (' + total + ' registros en 6 tablas · audit Ley 21.719).', true);
     loadHistorial();
+    loadMemoriaSesion();
   }
 
   async function mmBorrarMemoriaSesion() {
     if (!confirm('¿Limpiar el resumen que Diego mantiene de vos? Las conversaciones individuales no se borran, solo el resumen.')) return;
-    try {
-      const r = await fetch(`${SUPABASE_URL}/functions/v1/diego-chat-process`, {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_email: _currentEmail, mensaje: 'limpiame la cache de sesion', request_id: crypto.randomUUID() }),
-      });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      mmMsg('✓ Resumen de sesión limpiado. Diego empieza la próxima conversación de cero.', true);
-      loadMemoriaSesion();
-    } catch (e) {
-      mmMsg('Error: ' + (e.message || String(e)), false);
-    }
+    if (typeof sb === 'undefined' || !sb) return;
+    const { data, error } = await sb.rpc('mi_memoria_borrar_memoria_sesion', { p_email: _currentEmail });
+    if (error) { mmMsg('Error: ' + error.message, false); return; }
+    mmMsg('✓ Resumen de sesión limpiado (' + (data?.borrados ?? 0) + ' filas). Diego empieza la próxima conversación de cero.', true);
+    loadMemoriaSesion();
   }
 
   async function mmRetirarConsentimiento() {
     if (!confirm('⚠️ Esto desactiva Diego para vos. No vas a ver el botón verde del chat y no puede ayudarte hasta que vuelvas a dar consentimiento. ¿Confirmás?')) return;
     if (typeof sb === 'undefined' || !sb) return;
-    const { error } = await sb.schema('panel').from('usuarios_autorizados')
-      .update({ aviso_ia_consentimiento: false, aviso_ia_aceptado_at: new Date().toISOString() })
-      .ilike('email', _currentEmail);
+    const { data, error } = await sb.rpc('mi_memoria_retirar_consentimiento', { p_email: _currentEmail });
     if (error) { mmMsg('Error: ' + error.message, false); return; }
     _userRow = { ..._userRow, aviso_ia_consentimiento: false };
     hideFabDiego();
-    mmMsg('✓ Consentimiento retirado. Diego está desactivado para vos. Recargá si querés volver a verlo (te aparecerá el banner de nuevo).', true);
+    mmMsg('✓ Consentimiento retirado (' + (data?.actualizado ?? 0) + ' fila · audit Ley 21.719). Recargá si querés volver a verlo.', true);
     initMiMemoria();
   }
 
@@ -12245,19 +12241,11 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const email = (JSON.parse(localStorage.getItem('rf_session') || '{}').email) || (await sb.auth.getSession())?.data?.session?.user?.email;
         if (!email) { alert('No hay sesión activa.'); return; }
-        const [perfilQ, histQ, memQ] = await Promise.all([
-          sb.schema('panel').from('usuarios_autorizados').select('*').eq('email', email).maybeSingle(),
-          sb.schema('panel').from('diego_bandeja').select('*').eq('remitente', email).order('creado_en', { ascending: false }).limit(500),
-          sb.schema('panel').from('diego_memoria_sesion').select('*').eq('usuario_email', email).maybeSingle(),
-        ]);
-        const bundle = {
-          export_v: 1, generado_at: new Date().toISOString(),
-          ley_aplicable: ['Ley 19628', 'Ley 21719'],
-          email,
-          perfil: perfilQ.data || null,
-          historial_diego: histQ.data || [],
-          memoria_sesion: memQ.data || null,
-        };
+        // Sub-PR A.2: usa RPC SECURITY DEFINER (mig 191) que devuelve TODO + audita
+        // (más completo que las 3 SELECT directas anteriores: incluye inbox, metrics
+        // y auditoría histórica del titular).
+        const { data: bundle, error: expErr } = await sb.rpc('mi_memoria_exportar', { p_email: email });
+        if (expErr) throw expErr;
         const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
