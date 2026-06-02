@@ -1,0 +1,30 @@
+name: JS parse check (R-AUD-064)
+
+on:
+  pull_request:
+    branches: [main, prod]
+    paths:
+      - 'public/**/*.html'
+      - 'asistente.html'
+      - 'scripts/js-parse-check.mjs'
+      - '.github/workflows/js-parse-check.yml'
+  push:
+    branches: [main, prod]
+    paths:
+      - 'public/**/*.html'
+      - 'asistente.html'
+
+jobs:
+  parse-check:
+    name: Validar sintaxis JS en HTMLs
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validar scripts inline
+        run: node scripts/js-parse-check.mjs
