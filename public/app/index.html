@@ -167,6 +167,7 @@
     </ul>
   </div>
 
+  <a id="cta-chat" class="cta" href="/app/chat.html" style="display:none;text-align:center;text-decoration:none">💬 Hablar con Diego</a>
   <button class="cta" id="cta-instalar" type="button">📲 Instalar app</button>
   <a id="cta-signup" class="cta-secondary" href="/app/signup.html">Crear cuenta gratis →</a>
   <a id="cta-login" class="cta-secondary" href="/app/login.html">Ya tengo cuenta · iniciar sesión</a>
@@ -209,6 +210,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     document.getElementById('cta-signup').style.display = 'none';
     document.getElementById('cta-login').style.display = 'none';
     document.getElementById('cta-logout').style.display = 'block';
+    document.getElementById('cta-chat').style.display = 'block';
     document.getElementById('bienvenida-title').textContent = 'Hola, ' + (u.nombre || u.telefono);
     if (u.empresa) {
       const li = document.getElementById('bienvenida-empresa');
