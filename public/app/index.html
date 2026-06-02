@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1A7A3C">
+<meta name="description" content="App oficial Reciclean — cotizá, consultá precios y conversá con Diego desde tu celular.">
+<title>Reciclean · App</title>
+<link rel="manifest" href="/app/manifest.json">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Reciclean">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:linear-gradient(180deg,#0D1B2A 0%,#1A2D3E 100%);
+    color:#fff;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    overflow-x:hidden;
+  }
+  main{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:32px 24px;
+    text-align:center;
+    max-width:480px;
+    margin:0 auto;
+    width:100%;
+  }
+  .brand-tag{
+    color:#4FC3F7;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .brand-name{
+    font-size:42px;
+    font-weight:800;
+    color:#fff;
+    margin-bottom:6px;
+    letter-spacing:-1px;
+  }
+  .brand-desc{
+    color:#6B8FA8;
+    font-size:14px;
+    margin-bottom:48px;
+    line-height:1.5;
+  }
+  .card{
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(79,195,247,0.15);
+    border-radius:16px;
+    padding:24px;
+    margin-bottom:16px;
+    width:100%;
+    text-align:left;
+  }
+  .card h2{
+    font-size:14px;
+    color:#4FC3F7;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    margin-bottom:12px;
+  }
+  .card ul{list-style:none;padding:0}
+  .card li{
+    padding:8px 0;
+    color:#B0C4D4;
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .card li::before{
+    content:'·';
+    color:#1A7A3C;
+    font-weight:700;
+    font-size:24px;
+  }
+  .cta{
+    background:linear-gradient(135deg,#1A7A3C,#0F5A2C);
+    color:#fff;
+    border:none;
+    padding:16px 28px;
+    border-radius:12px;
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:.5px;
+    cursor:pointer;
+    width:100%;
+    margin-top:8px;
+    transition:transform .15s ease;
+  }
+  .cta:active{transform:scale(0.98)}
+  .cta-secondary{
+    background:rgba(255,255,255,0.08);
+    color:#4FC3F7;
+    border:1px solid rgba(79,195,247,0.3);
+    padding:13px 24px;
+    border-radius:10px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    margin-top:10px;
+    width:100%;
+    text-decoration:none;
+    display:block;
+    text-align:center;
+  }
+  .install-prompt{
+    background:rgba(26,122,60,0.15);
+    border:1px solid rgba(26,122,60,0.4);
+    color:#7FE5A0;
+    padding:12px 16px;
+    border-radius:10px;
+    font-size:12px;
+    margin-bottom:16px;
+    display:none;
+  }
+  .install-prompt.show{display:block}
+  footer{
+    text-align:center;
+    padding:20px;
+    color:#4A6278;
+    font-size:11px;
+    border-top:1px solid rgba(255,255,255,0.05);
+  }
+  footer a{color:#4FC3F7;text-decoration:none}
+</style>
+</head>
+<body>
+<main>
+  <div class="brand-tag">Gestor REP autorizado</div>
+  <h1 class="brand-name">Reciclean</h1>
+  <p class="brand-desc">App oficial · cotizá, consultá precios y conversá con Diego desde tu celular.</p>
+
+  <div id="install-prompt" class="install-prompt">📲 Tip: tocá el botón ⋮ del navegador y elegí "Agregar a inicio" para instalar la app.</div>
+
+  <div class="card">
+    <h2>Qué viene</h2>
+    <ul>
+      <li>Cotizá retiros y compras directo desde el celular</li>
+      <li>Consultá precios actualizados al instante</li>
+      <li>Conversá con Diego, asistente comercial Reciclean</li>
+      <li>Subí fotos de material para evaluación rápida</li>
+    </ul>
+  </div>
+
+  <button class="cta" id="cta-instalar" type="button">📲 Instalar app</button>
+  <a class="cta-secondary" href="/asistente.html">Ya tenés cuenta · ir al asistente</a>
+</main>
+
+<footer>
+  Reciclean SpA · Gestor REP autorizado en Chile<br>
+  <a href="https://reciclean.cl">reciclean.cl</a> · <a href="mailto:comercial@gestionrepchile.cl">comercial@gestionrepchile.cl</a>
+</footer>
+
+<script>
+// Sub-PR B.1 D-DIEGO-50X-V4 Ola B · Pablo 02-jun-2026
+// Registro SW + prompt instalación PWA.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/app/sw.js', { scope: '/app/' })
+      .catch((e) => console.warn('[Reciclean App] SW register failed:', e));
+  });
+}
+
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const promo = document.getElementById('install-prompt');
+  if (promo) promo.classList.add('show');
+});
+
+document.getElementById('cta-instalar').addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    if (choice.outcome === 'accepted') {
+      document.getElementById('install-prompt').classList.remove('show');
+    }
+    deferredPrompt = null;
+  } else {
+    // iOS Safari u otros browsers sin beforeinstallprompt
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isIOS) {
+      alert('Para instalar en iPhone:\n\n1. Tocá el botón compartir (⬆ abajo)\n2. Tocá "Agregar a la pantalla de inicio"\n3. Tocá "Agregar"');
+    } else {
+      alert('Para instalar:\n\nTocá el botón ⋮ del navegador y elegí "Instalar app" o "Agregar a inicio".');
+    }
+  }
+});
+</script>
+</body>
+</html>
