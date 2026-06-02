@@ -1,0 +1,199 @@
+// Reciclean Widget · Chat Diego para sitios web
+// Sub-PR D.1 + D.2 D-DIEGO-50X-V4 Ola D · Pablo 02-jun-2026
+//
+// Uso (en cualquier página):
+//   <script src="https://reciclean-sistema.vercel.app/widget/widget.js" defer></script>
+//
+// Cuando reciclean.cl tenga repo propio, se mueve. Mientras tanto vive acá.
+// Source de tracking: widget_web
+
+(function () {
+  'use strict';
+  if (window.__reciclean_widget_init) return;
+  window.__reciclean_widget_init = true;
+
+  var SUPABASE_URL = 'https://eknmtsrtfkzroxnovfqn.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_y-ivpVdiL141kz4ZASje5g_SYG7do5z';
+
+  // Identidad anónima por visitante (D.3): localStorage key con UUID
+  var WIDGET_VISITOR_KEY = 'reciclean_widget_visitor_id';
+  var visitorId = (function () {
+    try {
+      var v = localStorage.getItem(WIDGET_VISITOR_KEY);
+      if (v) return v;
+      var n = 'wid_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+      localStorage.setItem(WIDGET_VISITOR_KEY, n);
+      return n;
+    } catch (e) { return 'wid_anon'; }
+  })();
+
+  // Inyectar estilos
+  var styles = '\
+  #reciclean-widget-fab{position:fixed;bottom:20px;right:20px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#1A7A3C,#0F5A2C);box-shadow:0 4px 16px rgba(26,122,60,0.4);cursor:pointer;z-index:2147483647;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;border:none;transition:transform .15s ease}\
+  #reciclean-widget-fab:hover{transform:scale(1.05)}\
+  #reciclean-widget-fab.hidden{display:none}\
+  #reciclean-widget-panel{position:fixed;bottom:90px;right:20px;width:360px;max-width:calc(100vw - 40px);height:520px;max-height:calc(100vh - 120px);background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.25);z-index:2147483647;display:none;flex-direction:column;overflow:hidden;font-family:"Segoe UI",system-ui,sans-serif}\
+  #reciclean-widget-panel.open{display:flex}\
+  .rwp-header{background:linear-gradient(135deg,#0D1B2A,#1A2D3E);padding:14px 16px;display:flex;align-items:center;gap:10px;color:#fff}\
+  .rwp-header .icon{width:36px;height:36px;border-radius:50%;background:#1A7A3C;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}\
+  .rwp-header .info{flex:1;min-width:0}\
+  .rwp-header .tag{color:#4FC3F7;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase}\
+  .rwp-header .name{font-size:14px;font-weight:700;color:#fff;line-height:1.2}\
+  .rwp-header .sub{font-size:11px;color:#6B8FA8}\
+  .rwp-header .close{background:rgba(255,255,255,0.1);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;flex-shrink:0}\
+  .rwp-chat{flex:1;overflow-y:auto;padding:14px;background:#F0F2F5;display:flex;flex-direction:column;gap:8px}\
+  .rwp-bubble{max-width:85%;padding:9px 13px;border-radius:14px;font-size:13.5px;line-height:1.45;word-wrap:break-word;white-space:pre-wrap}\
+  .rwp-bubble.user{background:linear-gradient(135deg,#1565C0,#0D47A1);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}\
+  .rwp-bubble.diego{background:#fff;color:#1A2332;align-self:flex-start;border:1px solid #E5EAF0;border-bottom-left-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,0.04)}\
+  .rwp-bubble.diego::before{content:"Diego";display:block;color:#1A7A3C;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}\
+  .rwp-bubble.thinking{background:#F0F2F5;color:#7A8C9E;align-self:flex-start;font-style:italic;font-size:12px;padding:6px 12px}\
+  .rwp-bubble.error{background:#FEE7E7;border:1px solid #F5B5B5;color:#A02A2A;align-self:center;max-width:90%;text-align:center;font-size:12px}\
+  .rwp-consent{background:#FFF8E1;border:1px solid #FFD54F;border-radius:10px;padding:12px;margin-bottom:8px;font-size:12px;line-height:1.5;color:#5D4037}\
+  .rwp-consent label{display:flex;align-items:flex-start;gap:8px;cursor:pointer}\
+  .rwp-consent input{margin-top:1px;accent-color:#1A7A3C;flex-shrink:0;cursor:pointer}\
+  .rwp-consent a{color:#1A7A3C}\
+  .rwp-input-row{padding:10px 12px;background:#fff;border-top:1px solid #E5EAF0;display:flex;gap:8px;align-items:flex-end}\
+  .rwp-input{flex:1;background:#F4F6F8;border:1px solid transparent;border-radius:12px;padding:9px 12px;color:#1A2332;font-size:14px;font-family:inherit;resize:none;max-height:100px;min-height:36px;outline:none}\
+  .rwp-input:focus{border-color:#1A7A3C;background:#fff}\
+  .rwp-send{background:linear-gradient(135deg,#1A7A3C,#0F5A2C);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0}\
+  .rwp-send:disabled{opacity:.4;cursor:not-allowed}\
+  ';
+
+  var styleEl = document.createElement('style');
+  styleEl.textContent = styles;
+  document.head.appendChild(styleEl);
+
+  // Estado consent (localStorage)
+  var CONSENT_KEY = 'reciclean_widget_consent_granted';
+  function hasConsent() { try { return localStorage.getItem(CONSENT_KEY) === 'true'; } catch (e) { return false; } }
+  function setConsent() { try { localStorage.setItem(CONSENT_KEY, 'true'); } catch (e) {} }
+
+  // FAB
+  var fab = document.createElement('button');
+  fab.id = 'reciclean-widget-fab';
+  fab.setAttribute('aria-label', 'Abrir chat con Diego');
+  fab.textContent = '💬';
+  document.body.appendChild(fab);
+
+  // Panel
+  var panel = document.createElement('div');
+  panel.id = 'reciclean-widget-panel';
+  panel.innerHTML = '\
+    <div class="rwp-header">\
+      <div class="icon">🤖</div>\
+      <div class="info">\
+        <div class="tag">Asistente Reciclean</div>\
+        <div class="name">Diego</div>\
+        <div class="sub">Respondo al toque</div>\
+      </div>\
+      <button class="close" id="rwp-close" type="button" aria-label="Cerrar">×</button>\
+    </div>\
+    <div class="rwp-chat" id="rwp-chat"></div>\
+    <div class="rwp-input-row">\
+      <textarea class="rwp-input" id="rwp-input" placeholder="Escribí tu pregunta…" rows="1" maxlength="2000"></textarea>\
+      <button class="rwp-send" id="rwp-send" type="button" aria-label="Enviar">→</button>\
+    </div>\
+  ';
+  document.body.appendChild(panel);
+
+  var chatEl = panel.querySelector('#rwp-chat');
+  var inputEl = panel.querySelector('#rwp-input');
+  var sendBtn = panel.querySelector('#rwp-send');
+
+  function bubble(texto, clase) {
+    var div = document.createElement('div');
+    div.className = 'rwp-bubble ' + clase;
+    div.textContent = texto;
+    chatEl.appendChild(div);
+    chatEl.scrollTop = chatEl.scrollHeight;
+    return div;
+  }
+
+  function showConsent() {
+    var box = document.createElement('div');
+    box.className = 'rwp-consent';
+    box.innerHTML = '\
+      <strong>Antes de chatear con Diego</strong><br>\
+      Necesitamos tu autorización para tratar tus mensajes (Ley 21.719 Chile).<br><br>\
+      <label><input type="checkbox" id="rwp-consent-cb"> Acepto el tratamiento de mis datos conforme a <a href="https://www.bcn.cl/leychile/navegar?idNorma=1217150" target="_blank">Ley 21.719</a>.</label>\
+    ';
+    chatEl.appendChild(box);
+    chatEl.scrollTop = chatEl.scrollHeight;
+    var cb = box.querySelector('#rwp-consent-cb');
+    cb.addEventListener('change', function () {
+      if (cb.checked) {
+        setConsent();
+        box.remove();
+        bubble('¡Gracias! Ya podés escribirme.', 'diego');
+        inputEl.focus();
+      }
+    });
+  }
+
+  function abrirPanel() {
+    panel.classList.add('open');
+    fab.classList.add('hidden');
+    if (chatEl.children.length === 0) {
+      bubble('Hola 👋 Soy Diego, asistente comercial de Reciclean. ¿En qué te ayudo? Precios, retiros, consultas, lo que necesites.', 'diego');
+      if (!hasConsent()) showConsent();
+    }
+  }
+  function cerrarPanel() {
+    panel.classList.remove('open');
+    fab.classList.remove('hidden');
+  }
+
+  fab.addEventListener('click', abrirPanel);
+  panel.querySelector('#rwp-close').addEventListener('click', cerrarPanel);
+
+  inputEl.addEventListener('input', function () {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 100) + 'px';
+  });
+
+  async function enviar() {
+    var texto = inputEl.value.trim();
+    if (!texto) return;
+    if (!hasConsent()) { bubble('Marcá la casilla de consentimiento arriba ☝️', 'error'); return; }
+    sendBtn.disabled = true;
+    bubble(texto, 'user');
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+    var thinking = bubble('Diego está pensando…', 'thinking');
+    try {
+      var resp = await fetch(SUPABASE_URL + '/functions/v1/diego-chat-process', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'apikey': SUPABASE_KEY,
+        },
+        body: JSON.stringify({
+          widget_visitor_id: visitorId,
+          mensaje: texto,
+          request_id: 'wid-' + Date.now(),
+        }),
+      });
+      var data = await resp.json();
+      thinking.remove();
+      if (!resp.ok || data.error) {
+        bubble('Error: ' + (data?.error || ('HTTP ' + resp.status)), 'error');
+      } else {
+        bubble(data.reply || data.message || '...', 'diego');
+      }
+    } catch (e) {
+      thinking.remove();
+      bubble('Sin conexión. Probá de nuevo.', 'error');
+    } finally {
+      sendBtn.disabled = false;
+      inputEl.focus();
+    }
+  }
+
+  sendBtn.addEventListener('click', enviar);
+  inputEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); }
+  });
+
+  console.log('[Reciclean Widget] cargado · visitor=' + visitorId);
+})();
