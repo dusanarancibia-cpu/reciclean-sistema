@@ -1000,6 +1000,7 @@
         <button data-tab="incidentes_op" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabIncidentesOp">🛠️ Incidentes</button>
         <button data-tab="firmas_pend" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabFirmasPend">📝 Firmas pendientes</button>
         <button data-tab="tarifas_ext" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabTarifasExt">💰 Tarifas externas</button>
+        <button data-tab="cumplimiento" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCumplimiento">⚖️ Cumplimiento</button>
         <button data-tab="piloto_pwa"  class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabPilotoPwa">📲 Piloto PWA</button>
         <button data-tab="mis_archivos" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabMisArchivos">📦 Mis archivos</button>
         <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabRdo">📈 RDO Resumen</button>
@@ -3720,6 +3721,75 @@
       <div id="tarifaLista" class="space-y-2"></div>
     </section>
 
+    <!-- Tab Cumplimiento Legal · silo 05 Cumplimiento Ambiental · 03-jun PC2 Pablo -->
+    <section id="tabCumplimiento" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">⚖️ Cumplimiento Legal</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Obligaciones legales por ley y artículo. Cargá evidencia (link al documento) y marcá estado.</p>
+        </div>
+        <button id="cump_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="cump_kpi_total">0</div>
+          <div class="text-xs text-stone-500">Total</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-amber-700" id="cump_kpi_pendientes">0</div>
+          <div class="text-xs text-stone-500">🟡 Pendientes</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-emerald-700" id="cump_kpi_ok">0</div>
+          <div class="text-xs text-stone-500">✅ Cumplidas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-red-700" id="cump_kpi_atrasadas">0</div>
+          <div class="text-xs text-stone-500">🔴 Atrasadas</div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 mb-3 flex-wrap">
+        <select id="cump_filtro_ley" class="px-2 py-1 border border-stone-300 rounded text-sm">
+          <option value="">Todas las leyes</option>
+        </select>
+        <select id="cump_filtro_estado" class="px-2 py-1 border border-stone-300 rounded text-sm">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="en_proceso">En proceso</option>
+          <option value="cumplida">Cumplida</option>
+          <option value="atrasada">Atrasada</option>
+          <option value="no_aplica">No aplica</option>
+        </select>
+        <input id="cump_filtro_texto" type="search" placeholder="🔍 Buscar en notas o responsable..." class="flex-1 px-2 py-1 border border-stone-300 rounded text-sm min-w-48">
+      </div>
+
+      <div id="cump_form" class="hidden bg-white border border-emerald-300 rounded p-3 mb-3 space-y-2">
+        <div class="text-sm font-semibold text-emerald-900" id="cump_form_titulo">Editar obligación</div>
+        <input type="hidden" id="cump_edit_id">
+        <div class="grid grid-cols-2 gap-2">
+          <select id="cump_estado" class="px-2 py-1 border border-stone-300 rounded text-sm">
+            <option value="pendiente">Pendiente</option>
+            <option value="en_proceso">En proceso</option>
+            <option value="cumplida">Cumplida</option>
+            <option value="atrasada">Atrasada</option>
+            <option value="no_aplica">No aplica</option>
+          </select>
+          <input id="cump_responsable" type="text" placeholder="Responsable (ej: Dyana)" class="px-2 py-1 border border-stone-300 rounded text-sm">
+        </div>
+        <input id="cump_evidencia_url" type="url" placeholder="Link al documento (SharePoint, Drive, PDF) — opcional" class="w-full px-2 py-1 border border-stone-300 rounded text-sm">
+        <input id="cump_fecha_verificacion" type="date" class="px-2 py-1 border border-stone-300 rounded text-sm">
+        <textarea id="cump_notas" placeholder="Notas / contexto" rows="2" maxlength="1000" class="w-full px-2 py-1 border border-stone-300 rounded text-sm"></textarea>
+        <div class="flex gap-2 justify-end">
+          <button id="cump_cancelar" class="px-3 py-1 text-stone-600 text-xs">Cancelar</button>
+          <button id="cump_guardar" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs">Guardar</button>
+        </div>
+      </div>
+
+      <div id="cump_lista" class="space-y-2"></div>
+    </section>
+
     <!-- Tab Piloto PWA (mig 195 backend · Pablo 02-jun PM) -->
     <section id="tabPilotoPwa" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -4820,6 +4890,7 @@ const TAB_SECTION_MAP = {
   incidentes_op: 'tabIncidentesOp',
   firmas_pend: 'tabFirmasPend',
   tarifas_ext: 'tabTarifasExt',
+  cumplimiento: 'tabCumplimiento',
   piloto_pwa: 'tabPilotoPwa',
   mis_archivos: 'tabMisArchivos',
   diego_coord: 'tabDiegoCoord',
@@ -14480,6 +14551,131 @@ document.addEventListener('DOMContentLoaded', () => {
       else if ((b = e.target.closest('.fp-editar')))    abrirEditFirma(b.dataset.id);
       else if ((b = e.target.closest('.fp-descargar'))) descargarArchivoFirma(b.dataset.path, b.dataset.name);
       else if ((b = e.target.closest('.te-edit')))      editarTarifa(b.dataset.id, b.dataset.precio);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+
+// Tab Cumplimiento Legal · silo 05 · 03-jun PC2 Pablo · MVP read+edit panel.cumplimiento_legal
+(function () {
+  let _cumpRows = [];
+  function $$(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function badgeEstado(estado) {
+    var map = {
+      pendiente: { cls: 'bg-amber-100 text-amber-800', emoji: '🟡' },
+      en_proceso: { cls: 'bg-sky-100 text-sky-800', emoji: '🔵' },
+      cumplida: { cls: 'bg-emerald-100 text-emerald-800', emoji: '✅' },
+      atrasada: { cls: 'bg-red-100 text-red-800', emoji: '🔴' },
+      no_aplica: { cls: 'bg-stone-100 text-stone-600', emoji: '⚫' }
+    };
+    var m = map[estado] || map.pendiente;
+    return '<span class="inline-block ' + m.cls + ' px-2 py-0.5 rounded text-xs">' + m.emoji + ' ' + esc(estado || 'pendiente') + '</span>';
+  }
+  async function loadCumplimiento() {
+    var lista = $$('cump_lista');
+    if (!lista || !window.sb) return;
+    try {
+      var resp = await sb.schema('panel').from('cumplimiento_legal').select('*').order('ley_id').order('articulo_id');
+      if (resp.error) throw resp.error;
+      _cumpRows = resp.data || [];
+      poblarFiltroLey();
+      renderCumplimiento();
+    } catch (e) {
+      lista.innerHTML = '<div class="text-xs text-red-600 py-4 text-center">Error: ' + esc(e && e.message ? e.message : e) + '</div>';
+    }
+  }
+  function poblarFiltroLey() {
+    var sel = $$('cump_filtro_ley');
+    if (!sel) return;
+    var leyes = Array.from(new Set(_cumpRows.map(function (r) { return r.ley_id; }))).sort();
+    var prev = sel.value;
+    sel.innerHTML = '<option value="">Todas las leyes</option>' + leyes.map(function (l) { return '<option value="' + esc(l) + '">' + esc(l) + '</option>'; }).join('');
+    if (prev && leyes.indexOf(prev) >= 0) sel.value = prev;
+  }
+  function renderCumplimiento() {
+    var lista = $$('cump_lista');
+    if (!lista) return;
+    var fLey = $$('cump_filtro_ley') ? $$('cump_filtro_ley').value : '';
+    var fEst = $$('cump_filtro_estado') ? $$('cump_filtro_estado').value : '';
+    var fTxt = ($$('cump_filtro_texto') ? $$('cump_filtro_texto').value : '').toLowerCase().trim();
+    var rows = _cumpRows;
+    if (fLey) rows = rows.filter(function (r) { return r.ley_id === fLey; });
+    if (fEst) rows = rows.filter(function (r) { return r.estado === fEst; });
+    if (fTxt) rows = rows.filter(function (r) { return (String(r.notas || '').toLowerCase().indexOf(fTxt) >= 0) || (String(r.responsable || '').toLowerCase().indexOf(fTxt) >= 0); });
+    if ($$('cump_kpi_total')) $$('cump_kpi_total').textContent = _cumpRows.length;
+    if ($$('cump_kpi_pendientes')) $$('cump_kpi_pendientes').textContent = _cumpRows.filter(function (r) { return r.estado === 'pendiente'; }).length;
+    if ($$('cump_kpi_ok')) $$('cump_kpi_ok').textContent = _cumpRows.filter(function (r) { return r.estado === 'cumplida'; }).length;
+    if ($$('cump_kpi_atrasadas')) $$('cump_kpi_atrasadas').textContent = _cumpRows.filter(function (r) { return r.estado === 'atrasada'; }).length;
+    if (!rows.length) {
+      lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Sin obligaciones con esos filtros.</div>';
+      return;
+    }
+    lista.innerHTML = rows.map(function (r) {
+      var fechaVer = r.fecha_verificacion ? new Date(r.fecha_verificacion).toLocaleDateString('es-CL') : '—';
+      var evidencia = r.evidencia_url
+        ? '<a href="' + esc(r.evidencia_url) + '" target="_blank" rel="noopener" class="text-blue-600 underline text-xs">📄 Ver documento</a>'
+        : '<span class="text-xs text-stone-400 italic">sin evidencia</span>';
+      return '<div class="bg-white border border-stone-200 rounded p-3" data-id="' + r.id + '">'
+        + '<div class="flex items-start justify-between gap-2 flex-wrap">'
+        + '<div class="flex-1 min-w-0">'
+        + '<div class="font-semibold text-sm text-stone-800">' + esc(r.ley_id) + ' · Art. ' + esc(r.articulo_id) + '</div>'
+        + '<div class="text-xs text-stone-500 mt-0.5">Responsable: ' + esc(r.responsable || '—') + ' · Verificado: ' + esc(fechaVer) + '</div>'
+        + '</div>'
+        + '<div class="flex items-center gap-2">' + badgeEstado(r.estado)
+        + '<button class="cump-editar px-2 py-1 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded text-xs" data-id="' + r.id + '">✏️ Editar</button>'
+        + '</div>'
+        + '</div>'
+        + '<div class="text-xs text-stone-600 mt-2">' + esc(r.notas || '') + '</div>'
+        + '<div class="mt-1">' + evidencia + '</div>'
+        + '</div>';
+    }).join('');
+  }
+  function abrirFormEditar(id) {
+    var row = _cumpRows.find(function (r) { return String(r.id) === String(id); });
+    if (!row) return;
+    $$('cump_form_titulo').textContent = 'Editar ' + row.ley_id + ' Art. ' + row.articulo_id;
+    $$('cump_edit_id').value = row.id;
+    $$('cump_estado').value = row.estado || 'pendiente';
+    $$('cump_responsable').value = row.responsable || '';
+    $$('cump_evidencia_url').value = row.evidencia_url || '';
+    $$('cump_fecha_verificacion').value = row.fecha_verificacion || '';
+    $$('cump_notas').value = row.notas || '';
+    $$('cump_form').classList.remove('hidden');
+    $$('cump_form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  async function guardarCumplimiento() {
+    var id = $$('cump_edit_id').value;
+    if (!id) return;
+    var patch = {
+      estado: $$('cump_estado').value,
+      responsable: $$('cump_responsable').value.trim() || null,
+      evidencia_url: $$('cump_evidencia_url').value.trim() || null,
+      fecha_verificacion: $$('cump_fecha_verificacion').value || null,
+      notas: $$('cump_notas').value.trim() || null,
+      updated_at: new Date().toISOString()
+    };
+    try {
+      var resp = await sb.schema('panel').from('cumplimiento_legal').update(patch).eq('id', id);
+      if (resp.error) throw resp.error;
+      $$('cump_form').classList.add('hidden');
+      loadCumplimiento();
+    } catch (e) {
+      alert('No se pudo guardar: ' + (e && e.message ? e.message : e));
+    }
+  }
+  function init() {
+    document.querySelector('button[data-tab="cumplimiento"]')?.addEventListener('click', function () { setTimeout(loadCumplimiento, 100); });
+    document.querySelector('a[data-v4-tab="cumplimiento"]')?.addEventListener('click', function () { setTimeout(loadCumplimiento, 100); });
+    $$('cump_refresh')?.addEventListener('click', loadCumplimiento);
+    $$('cump_cancelar')?.addEventListener('click', function () { $$('cump_form').classList.add('hidden'); });
+    $$('cump_guardar')?.addEventListener('click', guardarCumplimiento);
+    $$('cump_filtro_ley')?.addEventListener('change', renderCumplimiento);
+    $$('cump_filtro_estado')?.addEventListener('change', renderCumplimiento);
+    $$('cump_filtro_texto')?.addEventListener('input', renderCumplimiento);
+    $$('cump_lista')?.addEventListener('click', function (e) {
+      var btn = e.target.closest('.cump-editar');
+      if (btn) abrirFormEditar(btn.dataset.id);
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
