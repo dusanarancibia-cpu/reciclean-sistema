@@ -10634,7 +10634,8 @@ document.addEventListener('DOMContentLoaded', () => {
       ...(attach ? { file_url: attach.file_url, file_mime: attach.file_mime, file_name: attach.file_name } : {}),
     };
     try {
-      const r = await fetch(`${SUPABASE_URL_LOCAL}/functions/v1/diego-chat-process`, {
+      // v11 (D-OVERRIDE-DIEGO-001 PC1 Dusan 2026-06-05): target diego-secure (verify_jwt=true) + router verbos ambiguos.
+      const r = await fetch(`${SUPABASE_URL_LOCAL}/functions/v1/diego-secure`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -11887,7 +11888,8 @@ document.addEventListener('DOMContentLoaded', () => {
   async function mmBorrarMemoriaSesion() {
     if (!confirm('¿Limpiar el resumen que Diego mantiene de vos? Las conversaciones individuales no se borran, solo el resumen.')) return;
     try {
-      const r = await fetch(`${SUPABASE_URL}/functions/v1/diego-chat-process`, {
+      // v11 (D-OVERRIDE-DIEGO-001 PC1 Dusan 2026-06-05): target diego-secure (verify_jwt=true).
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/diego-secure`, {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_email: _currentEmail, mensaje: 'limpiame la cache de sesion', request_id: crypto.randomUUID() }),
@@ -13189,7 +13191,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       var SUPA = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : 'https://eknmtsrtfkzroxnovfqn.supabase.co';
       var ANON = (typeof SUPABASE_ANON_KEY !== 'undefined') ? SUPABASE_ANON_KEY : '';
-      var r = await fetch(SUPA + '/functions/v1/diego-chat-process', {
+      // v11 (D-OVERRIDE-DIEGO-001 PC1 Dusan 2026-06-05): target diego-secure (verify_jwt=true). FAB cartero mode skip router.
+      var r = await fetch(SUPA + '/functions/v1/diego-secure', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ANON },
         body: JSON.stringify({
