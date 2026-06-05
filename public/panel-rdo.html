@@ -6121,6 +6121,7 @@ async function loadAlertasPortada() {
 // Cuando es null: tabla RDO sin filtro. Cuando es un tipo_alerta: tabla filtrada
 // + chip "Filtrado: tipo · Limpiar" visible al inicio de la tabla.
 let _rdoAlertasFiltroTipo = null;
+let _rdoAlertasData = []; // cache para drill-down · BUG gerencia@ 02-jun
 
 function irABandejaConFiltro(tipoAlerta) {
   _rdoAlertasFiltroTipo = tipoAlerta || null;
@@ -6144,6 +6145,7 @@ async function loadAlertasRdo() {
   if (_rdoAlertasFiltroTipo) q = q.eq('tipo_alerta', _rdoAlertasFiltroTipo);
   const { data, error } = await q;
   if (error || !data?.length) {
+    _rdoAlertasData = [];
     div.innerHTML = _rdoAlertasFiltroTipo
       ? `<div class="bg-white rounded-lg p-4 shadow-sm">
            <div class="flex items-center gap-2 mb-2">
@@ -6157,6 +6159,7 @@ async function loadAlertasRdo() {
       : '';
     return;
   }
+  _rdoAlertasData = data; // cache para mostrarDetalleAlerta()
   const rojos    = data.filter(a => a.nivel === 'rojo').length;
   const amarillos = data.filter(a => a.nivel === 'amarillo').length;
   const badge = n => n === 'rojo'
@@ -6185,8 +6188,8 @@ async function loadAlertasRdo() {
             <th class="py-1">Fecha</th>
           </tr></thead>
           <tbody>
-            ${data.map(a => `
-            <tr class="border-b border-stone-50 hover:bg-stone-50">
+            ${data.map((a, idx) => `
+            <tr class="border-b border-stone-50 hover:bg-blue-50 cursor-pointer" onclick="mostrarDetalleAlerta(${idx})" title="Ver detalle y reparar">
               <td class="py-1 pr-2">${badge(a.nivel)}${a.nivel}</td>
               <td class="py-1 pr-2 font-medium text-stone-600">${escapeHtml(a.tipo_alerta || '')}</td>
               <td class="py-1 pr-2 text-stone-500 max-w-xs truncate" title="${escapeHtml(a.descripcion || '')}">${escapeHtml((a.descripcion || '').slice(0, 70))}${(a.descripcion || '').length > 70 ? '…' : ''}</td>
@@ -6196,7 +6199,77 @@ async function loadAlertasRdo() {
           </tbody>
         </table>
       </div>
+      <p class="text-[10px] text-stone-400 mt-2">💡 Clic en una fila para ver detalle y reparar.</p>
     </div>`;
+}
+
+// Mapeo tipo_alerta → tab donde se repara la causa raíz.
+const _RDO_ALERTA_REPARAR_MAP = {
+  precio_tarifa:           { tab: 'precios',     label: 'Ir a Precios',     hint: 'Ahí se publica precio nuevo.' },
+  contraparte_discrepancia:{ tab: 'facturacion', label: 'Ir a Facturación', hint: 'Cruzar DTE vs pesaje y corregir.' },
+  cliente_sin_registro:    { tab: 'comercial',   label: 'Ir a Comercial',   hint: 'Crear ficha del cliente.' },
+};
+
+function mostrarDetalleAlerta(idx) {
+  const a = _rdoAlertasData[idx];
+  if (!a) return;
+  const tipo = a.tipo_alerta || '';
+  const map = _RDO_ALERTA_REPARAR_MAP[tipo] || null;
+  const nivelColor = a.nivel === 'rojo' ? 'bg-red-50 border-red-300 text-red-900' : 'bg-amber-50 border-amber-300 text-amber-900';
+  const dotColor   = a.nivel === 'rojo' ? 'bg-red-500' : 'bg-amber-400';
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'pc-modal-backdrop';
+  backdrop.setAttribute('role','dialog');
+  backdrop.setAttribute('aria-modal','true');
+
+  const modal = document.createElement('div');
+  modal.className = 'pc-modal';
+  modal.style.maxWidth = '480px';
+
+  modal.innerHTML = `
+    <div class="border ${nivelColor} rounded-lg p-3 mb-3">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="inline-block w-2.5 h-2.5 rounded-full ${dotColor}"></span>
+        <span class="text-xs font-bold uppercase tracking-wide">${escapeHtml(a.nivel || '')}</span>
+        <span class="text-xs ml-auto opacity-70">${escapeHtml(a.fecha || '')}</span>
+      </div>
+      <div class="font-semibold text-sm">${escapeHtml(a.titulo || a.tipo_alerta || 'Alerta')}</div>
+    </div>
+    <div class="text-xs space-y-2 text-stone-700">
+      <div><span class="text-stone-400">Tipo:</span> <span class="font-mono">${escapeHtml(tipo)}</span></div>
+      ${a.valor ? `<div><span class="text-stone-400">Valor:</span> <span class="font-mono">${escapeHtml(a.valor)}</span></div>` : ''}
+      ${a.descripcion ? `<div class="bg-stone-50 rounded p-2 text-stone-600 whitespace-pre-wrap">${escapeHtml(a.descripcion)}</div>` : ''}
+      ${map ? `<div class="text-stone-500 italic">${escapeHtml(map.hint)}</div>` : ''}
+    </div>
+    <div class="pc-modal-actions mt-3 flex gap-2 justify-end">
+      ${map ? `<button id="alertaIrReparar" class="pc-modal-btn pc-modal-btn-ok">${escapeHtml(map.label)} →</button>` : ''}
+      <button id="alertaCerrar" class="pc-modal-btn pc-modal-btn-cancel">Cerrar</button>
+    </div>
+  `;
+
+  backdrop.appendChild(modal);
+  document.body.appendChild(backdrop);
+  requestAnimationFrame(() => backdrop.classList.add('show'));
+
+  function cerrar() {
+    backdrop.classList.remove('show');
+    document.removeEventListener('keydown', onKey);
+    setTimeout(() => { if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop); }, 200);
+  }
+  function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); cerrar(); } }
+
+  document.addEventListener('keydown', onKey);
+  backdrop.onclick = e => { if (e.target === backdrop) cerrar(); };
+  modal.querySelector('#alertaCerrar').onclick = cerrar;
+  const btnIr = modal.querySelector('#alertaIrReparar');
+  if (btnIr && map) {
+    btnIr.onclick = () => {
+      cerrar();
+      const btnTab = document.querySelector(`button[data-tab="${map.tab}"]`);
+      if (btnTab) btnTab.click();
+    };
+  }
 }
 
 async function loadFacturacionCruceAlertas() {
