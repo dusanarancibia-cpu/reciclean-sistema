@@ -11136,7 +11136,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <script>
 (function () {
-  // Diego v6 · chat inteligente conectado a Edge Function diego-chat-process
+  // Diego v6 · chat inteligente conectado a Edge Function diego-secure (wrapper FASE 2a) → diego-chat-process interno
   // D-DIEGO-PROMPT-V6 (Dusan 22-may-2026). System prompt fuente: DIEGO-PROMPT-MAXIMO.md
   function ready() { return typeof sb !== 'undefined' && sb && sb.schema; }
 
@@ -11326,7 +11326,8 @@ document.addEventListener('DOMContentLoaded', () => {
       ...(attach ? { file_url: attach.file_url, file_mime: attach.file_mime, file_name: attach.file_name } : {}),
     };
     try {
-      const r = await fetch(`${SUPABASE_URL_LOCAL}/functions/v1/diego-chat-process`, {
+      // D-OVERRIDE-DIEGO-001 FASE 2a (PC1 Dusan 2026-06-05): target diego-secure (verify_jwt=true) + router verbos ambiguos.
+      const r = await fetch(`${SUPABASE_URL_LOCAL}/functions/v1/diego-secure`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -13925,7 +13926,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       var SUPA = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : 'https://eknmtsrtfkzroxnovfqn.supabase.co';
       var ANON = (typeof SUPABASE_ANON_KEY !== 'undefined') ? SUPABASE_ANON_KEY : '';
-      var r = await fetch(SUPA + '/functions/v1/diego-chat-process', {
+      // D-OVERRIDE-DIEGO-001 FASE 2a (PC1 Dusan 2026-06-05): target diego-secure (verify_jwt=true). FAB cartero mode skip router.
+      var r = await fetch(SUPA + '/functions/v1/diego-secure', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ANON },
         body: JSON.stringify({
