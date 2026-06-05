@@ -2473,9 +2473,16 @@
          PESTAÑA OPORTUNIDADES KANBAN (D-OP-12)
     ═══════════════════════════════════════════════════════════ -->
     <section id="tabOportunidades" class="tab-content hidden">
-      <div class="flex justify-between items-center mb-4">
+      <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
         <h2 class="text-xl font-bold text-stone-800">🎯 Oportunidades — Pipeline Kanban</h2>
-        <button onclick="loadOportunidadesKanban()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+        <div class="flex items-center gap-3">
+          <button onclick="window.abrirModalNuevaOportunidadGlobal && window.abrirModalNuevaOportunidadGlobal()"
+                  class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-medium"
+                  title="Crear oportunidad para cualquier cliente (RDO puro o nuevo)">
+            ➕ Nueva oportunidad
+          </button>
+          <button onclick="loadOportunidadesKanban()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+        </div>
       </div>
 
       <!-- N2-5 · Resumen oportunidades + flag fuzzy CRM (backend Pablo) -->
@@ -15161,8 +15168,14 @@ document.addEventListener('DOMContentLoaded', () => {
     </header>
     <div class="p-4 space-y-3 text-sm">
       <div>
-        <label class="block text-xs text-stone-500 mb-1">Cliente</label>
+        <label class="block text-xs text-stone-500 mb-1">Cliente <span id="crmNuevaOppClienteReq" class="hidden text-red-600">*</span></label>
+        <!-- Modo ficha CRM Impulsa: cliente prellenado, no editable -->
         <div id="crmNuevaOppCliente" class="px-2 py-1.5 bg-stone-50 border border-stone-200 rounded text-stone-800">—</div>
+        <!-- Modo global (tab Oportunidades): cliente editable como texto libre -->
+        <input type="text" id="crmNuevaOppClienteLibre" maxlength="200"
+               class="hidden w-full px-2 py-1.5 border border-stone-300 rounded"
+               placeholder="Nombre del cliente (RDO puro o nuevo prospecto)">
+        <div id="crmNuevaOppClienteLibreHint" class="hidden text-[10px] text-stone-400 mt-1">Si el cliente ya existe en CRM Impulsa, mejor entrá por su ficha para vincularlo.</div>
       </div>
       <div>
         <label class="block text-xs text-stone-500 mb-1">Tipo *</label>
@@ -15170,6 +15183,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <option value="cotizacion">Cotización</option>
           <option value="necesidad">Necesidad</option>
           <option value="accion">Acción</option>
+          <option value="idea">Idea</option>
         </select>
       </div>
       <div>
@@ -15366,19 +15380,47 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { alert('No se pudo abrir: ' + (e?.message || String(e))); }
   }
 
-  // Modal
+  // Modal — modo ficha (cliente vinculado a CRM Impulsa)
   function abrirModalNueva(externalCrm, fc) {
     var overlay = document.getElementById('crmNuevaOppOverlay');
     overlay.classList.remove('hidden'); overlay.classList.add('flex');
+    document.getElementById('crmNuevaOppCliente').classList.remove('hidden');
     document.getElementById('crmNuevaOppCliente').textContent = (fc?.cFull?.razon_social || fc?.c360?.razon_social || externalCrm);
+    document.getElementById('crmNuevaOppClienteLibre').classList.add('hidden');
+    document.getElementById('crmNuevaOppClienteLibreHint').classList.add('hidden');
+    document.getElementById('crmNuevaOppClienteReq').classList.add('hidden');
     document.getElementById('crmNuevaOppTitulo').value = '';
     document.getElementById('crmNuevaOppSucursal').value = '';
     document.getElementById('crmNuevaOppValorUF').value = '';
     document.getElementById('crmNuevaOppDescripcion').value = '';
     document.getElementById('crmNuevaOppFiles').value = '';
     document.getElementById('crmNuevaOppMsg').classList.add('hidden');
-    document.getElementById('crmNuevaOppCrear').dataset.externalCrm = externalCrm;
+    var btn = document.getElementById('crmNuevaOppCrear');
+    btn.dataset.externalCrm = externalCrm;
+    btn.dataset.modo = 'ficha';
   }
+  // Modal — modo libre (tab Oportunidades global, sin external_id_crm)
+  function abrirModalNuevaLibre() {
+    var overlay = document.getElementById('crmNuevaOppOverlay');
+    overlay.classList.remove('hidden'); overlay.classList.add('flex');
+    document.getElementById('crmNuevaOppCliente').classList.add('hidden');
+    var lib = document.getElementById('crmNuevaOppClienteLibre');
+    lib.classList.remove('hidden'); lib.value = '';
+    document.getElementById('crmNuevaOppClienteLibreHint').classList.remove('hidden');
+    document.getElementById('crmNuevaOppClienteReq').classList.remove('hidden');
+    document.getElementById('crmNuevaOppTitulo').value = '';
+    document.getElementById('crmNuevaOppSucursal').value = '';
+    document.getElementById('crmNuevaOppValorUF').value = '';
+    document.getElementById('crmNuevaOppDescripcion').value = '';
+    document.getElementById('crmNuevaOppFiles').value = '';
+    document.getElementById('crmNuevaOppMsg').classList.add('hidden');
+    var btn = document.getElementById('crmNuevaOppCrear');
+    btn.dataset.externalCrm = '';
+    btn.dataset.modo = 'libre';
+    setTimeout(function () { lib.focus(); }, 50);
+  }
+  // Exponer para tab Oportunidades global (fuera del IIFE)
+  window.abrirModalNuevaOportunidadGlobal = abrirModalNuevaLibre;
   function cerrarModal() {
     var overlay = document.getElementById('crmNuevaOppOverlay');
     overlay.classList.add('hidden'); overlay.classList.remove('flex');
@@ -15386,28 +15428,46 @@ document.addEventListener('DOMContentLoaded', () => {
   async function crearOportunidad() {
     var btn = document.getElementById('crmNuevaOppCrear');
     var msg = document.getElementById('crmNuevaOppMsg');
-    var externalCrm = btn.dataset.externalCrm;
+    var modo = btn.dataset.modo || 'ficha';
+    var externalCrm = btn.dataset.externalCrm || null;
+    var clienteLibre = (modo === 'libre')
+      ? document.getElementById('crmNuevaOppClienteLibre').value.trim()
+      : null;
     var titulo = document.getElementById('crmNuevaOppTitulo').value.trim();
     var tipo = document.getElementById('crmNuevaOppTipo').value;
     var sucursal = document.getElementById('crmNuevaOppSucursal').value.trim() || null;
     var valor = parseFloat(document.getElementById('crmNuevaOppValorUF').value) || null;
     var descripcion = document.getElementById('crmNuevaOppDescripcion').value.trim() || null;
     var files = document.getElementById('crmNuevaOppFiles').files;
+    if (modo === 'libre' && !clienteLibre) {
+      msg.className = 'text-xs text-red-700'; msg.textContent = 'Cliente requerido.'; msg.classList.remove('hidden'); return;
+    }
     if (!titulo) { msg.className = 'text-xs text-red-700'; msg.textContent = 'Título requerido.'; msg.classList.remove('hidden'); return; }
     var email = resolveEmail();
     if (!email) { msg.className = 'text-xs text-red-700'; msg.textContent = 'No detecto tu sesión.'; msg.classList.remove('hidden'); return; }
     btn.disabled = true; btn.textContent = 'Creando…';
     try {
-      var r = await sb.rpc('crm_crear_oportunidad', {
-        p_email: email, p_external_id_crm: externalCrm, p_tipo: tipo,
-        p_titulo: titulo, p_descripcion: descripcion, p_sucursal_id: sucursal,
-        p_valor_estimado_uf: valor, p_metadata: {}
+      // RPC v2 (mig 221): soporta external_id_crm O cliente_nombre_libre.
+      var r = await sb.rpc('crm_crear_oportunidad_v2', {
+        p_email: email,
+        p_tipo: tipo,
+        p_titulo: titulo,
+        p_descripcion: descripcion,
+        p_sucursal_id: sucursal,
+        p_valor_estimado_uf: valor,
+        p_metadata: {},
+        p_external_id_crm: externalCrm || null,
+        p_cliente_nombre_libre: clienteLibre
       });
       if (r.error) throw r.error;
       var oportId = r.data;
       for (var i = 0; i < files.length; i++) { await subirArchivo(oportId, files[i]); }
       cerrarModal();
-      cargarOportunidadesPanel(externalCrm);
+      if (modo === 'ficha' && externalCrm) {
+        cargarOportunidadesPanel(externalCrm);
+      } else if (typeof window.loadOportunidadesKanban === 'function') {
+        window.loadOportunidadesKanban();
+      }
     } catch (e) {
       msg.className = 'text-xs text-red-700'; msg.textContent = 'Error: ' + (e?.message || String(e));
       msg.classList.remove('hidden');
