@@ -163,11 +163,11 @@ select.neg-input option{background:#1A2D3E;color:#fff}
     <div class="login-logo">
       <div class="brand-sub">Reciclean · Farex</div>
       <div class="brand-title">Asistente Comercial</div>
-      <div class="brand-desc">Ingresa con tu teléfono y PIN</div>
+      <div class="brand-desc">Ingresa con tu teléfono o email + PIN</div>
     </div>
     <div class="login-field">
-      <label>Teléfono WhatsApp</label>
-      <input class="login-input" id="login-tel" type="tel" inputmode="tel" placeholder="+56912345678" autocomplete="tel">
+      <label>Teléfono WhatsApp o email</label>
+      <input class="login-input" id="login-tel" type="text" inputmode="email" placeholder="+56912345678 o tu@correo.cl" autocomplete="username">
     </div>
     <div class="login-field">
       <label>PIN</label>
@@ -472,29 +472,34 @@ function showLoginError(msg) {
 }
 
 async function doLogin() {
-  const tel = document.getElementById('login-tel').value.trim();
+  const raw = document.getElementById('login-tel').value.trim();
   const pin = document.getElementById('login-pin').value.trim();
-  if(!tel || !pin) { showLoginError('Ingresa tu teléfono y PIN'); return; }
+  if(!raw || !pin) { showLoginError('Ingresa tu teléfono/email y PIN'); return; }
 
   const btn = document.getElementById('login-btn');
   btn.disabled = true;
   btn.textContent = '⏳ Verificando...';
   document.getElementById('login-error').style.display = 'none';
 
-  const telNorm = normTel(tel);
+  // Detección email vs teléfono: si tiene '@' lo tratamos como email,
+  // sino como teléfono y aplicamos normTel.
+  const esEmail = raw.includes('@');
+  let query = _supa.from('usuarios_autorizados').select('*');
+  if (esEmail) {
+    query = query.eq('email', raw.toLowerCase());
+  } else {
+    const telNorm = normTel(raw);
+    query = query.or(`telefono.eq.${telNorm},telefono.eq.${raw}`);
+  }
 
-  // Intentar con teléfono normalizado, y también con el valor original
-  const {data, error} = await _supa
-    .from('usuarios_autorizados')
-    .select('*')
-    .or(`telefono.eq.${telNorm},telefono.eq.${tel}`)
+  const {data, error} = await query
     .eq('pin', pin)
     .eq('activo', true)
     .eq('acceso_asistente', true)
     .maybeSingle();
 
   if(error || !data) {
-    showLoginError('Teléfono o PIN incorrecto');
+    showLoginError(esEmail ? 'Email o PIN incorrecto' : 'Teléfono o PIN incorrecto');
     return;
   }
 
