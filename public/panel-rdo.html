@@ -3384,9 +3384,10 @@
           </div>
           <div id="crmFichaBody" class="p-5 overflow-y-auto flex-1">—</div>
           <footer class="p-4 border-t border-stone-100 bg-stone-50 flex items-center justify-between">
-            <span class="text-xs text-stone-500">Datos rescatados de CRM Impulsa · solo lectura</span>
-            <button id="crmBtnAgregarGestion" disabled title="Disponible cuando Dusan firme D-CRM-GESTIONES"
-                    class="px-3 py-1.5 text-sm rounded-md bg-stone-200 text-stone-400 cursor-not-allowed">
+            <span class="text-xs text-stone-500">Datos rescatados de CRM Impulsa · gestiones nuevas se guardan en el panel</span>
+            <button id="crmBtnAgregarGestion"
+                    onclick="window.abrirModalNuevaGestion && window.abrirModalNuevaGestion()"
+                    class="px-3 py-1.5 text-sm rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
               + Agregar gestión
             </button>
           </footer>
@@ -10950,17 +10951,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       else if (name === 'gestiones') {
-        body.innerHTML = `
-          <div class="text-center py-8">
-            <div class="text-4xl mb-2">📝</div>
-            <p class="text-stone-700 font-medium mb-1">Sin gestiones registradas</p>
-            <p class="text-xs text-stone-500 max-w-md mx-auto mb-3">El registro de gestiones esta pendiente de firma <code class="bg-stone-100 px-1 rounded">D-CRM-GESTIONES</code> por Dusan.</p>
-            <p class="text-xs text-emerald-700 max-w-md mx-auto mb-3"><strong>Mientras tanto:</strong> si necesitas crear una <strong>nueva oportunidad</strong> para este cliente, anda al tab Cotizador. Si el cliente no esta en el catalogo (ej. EMERSON), podes escribirlo libre en el campo "Cliente" y guardar igual la cotizacion.</p>
-            <button onclick="document.querySelector('button[data-tab=\\'cotizador\\']')?.click() || document.querySelector('a[data-v4-tab=\\'cotizador\\']')?.click()"
-                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold">
-              💼 Ir al Cotizador para crear oportunidad
-            </button>
-          </div>`;
+        // D-CRM-GESTIONES (mig 222) · Pablo 2026-06-05
+        body.innerHTML = '<div id="crmGestionesContainer" class="space-y-3"><div class="text-center text-stone-400 py-6 text-sm">Cargando gestiones…</div></div>';
+        if (typeof window.cargarGestionesCliente === 'function') {
+          window.cargarGestionesCliente({ external_id_crm: id, cliente_id: cFull?.cliente_id || null, cliente_nombre: cFull?.razon_social || '' });
+        }
       }
     } catch (e) {
       console.warn('[CRM] subtab', name, 'error:', e);
@@ -15171,11 +15166,19 @@ document.addEventListener('DOMContentLoaded', () => {
         <label class="block text-xs text-stone-500 mb-1">Cliente <span id="crmNuevaOppClienteReq" class="hidden text-red-600">*</span></label>
         <!-- Modo ficha CRM Impulsa: cliente prellenado, no editable -->
         <div id="crmNuevaOppCliente" class="px-2 py-1.5 bg-stone-50 border border-stone-200 rounded text-stone-800">—</div>
-        <!-- Modo global (tab Oportunidades): cliente editable como texto libre -->
-        <input type="text" id="crmNuevaOppClienteLibre" maxlength="200"
-               class="hidden w-full px-2 py-1.5 border border-stone-300 rounded"
-               placeholder="Nombre del cliente (RDO puro o nuevo prospecto)">
-        <div id="crmNuevaOppClienteLibreHint" class="hidden text-[10px] text-stone-400 mt-1">Si el cliente ya existe en CRM Impulsa, mejor entrá por su ficha para vincularlo.</div>
+        <!-- Modo global (tab Oportunidades): autocomplete + texto libre fallback -->
+        <div id="crmNuevaOppClienteWrap" class="hidden relative">
+          <input type="text" id="crmNuevaOppClienteLibre" maxlength="200" autocomplete="off"
+                 class="w-full px-2 py-1.5 border border-stone-300 rounded"
+                 placeholder="Buscá por razón social o RUT…">
+          <div id="crmNuevaOppClienteDropdown" class="hidden absolute z-10 left-0 right-0 mt-1 bg-white border border-stone-200 rounded shadow-lg max-h-60 overflow-y-auto"></div>
+        </div>
+        <div id="crmNuevaOppClienteVinculado" class="hidden flex items-center gap-2 px-2 py-1.5 bg-emerald-50 border border-emerald-300 rounded">
+          <span class="text-xs text-emerald-700">✓ Vinculado:</span>
+          <span id="crmNuevaOppClienteVinculadoNombre" class="text-sm text-emerald-800 font-medium flex-1 truncate"></span>
+          <button id="crmNuevaOppClienteDesvincular" type="button" class="text-xs text-stone-500 hover:text-red-600" title="Desvincular y escribir libre">✕</button>
+        </div>
+        <div id="crmNuevaOppClienteLibreHint" class="hidden text-[10px] text-stone-400 mt-1">Tipeá ≥3 caracteres para buscar. Si no existe, queda como prospecto nuevo (texto libre).</div>
       </div>
       <div>
         <label class="block text-xs text-stone-500 mb-1">Tipo *</label>
@@ -15404,8 +15407,13 @@ document.addEventListener('DOMContentLoaded', () => {
     var overlay = document.getElementById('crmNuevaOppOverlay');
     overlay.classList.remove('hidden'); overlay.classList.add('flex');
     document.getElementById('crmNuevaOppCliente').classList.add('hidden');
+    document.getElementById('crmNuevaOppClienteWrap').classList.remove('hidden');
+    document.getElementById('crmNuevaOppClienteWrap').classList.add('block');
+    document.getElementById('crmNuevaOppClienteVinculado').classList.add('hidden');
+    document.getElementById('crmNuevaOppClienteVinculado').classList.remove('flex');
     var lib = document.getElementById('crmNuevaOppClienteLibre');
-    lib.classList.remove('hidden'); lib.value = '';
+    lib.value = '';
+    document.getElementById('crmNuevaOppClienteDropdown').classList.add('hidden');
     document.getElementById('crmNuevaOppClienteLibreHint').classList.remove('hidden');
     document.getElementById('crmNuevaOppClienteReq').classList.remove('hidden');
     document.getElementById('crmNuevaOppTitulo').value = '';
@@ -15416,8 +15424,79 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('crmNuevaOppMsg').classList.add('hidden');
     var btn = document.getElementById('crmNuevaOppCrear');
     btn.dataset.externalCrm = '';
+    btn.dataset.clienteIdVinculado = '';
     btn.dataset.modo = 'libre';
     setTimeout(function () { lib.focus(); }, 50);
+  }
+
+  // ── Autocomplete cliente (modo libre) ────────────────────────────────
+  var _ocSearchTimer = null;
+  var _ocLastResults = [];
+  async function ocBuscar(q) {
+    if (!ready()) return [];
+    var clean = (q || '').trim();
+    if (clean.length < 3) return [];
+    try {
+      var resp = await sb
+        .schema('curated').from('clientes')
+        .select('cliente_id, razon_social, external_id_crm, rut')
+        .or('razon_social.ilike.%' + clean + '%,rut.ilike.' + clean + '%')
+        .order('razon_social', { ascending: true })
+        .limit(10);
+      if (resp.error) throw resp.error;
+      return resp.data || [];
+    } catch (e) {
+      console.warn('[oc] buscar error:', e);
+      return [];
+    }
+  }
+  function ocRenderDropdown(items) {
+    var dd = document.getElementById('crmNuevaOppClienteDropdown');
+    if (!items.length) { dd.classList.add('hidden'); dd.innerHTML = ''; return; }
+    dd.innerHTML = items.map(function (c, i) {
+      return '<div class="oc-item px-3 py-2 cursor-pointer hover:bg-emerald-50 border-b border-stone-100 last:border-0" data-idx="' + i + '">' +
+        '<div class="text-sm text-stone-800 truncate">' + esc(c.razon_social || '(sin razón social)') + '</div>' +
+        '<div class="text-[10px] text-stone-400">' + esc(c.rut || 'sin RUT') + (c.external_id_crm ? ' · CRM ' + esc(c.external_id_crm) : '') + '</div>' +
+      '</div>';
+    }).join('');
+    dd.classList.remove('hidden');
+    _ocLastResults = items;
+  }
+  function ocVincular(cliente) {
+    var btn = document.getElementById('crmNuevaOppCrear');
+    btn.dataset.externalCrm = cliente.external_id_crm || '';
+    btn.dataset.clienteIdVinculado = cliente.cliente_id || '';
+    document.getElementById('crmNuevaOppClienteVinculadoNombre').textContent = cliente.razon_social || '(sin nombre)';
+    document.getElementById('crmNuevaOppClienteWrap').classList.add('hidden');
+    document.getElementById('crmNuevaOppClienteWrap').classList.remove('block');
+    document.getElementById('crmNuevaOppClienteDropdown').classList.add('hidden');
+    document.getElementById('crmNuevaOppClienteVinculado').classList.remove('hidden');
+    document.getElementById('crmNuevaOppClienteVinculado').classList.add('flex');
+    document.getElementById('crmNuevaOppClienteLibreHint').classList.add('hidden');
+  }
+  function ocDesvincular() {
+    var btn = document.getElementById('crmNuevaOppCrear');
+    btn.dataset.externalCrm = '';
+    btn.dataset.clienteIdVinculado = '';
+    document.getElementById('crmNuevaOppClienteVinculado').classList.add('hidden');
+    document.getElementById('crmNuevaOppClienteVinculado').classList.remove('flex');
+    document.getElementById('crmNuevaOppClienteWrap').classList.remove('hidden');
+    document.getElementById('crmNuevaOppClienteWrap').classList.add('block');
+    document.getElementById('crmNuevaOppClienteLibreHint').classList.remove('hidden');
+    var lib = document.getElementById('crmNuevaOppClienteLibre');
+    lib.value = '';
+    setTimeout(function () { lib.focus(); }, 50);
+  }
+  // blur: si texto exacto matchea razón social única → auto-vincular
+  function ocBlurAutoMatch() {
+    var libVal = document.getElementById('crmNuevaOppClienteLibre').value.trim().toLowerCase();
+    if (!libVal) return;
+    var exactos = _ocLastResults.filter(function (c) {
+      return (c.razon_social || '').trim().toLowerCase() === libVal;
+    });
+    if (exactos.length === 1) {
+      ocVincular(exactos[0]);
+    }
   }
   // Exponer para tab Oportunidades global (fuera del IIFE)
   window.abrirModalNuevaOportunidadGlobal = abrirModalNuevaLibre;
@@ -15430,7 +15509,9 @@ document.addEventListener('DOMContentLoaded', () => {
     var msg = document.getElementById('crmNuevaOppMsg');
     var modo = btn.dataset.modo || 'ficha';
     var externalCrm = btn.dataset.externalCrm || null;
-    var clienteLibre = (modo === 'libre')
+    var vinculadoVisible = document.getElementById('crmNuevaOppClienteVinculado').classList.contains('flex');
+    // En modo libre, si hay cliente vinculado: usar external/cliente_id y descartar texto libre.
+    var clienteLibre = (modo === 'libre' && !vinculadoVisible)
       ? document.getElementById('crmNuevaOppClienteLibre').value.trim()
       : null;
     var titulo = document.getElementById('crmNuevaOppTitulo').value.trim();
@@ -15439,7 +15520,7 @@ document.addEventListener('DOMContentLoaded', () => {
     var valor = parseFloat(document.getElementById('crmNuevaOppValorUF').value) || null;
     var descripcion = document.getElementById('crmNuevaOppDescripcion').value.trim() || null;
     var files = document.getElementById('crmNuevaOppFiles').files;
-    if (modo === 'libre' && !clienteLibre) {
+    if (modo === 'libre' && !vinculadoVisible && !clienteLibre) {
       msg.className = 'text-xs text-red-700'; msg.textContent = 'Cliente requerido.'; msg.classList.remove('hidden'); return;
     }
     if (!titulo) { msg.className = 'text-xs text-red-700'; msg.textContent = 'Título requerido.'; msg.classList.remove('hidden'); return; }
@@ -15497,6 +15578,333 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('crmNuevaOppCerrar')?.addEventListener('click', cerrarModal);
     document.getElementById('crmNuevaOppCancelar')?.addEventListener('click', cerrarModal);
     document.getElementById('crmNuevaOppCrear')?.addEventListener('click', crearOportunidad);
+
+    // Autocomplete cliente · listeners
+    var lib = document.getElementById('crmNuevaOppClienteLibre');
+    if (lib) {
+      lib.addEventListener('input', function () {
+        clearTimeout(_ocSearchTimer);
+        var q = lib.value.trim();
+        if (q.length < 3) {
+          document.getElementById('crmNuevaOppClienteDropdown').classList.add('hidden');
+          return;
+        }
+        _ocSearchTimer = setTimeout(async function () {
+          var items = await ocBuscar(q);
+          ocRenderDropdown(items);
+        }, 300);
+      });
+      lib.addEventListener('blur', function () {
+        // Timeout para que el click en una opción del dropdown tenga prioridad
+        setTimeout(function () {
+          document.getElementById('crmNuevaOppClienteDropdown').classList.add('hidden');
+          ocBlurAutoMatch();
+        }, 200);
+      });
+    }
+    document.getElementById('crmNuevaOppClienteDropdown')?.addEventListener('mousedown', function (e) {
+      var item = e.target.closest('.oc-item');
+      if (!item) return;
+      e.preventDefault(); // evita que el input pierda foco antes de procesar
+      var idx = parseInt(item.dataset.idx, 10);
+      var c = _ocLastResults[idx];
+      if (c) ocVincular(c);
+    });
+    document.getElementById('crmNuevaOppClienteDesvincular')?.addEventListener('click', ocDesvincular);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- ============================================================ -->
+<!-- D-CRM-GESTIONES · mig 222 · Pablo 2026-06-05                  -->
+<!-- ============================================================ -->
+<div id="crmNuevaGestionOverlay" class="hidden fixed inset-0 z-[60] bg-stone-900/60 items-center justify-center p-4">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <header class="p-4 border-b border-stone-200 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-stone-800">📝 Nueva gestión</h3>
+      <button id="crmNuevaGestCerrar" class="text-stone-500 hover:text-stone-700 text-xl leading-none">×</button>
+    </header>
+    <div class="p-4 space-y-3 text-sm">
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Cliente</label>
+        <div id="crmNuevaGestCliente" class="px-2 py-1.5 bg-stone-50 border border-stone-200 rounded text-stone-800">—</div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Tipo *</label>
+          <select id="crmNuevaGestTipo" class="w-full px-2 py-1.5 border border-stone-300 rounded">
+            <option value="llamada">📞 Llamada</option>
+            <option value="email">✉️ Email</option>
+            <option value="reunion">🤝 Reunión</option>
+            <option value="whatsapp">💬 WhatsApp</option>
+            <option value="nota">📝 Nota</option>
+            <option value="otra">🔖 Otra</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Fecha de la gestión</label>
+          <input type="datetime-local" id="crmNuevaGestFecha" class="w-full px-2 py-1.5 border border-stone-300 rounded">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Título *</label>
+        <input type="text" id="crmNuevaGestTitulo" maxlength="200" placeholder="Ej: Llamada cotización papel cartón"
+               class="w-full px-2 py-1.5 border border-stone-300 rounded">
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Descripción</label>
+        <textarea id="crmNuevaGestDescripcion" rows="3" maxlength="2000" placeholder="Qué se habló, qué se acordó…"
+                  class="w-full px-2 py-1.5 border border-stone-300 rounded"></textarea>
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Resultado / próximo paso</label>
+        <input type="text" id="crmNuevaGestResultado" maxlength="200" placeholder="Ej: agendar revisita lunes / esperando OC / no contesta"
+               class="w-full px-2 py-1.5 border border-stone-300 rounded">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">📅 Seguimiento para</label>
+          <input type="datetime-local" id="crmNuevaGestFollow" class="w-full px-2 py-1.5 border border-stone-300 rounded">
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Responsable</label>
+          <input type="text" id="crmNuevaGestResponsable" placeholder="email" class="w-full px-2 py-1.5 border border-stone-300 rounded">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">📎 Adjuntos (opcional)</label>
+        <input type="file" id="crmNuevaGestFiles" multiple class="w-full text-xs">
+        <div class="text-[10px] text-stone-400 mt-1">Se suben al guardar la gestión. Capturas, PDFs, audios.</div>
+      </div>
+      <div id="crmNuevaGestMsg" class="hidden text-xs"></div>
+      <div class="flex justify-end gap-2 pt-2 border-t border-stone-100">
+        <button id="crmNuevaGestCancelar" class="px-3 py-1.5 text-stone-600 text-sm">Cancelar</button>
+        <button id="crmNuevaGestCrear" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-semibold">Guardar gestión</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  function ready() { return typeof sb !== 'undefined' && sb && sb.rpc && sb.storage; }
+  function resolveEmail() {
+    if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase();
+    try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
+    try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
+    try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    try {
+      var sbTok = JSON.parse(localStorage.getItem('sb-eknmtsrtfkzroxnovfqn-auth-token') || 'null');
+      var em = sbTok?.user?.email || sbTok?.currentSession?.user?.email;
+      if (em) return String(em).toLowerCase();
+    } catch (e) {}
+    return null;
+  }
+  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]; }); }
+  function fmtFecha(ts) { if (!ts) return '—'; try { return new Date(ts).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return ts; } }
+  function fmtKB(b) { if (!b) return ''; return Math.round(b/1024) + ' KB'; }
+  function toDatetimeLocal(d) { var x = new Date(d); var off = x.getTimezoneOffset()*60000; return new Date(x - off).toISOString().slice(0,16); }
+
+  // Contexto cliente actual del modal de gestiones (lo setea cargarGestionesCliente).
+  var _gestCtx = { external_id_crm: null, cliente_id: null, cliente_nombre: '' };
+
+  // Render del subtab Gestiones — invocado desde renderSubTab del CRM Impulsa.
+  window.cargarGestionesCliente = async function (ctx) {
+    _gestCtx = {
+      external_id_crm: ctx?.external_id_crm || null,
+      cliente_id: ctx?.cliente_id || null,
+      cliente_nombre: ctx?.cliente_nombre || ''
+    };
+    var cont = document.getElementById('crmGestionesContainer');
+    if (!cont || !ready()) return;
+    try {
+      var resp = await sb.rpc('crm_gestiones_por_cliente', {
+        p_external_id_crm: _gestCtx.external_id_crm,
+        p_cliente_id: _gestCtx.cliente_id,
+        p_limit: 50
+      });
+      if (resp.error) throw resp.error;
+      renderTimeline(cont, resp.data?.gestiones || [], resp.data?.next_cursor || null);
+    } catch (e) {
+      console.warn('[gest] error cargar:', e);
+      cont.innerHTML = '<div class="text-xs text-red-700 py-3">Error cargando gestiones: ' + esc(e?.message || String(e)) + '</div>';
+    }
+  };
+
+  function renderTimeline(cont, gestiones, nextCursor) {
+    if (!gestiones.length) {
+      cont.innerHTML = '<div class="text-center py-8 text-stone-400 text-sm">Sin gestiones todavía. Hacé click en + Agregar gestión.</div>';
+      return;
+    }
+    var ICONOS = { llamada:'📞', email:'✉️', reunion:'🤝', whatsapp:'💬', nota:'📝', otra:'🔖' };
+    var html = gestiones.map(function (g) {
+      var ico = ICONOS[g.tipo] || '🔖';
+      var followBadge = '';
+      if (g.follow_up_at) {
+        var venc = new Date(g.follow_up_at) < new Date();
+        followBadge = '<span class="ml-2 inline-block text-[10px] px-1.5 py-0.5 rounded ' +
+          (venc ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') +
+          '">📅 ' + (venc ? 'Seguimiento vencido' : 'Seguir') + ' ' + esc(fmtFecha(g.follow_up_at)) + '</span>';
+      }
+      var autoTag = (g.metadata && g.metadata.auto_generated) ? '<span class="ml-2 text-[10px] text-stone-400">auto</span>' : '';
+      var adjuntosTag = g.adjuntos_count > 0 ? '<span class="ml-2 text-[10px] text-stone-500">📎 ' + g.adjuntos_count + '</span>' : '';
+      return '<div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm" data-gest-id="' + esc(g.id) + '">' +
+        '<div class="flex items-start gap-2 flex-wrap">' +
+          '<span class="text-xl">' + ico + '</span>' +
+          '<div class="flex-1 min-w-0">' +
+            '<div class="font-medium text-sm text-stone-800">' + esc(g.titulo) + autoTag + adjuntosTag + followBadge + '</div>' +
+            '<div class="text-[11px] text-stone-500 mt-0.5">' +
+              esc(g.tipo) + ' · ' + esc(fmtFecha(g.fecha_gestion)) + ' · ' + esc(g.responsable) +
+            '</div>' +
+            (g.descripcion ? '<div class="text-xs text-stone-600 mt-1.5 whitespace-pre-wrap">' + esc(g.descripcion) + '</div>' : '') +
+            (g.resultado ? '<div class="text-xs text-emerald-700 mt-1">→ ' + esc(g.resultado) + '</div>' : '') +
+          '</div>' +
+        '</div>' +
+        (g.adjuntos_count > 0 ? '<div class="mt-2 pl-7" data-adj-of="' + esc(g.id) + '"></div>' : '') +
+      '</div>';
+    }).join('');
+    if (nextCursor) {
+      html += '<button id="gestVerMas" data-cursor="' + esc(nextCursor) + '" class="w-full py-2 text-xs text-emerald-700 hover:bg-emerald-50 rounded">Ver más antiguas →</button>';
+    }
+    cont.innerHTML = html;
+    // Cargar adjuntos lazy en cada gestión con adjuntos_count > 0
+    cont.querySelectorAll('[data-adj-of]').forEach(function (slot) {
+      cargarAdjuntosDeGestion(slot.getAttribute('data-adj-of'), slot);
+    });
+    var verMas = document.getElementById('gestVerMas');
+    if (verMas) verMas.addEventListener('click', async function () {
+      var cursor = verMas.dataset.cursor;
+      verMas.disabled = true; verMas.textContent = 'Cargando…';
+      try {
+        var resp = await sb.rpc('crm_gestiones_por_cliente', {
+          p_external_id_crm: _gestCtx.external_id_crm,
+          p_cliente_id: _gestCtx.cliente_id,
+          p_cursor_ts: cursor,
+          p_limit: 50
+        });
+        if (resp.error) throw resp.error;
+        verMas.remove();
+        var nuevas = resp.data?.gestiones || [];
+        var append = document.createElement('div');
+        append.className = 'space-y-3';
+        cont.appendChild(append);
+        renderTimeline(append, nuevas, resp.data?.next_cursor || null);
+      } catch (e) {
+        verMas.disabled = false; verMas.textContent = 'Reintentar';
+        console.warn('[gest] ver más error:', e);
+      }
+    });
+  }
+
+  async function cargarAdjuntosDeGestion(gestionId, slotEl) {
+    try {
+      var r = await sb.rpc('gest_adjuntos_listar', { p_gestion_id: gestionId });
+      if (r.error || !Array.isArray(r.data)) return;
+      slotEl.innerHTML = r.data.map(function (a) {
+        return '<div class="flex items-center gap-2 text-[11px] bg-stone-50 px-2 py-1 rounded mt-1">' +
+          '<span class="truncate flex-1">📄 ' + esc(a.nombre) + ' <span class="text-stone-400">' + fmtKB(a.tamano_bytes) + '</span></span>' +
+          '<button class="gest-adj-ver text-sky-700 hover:underline" data-path="' + esc(a.bucket_path) + '">ver</button>' +
+        '</div>';
+      }).join('');
+    } catch (e) { /* silenciar */ }
+  }
+
+  // Modal nueva gestión
+  window.abrirModalNuevaGestion = function () {
+    var overlay = document.getElementById('crmNuevaGestionOverlay');
+    overlay.classList.remove('hidden'); overlay.classList.add('flex');
+    document.getElementById('crmNuevaGestCliente').textContent = _gestCtx.cliente_nombre || _gestCtx.external_id_crm || _gestCtx.cliente_id || '—';
+    document.getElementById('crmNuevaGestTitulo').value = '';
+    document.getElementById('crmNuevaGestDescripcion').value = '';
+    document.getElementById('crmNuevaGestResultado').value = '';
+    document.getElementById('crmNuevaGestFecha').value = toDatetimeLocal(new Date());
+    document.getElementById('crmNuevaGestFollow').value = '';
+    document.getElementById('crmNuevaGestFiles').value = '';
+    document.getElementById('crmNuevaGestResponsable').value = resolveEmail() || '';
+    document.getElementById('crmNuevaGestMsg').classList.add('hidden');
+  };
+  function cerrarModalGest() {
+    var overlay = document.getElementById('crmNuevaGestionOverlay');
+    overlay.classList.add('hidden'); overlay.classList.remove('flex');
+  }
+
+  async function crearGestion() {
+    var btn = document.getElementById('crmNuevaGestCrear');
+    var msg = document.getElementById('crmNuevaGestMsg');
+    var email = resolveEmail();
+    if (!email) { msg.className='text-xs text-red-700'; msg.textContent='No detecto tu sesión.'; msg.classList.remove('hidden'); return; }
+    var titulo = document.getElementById('crmNuevaGestTitulo').value.trim();
+    if (!titulo) { msg.className='text-xs text-red-700'; msg.textContent='Título requerido.'; msg.classList.remove('hidden'); return; }
+    var tipo = document.getElementById('crmNuevaGestTipo').value;
+    var descripcion = document.getElementById('crmNuevaGestDescripcion').value.trim() || null;
+    var resultado = document.getElementById('crmNuevaGestResultado').value.trim() || null;
+    var fechaInp = document.getElementById('crmNuevaGestFecha').value;
+    var fecha = fechaInp ? new Date(fechaInp).toISOString() : null;
+    var followInp = document.getElementById('crmNuevaGestFollow').value;
+    var follow = followInp ? new Date(followInp).toISOString() : null;
+    var responsable = (document.getElementById('crmNuevaGestResponsable').value.trim() || email).toLowerCase();
+    var files = document.getElementById('crmNuevaGestFiles').files;
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      var r = await sb.rpc('crm_crear_gestion', {
+        p_email: email, p_tipo: tipo, p_titulo: titulo,
+        p_descripcion: descripcion, p_fecha_gestion: fecha,
+        p_resultado: resultado, p_follow_up_at: follow,
+        p_responsable: responsable,
+        p_cliente_id: _gestCtx.cliente_id, p_external_id_crm: _gestCtx.external_id_crm,
+        p_metadata: {}
+      });
+      if (r.error) throw r.error;
+      var gestionId = r.data;
+      // Subir adjuntos (si hay) — uno por uno para no saturar
+      for (var i = 0; i < files.length; i++) {
+        await subirAdjuntoGestion(gestionId, files[i], email);
+      }
+      cerrarModalGest();
+      window.cargarGestionesCliente(_gestCtx);
+    } catch (e) {
+      msg.className='text-xs text-red-700'; msg.textContent='Error: ' + (e?.message || String(e));
+      msg.classList.remove('hidden');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Guardar gestión';
+    }
+  }
+
+  async function subirAdjuntoGestion(gestionId, file, email) {
+    try {
+      var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      var path = 'gestiones/' + gestionId + '/' + Date.now() + '_' + safeName;
+      var up = await sb.storage.from('impulsa-documentos').upload(path, file, { upsert: false, contentType: file.type || 'application/octet-stream' });
+      if (up.error) throw up.error;
+      var reg = await sb.rpc('gest_adjunto_registrar', {
+        p_email: email, p_gestion_id: gestionId, p_bucket_path: path,
+        p_nombre: file.name, p_mime: file.type || null, p_size: file.size
+      });
+      if (reg.error) throw reg.error;
+    } catch (e) {
+      console.warn('[gest-adj] upload error:', e);
+      alert('Error subiendo "' + file.name + '": ' + (e?.message || String(e)));
+    }
+  }
+
+  async function verAdjuntoGestion(path) {
+    try {
+      var s = await sb.storage.from('impulsa-documentos').createSignedUrl(path, 300);
+      if (s.error) throw s.error;
+      window.open(s.data.signedUrl, '_blank');
+    } catch (e) { alert('No se pudo abrir: ' + (e?.message || String(e))); }
+  }
+
+  function init() {
+    document.getElementById('crmNuevaGestCerrar')?.addEventListener('click', cerrarModalGest);
+    document.getElementById('crmNuevaGestCancelar')?.addEventListener('click', cerrarModalGest);
+    document.getElementById('crmNuevaGestCrear')?.addEventListener('click', crearGestion);
+    // Delegación: clicks en "ver" adjunto
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('.gest-adj-ver');
+      if (btn) { verAdjuntoGestion(btn.dataset.path); }
+    });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
