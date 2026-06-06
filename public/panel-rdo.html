@@ -3768,6 +3768,15 @@
         </div>
       </div>
 
+      <!-- Mis obligaciones · filtra por responsable_email = sesión · mig 227 -->
+      <div id="cump_mis_obligaciones" class="hidden bg-emerald-50 border border-emerald-300 rounded p-3 mb-3">
+        <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
+          <div class="text-sm font-semibold text-emerald-900">🎯 Tus obligaciones pendientes (<span id="cump_mis_count">0</span>)</div>
+          <button id="cump_mis_ver_todas" class="text-xs text-emerald-700 hover:underline">Ver todas ↓</button>
+        </div>
+        <div id="cump_mis_lista" class="space-y-1"></div>
+      </div>
+
       <div class="flex gap-2 mb-3 flex-wrap">
         <select id="cump_filtro_ley" class="px-2 py-1 border border-stone-300 rounded text-sm">
           <option value="">Todas las leyes</option>
@@ -3820,6 +3829,22 @@
         </div>
         <input id="cump_fecha_verificacion" type="date" class="px-2 py-1 border border-stone-300 rounded text-sm">
         <textarea id="cump_notas" placeholder="Notas / contexto" rows="2" maxlength="1000" class="w-full px-2 py-1 border border-stone-300 rounded text-sm"></textarea>
+
+        <!-- Archivos adjuntos · mig 227 · bucket impulsa-documentos prefix cumplimiento/ -->
+        <div class="border-t border-stone-200 pt-2 mt-1">
+          <div class="text-xs font-semibold text-stone-700 mb-1 flex items-center justify-between">
+            <span>📎 Archivos de respaldo</span>
+            <button type="button" id="cump_diego_ctx" class="text-[11px] text-violet-700 hover:underline">🧠 Preguntar a Diego sobre esta obligación</button>
+          </div>
+          <div id="cump_dropzone" class="border-2 border-dashed border-stone-300 rounded p-3 text-center text-xs text-stone-500 hover:border-emerald-400 hover:bg-emerald-50 cursor-pointer transition-colors">
+            <div>📥 <strong>Arrastrá archivos aquí</strong> o <span class="text-emerald-700 underline">hacé click para elegir</span></div>
+            <div class="text-[10px] text-stone-400 mt-0.5">PDF, JPG, PNG, DOCX hasta 25 MB</div>
+          </div>
+          <input id="cump_file_picker" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.heic" class="hidden">
+          <div id="cump_upload_progress" class="hidden mt-1 text-xs text-stone-600"></div>
+          <div id="cump_archivos_lista" class="mt-2 space-y-1"></div>
+        </div>
+
         <div class="flex gap-2 justify-end">
           <button id="cump_cancelar" class="px-3 py-1 text-stone-600 text-xs">Cancelar</button>
           <button id="cump_guardar" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs">Guardar</button>
@@ -14874,10 +14899,32 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 // Tab Cumplimiento Legal · silo 05 · 03-jun PC2 Pablo · MVP read+edit panel.cumplimiento_legal
+// Extendido 06-jun mig 227: drag&drop archivos + "mis obligaciones" + Diego ctx
 (function () {
   let _cumpRows = [];
+  let _sessionEmail = '';
+  let _archivosCache = {};
+  let _currentEditId = null;
   function $$(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function humanSize(b) { if (!b) return ''; if (b < 1024) return b + ' B'; if (b < 1048576) return (b/1024).toFixed(1) + ' KB'; return (b/1048576).toFixed(1) + ' MB'; }
+  async function resolveSessionEmail() {
+    try {
+      if (window.currentUser && window.currentUser.email) return String(window.currentUser.email).toLowerCase();
+    } catch (_) {}
+    try {
+      var rf = JSON.parse(localStorage.getItem('rf_session') || 'null');
+      if (rf && rf.email) return String(rf.email).toLowerCase();
+    } catch (_) {}
+    try {
+      if (window.sb && sb.auth) {
+        var s = await sb.auth.getSession();
+        var em = s && s.data && s.data.session && s.data.session.user && s.data.session.user.email;
+        if (em) return String(em).toLowerCase();
+      }
+    } catch (_) {}
+    return '';
+  }
   function badgeEstado(estado) {
     var map = {
       pendiente: { cls: 'bg-amber-100 text-amber-800', emoji: '🟡' },
@@ -14893,14 +14940,39 @@ document.addEventListener('DOMContentLoaded', () => {
     var lista = $$('cump_lista');
     if (!lista || !window.sb) return;
     try {
+      if (!_sessionEmail) _sessionEmail = await resolveSessionEmail();
       var resp = await sb.schema('panel').from('cumplimiento_legal').select('*').order('ley_id').order('articulo_id');
       if (resp.error) throw resp.error;
       _cumpRows = resp.data || [];
       poblarFiltroLey();
+      renderMisObligaciones();
       renderCumplimiento();
     } catch (e) {
       lista.innerHTML = '<div class="text-xs text-red-600 py-4 text-center">Error: ' + esc(e && e.message ? e.message : e) + '</div>';
     }
+  }
+  function renderMisObligaciones() {
+    var box = $$('cump_mis_obligaciones');
+    var listaMis = $$('cump_mis_lista');
+    var cnt = $$('cump_mis_count');
+    if (!box || !listaMis) return;
+    if (!_sessionEmail) { box.classList.add('hidden'); return; }
+    var mias = _cumpRows.filter(function (r) {
+      return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail
+             && r.estado !== 'cumplida' && r.estado !== 'no_aplica';
+    });
+    if (!mias.length) { box.classList.add('hidden'); return; }
+    box.classList.remove('hidden');
+    if (cnt) cnt.textContent = mias.length;
+    listaMis.innerHTML = mias.map(function (r) {
+      var nArchivos = (_archivosCache[r.id] || []).length;
+      var iconAdj = nArchivos > 0 ? '📎 ' + nArchivos : '⬜ sin adj';
+      return '<button class="cump-mis-item w-full text-left bg-white border border-emerald-200 hover:border-emerald-400 rounded px-2 py-1.5 text-xs flex items-center justify-between gap-2" data-id="' + r.id + '">'
+        + '<span class="truncate">' + badgeEstado(r.estado) + ' <strong>' + esc(r.ley_id) + '</strong> Art. ' + esc(r.articulo_id)
+        + (r.sucursal_id ? ' · ' + esc(r.sucursal_id) : '') + '</span>'
+        + '<span class="text-stone-500 whitespace-nowrap">' + iconAdj + ' · editar →</span>'
+        + '</button>';
+    }).join('');
   }
   function poblarFiltroLey() {
     var sel = $$('cump_filtro_ley');
@@ -14961,6 +15033,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function abrirFormEditar(id) {
     var row = _cumpRows.find(function (r) { return String(r.id) === String(id); });
     if (!row) return;
+    _currentEditId = row.id;
     $$('cump_form_titulo').textContent = 'Editar ' + row.ley_id + ' Art. ' + row.articulo_id;
     $$('cump_edit_id').value = row.id;
     $$('cump_estado').value = row.estado || 'pendiente';
@@ -14971,7 +15044,126 @@ document.addEventListener('DOMContentLoaded', () => {
     $$('cump_fecha_verificacion').value = row.fecha_verificacion || '';
     $$('cump_notas').value = row.notas || '';
     $$('cump_form').classList.remove('hidden');
+    cargarArchivos(row.id);
     $$('cump_form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  async function cargarArchivos(obligacionId) {
+    var cont = $$('cump_archivos_lista');
+    if (!cont) return;
+    cont.innerHTML = '<div class="text-xs text-stone-400 italic">Cargando...</div>';
+    try {
+      var resp = await sb.rpc('cump_archivo_listar', { p_obligacion_id: Number(obligacionId) });
+      if (resp.error) throw resp.error;
+      _archivosCache[obligacionId] = resp.data || [];
+      renderArchivos(obligacionId);
+    } catch (e) {
+      cont.innerHTML = '<div class="text-xs text-red-600">No se pudieron cargar archivos: ' + esc(e.message || e) + '</div>';
+    }
+  }
+  function renderArchivos(obligacionId) {
+    var cont = $$('cump_archivos_lista');
+    if (!cont) return;
+    var arr = _archivosCache[obligacionId] || [];
+    if (!arr.length) {
+      cont.innerHTML = '<div class="text-xs text-stone-400 italic">Sin archivos cargados todavía.</div>';
+      return;
+    }
+    cont.innerHTML = arr.map(function (a) {
+      var fecha = new Date(a.created_at).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' });
+      var puedoBorrar = String(a.subido_por || '').toLowerCase() === _sessionEmail;
+      return '<div class="bg-stone-50 border border-stone-200 rounded px-2 py-1 flex items-center justify-between gap-2 text-xs" data-archivo-id="' + a.id + '">'
+        + '<div class="flex-1 min-w-0 truncate"><span class="font-medium">' + esc(a.filename) + '</span>'
+        + ' <span class="text-stone-400">' + humanSize(a.size_bytes) + ' · ' + esc(fecha) + ' · ' + esc(a.subido_por || '') + '</span></div>'
+        + '<div class="flex gap-1 whitespace-nowrap">'
+        + '<button class="cump-archivo-ver px-2 py-0.5 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded" data-storage-path="' + esc(a.storage_path) + '" data-bucket="' + esc(a.bucket) + '">👁 Ver</button>'
+        + (puedoBorrar ? '<button class="cump-archivo-borrar px-2 py-0.5 bg-red-100 hover:bg-red-200 text-red-800 rounded" data-archivo-id="' + a.id + '">🗑</button>' : '')
+        + '</div></div>';
+    }).join('');
+  }
+  async function subirArchivos(files, obligacionId) {
+    if (!files || !files.length || !obligacionId) return;
+    var prog = $$('cump_upload_progress');
+    if (prog) { prog.classList.remove('hidden'); prog.textContent = ''; }
+    var ok = 0, fail = 0;
+    for (var i = 0; i < files.length; i++) {
+      var file = files[i];
+      if (file.size > 25 * 1024 * 1024) { fail++; if (prog) prog.textContent = '❌ ' + file.name + ' supera 25 MB'; continue; }
+      var safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120);
+      var path = 'cumplimiento/' + obligacionId + '/' + Date.now() + '_' + safe;
+      if (prog) prog.textContent = '⏳ Subiendo ' + (i+1) + '/' + files.length + ': ' + file.name;
+      try {
+        var up = await sb.storage.from('impulsa-documentos').upload(path, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type || 'application/octet-stream'
+        });
+        if (up.error) throw up.error;
+        var reg = await sb.rpc('cump_archivo_registrar', {
+          p_obligacion_id: Number(obligacionId),
+          p_storage_path: path,
+          p_filename: file.name,
+          p_mime_type: file.type || null,
+          p_size_bytes: file.size,
+          p_bucket: 'impulsa-documentos'
+        });
+        if (reg.error) throw reg.error;
+        ok++;
+      } catch (e) {
+        fail++;
+        if (prog) prog.textContent = '❌ Falló ' + file.name + ': ' + (e.message || e);
+        console.warn('Upload fail', file.name, e);
+      }
+    }
+    if (prog) {
+      prog.textContent = '✅ ' + ok + ' archivo(s) cargado(s)' + (fail ? ' · ❌ ' + fail + ' fallaron' : '');
+      setTimeout(function () { prog.classList.add('hidden'); }, 4000);
+    }
+    await cargarArchivos(obligacionId);
+    renderMisObligaciones();
+  }
+  async function verArchivo(storagePath, bucket) {
+    try {
+      var s = await sb.storage.from(bucket || 'impulsa-documentos').createSignedUrl(storagePath, 300);
+      if (s.error) throw s.error;
+      window.open(s.data.signedUrl, '_blank', 'noopener');
+    } catch (e) {
+      alert('No se pudo abrir: ' + (e.message || e));
+    }
+  }
+  async function borrarArchivo(archivoId) {
+    if (!confirm('¿Borrar este archivo? No se puede deshacer.')) return;
+    try {
+      var arr = (_currentEditId && _archivosCache[_currentEditId]) || [];
+      var meta = arr.find(function (a) { return String(a.id) === String(archivoId); });
+      var resp = await sb.rpc('cump_archivo_borrar', { p_id: Number(archivoId) });
+      if (resp.error) throw resp.error;
+      // Borrar también el objeto del bucket (el RPC solo borra la fila)
+      if (meta && meta.storage_path && meta.bucket) {
+        try { await sb.storage.from(meta.bucket).remove([meta.storage_path]); } catch (_) {}
+      }
+      if (_currentEditId) await cargarArchivos(_currentEditId);
+      renderMisObligaciones();
+    } catch (e) {
+      alert('No se pudo borrar: ' + (e.message || e));
+    }
+  }
+  function abrirDiegoContexto() {
+    if (!_currentEditId) return;
+    var row = _cumpRows.find(function (r) { return r.id === _currentEditId; });
+    if (!row) return;
+    var ctx = 'Estoy en el silo Cumplimiento Legal trabajando sobre ' + row.ley_id + ' Art. ' + row.articulo_id
+      + '. Estado actual: ' + (row.estado || 'pendiente')
+      + (row.sucursal_id ? ' · Sucursal: ' + row.sucursal_id : '')
+      + (row.notas ? ' · Notas: ' + row.notas : '')
+      + '. ¿Qué documento o evidencia debería cargar para cumplir con esta obligación?';
+    if (typeof window.openDiegoChat === 'function') {
+      window.openDiegoChat({ prefill: ctx, modulo: 'cumplimiento_silo_05', obligacion_id: row.id });
+    } else if (typeof window.fabDiegoOpen === 'function') {
+      window.fabDiegoOpen(ctx);
+    } else {
+      var pref = encodeURIComponent(ctx);
+      window.open('/chat-diego.html?prefill=' + pref, '_blank', 'noopener');
+    }
   }
   async function guardarCumplimiento() {
     var id = $$('cump_edit_id').value;
@@ -14999,7 +15191,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('button[data-tab="cumplimiento"]')?.addEventListener('click', function () { setTimeout(loadCumplimiento, 100); });
     document.querySelector('a[data-v4-tab="cumplimiento"]')?.addEventListener('click', function () { setTimeout(loadCumplimiento, 100); });
     $$('cump_refresh')?.addEventListener('click', loadCumplimiento);
-    $$('cump_cancelar')?.addEventListener('click', function () { $$('cump_form').classList.add('hidden'); });
+    $$('cump_cancelar')?.addEventListener('click', function () { $$('cump_form').classList.add('hidden'); _currentEditId = null; });
     $$('cump_guardar')?.addEventListener('click', guardarCumplimiento);
     $$('cump_filtro_ley')?.addEventListener('change', renderCumplimiento);
     $$('cump_filtro_estado')?.addEventListener('change', renderCumplimiento);
@@ -15008,6 +15200,45 @@ document.addEventListener('DOMContentLoaded', () => {
     $$('cump_lista')?.addEventListener('click', function (e) {
       var btn = e.target.closest('.cump-editar');
       if (btn) abrirFormEditar(btn.dataset.id);
+    });
+    // Mis obligaciones · click → editar
+    $$('cump_mis_lista')?.addEventListener('click', function (e) {
+      var btn = e.target.closest('.cump-mis-item');
+      if (btn) abrirFormEditar(btn.dataset.id);
+    });
+    $$('cump_mis_ver_todas')?.addEventListener('click', function () {
+      $$('cump_lista')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    // Diego contexto
+    $$('cump_diego_ctx')?.addEventListener('click', abrirDiegoContexto);
+    // Drag & drop + file picker
+    var dz = $$('cump_dropzone');
+    var picker = $$('cump_file_picker');
+    if (dz && picker) {
+      dz.addEventListener('click', function () { picker.click(); });
+      picker.addEventListener('change', function (e) {
+        if (_currentEditId && e.target.files && e.target.files.length) {
+          subirArchivos(e.target.files, _currentEditId);
+          picker.value = '';
+        }
+      });
+      ['dragenter','dragover'].forEach(function (ev) {
+        dz.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); dz.classList.add('border-emerald-500','bg-emerald-50'); });
+      });
+      ['dragleave','drop'].forEach(function (ev) {
+        dz.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); dz.classList.remove('border-emerald-500','bg-emerald-50'); });
+      });
+      dz.addEventListener('drop', function (e) {
+        var files = e.dataTransfer && e.dataTransfer.files;
+        if (_currentEditId && files && files.length) subirArchivos(files, _currentEditId);
+      });
+    }
+    // Lista archivos · ver / borrar
+    $$('cump_archivos_lista')?.addEventListener('click', function (e) {
+      var vb = e.target.closest('.cump-archivo-ver');
+      var db = e.target.closest('.cump-archivo-borrar');
+      if (vb) verArchivo(vb.dataset.storagePath, vb.dataset.bucket);
+      else if (db) borrarArchivo(db.dataset.archivoId);
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
