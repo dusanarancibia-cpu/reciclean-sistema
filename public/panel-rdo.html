@@ -1016,7 +1016,7 @@
         <button data-tab="incidentes_op" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabIncidentesOp">🛠️ Incidentes</button>
         <button data-tab="firmas_pend" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabFirmasPend">📝 Firmas pendientes</button>
         <button data-tab="tarifas_ext" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabTarifasExt">💰 Tarifas externas</button>
-        <button data-tab="cumplimiento" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCumplimiento">⚖️ Cumplimiento</button>
+        <button data-tab="cumplimiento" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCumplimiento">📋 Trámites</button>
         <button data-tab="herramientas_ext" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabHerramientasExt">🌐 Herramientas ext.</button>
         <button data-tab="facturacion_grupo" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabFacturacionGrupo">💰 Facturación grupo</button>
         <button data-tab="vales_portal" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabValesPortal">📊 Vales portal</button>
@@ -3749,32 +3749,73 @@
       <div id="tarifaLista" class="space-y-2"></div>
     </section>
 
-    <!-- Tab Cumplimiento Legal · silo 05 Cumplimiento Ambiental · 03-jun PC2 Pablo -->
+    <!-- Tab Permisología · silo 05 · MVP visual rico 08-jun PC1 -->
     <section id="tabCumplimiento" class="tab-content hidden">
-      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-        <div>
-          <h2 class="text-xl font-bold text-stone-800">⚖️ Cumplimiento Legal</h2>
-          <p class="text-xs text-stone-500 mt-0.5">Obligaciones legales por ley y artículo. Cargá evidencia (link al documento) y marcá estado.</p>
+
+      <!-- Header gradient verde con avatar + breadcrumb -->
+      <div class="mb-3 rounded-2xl overflow-hidden" style="background:linear-gradient(135deg,#064e3b,#059669)">
+        <div class="px-5 py-4 flex items-center justify-between flex-wrap gap-3 text-white">
+          <div>
+            <div class="text-xl font-bold flex items-center gap-2">📋 Trámites</div>
+            <div class="text-xs opacity-85">Tus trámites por comuna · vos elegís · Diego te ayuda</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" id="permisologia_guia_btn" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1" title="Abrir guía flotante (arrastrable + redimensionable)">📚 Cómo usar</button>
+            <button id="cump_refresh" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-semibold">↻ Actualizar</button>
+            <span id="permisologia_avatar" class="px-3 py-1.5 bg-white/25 rounded-full text-xs font-semibold inline-flex items-center gap-1.5">👤 <span id="permisologia_avatar_nombre">—</span></span>
+          </div>
         </div>
-        <button id="cump_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-        <div class="bg-white border border-stone-200 rounded p-2">
-          <div class="text-2xl font-bold text-stone-700" id="cump_kpi_total">0</div>
-          <div class="text-xs text-stone-500">Total</div>
+      <!-- EAG-01 · Saludo personalizado primera vez -->
+      <div id="permisologia_welcome" class="hidden bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4 mb-3">
+        <div class="flex items-start justify-between gap-3 flex-wrap">
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-bold text-amber-900">👋 Hola <span id="permisologia_welcome_nombre">—</span></div>
+            <div class="text-sm text-stone-800 mt-1">Tenés <strong><span id="permisologia_welcome_count">—</span> permisos</strong> asignados en hasta 4 sucursales. <strong>Vos elegís por dónde empezar</strong> · hacé clic en cualquier permiso de la lista y queda marcado como tu foco del día. Cuando un trámite se atasque, Diego coach te sugiere algo paralelo que sí puedas avanzar.</div>
+          </div>
+          <button id="permisologia_welcome_close" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 whitespace-nowrap">Ver mis permisos</button>
         </div>
-        <div class="bg-white border border-stone-200 rounded p-2">
-          <div class="text-2xl font-bold text-amber-700" id="cump_kpi_pendientes">0</div>
-          <div class="text-xs text-stone-500">🟡 Pendientes</div>
+      </div>
+
+      <!-- KPI strip 4 colores semáforo -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+        <div class="bg-emerald-50 border-2 border-emerald-600 rounded-lg p-3 text-center">
+          <div class="text-3xl font-extrabold text-emerald-700" id="cump_kpi_ok">0</div>
+          <div class="text-[10px] uppercase tracking-wide text-stone-600 mt-0.5">Al día</div>
         </div>
-        <div class="bg-white border border-stone-200 rounded p-2">
-          <div class="text-2xl font-bold text-emerald-700" id="cump_kpi_ok">0</div>
-          <div class="text-xs text-stone-500">✅ Cumplidas</div>
+        <div class="bg-amber-50 border-2 border-amber-600 rounded-lg p-3 text-center">
+          <div class="text-3xl font-extrabold text-amber-700" id="permisologia_kpi_7d">0</div>
+          <div class="text-[10px] uppercase tracking-wide text-stone-600 mt-0.5">7d</div>
         </div>
-        <div class="bg-white border border-stone-200 rounded p-2">
-          <div class="text-2xl font-bold text-red-700" id="cump_kpi_atrasadas">0</div>
-          <div class="text-xs text-stone-500">🔴 Atrasadas</div>
+        <div class="bg-red-50 border-2 border-red-600 rounded-lg p-3 text-center">
+          <div class="text-3xl font-extrabold text-red-700" id="cump_kpi_atrasadas">0</div>
+          <div class="text-[10px] uppercase tracking-wide text-stone-600 mt-0.5">Vencidos</div>
+        </div>
+        <div class="bg-stone-100 border-2 border-stone-400 rounded-lg p-3 text-center relative">
+          <div class="text-3xl font-extrabold text-stone-700" id="permisologia_kpi_sinfoto">0</div>
+          <div class="text-[10px] uppercase tracking-wide text-stone-600 mt-0.5">Falta foto</div>
+        </div>
+      </div>
+
+      <!-- Barra de progreso global -->
+      <div id="permisologia_progress" class="hidden mb-3 bg-white border border-stone-200 rounded-lg p-3">
+        <div class="text-xs text-stone-700 mb-1">Llevás <strong><span id="permisologia_progress_done">0</span> de <span id="permisologia_progress_total">0</span></strong> evidencias subidas · <span id="permisologia_progress_pct">0</span>% · Cada permiso te toma ~2 min · En <span id="permisologia_progress_eta">0</span> min estás al día.</div>
+        <div class="h-2 bg-stone-200 rounded-full overflow-hidden"><div id="permisologia_progress_bar" class="h-full bg-emerald-600 transition-all duration-500" style="width:0%"></div></div>
+      </div>
+
+      <!-- TOP 1 card destacada · permiso elegido como foco -->
+      <div id="permisologia_top1" class="hidden mb-3 bg-white border-2 border-emerald-600 rounded-lg p-4" style="box-shadow:0 4px 16px rgba(5,150,105,0.15)">
+        <div class="flex justify-between items-start mb-2 flex-wrap gap-2">
+          <span id="permisologia_top1_pill" class="px-3 py-1 bg-blue-600 text-white rounded-full text-[10px] font-bold uppercase tracking-wide">MAIPÚ</span>
+          <span class="px-3 py-1 bg-emerald-900 text-white rounded-full text-[10px] font-bold uppercase tracking-wide">⭐ ELEGIDO POR VOS</span>
+        </div>
+        <div class="text-lg font-bold text-stone-800" id="permisologia_top1_titulo">—</div>
+        <div class="text-xs text-stone-500 mt-1" id="permisologia_top1_plazo">—</div>
+        <div class="text-sm text-stone-700 mt-2" id="permisologia_top1_desc">Necesitamos la foto del papel firmado por SEREMI sobre este permiso. Si dudás qué papel pedir, apretá <em>Preguntar a Diego</em> abajo. Cuando lo termines o se atasque, podés volver a elegir otro de la lista.</div>
+        <div class="flex gap-2 mt-3 flex-wrap">
+          <button id="permisologia_top1_subir" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700">📷 Subir foto del papel · 2 min</button>
+          <button id="permisologia_top1_diego" class="px-4 py-2 bg-white border-2 border-emerald-600 text-emerald-700 rounded-lg text-xs font-semibold hover:bg-emerald-50">¿Dudás qué papel pedir? · Preguntá a Diego</button>
         </div>
       </div>
 
@@ -3787,6 +3828,36 @@
         <div id="cump_mis_lista" class="space-y-1"></div>
       </div>
 
+      <!-- Selector COMUNAS (chips multi-select) · MVP visual 08-jun -->
+      <div class="mb-3 bg-white border border-stone-200 rounded-lg p-3">
+        <div class="text-xs font-bold text-stone-700 mb-2 uppercase tracking-wide">📍 Comunas · elegí una o varias para comparar procesos similares</div>
+        <div id="permisologia_comunas_chips" class="flex flex-wrap gap-2">
+          <button type="button" data-comuna="" class="permisologia-chip px-3 py-1.5 bg-emerald-600 text-white rounded-full text-xs font-bold hover:bg-emerald-700 transition">✓ Todas</button>
+          <button type="button" data-comuna="cerrillos" class="permisologia-chip px-3 py-1.5 bg-white border-2 border-emerald-200 text-stone-700 rounded-full text-xs font-semibold hover:bg-emerald-50 transition">Cerrillos</button>
+          <button type="button" data-comuna="maipu" class="permisologia-chip px-3 py-1.5 bg-white border-2 border-blue-200 text-stone-700 rounded-full text-xs font-semibold hover:bg-blue-50 transition">Maipú</button>
+          <button type="button" data-comuna="talca" class="permisologia-chip px-3 py-1.5 bg-white border-2 border-amber-200 text-stone-700 rounded-full text-xs font-semibold hover:bg-amber-50 transition">Talca</button>
+          <button type="button" data-comuna="puerto_montt" class="permisologia-chip px-3 py-1.5 bg-white border-2 border-indigo-200 text-stone-700 rounded-full text-xs font-semibold hover:bg-indigo-50 transition">Puerto Montt</button>
+        </div>
+      </div>
+
+      <!-- Selector TIPO TRÁMITE (provisorio · filtro frontend hasta BD post-freeze) -->
+      <div class="mb-3 bg-white border border-stone-200 rounded-lg p-3">
+        <div class="text-xs font-bold text-stone-700 mb-2 uppercase tracking-wide flex items-center justify-between flex-wrap gap-2">
+          <span>📑 Tipo de trámite</span>
+          <span class="text-[10px] font-normal text-stone-400 normal-case">post-freeze 15-jun: tipos se guardan en BD + auto-detección</span>
+        </div>
+        <div id="permisologia_tipos_chips" class="flex flex-wrap gap-2">
+          <button type="button" data-tipo="" class="permisologia-tipo-chip px-3 py-1.5 bg-emerald-600 text-white rounded-full text-xs font-bold">✓ Todos</button>
+          <button type="button" data-tipo="calificacion_tecnica" class="permisologia-tipo-chip px-3 py-1.5 bg-white border border-stone-300 text-stone-700 rounded-full text-xs">Calificación Técnica</button>
+          <button type="button" data-tipo="patente_provisoria" class="permisologia-tipo-chip px-3 py-1.5 bg-white border border-stone-300 text-stone-700 rounded-full text-xs">Patente Provisoria</button>
+          <button type="button" data-tipo="patente_definitiva" class="permisologia-tipo-chip px-3 py-1.5 bg-white border border-stone-300 text-stone-700 rounded-full text-xs">Patente Definitiva</button>
+          <button type="button" data-tipo="resolucion_sanitaria" class="permisologia-tipo-chip px-3 py-1.5 bg-white border border-stone-300 text-stone-700 rounded-full text-xs">Resolución Sanitaria</button>
+          <button type="button" data-tipo="resolucion_transporte_rnp" class="permisologia-tipo-chip px-3 py-1.5 bg-white border border-stone-300 text-stone-700 rounded-full text-xs">Resolución Transporte RNP</button>
+          <button type="button" id="permisologia_tipo_nuevo" class="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 border border-dashed border-stone-400 text-stone-600 rounded-full text-xs font-bold">+ Agregar tipo</button>
+        </div>
+      </div>
+
+      <!-- Filtros secundarios (estado · ley · texto) -->
       <div class="flex gap-2 mb-3 flex-wrap">
         <select id="cump_filtro_ley" class="px-2 py-1 border border-stone-300 rounded text-sm">
           <option value="">Todas las leyes</option>
@@ -3799,13 +3870,9 @@
           <option value="atrasada">Atrasada</option>
           <option value="no_aplica">No aplica</option>
         </select>
-        <select id="cump_filtro_sucursal" class="px-2 py-1 border border-stone-300 rounded text-sm">
+        <!-- Filtro sucursal escondido (lo reemplaza chips Comunas arriba) -->
+        <select id="cump_filtro_sucursal" class="hidden">
           <option value="">Todas las sucursales</option>
-          <option value="__transversal__">Solo transversales (sin sucursal)</option>
-          <option value="cerrillos">Cerrillos</option>
-          <option value="maipu">Maipu</option>
-          <option value="talca">Talca</option>
-          <option value="puerto_montt">Puerto Montt</option>
         </select>
         <input id="cump_filtro_texto" type="search" placeholder="Buscar en notas o responsable..." class="flex-1 px-2 py-1 border border-stone-300 rounded text-sm min-w-48">
       </div>
@@ -3855,6 +3922,13 @@
           <div id="cump_archivos_lista" class="mt-2 space-y-1"></div>
         </div>
 
+        <!-- EAG-22 · Escalado SIN FILTROS a los 3 · MVP 08-jun -->
+        <div class="border-t border-stone-200 pt-2 mt-1">
+          <div class="text-xs font-semibold text-stone-700 mb-1">📡 Si te trabás o la evidencia falla</div>
+          <button type="button" id="cump_escalar_3" class="w-full px-3 py-2 bg-slate-800 text-white rounded text-xs hover:bg-slate-900">📡 Escalar a los 3 · Cesar · Dyana · Dusan</button>
+          <div class="text-[10px] text-stone-500 mt-1">Los 3 reciben el mismo mensaje · sin filtros · con el aprendizaje el ruteo se ajusta.</div>
+        </div>
+
         <div class="flex gap-2 justify-end">
           <button id="cump_cancelar" class="px-3 py-1 text-stone-600 text-xs">Cancelar</button>
           <button id="cump_guardar" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs">Guardar</button>
@@ -3862,6 +3936,31 @@
       </div>
 
       <div id="cump_lista" class="space-y-2"></div>
+
+      <!-- Modal flotante guía · draggable + resizable · 08-jun -->
+      <div id="permisologia_guia_modal" class="hidden fixed z-40 bg-white border-2 border-emerald-600 rounded-lg shadow-2xl overflow-hidden flex flex-col"
+           style="top:80px;left:80px;width:520px;height:600px;min-width:340px;min-height:280px;resize:both">
+        <div id="permisologia_guia_header" class="bg-gradient-to-r from-emerald-700 to-emerald-900 text-white px-3 py-2 flex items-center justify-between select-none" style="cursor:move">
+          <div class="text-xs font-bold flex items-center gap-2">📚 Guía Permisología · arrastrame por la barra · estiro desde la esquina ↘</div>
+          <div class="flex gap-1">
+            <button type="button" id="permisologia_guia_max" class="text-white/80 hover:text-white px-2 text-sm" title="Maximizar / restaurar">⛶</button>
+            <button type="button" id="permisologia_guia_close" class="text-white/80 hover:text-white px-2 text-base" title="Cerrar">×</button>
+          </div>
+        </div>
+        <iframe id="permisologia_guia_iframe" src="/guias/permisologia.html" class="flex-1 w-full border-0" loading="lazy"></iframe>
+      </div>
+
+      <!-- EAG-08 · Toast refuerzo positivo post-upload · MVP 08-jun -->
+      <div id="permisologia_toast" class="hidden fixed bottom-4 right-4 z-50 max-w-sm bg-emerald-600 text-white rounded-lg shadow-2xl p-4">
+        <div class="flex items-start gap-3">
+          <div class="text-2xl">✓</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm" id="permisologia_toast_title">Listo</div>
+            <div class="text-xs opacity-90 mt-1" id="permisologia_toast_msg">Evidencia subida</div>
+          </div>
+          <button id="permisologia_toast_close" class="text-white/70 hover:text-white text-lg leading-none">×</button>
+        </div>
+      </div>
     </section>
 
     <!-- Tab Herramientas externas · D-FACTURACION-ETAPA-1 FASE 5 · PC2 Pablo 06-jun -->
@@ -4969,7 +5068,7 @@ async function loadSilos() {
     '02': 'Operaciones',
     '03': 'Planta',
     '04': 'Manifiestos',
-    '05': 'Cumplimiento',
+    '05': 'Permisología',
     '06': 'Tecnología',
     '07': 'Finanzas',
     '08': 'RRHH',
@@ -15206,6 +15305,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     await cargarArchivos(obligacionId);
     renderMisObligaciones();
+    // EAG-08 · refuerzo positivo
+    if (ok > 0 && window.showPermisologiaToast) {
+      try {
+        var rowDone = (_cumpRows || []).find(function (r) { return String(r.id) === String(obligacionId); }) || {};
+        var nTotal = (_cumpRows || []).filter(function (r) {
+          return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail;
+        }).length;
+        var nConArchivos = (_cumpRows || []).filter(function (r) {
+          return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail
+                 && (_archivosCache[r.id] || []).length > 0;
+        }).length;
+        var faltan = Math.max(0, nTotal - nConArchivos);
+        window.showPermisologiaToast(
+          'Listo · evidencia subida',
+          (rowDone.ley_id ? rowDone.ley_id + ' Art ' + rowDone.articulo_id : 'Archivo') + ' guardado. Quedan ' + faltan + ' permisos sin evidencia.'
+        );
+      } catch (_) {}
+    }
   }
   async function verArchivo(storagePath, bucket) {
     try {
@@ -15297,6 +15414,402 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // Diego contexto
     $$('cump_diego_ctx')?.addEventListener('click', abrirDiegoContexto);
+
+    // GUARDA · todo lo de Permisología MVP se ejecuta UNA sola vez · 08-jun fix freeze
+    if (window._permisologiaInited) { console.log('[Permisología] init ya ejecutado · skip'); return; }
+    window._permisologiaInited = true;
+
+    // Helpers · MVP visual 08-jun
+    function _permisologiaNombreCorto() {
+      var nombre = (window._sessionUserNombre || (_sessionEmail || '').split('@')[0] || '').split(' ')[0];
+      return nombre || 'Usuario';
+    }
+    function _permisologiaSucursalColor(suc) {
+      var map = { maipu:'bg-blue-600', cerrillos:'bg-emerald-600', talca:'bg-amber-600', puerto_montt:'bg-indigo-600' };
+      return map[String(suc || '').toLowerCase()] || 'bg-stone-500';
+    }
+    function _permisologiaSucursalLabel(suc) {
+      var map = { maipu:'MAIPÚ', cerrillos:'CERRILLOS', talca:'TALCA', puerto_montt:'PTO MONTT' };
+      return map[String(suc || '').toLowerCase()] || String(suc || 'TRANSV.').toUpperCase();
+    }
+
+    // EAG-01 · Saludo + avatar header + KPIs avanzados + progreso · MVP 08-jun
+    function maybeShowWelcome() {
+      try {
+        if (!_sessionEmail) return;
+        // Avatar header (siempre, no dismissible)
+        var avEl = $$('permisologia_avatar_nombre');
+        if (avEl) avEl.textContent = _permisologiaNombreCorto();
+
+        var mias = (_cumpRows || []).filter(function (r) {
+          return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail
+                 && r.estado !== 'cumplida' && r.estado !== 'no_aplica';
+        });
+
+        // KPIs avanzados
+        var hoy = new Date();
+        var ms7d = 7 * 24 * 3600 * 1000;
+        var nVencen7d = 0, nSinFoto = 0;
+        mias.forEach(function (r) {
+          if (r.fecha_verificacion) {
+            var diff = new Date(r.fecha_verificacion).getTime() - hoy.getTime();
+            if (diff >= 0 && diff <= ms7d) nVencen7d++;
+          }
+          if (!(_archivosCache[r.id] || []).length) nSinFoto++;
+        });
+        if ($$('permisologia_kpi_7d')) $$('permisologia_kpi_7d').textContent = nVencen7d;
+        if ($$('permisologia_kpi_sinfoto')) $$('permisologia_kpi_sinfoto').textContent = nSinFoto;
+
+        // Barra progreso
+        var total = mias.length + (_cumpRows || []).filter(function (r) {
+          return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail && r.estado === 'cumplida';
+        }).length;
+        var hechas = total - mias.length;
+        if (total > 0) {
+          var pct = Math.round((hechas / total) * 100);
+          var box = $$('permisologia_progress');
+          if (box) box.classList.remove('hidden');
+          if ($$('permisologia_progress_done')) $$('permisologia_progress_done').textContent = hechas;
+          if ($$('permisologia_progress_total')) $$('permisologia_progress_total').textContent = total;
+          if ($$('permisologia_progress_pct')) $$('permisologia_progress_pct').textContent = pct;
+          if ($$('permisologia_progress_eta')) $$('permisologia_progress_eta').textContent = mias.length * 2;
+          if ($$('permisologia_progress_bar')) $$('permisologia_progress_bar').style.width = pct + '%';
+        }
+
+        // Saludo bienvenida primera vez
+        var dismissed = localStorage.getItem('permisologia_welcome_dismissed_' + _sessionEmail);
+        if (!dismissed && mias.length) {
+          var welcome = $$('permisologia_welcome'); if (welcome) welcome.classList.remove('hidden');
+          if ($$('permisologia_welcome_nombre')) $$('permisologia_welcome_nombre').textContent = _permisologiaNombreCorto();
+          if ($$('permisologia_welcome_count')) $$('permisologia_welcome_count').textContent = mias.length;
+        }
+      } catch (_) {}
+    }
+    $$('permisologia_welcome_close')?.addEventListener('click', function () {
+      var box = $$('permisologia_welcome'); if (box) box.classList.add('hidden');
+      try { if (_sessionEmail) localStorage.setItem('permisologia_welcome_dismissed_' + _sessionEmail, '1'); } catch (_) {}
+    });
+
+    // EAG-02 · TOP 1 card · se llena cuando Jair clickea un permiso de la lista
+    function showPermisologiaTop1(rowId) {
+      try {
+        var row = (_cumpRows || []).find(function (r) { return String(r.id) === String(rowId); });
+        if (!row) return;
+        localStorage.setItem('permisologia_top1_' + (_sessionEmail || 'anon'), String(rowId));
+        var box = $$('permisologia_top1'); if (!box) return;
+        var pill = $$('permisologia_top1_pill');
+        var titulo = $$('permisologia_top1_titulo');
+        var plazo = $$('permisologia_top1_plazo');
+        if (pill) {
+          pill.textContent = _permisologiaSucursalLabel(row.sucursal_id);
+          pill.className = 'px-3 py-1 text-white rounded-full text-[10px] font-bold uppercase tracking-wide ' + _permisologiaSucursalColor(row.sucursal_id);
+        }
+        if (titulo) titulo.textContent = (row.ley_id || 'Permiso') + ' · Art. ' + (row.articulo_id || '?');
+        if (plazo) {
+          var p = row.fecha_verificacion
+            ? 'Vence ' + new Date(row.fecha_verificacion).toLocaleDateString('es-CL')
+            : 'Plazo sin definir aún · Dyana lo está confirmando';
+          plazo.textContent = p;
+        }
+        box.classList.remove('hidden');
+        // Botones contextuales
+        var btnSubir = $$('permisologia_top1_subir');
+        var btnDiego = $$('permisologia_top1_diego');
+        if (btnSubir) btnSubir.onclick = function () { abrirFormEditar(rowId); setTimeout(function () { $$('cump_dropzone')?.click(); }, 200); };
+        if (btnDiego) btnDiego.onclick = function () { abrirFormEditar(rowId); setTimeout(function () { $$('cump_diego_ctx')?.click(); }, 200); };
+      } catch (_) {}
+    }
+    // Hook click en lista "mis obligaciones" → además de abrir form, marcar como TOP 1
+    $$('cump_mis_lista')?.addEventListener('click', function (e) {
+      var btn = e.target.closest('.cump-mis-item');
+      if (btn) showPermisologiaTop1(btn.dataset.id);
+    }, true);
+
+    // Re-render trigger: cuando se cargan obligaciones, intentar mostrar saludo + KPIs + restore TOP 1
+    var _origRenderMis = renderMisObligaciones;
+    renderMisObligaciones = function () {
+      _origRenderMis.apply(this, arguments);
+      maybeShowWelcome();
+      // Restore TOP 1 anterior si existe
+      try {
+        var saved = localStorage.getItem('permisologia_top1_' + (_sessionEmail || 'anon'));
+        if (saved) showPermisologiaTop1(saved);
+      } catch (_) {}
+    };
+
+    // EAG-22 · Escalado SIN FILTROS a los 3 (Cesar/Dyana/Dusan) · MVP 08-jun
+    $$('cump_escalar_3')?.addEventListener('click', async function () {
+      if (!_currentEditId) { alert('Primero elegí un permiso de la lista de arriba.'); return; }
+      var row = _cumpRows.find(function (r) { return String(r.id) === String(_currentEditId); }) || {};
+      var motivo = prompt('¿Qué necesitás? (1-2 líneas)\nVamos a notificar a Cesar (Soporte), Dyana (Contabilidad) y Dusan (CEO) los 3 al mismo tiempo.');
+      if (!motivo) return;
+      var mensaje = '[Escalado Permisología · ' + (window._sessionUserNombre || _sessionEmail) + '] '
+        + (row.ley_id || '?') + ' Art ' + (row.articulo_id || '?')
+        + (row.sucursal_id ? ' · ' + row.sucursal_id : '')
+        + ' · Motivo: ' + motivo;
+      try {
+        var destinos = [
+          { email: 'soporte@gestionrepchile.cl', nombre: 'Cesar Mora' },
+          { email: 'dpinto@sercotspa.cl', nombre: 'Dyana' },
+          { email: 'gerencia@gestionrepchile.cl', nombre: 'Dusan' }
+        ];
+        var ok = 0;
+        for (var i = 0; i < destinos.length; i++) {
+          try {
+            await sb.from('diego_inbox').insert({
+              destinatario_email: destinos[i].email,
+              categoria: 'escalado_permisologia',
+              titulo: 'Escalado Permisología · obligación #' + _currentEditId,
+              mensaje: mensaje,
+              origen_email: _sessionEmail || 'panel',
+              prioridad: 'alta'
+            });
+            ok++;
+          } catch (e) { console.warn('Escalado fail ' + destinos[i].email, e); }
+        }
+        if (ok === 3) showPermisologiaToast('Escalado enviado ✓', 'Cesar, Dyana y Dusan reciben el mensaje. Sigue trabajando en otra cosa mientras responden.');
+        else alert('Escalado parcial: ' + ok + '/3. Avisá a Dusan por WhatsApp si urge.');
+      } catch (e) {
+        alert('No pude escalar: ' + (e.message || e));
+      }
+    });
+
+    // Scroll-to-top al activar pestaña Permisología · 08-jun
+    document.querySelector('button[data-tab="cumplimiento"]')?.addEventListener('click', function () {
+      setTimeout(function () {
+        var section = document.getElementById('tabCumplimiento');
+        if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        else window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 50);
+    });
+
+    // Chips COMUNAS · multi-select · 08-jun
+    (function setupComunaChips() {
+      var cont = document.getElementById('permisologia_comunas_chips');
+      if (!cont) return;
+      var seleccionadas = new Set(); // vacío = todas
+      function paintChips() {
+        cont.querySelectorAll('.permisologia-chip').forEach(function (b) {
+          var c = b.dataset.comuna || '';
+          var sel = (c === '' && seleccionadas.size === 0) || seleccionadas.has(c);
+          if (sel) {
+            b.className = 'permisologia-chip px-3 py-1.5 bg-emerald-600 text-white rounded-full text-xs font-bold hover:bg-emerald-700 transition';
+            if (!b.textContent.startsWith('✓')) b.textContent = '✓ ' + b.textContent.replace(/^✓ /,'');
+          } else {
+            b.className = 'permisologia-chip px-3 py-1.5 bg-white border-2 border-stone-300 text-stone-700 rounded-full text-xs font-semibold hover:bg-stone-50 transition';
+            b.textContent = b.textContent.replace(/^✓ /,'');
+          }
+        });
+        // Aplicar filtro al select existente (compatibilidad con renderCumplimiento)
+        var sel = document.getElementById('cump_filtro_sucursal');
+        if (sel) {
+          if (seleccionadas.size === 0) sel.value = '';
+          else if (seleccionadas.size === 1) sel.value = Array.from(seleccionadas)[0];
+          else sel.value = ''; // multi-select no soportado por el filtro original · fallback "todas"
+          sel.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        // Filtro multi-comuna real
+        window._permisologiaComunaSet = seleccionadas;
+        if (typeof renderCumplimiento === 'function') renderCumplimiento();
+      }
+      cont.addEventListener('click', function (e) {
+        var btn = e.target.closest('.permisologia-chip');
+        if (!btn) return;
+        var c = btn.dataset.comuna || '';
+        if (c === '') { seleccionadas.clear(); }
+        else {
+          if (seleccionadas.has(c)) seleccionadas.delete(c);
+          else seleccionadas.add(c);
+        }
+        paintChips();
+      });
+      paintChips();
+    })();
+
+    // Chips TIPO TRÁMITE · filtro frontend provisorio · 08-jun
+    (function setupTipoChips() {
+      var cont = document.getElementById('permisologia_tipos_chips');
+      if (!cont) return;
+      var tipoActivo = '';
+      function paint() {
+        cont.querySelectorAll('.permisologia-tipo-chip').forEach(function (b) {
+          var t = b.dataset.tipo || '';
+          var sel = (t === tipoActivo);
+          if (sel) b.className = 'permisologia-tipo-chip px-3 py-1.5 bg-emerald-600 text-white rounded-full text-xs font-bold';
+          else b.className = 'permisologia-tipo-chip px-3 py-1.5 bg-white border border-stone-300 text-stone-700 rounded-full text-xs hover:bg-stone-50';
+        });
+        window._permisologiaTipoActivo = tipoActivo;
+        if (typeof renderCumplimiento === 'function') renderCumplimiento();
+      }
+      cont.addEventListener('click', function (e) {
+        var btn = e.target.closest('.permisologia-tipo-chip');
+        if (!btn) return;
+        tipoActivo = btn.dataset.tipo || '';
+        paint();
+      });
+      document.getElementById('permisologia_tipo_nuevo')?.addEventListener('click', function () {
+        var nuevo = prompt('Nombre del nuevo tipo de trámite (ej: "Permiso Bombero"):');
+        if (!nuevo) return;
+        var slug = nuevo.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'permisologia-tipo-chip px-3 py-1.5 bg-white border border-stone-300 text-stone-700 rounded-full text-xs';
+        btn.dataset.tipo = slug;
+        btn.textContent = nuevo;
+        cont.insertBefore(btn, document.getElementById('permisologia_tipo_nuevo'));
+        alert('Tipo "' + nuevo + '" agregado solo en esta pantalla. Para que se guarde permanente y se auto-asigne a obligaciones, Pablo lo conecta a BD post-freeze 15-jun.');
+      });
+      paint();
+    })();
+
+    // Sidebar contextual: cuando silo Permisología activo, ocultar pestañas no-Trámites · 08-jun · fix v2 [data-v4-tab]
+    function permisologiaApplyContextualSidebar() {
+      try {
+        var sel = document.getElementById('siloSelector');
+        var siloValue = sel ? sel.value : '';
+        var enPermisologia = (siloValue === '05');
+        var keep = ['cumplimiento', 'portada', 'admin', 'manual', 'inicio'];
+
+        // 1. Sidebar lateral v4 (los `<a data-v4-tab>` agrupados en <details>)
+        document.querySelectorAll('a[data-v4-tab]').forEach(function (a) {
+          var tab = a.dataset.v4Tab;
+          if (enPermisologia && keep.indexOf(tab) === -1) a.classList.add('permisologia-tab-oculto');
+          else a.classList.remove('permisologia-tab-oculto');
+        });
+
+        // 2. Header tabs antiguos (por compat)
+        document.querySelectorAll('button[data-tab]').forEach(function (b) {
+          var tab = b.dataset.tab;
+          if (enPermisologia && keep.indexOf(tab) === -1) b.classList.add('permisologia-tab-oculto');
+          else b.classList.remove('permisologia-tab-oculto');
+        });
+
+        // 3. Categorías <details> en sidebar v4 · si la categoría no contiene ningún tab visible, ocultarla
+        document.querySelectorAll('details.v4-cat').forEach(function (det) {
+          if (!enPermisologia) {
+            det.classList.remove('permisologia-tab-oculto');
+            return;
+          }
+          var visibles = det.querySelectorAll('a[data-v4-tab]:not(.permisologia-tab-oculto)');
+          if (visibles.length === 0) det.classList.add('permisologia-tab-oculto');
+          else det.classList.remove('permisologia-tab-oculto');
+        });
+      } catch (_) {}
+    }
+    // Inyectar CSS para que !important triunfe sobre cualquier reaparición de applySiloTabs
+    (function injectContextualCSS() {
+      if (document.getElementById('permisologia_contextual_css')) return;
+      var st = document.createElement('style');
+      st.id = 'permisologia_contextual_css';
+      st.textContent = '.permisologia-tab-oculto { display: none !important; }';
+      document.head.appendChild(st);
+    })();
+    document.getElementById('siloSelector')?.addEventListener('change', function () {
+      setTimeout(permisologiaApplyContextualSidebar, 50);
+      setTimeout(permisologiaApplyContextualSidebar, 300);
+    });
+    // Re-aplicar después de cualquier click en sidebar (applySiloTabs interno revierte la visibility)
+    document.querySelectorAll('button[data-tab]').forEach(function (b) {
+      b.addEventListener('click', function () { setTimeout(permisologiaApplyContextualSidebar, 30); });
+    });
+    // MutationObserver REMOVIDO 08-jun 15:00 · causaba loop infinito (page freeze)
+    // En su lugar: re-aplicar solo en eventos discretos (click tab + cambio silo + carga inicial)
+    // Carga inicial
+    setTimeout(permisologiaApplyContextualSidebar, 1500);
+    setTimeout(permisologiaApplyContextualSidebar, 3500);
+
+    // Hook al filtro real: filtrar por multi-comuna y por tipo_tramite (BD viva)
+    var _origRenderCumplimiento = renderCumplimiento;
+    var TIPOS_TRAMITE_NOMBRES = {
+      calificacion_tecnica: 'Calificación Técnica',
+      patente_provisoria: 'Patente Provisoria',
+      patente_definitiva: 'Patente Definitiva',
+      resolucion_sanitaria: 'Resolución Sanitaria',
+      resolucion_transporte_rnp: 'Resolución Transporte RNP'
+    };
+    renderCumplimiento = function () {
+      _origRenderCumplimiento.apply(this, arguments);
+      try {
+        var comunaSet = window._permisologiaComunaSet;
+        var tipo = window._permisologiaTipoActivo;
+        var lista = document.getElementById('cump_lista');
+        if (!lista) return;
+        // Selector real: cada item de la lista tiene data-id (línea 15202 del HTML original)
+        var items = lista.querySelectorAll('div[data-id]');
+        items.forEach(function (it) {
+          var row = (_cumpRows || []).find(function (r) { return String(r.id) === String(it.dataset.id); });
+          if (!row) return;
+          // Inyectar badge tipo si falta
+          if (row.tipo_tramite && !it.querySelector('.permisologia-tipo-badge')) {
+            var badge = document.createElement('span');
+            badge.className = 'permisologia-tipo-badge inline-block ml-1 px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-bold';
+            badge.textContent = '📑 ' + (TIPOS_TRAMITE_NOMBRES[row.tipo_tramite] || row.tipo_tramite);
+            var hdr = it.querySelector('.font-semibold, h3, h4, strong, .text-sm') || it;
+            hdr.appendChild(badge);
+          }
+          // Filtros
+          var matchComuna = !comunaSet || comunaSet.size === 0 || comunaSet.has(String(row.sucursal_id || ''));
+          var matchTipo = !tipo || (row.tipo_tramite === tipo);
+          if (!(matchComuna && matchTipo)) it.style.display = 'none';
+          else it.style.display = '';
+        });
+      } catch (_) {}
+    };
+
+    // Modal flotante guía · drag + maximize + open/close · 08-jun
+    (function setupGuiaModal() {
+      var modal = $$('permisologia_guia_modal');
+      var btn = $$('permisologia_guia_btn');
+      var hdr = $$('permisologia_guia_header');
+      var btnClose = $$('permisologia_guia_close');
+      var btnMax = $$('permisologia_guia_max');
+      if (!modal || !btn) return;
+      var maximized = false, savedRect = null;
+      btn.addEventListener('click', function () { modal.classList.remove('hidden'); });
+      btnClose?.addEventListener('click', function () { modal.classList.add('hidden'); });
+      btnMax?.addEventListener('click', function () {
+        if (!maximized) {
+          savedRect = { t: modal.style.top, l: modal.style.left, w: modal.style.width, h: modal.style.height };
+          Object.assign(modal.style, { top:'10px', left:'10px', width:'calc(100vw - 20px)', height:'calc(100vh - 20px)' });
+          maximized = true;
+        } else if (savedRect) {
+          Object.assign(modal.style, { top: savedRect.t, left: savedRect.l, width: savedRect.w, height: savedRect.h });
+          maximized = false;
+        }
+      });
+      // Drag por header
+      var dragging = false, offX = 0, offY = 0;
+      hdr?.addEventListener('mousedown', function (e) {
+        if (maximized) return;
+        dragging = true;
+        var rect = modal.getBoundingClientRect();
+        offX = e.clientX - rect.left;
+        offY = e.clientY - rect.top;
+        e.preventDefault();
+      });
+      document.addEventListener('mousemove', function (e) {
+        if (!dragging) return;
+        var x = Math.max(0, Math.min(window.innerWidth - 60, e.clientX - offX));
+        var y = Math.max(0, Math.min(window.innerHeight - 40, e.clientY - offY));
+        modal.style.left = x + 'px';
+        modal.style.top = y + 'px';
+      });
+      document.addEventListener('mouseup', function () { dragging = false; });
+    })();
+
+    // EAG-08 · Toast refuerzo positivo · MVP 08-jun
+    window.showPermisologiaToast = function (title, msg) {
+      var t = $$('permisologia_toast'); if (!t) return;
+      var ttl = $$('permisologia_toast_title'); var ms = $$('permisologia_toast_msg');
+      if (ttl) ttl.textContent = title || 'Listo';
+      if (ms) ms.textContent = msg || '';
+      t.classList.remove('hidden');
+      clearTimeout(window._permisologiaToastTimer);
+      window._permisologiaToastTimer = setTimeout(function () { t.classList.add('hidden'); }, 6000);
+    };
+    $$('permisologia_toast_close')?.addEventListener('click', function () {
+      $$('permisologia_toast')?.classList.add('hidden');
+    });
     // Drag & drop + file picker
     var dz = $$('cump_dropzone');
     var picker = $$('cump_file_picker');
