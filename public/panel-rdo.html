@@ -15703,26 +15703,40 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(permisologiaApplyContextualSidebar, 1500);
     setTimeout(permisologiaApplyContextualSidebar, 3500);
 
-    // Hook al filtro real: filtrar por multi-comuna y por tipo activo
+    // Hook al filtro real: filtrar por multi-comuna y por tipo_tramite (BD viva)
     var _origRenderCumplimiento = renderCumplimiento;
+    var TIPOS_TRAMITE_NOMBRES = {
+      calificacion_tecnica: 'Calificación Técnica',
+      patente_provisoria: 'Patente Provisoria',
+      patente_definitiva: 'Patente Definitiva',
+      resolucion_sanitaria: 'Resolución Sanitaria',
+      resolucion_transporte_rnp: 'Resolución Transporte RNP'
+    };
     renderCumplimiento = function () {
       _origRenderCumplimiento.apply(this, arguments);
       try {
         var comunaSet = window._permisologiaComunaSet;
         var tipo = window._permisologiaTipoActivo;
-        if ((comunaSet && comunaSet.size > 0) || tipo) {
-          var lista = document.getElementById('cump_lista');
-          if (!lista) return;
-          var items = lista.querySelectorAll('[data-cump-id]');
-          items.forEach(function (it) {
-            var row = (_cumpRows || []).find(function (r) { return String(r.id) === String(it.dataset.cumpId); });
-            if (!row) return;
-            var matchComuna = !comunaSet || comunaSet.size === 0 || comunaSet.has(String(row.sucursal_id || ''));
-            var matchTipo = !tipo; // sin BD aún, no se aplica · queda preparado
-            if (!(matchComuna && matchTipo)) it.style.display = 'none';
-            else it.style.display = '';
-          });
-        }
+        var lista = document.getElementById('cump_lista');
+        if (!lista) return;
+        var items = lista.querySelectorAll('[data-cump-id]');
+        items.forEach(function (it) {
+          var row = (_cumpRows || []).find(function (r) { return String(r.id) === String(it.dataset.cumpId); });
+          if (!row) return;
+          // Inyectar badge tipo si falta
+          if (row.tipo_tramite && !it.querySelector('.permisologia-tipo-badge')) {
+            var badge = document.createElement('span');
+            badge.className = 'permisologia-tipo-badge inline-block ml-1 px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-bold';
+            badge.textContent = '📑 ' + (TIPOS_TRAMITE_NOMBRES[row.tipo_tramite] || row.tipo_tramite);
+            var hdr = it.querySelector('.font-semibold, h3, h4, strong, .text-sm') || it;
+            hdr.appendChild(badge);
+          }
+          // Filtros
+          var matchComuna = !comunaSet || comunaSet.size === 0 || comunaSet.has(String(row.sucursal_id || ''));
+          var matchTipo = !tipo || (row.tipo_tramite === tipo);
+          if (!(matchComuna && matchTipo)) it.style.display = 'none';
+          else it.style.display = '';
+        });
       } catch (_) {}
     };
 
