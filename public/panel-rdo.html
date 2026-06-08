@@ -3760,7 +3760,7 @@
             <div class="text-xs opacity-85">Tus permisos por ley y artículo · vos elegís · Diego te ayuda</div>
           </div>
           <div class="flex items-center gap-2">
-            <a href="/guias/permisologia.html" target="_blank" rel="noopener" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1" title="Guía visual 6 pasos">📚 Cómo usar</a>
+            <button type="button" id="permisologia_guia_btn" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1" title="Abrir guía flotante (arrastrable + redimensionable)">📚 Cómo usar</button>
             <button id="cump_refresh" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-semibold">↻ Actualizar</button>
             <span id="permisologia_avatar" class="px-3 py-1.5 bg-white/25 rounded-full text-xs font-semibold inline-flex items-center gap-1.5">👤 <span id="permisologia_avatar_nombre">—</span></span>
           </div>
@@ -3910,6 +3910,19 @@
       </div>
 
       <div id="cump_lista" class="space-y-2"></div>
+
+      <!-- Modal flotante guía · draggable + resizable · 08-jun -->
+      <div id="permisologia_guia_modal" class="hidden fixed z-40 bg-white border-2 border-emerald-600 rounded-lg shadow-2xl overflow-hidden flex flex-col"
+           style="top:80px;left:80px;width:520px;height:600px;min-width:340px;min-height:280px;resize:both">
+        <div id="permisologia_guia_header" class="bg-gradient-to-r from-emerald-700 to-emerald-900 text-white px-3 py-2 flex items-center justify-between select-none" style="cursor:move">
+          <div class="text-xs font-bold flex items-center gap-2">📚 Guía Permisología · arrastrame por la barra · estiro desde la esquina ↘</div>
+          <div class="flex gap-1">
+            <button type="button" id="permisologia_guia_max" class="text-white/80 hover:text-white px-2 text-sm" title="Maximizar / restaurar">⛶</button>
+            <button type="button" id="permisologia_guia_close" class="text-white/80 hover:text-white px-2 text-base" title="Cerrar">×</button>
+          </div>
+        </div>
+        <iframe id="permisologia_guia_iframe" src="/guias/permisologia.html" class="flex-1 w-full border-0" loading="lazy"></iframe>
+      </div>
 
       <!-- EAG-08 · Toast refuerzo positivo post-upload · MVP 08-jun -->
       <div id="permisologia_toast" class="hidden fixed bottom-4 right-4 z-50 max-w-sm bg-emerald-600 text-white rounded-lg shadow-2xl p-4">
@@ -15530,6 +15543,47 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('No pude escalar: ' + (e.message || e));
       }
     });
+
+    // Modal flotante guía · drag + maximize + open/close · 08-jun
+    (function setupGuiaModal() {
+      var modal = $$('permisologia_guia_modal');
+      var btn = $$('permisologia_guia_btn');
+      var hdr = $$('permisologia_guia_header');
+      var btnClose = $$('permisologia_guia_close');
+      var btnMax = $$('permisologia_guia_max');
+      if (!modal || !btn) return;
+      var maximized = false, savedRect = null;
+      btn.addEventListener('click', function () { modal.classList.remove('hidden'); });
+      btnClose?.addEventListener('click', function () { modal.classList.add('hidden'); });
+      btnMax?.addEventListener('click', function () {
+        if (!maximized) {
+          savedRect = { t: modal.style.top, l: modal.style.left, w: modal.style.width, h: modal.style.height };
+          Object.assign(modal.style, { top:'10px', left:'10px', width:'calc(100vw - 20px)', height:'calc(100vh - 20px)' });
+          maximized = true;
+        } else if (savedRect) {
+          Object.assign(modal.style, { top: savedRect.t, left: savedRect.l, width: savedRect.w, height: savedRect.h });
+          maximized = false;
+        }
+      });
+      // Drag por header
+      var dragging = false, offX = 0, offY = 0;
+      hdr?.addEventListener('mousedown', function (e) {
+        if (maximized) return;
+        dragging = true;
+        var rect = modal.getBoundingClientRect();
+        offX = e.clientX - rect.left;
+        offY = e.clientY - rect.top;
+        e.preventDefault();
+      });
+      document.addEventListener('mousemove', function (e) {
+        if (!dragging) return;
+        var x = Math.max(0, Math.min(window.innerWidth - 60, e.clientX - offX));
+        var y = Math.max(0, Math.min(window.innerHeight - 40, e.clientY - offY));
+        modal.style.left = x + 'px';
+        modal.style.top = y + 'px';
+      });
+      document.addEventListener('mouseup', function () { dragging = false; });
+    })();
 
     // EAG-08 · Toast refuerzo positivo · MVP 08-jun
     window.showPermisologiaToast = function (title, msg) {
