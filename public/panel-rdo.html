@@ -15658,22 +15658,37 @@ document.addEventListener('DOMContentLoaded', () => {
       paint();
     })();
 
-    // Sidebar contextual: cuando silo Permisología activo, ocultar pestañas no-Trámites · 08-jun
+    // Sidebar contextual: cuando silo Permisología activo, ocultar pestañas no-Trámites · 08-jun · fix v2 [data-v4-tab]
     function permisologiaApplyContextualSidebar() {
       try {
         var sel = document.getElementById('siloSelector');
         var siloValue = sel ? sel.value : '';
-        // currentSilo vive en otro scope · me apoyo en el value del selector real
         var enPermisologia = (siloValue === '05');
+        var keep = ['cumplimiento', 'portada', 'admin', 'manual', 'inicio'];
+
+        // 1. Sidebar lateral v4 (los `<a data-v4-tab>` agrupados en <details>)
+        document.querySelectorAll('a[data-v4-tab]').forEach(function (a) {
+          var tab = a.dataset.v4Tab;
+          if (enPermisologia && keep.indexOf(tab) === -1) a.classList.add('permisologia-tab-oculto');
+          else a.classList.remove('permisologia-tab-oculto');
+        });
+
+        // 2. Header tabs antiguos (por compat)
         document.querySelectorAll('button[data-tab]').forEach(function (b) {
           var tab = b.dataset.tab;
-          if (enPermisologia) {
-            var keep = ['cumplimiento', 'inicio', 'portada', 'admin', 'manual'];
-            if (keep.indexOf(tab) === -1) b.classList.add('permisologia-tab-oculto');
-            else b.classList.remove('permisologia-tab-oculto');
-          } else {
-            b.classList.remove('permisologia-tab-oculto');
+          if (enPermisologia && keep.indexOf(tab) === -1) b.classList.add('permisologia-tab-oculto');
+          else b.classList.remove('permisologia-tab-oculto');
+        });
+
+        // 3. Categorías <details> en sidebar v4 · si la categoría no contiene ningún tab visible, ocultarla
+        document.querySelectorAll('details.v4-cat').forEach(function (det) {
+          if (!enPermisologia) {
+            det.classList.remove('permisologia-tab-oculto');
+            return;
           }
+          var visibles = det.querySelectorAll('a[data-v4-tab]:not(.permisologia-tab-oculto)');
+          if (visibles.length === 0) det.classList.add('permisologia-tab-oculto');
+          else det.classList.remove('permisologia-tab-oculto');
         });
       } catch (_) {}
     }
