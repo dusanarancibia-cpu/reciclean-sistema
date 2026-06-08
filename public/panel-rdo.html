@@ -15734,9 +15734,10 @@ document.addEventListener('DOMContentLoaded', () => {
         var tipo = window._permisologiaTipoActivo;
         var lista = document.getElementById('cump_lista');
         if (!lista) return;
-        var items = lista.querySelectorAll('[data-cump-id]');
+        // Selector real: cada item de la lista tiene data-id (línea 15202 del HTML original)
+        var items = lista.querySelectorAll('div[data-id]');
         items.forEach(function (it) {
-          var row = (_cumpRows || []).find(function (r) { return String(r.id) === String(it.dataset.cumpId); });
+          var row = (_cumpRows || []).find(function (r) { return String(r.id) === String(it.dataset.id); });
           if (!row) return;
           // Inyectar badge tipo si falta
           if (row.tipo_tramite && !it.querySelector('.permisologia-tipo-badge')) {
