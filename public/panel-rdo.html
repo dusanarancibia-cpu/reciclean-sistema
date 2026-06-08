@@ -3749,46 +3749,73 @@
       <div id="tarifaLista" class="space-y-2"></div>
     </section>
 
-    <!-- Tab Permisología · silo 05 · MVP auto-guía Jair 08-jun PC1 -->
+    <!-- Tab Permisología · silo 05 · MVP visual rico 08-jun PC1 -->
     <section id="tabCumplimiento" class="tab-content hidden">
-      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-        <div>
-          <h2 class="text-xl font-bold text-stone-800">⚖️ Permisología</h2>
-          <p class="text-xs text-stone-500 mt-0.5">Tus permisos por ley y artículo. Vos elegís por dónde empezar · subí foto del papel · Diego te ayuda si dudás.</p>
-        </div>
-        <div class="flex gap-2">
-          <a href="/guias/permisologia.html" target="_blank" rel="noopener" class="px-3 py-1 bg-amber-500 text-white rounded text-xs hover:bg-amber-600 inline-flex items-center gap-1" title="Abrí la guía visual de 6 pasos">📚 Cómo usar</a>
-          <button id="cump_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+
+      <!-- Header gradient verde con avatar + breadcrumb -->
+      <div class="mb-3 rounded-2xl overflow-hidden" style="background:linear-gradient(135deg,#064e3b,#059669)">
+        <div class="px-5 py-4 flex items-center justify-between flex-wrap gap-3 text-white">
+          <div>
+            <div class="text-xl font-bold flex items-center gap-2">⚖️ Permisología</div>
+            <div class="text-xs opacity-85">Tus permisos por ley y artículo · vos elegís · Diego te ayuda</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="/guias/permisologia.html" target="_blank" rel="noopener" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1" title="Guía visual 6 pasos">📚 Cómo usar</a>
+            <button id="cump_refresh" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-semibold">↻ Actualizar</button>
+            <span id="permisologia_avatar" class="px-3 py-1.5 bg-white/25 rounded-full text-xs font-semibold inline-flex items-center gap-1.5">👤 <span id="permisologia_avatar_nombre">—</span></span>
+          </div>
         </div>
       </div>
 
-      <!-- EAG-01 · Saludo personalizado primera vez · MVP 08-jun -->
-      <div id="permisologia_welcome" class="hidden bg-amber-50 border-l-4 border-amber-500 rounded p-3 mb-3">
+      <!-- EAG-01 · Saludo personalizado primera vez -->
+      <div id="permisologia_welcome" class="hidden bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4 mb-3">
         <div class="flex items-start justify-between gap-3 flex-wrap">
           <div class="flex-1 min-w-0">
-            <div class="text-sm font-semibold text-amber-900">👋 Hola <span id="permisologia_welcome_nombre">—</span></div>
-            <div class="text-xs text-stone-700 mt-1">Tenés <strong><span id="permisologia_welcome_count">—</span> permisos</strong> asignados en hasta 4 sucursales. <strong>Vos elegís por dónde empezar</strong> · hacé clic en cualquier permiso de la lista y queda marcado como tu foco del día. Cuando un trámite se atasque, Diego coach te sugiere algo paralelo que sí puedas avanzar.</div>
+            <div class="text-sm font-bold text-amber-900">👋 Hola <span id="permisologia_welcome_nombre">—</span></div>
+            <div class="text-sm text-stone-800 mt-1">Tenés <strong><span id="permisologia_welcome_count">—</span> permisos</strong> asignados en hasta 4 sucursales. <strong>Vos elegís por dónde empezar</strong> · hacé clic en cualquier permiso de la lista y queda marcado como tu foco del día. Cuando un trámite se atasque, Diego coach te sugiere algo paralelo que sí puedas avanzar.</div>
           </div>
-          <button id="permisologia_welcome_close" class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700 whitespace-nowrap">Ver mis permisos</button>
+          <button id="permisologia_welcome_close" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 whitespace-nowrap">Ver mis permisos</button>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-        <div class="bg-white border border-stone-200 rounded p-2">
-          <div class="text-2xl font-bold text-stone-700" id="cump_kpi_total">0</div>
-          <div class="text-xs text-stone-500">Total</div>
+      <!-- KPI strip 4 colores semáforo -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+        <div class="bg-emerald-50 border-2 border-emerald-600 rounded-lg p-3 text-center">
+          <div class="text-3xl font-extrabold text-emerald-700" id="cump_kpi_ok">0</div>
+          <div class="text-[10px] uppercase tracking-wide text-stone-600 mt-0.5">Al día</div>
         </div>
-        <div class="bg-white border border-stone-200 rounded p-2">
-          <div class="text-2xl font-bold text-amber-700" id="cump_kpi_pendientes">0</div>
-          <div class="text-xs text-stone-500">🟡 Pendientes</div>
+        <div class="bg-amber-50 border-2 border-amber-600 rounded-lg p-3 text-center">
+          <div class="text-3xl font-extrabold text-amber-700" id="permisologia_kpi_7d">0</div>
+          <div class="text-[10px] uppercase tracking-wide text-stone-600 mt-0.5">7d</div>
         </div>
-        <div class="bg-white border border-stone-200 rounded p-2">
-          <div class="text-2xl font-bold text-emerald-700" id="cump_kpi_ok">0</div>
-          <div class="text-xs text-stone-500">✅ Cumplidas</div>
+        <div class="bg-red-50 border-2 border-red-600 rounded-lg p-3 text-center">
+          <div class="text-3xl font-extrabold text-red-700" id="cump_kpi_atrasadas">0</div>
+          <div class="text-[10px] uppercase tracking-wide text-stone-600 mt-0.5">Vencidos</div>
         </div>
-        <div class="bg-white border border-stone-200 rounded p-2">
-          <div class="text-2xl font-bold text-red-700" id="cump_kpi_atrasadas">0</div>
-          <div class="text-xs text-stone-500">🔴 Atrasadas</div>
+        <div class="bg-stone-100 border-2 border-stone-400 rounded-lg p-3 text-center relative">
+          <div class="text-3xl font-extrabold text-stone-700" id="permisologia_kpi_sinfoto">0</div>
+          <div class="text-[10px] uppercase tracking-wide text-stone-600 mt-0.5">Falta foto</div>
+        </div>
+      </div>
+
+      <!-- Barra de progreso global -->
+      <div id="permisologia_progress" class="hidden mb-3 bg-white border border-stone-200 rounded-lg p-3">
+        <div class="text-xs text-stone-700 mb-1">Llevás <strong><span id="permisologia_progress_done">0</span> de <span id="permisologia_progress_total">0</span></strong> evidencias subidas · <span id="permisologia_progress_pct">0</span>% · Cada permiso te toma ~2 min · En <span id="permisologia_progress_eta">0</span> min estás al día.</div>
+        <div class="h-2 bg-stone-200 rounded-full overflow-hidden"><div id="permisologia_progress_bar" class="h-full bg-emerald-600 transition-all duration-500" style="width:0%"></div></div>
+      </div>
+
+      <!-- TOP 1 card destacada · permiso elegido como foco -->
+      <div id="permisologia_top1" class="hidden mb-3 bg-white border-2 border-emerald-600 rounded-lg p-4" style="box-shadow:0 4px 16px rgba(5,150,105,0.15)">
+        <div class="flex justify-between items-start mb-2 flex-wrap gap-2">
+          <span id="permisologia_top1_pill" class="px-3 py-1 bg-blue-600 text-white rounded-full text-[10px] font-bold uppercase tracking-wide">MAIPÚ</span>
+          <span class="px-3 py-1 bg-emerald-900 text-white rounded-full text-[10px] font-bold uppercase tracking-wide">⭐ ELEGIDO POR VOS</span>
+        </div>
+        <div class="text-lg font-bold text-stone-800" id="permisologia_top1_titulo">—</div>
+        <div class="text-xs text-stone-500 mt-1" id="permisologia_top1_plazo">—</div>
+        <div class="text-sm text-stone-700 mt-2" id="permisologia_top1_desc">Necesitamos la foto del papel firmado por SEREMI sobre este permiso. Si dudás qué papel pedir, apretá <em>Preguntar a Diego</em> abajo. Cuando lo termines o se atasque, podés volver a elegir otro de la lista.</div>
+        <div class="flex gap-2 mt-3 flex-wrap">
+          <button id="permisologia_top1_subir" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700">📷 Subir foto del papel · 2 min</button>
+          <button id="permisologia_top1_diego" class="px-4 py-2 bg-white border-2 border-emerald-600 text-emerald-700 rounded-lg text-xs font-semibold hover:bg-emerald-50">¿Dudás qué papel pedir? · Preguntá a Diego</button>
         </div>
       </div>
 
@@ -15349,35 +15376,123 @@ document.addEventListener('DOMContentLoaded', () => {
     // Diego contexto
     $$('cump_diego_ctx')?.addEventListener('click', abrirDiegoContexto);
 
-    // EAG-01 · Saludo personalizado primera vez · MVP 08-jun
+    // Helpers · MVP visual 08-jun
+    function _permisologiaNombreCorto() {
+      var nombre = (window._sessionUserNombre || (_sessionEmail || '').split('@')[0] || '').split(' ')[0];
+      return nombre || 'Usuario';
+    }
+    function _permisologiaSucursalColor(suc) {
+      var map = { maipu:'bg-blue-600', cerrillos:'bg-emerald-600', talca:'bg-amber-600', puerto_montt:'bg-indigo-600' };
+      return map[String(suc || '').toLowerCase()] || 'bg-stone-500';
+    }
+    function _permisologiaSucursalLabel(suc) {
+      var map = { maipu:'MAIPÚ', cerrillos:'CERRILLOS', talca:'TALCA', puerto_montt:'PTO MONTT' };
+      return map[String(suc || '').toLowerCase()] || String(suc || 'TRANSV.').toUpperCase();
+    }
+
+    // EAG-01 · Saludo + avatar header + KPIs avanzados + progreso · MVP 08-jun
     function maybeShowWelcome() {
       try {
         if (!_sessionEmail) return;
-        var dismissed = localStorage.getItem('permisologia_welcome_dismissed_' + _sessionEmail);
-        if (dismissed === '1') return;
+        // Avatar header (siempre, no dismissible)
+        var avEl = $$('permisologia_avatar_nombre');
+        if (avEl) avEl.textContent = _permisologiaNombreCorto();
+
         var mias = (_cumpRows || []).filter(function (r) {
           return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail
                  && r.estado !== 'cumplida' && r.estado !== 'no_aplica';
         });
-        if (!mias.length) return;
-        var box = $$('permisologia_welcome'); if (!box) return;
-        var nombreEl = $$('permisologia_welcome_nombre');
-        var countEl = $$('permisologia_welcome_count');
-        if (nombreEl) {
-          var nombre = (window._sessionUserNombre || _sessionEmail.split('@')[0] || '').split(' ')[0];
-          nombreEl.textContent = nombre || 'colega';
+
+        // KPIs avanzados
+        var hoy = new Date();
+        var ms7d = 7 * 24 * 3600 * 1000;
+        var nVencen7d = 0, nSinFoto = 0;
+        mias.forEach(function (r) {
+          if (r.fecha_verificacion) {
+            var diff = new Date(r.fecha_verificacion).getTime() - hoy.getTime();
+            if (diff >= 0 && diff <= ms7d) nVencen7d++;
+          }
+          if (!(_archivosCache[r.id] || []).length) nSinFoto++;
+        });
+        if ($$('permisologia_kpi_7d')) $$('permisologia_kpi_7d').textContent = nVencen7d;
+        if ($$('permisologia_kpi_sinfoto')) $$('permisologia_kpi_sinfoto').textContent = nSinFoto;
+
+        // Barra progreso
+        var total = mias.length + (_cumpRows || []).filter(function (r) {
+          return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail && r.estado === 'cumplida';
+        }).length;
+        var hechas = total - mias.length;
+        if (total > 0) {
+          var pct = Math.round((hechas / total) * 100);
+          var box = $$('permisologia_progress');
+          if (box) box.classList.remove('hidden');
+          if ($$('permisologia_progress_done')) $$('permisologia_progress_done').textContent = hechas;
+          if ($$('permisologia_progress_total')) $$('permisologia_progress_total').textContent = total;
+          if ($$('permisologia_progress_pct')) $$('permisologia_progress_pct').textContent = pct;
+          if ($$('permisologia_progress_eta')) $$('permisologia_progress_eta').textContent = mias.length * 2;
+          if ($$('permisologia_progress_bar')) $$('permisologia_progress_bar').style.width = pct + '%';
         }
-        if (countEl) countEl.textContent = mias.length;
-        box.classList.remove('hidden');
+
+        // Saludo bienvenida primera vez
+        var dismissed = localStorage.getItem('permisologia_welcome_dismissed_' + _sessionEmail);
+        if (!dismissed && mias.length) {
+          var welcome = $$('permisologia_welcome'); if (welcome) welcome.classList.remove('hidden');
+          if ($$('permisologia_welcome_nombre')) $$('permisologia_welcome_nombre').textContent = _permisologiaNombreCorto();
+          if ($$('permisologia_welcome_count')) $$('permisologia_welcome_count').textContent = mias.length;
+        }
       } catch (_) {}
     }
     $$('permisologia_welcome_close')?.addEventListener('click', function () {
       var box = $$('permisologia_welcome'); if (box) box.classList.add('hidden');
       try { if (_sessionEmail) localStorage.setItem('permisologia_welcome_dismissed_' + _sessionEmail, '1'); } catch (_) {}
     });
-    // Re-render trigger: cuando se cargan obligaciones, intentar mostrar saludo
+
+    // EAG-02 · TOP 1 card · se llena cuando Jair clickea un permiso de la lista
+    function showPermisologiaTop1(rowId) {
+      try {
+        var row = (_cumpRows || []).find(function (r) { return String(r.id) === String(rowId); });
+        if (!row) return;
+        localStorage.setItem('permisologia_top1_' + (_sessionEmail || 'anon'), String(rowId));
+        var box = $$('permisologia_top1'); if (!box) return;
+        var pill = $$('permisologia_top1_pill');
+        var titulo = $$('permisologia_top1_titulo');
+        var plazo = $$('permisologia_top1_plazo');
+        if (pill) {
+          pill.textContent = _permisologiaSucursalLabel(row.sucursal_id);
+          pill.className = 'px-3 py-1 text-white rounded-full text-[10px] font-bold uppercase tracking-wide ' + _permisologiaSucursalColor(row.sucursal_id);
+        }
+        if (titulo) titulo.textContent = (row.ley_id || 'Permiso') + ' · Art. ' + (row.articulo_id || '?');
+        if (plazo) {
+          var p = row.fecha_verificacion
+            ? 'Vence ' + new Date(row.fecha_verificacion).toLocaleDateString('es-CL')
+            : 'Plazo sin definir aún · Dyana lo está confirmando';
+          plazo.textContent = p;
+        }
+        box.classList.remove('hidden');
+        // Botones contextuales
+        var btnSubir = $$('permisologia_top1_subir');
+        var btnDiego = $$('permisologia_top1_diego');
+        if (btnSubir) btnSubir.onclick = function () { abrirFormEditar(rowId); setTimeout(function () { $$('cump_dropzone')?.click(); }, 200); };
+        if (btnDiego) btnDiego.onclick = function () { abrirFormEditar(rowId); setTimeout(function () { $$('cump_diego_ctx')?.click(); }, 200); };
+      } catch (_) {}
+    }
+    // Hook click en lista "mis obligaciones" → además de abrir form, marcar como TOP 1
+    $$('cump_mis_lista')?.addEventListener('click', function (e) {
+      var btn = e.target.closest('.cump-mis-item');
+      if (btn) showPermisologiaTop1(btn.dataset.id);
+    }, true);
+
+    // Re-render trigger: cuando se cargan obligaciones, intentar mostrar saludo + KPIs + restore TOP 1
     var _origRenderMis = renderMisObligaciones;
-    renderMisObligaciones = function () { _origRenderMis.apply(this, arguments); maybeShowWelcome(); };
+    renderMisObligaciones = function () {
+      _origRenderMis.apply(this, arguments);
+      maybeShowWelcome();
+      // Restore TOP 1 anterior si existe
+      try {
+        var saved = localStorage.getItem('permisologia_top1_' + (_sessionEmail || 'anon'));
+        if (saved) showPermisologiaTop1(saved);
+      } catch (_) {}
+    };
 
     // EAG-22 · Escalado SIN FILTROS a los 3 (Cesar/Dyana/Dusan) · MVP 08-jun
     $$('cump_escalar_3')?.addEventListener('click', async function () {
