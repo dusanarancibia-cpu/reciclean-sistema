@@ -642,6 +642,10 @@
             <span class="v4-emoji" aria-hidden="true">⚖️</span>
             Pesaje
           </a>
+          <a href="#" data-v4-tab="vales_portal" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📊</span>
+            Vales portal
+          </a>
           <a href="#" data-v4-tab="facturacion" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🧾</span>
             Facturación
@@ -752,6 +756,10 @@
             <span class="v4-emoji" aria-hidden="true">💰</span>
             <span>Tarifas externas</span>
           </a>
+          <a href="#" data-v4-tab="piloto_pwa" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📲</span>
+            <span>Piloto PWA</span>
+          </a>
           <a href="#" data-v4-tab="mi_bandeja" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📥</span>
             <span>Mi Bandeja</span>
@@ -779,6 +787,18 @@
           <a href="#" data-v4-tab="comunicados" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🎧</span>
             Comunicados
+          </a>
+          <a href="#" data-v4-tab="cumplimiento" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">⚖️</span>
+            Cumplimiento
+          </a>
+          <a href="#" data-v4-tab="herramientas_ext" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🌐</span>
+            Herramientas ext.
+          </a>
+          <a href="#" data-v4-tab="facturacion_grupo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">💰</span>
+            Facturación grupo
           </a>
         </div>
       </details>
@@ -996,6 +1016,11 @@
         <button data-tab="incidentes_op" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabIncidentesOp">🛠️ Incidentes</button>
         <button data-tab="firmas_pend" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabFirmasPend">📝 Firmas pendientes</button>
         <button data-tab="tarifas_ext" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabTarifasExt">💰 Tarifas externas</button>
+        <button data-tab="cumplimiento" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCumplimiento">⚖️ Cumplimiento</button>
+        <button data-tab="herramientas_ext" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabHerramientasExt">🌐 Herramientas ext.</button>
+        <button data-tab="facturacion_grupo" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabFacturacionGrupo">💰 Facturación grupo</button>
+        <button data-tab="vales_portal" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabValesPortal">📊 Vales portal</button>
+        <button data-tab="piloto_pwa"  class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabPilotoPwa">📲 Piloto PWA</button>
         <button data-tab="mis_archivos" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabMisArchivos">📦 Mis archivos</button>
         <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabRdo">📈 RDO Resumen</button>
         <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
@@ -2458,9 +2483,16 @@
          PESTAÑA OPORTUNIDADES KANBAN (D-OP-12)
     ═══════════════════════════════════════════════════════════ -->
     <section id="tabOportunidades" class="tab-content hidden">
-      <div class="flex justify-between items-center mb-4">
+      <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
         <h2 class="text-xl font-bold text-stone-800">🎯 Oportunidades — Pipeline Kanban</h2>
-        <button onclick="loadOportunidadesKanban()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+        <div class="flex items-center gap-3">
+          <button onclick="window.abrirModalNuevaOportunidadGlobal && window.abrirModalNuevaOportunidadGlobal()"
+                  class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-medium"
+                  title="Crear oportunidad para cualquier cliente (RDO puro o nuevo)">
+            ➕ Nueva oportunidad
+          </button>
+          <button onclick="loadOportunidadesKanban()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+        </div>
       </div>
 
       <!-- N2-5 · Resumen oportunidades + flag fuzzy CRM (backend Pablo) -->
@@ -2935,14 +2967,34 @@
     <section id="tabCotizador" class="tab-content hidden">
       <h2 class="text-xl font-bold mb-4 text-stone-800">📋 Cotizador</h2>
 
-      <!-- 🟢 Quick win H02 · Toggle "cliente trae material" -->
-      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-4 flex items-center gap-3">
+      <!-- SPEC V1.1 H13 · Pizarra inteligente: pega texto cliente, Diego extrae -->
+      <div class="bg-sky-50 border border-sky-200 rounded-lg p-3 mb-4">
+        <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
+          <h3 class="text-sm font-semibold text-sky-900">✍️ Pizarra — pegá lo que te contó el cliente</h3>
+          <button id="cotPizarraToggle" type="button" class="text-xs text-sky-700 hover:underline" title="Mostrar/ocultar la pizarra">mostrar</button>
+        </div>
+        <div id="cotPizarraBody" class="hidden">
+          <textarea id="cotPizarraTexto" rows="3" maxlength="4000"
+                    placeholder="Ej: Llamó Pedro de Green Cup, tienen 5 toneladas de cilindros de cartón en Maipú, lo traen ellos, quieren saber el precio"
+                    class="w-full px-2 py-1 border border-sky-300 rounded text-sm focus:border-sky-600 focus:outline-none"></textarea>
+          <div class="flex items-center justify-between gap-2 mt-2 flex-wrap">
+            <button id="cotPizarraExtraer" type="button"
+                    class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded text-xs font-semibold">
+              🤖 Extraer con Diego
+            </button>
+            <span id="cotPizarraStatus" class="text-xs text-sky-700"></span>
+          </div>
+          <div id="cotPizarraResultado" class="hidden mt-2 p-2 bg-white border rounded text-xs"></div>
+        </div>
+      </div>
+
+      <!-- R-AUD-013 · Toggle H02 compacto (no cuenta como seccion separada) -->
+      <div class="bg-emerald-50 border border-emerald-200 rounded p-2 mb-3 flex items-center gap-2 text-sm">
         <input type="checkbox" id="cotClienteTraeMaterial" onchange="cotToggleClienteTraeMaterial(this.checked)"
-               class="w-5 h-5 accent-emerald-700">
-        <label for="cotClienteTraeMaterial" class="text-sm font-medium text-emerald-900 cursor-pointer flex-1">
-          ☝️ <strong>El cliente trae el material él mismo</strong> — sin servicio de retiro · solo compramos material
+               class="w-4 h-4 accent-emerald-700">
+        <label for="cotClienteTraeMaterial" class="text-emerald-900 cursor-pointer flex-1">
+          <strong>El cliente trae el material el mismo</strong> <span class="text-xs text-emerald-700">(oculta servicio + tarifa)</span>
         </label>
-        <span class="text-xs text-emerald-700 italic">(oculta servicio + tarifa)</span>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -2956,21 +3008,31 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 
               <div class="md:col-span-2">
-                <label for="cotTitulo" class="block text-xs text-stone-500 mb-1" title="Título visible en la lista de negocios y reportes">Título de la cotización * <span class="text-xs text-stone-400 italic">(se completa solo al elegir cliente + sucursal + material)</span></label>
-                <input type="text" id="cotTitulo" placeholder="Se autogenera al completar los datos…"
-                       title="Se autogenera con [servicio] · [cliente] · [sucursal]. Editalo solo si querés un nombre distinto."
-                       oninput="cotRecalcular(); cotTituloEditadoManual = true;"
-                       class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
+                <label for="cotTitulo" class="block text-xs text-stone-500 mb-1" title="Título visible en la lista de negocios y reportes">Título de la cotización * <span class="text-xs text-stone-400 italic">(se autogenera · podés editarlo)</span></label>
+                <div class="flex gap-1">
+                  <input type="text" id="cotTitulo" placeholder="Se autogenera al completar los datos…"
+                         title="Se autogenera con [servicio] · [cliente] · [sucursal]. Botón ↻ vuelve a generarlo automáticamente."
+                         oninput="cotRecalcular(); cotTituloEditadoManual = true;"
+                         class="flex-1 border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
+                  <button type="button" id="cotTituloRegenerar"
+                          title="Volver al título automático ([servicio] · [cliente])"
+                          class="px-3 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded text-sm">↻</button>
+                </div>
               </div>
 
               <div>
                 <label for="cotClienteBuscar" class="block text-xs text-stone-500 mb-1" title="Cliente al que le estás cotizando">Cliente *</label>
-                <input type="text" id="cotClienteBuscar" placeholder="Buscar por nombre o RUT…"
-                       title="Escribí 2+ letras para ver sugerencias del catálogo. Si no existe, lo creás luego."
-                       oninput="buscarClienteCotizador(this.value)"
-                       autocomplete="off"
-                       aria-autocomplete="list" aria-controls="cotClienteSugerencias"
-                       class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
+                <div class="flex gap-1">
+                  <input type="text" id="cotClienteBuscar" placeholder="Buscar por nombre o RUT..."
+                         title="Escribí 2+ letras para ver sugerencias del catálogo. Si no existe, lo creás luego."
+                         oninput="buscarClienteCotizador(this.value)"
+                         autocomplete="off"
+                         aria-autocomplete="list" aria-controls="cotClienteSugerencias"
+                         class="flex-1 border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
+                  <button type="button" id="cotClienteEditarBtn" onclick="cotEditarCliente()" disabled
+                          title="Editar datos del cliente seleccionado (modal unico R-AUD-035)"
+                          class="px-3 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded text-sm disabled:opacity-40 disabled:cursor-not-allowed">✏️</button>
+                </div>
                 <div id="cotClienteSugerencias" role="listbox" aria-label="Sugerencias de clientes"
                      class="hidden border border-stone-200 rounded mt-1 bg-white shadow-md z-10 max-h-40 overflow-y-auto"></div>
                 <input type="hidden" id="cotClienteId">
@@ -2986,11 +3048,11 @@
                 </select>
               </div>
 
-              <div id="cotServicioBlock">
+              <div id="cotServicioBlock" class="md:col-span-2">
                 <label for="cotServicio" class="block text-xs text-stone-500 mb-1" title="Tipo de servicio a cotizar">Servicio *</label>
-                <select id="cotServicio" onchange="cotRecalcular()"
-                        title="Servicio del catálogo: retiro, arriendo, pesaje, etc."
-                        class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
+                <!-- SPEC V1.1 H05 · cards visuales por familia, select hidden mantiene compat -->
+                <div id="cotServicioCards" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
+                <select id="cotServicio" onchange="cotRecalcular()" class="sr-only" tabindex="-1" aria-hidden="true">
                   <option value="">Seleccionar…</option>
                 </select>
               </div>
@@ -3002,6 +3064,15 @@
                         class="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:border-green-700 focus:outline-none">
                   <option value="">Sin tarifa fija</option>
                 </select>
+                <!-- SPEC V1.1 H07 · cálculo automático km -->
+                <div id="cotKmBlock" class="hidden mt-2 p-2 bg-sky-50 border border-sky-200 rounded text-xs"
+                     title="Distancia sucursal → cliente vía Google Maps. La tarifa total se ajusta automáticamente si la tarifa tiene cargo por km.">
+                  <div class="flex items-center justify-between gap-2 mb-1">
+                    <span class="text-sky-700 font-semibold">🛣️ Distancia y tarifa</span>
+                    <button type="button" id="cotKmRecalcular" class="text-[10px] px-2 py-0.5 bg-sky-600 text-white rounded hover:bg-sky-700" title="Volver a calcular la distancia">↻ recalcular</button>
+                  </div>
+                  <div id="cotKmDetalle" class="text-sky-900">—</div>
+                </div>
               </div>
 
               <div class="md:col-span-2">
@@ -3032,6 +3103,7 @@
                 <thead>
                   <tr class="border-b text-stone-500 text-xs">
                     <th class="text-left py-2 pr-2" title="Nombre del material o servicio cotizado">Material / Descripción</th>
+                    <th class="text-left py-2 px-2 w-40" title="Servicio asociado a esta linea. Vacio = usa el servicio principal del cotizador. Permite multi-servicio en una sola cotizacion (ej: arriendo + retiros).">Servicio</th>
                     <th class="text-right py-2 px-2 w-24" title="Cantidad numérica (la unidad la elegís en la columna siguiente)">Cantidad</th>
                     <th class="text-center py-2 px-2 w-20" title="Unidad de medida: kg, t (toneladas), u (unidades), m³ o litros">Unidad</th>
                     <th class="text-right py-2 px-2 w-36" title="Precio en UF por unidad. Ej: 0.05 UF por kg, 50 UF por tonelada">Precio <span class="text-stone-400">(UF / u)</span></th>
@@ -3322,9 +3394,10 @@
           </div>
           <div id="crmFichaBody" class="p-5 overflow-y-auto flex-1">—</div>
           <footer class="p-4 border-t border-stone-100 bg-stone-50 flex items-center justify-between">
-            <span class="text-xs text-stone-500">Datos rescatados de CRM Impulsa · solo lectura</span>
-            <button id="crmBtnAgregarGestion" disabled title="Disponible cuando Dusan firme D-CRM-GESTIONES"
-                    class="px-3 py-1.5 text-sm rounded-md bg-stone-200 text-stone-400 cursor-not-allowed">
+            <span class="text-xs text-stone-500">Datos rescatados de CRM Impulsa · gestiones nuevas se guardan en el panel</span>
+            <button id="crmBtnAgregarGestion"
+                    onclick="window.abrirModalNuevaGestion && window.abrirModalNuevaGestion()"
+                    class="px-3 py-1.5 text-sm rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
               + Agregar gestión
             </button>
           </footer>
@@ -3674,6 +3747,345 @@
         </div>
       </div>
       <div id="tarifaLista" class="space-y-2"></div>
+    </section>
+
+    <!-- Tab Cumplimiento Legal · silo 05 Cumplimiento Ambiental · 03-jun PC2 Pablo -->
+    <section id="tabCumplimiento" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">⚖️ Cumplimiento Legal</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Obligaciones legales por ley y artículo. Cargá evidencia (link al documento) y marcá estado.</p>
+        </div>
+        <button id="cump_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="cump_kpi_total">0</div>
+          <div class="text-xs text-stone-500">Total</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-amber-700" id="cump_kpi_pendientes">0</div>
+          <div class="text-xs text-stone-500">🟡 Pendientes</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-emerald-700" id="cump_kpi_ok">0</div>
+          <div class="text-xs text-stone-500">✅ Cumplidas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-red-700" id="cump_kpi_atrasadas">0</div>
+          <div class="text-xs text-stone-500">🔴 Atrasadas</div>
+        </div>
+      </div>
+
+      <!-- Mis obligaciones · filtra por responsable_email = sesión · mig 227 -->
+      <div id="cump_mis_obligaciones" class="hidden bg-emerald-50 border border-emerald-300 rounded p-3 mb-3">
+        <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
+          <div class="text-sm font-semibold text-emerald-900">🎯 Tus obligaciones pendientes (<span id="cump_mis_count">0</span>)</div>
+          <button id="cump_mis_ver_todas" class="text-xs text-emerald-700 hover:underline">Ver todas ↓</button>
+        </div>
+        <div id="cump_mis_lista" class="space-y-1"></div>
+      </div>
+
+      <div class="flex gap-2 mb-3 flex-wrap">
+        <select id="cump_filtro_ley" class="px-2 py-1 border border-stone-300 rounded text-sm">
+          <option value="">Todas las leyes</option>
+        </select>
+        <select id="cump_filtro_estado" class="px-2 py-1 border border-stone-300 rounded text-sm">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="en_proceso">En proceso</option>
+          <option value="cumplida">Cumplida</option>
+          <option value="atrasada">Atrasada</option>
+          <option value="no_aplica">No aplica</option>
+        </select>
+        <select id="cump_filtro_sucursal" class="px-2 py-1 border border-stone-300 rounded text-sm">
+          <option value="">Todas las sucursales</option>
+          <option value="__transversal__">Solo transversales (sin sucursal)</option>
+          <option value="cerrillos">Cerrillos</option>
+          <option value="maipu">Maipu</option>
+          <option value="talca">Talca</option>
+          <option value="puerto_montt">Puerto Montt</option>
+        </select>
+        <input id="cump_filtro_texto" type="search" placeholder="Buscar en notas o responsable..." class="flex-1 px-2 py-1 border border-stone-300 rounded text-sm min-w-48">
+      </div>
+
+      <div id="cump_form" class="hidden bg-white border border-emerald-300 rounded p-3 mb-3 space-y-2">
+        <div class="text-sm font-semibold text-emerald-900" id="cump_form_titulo">Editar obligación</div>
+        <input type="hidden" id="cump_edit_id">
+        <div class="grid grid-cols-2 gap-2">
+          <select id="cump_estado" class="px-2 py-1 border border-stone-300 rounded text-sm">
+            <option value="pendiente">Pendiente</option>
+            <option value="en_proceso">En proceso</option>
+            <option value="cumplida">Cumplida</option>
+            <option value="atrasada">Atrasada</option>
+            <option value="no_aplica">No aplica</option>
+          </select>
+          <input id="cump_responsable" type="text" placeholder="Responsable (ej: Dyana)" class="px-2 py-1 border border-stone-300 rounded text-sm">
+        </div>
+        <input id="cump_evidencia_url" type="url" placeholder="Link al documento (SharePoint, Drive, PDF) — opcional" class="w-full px-2 py-1 border border-stone-300 rounded text-sm">
+        <div class="grid grid-cols-2 gap-2 items-center">
+          <select id="cump_sucursal" class="px-2 py-1 border border-stone-300 rounded text-sm">
+            <option value="">Transversal (todas las sucursales)</option>
+            <option value="cerrillos">Cerrillos</option>
+            <option value="maipu">Maipu</option>
+            <option value="talca">Talca</option>
+            <option value="puerto_montt">Puerto Montt</option>
+          </select>
+          <label class="text-xs flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="cump_requiere_aprob" class="w-4 h-4 accent-amber-600">
+            <span>Requiere aprobacion gerencia</span>
+          </label>
+        </div>
+        <input id="cump_fecha_verificacion" type="date" class="px-2 py-1 border border-stone-300 rounded text-sm">
+        <textarea id="cump_notas" placeholder="Notas / contexto" rows="2" maxlength="1000" class="w-full px-2 py-1 border border-stone-300 rounded text-sm"></textarea>
+
+        <!-- Archivos adjuntos · mig 227 · bucket impulsa-documentos prefix cumplimiento/ -->
+        <div class="border-t border-stone-200 pt-2 mt-1">
+          <div class="text-xs font-semibold text-stone-700 mb-1 flex items-center justify-between">
+            <span>📎 Archivos de respaldo</span>
+            <button type="button" id="cump_diego_ctx" class="text-[11px] text-violet-700 hover:underline">🧠 Preguntar a Diego sobre esta obligación</button>
+          </div>
+          <div id="cump_dropzone" class="border-2 border-dashed border-stone-300 rounded p-3 text-center text-xs text-stone-500 hover:border-emerald-400 hover:bg-emerald-50 cursor-pointer transition-colors">
+            <div>📥 <strong>Arrastrá archivos aquí</strong> o <span class="text-emerald-700 underline">hacé click para elegir</span></div>
+            <div class="text-[10px] text-stone-400 mt-0.5">PDF, JPG, PNG, DOCX hasta 25 MB</div>
+          </div>
+          <input id="cump_file_picker" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.heic" class="hidden">
+          <div id="cump_upload_progress" class="hidden mt-1 text-xs text-stone-600"></div>
+          <div id="cump_archivos_lista" class="mt-2 space-y-1"></div>
+        </div>
+
+        <div class="flex gap-2 justify-end">
+          <button id="cump_cancelar" class="px-3 py-1 text-stone-600 text-xs">Cancelar</button>
+          <button id="cump_guardar" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs">Guardar</button>
+        </div>
+      </div>
+
+      <div id="cump_lista" class="space-y-2"></div>
+    </section>
+
+    <!-- Tab Herramientas externas · D-FACTURACION-ETAPA-1 FASE 5 · PC2 Pablo 06-jun -->
+    <section id="tabHerramientasExt" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">🌐 Herramientas externas</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Registro maestro de las N herramientas externas del grupo Reciclean-Farex. Etapa 1: facturacion.cl · SII · CRM Impulsa.</p>
+        </div>
+        <button id="hext_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="hext_kpi_total">0</div>
+          <div class="text-xs text-stone-500">Total herramientas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-emerald-700" id="hext_kpi_activas">0</div>
+          <div class="text-xs text-stone-500">✅ Activas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-amber-700" id="hext_kpi_pendientes">0</div>
+          <div class="text-xs text-stone-500">⏳ Pendientes arranque</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-sky-700" id="hext_kpi_empresas">0</div>
+          <div class="text-xs text-stone-500">🏢 Empresas activas</div>
+        </div>
+      </div>
+
+      <div id="hext_lista" class="space-y-2">
+        <div class="text-xs text-stone-400 italic py-4 text-center">Cargando...</div>
+      </div>
+    </section>
+
+    <!-- Tab Facturacion grupo · D-FACTURACION-ETAPA-1 FASE 6 · PC2 Pablo 06-jun -->
+    <section id="tabFacturacionGrupo" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">💰 Facturación grupo</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Facturas multi-empresa multi-herramienta. Filtra según tu perfil. Marcar privada solo Dusan / Dyana / Pablo.</p>
+        </div>
+        <div class="flex gap-2 items-center flex-wrap">
+          <label class="text-xs flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" id="fg_solo_no_pagadas" class="w-4 h-4 accent-amber-600">
+            <span>Solo no pagadas</span>
+          </label>
+          <button id="fg_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="fg_kpi_total">0</div>
+          <div class="text-xs text-stone-500">Visibles para vos</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-amber-700" id="fg_kpi_no_pagadas">0</div>
+          <div class="text-xs text-stone-500">⏳ No pagadas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-violet-700" id="fg_kpi_privadas">0</div>
+          <div class="text-xs text-stone-500">🔒 Privadas (tuyas)</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-emerald-700" id="fg_kpi_monto">$0</div>
+          <div class="text-xs text-stone-500">Σ Total visible</div>
+        </div>
+      </div>
+
+      <div id="fg_lista" class="space-y-2">
+        <div class="text-xs text-stone-400 italic py-4 text-center">Cargando...</div>
+      </div>
+    </section>
+
+    <!-- Tab Vales portal · G42 · D-PESAJES-DIARIA-001 · PC2 Pablo 03-jun PM -->
+    <section id="tabValesPortal" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">📊 Vales portal pesajes</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Ingesta vales detallados desde plataforma-virtual.com. Sincroniza 3x/día L-V + 1x/día S-D.</p>
+        </div>
+        <div class="flex gap-2 items-center flex-wrap">
+          <span id="vp_estado_pipeline" class="text-xs text-stone-500"></span>
+          <button id="vp_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
+      </div>
+
+      <!-- Banner si no hay datos -->
+      <div id="vp_banner_sin_datos" class="hidden bg-amber-50 border border-amber-300 rounded p-3 mb-3 text-sm text-amber-900">
+        <strong>⏳ Pendiente clave Vault.</strong> La infraestructura está lista (tablas + EF + 4 crons), pero la clave del portal aún no se cargó al Vault Supabase. Dusan dicta la clave verbal a Pablo · Pablo ejecuta <code class="bg-amber-100 px-1 rounded">SELECT vault.create_secret('plataforma_virtual_pesajes_password', ...);</code> · luego se activan los 4 crons.
+      </div>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="vp_kpi_vales">0</div>
+          <div class="text-xs text-stone-500">Vales totales</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-emerald-700" id="vp_kpi_saldo">$0</div>
+          <div class="text-xs text-stone-500">💰 Saldo pendiente</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="vp_kpi_clientes">0</div>
+          <div class="text-xs text-stone-500">👥 Generadores pendientes</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="vp_kpi_ultimo">—</div>
+          <div class="text-xs text-stone-500">📅 Último vale</div>
+        </div>
+      </div>
+
+      <!-- Resumen sucursal -->
+      <div class="bg-white border border-stone-200 rounded mb-3">
+        <div class="px-3 py-2 border-b border-stone-200 text-sm font-semibold text-stone-700">🏢 Resumen por sucursal</div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-stone-50 text-xs text-stone-500 uppercase">
+              <tr>
+                <th class="text-left px-3 py-2">Sucursal</th>
+                <th class="text-right px-3 py-2">Vales</th>
+                <th class="text-right px-3 py-2">Clientes</th>
+                <th class="text-right px-3 py-2">Kg total</th>
+                <th class="text-right px-3 py-2">CLP total</th>
+                <th class="text-right px-3 py-2">Saldo pendiente</th>
+                <th class="text-right px-3 py-2">Último vale</th>
+              </tr>
+            </thead>
+            <tbody id="vp_sucursal_body"><tr><td colspan="7" class="text-center text-stone-400 py-4">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Cuentas pagar generadores -->
+      <div class="bg-white border border-stone-200 rounded mb-3">
+        <div class="px-3 py-2 border-b border-stone-200 text-sm font-semibold text-stone-700 flex items-center justify-between">
+          <span>💸 Cuentas por pagar (generadores con saldo &gt; 0)</span>
+          <input id="vp_filtro_generador" type="search" placeholder="Buscar razón social o RUT..." class="px-2 py-0.5 border border-stone-300 rounded text-xs">
+        </div>
+        <div class="overflow-x-auto max-h-96 overflow-y-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-stone-50 text-xs text-stone-500 uppercase sticky top-0">
+              <tr>
+                <th class="text-left px-3 py-2">Razón social</th>
+                <th class="text-left px-3 py-2">RUT</th>
+                <th class="text-left px-3 py-2">Banco</th>
+                <th class="text-right px-3 py-2">Vales</th>
+                <th class="text-right px-3 py-2">Saldo CLP</th>
+                <th class="text-left px-3 py-2">Último vale</th>
+              </tr>
+            </thead>
+            <tbody id="vp_pagar_body"><tr><td colspan="6" class="text-center text-stone-400 py-4">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Últimos 50 vales -->
+      <div class="bg-white border border-stone-200 rounded">
+        <div class="px-3 py-2 border-b border-stone-200 text-sm font-semibold text-stone-700">📋 Últimos 50 vales</div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-stone-50 text-xs text-stone-500 uppercase">
+              <tr>
+                <th class="text-left px-3 py-2">Folio</th>
+                <th class="text-left px-3 py-2">Fecha</th>
+                <th class="text-left px-3 py-2">Sucursal</th>
+                <th class="text-left px-3 py-2">Razón social</th>
+                <th class="text-left px-3 py-2">Tipo</th>
+                <th class="text-right px-3 py-2">Kg final</th>
+                <th class="text-right px-3 py-2">CLP total</th>
+                <th class="text-right px-3 py-2">Saldo</th>
+                <th class="text-left px-3 py-2">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="vp_recientes_body"><tr><td colspan="9" class="text-center text-stone-400 py-4">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab Piloto PWA (mig 195 backend · Pablo 02-jun PM) -->
+    <section id="tabPilotoPwa" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">📲 Piloto PWA Reciclean</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Clientes externos invitados a probar la app móvil Reciclean</p>
+        </div>
+        <button id="ppwa_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-6 gap-2 mb-4">
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-stone-700" id="ppwa_kpi_total">0</div>
+          <div class="text-xs text-stone-500">Total</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-amber-700" id="ppwa_kpi_pendientes">0</div>
+          <div class="text-xs text-stone-500">🟡 Pendientes</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-blue-700" id="ppwa_kpi_invitados">0</div>
+          <div class="text-xs text-stone-500">📤 Invitados</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-emerald-700" id="ppwa_kpi_activados">0</div>
+          <div class="text-xs text-stone-500">✅ Activados</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-sky-700" id="ppwa_kpi_con_uso">0</div>
+          <div class="text-xs text-stone-500">💬 Uso 7d</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-2xl font-bold text-stone-500" id="ppwa_kpi_rechazados">0</div>
+          <div class="text-xs text-stone-500">⚫ Rechazados</div>
+        </div>
+      </div>
+
+      <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-3">
+        💡 <strong>Workflow Andrea/Cony:</strong> 1) Conseguir contacto real cliente. 2) Editar fila acá con email + teléfono + nombre. 3) Mandarle el link <code class="bg-white px-1 rounded">reciclean-sistema.vercel.app/app/</code> por WhatsApp/email. 4) Apretar "Marcar invitado" cuando le mandes. 5) Cuando el cliente se registra en la app, pasa a "Activado" automáticamente.
+      </p>
+
+      <div id="ppwa_lista" class="space-y-2"></div>
     </section>
 
     <!-- R-AUD-040 · Tab Mis archivos (PC2 Pablo 2026-06-02 mig 167 backend) - lectura para todos -->
@@ -4082,7 +4494,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -4732,6 +5144,11 @@ const TAB_SECTION_MAP = {
   incidentes_op: 'tabIncidentesOp',
   firmas_pend: 'tabFirmasPend',
   tarifas_ext: 'tabTarifasExt',
+  cumplimiento: 'tabCumplimiento',
+  herramientas_ext: 'tabHerramientasExt',
+  facturacion_grupo: 'tabFacturacionGrupo',
+  vales_portal: 'tabValesPortal',
+  piloto_pwa: 'tabPilotoPwa',
   mis_archivos: 'tabMisArchivos',
   diego_coord: 'tabDiegoCoord',
   bucle_vivo: 'tabBucleVivo',
@@ -5062,11 +5479,9 @@ async function initDieguito() {
   _diegIniciado = true;
 
   // D-OP-04-v2 Ola 1.1 — cargar destinos + top-20 clientes en paralelo.
-  const destinosP = sb.schema('staging')
-    .from('dieguito_destinations')
-    .select('id,slug,label,kind,color')
-    .eq('active', true)
-    .order('sort_order');
+  // Wave 1 PR-B: usar RPC public.dieguito_destinations_activos() en vez de
+  // staging directo (resuelve 9bc5b1dd + ef870b22 403 staging RLS).
+  const destinosP = sb.rpc('dieguito_destinations_activos');
 
   // Top clientes: vigentes ordenados por categoría (mejor → menos → poco → en_prueba → critica)
   // y por contribucion si está presente. cap a 20.
@@ -5825,6 +6240,7 @@ async function loadAlertasPortada() {
 // Cuando es null: tabla RDO sin filtro. Cuando es un tipo_alerta: tabla filtrada
 // + chip "Filtrado: tipo · Limpiar" visible al inicio de la tabla.
 let _rdoAlertasFiltroTipo = null;
+let _rdoAlertasData = []; // cache para drill-down · BUG gerencia@ 02-jun
 
 function irABandejaConFiltro(tipoAlerta) {
   _rdoAlertasFiltroTipo = tipoAlerta || null;
@@ -5848,6 +6264,7 @@ async function loadAlertasRdo() {
   if (_rdoAlertasFiltroTipo) q = q.eq('tipo_alerta', _rdoAlertasFiltroTipo);
   const { data, error } = await q;
   if (error || !data?.length) {
+    _rdoAlertasData = [];
     div.innerHTML = _rdoAlertasFiltroTipo
       ? `<div class="bg-white rounded-lg p-4 shadow-sm">
            <div class="flex items-center gap-2 mb-2">
@@ -5861,6 +6278,7 @@ async function loadAlertasRdo() {
       : '';
     return;
   }
+  _rdoAlertasData = data; // cache para mostrarDetalleAlerta()
   const rojos    = data.filter(a => a.nivel === 'rojo').length;
   const amarillos = data.filter(a => a.nivel === 'amarillo').length;
   const badge = n => n === 'rojo'
@@ -5889,8 +6307,8 @@ async function loadAlertasRdo() {
             <th class="py-1">Fecha</th>
           </tr></thead>
           <tbody>
-            ${data.map(a => `
-            <tr class="border-b border-stone-50 hover:bg-stone-50">
+            ${data.map((a, idx) => `
+            <tr class="border-b border-stone-50 hover:bg-blue-50 cursor-pointer" onclick="mostrarDetalleAlerta(${idx})" title="Ver detalle y reparar">
               <td class="py-1 pr-2">${badge(a.nivel)}${a.nivel}</td>
               <td class="py-1 pr-2 font-medium text-stone-600">${escapeHtml(a.tipo_alerta || '')}</td>
               <td class="py-1 pr-2 text-stone-500 max-w-xs truncate" title="${escapeHtml(a.descripcion || '')}">${escapeHtml((a.descripcion || '').slice(0, 70))}${(a.descripcion || '').length > 70 ? '…' : ''}</td>
@@ -5900,7 +6318,77 @@ async function loadAlertasRdo() {
           </tbody>
         </table>
       </div>
+      <p class="text-[10px] text-stone-400 mt-2">💡 Clic en una fila para ver detalle y reparar.</p>
     </div>`;
+}
+
+// Mapeo tipo_alerta → tab donde se repara la causa raíz.
+const _RDO_ALERTA_REPARAR_MAP = {
+  precio_tarifa:           { tab: 'precios',     label: 'Ir a Precios',     hint: 'Ahí se publica precio nuevo.' },
+  contraparte_discrepancia:{ tab: 'facturacion', label: 'Ir a Facturación', hint: 'Cruzar DTE vs pesaje y corregir.' },
+  cliente_sin_registro:    { tab: 'comercial',   label: 'Ir a Comercial',   hint: 'Crear ficha del cliente.' },
+};
+
+function mostrarDetalleAlerta(idx) {
+  const a = _rdoAlertasData[idx];
+  if (!a) return;
+  const tipo = a.tipo_alerta || '';
+  const map = _RDO_ALERTA_REPARAR_MAP[tipo] || null;
+  const nivelColor = a.nivel === 'rojo' ? 'bg-red-50 border-red-300 text-red-900' : 'bg-amber-50 border-amber-300 text-amber-900';
+  const dotColor   = a.nivel === 'rojo' ? 'bg-red-500' : 'bg-amber-400';
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'pc-modal-backdrop';
+  backdrop.setAttribute('role','dialog');
+  backdrop.setAttribute('aria-modal','true');
+
+  const modal = document.createElement('div');
+  modal.className = 'pc-modal';
+  modal.style.maxWidth = '480px';
+
+  modal.innerHTML = `
+    <div class="border ${nivelColor} rounded-lg p-3 mb-3">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="inline-block w-2.5 h-2.5 rounded-full ${dotColor}"></span>
+        <span class="text-xs font-bold uppercase tracking-wide">${escapeHtml(a.nivel || '')}</span>
+        <span class="text-xs ml-auto opacity-70">${escapeHtml(a.fecha || '')}</span>
+      </div>
+      <div class="font-semibold text-sm">${escapeHtml(a.titulo || a.tipo_alerta || 'Alerta')}</div>
+    </div>
+    <div class="text-xs space-y-2 text-stone-700">
+      <div><span class="text-stone-400">Tipo:</span> <span class="font-mono">${escapeHtml(tipo)}</span></div>
+      ${a.valor ? `<div><span class="text-stone-400">Valor:</span> <span class="font-mono">${escapeHtml(a.valor)}</span></div>` : ''}
+      ${a.descripcion ? `<div class="bg-stone-50 rounded p-2 text-stone-600 whitespace-pre-wrap">${escapeHtml(a.descripcion)}</div>` : ''}
+      ${map ? `<div class="text-stone-500 italic">${escapeHtml(map.hint)}</div>` : ''}
+    </div>
+    <div class="pc-modal-actions mt-3 flex gap-2 justify-end">
+      ${map ? `<button id="alertaIrReparar" class="pc-modal-btn pc-modal-btn-ok">${escapeHtml(map.label)} →</button>` : ''}
+      <button id="alertaCerrar" class="pc-modal-btn pc-modal-btn-cancel">Cerrar</button>
+    </div>
+  `;
+
+  backdrop.appendChild(modal);
+  document.body.appendChild(backdrop);
+  requestAnimationFrame(() => backdrop.classList.add('show'));
+
+  function cerrar() {
+    backdrop.classList.remove('show');
+    document.removeEventListener('keydown', onKey);
+    setTimeout(() => { if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop); }, 200);
+  }
+  function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); cerrar(); } }
+
+  document.addEventListener('keydown', onKey);
+  backdrop.onclick = e => { if (e.target === backdrop) cerrar(); };
+  modal.querySelector('#alertaCerrar').onclick = cerrar;
+  const btnIr = modal.querySelector('#alertaIrReparar');
+  if (btnIr && map) {
+    btnIr.onclick = () => {
+      cerrar();
+      const btnTab = document.querySelector(`button[data-tab="${map.tab}"]`);
+      if (btnTab) btnTab.click();
+    };
+  }
 }
 
 async function loadFacturacionCruceAlertas() {
@@ -6381,6 +6869,7 @@ function cotizarDesdeFilaNegocio(opId, titulo, clienteId, clienteNombre) {
       document.getElementById('cotClienteSeleccionado').textContent = '✔ ' + (clienteNombre || clienteId);
       document.getElementById('cotClienteBuscar').value = clienteNombre || clienteId;
     }
+    if (typeof cotRefrescarEditarClienteBtn === 'function') cotRefrescarEditarClienteBtn();
   }, 300);
 }
 
@@ -7073,8 +7562,8 @@ async function initCotizador() {
   // Cargar catálogos en paralelo
   const [sucRes, srvRes, tarRes, pisoRes, marRes] = await Promise.all([
     sb.schema('curated').from('sucursales').select('sucursal_id, nombre').eq('activa', true).order('nombre'),
-    sb.schema('curated').from('servicios_catalogo').select('servicio_id, tipo, nombre').eq('activo', true).order('tipo').order('nombre'),
-    sb.schema('curated').from('vw_tarifas_uf_vigente').select('tarifa_id, nombre, monto_uf').order('nombre'),
+    sb.schema('curated').from('servicios_catalogo').select('servicio_id, tipo, nombre, descripcion').eq('activo', true).order('tipo').order('nombre'),
+    sb.schema('curated').from('vw_tarifas_uf_vigente').select('tarifa_id, nombre, monto_uf, tarifa_uf_por_km').order('nombre'),
     sb.schema('curated').from('vw_descuentos_pisos_vigente').select('nivel_autorizacion, descuento_max_pct').order('descuento_max_pct'),
     sb.schema('curated').from('vw_margen_metas_vigente').select('categoria_id, descripcion, margen_meta_pct, margen_minimo_pct').order('margen_meta_pct'),
   ]);
@@ -7087,21 +7576,25 @@ async function initCotizador() {
     selSuc.appendChild(o);
   });
 
-  // Servicios
+  // Servicios — hidden select (compat) + cards H05
+  window._cotServiciosCatalogo = srvRes.data || [];
   const selSrv = document.getElementById('cotServicio');
-  (srvRes.data || []).forEach(s => {
+  window._cotServiciosCatalogo.forEach(s => {
     const o = document.createElement('option');
     o.value = s.servicio_id;
     o.textContent = `[${escapeHtml(s.tipo)}] ${escapeHtml(s.nombre)}`;
     selSrv.appendChild(o);
   });
+  renderServicioCards();
 
-  // Tarifas
+  // Tarifas — guardo el array completo para H07 (suma km)
+  window._cotTarifasCatalogo = tarRes.data || [];
   const selTar = document.getElementById('cotTarifa');
-  (tarRes.data || []).forEach(t => {
+  window._cotTarifasCatalogo.forEach(t => {
     const o = document.createElement('option');
     o.value = t.tarifa_id;
-    o.textContent = `${escapeHtml(t.nombre)} — ${Number(t.monto_uf).toFixed(4)} UF`;
+    const sufKm = (t.tarifa_uf_por_km != null) ? ` (+${Number(t.tarifa_uf_por_km).toFixed(4)} UF/km)` : '';
+    o.textContent = `${escapeHtml(t.nombre)} — ${Number(t.monto_uf).toFixed(4)} UF${sufKm}`;
     selTar.appendChild(o);
   });
 
@@ -7132,9 +7625,57 @@ async function initCotizador() {
 }
 
 function agregarLineaCot() {
-  _cotLineas.push({ desc: '', qty: 1, unidad: 'kg', precioUF: 0, descPct: 0 });
+  // PR4 Fase 3: servicio_id por linea (default null = usa el del cotizador principal)
+  _cotLineas.push({ desc: '', material_id: null, qty: 1, unidad: 'kg', precioUF: 0, descPct: 0, servicio_id: null });
   renderLineasCot();
 }
+
+// SPEC V1.1 H10 · autocomplete materiales por línea (usa RPC diego_buscar_material)
+window._cotMatTimers = {};
+window.cotMaterialBuscar = function (idx, val) {
+  clearTimeout(window._cotMatTimers[idx]);
+  const sug = document.getElementById('cotMaterialSug-' + idx);
+  if (!sug) return;
+  if (!val || val.trim().length < 2) { sug.classList.add('hidden'); sug.innerHTML = ''; return; }
+  window._cotMatTimers[idx] = setTimeout(async () => {
+    try {
+      const { data, error } = await sb.rpc('diego_buscar_material', { p_query: val.trim(), p_limit: 6 });
+      if (error) throw error;
+      const rows = data || [];
+      if (!rows.length) {
+        sug.innerHTML = '<div class="px-2 py-1 text-[10px] text-stone-400 italic">Sin coincidencias en catálogo · podés escribir libre</div>';
+        sug.classList.remove('hidden');
+        return;
+      }
+      sug.innerHTML = rows.map(r =>
+        `<div class="cot-mat-opt px-2 py-1 hover:bg-emerald-50 cursor-pointer text-xs border-b border-stone-100 last:border-0"
+              data-idx="${idx}" data-id="${escapeHtml(r.material_id)}" data-nombre="${escapeHtml(r.nombre)}">
+           <span class="font-medium">${escapeHtml(r.nombre)}</span>
+           <span class="text-stone-400 text-[10px] ml-1">${escapeHtml(r.categoria || '')} · ${r.match_type}</span>
+         </div>`
+      ).join('');
+      sug.classList.remove('hidden');
+    } catch (e) {
+      console.warn('[H10] buscar material:', e);
+    }
+  }, 300);
+};
+window.cotMaterialSeleccionar = function (idx, id, nombre) {
+  if (!_cotLineas[idx]) return;
+  _cotLineas[idx].desc = nombre;
+  _cotLineas[idx].material_id = id;
+  const sug = document.getElementById('cotMaterialSug-' + idx);
+  if (sug) { sug.classList.add('hidden'); sug.innerHTML = ''; }
+  renderLineasCot();
+  cotRecalcular();
+};
+// Delegated click para opciones (sobrevive al re-render del tbody)
+document.addEventListener('click', function (e) {
+  const op = e.target.closest('.cot-mat-opt');
+  if (op) {
+    window.cotMaterialSeleccionar(parseInt(op.dataset.idx, 10), op.dataset.id, op.dataset.nombre);
+  }
+});
 
 function eliminarLineaCot(idx) {
   _cotLineas.splice(idx, 1);
@@ -7145,17 +7686,35 @@ function eliminarLineaCot(idx) {
 function renderLineasCot() {
   const tbody = document.getElementById('cotLineas');
   const UNIDADES = ['kg','t','u','m3','lt'];
+  // PR4 Fase 3: opciones de servicio por linea (multi-servicio en una sola cotizacion)
+  const servicios = window._cotServiciosCatalogo || [];
+  const srvOptsFn = (selectedId) => {
+    return '<option value="">— Usa servicio principal —</option>' +
+      servicios.map(s => `<option value="${escapeHtml(s.servicio_id)}"${selectedId === s.servicio_id ? ' selected' : ''}>${escapeHtml(s.nombre)}</option>`).join('');
+  };
   tbody.innerHTML = _cotLineas.map((l, i) => {
     if (!l.unidad) l.unidad = 'kg';
+    if (l.servicio_id === undefined) l.servicio_id = null;
     const opts = UNIDADES.map(u => `<option value="${u}"${l.unidad===u?' selected':''}>${u}</option>`).join('');
     return `
     <tr class="border-b border-stone-100">
-      <td class="py-1 pr-2">
-        <input type="text" value="${escapeHtml(l.desc)}" placeholder="Descripción…"
+      <td class="py-1 pr-2 relative">
+        <input type="text" value="${escapeHtml(l.desc)}" placeholder="Descripción / material…"
                aria-label="Descripción de la línea ${i + 1}"
-               title="Nombre del material o servicio (ej: cartón, polipropileno, retiro especial)"
-               oninput="_cotLineas[${i}].desc = this.value"
+               title="Escribí 2+ letras para ver sugerencias del catálogo. Si no aparece, escribilo libre."
+               oninput="_cotLineas[${i}].desc = this.value; _cotLineas[${i}].material_id = null; window.cotMaterialBuscar(${i}, this.value)"
+               autocomplete="off"
                class="w-full border border-stone-200 rounded px-2 py-1 text-sm focus:border-green-700 focus:outline-none">
+        ${l.material_id ? '<span class="absolute right-2 top-2 text-emerald-600 text-xs" title="Vinculado a catálogo">✓</span>' : ''}
+        <div id="cotMaterialSug-${i}" class="hidden absolute left-0 right-0 top-full mt-0.5 border border-stone-200 rounded bg-white shadow-lg z-30 max-h-48 overflow-y-auto"></div>
+      </td>
+      <td class="py-1 px-2">
+        <select aria-label="Servicio de la linea ${i + 1}"
+                title="Servicio especifico de esta linea. Vacio = usa el servicio principal del cotizador."
+                onchange="_cotLineas[${i}].servicio_id = this.value || null; cotRecalcular()"
+                class="cot-servicio border border-stone-200 rounded px-1 py-1 text-sm focus:border-green-700 focus:outline-none">
+          ${srvOptsFn(l.servicio_id)}
+        </select>
       </td>
       <td class="py-1 px-2">
         <input type="number" value="${l.qty}" min="0" step="any" inputmode="decimal"
@@ -7199,6 +7758,223 @@ function renderLineasCot() {
   `;}).join('');
 }
 
+// SPEC V1.1 H13 · pizarra inteligente: llama EF diego-cotizador-parse y aplica los campos.
+window.cotPizarraExtraer = async function () {
+  const ta = document.getElementById('cotPizarraTexto');
+  const btn = document.getElementById('cotPizarraExtraer');
+  const status = document.getElementById('cotPizarraStatus');
+  const resDiv = document.getElementById('cotPizarraResultado');
+  const texto = (ta?.value || '').trim();
+  if (!texto) { status.textContent = '⚠ Pegá algo antes de extraer.'; return; }
+  if (texto.length < 15) { status.textContent = '⚠ Texto muy corto (mínimo 15 chars).'; return; }
+  btn.disabled = true; btn.textContent = '🤖 Diego analizando…';
+  status.textContent = '';
+  resDiv.classList.add('hidden');
+  try {
+    const supabaseUrl = (sb?.supabaseUrl) || 'https://eknmtsrtfkzroxnovfqn.supabase.co';
+    const supabaseKey = (sb?.supabaseKey) || sb?.rest?.headers?.apikey;
+    const sess = await sb.auth.getSession();
+    const accessToken = sess?.data?.session?.access_token;
+    const resp = await fetch(`${supabaseUrl}/functions/v1/diego-cotizador-parse`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken || supabaseKey || ''}`,
+        'apikey': supabaseKey || ''
+      },
+      body: JSON.stringify({ texto })
+    });
+    const data = await resp.json();
+    if (!resp.ok || !data.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+    const p = data.parsed || {};
+    const conf = Number(data.confidence || 0);
+    cotPizarraAplicar(p, conf, data.usage);
+    status.textContent = `✓ Aplicado · confianza ${(conf * 100).toFixed(0)}%`;
+  } catch (e) {
+    console.error('[H13] pizarra error:', e);
+    status.textContent = '⚠ Error: ' + (e?.message || e);
+  } finally {
+    btn.disabled = false; btn.textContent = '🤖 Extraer con Diego';
+  }
+};
+window.cotPizarraAplicar = function (parsed, confidence, usage) {
+  const baja = confidence < 0.7;
+  const resDiv = document.getElementById('cotPizarraResultado');
+  // Cliente
+  if (parsed.cliente_nombre) {
+    const inp = document.getElementById('cotClienteBuscar');
+    if (inp) { inp.value = parsed.cliente_nombre; document.getElementById('cotClienteId').value = ''; document.getElementById('cotClienteSeleccionado').textContent = 'libre: ' + parsed.cliente_nombre; }
+  }
+  // Sucursal
+  if (parsed.sucursal_id) {
+    const sel = document.getElementById('cotSucursal');
+    if (sel && [...sel.options].some(o => o.value === parsed.sucursal_id)) {
+      sel.value = parsed.sucursal_id;
+      sel.dispatchEvent(new Event('change'));
+    }
+  }
+  // Toggle cliente trae material
+  if (typeof parsed.cliente_trae_material === 'boolean') {
+    const chk = document.getElementById('cotClienteTraeMaterial');
+    if (chk) { chk.checked = parsed.cliente_trae_material; if (typeof window.cotToggleClienteTraeMaterial === 'function') window.cotToggleClienteTraeMaterial(chk.checked); }
+  }
+  // Notas residuales
+  if (parsed.notas_residuales) {
+    const nt = document.getElementById('cotNotas');
+    if (nt) nt.value = parsed.notas_residuales;
+  }
+  // Materiales: reemplaza _cotLineas
+  if (Array.isArray(parsed.materiales) && parsed.materiales.length) {
+    window._cotLineas = parsed.materiales.map(m => ({
+      desc: m.desc || '',
+      material_id: m.material_id || null,
+      qty: Number(m.qty) || 1,
+      unidad: ['kg','t','u','m3','lt'].includes(m.unidad) ? m.unidad : 'kg',
+      precioUF: 0,
+      descPct: 0
+    }));
+    if (typeof renderLineasCot === 'function') renderLineasCot();
+  }
+  // Resumen visual con razonamiento
+  const cls = baja ? 'border-amber-400 bg-amber-50 text-amber-900' : 'border-emerald-400 bg-emerald-50 text-emerald-900';
+  resDiv.className = 'mt-2 p-2 border-2 rounded text-xs ' + cls;
+  resDiv.innerHTML =
+    (baja ? '<strong>⚠ Confianza baja · verificá antes de guardar</strong><br>' : '<strong>✓ Extracción aplicada</strong><br>') +
+    (parsed.razonamiento ? '<span class="italic">' + escapeHtml(String(parsed.razonamiento)) + '</span><br>' : '') +
+    `<span class="text-stone-500">Confianza: ${(confidence * 100).toFixed(0)}%${usage ? ' · tokens ' + (usage.input_tokens || 0) + '→' + (usage.output_tokens || 0) : ''}</span>`;
+  resDiv.classList.remove('hidden');
+  if (typeof cotAutogenerarTitulo === 'function') cotAutogenerarTitulo();
+  if (typeof cotRecalcular === 'function') cotRecalcular();
+};
+document.getElementById('cotPizarraExtraer')?.addEventListener('click', window.cotPizarraExtraer);
+document.getElementById('cotPizarraToggle')?.addEventListener('click', () => {
+  const body = document.getElementById('cotPizarraBody');
+  const btn = document.getElementById('cotPizarraToggle');
+  if (!body || !btn) return;
+  const hidden = body.classList.toggle('hidden');
+  btn.textContent = hidden ? 'mostrar' : 'ocultar';
+});
+
+// SPEC V1.1 H05 · cards visuales de servicio (reemplaza select plano).
+// El select #cotServicio queda como fuente de verdad (compat con cotRecalcular).
+window.cotServicioFamilia = function (s) {
+  const t = (s.nombre + ' ' + (s.descripcion || '')).toLowerCase();
+  if (/(arriendo|contenedor|jaula|volquete)/.test(t)) return { fam: 'arriendo', icon: '🏗️', cls: 'border-sky-300 bg-sky-50 hover:bg-sky-100',     active: 'border-sky-600 bg-sky-100 ring-2 ring-sky-300' };
+  if (/(retiro|cami(o|ó)n|amplirrol|transporte|km|peoneta)/.test(t)) return { fam: 'retiro',  icon: '🚛', cls: 'border-emerald-300 bg-emerald-50 hover:bg-emerald-100', active: 'border-emerald-600 bg-emerald-100 ring-2 ring-emerald-300' };
+  if (/(pesaje|certif|control|seguridad|disposici)/.test(t))         return { fam: 'pesaje',  icon: '⚖️', cls: 'border-purple-300 bg-purple-50 hover:bg-purple-100', active: 'border-purple-600 bg-purple-100 ring-2 ring-purple-300' };
+  if (/(notar|destruc|segregac|limpie|adicional|fin de semana)/.test(t)) return { fam: 'otro', icon: '🧹', cls: 'border-stone-300 bg-stone-50 hover:bg-stone-100', active: 'border-stone-600 bg-stone-100 ring-2 ring-stone-300' };
+  return { fam: 'otro', icon: '📦', cls: 'border-stone-300 bg-stone-50 hover:bg-stone-100', active: 'border-stone-600 bg-stone-100 ring-2 ring-stone-300' };
+};
+window.renderServicioCards = function () {
+  const cont = document.getElementById('cotServicioCards');
+  const sel = document.getElementById('cotServicio');
+  const items = window._cotServiciosCatalogo || [];
+  if (!cont) return;
+  const seleccionado = sel ? sel.value : '';
+  cont.innerHTML = items.map(s => {
+    const f = window.cotServicioFamilia(s);
+    const isActive = seleccionado === s.servicio_id;
+    const desc = (s.descripcion || '').slice(0, 90);
+    return `<button type="button" class="cot-srv-card text-left border-2 rounded-lg p-2 transition ${isActive ? f.active : f.cls}"
+                    data-id="${escapeHtml(s.servicio_id)}"
+                    title="${escapeHtml(s.descripcion || s.nombre)}">
+              <div class="flex items-center gap-2 mb-0.5">
+                <span class="text-base leading-none">${f.icon}</span>
+                <span class="text-xs font-semibold text-stone-800">${escapeHtml(s.nombre)}</span>
+              </div>
+              ${desc ? `<div class="text-[10px] text-stone-600 leading-tight">${escapeHtml(desc)}</div>` : ''}
+            </button>`;
+  }).join('');
+  cont.querySelectorAll('.cot-srv-card').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const v = btn.dataset.id;
+      const cur = sel.value;
+      sel.value = (cur === v) ? '' : v; // click otra vez = deseleccionar
+      sel.dispatchEvent(new Event('change'));
+      renderServicioCards();
+      if (typeof cotAutogenerarTitulo === 'function') cotAutogenerarTitulo();
+    });
+  });
+};
+
+// SPEC V1.1 H07 · cálculo automático km sucursal → cliente vía EF google-maps-distance
+window._cotKmCache = null;
+window.cotKmCalcular = async function (force) {
+  const sucursalId = document.getElementById('cotSucursal')?.value;
+  const clienteId = document.getElementById('cotClienteId')?.value;
+  const block = document.getElementById('cotKmBlock');
+  const det = document.getElementById('cotKmDetalle');
+  if (!sucursalId || !clienteId) { if (block) block.classList.add('hidden'); window._cotKmCache = null; return; }
+  if (!force && window._cotKmCache && window._cotKmCache.k === sucursalId + '|' + clienteId) {
+    cotKmRender(window._cotKmCache); return;
+  }
+  block.classList.remove('hidden');
+  det.innerHTML = '<span class="text-stone-500">Resolviendo direcciones…</span>';
+  try {
+    const dirRes = await sb.rpc('cotizador_resolver_direcciones', { p_sucursal_id: sucursalId, p_cliente_id: clienteId });
+    if (dirRes.error) throw dirRes.error;
+    const dir = dirRes.data || {};
+    const origin = dir.sucursal?.direccion_full;
+    const destination = dir.cliente?.direccion_full;
+    if (!destination) {
+      det.innerHTML = '<span class="text-amber-700">⚠ Cliente sin dirección registrada — no se puede calcular km.</span>';
+      window._cotKmCache = null;
+      return;
+    }
+    det.innerHTML = '<span class="text-stone-500">Calculando ruta vía Google Maps…</span>';
+    const supabaseUrl = (sb?.supabaseUrl) || 'https://eknmtsrtfkzroxnovfqn.supabase.co';
+    const supabaseKey = (sb?.supabaseKey) || sb?.rest?.headers?.apikey || sb?.headers?.apikey;
+    const sess = await sb.auth.getSession();
+    const accessToken = sess?.data?.session?.access_token;
+    const resp = await fetch(`${supabaseUrl}/functions/v1/google-maps-distance`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken || supabaseKey || ''}`,
+        'apikey': supabaseKey || ''
+      },
+      body: JSON.stringify({ origin, destination })
+    });
+    if (!resp.ok) throw new Error(`google-maps-distance HTTP ${resp.status}`);
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'sin ruta');
+    window._cotKmCache = { k: sucursalId + '|' + clienteId, km: data.distance_km, duration: data.duration_min, origin, destination };
+    cotKmRender(window._cotKmCache);
+  } catch (e) {
+    console.warn('[H07] km calcular error:', e);
+    det.innerHTML = '<span class="text-amber-700">⚠ No se pudo calcular: ' + escapeHtml(e?.message || String(e)) + '</span>';
+  }
+};
+window.cotKmRender = function (cache) {
+  const det = document.getElementById('cotKmDetalle');
+  const tarifaSel = document.getElementById('cotTarifa');
+  const tarifaId = tarifaSel?.value;
+  const tarifas = window._cotTarifasCatalogo || [];
+  const t = tarifas.find(x => x.tarifa_id === tarifaId);
+  const km = cache?.km;
+  let html = `<div>📍 ${escapeHtml(cache.origin || '—')} → ${escapeHtml(cache.destination || '—')}</div>` +
+             `<div class="mt-1"><strong>${km} km</strong> · ${cache.duration} min</div>`;
+  if (t) {
+    const base = Number(t.monto_uf || 0);
+    const perKm = t.tarifa_uf_por_km != null ? Number(t.tarifa_uf_por_km) : 0;
+    const total = base + (perKm * km);
+    if (perKm > 0) {
+      html += `<div class="mt-1 font-mono text-sky-900">${window.fmtNum(base, 'UF')} UF base + ${km} km × ${window.fmtNum(perKm, 'UF')} = <strong>${window.fmtNum(total, 'UF')} UF</strong></div>`;
+    } else {
+      html += `<div class="mt-1 font-mono text-stone-600">tarifa elegida no cobra adicional por km (base ${window.fmtNum(base, 'UF')} UF)</div>`;
+    }
+  } else {
+    html += `<div class="mt-1 text-stone-500">Elegí una tarifa base para ver el total con km</div>`;
+  }
+  det.innerHTML = html;
+};
+
+// Triggers
+['cotSucursal','cotTarifa'].forEach(id => {
+  document.getElementById(id)?.addEventListener('change', () => { window.cotKmCalcular(); });
+});
+document.getElementById('cotKmRecalcular')?.addEventListener('click', () => { window.cotKmCalcular(true); });
+
 // D-OP-04-v2 Ola 1.4 — mapeo perfil del panel → nivel_autorizacion de mig 029.
 // La función f_validar_descuento espera: 'ceo' | 'jefe_comercial' | 'ejecutivo'.
 function nivelAutorizacionDePerfil(perfil) {
@@ -7229,6 +8005,23 @@ window.cotToggleClienteTraeMaterial = function (checked) {
   if (typeof cotAutogenerarTitulo === 'function') cotAutogenerarTitulo();
 };
 
+// F2 R-AUD-035 · Boton "Editar cliente" abre modal unico carAbrirEditar (reusa
+// el de tab Cartera). Habilitado solo cuando hay cliente_id del catalogo.
+window.cotEditarCliente = function () {
+  const id = document.getElementById('cotClienteId')?.value;
+  if (!id) return;
+  if (typeof window.carAbrirEditar === 'function') {
+    window.carAbrirEditar(id);
+  } else {
+    alert('Editor de cliente no disponible aun. Probar desde pestana Cartera.');
+  }
+};
+window.cotRefrescarEditarClienteBtn = function () {
+  const btn = document.getElementById('cotClienteEditarBtn');
+  if (!btn) return;
+  btn.disabled = !document.getElementById('cotClienteId')?.value;
+};
+
 // H04 · autogenerar título a partir de cliente + sucursal + servicio
 window.cotTituloEditadoManual = false;
 window.cotAutogenerarTitulo = function () {
@@ -7252,6 +8045,11 @@ window.cotAutogenerarTitulo = function () {
   const el = document.getElementById(id);
   if (el) el.addEventListener('change', cotAutogenerarTitulo);
   if (el) el.addEventListener('input', cotAutogenerarTitulo);
+});
+// SPEC V1.1 H04 · botón ↻ regenera título y vuelve a modo auto
+document.getElementById('cotTituloRegenerar')?.addEventListener('click', () => {
+  window.cotTituloEditadoManual = false;
+  cotAutogenerarTitulo();
 });
 
 function cotRecalcular() {
@@ -7363,8 +8161,11 @@ function seleccionarClienteCot(id, nombre) {
   document.getElementById('cotClienteBuscar').value = nombre;
   document.getElementById('cotClienteSeleccionado').textContent = '✔ ' + nombre;
   document.getElementById('cotClienteSugerencias').classList.add('hidden');
+  if (typeof cotRefrescarEditarClienteBtn === 'function') cotRefrescarEditarClienteBtn();
   // D-OP-04-v2 Ola 1.4 — re-disparar validación con cliente recién elegido.
   if (typeof cotRecalcular === 'function') cotRecalcular();
+  // SPEC V1.1 H07 · disparar cálculo km con cliente nuevo
+  if (typeof window.cotKmCalcular === 'function') window.cotKmCalcular();
 }
 
 async function guardarCotizacion() {
@@ -7407,29 +8208,23 @@ async function guardarCotizacion() {
   btn.disabled = true;
   btn.textContent = '⏳ Guardando…';
 
-  const payload = {
-    tipo: 'cotizacion',
-    titulo,
-    estado: 'recibida',
-    responsable: currentUser,
-    valor_estimado_uf: totalUF,
-    created_by: currentUser,
-    updated_by: currentUser,
-    metadata: {
-      lineas: _cotLineas,
-      servicio_id: servicioId || null,
-      notas,
-    },
-  };
-
-  if (clienteId) {
-    payload.cliente_id = clienteId;
-  } else {
-    payload.cliente_nombre_libre = clienteNombreLibre;
-  }
-  if (sucursalId) payload.sucursal_id = sucursalId;
-
-  const { data, error } = await sb.schema('curated').from('oportunidades').insert(payload).select('oportunidad_id').single();
+  // F4 mig 169 · RPC cotizador_guardar_v1 SECURITY DEFINER.
+  // Atomico: INSERT curated.oportunidades + encola sync Impulsa async +
+  // registra afirmacion R-AUD-024. Reemplaza INSERT directo (R-AUD-032).
+  const traeMaterial = !!document.getElementById('cotClienteTraeMaterial')?.checked;
+  const rpcRes = await sb.rpc('cotizador_guardar_v1', {
+    p_titulo: titulo,
+    p_cliente_id: clienteId || null,
+    p_cliente_nombre_libre: clienteId ? null : (clienteNombreLibre || null),
+    p_sucursal_id: sucursalId,
+    p_servicio_id: servicioId || null,
+    p_notas: notas || null,
+    p_cliente_trae_material: traeMaterial,
+    p_lineas: _cotLineas,
+    p_valor_estimado_uf: totalUF
+  });
+  const data = rpcRes.data;
+  const error = rpcRes.error || ((data && data.ok === false) ? { message: String(data.error || 'desconocido') } : null);
 
   btn.disabled = false;
   btn.textContent = '✅ Guardar cotización';
@@ -7439,7 +8234,15 @@ async function guardarCotizacion() {
     const msgTec = String(error.message || '');
     let humano = msgTec;
     let sugerencia = '';
-    if (/permission denied/i.test(msgTec)) {
+    if (/titulo_requerido/i.test(msgTec)) {
+      humano = 'Falta completar el título de la cotización';
+    } else if (/sucursal_requerida/i.test(msgTec)) {
+      humano = 'Falta elegir una sucursal';
+    } else if (/cliente_requerido/i.test(msgTec)) {
+      humano = 'Falta elegir o escribir el cliente';
+    } else if (/lineas_requeridas/i.test(msgTec)) {
+      humano = 'Agregá al menos una línea de cotización';
+    } else if (/permission denied/i.test(msgTec)) {
       humano = 'No tenés permiso para guardar cotizaciones todavía';
       sugerencia = 'Avisale a Pablo o pedile a Diego: "no puedo guardar cotizaciones".';
     } else if (/foreign key|violates foreign/i.test(msgTec)) {
@@ -7487,6 +8290,7 @@ async function guardarCotizacion() {
   document.getElementById('cotClienteId').value = '';
   document.getElementById('cotClienteBuscar').value = '';
   document.getElementById('cotClienteSeleccionado').textContent = '';
+  if (typeof cotRefrescarEditarClienteBtn === 'function') cotRefrescarEditarClienteBtn();
   document.getElementById('cotSucursal').value = '';
   document.getElementById('cotServicio').value = '';
   document.getElementById('cotNotas').value = '';
@@ -10258,12 +11062,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       else if (name === 'gestiones') {
-        body.innerHTML = `
-          <div class="text-center py-8">
-            <div class="text-4xl mb-2">📝</div>
-            <p class="text-stone-700 font-medium mb-1">Sin gestiones registradas</p>
-            <p class="text-xs text-stone-500 max-w-md mx-auto">El registro de nuevas gestiones requiere la tabla <code class="bg-stone-100 px-1 rounded">panel.crm_gestiones</code>, pendiente de firma <code>D-CRM-GESTIONES</code> por Dusan. Una vez firmada, este panel mostrará el historial cronológico y permitirá agregar entradas nuevas.</p>
-          </div>`;
+        // D-CRM-GESTIONES (mig 222) · Pablo 2026-06-05
+        body.innerHTML = '<div id="crmGestionesContainer" class="space-y-3"><div class="text-center text-stone-400 py-6 text-sm">Cargando gestiones…</div></div>';
+        if (typeof window.cargarGestionesCliente === 'function') {
+          window.cargarGestionesCliente({ external_id_crm: id, cliente_id: cFull?.cliente_id || null, cliente_nombre: cFull?.razon_social || '' });
+        }
       }
     } catch (e) {
       console.warn('[CRM] subtab', name, 'error:', e);
@@ -11875,41 +12678,37 @@ document.addEventListener('DOMContentLoaded', () => {
     el.className = 'text-xs p-2 rounded mt-3 ' + (ok ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
   }
 
+  // Sub-PR A.2 D-DIEGO-50X-V4 Ola A · Mi memoria V2 derecho rectificación.
+  // Los 4 handlers ahora llaman RPCs SECURITY DEFINER (mig 191) que borran TODA
+  // la PII en 6 tablas + auditan en panel.diego_borrados_auditoria (Ley 21.719).
   async function mmBorrarHistorial() {
     if (!confirm('⚠️ ¿Borrar TODO tu historial con Diego? Es irreversible y Diego empieza de cero la próxima vez que chatées.')) return;
     if (typeof sb === 'undefined' || !sb) return;
-    const { error } = await sb.schema('panel').from('diego_bandeja').delete().ilike('remitente', _currentEmail);
+    const { data, error } = await sb.rpc('mi_memoria_borrar_historial', { p_email: _currentEmail });
     if (error) { mmMsg('Error: ' + error.message, false); return; }
-    mmMsg('✓ Historial borrado completamente.', true);
+    const total = data?.total ?? 0;
+    mmMsg('✓ Historial borrado completamente (' + total + ' registros en 6 tablas · audit Ley 21.719).', true);
     loadHistorial();
+    loadMemoriaSesion();
   }
 
   async function mmBorrarMemoriaSesion() {
     if (!confirm('¿Limpiar el resumen que Diego mantiene de vos? Las conversaciones individuales no se borran, solo el resumen.')) return;
-    try {
-      const r = await fetch(`${SUPABASE_URL}/functions/v1/diego-chat-process`, {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_email: _currentEmail, mensaje: 'limpiame la cache de sesion', request_id: crypto.randomUUID() }),
-      });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      mmMsg('✓ Resumen de sesión limpiado. Diego empieza la próxima conversación de cero.', true);
-      loadMemoriaSesion();
-    } catch (e) {
-      mmMsg('Error: ' + (e.message || String(e)), false);
-    }
+    if (typeof sb === 'undefined' || !sb) return;
+    const { data, error } = await sb.rpc('mi_memoria_borrar_memoria_sesion', { p_email: _currentEmail });
+    if (error) { mmMsg('Error: ' + error.message, false); return; }
+    mmMsg('✓ Resumen de sesión limpiado (' + (data?.borrados ?? 0) + ' filas). Diego empieza la próxima conversación de cero.', true);
+    loadMemoriaSesion();
   }
 
   async function mmRetirarConsentimiento() {
     if (!confirm('⚠️ Esto desactiva Diego para vos. No vas a ver el botón verde del chat y no puede ayudarte hasta que vuelvas a dar consentimiento. ¿Confirmás?')) return;
     if (typeof sb === 'undefined' || !sb) return;
-    const { error } = await sb.schema('panel').from('usuarios_autorizados')
-      .update({ aviso_ia_consentimiento: false, aviso_ia_aceptado_at: new Date().toISOString() })
-      .ilike('email', _currentEmail);
+    const { data, error } = await sb.rpc('mi_memoria_retirar_consentimiento', { p_email: _currentEmail });
     if (error) { mmMsg('Error: ' + error.message, false); return; }
     _userRow = { ..._userRow, aviso_ia_consentimiento: false };
     hideFabDiego();
-    mmMsg('✓ Consentimiento retirado. Diego está desactivado para vos. Recargá si querés volver a verlo (te aparecerá el banner de nuevo).', true);
+    mmMsg('✓ Consentimiento retirado (' + (data?.actualizado ?? 0) + ' fila · audit Ley 21.719). Recargá si querés volver a verlo.', true);
     initMiMemoria();
   }
 
@@ -11932,19 +12731,11 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const email = (JSON.parse(localStorage.getItem('rf_session') || '{}').email) || (await sb.auth.getSession())?.data?.session?.user?.email;
         if (!email) { alert('No hay sesión activa.'); return; }
-        const [perfilQ, histQ, memQ] = await Promise.all([
-          sb.schema('panel').from('usuarios_autorizados').select('*').eq('email', email).maybeSingle(),
-          sb.schema('panel').from('diego_bandeja').select('*').eq('remitente', email).order('creado_en', { ascending: false }).limit(500),
-          sb.schema('panel').from('diego_memoria_sesion').select('*').eq('usuario_email', email).maybeSingle(),
-        ]);
-        const bundle = {
-          export_v: 1, generado_at: new Date().toISOString(),
-          ley_aplicable: ['Ley 19628', 'Ley 21719'],
-          email,
-          perfil: perfilQ.data || null,
-          historial_diego: histQ.data || [],
-          memoria_sesion: memQ.data || null,
-        };
+        // Sub-PR A.2: usa RPC SECURITY DEFINER (mig 191) que devuelve TODO + audita
+        // (más completo que las 3 SELECT directas anteriores: incluye inbox, metrics
+        // y auditoría histórica del titular).
+        const { data: bundle, error: expErr } = await sb.rpc('mi_memoria_exportar', { p_email: email });
+        if (expErr) throw expErr;
         const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -12614,13 +13405,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function refrescar() {
     try {
+      // Wave 6 mig 204: usar wrappers public.v_dod_* (schema dod no expuesto en PostgREST por default).
       const [equipos, proyectos, criterios, metricas, etapas, criteriosEs] = await Promise.all([
-        sb.schema('dod').from('equipos').select('id', { count: 'exact', head: true }),
-        sb.schema('dod').from('proyectos').select('id', { count: 'exact', head: true }).eq('estado', 'activo'),
-        sb.schema('dod').from('criterios_generales').select('id', { count: 'exact', head: true }).eq('activo', true),
-        sb.schema('dod').from('metricas_calidad').select('id, nombre, categoria, unidad, umbral_minimo, umbral_maximo, direccion_optima').eq('activo', true).order('categoria').order('nombre'),
-        sb.schema('dod').from('etapas_ciclo_vida').select('id, nombre, orden, descripcion').order('orden'),
-        sb.schema('dod').from('criterios_entrada_salida').select('id, etapa_id, tipo, descripcion, es_obligatorio')
+        sb.from('v_dod_equipos').select('id', { count: 'exact', head: true }),
+        sb.from('v_dod_proyectos').select('id', { count: 'exact', head: true }).eq('estado', 'activo'),
+        sb.from('v_dod_criterios_generales').select('id', { count: 'exact', head: true }).eq('activo', true),
+        sb.from('v_dod_metricas_calidad').select('id, nombre, categoria, unidad, umbral_minimo, umbral_maximo, direccion_optima').eq('activo', true).order('categoria').order('nombre'),
+        sb.from('v_dod_etapas_ciclo_vida').select('id, nombre, orden, descripcion').order('orden'),
+        sb.from('v_dod_criterios_entrada_salida').select('id, etapa_id, tipo, descripcion, es_obligatorio')
       ]);
 
       document.getElementById('dodEquiposCount').textContent = equipos.count ?? '—';
@@ -13070,6 +13862,15 @@ document.addEventListener('DOMContentLoaded', () => {
         <span class="dcm-cat-emoji">🚨</span><strong>Es urgente</strong>
       </button>
     </div>
+    <!-- Campos contexto obligatorios cuando categoria=urgente (R-AUD-NO-CARGA-DUSAN 02-jun) -->
+    <div id="dcmUrgenteFields" style="display:none;background:#fef3c7;border:1px solid #f59e0b;border-radius:.375rem;padding:.625rem .75rem;margin-bottom:.75rem;">
+      <div style="font-size:.75rem;color:#92400e;font-weight:600;margin-bottom:.375rem;">🚨 Para resolver rápido necesitamos 2 cosas:</div>
+      <label for="dcmUrgCliente" style="font-size:.7rem;color:#78350f;display:block;margin-bottom:.125rem;">Cliente o asunto</label>
+      <input type="text" id="dcmUrgCliente" maxlength="200" placeholder="Ej: Megapol · cotización Talca · firma Abastible" aria-label="Cliente o asunto" style="width:100%;padding:.4rem .55rem;border:1px solid #cbd5e1;border-radius:.25rem;font-family:'Inter',sans-serif;font-size:.85rem;box-sizing:border-box;margin-bottom:.5rem;">
+      <label for="dcmUrgRazon" style="font-size:.7rem;color:#78350f;display:block;margin-bottom:.125rem;">¿Qué pasa si no se resuelve hoy?</label>
+      <input type="text" id="dcmUrgRazon" maxlength="200" placeholder="Ej: cliente se pierde · pierdo el camión · queda parada la planta" aria-label="Que pasa si no se resuelve hoy" style="width:100%;padding:.4rem .55rem;border:1px solid #cbd5e1;border-radius:.25rem;font-family:'Inter',sans-serif;font-size:.85rem;box-sizing:border-box;">
+    </div>
+
     <label for="dcmTextarea" style="font-size:.8rem;color:#475569;display:block;margin-bottom:.25rem;">Contale a Diego</label>
     <textarea id="dcmTextarea" maxlength="5000" placeholder="Describí lo que querés contar (máx 5000)…" aria-label="Mensaje" rows="6"></textarea>
     <div class="dcm-counter"><span id="dcmCount">0</span>/5000</div>
@@ -13132,6 +13933,12 @@ document.addEventListener('DOMContentLoaded', () => {
     resp.textContent = '';
     submitBtn.disabled = true;
     submitBtn.textContent = 'Enviar';
+    var uf = document.getElementById('dcmUrgenteFields');
+    if (uf) uf.style.display = 'none';
+    var uc = document.getElementById('dcmUrgCliente');
+    var ur = document.getElementById('dcmUrgRazon');
+    if (uc) uc.value = '';
+    if (ur) ur.value = '';
     modal.classList.add('open');
     setTimeout(function () { textarea.focus(); }, 80);
   }
@@ -13139,8 +13946,31 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.classList.remove('open');
   }
 
+  // R-AUD-NO-CARGA-DUSAN · campos contexto solo para urgente
+  var urgFields = document.getElementById('dcmUrgenteFields');
+  var urgClienteIn = document.getElementById('dcmUrgCliente');
+  var urgRazonIn = document.getElementById('dcmUrgRazon');
+
+  function urgenteCamposOk() {
+    if (selectedCat !== 'urgente') return true;
+    var c = (urgClienteIn && urgClienteIn.value || '').trim();
+    var r = (urgRazonIn && urgRazonIn.value || '').trim();
+    return c.length >= 3 && r.length >= 3;
+  }
+
   function updateSubmitState() {
-    submitBtn.disabled = !(selectedCat && textarea.value.trim().length > 0);
+    submitBtn.disabled = !(selectedCat && textarea.value.trim().length > 0 && urgenteCamposOk());
+  }
+
+  function refreshUrgenteFields() {
+    if (!urgFields) return;
+    if (selectedCat === 'urgente') {
+      urgFields.style.display = 'block';
+    } else {
+      urgFields.style.display = 'none';
+      if (urgClienteIn) urgClienteIn.value = '';
+      if (urgRazonIn) urgRazonIn.value = '';
+    }
   }
 
   catBtns.forEach(function (btn) {
@@ -13149,6 +13979,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.classList.add('selected');
       btn.setAttribute('aria-checked', 'true');
       selectedCat = btn.getAttribute('data-cat');
+      refreshUrgenteFields();
       updateSubmitState();
     });
   });
@@ -13157,6 +13988,8 @@ document.addEventListener('DOMContentLoaded', () => {
     counter.textContent = String(textarea.value.length);
     updateSubmitState();
   });
+  if (urgClienteIn) urgClienteIn.addEventListener('input', updateSubmitState);
+  if (urgRazonIn) urgRazonIn.addEventListener('input', updateSubmitState);
 
   cancelBtn.addEventListener('click', close);
 
@@ -13176,6 +14009,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   submitBtn.addEventListener('click', async function () {
     if (!selectedCat || !textarea.value.trim()) return;
+    if (selectedCat === 'urgente' && !urgenteCamposOk()) {
+      resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
+      resp.textContent = 'Para urgente necesitamos cliente/asunto y que pasa si no se resuelve hoy.';
+      resp.style.display = 'block';
+      return;
+    }
     var email = resolveEmail();
     if (!email) {
       resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
@@ -13184,6 +14023,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     var ctx = resolveSucursalTab();
+    // R-AUD-NO-CARGA-DUSAN · si urgente, prepend contexto al mensaje para que PC/Dusan
+    // tengan info accionable sin tener que re-preguntar al operativo.
+    var mensajeFinal = textarea.value.trim();
+    if (selectedCat === 'urgente') {
+      var uc = (urgClienteIn && urgClienteIn.value || '').trim();
+      var ur = (urgRazonIn && urgRazonIn.value || '').trim();
+      mensajeFinal = '[CLIENTE/ASUNTO]: ' + uc + '\n[SI NO SE RESUELVE HOY]: ' + ur + '\n---\n' + mensajeFinal;
+    }
     submitBtn.disabled = true;
     submitBtn.textContent = 'Enviando…';
     try {
@@ -13196,7 +14043,7 @@ document.addEventListener('DOMContentLoaded', () => {
           mode: 'feedback_cartero',
           user_email: email,
           categoria: selectedCat,
-          mensaje: textarea.value.trim(),
+          mensaje: mensajeFinal,
           sucursal: ctx.sucursal,
           tab_actual: ctx.tab_actual,
         }),
@@ -13854,6 +14701,34 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (r.link_firmado) {
           linkFirmado = '<a href="' + esc(r.link_firmado) + '" target="_blank" class="text-emerald-700 underline font-semibold text-xs">✅ Abrir documento firmado (link externo)</a>';
         }
+        // Wave 4 PR-J · seccion Analisis legal IA si esta disponible
+        var analisisLegal = '';
+        if (r.analisis_legal) {
+          var a = r.analisis_legal;
+          var rg = String(a.nivel_riesgo || '').toUpperCase();
+          var rgCls = rg === 'ALTO' ? 'bg-red-100 text-red-800 border-red-300'
+                    : rg === 'MEDIO' ? 'bg-amber-100 text-amber-800 border-amber-300'
+                    : rg === 'BAJO' ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                    : 'bg-stone-100 text-stone-700 border-stone-300';
+          var lista = function (arr) { return Array.isArray(arr) && arr.length ? '<ul class="list-disc pl-4 text-xs space-y-0.5">' + arr.map(function (x) { return '<li>' + esc(String(x)) + '</li>'; }).join('') + '</ul>' : '<span class="text-stone-400 italic">—</span>'; };
+          analisisLegal = '<details class="mt-2 border rounded p-2 ' + rgCls + '">' +
+            '<summary class="text-xs font-semibold cursor-pointer">🤖 Análisis legal IA · riesgo ' + esc(rg || 'NO_DETERMINABLE') + ' · ' + esc(String(a.recomendacion || '').slice(0, 60)) + '</summary>' +
+            '<div class="text-xs mt-2 space-y-2">' +
+              '<div><strong>Resumen:</strong> ' + esc(a.resumen || '—') + '</div>' +
+              (a.tipo_documento ? '<div><strong>Tipo:</strong> ' + esc(a.tipo_documento) + (a.contraparte ? ' · ' + esc(a.contraparte) : '') + '</div>' : '') +
+              (a.vencimiento ? '<div><strong>Vence:</strong> ' + esc(a.vencimiento) + '</div>' : '') +
+              '<div><strong>Compromisos:</strong> ' + lista(a.compromisos) + '</div>' +
+              '<div><strong>Plazos:</strong> ' + lista(a.plazos) + '</div>' +
+              '<div><strong>Penalidades:</strong> ' + lista(a.penalidades) + '</div>' +
+              '<div><strong>⚠ Riesgos:</strong> ' + lista(a.riesgos_detectados) + '</div>' +
+              '<div class="font-semibold mt-1">Recomendación: ' + esc(a.recomendacion || '—') + '</div>' +
+              (r.analizado_en ? '<div class="text-[10px] text-stone-500">analizado ' + fmtFecha(r.analizado_en) + '</div>' : '') +
+            '</div>' +
+          '</details>';
+        } else if (r.archivo_path) {
+          analisisLegal = '<div class="mt-2 text-xs text-stone-400 italic">🤖 Análisis legal IA pendiente · se genera automático al subir archivo.</div>';
+        }
+
         return '<div class="bg-white border border-stone-200 rounded p-3">' +
           '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
             '<span class="font-semibold text-sm">📝 ' + esc(r.documento_titulo) + '</span>' +
@@ -13864,6 +14739,7 @@ document.addEventListener('DOMContentLoaded', () => {
           (linkFirmado ? '<div class="text-xs mt-1">' + linkFirmado + '</div>' : '') +
           (r.notas ? '<div class="text-xs text-stone-700 italic mt-1">"' + esc(r.notas) + '"</div>' : '') +
           (r.comentarios_firmante ? '<div class="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-900">💬 ' + esc(r.comentarios_firmante) + '</div>' : '') +
+          analisisLegal +
           '<div class="text-[10px] text-stone-400 mt-1">solicitado ' + fmtFecha(r.created_at) + (r.firmado_en ? ' · firmado ' + fmtFecha(r.firmado_en) : '') + '</div>' +
           '<div class="mt-2 flex gap-1 flex-wrap">' +
             (puedeEditar ? '<button class="fp-editar text-[10px] px-2 py-0.5 bg-stone-200 text-stone-700 rounded" data-id="' + esc(r.id) + '">✏ Editar</button>' : '') +
@@ -14107,6 +14983,641 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
+
+// Tab Cumplimiento Legal · silo 05 · 03-jun PC2 Pablo · MVP read+edit panel.cumplimiento_legal
+// Extendido 06-jun mig 227: drag&drop archivos + "mis obligaciones" + Diego ctx
+(function () {
+  let _cumpRows = [];
+  let _sessionEmail = '';
+  let _archivosCache = {};
+  let _currentEditId = null;
+  function $$(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function humanSize(b) { if (!b) return ''; if (b < 1024) return b + ' B'; if (b < 1048576) return (b/1024).toFixed(1) + ' KB'; return (b/1048576).toFixed(1) + ' MB'; }
+  async function resolveSessionEmail() {
+    try {
+      if (window.currentUser && window.currentUser.email) return String(window.currentUser.email).toLowerCase();
+    } catch (_) {}
+    try {
+      var rf = JSON.parse(localStorage.getItem('rf_session') || 'null');
+      if (rf && rf.email) return String(rf.email).toLowerCase();
+    } catch (_) {}
+    try {
+      if (window.sb && sb.auth) {
+        var s = await sb.auth.getSession();
+        var em = s && s.data && s.data.session && s.data.session.user && s.data.session.user.email;
+        if (em) return String(em).toLowerCase();
+      }
+    } catch (_) {}
+    return '';
+  }
+  function badgeEstado(estado) {
+    var map = {
+      pendiente: { cls: 'bg-amber-100 text-amber-800', emoji: '🟡' },
+      en_proceso: { cls: 'bg-sky-100 text-sky-800', emoji: '🔵' },
+      cumplida: { cls: 'bg-emerald-100 text-emerald-800', emoji: '✅' },
+      atrasada: { cls: 'bg-red-100 text-red-800', emoji: '🔴' },
+      no_aplica: { cls: 'bg-stone-100 text-stone-600', emoji: '⚫' }
+    };
+    var m = map[estado] || map.pendiente;
+    return '<span class="inline-block ' + m.cls + ' px-2 py-0.5 rounded text-xs">' + m.emoji + ' ' + esc(estado || 'pendiente') + '</span>';
+  }
+  async function loadCumplimiento() {
+    var lista = $$('cump_lista');
+    if (!lista || !window.sb) return;
+    try {
+      if (!_sessionEmail) _sessionEmail = await resolveSessionEmail();
+      var resp = await sb.schema('panel').from('cumplimiento_legal').select('*').order('ley_id').order('articulo_id');
+      if (resp.error) throw resp.error;
+      _cumpRows = resp.data || [];
+      poblarFiltroLey();
+      renderMisObligaciones();
+      renderCumplimiento();
+    } catch (e) {
+      lista.innerHTML = '<div class="text-xs text-red-600 py-4 text-center">Error: ' + esc(e && e.message ? e.message : e) + '</div>';
+    }
+  }
+  function renderMisObligaciones() {
+    var box = $$('cump_mis_obligaciones');
+    var listaMis = $$('cump_mis_lista');
+    var cnt = $$('cump_mis_count');
+    if (!box || !listaMis) return;
+    if (!_sessionEmail) { box.classList.add('hidden'); return; }
+    var mias = _cumpRows.filter(function (r) {
+      return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail
+             && r.estado !== 'cumplida' && r.estado !== 'no_aplica';
+    });
+    if (!mias.length) { box.classList.add('hidden'); return; }
+    box.classList.remove('hidden');
+    if (cnt) cnt.textContent = mias.length;
+    listaMis.innerHTML = mias.map(function (r) {
+      var nArchivos = (_archivosCache[r.id] || []).length;
+      var iconAdj = nArchivos > 0 ? '📎 ' + nArchivos : '⬜ sin adj';
+      return '<button class="cump-mis-item w-full text-left bg-white border border-emerald-200 hover:border-emerald-400 rounded px-2 py-1.5 text-xs flex items-center justify-between gap-2" data-id="' + r.id + '">'
+        + '<span class="truncate">' + badgeEstado(r.estado) + ' <strong>' + esc(r.ley_id) + '</strong> Art. ' + esc(r.articulo_id)
+        + (r.sucursal_id ? ' · ' + esc(r.sucursal_id) : '') + '</span>'
+        + '<span class="text-stone-500 whitespace-nowrap">' + iconAdj + ' · editar →</span>'
+        + '</button>';
+    }).join('');
+  }
+  function poblarFiltroLey() {
+    var sel = $$('cump_filtro_ley');
+    if (!sel) return;
+    var leyes = Array.from(new Set(_cumpRows.map(function (r) { return r.ley_id; }))).sort();
+    var prev = sel.value;
+    sel.innerHTML = '<option value="">Todas las leyes</option>' + leyes.map(function (l) { return '<option value="' + esc(l) + '">' + esc(l) + '</option>'; }).join('');
+    if (prev && leyes.indexOf(prev) >= 0) sel.value = prev;
+  }
+  function renderCumplimiento() {
+    var lista = $$('cump_lista');
+    if (!lista) return;
+    var fLey = $$('cump_filtro_ley') ? $$('cump_filtro_ley').value : '';
+    var fEst = $$('cump_filtro_estado') ? $$('cump_filtro_estado').value : '';
+    var fSuc = $$('cump_filtro_sucursal') ? $$('cump_filtro_sucursal').value : '';
+    var fTxt = ($$('cump_filtro_texto') ? $$('cump_filtro_texto').value : '').toLowerCase().trim();
+    var rows = _cumpRows;
+    if (fLey) rows = rows.filter(function (r) { return r.ley_id === fLey; });
+    if (fEst) rows = rows.filter(function (r) { return r.estado === fEst; });
+    if (fSuc === '__transversal__') rows = rows.filter(function (r) { return !r.sucursal_id; });
+    else if (fSuc) rows = rows.filter(function (r) { return r.sucursal_id === fSuc; });
+    if (fTxt) rows = rows.filter(function (r) { return (String(r.notas || '').toLowerCase().indexOf(fTxt) >= 0) || (String(r.responsable || '').toLowerCase().indexOf(fTxt) >= 0); });
+    if ($$('cump_kpi_total')) $$('cump_kpi_total').textContent = _cumpRows.length;
+    if ($$('cump_kpi_pendientes')) $$('cump_kpi_pendientes').textContent = _cumpRows.filter(function (r) { return r.estado === 'pendiente'; }).length;
+    if ($$('cump_kpi_ok')) $$('cump_kpi_ok').textContent = _cumpRows.filter(function (r) { return r.estado === 'cumplida'; }).length;
+    if ($$('cump_kpi_atrasadas')) $$('cump_kpi_atrasadas').textContent = _cumpRows.filter(function (r) { return r.estado === 'atrasada'; }).length;
+    if (!rows.length) {
+      lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Sin obligaciones con esos filtros.</div>';
+      return;
+    }
+    lista.innerHTML = rows.map(function (r) {
+      var fechaVer = r.fecha_verificacion ? new Date(r.fecha_verificacion).toLocaleDateString('es-CL') : '—';
+      var evidencia = r.evidencia_url
+        ? '<a href="' + esc(r.evidencia_url) + '" target="_blank" rel="noopener" class="text-blue-600 underline text-xs">📄 Ver documento</a>'
+        : '<span class="text-xs text-stone-400 italic">sin evidencia</span>';
+      var badgeSuc = r.sucursal_id
+        ? '<span class="inline-block bg-sky-100 text-sky-800 px-2 py-0.5 rounded text-[10px] uppercase">' + esc(r.sucursal_id) + '</span>'
+        : '<span class="inline-block bg-stone-100 text-stone-600 px-2 py-0.5 rounded text-[10px]">transversal</span>';
+      var badgeAprob = r.requiere_aprobacion_gerencia
+        ? '<span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px]" title="Requiere aprobacion gerencia antes de marcar cumplida">requiere gerencia</span>'
+        : '';
+      return '<div class="bg-white border border-stone-200 rounded p-3" data-id="' + r.id + '">'
+        + '<div class="flex items-start justify-between gap-2 flex-wrap">'
+        + '<div class="flex-1 min-w-0">'
+        + '<div class="font-semibold text-sm text-stone-800">' + esc(r.ley_id) + ' · Art. ' + esc(r.articulo_id) + '</div>'
+        + '<div class="text-xs text-stone-500 mt-0.5">Responsable: ' + esc(r.responsable || '—') + ' · Verificado: ' + esc(fechaVer) + '</div>'
+        + '<div class="flex gap-1 mt-1 flex-wrap">' + badgeSuc + badgeAprob + '</div>'
+        + '</div>'
+        + '<div class="flex items-center gap-2">' + badgeEstado(r.estado)
+        + '<button class="cump-editar px-2 py-1 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded text-xs" data-id="' + r.id + '">✏️ Editar</button>'
+        + '</div>'
+        + '</div>'
+        + '<div class="text-xs text-stone-600 mt-2">' + esc(r.notas || '') + '</div>'
+        + '<div class="mt-1">' + evidencia + '</div>'
+        + '</div>';
+    }).join('');
+  }
+  function abrirFormEditar(id) {
+    var row = _cumpRows.find(function (r) { return String(r.id) === String(id); });
+    if (!row) return;
+    _currentEditId = row.id;
+    $$('cump_form_titulo').textContent = 'Editar ' + row.ley_id + ' Art. ' + row.articulo_id;
+    $$('cump_edit_id').value = row.id;
+    $$('cump_estado').value = row.estado || 'pendiente';
+    $$('cump_responsable').value = row.responsable || '';
+    $$('cump_evidencia_url').value = row.evidencia_url || '';
+    if ($$('cump_sucursal')) $$('cump_sucursal').value = row.sucursal_id || '';
+    if ($$('cump_requiere_aprob')) $$('cump_requiere_aprob').checked = !!row.requiere_aprobacion_gerencia;
+    $$('cump_fecha_verificacion').value = row.fecha_verificacion || '';
+    $$('cump_notas').value = row.notas || '';
+    $$('cump_form').classList.remove('hidden');
+    cargarArchivos(row.id);
+    $$('cump_form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  async function cargarArchivos(obligacionId) {
+    var cont = $$('cump_archivos_lista');
+    if (!cont) return;
+    cont.innerHTML = '<div class="text-xs text-stone-400 italic">Cargando...</div>';
+    try {
+      var resp = await sb.rpc('cump_archivo_listar', { p_obligacion_id: Number(obligacionId) });
+      if (resp.error) throw resp.error;
+      _archivosCache[obligacionId] = resp.data || [];
+      renderArchivos(obligacionId);
+    } catch (e) {
+      cont.innerHTML = '<div class="text-xs text-red-600">No se pudieron cargar archivos: ' + esc(e.message || e) + '</div>';
+    }
+  }
+  function renderArchivos(obligacionId) {
+    var cont = $$('cump_archivos_lista');
+    if (!cont) return;
+    var arr = _archivosCache[obligacionId] || [];
+    if (!arr.length) {
+      cont.innerHTML = '<div class="text-xs text-stone-400 italic">Sin archivos cargados todavía.</div>';
+      return;
+    }
+    cont.innerHTML = arr.map(function (a) {
+      var fecha = new Date(a.created_at).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' });
+      var puedoBorrar = String(a.subido_por || '').toLowerCase() === _sessionEmail;
+      return '<div class="bg-stone-50 border border-stone-200 rounded px-2 py-1 flex items-center justify-between gap-2 text-xs" data-archivo-id="' + a.id + '">'
+        + '<div class="flex-1 min-w-0 truncate"><span class="font-medium">' + esc(a.filename) + '</span>'
+        + ' <span class="text-stone-400">' + humanSize(a.size_bytes) + ' · ' + esc(fecha) + ' · ' + esc(a.subido_por || '') + '</span></div>'
+        + '<div class="flex gap-1 whitespace-nowrap">'
+        + '<button class="cump-archivo-ver px-2 py-0.5 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded" data-storage-path="' + esc(a.storage_path) + '" data-bucket="' + esc(a.bucket) + '">👁 Ver</button>'
+        + (puedoBorrar ? '<button class="cump-archivo-borrar px-2 py-0.5 bg-red-100 hover:bg-red-200 text-red-800 rounded" data-archivo-id="' + a.id + '">🗑</button>' : '')
+        + '</div></div>';
+    }).join('');
+  }
+  async function subirArchivos(files, obligacionId) {
+    if (!files || !files.length || !obligacionId) return;
+    var prog = $$('cump_upload_progress');
+    if (prog) { prog.classList.remove('hidden'); prog.textContent = ''; }
+    var ok = 0, fail = 0;
+    for (var i = 0; i < files.length; i++) {
+      var file = files[i];
+      if (file.size > 25 * 1024 * 1024) { fail++; if (prog) prog.textContent = '❌ ' + file.name + ' supera 25 MB'; continue; }
+      var safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120);
+      var path = 'cumplimiento/' + obligacionId + '/' + Date.now() + '_' + safe;
+      if (prog) prog.textContent = '⏳ Subiendo ' + (i+1) + '/' + files.length + ': ' + file.name;
+      try {
+        var up = await sb.storage.from('impulsa-documentos').upload(path, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type || 'application/octet-stream'
+        });
+        if (up.error) throw up.error;
+        var reg = await sb.rpc('cump_archivo_registrar', {
+          p_obligacion_id: Number(obligacionId),
+          p_storage_path: path,
+          p_filename: file.name,
+          p_mime_type: file.type || null,
+          p_size_bytes: file.size,
+          p_bucket: 'impulsa-documentos'
+        });
+        if (reg.error) throw reg.error;
+        ok++;
+      } catch (e) {
+        fail++;
+        if (prog) prog.textContent = '❌ Falló ' + file.name + ': ' + (e.message || e);
+        console.warn('Upload fail', file.name, e);
+      }
+    }
+    if (prog) {
+      prog.textContent = '✅ ' + ok + ' archivo(s) cargado(s)' + (fail ? ' · ❌ ' + fail + ' fallaron' : '');
+      setTimeout(function () { prog.classList.add('hidden'); }, 4000);
+    }
+    await cargarArchivos(obligacionId);
+    renderMisObligaciones();
+  }
+  async function verArchivo(storagePath, bucket) {
+    try {
+      var s = await sb.storage.from(bucket || 'impulsa-documentos').createSignedUrl(storagePath, 300);
+      if (s.error) throw s.error;
+      window.open(s.data.signedUrl, '_blank', 'noopener');
+    } catch (e) {
+      alert('No se pudo abrir: ' + (e.message || e));
+    }
+  }
+  async function borrarArchivo(archivoId) {
+    if (!confirm('¿Borrar este archivo? No se puede deshacer.')) return;
+    try {
+      var arr = (_currentEditId && _archivosCache[_currentEditId]) || [];
+      var meta = arr.find(function (a) { return String(a.id) === String(archivoId); });
+      var resp = await sb.rpc('cump_archivo_borrar', { p_id: Number(archivoId) });
+      if (resp.error) throw resp.error;
+      // Borrar también el objeto del bucket (el RPC solo borra la fila)
+      if (meta && meta.storage_path && meta.bucket) {
+        try { await sb.storage.from(meta.bucket).remove([meta.storage_path]); } catch (_) {}
+      }
+      if (_currentEditId) await cargarArchivos(_currentEditId);
+      renderMisObligaciones();
+    } catch (e) {
+      alert('No se pudo borrar: ' + (e.message || e));
+    }
+  }
+  function abrirDiegoContexto() {
+    if (!_currentEditId) return;
+    var row = _cumpRows.find(function (r) { return r.id === _currentEditId; });
+    if (!row) return;
+    var ctx = 'Estoy en el silo Cumplimiento Legal trabajando sobre ' + row.ley_id + ' Art. ' + row.articulo_id
+      + '. Estado actual: ' + (row.estado || 'pendiente')
+      + (row.sucursal_id ? ' · Sucursal: ' + row.sucursal_id : '')
+      + (row.notas ? ' · Notas: ' + row.notas : '')
+      + '. ¿Qué documento o evidencia debería cargar para cumplir con esta obligación?';
+    if (typeof window.openDiegoChat === 'function') {
+      window.openDiegoChat({ prefill: ctx, modulo: 'cumplimiento_silo_05', obligacion_id: row.id });
+    } else if (typeof window.fabDiegoOpen === 'function') {
+      window.fabDiegoOpen(ctx);
+    } else {
+      var pref = encodeURIComponent(ctx);
+      window.open('/chat-diego.html?prefill=' + pref, '_blank', 'noopener');
+    }
+  }
+  async function guardarCumplimiento() {
+    var id = $$('cump_edit_id').value;
+    if (!id) return;
+    var patch = {
+      estado: $$('cump_estado').value,
+      responsable: $$('cump_responsable').value.trim() || null,
+      evidencia_url: $$('cump_evidencia_url').value.trim() || null,
+      sucursal_id: ($$('cump_sucursal') ? $$('cump_sucursal').value : '') || null,
+      requiere_aprobacion_gerencia: !!($$('cump_requiere_aprob') && $$('cump_requiere_aprob').checked),
+      fecha_verificacion: $$('cump_fecha_verificacion').value || null,
+      notas: $$('cump_notas').value.trim() || null,
+      updated_at: new Date().toISOString()
+    };
+    try {
+      var resp = await sb.schema('panel').from('cumplimiento_legal').update(patch).eq('id', id);
+      if (resp.error) throw resp.error;
+      $$('cump_form').classList.add('hidden');
+      loadCumplimiento();
+    } catch (e) {
+      alert('No se pudo guardar: ' + (e && e.message ? e.message : e));
+    }
+  }
+  function init() {
+    document.querySelector('button[data-tab="cumplimiento"]')?.addEventListener('click', function () { setTimeout(loadCumplimiento, 100); });
+    document.querySelector('a[data-v4-tab="cumplimiento"]')?.addEventListener('click', function () { setTimeout(loadCumplimiento, 100); });
+    $$('cump_refresh')?.addEventListener('click', loadCumplimiento);
+    $$('cump_cancelar')?.addEventListener('click', function () { $$('cump_form').classList.add('hidden'); _currentEditId = null; });
+    $$('cump_guardar')?.addEventListener('click', guardarCumplimiento);
+    $$('cump_filtro_ley')?.addEventListener('change', renderCumplimiento);
+    $$('cump_filtro_estado')?.addEventListener('change', renderCumplimiento);
+    $$('cump_filtro_sucursal')?.addEventListener('change', renderCumplimiento);
+    $$('cump_filtro_texto')?.addEventListener('input', renderCumplimiento);
+    $$('cump_lista')?.addEventListener('click', function (e) {
+      var btn = e.target.closest('.cump-editar');
+      if (btn) abrirFormEditar(btn.dataset.id);
+    });
+    // Mis obligaciones · click → editar
+    $$('cump_mis_lista')?.addEventListener('click', function (e) {
+      var btn = e.target.closest('.cump-mis-item');
+      if (btn) abrirFormEditar(btn.dataset.id);
+    });
+    $$('cump_mis_ver_todas')?.addEventListener('click', function () {
+      $$('cump_lista')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    // Diego contexto
+    $$('cump_diego_ctx')?.addEventListener('click', abrirDiegoContexto);
+    // Drag & drop + file picker
+    var dz = $$('cump_dropzone');
+    var picker = $$('cump_file_picker');
+    if (dz && picker) {
+      dz.addEventListener('click', function () { picker.click(); });
+      picker.addEventListener('change', function (e) {
+        if (_currentEditId && e.target.files && e.target.files.length) {
+          subirArchivos(e.target.files, _currentEditId);
+          picker.value = '';
+        }
+      });
+      ['dragenter','dragover'].forEach(function (ev) {
+        dz.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); dz.classList.add('border-emerald-500','bg-emerald-50'); });
+      });
+      ['dragleave','drop'].forEach(function (ev) {
+        dz.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); dz.classList.remove('border-emerald-500','bg-emerald-50'); });
+      });
+      dz.addEventListener('drop', function (e) {
+        var files = e.dataTransfer && e.dataTransfer.files;
+        if (_currentEditId && files && files.length) subirArchivos(files, _currentEditId);
+      });
+    }
+    // Lista archivos · ver / borrar
+    $$('cump_archivos_lista')?.addEventListener('click', function (e) {
+      var vb = e.target.closest('.cump-archivo-ver');
+      var db = e.target.closest('.cump-archivo-borrar');
+      if (vb) verArchivo(vb.dataset.storagePath, vb.dataset.bucket);
+      else if (db) borrarArchivo(db.dataset.archivoId);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+
+// Tab Herramientas externas + Facturacion grupo · D-FACTURACION-ETAPA-1 · PC2 Pablo 06-jun
+(function () {
+  function $$(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function fmtMoney(n) { if (n == null) return '—'; try { return '$' + Number(n).toLocaleString('es-CL', { maximumFractionDigits: 0 }); } catch (_) { return '$' + n; } }
+  function fmtFecha(d) { if (!d) return '—'; try { return new Date(d).toLocaleDateString('es-CL'); } catch (_) { return d; } }
+  function badgeEstadoHext(estado) {
+    var map = {
+      activo: 'bg-emerald-100 text-emerald-800',
+      pendiente_arranque: 'bg-amber-100 text-amber-800',
+      pausado: 'bg-stone-200 text-stone-700',
+      fallando: 'bg-red-100 text-red-800'
+    };
+    var cls = map[estado] || 'bg-stone-100 text-stone-700';
+    return '<span class="inline-block ' + cls + ' px-2 py-0.5 rounded text-xs">' + esc(estado || '—') + '</span>';
+  }
+
+  async function loadHerramientasExt() {
+    var lista = $$('hext_lista');
+    if (!lista || !window.sb) return;
+    try {
+      var resp = await sb.rpc('herramientas_externas_estado');
+      if (resp.error) throw resp.error;
+      var rows = resp.data || [];
+      var activas = rows.filter(function (r) { return r.estado === 'activo'; }).length;
+      var pendientes = rows.filter(function (r) { return r.estado === 'pendiente_arranque'; }).length;
+      var empresasActivas = rows[0] ? Number(rows[0].empresas_activas || 0) : 0;
+      if ($$('hext_kpi_total')) $$('hext_kpi_total').textContent = rows.length;
+      if ($$('hext_kpi_activas')) $$('hext_kpi_activas').textContent = activas;
+      if ($$('hext_kpi_pendientes')) $$('hext_kpi_pendientes').textContent = pendientes;
+      if ($$('hext_kpi_empresas')) $$('hext_kpi_empresas').textContent = empresasActivas;
+      if (!rows.length) {
+        lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Sin herramientas configuradas.</div>';
+        return;
+      }
+      lista.innerHTML = rows.map(function (r) {
+        var ultima = r.ultima_corrida ? new Date(r.ultima_corrida).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }) : 'sin corrida';
+        return '<div class="bg-white border border-stone-200 rounded p-3">'
+          + '<div class="flex items-start justify-between gap-2 flex-wrap">'
+          + '<div class="flex-1 min-w-0">'
+          + '<div class="font-semibold text-sm text-stone-800">' + esc(r.nombre) + ' <span class="text-xs text-stone-400 font-normal">· prioridad ' + esc(r.prioridad_orden) + '</span></div>'
+          + '<div class="text-xs text-stone-500 mt-0.5">' + esc(r.codigo) + ' · ' + esc(r.tipo || '—') + ' · ' + esc(r.metodo_conexion || '—') + (r.responsable_pc ? ' · ' + esc(r.responsable_pc) : '') + '</div>'
+          + '<div class="text-xs text-stone-600 mt-1">⏱ ' + esc(r.frecuencia_cron || '—') + ' · última corrida: ' + esc(ultima) + '</div>'
+          + '</div>'
+          + '<div>' + badgeEstadoHext(r.estado) + '</div>'
+          + '</div>'
+          + (r.notas ? '<div class="text-xs text-stone-600 italic mt-1">' + esc(r.notas) + '</div>' : '')
+          + '</div>';
+      }).join('');
+    } catch (e) {
+      lista.innerHTML = '<div class="text-xs text-red-600 py-4 text-center">Error: ' + esc(e && e.message ? e.message : e) + '</div>';
+    }
+  }
+
+  var _fgRows = [];
+
+  async function loadFacturacionGrupo() {
+    var lista = $$('fg_lista');
+    if (!lista || !window.sb) return;
+    try {
+      var soloNoPagadas = !!($$('fg_solo_no_pagadas') && $$('fg_solo_no_pagadas').checked);
+      var resp = await sb.rpc('facturas_listar_visibles', { p_limit: 200, p_offset: 0, p_solo_no_pagadas: soloNoPagadas });
+      if (resp.error) throw resp.error;
+      _fgRows = resp.data || [];
+      renderFacturacionGrupo();
+    } catch (e) {
+      lista.innerHTML = '<div class="text-xs text-red-600 py-4 text-center">Error: ' + esc(e && e.message ? e.message : e) + '</div>';
+    }
+  }
+
+  function renderFacturacionGrupo() {
+    var lista = $$('fg_lista');
+    if (!lista) return;
+    var rows = _fgRows;
+    var email = '';
+    try { email = (window.currentUser && window.currentUser.email) || ''; } catch (_) {}
+    email = String(email || '').toLowerCase();
+    var total = rows.length;
+    var noPag = rows.filter(function (r) { return !r.pagada; }).length;
+    var privadasTuyas = rows.filter(function (r) { return r.privada && String(r.privada_marcada_por || '').toLowerCase() === email; }).length;
+    var suma = rows.reduce(function (acc, r) { return acc + (Number(r.monto_total) || 0); }, 0);
+    if ($$('fg_kpi_total')) $$('fg_kpi_total').textContent = total;
+    if ($$('fg_kpi_no_pagadas')) $$('fg_kpi_no_pagadas').textContent = noPag;
+    if ($$('fg_kpi_privadas')) $$('fg_kpi_privadas').textContent = privadasTuyas;
+    if ($$('fg_kpi_monto')) $$('fg_kpi_monto').textContent = fmtMoney(suma);
+    if (!rows.length) {
+      lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Sin facturas visibles para tu perfil. Cuando el scraper levante la primera tanda, aparecen acá.</div>';
+      return;
+    }
+    lista.innerHTML = rows.map(function (r) {
+      var puedeMarcar = String(r.privada_marcada_por || '').toLowerCase() === email
+        || (window.PANEL_ADMIN_EMAILS && window.PANEL_ADMIN_EMAILS.indexOf(email) >= 0);
+      var badgeCat = r.categoria_auto
+        ? '<span class="inline-block bg-sky-100 text-sky-800 px-2 py-0.5 rounded text-[10px] uppercase">' + esc(r.categoria_auto) + '</span>'
+        : '';
+      var badgePagada = r.pagada
+        ? '<span class="inline-block bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px]">pagada</span>'
+        : '<span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px]">no pagada</span>';
+      var badgePrivada = r.privada
+        ? '<span class="inline-block bg-violet-100 text-violet-800 px-2 py-0.5 rounded text-[10px]">🔒 privada</span>'
+        : '';
+      return '<div class="bg-white border border-stone-200 rounded p-3" data-id="' + r.id + '">'
+        + '<div class="flex items-start justify-between gap-2 flex-wrap">'
+        + '<div class="flex-1 min-w-0">'
+        + '<div class="font-semibold text-sm text-stone-800 truncate">' + esc(r.proveedor_nombre || r.proveedor_rut || 'sin proveedor') + ' · folio ' + esc(r.folio || '—') + '</div>'
+        + '<div class="text-xs text-stone-500 mt-0.5">' + esc(r.tipo_documento || 'factura') + ' · ' + fmtFecha(r.fecha_emision) + (r.proveedor_rut ? ' · ' + esc(r.proveedor_rut) : '') + '</div>'
+        + '<div class="flex gap-1 mt-1 flex-wrap">' + badgeCat + badgePagada + badgePrivada + '</div>'
+        + '</div>'
+        + '<div class="text-right whitespace-nowrap">'
+        + '<div class="font-bold text-sm text-stone-800">' + esc(fmtMoney(r.monto_total)) + '</div>'
+        + (r.iva ? '<div class="text-[10px] text-stone-400">IVA ' + esc(fmtMoney(r.iva)) + '</div>' : '')
+        + '</div>'
+        + '</div>'
+        + '<div class="mt-2 flex gap-1 flex-wrap">'
+        + '<button class="fg-toggle-privada text-[10px] px-2 py-0.5 ' + (r.privada ? 'bg-violet-100 text-violet-800' : 'bg-stone-100 text-stone-700') + ' rounded" data-id="' + r.id + '" data-privada="' + (r.privada ? '0' : '1') + '">'
+        + (r.privada ? (puedeMarcar ? '🔓 Quitar privada' : '🔒 privada (tu marca)') : '🔒 Marcar privada')
+        + '</button>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  async function togglePrivada(id, nuevoVal) {
+    try {
+      var resp = await sb.rpc('factura_marcar_privada', { p_factura_id: Number(id), p_privada: nuevoVal });
+      if (resp.error) throw resp.error;
+      loadFacturacionGrupo();
+    } catch (e) {
+      alert('No se pudo cambiar privacidad: ' + (e.message || e));
+    }
+  }
+
+  function initHextFg() {
+    document.querySelector('button[data-tab="herramientas_ext"]')?.addEventListener('click', function () { setTimeout(loadHerramientasExt, 100); });
+    document.querySelector('a[data-v4-tab="herramientas_ext"]')?.addEventListener('click', function () { setTimeout(loadHerramientasExt, 100); });
+    $$('hext_refresh')?.addEventListener('click', loadHerramientasExt);
+
+    document.querySelector('button[data-tab="facturacion_grupo"]')?.addEventListener('click', function () { setTimeout(loadFacturacionGrupo, 100); });
+    document.querySelector('a[data-v4-tab="facturacion_grupo"]')?.addEventListener('click', function () { setTimeout(loadFacturacionGrupo, 100); });
+    $$('fg_refresh')?.addEventListener('click', loadFacturacionGrupo);
+    $$('fg_solo_no_pagadas')?.addEventListener('change', loadFacturacionGrupo);
+    $$('fg_lista')?.addEventListener('click', function (e) {
+      var btn = e.target.closest('.fg-toggle-privada');
+      if (btn) togglePrivada(btn.dataset.id, btn.dataset.privada === '1');
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHextFg); else initHextFg();
+})();
+
+// Tab Vales Portal · G42 · D-PESAJES-DIARIA-001 · PC2 Pablo 03-jun PM
+(function () {
+  let _vpPagar = [];
+  function $$(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function fmtCLP(n) { if (n == null || isNaN(n)) return '—'; return '$' + Number(n).toLocaleString('es-CL', { maximumFractionDigits: 0 }); }
+  function fmtKg(n) { if (n == null || isNaN(n)) return '—'; return Number(n).toLocaleString('es-CL', { maximumFractionDigits: 1 }) + ' kg'; }
+  function fmtFecha(s) { if (!s) return '—'; try { return new Date(s).toLocaleDateString('es-CL'); } catch (e) { return s; } }
+  function badgeEstadoVale(estado) {
+    var n = Number(estado);
+    if (n === 1) return '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs">🟡 Pendiente</span>';
+    if (n === 2) return '<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-xs">✅ Cerrado</span>';
+    if (n === 9) return '<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs">❌ Anulado</span>';
+    return '<span class="bg-stone-100 text-stone-600 px-2 py-0.5 rounded text-xs">—</span>';
+  }
+
+  async function loadVales() {
+    if (!window.sb) return;
+    var estado = $$('vp_estado_pipeline');
+    if (estado) estado.textContent = 'Cargando...';
+
+    try {
+      var sucP = sb.schema('panel').from('v_pesajes_resumen_sucursal').select('*');
+      var pagarP = sb.schema('panel').from('v_cuentas_pagar_generadores').select('*').limit(500);
+      var recientesP = sb.schema('curated').from('vales_portal_externo').select('folio,fecha,sucursal,razon_social,tipo_servicio,peso_final,total_vale,saldo_vale,estado').order('fecha', { ascending: false }).order('folio', { ascending: false }).limit(50);
+
+      var [sucR, pagarR, recR] = await Promise.all([sucP, pagarP, recientesP]);
+
+      if (sucR.error) throw sucR.error;
+      if (pagarR.error) throw pagarR.error;
+      if (recR.error) throw recR.error;
+
+      var sucRows = sucR.data || [];
+      _vpPagar = pagarR.data || [];
+      var recRows = recR.data || [];
+
+      var totalVales = sucRows.reduce(function (a, r) { return a + (Number(r.vales) || 0); }, 0);
+      var totalSaldo = _vpPagar.reduce(function (a, r) { return a + (Number(r.saldo_clp) || 0); }, 0);
+      var ultimoVale = sucRows.reduce(function (max, r) {
+        if (!r.ultimo_vale) return max;
+        if (!max || new Date(r.ultimo_vale) > new Date(max)) return r.ultimo_vale;
+        return max;
+      }, null);
+
+      if ($$('vp_kpi_vales')) $$('vp_kpi_vales').textContent = totalVales.toLocaleString('es-CL');
+      if ($$('vp_kpi_saldo')) $$('vp_kpi_saldo').textContent = fmtCLP(totalSaldo);
+      if ($$('vp_kpi_clientes')) $$('vp_kpi_clientes').textContent = _vpPagar.length.toLocaleString('es-CL');
+      if ($$('vp_kpi_ultimo')) $$('vp_kpi_ultimo').textContent = fmtFecha(ultimoVale);
+
+      if (totalVales === 0) {
+        $$('vp_banner_sin_datos')?.classList.remove('hidden');
+      } else {
+        $$('vp_banner_sin_datos')?.classList.add('hidden');
+      }
+
+      var sucBody = $$('vp_sucursal_body');
+      if (sucBody) {
+        if (sucRows.length === 0) {
+          sucBody.innerHTML = '<tr><td colspan="7" class="text-center text-stone-400 py-4">Sin datos · pipeline aún sin ejecutar</td></tr>';
+        } else {
+          sucBody.innerHTML = sucRows.map(function (r) {
+            return '<tr class="border-t border-stone-100 hover:bg-stone-50">' +
+              '<td class="px-3 py-2 font-semibold">' + esc(r.sucursal) + '</td>' +
+              '<td class="text-right px-3 py-2">' + (Number(r.vales) || 0).toLocaleString('es-CL') + '</td>' +
+              '<td class="text-right px-3 py-2">' + (Number(r.clientes_unicos) || 0).toLocaleString('es-CL') + '</td>' +
+              '<td class="text-right px-3 py-2">' + fmtKg(r.kg_total) + '</td>' +
+              '<td class="text-right px-3 py-2">' + fmtCLP(r.clp_total) + '</td>' +
+              '<td class="text-right px-3 py-2 text-emerald-700 font-semibold">' + fmtCLP(r.saldo_pendiente_clp) + '</td>' +
+              '<td class="text-right px-3 py-2 text-xs text-stone-500">' + fmtFecha(r.ultimo_vale) + '</td>' +
+              '</tr>';
+          }).join('');
+        }
+      }
+
+      renderPagar();
+
+      var recBody = $$('vp_recientes_body');
+      if (recBody) {
+        if (recRows.length === 0) {
+          recBody.innerHTML = '<tr><td colspan="9" class="text-center text-stone-400 py-4">Sin vales · cargá la clave portal para que la EF arranque</td></tr>';
+        } else {
+          recBody.innerHTML = recRows.map(function (r) {
+            return '<tr class="border-t border-stone-100 hover:bg-stone-50">' +
+              '<td class="px-3 py-2 font-mono text-xs">' + esc(r.folio) + '</td>' +
+              '<td class="px-3 py-2 text-xs">' + fmtFecha(r.fecha) + '</td>' +
+              '<td class="px-3 py-2 text-xs">' + esc(r.sucursal || '—') + '</td>' +
+              '<td class="px-3 py-2">' + esc(r.razon_social || '—') + '</td>' +
+              '<td class="px-3 py-2 text-xs">' + esc(r.tipo_servicio || '—') + '</td>' +
+              '<td class="text-right px-3 py-2">' + fmtKg(r.peso_final) + '</td>' +
+              '<td class="text-right px-3 py-2">' + fmtCLP(r.total_vale) + '</td>' +
+              '<td class="text-right px-3 py-2 font-semibold ' + (Number(r.saldo_vale) > 0 ? 'text-emerald-700' : 'text-stone-400') + '">' + fmtCLP(r.saldo_vale) + '</td>' +
+              '<td class="px-3 py-2">' + badgeEstadoVale(r.estado) + '</td>' +
+              '</tr>';
+          }).join('');
+        }
+      }
+
+      if (estado) estado.textContent = 'Última carga ' + new Date().toLocaleTimeString('es-CL');
+    } catch (e) {
+      if (estado) estado.textContent = 'Error: ' + (e && e.message ? e.message : e);
+      console.error('[vales_portal] error:', e);
+    }
+  }
+
+  function renderPagar() {
+    var body = $$('vp_pagar_body');
+    if (!body) return;
+    var filtro = ($$('vp_filtro_generador')?.value || '').toLowerCase().trim();
+    var rows = _vpPagar;
+    if (filtro) {
+      rows = rows.filter(function (r) {
+        return (r.razon_social || '').toLowerCase().includes(filtro) ||
+               String(r.rut || '').toLowerCase().includes(filtro);
+      });
+    }
+    if (rows.length === 0) {
+      body.innerHTML = '<tr><td colspan="6" class="text-center text-stone-400 py-4">' + (filtro ? 'Sin coincidencias' : 'Sin saldos pendientes') + '</td></tr>';
+      return;
+    }
+    body.innerHTML = rows.slice(0, 200).map(function (r) {
+      return '<tr class="border-t border-stone-100 hover:bg-stone-50">' +
+        '<td class="px-3 py-2 font-semibold">' + esc(r.razon_social || '—') + '</td>' +
+        '<td class="px-3 py-2 font-mono text-xs">' + esc(r.rut ? r.rut + (r.dv ? '-' + r.dv : '') : '—') + '</td>' +
+        '<td class="px-3 py-2 text-xs">' + esc(r.banco || '—') + '</td>' +
+        '<td class="text-right px-3 py-2">' + (Number(r.vales_pendientes) || 0).toLocaleString('es-CL') + '</td>' +
+        '<td class="text-right px-3 py-2 text-emerald-700 font-semibold">' + fmtCLP(r.saldo_clp) + '</td>' +
+        '<td class="px-3 py-2 text-xs text-stone-500">' + fmtFecha(r.ultimo_vale) + '</td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  function init() {
+    document.querySelector('button[data-tab="vales_portal"]')?.addEventListener('click', function () { setTimeout(loadVales, 100); });
+    document.querySelector('a[data-v4-tab="vales_portal"]')?.addEventListener('click', function () { setTimeout(loadVales, 100); });
+    $$('vp_refresh')?.addEventListener('click', loadVales);
+    $$('vp_filtro_generador')?.addEventListener('input', renderPagar);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
 </script>
 
 <!-- D-CRM-IMPULSA-OPORT-NUEVA-001 · Modal Nueva oportunidad + sección adjuntos panel (Pablo 01-jun PM) -->
@@ -14118,8 +15629,22 @@ document.addEventListener('DOMContentLoaded', () => {
     </header>
     <div class="p-4 space-y-3 text-sm">
       <div>
-        <label class="block text-xs text-stone-500 mb-1">Cliente</label>
+        <label class="block text-xs text-stone-500 mb-1">Cliente <span id="crmNuevaOppClienteReq" class="hidden text-red-600">*</span></label>
+        <!-- Modo ficha CRM Impulsa: cliente prellenado, no editable -->
         <div id="crmNuevaOppCliente" class="px-2 py-1.5 bg-stone-50 border border-stone-200 rounded text-stone-800">—</div>
+        <!-- Modo global (tab Oportunidades): autocomplete + texto libre fallback -->
+        <div id="crmNuevaOppClienteWrap" class="hidden relative">
+          <input type="text" id="crmNuevaOppClienteLibre" maxlength="200" autocomplete="off"
+                 class="w-full px-2 py-1.5 border border-stone-300 rounded"
+                 placeholder="Buscá por razón social o RUT…">
+          <div id="crmNuevaOppClienteDropdown" class="hidden absolute z-10 left-0 right-0 mt-1 bg-white border border-stone-200 rounded shadow-lg max-h-60 overflow-y-auto"></div>
+        </div>
+        <div id="crmNuevaOppClienteVinculado" class="hidden flex items-center gap-2 px-2 py-1.5 bg-emerald-50 border border-emerald-300 rounded">
+          <span class="text-xs text-emerald-700">✓ Vinculado:</span>
+          <span id="crmNuevaOppClienteVinculadoNombre" class="text-sm text-emerald-800 font-medium flex-1 truncate"></span>
+          <button id="crmNuevaOppClienteDesvincular" type="button" class="text-xs text-stone-500 hover:text-red-600" title="Desvincular y escribir libre">✕</button>
+        </div>
+        <div id="crmNuevaOppClienteLibreHint" class="hidden text-[10px] text-stone-400 mt-1">Tipeá ≥3 caracteres para buscar. Si no existe, queda como prospecto nuevo (texto libre).</div>
       </div>
       <div>
         <label class="block text-xs text-stone-500 mb-1">Tipo *</label>
@@ -14127,6 +15652,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <option value="cotizacion">Cotización</option>
           <option value="necesidad">Necesidad</option>
           <option value="accion">Acción</option>
+          <option value="idea">Idea</option>
         </select>
       </div>
       <div>
@@ -14323,19 +15849,123 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { alert('No se pudo abrir: ' + (e?.message || String(e))); }
   }
 
-  // Modal
+  // Modal — modo ficha (cliente vinculado a CRM Impulsa)
   function abrirModalNueva(externalCrm, fc) {
     var overlay = document.getElementById('crmNuevaOppOverlay');
     overlay.classList.remove('hidden'); overlay.classList.add('flex');
+    document.getElementById('crmNuevaOppCliente').classList.remove('hidden');
     document.getElementById('crmNuevaOppCliente').textContent = (fc?.cFull?.razon_social || fc?.c360?.razon_social || externalCrm);
+    document.getElementById('crmNuevaOppClienteLibre').classList.add('hidden');
+    document.getElementById('crmNuevaOppClienteLibreHint').classList.add('hidden');
+    document.getElementById('crmNuevaOppClienteReq').classList.add('hidden');
     document.getElementById('crmNuevaOppTitulo').value = '';
     document.getElementById('crmNuevaOppSucursal').value = '';
     document.getElementById('crmNuevaOppValorUF').value = '';
     document.getElementById('crmNuevaOppDescripcion').value = '';
     document.getElementById('crmNuevaOppFiles').value = '';
     document.getElementById('crmNuevaOppMsg').classList.add('hidden');
-    document.getElementById('crmNuevaOppCrear').dataset.externalCrm = externalCrm;
+    var btn = document.getElementById('crmNuevaOppCrear');
+    btn.dataset.externalCrm = externalCrm;
+    btn.dataset.modo = 'ficha';
   }
+  // Modal — modo libre (tab Oportunidades global, sin external_id_crm)
+  function abrirModalNuevaLibre() {
+    var overlay = document.getElementById('crmNuevaOppOverlay');
+    overlay.classList.remove('hidden'); overlay.classList.add('flex');
+    document.getElementById('crmNuevaOppCliente').classList.add('hidden');
+    document.getElementById('crmNuevaOppClienteWrap').classList.remove('hidden');
+    document.getElementById('crmNuevaOppClienteWrap').classList.add('block');
+    document.getElementById('crmNuevaOppClienteVinculado').classList.add('hidden');
+    document.getElementById('crmNuevaOppClienteVinculado').classList.remove('flex');
+    var lib = document.getElementById('crmNuevaOppClienteLibre');
+    lib.value = '';
+    document.getElementById('crmNuevaOppClienteDropdown').classList.add('hidden');
+    document.getElementById('crmNuevaOppClienteLibreHint').classList.remove('hidden');
+    document.getElementById('crmNuevaOppClienteReq').classList.remove('hidden');
+    document.getElementById('crmNuevaOppTitulo').value = '';
+    document.getElementById('crmNuevaOppSucursal').value = '';
+    document.getElementById('crmNuevaOppValorUF').value = '';
+    document.getElementById('crmNuevaOppDescripcion').value = '';
+    document.getElementById('crmNuevaOppFiles').value = '';
+    document.getElementById('crmNuevaOppMsg').classList.add('hidden');
+    var btn = document.getElementById('crmNuevaOppCrear');
+    btn.dataset.externalCrm = '';
+    btn.dataset.clienteIdVinculado = '';
+    btn.dataset.modo = 'libre';
+    setTimeout(function () { lib.focus(); }, 50);
+  }
+
+  // ── Autocomplete cliente (modo libre) ────────────────────────────────
+  var _ocSearchTimer = null;
+  var _ocLastResults = [];
+  async function ocBuscar(q) {
+    if (!ready()) return [];
+    var clean = (q || '').trim();
+    if (clean.length < 3) return [];
+    try {
+      var resp = await sb
+        .schema('curated').from('clientes')
+        .select('cliente_id, razon_social, external_id_crm, rut')
+        .or('razon_social.ilike.%' + clean + '%,rut.ilike.' + clean + '%')
+        .order('razon_social', { ascending: true })
+        .limit(10);
+      if (resp.error) throw resp.error;
+      return resp.data || [];
+    } catch (e) {
+      console.warn('[oc] buscar error:', e);
+      return [];
+    }
+  }
+  function ocRenderDropdown(items) {
+    var dd = document.getElementById('crmNuevaOppClienteDropdown');
+    if (!items.length) { dd.classList.add('hidden'); dd.innerHTML = ''; return; }
+    dd.innerHTML = items.map(function (c, i) {
+      return '<div class="oc-item px-3 py-2 cursor-pointer hover:bg-emerald-50 border-b border-stone-100 last:border-0" data-idx="' + i + '">' +
+        '<div class="text-sm text-stone-800 truncate">' + esc(c.razon_social || '(sin razón social)') + '</div>' +
+        '<div class="text-[10px] text-stone-400">' + esc(c.rut || 'sin RUT') + (c.external_id_crm ? ' · CRM ' + esc(c.external_id_crm) : '') + '</div>' +
+      '</div>';
+    }).join('');
+    dd.classList.remove('hidden');
+    _ocLastResults = items;
+  }
+  function ocVincular(cliente) {
+    var btn = document.getElementById('crmNuevaOppCrear');
+    btn.dataset.externalCrm = cliente.external_id_crm || '';
+    btn.dataset.clienteIdVinculado = cliente.cliente_id || '';
+    document.getElementById('crmNuevaOppClienteVinculadoNombre').textContent = cliente.razon_social || '(sin nombre)';
+    document.getElementById('crmNuevaOppClienteWrap').classList.add('hidden');
+    document.getElementById('crmNuevaOppClienteWrap').classList.remove('block');
+    document.getElementById('crmNuevaOppClienteDropdown').classList.add('hidden');
+    document.getElementById('crmNuevaOppClienteVinculado').classList.remove('hidden');
+    document.getElementById('crmNuevaOppClienteVinculado').classList.add('flex');
+    document.getElementById('crmNuevaOppClienteLibreHint').classList.add('hidden');
+  }
+  function ocDesvincular() {
+    var btn = document.getElementById('crmNuevaOppCrear');
+    btn.dataset.externalCrm = '';
+    btn.dataset.clienteIdVinculado = '';
+    document.getElementById('crmNuevaOppClienteVinculado').classList.add('hidden');
+    document.getElementById('crmNuevaOppClienteVinculado').classList.remove('flex');
+    document.getElementById('crmNuevaOppClienteWrap').classList.remove('hidden');
+    document.getElementById('crmNuevaOppClienteWrap').classList.add('block');
+    document.getElementById('crmNuevaOppClienteLibreHint').classList.remove('hidden');
+    var lib = document.getElementById('crmNuevaOppClienteLibre');
+    lib.value = '';
+    setTimeout(function () { lib.focus(); }, 50);
+  }
+  // blur: si texto exacto matchea razón social única → auto-vincular
+  function ocBlurAutoMatch() {
+    var libVal = document.getElementById('crmNuevaOppClienteLibre').value.trim().toLowerCase();
+    if (!libVal) return;
+    var exactos = _ocLastResults.filter(function (c) {
+      return (c.razon_social || '').trim().toLowerCase() === libVal;
+    });
+    if (exactos.length === 1) {
+      ocVincular(exactos[0]);
+    }
+  }
+  // Exponer para tab Oportunidades global (fuera del IIFE)
+  window.abrirModalNuevaOportunidadGlobal = abrirModalNuevaLibre;
   function cerrarModal() {
     var overlay = document.getElementById('crmNuevaOppOverlay');
     overlay.classList.add('hidden'); overlay.classList.remove('flex');
@@ -14343,28 +15973,48 @@ document.addEventListener('DOMContentLoaded', () => {
   async function crearOportunidad() {
     var btn = document.getElementById('crmNuevaOppCrear');
     var msg = document.getElementById('crmNuevaOppMsg');
-    var externalCrm = btn.dataset.externalCrm;
+    var modo = btn.dataset.modo || 'ficha';
+    var externalCrm = btn.dataset.externalCrm || null;
+    var vinculadoVisible = document.getElementById('crmNuevaOppClienteVinculado').classList.contains('flex');
+    // En modo libre, si hay cliente vinculado: usar external/cliente_id y descartar texto libre.
+    var clienteLibre = (modo === 'libre' && !vinculadoVisible)
+      ? document.getElementById('crmNuevaOppClienteLibre').value.trim()
+      : null;
     var titulo = document.getElementById('crmNuevaOppTitulo').value.trim();
     var tipo = document.getElementById('crmNuevaOppTipo').value;
     var sucursal = document.getElementById('crmNuevaOppSucursal').value.trim() || null;
     var valor = parseFloat(document.getElementById('crmNuevaOppValorUF').value) || null;
     var descripcion = document.getElementById('crmNuevaOppDescripcion').value.trim() || null;
     var files = document.getElementById('crmNuevaOppFiles').files;
+    if (modo === 'libre' && !vinculadoVisible && !clienteLibre) {
+      msg.className = 'text-xs text-red-700'; msg.textContent = 'Cliente requerido.'; msg.classList.remove('hidden'); return;
+    }
     if (!titulo) { msg.className = 'text-xs text-red-700'; msg.textContent = 'Título requerido.'; msg.classList.remove('hidden'); return; }
     var email = resolveEmail();
     if (!email) { msg.className = 'text-xs text-red-700'; msg.textContent = 'No detecto tu sesión.'; msg.classList.remove('hidden'); return; }
     btn.disabled = true; btn.textContent = 'Creando…';
     try {
-      var r = await sb.rpc('crm_crear_oportunidad', {
-        p_email: email, p_external_id_crm: externalCrm, p_tipo: tipo,
-        p_titulo: titulo, p_descripcion: descripcion, p_sucursal_id: sucursal,
-        p_valor_estimado_uf: valor, p_metadata: {}
+      // RPC v2 (mig 221): soporta external_id_crm O cliente_nombre_libre.
+      var r = await sb.rpc('crm_crear_oportunidad_v2', {
+        p_email: email,
+        p_tipo: tipo,
+        p_titulo: titulo,
+        p_descripcion: descripcion,
+        p_sucursal_id: sucursal,
+        p_valor_estimado_uf: valor,
+        p_metadata: {},
+        p_external_id_crm: externalCrm || null,
+        p_cliente_nombre_libre: clienteLibre
       });
       if (r.error) throw r.error;
       var oportId = r.data;
       for (var i = 0; i < files.length; i++) { await subirArchivo(oportId, files[i]); }
       cerrarModal();
-      cargarOportunidadesPanel(externalCrm);
+      if (modo === 'ficha' && externalCrm) {
+        cargarOportunidadesPanel(externalCrm);
+      } else if (typeof window.loadOportunidadesKanban === 'function') {
+        window.loadOportunidadesKanban();
+      }
     } catch (e) {
       msg.className = 'text-xs text-red-700'; msg.textContent = 'Error: ' + (e?.message || String(e));
       msg.classList.remove('hidden');
@@ -14394,6 +16044,466 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('crmNuevaOppCerrar')?.addEventListener('click', cerrarModal);
     document.getElementById('crmNuevaOppCancelar')?.addEventListener('click', cerrarModal);
     document.getElementById('crmNuevaOppCrear')?.addEventListener('click', crearOportunidad);
+
+    // Autocomplete cliente · listeners
+    var lib = document.getElementById('crmNuevaOppClienteLibre');
+    if (lib) {
+      lib.addEventListener('input', function () {
+        clearTimeout(_ocSearchTimer);
+        var q = lib.value.trim();
+        if (q.length < 3) {
+          document.getElementById('crmNuevaOppClienteDropdown').classList.add('hidden');
+          return;
+        }
+        _ocSearchTimer = setTimeout(async function () {
+          var items = await ocBuscar(q);
+          ocRenderDropdown(items);
+        }, 300);
+      });
+      lib.addEventListener('blur', function () {
+        // Timeout para que el click en una opción del dropdown tenga prioridad
+        setTimeout(function () {
+          document.getElementById('crmNuevaOppClienteDropdown').classList.add('hidden');
+          ocBlurAutoMatch();
+        }, 200);
+      });
+    }
+    document.getElementById('crmNuevaOppClienteDropdown')?.addEventListener('mousedown', function (e) {
+      var item = e.target.closest('.oc-item');
+      if (!item) return;
+      e.preventDefault(); // evita que el input pierda foco antes de procesar
+      var idx = parseInt(item.dataset.idx, 10);
+      var c = _ocLastResults[idx];
+      if (c) ocVincular(c);
+    });
+    document.getElementById('crmNuevaOppClienteDesvincular')?.addEventListener('click', ocDesvincular);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- ============================================================ -->
+<!-- D-CRM-GESTIONES · mig 222 · Pablo 2026-06-05                  -->
+<!-- ============================================================ -->
+<div id="crmNuevaGestionOverlay" class="hidden fixed inset-0 z-[60] bg-stone-900/60 items-center justify-center p-4">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <header class="p-4 border-b border-stone-200 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-stone-800">📝 Nueva gestión</h3>
+      <button id="crmNuevaGestCerrar" class="text-stone-500 hover:text-stone-700 text-xl leading-none">×</button>
+    </header>
+    <div class="p-4 space-y-3 text-sm">
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Cliente</label>
+        <div id="crmNuevaGestCliente" class="px-2 py-1.5 bg-stone-50 border border-stone-200 rounded text-stone-800">—</div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Tipo *</label>
+          <select id="crmNuevaGestTipo" class="w-full px-2 py-1.5 border border-stone-300 rounded">
+            <option value="llamada">📞 Llamada</option>
+            <option value="email">✉️ Email</option>
+            <option value="reunion">🤝 Reunión</option>
+            <option value="whatsapp">💬 WhatsApp</option>
+            <option value="nota">📝 Nota</option>
+            <option value="otra">🔖 Otra</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Fecha de la gestión</label>
+          <input type="datetime-local" id="crmNuevaGestFecha" class="w-full px-2 py-1.5 border border-stone-300 rounded">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Título *</label>
+        <input type="text" id="crmNuevaGestTitulo" maxlength="200" placeholder="Ej: Llamada cotización papel cartón"
+               class="w-full px-2 py-1.5 border border-stone-300 rounded">
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Descripción</label>
+        <textarea id="crmNuevaGestDescripcion" rows="3" maxlength="2000" placeholder="Qué se habló, qué se acordó…"
+                  class="w-full px-2 py-1.5 border border-stone-300 rounded"></textarea>
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Resultado / próximo paso</label>
+        <input type="text" id="crmNuevaGestResultado" maxlength="200" placeholder="Ej: agendar revisita lunes / esperando OC / no contesta"
+               class="w-full px-2 py-1.5 border border-stone-300 rounded">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">📅 Seguimiento para</label>
+          <input type="datetime-local" id="crmNuevaGestFollow" class="w-full px-2 py-1.5 border border-stone-300 rounded">
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Responsable</label>
+          <input type="text" id="crmNuevaGestResponsable" placeholder="email" class="w-full px-2 py-1.5 border border-stone-300 rounded">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">📎 Adjuntos (opcional)</label>
+        <input type="file" id="crmNuevaGestFiles" multiple class="w-full text-xs">
+        <div class="text-[10px] text-stone-400 mt-1">Se suben al guardar la gestión. Capturas, PDFs, audios.</div>
+      </div>
+      <div id="crmNuevaGestMsg" class="hidden text-xs"></div>
+      <div class="flex justify-end gap-2 pt-2 border-t border-stone-100">
+        <button id="crmNuevaGestCancelar" class="px-3 py-1.5 text-stone-600 text-sm">Cancelar</button>
+        <button id="crmNuevaGestCrear" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-semibold">Guardar gestión</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  function ready() { return typeof sb !== 'undefined' && sb && sb.rpc && sb.storage; }
+  function resolveEmail() {
+    if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase();
+    try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
+    try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
+    try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    try {
+      var sbTok = JSON.parse(localStorage.getItem('sb-eknmtsrtfkzroxnovfqn-auth-token') || 'null');
+      var em = sbTok?.user?.email || sbTok?.currentSession?.user?.email;
+      if (em) return String(em).toLowerCase();
+    } catch (e) {}
+    return null;
+  }
+  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]; }); }
+  function fmtFecha(ts) { if (!ts) return '—'; try { return new Date(ts).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return ts; } }
+  function fmtKB(b) { if (!b) return ''; return Math.round(b/1024) + ' KB'; }
+  function toDatetimeLocal(d) { var x = new Date(d); var off = x.getTimezoneOffset()*60000; return new Date(x - off).toISOString().slice(0,16); }
+
+  // Contexto cliente actual del modal de gestiones (lo setea cargarGestionesCliente).
+  var _gestCtx = { external_id_crm: null, cliente_id: null, cliente_nombre: '' };
+
+  // Render del subtab Gestiones — invocado desde renderSubTab del CRM Impulsa.
+  window.cargarGestionesCliente = async function (ctx) {
+    _gestCtx = {
+      external_id_crm: ctx?.external_id_crm || null,
+      cliente_id: ctx?.cliente_id || null,
+      cliente_nombre: ctx?.cliente_nombre || ''
+    };
+    var cont = document.getElementById('crmGestionesContainer');
+    if (!cont || !ready()) return;
+    try {
+      var resp = await sb.rpc('crm_gestiones_por_cliente', {
+        p_external_id_crm: _gestCtx.external_id_crm,
+        p_cliente_id: _gestCtx.cliente_id,
+        p_limit: 50
+      });
+      if (resp.error) throw resp.error;
+      renderTimeline(cont, resp.data?.gestiones || [], resp.data?.next_cursor || null);
+    } catch (e) {
+      console.warn('[gest] error cargar:', e);
+      cont.innerHTML = '<div class="text-xs text-red-700 py-3">Error cargando gestiones: ' + esc(e?.message || String(e)) + '</div>';
+    }
+  };
+
+  function renderTimeline(cont, gestiones, nextCursor) {
+    if (!gestiones.length) {
+      cont.innerHTML = '<div class="text-center py-8 text-stone-400 text-sm">Sin gestiones todavía. Hacé click en + Agregar gestión.</div>';
+      return;
+    }
+    var ICONOS = { llamada:'📞', email:'✉️', reunion:'🤝', whatsapp:'💬', nota:'📝', otra:'🔖' };
+    var html = gestiones.map(function (g) {
+      var ico = ICONOS[g.tipo] || '🔖';
+      var followBadge = '';
+      if (g.follow_up_at) {
+        var venc = new Date(g.follow_up_at) < new Date();
+        followBadge = '<span class="ml-2 inline-block text-[10px] px-1.5 py-0.5 rounded ' +
+          (venc ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') +
+          '">📅 ' + (venc ? 'Seguimiento vencido' : 'Seguir') + ' ' + esc(fmtFecha(g.follow_up_at)) + '</span>';
+      }
+      var autoTag = (g.metadata && g.metadata.auto_generated) ? '<span class="ml-2 text-[10px] text-stone-400">auto</span>' : '';
+      var adjuntosTag = g.adjuntos_count > 0 ? '<span class="ml-2 text-[10px] text-stone-500">📎 ' + g.adjuntos_count + '</span>' : '';
+      return '<div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm" data-gest-id="' + esc(g.id) + '">' +
+        '<div class="flex items-start gap-2 flex-wrap">' +
+          '<span class="text-xl">' + ico + '</span>' +
+          '<div class="flex-1 min-w-0">' +
+            '<div class="font-medium text-sm text-stone-800">' + esc(g.titulo) + autoTag + adjuntosTag + followBadge + '</div>' +
+            '<div class="text-[11px] text-stone-500 mt-0.5">' +
+              esc(g.tipo) + ' · ' + esc(fmtFecha(g.fecha_gestion)) + ' · ' + esc(g.responsable) +
+            '</div>' +
+            (g.descripcion ? '<div class="text-xs text-stone-600 mt-1.5 whitespace-pre-wrap">' + esc(g.descripcion) + '</div>' : '') +
+            (g.resultado ? '<div class="text-xs text-emerald-700 mt-1">→ ' + esc(g.resultado) + '</div>' : '') +
+          '</div>' +
+        '</div>' +
+        (g.adjuntos_count > 0 ? '<div class="mt-2 pl-7" data-adj-of="' + esc(g.id) + '"></div>' : '') +
+      '</div>';
+    }).join('');
+    if (nextCursor) {
+      html += '<button id="gestVerMas" data-cursor="' + esc(nextCursor) + '" class="w-full py-2 text-xs text-emerald-700 hover:bg-emerald-50 rounded">Ver más antiguas →</button>';
+    }
+    cont.innerHTML = html;
+    // Cargar adjuntos lazy en cada gestión con adjuntos_count > 0
+    cont.querySelectorAll('[data-adj-of]').forEach(function (slot) {
+      cargarAdjuntosDeGestion(slot.getAttribute('data-adj-of'), slot);
+    });
+    var verMas = document.getElementById('gestVerMas');
+    if (verMas) verMas.addEventListener('click', async function () {
+      var cursor = verMas.dataset.cursor;
+      verMas.disabled = true; verMas.textContent = 'Cargando…';
+      try {
+        var resp = await sb.rpc('crm_gestiones_por_cliente', {
+          p_external_id_crm: _gestCtx.external_id_crm,
+          p_cliente_id: _gestCtx.cliente_id,
+          p_cursor_ts: cursor,
+          p_limit: 50
+        });
+        if (resp.error) throw resp.error;
+        verMas.remove();
+        var nuevas = resp.data?.gestiones || [];
+        var append = document.createElement('div');
+        append.className = 'space-y-3';
+        cont.appendChild(append);
+        renderTimeline(append, nuevas, resp.data?.next_cursor || null);
+      } catch (e) {
+        verMas.disabled = false; verMas.textContent = 'Reintentar';
+        console.warn('[gest] ver más error:', e);
+      }
+    });
+  }
+
+  async function cargarAdjuntosDeGestion(gestionId, slotEl) {
+    try {
+      var r = await sb.rpc('gest_adjuntos_listar', { p_gestion_id: gestionId });
+      if (r.error || !Array.isArray(r.data)) return;
+      slotEl.innerHTML = r.data.map(function (a) {
+        return '<div class="flex items-center gap-2 text-[11px] bg-stone-50 px-2 py-1 rounded mt-1">' +
+          '<span class="truncate flex-1">📄 ' + esc(a.nombre) + ' <span class="text-stone-400">' + fmtKB(a.tamano_bytes) + '</span></span>' +
+          '<button class="gest-adj-ver text-sky-700 hover:underline" data-path="' + esc(a.bucket_path) + '">ver</button>' +
+        '</div>';
+      }).join('');
+    } catch (e) { /* silenciar */ }
+  }
+
+  // Modal nueva gestión
+  window.abrirModalNuevaGestion = function () {
+    var overlay = document.getElementById('crmNuevaGestionOverlay');
+    overlay.classList.remove('hidden'); overlay.classList.add('flex');
+    document.getElementById('crmNuevaGestCliente').textContent = _gestCtx.cliente_nombre || _gestCtx.external_id_crm || _gestCtx.cliente_id || '—';
+    document.getElementById('crmNuevaGestTitulo').value = '';
+    document.getElementById('crmNuevaGestDescripcion').value = '';
+    document.getElementById('crmNuevaGestResultado').value = '';
+    document.getElementById('crmNuevaGestFecha').value = toDatetimeLocal(new Date());
+    document.getElementById('crmNuevaGestFollow').value = '';
+    document.getElementById('crmNuevaGestFiles').value = '';
+    document.getElementById('crmNuevaGestResponsable').value = resolveEmail() || '';
+    document.getElementById('crmNuevaGestMsg').classList.add('hidden');
+  };
+  function cerrarModalGest() {
+    var overlay = document.getElementById('crmNuevaGestionOverlay');
+    overlay.classList.add('hidden'); overlay.classList.remove('flex');
+  }
+
+  async function crearGestion() {
+    var btn = document.getElementById('crmNuevaGestCrear');
+    var msg = document.getElementById('crmNuevaGestMsg');
+    var email = resolveEmail();
+    if (!email) { msg.className='text-xs text-red-700'; msg.textContent='No detecto tu sesión.'; msg.classList.remove('hidden'); return; }
+    var titulo = document.getElementById('crmNuevaGestTitulo').value.trim();
+    if (!titulo) { msg.className='text-xs text-red-700'; msg.textContent='Título requerido.'; msg.classList.remove('hidden'); return; }
+    var tipo = document.getElementById('crmNuevaGestTipo').value;
+    var descripcion = document.getElementById('crmNuevaGestDescripcion').value.trim() || null;
+    var resultado = document.getElementById('crmNuevaGestResultado').value.trim() || null;
+    var fechaInp = document.getElementById('crmNuevaGestFecha').value;
+    var fecha = fechaInp ? new Date(fechaInp).toISOString() : null;
+    var followInp = document.getElementById('crmNuevaGestFollow').value;
+    var follow = followInp ? new Date(followInp).toISOString() : null;
+    var responsable = (document.getElementById('crmNuevaGestResponsable').value.trim() || email).toLowerCase();
+    var files = document.getElementById('crmNuevaGestFiles').files;
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      var r = await sb.rpc('crm_crear_gestion', {
+        p_email: email, p_tipo: tipo, p_titulo: titulo,
+        p_descripcion: descripcion, p_fecha_gestion: fecha,
+        p_resultado: resultado, p_follow_up_at: follow,
+        p_responsable: responsable,
+        p_cliente_id: _gestCtx.cliente_id, p_external_id_crm: _gestCtx.external_id_crm,
+        p_metadata: {}
+      });
+      if (r.error) throw r.error;
+      var gestionId = r.data;
+      // Subir adjuntos (si hay) — uno por uno para no saturar
+      for (var i = 0; i < files.length; i++) {
+        await subirAdjuntoGestion(gestionId, files[i], email);
+      }
+      cerrarModalGest();
+      window.cargarGestionesCliente(_gestCtx);
+    } catch (e) {
+      msg.className='text-xs text-red-700'; msg.textContent='Error: ' + (e?.message || String(e));
+      msg.classList.remove('hidden');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Guardar gestión';
+    }
+  }
+
+  async function subirAdjuntoGestion(gestionId, file, email) {
+    try {
+      var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      var path = 'gestiones/' + gestionId + '/' + Date.now() + '_' + safeName;
+      var up = await sb.storage.from('impulsa-documentos').upload(path, file, { upsert: false, contentType: file.type || 'application/octet-stream' });
+      if (up.error) throw up.error;
+      var reg = await sb.rpc('gest_adjunto_registrar', {
+        p_email: email, p_gestion_id: gestionId, p_bucket_path: path,
+        p_nombre: file.name, p_mime: file.type || null, p_size: file.size
+      });
+      if (reg.error) throw reg.error;
+    } catch (e) {
+      console.warn('[gest-adj] upload error:', e);
+      alert('Error subiendo "' + file.name + '": ' + (e?.message || String(e)));
+    }
+  }
+
+  async function verAdjuntoGestion(path) {
+    try {
+      var s = await sb.storage.from('impulsa-documentos').createSignedUrl(path, 300);
+      if (s.error) throw s.error;
+      window.open(s.data.signedUrl, '_blank');
+    } catch (e) { alert('No se pudo abrir: ' + (e?.message || String(e))); }
+  }
+
+  function init() {
+    document.getElementById('crmNuevaGestCerrar')?.addEventListener('click', cerrarModalGest);
+    document.getElementById('crmNuevaGestCancelar')?.addEventListener('click', cerrarModalGest);
+    document.getElementById('crmNuevaGestCrear')?.addEventListener('click', crearGestion);
+    // Delegación: clicks en "ver" adjunto
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('.gest-adj-ver');
+      if (btn) { verAdjuntoGestion(btn.dataset.path); }
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- Handler tab Piloto PWA (mig 195 · Pablo 02-jun PM) -->
+<script>
+(function () {
+  function ready() { return typeof sb !== 'undefined' && sb && sb.rpc; }
+  function resolveEmail() {
+    if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase();
+    try { var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s?.email) return String(s.email).toLowerCase(); } catch (e) {}
+    try { var u = JSON.parse(sessionStorage.getItem('rf_usuario') || 'null'); if (u?.email) return String(u.email).toLowerCase(); } catch (e) {}
+    try { var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls?.email) return String(ls.email).toLowerCase(); } catch (e) {}
+    try {
+      var sbKey = 'sb-eknmtsrtfkzroxnovfqn-auth-token';
+      var sbTok = JSON.parse(localStorage.getItem(sbKey) || 'null');
+      var em = sbTok?.user?.email || sbTok?.currentSession?.user?.email;
+      if (em) return String(em).toLowerCase();
+    } catch (e) {}
+    return null;
+  }
+  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function fmtFecha(ts) { if (!ts) return '—'; try { return new Date(ts).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return ts; } }
+  function estadoBadge(estado) {
+    var map = {
+      invitacion_pendiente: { c: 'bg-amber-100 text-amber-800', l: '🟡 Pendiente invitar' },
+      invitado: { c: 'bg-blue-100 text-blue-800', l: '📤 Invitado' },
+      activado: { c: 'bg-emerald-100 text-emerald-800', l: '✅ Activado' },
+      rechazado: { c: 'bg-red-100 text-red-700', l: '⚫ Rechazado' },
+      inactivo: { c: 'bg-stone-100 text-stone-600', l: '💤 Inactivo' },
+    };
+    var m = map[estado] || { c: 'bg-stone-100 text-stone-600', l: estado || '?' };
+    return '<span class="text-[10px] px-2 py-0.5 rounded ' + m.c + '">' + m.l + '</span>';
+  }
+
+  async function loadPiloto() {
+    var lista = document.getElementById('ppwa_lista');
+    if (!ready() || !lista) return;
+    lista.innerHTML = '<div class="text-xs text-stone-400 italic py-3 text-center">Cargando…</div>';
+    try {
+      var resp = await sb.rpc('app_pwa_piloto_listar');
+      if (resp.error) throw resp.error;
+      var data = resp.data || {};
+      var stats = data.stats || {};
+      var filas = data.filas || [];
+      document.getElementById('ppwa_kpi_total').textContent = stats.total || 0;
+      document.getElementById('ppwa_kpi_pendientes').textContent = stats.pendientes || 0;
+      document.getElementById('ppwa_kpi_invitados').textContent = stats.invitados || 0;
+      document.getElementById('ppwa_kpi_activados').textContent = stats.activados || 0;
+      document.getElementById('ppwa_kpi_con_uso').textContent = stats.con_uso_7d || 0;
+      document.getElementById('ppwa_kpi_rechazados').textContent = stats.rechazados || 0;
+
+      if (!filas.length) {
+        lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Sin clientes piloto cargados.</div>';
+        return;
+      }
+      lista.innerHTML = filas.map(function (r) {
+        return '<div class="bg-white border border-stone-200 rounded p-3" data-id="' + esc(r.id) + '">' +
+          '<div class="flex items-center justify-between gap-2 mb-2 flex-wrap">' +
+            '<div class="flex items-center gap-2 flex-wrap">' +
+              '<span class="font-semibold text-sm">' + esc(r.razon_social) + '</span>' +
+              estadoBadge(r.estado) +
+            '</div>' +
+            '<span class="text-[10px] text-stone-400">' + esc(r.cliente_id || '—') + '</span>' +
+          '</div>' +
+          '<div class="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-1 text-xs">' +
+            '<div>👤 ' + esc(r.contacto_nombre || '<sin contacto>') + '</div>' +
+            '<div>📧 ' + esc(r.contacto_email || '—') + '</div>' +
+            '<div>📱 ' + esc(r.contacto_telefono || '—') + '</div>' +
+          '</div>' +
+          (r.notas ? '<div class="text-xs text-stone-500 italic mt-1">📝 ' + esc(r.notas) + '</div>' : '') +
+          '<div class="text-[10px] text-stone-400 mt-2 flex flex-wrap gap-x-3">' +
+            (r.invitado_at ? '<span>📤 invitado ' + fmtFecha(r.invitado_at) + (r.invitado_por ? ' · ' + esc(r.invitado_por) : '') + '</span>' : '') +
+            (r.activado_at ? '<span>✅ activado ' + fmtFecha(r.activado_at) + '</span>' : '') +
+            (r.cred_ultimo_login ? '<span>🔑 último login ' + fmtFecha(r.cred_ultimo_login) + '</span>' : '') +
+            (r.mensajes_total ? '<span>💬 ' + r.mensajes_total + ' mensajes</span>' : '') +
+          '</div>' +
+          '<div class="mt-2 flex gap-1 flex-wrap">' +
+            '<button class="ppwa-editar text-[10px] px-2 py-0.5 bg-stone-200 text-stone-700 rounded" data-id="' + esc(r.id) + '">✏ Editar contacto</button>' +
+            (r.estado === 'invitacion_pendiente' && (r.contacto_email || r.contacto_telefono) ? '<button class="ppwa-marcar-invitado text-[10px] px-2 py-0.5 bg-blue-600 text-white rounded" data-id="' + esc(r.id) + '">📤 Marcar invitado</button>' : '') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    } catch (e) {
+      console.error('[piloto-pwa] error:', e);
+      lista.innerHTML = '<div class="text-xs text-red-700 italic py-2 text-center">Error: ' + esc(e?.message || e) + '</div>';
+    }
+  }
+  window.loadPilotoPwa = loadPiloto;
+
+  async function editarFila(id) {
+    var nombre = prompt('Nombre del contacto comercial:', '') ?? '';
+    if (nombre === null) return;
+    var email = prompt('Email del contacto:', '') ?? '';
+    var telefono = prompt('Teléfono celular del contacto (formato +56 9 XXXX XXXX):', '') ?? '';
+    var notas = prompt('Notas adicionales (opcional):', '') ?? '';
+    if (!nombre && !email && !telefono && !notas) return;
+    var userEmail = resolveEmail();
+    if (!userEmail) { alert('No detecto sesión'); return; }
+    try {
+      var r = await sb.rpc('app_pwa_piloto_actualizar_contacto', {
+        p_id: id, p_email_solicitante: userEmail,
+        p_contacto_nombre: nombre.trim() || null,
+        p_contacto_email: email.trim() || null,
+        p_contacto_telefono: telefono.trim() || null,
+        p_notas: notas.trim() || null,
+      });
+      if (r.error) throw r.error;
+      if (r.data && r.data.ok) { loadPiloto(); } else { alert('Error: ' + (r.data?.error || 'no autorizado')); }
+    } catch (e) { alert('Error: ' + (e?.message || e)); }
+  }
+  async function marcarInvitado(id) {
+    if (!confirm('¿Confirmás que ya le mandaste la invitación al cliente?')) return;
+    var userEmail = resolveEmail();
+    if (!userEmail) { alert('No detecto sesión'); return; }
+    try {
+      var r = await sb.rpc('app_pwa_piloto_marcar_invitado', { p_id: id, p_email_solicitante: userEmail });
+      if (r.error) throw r.error;
+      if (r.data && r.data.ok) { loadPiloto(); } else { alert('Error: ' + (r.data?.error || 'no autorizado')); }
+    } catch (e) { alert('Error: ' + (e?.message || e)); }
+  }
+
+  function init() {
+    document.querySelector('button[data-tab="piloto_pwa"]')?.addEventListener('click', function () { setTimeout(loadPiloto, 100); });
+    document.querySelector('a[data-v4-tab="piloto_pwa"]')?.addEventListener('click', function () { setTimeout(loadPiloto, 100); });
+    document.getElementById('ppwa_refresh')?.addEventListener('click', loadPiloto);
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest('.ppwa-editar');
+      if (b) { editarFila(b.dataset.id); return; }
+      b = e.target.closest('.ppwa-marcar-invitado');
+      if (b) { marcarInvitado(b.dataset.id); }
+    });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

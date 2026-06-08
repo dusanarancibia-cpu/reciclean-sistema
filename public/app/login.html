@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1A7A3C">
+<title>Reciclean · Iniciar sesión</title>
+<link rel="manifest" href="/app/manifest.json">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:linear-gradient(180deg,#0D1B2A 0%,#1A2D3E 100%);
+  color:#fff;
+  min-height:100vh;
+  padding:24px 20px;
+  max-width:480px;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.brand{text-align:center;margin-bottom:32px}
+.tag{color:#4FC3F7;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase}
+.title{font-size:36px;font-weight:800;color:#fff;margin-top:6px;letter-spacing:-1px}
+.sub{color:#6B8FA8;font-size:13px;margin-top:6px}
+.field{margin-bottom:14px}
+label{display:block;color:#4FC3F7;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+input{
+  width:100%;
+  padding:14px 16px;
+  border-radius:10px;
+  border:1.5px solid #2C3E50;
+  background:#1A2D3E;
+  color:#fff;
+  font-size:15px;
+  outline:none;
+}
+input:focus{border-color:#4FC3F7}
+.btn{
+  width:100%;
+  padding:15px;
+  border-radius:11px;
+  border:none;
+  background:linear-gradient(135deg,#1565C0,#0D47A1);
+  color:#fff;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:10px;
+}
+.btn:active{opacity:.85}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.alt{text-align:center;margin-top:18px;color:#6B8FA8;font-size:13px}
+.alt a{color:#4FC3F7;text-decoration:none;font-weight:700}
+.error{
+  background:#4A1A1A;
+  border:1px solid #8B3A3A;
+  border-radius:8px;
+  padding:10px 13px;
+  color:#FF8080;
+  font-size:12px;
+  margin-top:10px;
+  display:none;
+}
+</style>
+</head>
+<body>
+
+<div class="brand">
+  <div class="tag">Reciclean App</div>
+  <div class="title">Reciclean</div>
+  <p class="sub">Iniciá sesión con tu teléfono y PIN.</p>
+</div>
+
+<form id="login-form" autocomplete="off">
+  <div class="field">
+    <label for="telefono">Teléfono</label>
+    <input type="tel" id="telefono" required minlength="9" maxlength="15" placeholder="+56 9 1234 5678" inputmode="tel" autofocus>
+  </div>
+  <div class="field">
+    <label for="pin">PIN</label>
+    <input type="password" id="pin" required minlength="4" maxlength="12" placeholder="••••" inputmode="numeric">
+  </div>
+  <button class="btn" id="submit-btn" type="submit">Entrar →</button>
+  <div class="error" id="err"></div>
+
+  <p class="alt">¿No tenés cuenta? <a href="/app/signup.html">Crear cuenta</a></p>
+</form>
+
+<script>
+const SUPABASE_URL = 'https://eknmtsrtfkzroxnovfqn.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_y-ivpVdiL141kz4ZASje5g_SYG7do5z';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function normTel(t) {
+  const d = (t || '').replace(/\s+/g,'').replace(/[^\d+]/g,'');
+  if (d.startsWith('+')) return d;
+  if (d.startsWith('56')) return '+' + d;
+  if (d.length <= 9) return '+56' + d;
+  return '+' + d;
+}
+function showErr(msg) { const el = document.getElementById('err'); el.textContent = msg; el.style.display = 'block'; }
+
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = 'Entrando…';
+
+  try {
+    const { data, error } = await sb.rpc('app_cliente_login', {
+      p_telefono: normTel(document.getElementById('telefono').value),
+      p_pin: document.getElementById('pin').value,
+      p_user_agent: navigator.userAgent.slice(0, 200),
+    });
+    if (error) throw error;
+    if (data && data.ok) {
+      sessionStorage.setItem('reciclean_app_user', JSON.stringify({
+        telefono: data.telefono,
+        nombre: data.nombre,
+        empresa: data.empresa,
+        email: data.email,
+        consent_ok: data.consent_ok,
+        login_at: Date.now(),
+      }));
+      window.location.href = '/app/';
+    } else {
+      showErr((data && data.mensaje) || 'Teléfono o PIN incorrecto.');
+      btn.disabled = false; btn.textContent = 'Entrar →';
+    }
+  } catch (e) {
+    showErr('Error: ' + (e?.message || e));
+    btn.disabled = false; btn.textContent = 'Entrar →';
+  }
+});
+
+document.getElementById('telefono').addEventListener('blur', (e) => {
+  e.target.value = normTel(e.target.value);
+});
+</script>
+</body>
+</html>

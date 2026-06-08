@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0D1B2A">
+<title>4 variantes visuales widget · Pablo elige</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:
+    radial-gradient(at 20% 10%, rgba(26,122,60,0.12) 0%, transparent 50%),
+    radial-gradient(at 80% 80%, rgba(79,195,247,0.10) 0%, transparent 50%),
+    #0D1117;
+  color:#E5EAF0;
+  min-height:100vh;
+  padding:24px 16px;
+}
+header{text-align:center;margin-bottom:32px}
+.eyebrow{color:#4FC3F7;font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase}
+h1{font-size:28px;font-weight:800;margin-top:6px;letter-spacing:-0.5px}
+.sub{color:#8FA8BC;font-size:13px;margin-top:6px;max-width:640px;margin-left:auto;margin-right:auto}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:16px;
+  max-width:1200px;
+  margin:0 auto;
+}
+.card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px;
+  padding:24px 20px 32px;
+  position:relative;
+  overflow:hidden;
+  min-height:340px;
+  display:flex;
+  flex-direction:column;
+}
+.card .num{
+  position:absolute;top:14px;right:14px;
+  background:rgba(79,195,247,0.15);color:#4FC3F7;
+  font-size:10px;font-weight:700;letter-spacing:1px;
+  padding:4px 10px;border-radius:99px;
+}
+.card h3{font-size:17px;font-weight:700;margin-bottom:4px}
+.card .desc{color:#8FA8BC;font-size:12px;line-height:1.5;margin-bottom:24px;min-height:48px}
+.card .preview{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  background:
+    linear-gradient(135deg,#1A2D3E 0%,#0D1B2A 100%);
+  border-radius:14px;
+  padding:32px;position:relative;
+  border:1px solid rgba(255,255,255,0.04);
+  min-height:140px;
+}
+.card .meta{
+  margin-top:12px;
+  display:flex;gap:6px;flex-wrap:wrap;
+}
+.tag{
+  background:rgba(255,255,255,0.06);
+  color:#B0C4D4;
+  font-size:10px;padding:3px 9px;border-radius:99px;
+  border:1px solid rgba(255,255,255,0.08);
+}
+
+/* ═══════════════════════════════════════════════
+   VARIANTE A · Halo pulsante + glass + ondas
+   ═══════════════════════════════════════════════ */
+.va-fab{
+  width:60px;height:60px;border-radius:50%;
+  background:linear-gradient(135deg,#1A7A3C 0%,#2BB668 100%);
+  position:relative;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:
+    0 8px 32px rgba(26,122,60,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.2),
+    inset 0 -10px 24px rgba(0,0,0,0.18);
+  backdrop-filter:blur(20px);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.va-fab::before,.va-fab::after{
+  content:'';position:absolute;inset:0;border-radius:50%;
+  border:1.5px solid rgba(43,182,104,0.55);
+  animation:vaPulse 2.4s ease-out infinite;
+}
+.va-fab::after{animation-delay:1.2s}
+@keyframes vaPulse{
+  0%{transform:scale(1);opacity:.9}
+  100%{transform:scale(1.9);opacity:0}
+}
+.va-fab svg{width:24px;height:24px;color:#fff;position:relative;z-index:2}
+.va-fab:hover{transform:scale(1.08)}
+
+/* ═══════════════════════════════════════════════
+   VARIANTE B · Pill conversacional con typing
+   ═══════════════════════════════════════════════ */
+.vb-pill{
+  background:rgba(13,27,42,0.85);
+  border:1px solid rgba(79,195,247,0.3);
+  backdrop-filter:blur(20px);
+  border-radius:99px;padding:8px 18px 8px 8px;
+  display:flex;align-items:center;gap:12px;
+  cursor:pointer;
+  box-shadow:0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04);
+  transition:all .3s ease;
+}
+.vb-pill:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,0.5)}
+.vb-pill .avatar{
+  width:40px;height:40px;border-radius:50%;
+  background:linear-gradient(135deg,#1A7A3C,#0F5A2C);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:#fff;flex-shrink:0;
+  position:relative;
+}
+.vb-pill .avatar::after{
+  content:'';position:absolute;bottom:1px;right:1px;
+  width:10px;height:10px;background:#22E07E;
+  border-radius:50%;border:2px solid #0D1B2A;
+}
+.vb-pill .text{display:flex;flex-direction:column;line-height:1.2}
+.vb-pill .name{color:#fff;font-size:12px;font-weight:600}
+.vb-pill .status{color:#4FC3F7;font-size:10px;display:flex;align-items:center;gap:5px}
+.vb-pill .dots{display:inline-flex;gap:2px}
+.vb-pill .dots span{
+  width:3px;height:3px;background:#4FC3F7;border-radius:50%;
+  animation:vbTyping 1.4s infinite;
+}
+.vb-pill .dots span:nth-child(2){animation-delay:.2s}
+.vb-pill .dots span:nth-child(3){animation-delay:.4s}
+@keyframes vbTyping{
+  0%,60%,100%{opacity:.3;transform:translateY(0)}
+  30%{opacity:1;transform:translateY(-3px)}
+}
+
+/* ═══════════════════════════════════════════════
+   VARIANTE C · Bauhaus / brutalismo verde
+   ═══════════════════════════════════════════════ */
+.vc-block{
+  background:#22E07E;
+  color:#0D1B2A;
+  padding:14px 18px;
+  border-radius:0;
+  border:2px solid #0D1B2A;
+  box-shadow:6px 6px 0 #0D1B2A;
+  cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+  font-weight:800;font-size:13px;
+  text-transform:uppercase;letter-spacing:1px;
+  transition:transform .15s ease,box-shadow .15s ease;
+}
+.vc-block:hover{
+  transform:translate(-2px,-2px);
+  box-shadow:8px 8px 0 #0D1B2A;
+}
+.vc-block:active{
+  transform:translate(2px,2px);
+  box-shadow:2px 2px 0 #0D1B2A;
+}
+.vc-block .icon{
+  background:#0D1B2A;color:#22E07E;
+  width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;
+}
+
+/* ═══════════════════════════════════════════════
+   VARIANTE D · Orb mini con eyes (más cálido)
+   ═══════════════════════════════════════════════ */
+.vd-orb{
+  width:70px;height:70px;border-radius:50%;
+  background:
+    radial-gradient(circle at 30% 30%, #2BB668 0%, #1A7A3C 50%, #0F5A2C 100%);
+  position:relative;cursor:pointer;
+  box-shadow:
+    0 10px 30px rgba(26,122,60,0.4),
+    inset -10px -15px 30px rgba(0,0,0,0.25),
+    inset 8px 8px 20px rgba(255,255,255,0.15);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .3s ease;
+}
+.vd-orb:hover{transform:scale(1.05) rotate(-3deg)}
+.vd-eyes{
+  display:flex;gap:8px;
+  position:relative;z-index:2;
+}
+.vd-eye{
+  width:8px;height:8px;background:#fff;border-radius:50%;
+  position:relative;
+  animation:vdBlink 5s infinite;
+}
+.vd-eye::after{
+  content:'';position:absolute;
+  width:3px;height:3px;background:#0D1B2A;border-radius:50%;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+}
+@keyframes vdBlink{
+  0%,94%,100%{height:8px}
+  96%,98%{height:2px}
+}
+.vd-mouth{
+  position:absolute;bottom:18px;
+  width:14px;height:6px;
+  border-bottom:2px solid #fff;
+  border-radius:0 0 14px 14px;
+}
+.vd-orb .badge{
+  position:absolute;top:-2px;right:-2px;
+  width:18px;height:18px;background:#FF6B35;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:10px;font-weight:800;
+  border:2px solid #0D1117;
+  box-shadow:0 2px 8px rgba(255,107,53,0.5);
+}
+
+/* Mini chat dropdown común (al hover en .card mostrar burbujita) */
+.preview-label{
+  position:absolute;bottom:12px;left:50%;
+  transform:translateX(-50%);
+  color:#5A6B7D;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+}
+
+/* CTA al final */
+.cta-bar{
+  margin-top:32px;text-align:center;padding:24px;
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;max-width:1200px;margin-left:auto;margin-right:auto;
+}
+.cta-bar p{color:#8FA8BC;font-size:13px;margin-bottom:8px}
+.cta-bar strong{color:#fff}
+.cta-bar code{
+  background:rgba(79,195,247,0.12);color:#4FC3F7;
+  padding:2px 8px;border-radius:5px;
+  font-family:'JetBrains Mono','Courier New',monospace;font-size:12px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Comparativa visual 2026</div>
+  <h1>4 variantes para el widget de Diego</h1>
+  <p class="sub">La 💬 verde clásica es de 2018. Acá tenés 4 estilos contemporáneos para que elijas el que va con la marca Reciclean. Pasale el mouse a cada uno.</p>
+</header>
+
+<div class="grid">
+
+  <!-- VARIANTE A -->
+  <div class="card">
+    <div class="num">A</div>
+    <h3>Halo pulsante + glass</h3>
+    <p class="desc">Vidrio esmerilado verde con ondas que pulsan. Suave, premium, transmite "está vivo".</p>
+    <div class="preview">
+      <div class="va-fab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      </div>
+      <div class="preview-label">A · Glass + halo</div>
+    </div>
+    <div class="meta">
+      <span class="tag">glass</span>
+      <span class="tag">animación pulse</span>
+      <span class="tag">premium</span>
+    </div>
+  </div>
+
+  <!-- VARIANTE B -->
+  <div class="card">
+    <div class="num">B</div>
+    <h3>Pill conversacional</h3>
+    <p class="desc">Tarjeta horizontal con avatar + nombre + estado online + typing dots. Invita a hablar.</p>
+    <div class="preview">
+      <div class="vb-pill">
+        <div class="avatar">🤖</div>
+        <div class="text">
+          <span class="name">Diego</span>
+          <span class="status">en línea <span class="dots"><span></span><span></span><span></span></span></span>
+        </div>
+      </div>
+      <div class="preview-label">B · Pill conversacional</div>
+    </div>
+    <div class="meta">
+      <span class="tag">horizontal</span>
+      <span class="tag">typing dots</span>
+      <span class="tag">avatar visible</span>
+    </div>
+  </div>
+
+  <!-- VARIANTE C -->
+  <div class="card">
+    <div class="num">C</div>
+    <h3>Bauhaus neo-brutalismo</h3>
+    <p class="desc">Bloque verde lima con sombra dura, sin redondeos suaves. Estética 2026 de "post-glassmorphism".</p>
+    <div class="preview">
+      <div class="vc-block">
+        <span class="icon">▸</span>
+        <span>Chat con Diego</span>
+      </div>
+      <div class="preview-label">C · Brutalismo verde</div>
+    </div>
+    <div class="meta">
+      <span class="tag">audaz</span>
+      <span class="tag">sin gradientes</span>
+      <span class="tag">marca fuerte</span>
+    </div>
+  </div>
+
+  <!-- VARIANTE D -->
+  <div class="card">
+    <div class="num">D</div>
+    <h3>Orb con cara (mascot mini)</h3>
+    <p class="desc">Esfera 3D con ojitos que parpadean y boca sonriendo. Antropomórfico, amigable. Badge naranja para llamar.</p>
+    <div class="preview">
+      <div class="vd-orb">
+        <div class="vd-eyes">
+          <div class="vd-eye"></div>
+          <div class="vd-eye"></div>
+        </div>
+        <div class="vd-mouth"></div>
+        <div class="badge">1</div>
+      </div>
+      <div class="preview-label">D · Orb con cara</div>
+    </div>
+    <div class="meta">
+      <span class="tag">mascot</span>
+      <span class="tag">3D depth</span>
+      <span class="tag">badge atención</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="cta-bar">
+  <p><strong>Para reemplazar el widget actual</strong>, decime el número (A · B · C · D) o pedime una mezcla.</p>
+  <p style="margin-top:6px">
+    <strong>Mi opinión técnica:</strong>
+    <span style="color:#B0C4D4"> B (pill) convierte más porque ya muestra "Diego en línea" sin tener que hacer click. </span>
+    <strong>Mi opinión de marca:</strong>
+    <span style="color:#B0C4D4"> C (brutalismo) refuerza Reciclean como marca contemporánea sin parecer otro chatbot.</span>
+  </p>
+</div>
+
+</body>
+</html>
