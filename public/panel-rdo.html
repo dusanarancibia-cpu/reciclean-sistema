@@ -1016,7 +1016,7 @@
         <button data-tab="incidentes_op" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabIncidentesOp">🛠️ Incidentes</button>
         <button data-tab="firmas_pend" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabFirmasPend">📝 Firmas pendientes</button>
         <button data-tab="tarifas_ext" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabTarifasExt">💰 Tarifas externas</button>
-        <button data-tab="cumplimiento" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCumplimiento">⚖️ Cumplimiento</button>
+        <button data-tab="cumplimiento" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCumplimiento">⚖️ Permisología</button>
         <button data-tab="herramientas_ext" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabHerramientasExt">🌐 Herramientas ext.</button>
         <button data-tab="facturacion_grupo" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabFacturacionGrupo">💰 Facturación grupo</button>
         <button data-tab="vales_portal" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabValesPortal">📊 Vales portal</button>
@@ -3749,14 +3749,25 @@
       <div id="tarifaLista" class="space-y-2"></div>
     </section>
 
-    <!-- Tab Cumplimiento Legal · silo 05 Cumplimiento Ambiental · 03-jun PC2 Pablo -->
+    <!-- Tab Permisología · silo 05 · MVP auto-guía Jair 08-jun PC1 -->
     <section id="tabCumplimiento" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
         <div>
-          <h2 class="text-xl font-bold text-stone-800">⚖️ Cumplimiento Legal</h2>
-          <p class="text-xs text-stone-500 mt-0.5">Obligaciones legales por ley y artículo. Cargá evidencia (link al documento) y marcá estado.</p>
+          <h2 class="text-xl font-bold text-stone-800">⚖️ Permisología</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Tus permisos por ley y artículo. Vos elegís por dónde empezar · subí foto del papel · Diego te ayuda si dudás.</p>
         </div>
         <button id="cump_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+      </div>
+
+      <!-- EAG-01 · Saludo personalizado primera vez · MVP 08-jun -->
+      <div id="permisologia_welcome" class="hidden bg-amber-50 border-l-4 border-amber-500 rounded p-3 mb-3">
+        <div class="flex items-start justify-between gap-3 flex-wrap">
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold text-amber-900">👋 Hola <span id="permisologia_welcome_nombre">—</span></div>
+            <div class="text-xs text-stone-700 mt-1">Tenés <strong><span id="permisologia_welcome_count">—</span> permisos</strong> asignados en hasta 4 sucursales. <strong>Vos elegís por dónde empezar</strong> · hacé clic en cualquier permiso de la lista y queda marcado como tu foco del día. Cuando un trámite se atasque, Diego coach te sugiere algo paralelo que sí puedas avanzar.</div>
+          </div>
+          <button id="permisologia_welcome_close" class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700 whitespace-nowrap">Ver mis permisos</button>
+        </div>
       </div>
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
@@ -3855,6 +3866,13 @@
           <div id="cump_archivos_lista" class="mt-2 space-y-1"></div>
         </div>
 
+        <!-- EAG-22 · Escalado SIN FILTROS a los 3 · MVP 08-jun -->
+        <div class="border-t border-stone-200 pt-2 mt-1">
+          <div class="text-xs font-semibold text-stone-700 mb-1">📡 Si te trabás o la evidencia falla</div>
+          <button type="button" id="cump_escalar_3" class="w-full px-3 py-2 bg-slate-800 text-white rounded text-xs hover:bg-slate-900">📡 Escalar a los 3 · Cesar · Dyana · Dusan</button>
+          <div class="text-[10px] text-stone-500 mt-1">Los 3 reciben el mismo mensaje · sin filtros · con el aprendizaje el ruteo se ajusta.</div>
+        </div>
+
         <div class="flex gap-2 justify-end">
           <button id="cump_cancelar" class="px-3 py-1 text-stone-600 text-xs">Cancelar</button>
           <button id="cump_guardar" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs">Guardar</button>
@@ -3862,6 +3880,18 @@
       </div>
 
       <div id="cump_lista" class="space-y-2"></div>
+
+      <!-- EAG-08 · Toast refuerzo positivo post-upload · MVP 08-jun -->
+      <div id="permisologia_toast" class="hidden fixed bottom-4 right-4 z-50 max-w-sm bg-emerald-600 text-white rounded-lg shadow-2xl p-4">
+        <div class="flex items-start gap-3">
+          <div class="text-2xl">✓</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm" id="permisologia_toast_title">Listo</div>
+            <div class="text-xs opacity-90 mt-1" id="permisologia_toast_msg">Evidencia subida</div>
+          </div>
+          <button id="permisologia_toast_close" class="text-white/70 hover:text-white text-lg leading-none">×</button>
+        </div>
+      </div>
     </section>
 
     <!-- Tab Herramientas externas · D-FACTURACION-ETAPA-1 FASE 5 · PC2 Pablo 06-jun -->
@@ -15206,6 +15236,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     await cargarArchivos(obligacionId);
     renderMisObligaciones();
+    // EAG-08 · refuerzo positivo
+    if (ok > 0 && window.showPermisologiaToast) {
+      try {
+        var rowDone = (_cumpRows || []).find(function (r) { return String(r.id) === String(obligacionId); }) || {};
+        var nTotal = (_cumpRows || []).filter(function (r) {
+          return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail;
+        }).length;
+        var nConArchivos = (_cumpRows || []).filter(function (r) {
+          return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail
+                 && (_archivosCache[r.id] || []).length > 0;
+        }).length;
+        var faltan = Math.max(0, nTotal - nConArchivos);
+        window.showPermisologiaToast(
+          'Listo · evidencia subida',
+          (rowDone.ley_id ? rowDone.ley_id + ' Art ' + rowDone.articulo_id : 'Archivo') + ' guardado. Quedan ' + faltan + ' permisos sin evidencia.'
+        );
+      } catch (_) {}
+    }
   }
   async function verArchivo(storagePath, bucket) {
     try {
@@ -15297,6 +15345,87 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // Diego contexto
     $$('cump_diego_ctx')?.addEventListener('click', abrirDiegoContexto);
+
+    // EAG-01 · Saludo personalizado primera vez · MVP 08-jun
+    function maybeShowWelcome() {
+      try {
+        if (!_sessionEmail) return;
+        var dismissed = localStorage.getItem('permisologia_welcome_dismissed_' + _sessionEmail);
+        if (dismissed === '1') return;
+        var mias = (_cumpRows || []).filter(function (r) {
+          return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail
+                 && r.estado !== 'cumplida' && r.estado !== 'no_aplica';
+        });
+        if (!mias.length) return;
+        var box = $$('permisologia_welcome'); if (!box) return;
+        var nombreEl = $$('permisologia_welcome_nombre');
+        var countEl = $$('permisologia_welcome_count');
+        if (nombreEl) {
+          var nombre = (window._sessionUserNombre || _sessionEmail.split('@')[0] || '').split(' ')[0];
+          nombreEl.textContent = nombre || 'colega';
+        }
+        if (countEl) countEl.textContent = mias.length;
+        box.classList.remove('hidden');
+      } catch (_) {}
+    }
+    $$('permisologia_welcome_close')?.addEventListener('click', function () {
+      var box = $$('permisologia_welcome'); if (box) box.classList.add('hidden');
+      try { if (_sessionEmail) localStorage.setItem('permisologia_welcome_dismissed_' + _sessionEmail, '1'); } catch (_) {}
+    });
+    // Re-render trigger: cuando se cargan obligaciones, intentar mostrar saludo
+    var _origRenderMis = renderMisObligaciones;
+    renderMisObligaciones = function () { _origRenderMis.apply(this, arguments); maybeShowWelcome(); };
+
+    // EAG-22 · Escalado SIN FILTROS a los 3 (Cesar/Dyana/Dusan) · MVP 08-jun
+    $$('cump_escalar_3')?.addEventListener('click', async function () {
+      if (!_currentEditId) { alert('Primero elegí un permiso de la lista de arriba.'); return; }
+      var row = _cumpRows.find(function (r) { return String(r.id) === String(_currentEditId); }) || {};
+      var motivo = prompt('¿Qué necesitás? (1-2 líneas)\nVamos a notificar a Cesar (Soporte), Dyana (Contabilidad) y Dusan (CEO) los 3 al mismo tiempo.');
+      if (!motivo) return;
+      var mensaje = '[Escalado Permisología · ' + (window._sessionUserNombre || _sessionEmail) + '] '
+        + (row.ley_id || '?') + ' Art ' + (row.articulo_id || '?')
+        + (row.sucursal_id ? ' · ' + row.sucursal_id : '')
+        + ' · Motivo: ' + motivo;
+      try {
+        var destinos = [
+          { email: 'soporte@gestionrepchile.cl', nombre: 'Cesar Mora' },
+          { email: 'dpinto@sercotspa.cl', nombre: 'Dyana' },
+          { email: 'gerencia@gestionrepchile.cl', nombre: 'Dusan' }
+        ];
+        var ok = 0;
+        for (var i = 0; i < destinos.length; i++) {
+          try {
+            await sb.from('diego_inbox').insert({
+              destinatario_email: destinos[i].email,
+              categoria: 'escalado_permisologia',
+              titulo: 'Escalado Permisología · obligación #' + _currentEditId,
+              mensaje: mensaje,
+              origen_email: _sessionEmail || 'panel',
+              prioridad: 'alta'
+            });
+            ok++;
+          } catch (e) { console.warn('Escalado fail ' + destinos[i].email, e); }
+        }
+        if (ok === 3) showPermisologiaToast('Escalado enviado ✓', 'Cesar, Dyana y Dusan reciben el mensaje. Sigue trabajando en otra cosa mientras responden.');
+        else alert('Escalado parcial: ' + ok + '/3. Avisá a Dusan por WhatsApp si urge.');
+      } catch (e) {
+        alert('No pude escalar: ' + (e.message || e));
+      }
+    });
+
+    // EAG-08 · Toast refuerzo positivo · MVP 08-jun
+    window.showPermisologiaToast = function (title, msg) {
+      var t = $$('permisologia_toast'); if (!t) return;
+      var ttl = $$('permisologia_toast_title'); var ms = $$('permisologia_toast_msg');
+      if (ttl) ttl.textContent = title || 'Listo';
+      if (ms) ms.textContent = msg || '';
+      t.classList.remove('hidden');
+      clearTimeout(window._permisologiaToastTimer);
+      window._permisologiaToastTimer = setTimeout(function () { t.classList.add('hidden'); }, 6000);
+    };
+    $$('permisologia_toast_close')?.addEventListener('click', function () {
+      $$('permisologia_toast')?.classList.add('hidden');
+    });
     // Drag & drop + file picker
     var dz = $$('cump_dropzone');
     var picker = $$('cump_file_picker');
