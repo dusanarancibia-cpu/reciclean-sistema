@@ -792,6 +792,18 @@
             <span class="v4-emoji" aria-hidden="true">⚖️</span>
             Cumplimiento
           </a>
+          <a href="/mi-cola.html" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" title="Cola priorizada para operar">
+            <span class="v4-emoji" aria-hidden="true">📋</span>
+            Mi cola (Jair)
+          </a>
+          <a href="/expedientes/" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" title="Mesa de control general de 20 expedientes">
+            <span class="v4-emoji" aria-hidden="true">📂</span>
+            Expedientes
+          </a>
+          <a href="/supervision-jair.html" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" title="Vista Dusan + Cesar + Dyana">
+            <span class="v4-emoji" aria-hidden="true">👁️</span>
+            Supervisión Jair
+          </a>
           <a href="#" data-v4-tab="herramientas_ext" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🌐</span>
             Herramientas ext.
@@ -15110,6 +15122,21 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (_) {}
     return '';
   }
+  // Vista CEO · 08-jun · si admin → ve todas las obligaciones del equipo (no solo las suyas).
+  // Cubre el caso: Jair ve sus 40 obligaciones pero Dusan (gerencia@) veía vacío.
+  function _esAdminCEO() {
+    try {
+      var rf = JSON.parse(localStorage.getItem('rf_session') || '{}');
+      var perfil = String(rf.perfil || rf.rol || '').toLowerCase();
+      if (perfil === 'admin' || perfil === 'ceo' || perfil === 'gerencia') return true;
+      if (String(rf.email || '').toLowerCase() === 'gerencia@gestionrepchile.cl') return true;
+    } catch (_) {}
+    return String(_sessionEmail || '').toLowerCase() === 'gerencia@gestionrepchile.cl';
+  }
+  function _esMia(r) {
+    if (_esAdminCEO()) return true;
+    return !!(r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail);
+  }
   function badgeEstado(estado) {
     var map = {
       pendiente: { cls: 'bg-amber-100 text-amber-800', emoji: '🟡' },
@@ -15152,7 +15179,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!box || !listaMis) return;
     if (!_sessionEmail) { box.classList.add('hidden'); return; }
     var mias = _cumpRows.filter(function (r) {
-      return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail
+      return _esMia(r)
              && r.estado !== 'cumplida' && r.estado !== 'no_aplica';
     });
     if (!mias.length) { box.classList.add('hidden'); return; }
@@ -15321,10 +15348,10 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         var rowDone = (_cumpRows || []).find(function (r) { return String(r.id) === String(obligacionId); }) || {};
         var nTotal = (_cumpRows || []).filter(function (r) {
-          return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail;
+          return _esMia(r);
         }).length;
         var nConArchivos = (_cumpRows || []).filter(function (r) {
-          return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail
+          return _esMia(r)
                  && (_archivosCache[r.id] || []).length > 0;
         }).length;
         var faltan = Math.max(0, nTotal - nConArchivos);
@@ -15453,7 +15480,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (avEl) avEl.textContent = _permisologiaNombreCorto();
 
         var mias = (_cumpRows || []).filter(function (r) {
-          return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail
+          return _esMia(r)
                  && r.estado !== 'cumplida' && r.estado !== 'no_aplica';
         });
 
@@ -15473,7 +15500,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Barra progreso
         var total = mias.length + (_cumpRows || []).filter(function (r) {
-          return r.responsable_email && String(r.responsable_email).toLowerCase() === _sessionEmail && r.estado === 'cumplida';
+          return _esMia(r) && r.estado === 'cumplida';
         }).length;
         var hechas = total - mias.length;
         if (total > 0) {
