@@ -792,18 +792,6 @@
             <span class="v4-emoji" aria-hidden="true">⚖️</span>
             Cumplimiento
           </a>
-          <a href="/mi-cola.html" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" title="Cola priorizada para operar">
-            <span class="v4-emoji" aria-hidden="true">📋</span>
-            Mi cola (Jair)
-          </a>
-          <a href="/expedientes/" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" title="Mesa de control general de 20 expedientes">
-            <span class="v4-emoji" aria-hidden="true">📂</span>
-            Expedientes
-          </a>
-          <a href="/supervision-jair.html" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" title="Vista Dusan + Cesar + Dyana">
-            <span class="v4-emoji" aria-hidden="true">👁️</span>
-            Supervisión Jair
-          </a>
           <a href="#" data-v4-tab="herramientas_ext" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🌐</span>
             Herramientas ext.
@@ -3764,6 +3752,19 @@
     <!-- Tab Permisología · silo 05 · MVP visual rico 08-jun PC1 -->
     <section id="tabCumplimiento" class="tab-content hidden">
 
+      <!-- 4 sub-vistas internas · 09-jun nada-por-fuera · cargan via iframe (mismo dominio, sesión compartida) -->
+      <div id="permisologia_subnav" class="flex gap-2 mb-3 flex-wrap">
+        <button type="button" data-subv="tramites" class="permisologia-subv-btn active px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white">📋 Trámites</button>
+        <button type="button" data-subv="micola" class="permisologia-subv-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-200 text-stone-700 hover:bg-stone-300">🎯 Mi cola</button>
+        <button type="button" data-subv="expedientes" class="permisologia-subv-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-200 text-stone-700 hover:bg-stone-300">📂 Expedientes</button>
+        <button type="button" data-subv="supervision" class="permisologia-subv-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-200 text-stone-700 hover:bg-stone-300">👁️ Supervisión</button>
+      </div>
+      <!-- Sub-vistas iframe -->
+      <div id="permisologia_subv_micola" class="permisologia-subv-pane hidden"><iframe src="about:blank" data-src="/mi-cola.html" style="width:100%;height:calc(100vh - 220px);border:1px solid #e5e7eb;border-radius:12px;background:#fff"></iframe></div>
+      <div id="permisologia_subv_expedientes" class="permisologia-subv-pane hidden"><iframe src="about:blank" data-src="/expedientes/index.html" style="width:100%;height:calc(100vh - 220px);border:1px solid #e5e7eb;border-radius:12px;background:#fff"></iframe></div>
+      <div id="permisologia_subv_supervision" class="permisologia-subv-pane hidden"><iframe src="about:blank" data-src="/supervision-jair.html" style="width:100%;height:calc(100vh - 220px);border:1px solid #e5e7eb;border-radius:12px;background:#fff"></iframe></div>
+      <div id="permisologia_subv_tramites">
+
       <!-- Header gradient verde con avatar + breadcrumb -->
       <div class="mb-3 rounded-2xl overflow-hidden" style="background:linear-gradient(135deg,#064e3b,#059669)">
         <div class="px-5 py-4 flex items-center justify-between flex-wrap gap-3 text-white">
@@ -3973,6 +3974,7 @@
           <button id="permisologia_toast_close" class="text-white/70 hover:text-white text-lg leading-none">×</button>
         </div>
       </div>
+      </div><!-- /permisologia_subv_tramites -->
     </section>
 
     <!-- Tab Herramientas externas · D-FACTURACION-ETAPA-1 FASE 5 · PC2 Pablo 06-jun -->
@@ -15456,6 +15458,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // GUARDA · todo lo de Permisología MVP se ejecuta UNA sola vez · 08-jun fix freeze
     if (window._permisologiaInited) { console.log('[Permisología] init ya ejecutado · skip'); return; }
     window._permisologiaInited = true;
+
+    // Sub-vistas 09-jun · nada por fuera del panel
+    document.querySelectorAll('.permisologia-subv-btn').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var k = b.dataset.subv;
+        document.querySelectorAll('.permisologia-subv-btn').forEach(function (x) {
+          x.classList.remove('active','bg-emerald-600','text-white');
+          x.classList.add('bg-stone-200','text-stone-700');
+        });
+        b.classList.add('active','bg-emerald-600','text-white');
+        b.classList.remove('bg-stone-200','text-stone-700');
+        // Mostrar el panel correcto
+        var paneTramites = $$('permisologia_subv_tramites');
+        if (paneTramites) paneTramites.style.display = (k === 'tramites') ? '' : 'none';
+        ['micola','expedientes','supervision'].forEach(function (kk) {
+          var pane = $$('permisologia_subv_' + kk);
+          if (!pane) return;
+          if (k === kk) {
+            pane.classList.remove('hidden');
+            var ifr = pane.querySelector('iframe');
+            if (ifr && ifr.src === 'about:blank' && ifr.dataset.src) ifr.src = ifr.dataset.src;
+          } else {
+            pane.classList.add('hidden');
+          }
+        });
+      });
+    });
 
     // Helpers · MVP visual 08-jun
     function _permisologiaNombreCorto() {
