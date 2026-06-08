@@ -180,6 +180,15 @@ const params = new URLSearchParams(location.search);
 const codigo = params.get('codigo') || 'EXP-TALCA-PATENTE-DEFINITIVA';
 
 let _data = null;
+let _isAuth = false;
+
+async function checkAuth(){
+  try {
+    const s = await sb.auth.getSession();
+    _isAuth = !!(s && s.data && s.data.session && s.data.session.user);
+  } catch(_) { _isAuth = false; }
+  return _isAuth;
+}
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function fmtFecha(d){if(!d)return '—';try{return new Date(d).toLocaleString('es-CL',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch(_){return String(d);}}
@@ -292,7 +301,9 @@ function renderPunto(o){
               ? '<ul class="bit-list">'+bit.map(b => renderBit(b)).join('')+'</ul>'
               : '<div class="bit-vacia">Sin gestiones registradas. Tocá "Agregar gestión" para sumar tu primer WhatsApp/correo.</div>'
             )
-    + '    <button class="btn-agregar" onclick="abrirModal('+o.id+',\''+esc(o.titulo||'').replace(/\'/g,"\\'")+'\')">➕ Agregar gestión</button>'
+    + (_isAuth
+        ? '    <button class="btn-agregar" onclick="abrirModal('+o.id+',\''+esc(o.titulo||'').replace(/\'/g,"\\'")+'\')">➕ Agregar gestión</button>'
+        : '    <div style="padding:10px 14px;background:#fef3c7;color:#92400e;font-size:11px;border-top:1px solid var(--border)">🔒 Iniciá sesión en <a href="/panel-rdo.html" style="color:#92400e;font-weight:700">/panel-rdo.html</a> para agregar gestiones y subir adjuntos.</div>')
     + '  </div>'
     + '</div>';
 }
@@ -427,7 +438,7 @@ async function guardarGestion(){
 }
 window.guardarGestion = guardarGestion;
 
-cargar().then(()=>setTimeout(cargarPreviewsImagenes, 200));
+checkAuth().then(cargar).then(()=>setTimeout(cargarPreviewsImagenes, 200));
 </script>
 </body>
 </html>
