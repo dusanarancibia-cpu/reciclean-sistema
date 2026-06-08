@@ -7,10 +7,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--primary:#059669;--dark:#064e3b;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--cream:#fef3c7;--amber:#d97706}
+:root{--primary:#059669;--dark:#064e3b;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--cream:#fef3c7;--amber:#d97706;--red:#dc2626;--blue:#2563eb}
 *{box-sizing:border-box}
 body{font-family:'Inter',sans-serif;margin:0;background:#f3f4f6;color:var(--text);line-height:1.55}
-.page{max-width:840px;margin:0 auto;background:#fff;box-shadow:0 0 24px rgba(0,0,0,.08);min-height:100vh}
+.page{max-width:920px;margin:0 auto;background:#fff;box-shadow:0 0 24px rgba(0,0,0,.08);min-height:100vh}
 .toolbar{position:sticky;top:0;background:#111827;color:#fff;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;z-index:10;flex-wrap:wrap;gap:12px}
 .toolbar .info{font-size:13px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
 .toolbar .info strong{color:#86efac}
@@ -19,19 +19,34 @@ body{font-family:'Inter',sans-serif;margin:0;background:#f3f4f6;color:var(--text
 .toolbar button.secondary{background:transparent;border:1px solid #4b5563}
 .body{padding:48px 56px}
 .loading{padding:80px;text-align:center;color:var(--muted)}
+.error{padding:40px;color:var(--red);background:#fee2e2;border-radius:8px;margin:24px;font-family:monospace;font-size:13px;white-space:pre-wrap}
 .cover{text-align:center;padding:60px 24px;border-bottom:3px solid var(--dark);page-break-after:always}
 .cover h1{font-size:28px;color:var(--dark);margin:0 0 8px;letter-spacing:-.5px}
 .cover p{margin:6px 0;font-size:14px;color:#374151}
 .cover .badge{display:inline-block;background:var(--cream);border:1px solid var(--amber);color:#92400e;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;margin-top:16px}
+
+/* Mesa de control */
+.mesa{margin:24px 0 36px;padding:20px;background:#f9fafb;border:1px solid var(--border);border-radius:10px}
+.mesa h3{margin:0 0 12px;font-size:15px;color:var(--dark)}
+.mesa table{width:100%;border-collapse:collapse;font-size:13px}
+.mesa th{text-align:left;padding:8px;border-bottom:2px solid var(--border);color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.mesa td{padding:10px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+.mesa tr:hover{background:#fff;cursor:pointer}
+.mesa tr.activa{background:#ecfdf5}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.dot.verde{background:#10b981}
+.dot.amarillo{background:#f59e0b}
+.dot.rojo{background:#ef4444}
+.dot.azul{background:#3b82f6}
+.mini-chip{display:inline-block;background:#e5e7eb;color:#374151;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-left:4px}
+.mini-chip.alerta{background:#fef3c7;color:#92400e}
+.mini-chip.ok{background:#d1fae5;color:#065f46}
+
 .section{padding:36px 0;border-bottom:1px solid var(--border)}
 .section h2{font-size:20px;color:var(--dark);margin:0 0 16px;font-weight:800}
-.section p{margin:0 0 10px;font-size:14px}
-.toc{background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:20px;margin:24px 0}
-.toc h3{margin:0 0 12px;font-size:15px;color:var(--dark)}
-.toc ol{margin:0;padding-left:24px;font-size:13px;line-height:1.9}
-.toc li.completo{color:#065f46;font-weight:600}
-.toc li.falta{color:#b45309}
+
 .punto{padding:32px 0;page-break-before:always;border-top:2px solid var(--dark)}
+.punto[data-active="1"]{background:#fefce8;margin-left:-32px;margin-right:-32px;padding-left:32px;padding-right:32px;border-radius:8px}
 .punto .head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px}
 .punto h3{font-size:17px;color:var(--dark);margin:0;flex:1}
 .punto .meta{font-size:11px;color:var(--muted);text-align:right;line-height:1.7}
@@ -39,23 +54,64 @@ body{font-family:'Inter',sans-serif;margin:0;background:#f3f4f6;color:var(--text
 .punto .estado-respaldo.ok{background:#d1fae5;color:#065f46}
 .punto .estado-respaldo.falta{background:#fef3c7;color:#92400e}
 .punto .descripcion{font-size:13px;color:#374151;margin:8px 0 16px}
-.punto .archivo-box{border:2px dashed var(--border);border-radius:8px;padding:24px;text-align:center;color:var(--muted);font-size:13px;background:#f9fafb}
+.punto .archivo-box{border:2px dashed var(--border);border-radius:8px;padding:18px;text-align:center;color:var(--muted);font-size:13px;background:#f9fafb;margin-bottom:14px}
 .punto .archivo-box.con-archivo{background:#ecfdf5;border-color:#10b981;color:#065f46}
-.punto img{max-width:100%;border:1px solid var(--border);border-radius:6px;margin-top:12px}
-.punto .pdf-link{display:inline-block;background:#dbeafe;color:#1e40af;padding:8px 16px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;margin-top:8px}
-.tareas{background:#fef3c7;border-left:4px solid var(--amber);padding:12px 16px;margin-top:12px;border-radius:4px;font-size:12px}
+.pdf-link{display:inline-block;background:#dbeafe;color:#1e40af;padding:6px 12px;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;margin:4px}
+
+.tareas{background:#fef3c7;border-left:4px solid var(--amber);padding:12px 16px;margin:12px 0;border-radius:4px;font-size:12px}
 .tareas strong{color:#92400e;display:block;margin-bottom:4px}
 .tareas ul{margin:0;padding-left:20px}
+
+/* Bitácora gestiones */
+.bitacora{margin-top:16px;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.bitacora .bit-head{background:#1f2937;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700}
+.bitacora .bit-head .count{font-size:11px;background:#374151;padding:2px 8px;border-radius:10px;font-weight:600}
+.bitacora .bit-list{padding:0;margin:0;list-style:none;background:#fff;max-height:none}
+.bitacora .bit-item{padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px;line-height:1.5}
+.bitacora .bit-item:last-child{border-bottom:none}
+.bitacora .bit-tipo{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;margin-right:8px;text-transform:uppercase;letter-spacing:.04em}
+.bitacora .bit-tipo.whatsapp{background:#25d366;color:#fff}
+.bitacora .bit-tipo.correo{background:#2563eb;color:#fff}
+.bitacora .bit-tipo.llamada{background:#7c3aed;color:#fff}
+.bitacora .bit-tipo.visita{background:#ea580c;color:#fff}
+.bitacora .bit-tipo.reunion{background:#0891b2;color:#fff}
+.bitacora .bit-tipo.nota{background:#6b7280;color:#fff}
+.bitacora .bit-tipo.solicitud_interna{background:#be185d;color:#fff}
+.bitacora .bit-tipo.respuesta_autoridad{background:#064e3b;color:#fff}
+.bitacora .bit-tipo.otro{background:#94a3b8;color:#fff}
+.bitacora .bit-meta{color:var(--muted);font-size:11px;margin-top:4px}
+.bitacora .bit-texto{margin:6px 0 0;color:#1f2937}
+.bitacora .bit-adjunto{margin-top:8px}
+.bitacora .bit-adjunto img{max-width:280px;max-height:200px;border:1px solid var(--border);border-radius:6px;cursor:zoom-in}
+.bitacora .bit-vacia{padding:20px;text-align:center;color:var(--muted);font-size:12px;font-style:italic}
+.btn-agregar{background:var(--primary);color:#fff;border:none;padding:8px 14px;border-radius:6px;font-weight:600;cursor:pointer;font-size:12px;margin:10px 14px}
+.btn-agregar:hover{background:#047857}
+
+/* Modal agregar gestión */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:12px;max-width:540px;width:100%;padding:24px;max-height:90vh;overflow-y:auto}
+.modal h3{margin:0 0 16px;color:var(--dark);font-size:18px}
+.modal label{display:block;font-size:12px;font-weight:600;color:#374151;margin:10px 0 4px}
+.modal input,.modal select,.modal textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit}
+.modal textarea{min-height:80px;resize:vertical}
+.modal .actions{margin-top:20px;display:flex;gap:10px;justify-content:flex-end}
+.modal .actions button{padding:8px 16px;border-radius:6px;border:none;font-weight:600;cursor:pointer;font-size:13px}
+.modal .actions .ok{background:var(--primary);color:#fff}
+.modal .actions .cancel{background:#e5e7eb;color:#374151}
+.modal .file-info{font-size:11px;color:var(--muted);margin-top:4px}
+
 .firma{margin-top:60px;padding-top:40px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:60px;page-break-inside:avoid}
 .firma .linea{border-bottom:1px solid var(--text);height:50px}
 .firma .label{font-size:12px;color:var(--muted);margin-top:6px;text-align:center}
 @media print{
-  .toolbar{display:none}
+  .toolbar,.btn-agregar,.modal-bg{display:none !important}
   body{background:#fff}
   .page{box-shadow:none;max-width:none}
   .body{padding:24px 32px}
-  .punto{page-break-before:always}
+  .punto{page-break-before:always;background:#fff !important}
   .cover{page-break-after:always}
+  .bitacora{break-inside:avoid}
 }
 </style>
 </head>
@@ -66,16 +122,56 @@ body{font-family:'Inter',sans-serif;margin:0;background:#f3f4f6;color:var(--text
       <span>📋 Expediente: <strong id="t-codigo">cargando...</strong></span>
       <span>Estado: <strong id="t-estado">—</strong></span>
       <span>Respaldos: <strong id="t-respaldos">—</strong></span>
+      <span>Gestiones: <strong id="t-gestiones">—</strong></span>
     </div>
     <div>
-      <button class="secondary" onclick="window.location.href='/panel-rdo.html'">← Volver al panel</button>
-      <button onclick="window.print()">🖨️ Imprimir todo</button>
+      <button class="secondary" onclick="window.location.href='/panel-rdo.html'">← Panel</button>
+      <button onclick="window.print()">🖨️ Imprimir</button>
     </div>
   </div>
   <div class="body" id="contenido">
     <div class="loading">Cargando expediente...</div>
   </div>
 </div>
+
+<!-- Modal agregar gestión -->
+<div class="modal-bg" id="modalGestion">
+  <div class="modal">
+    <h3>➕ Registrar gestión efectuada</h3>
+    <input type="hidden" id="g_obligacion_id">
+    <div id="g_punto_titulo" style="font-size:13px;color:var(--muted);margin-bottom:12px"></div>
+    <label>Tipo de gestión</label>
+    <select id="g_tipo">
+      <option value="whatsapp">📱 WhatsApp</option>
+      <option value="correo">📧 Correo</option>
+      <option value="llamada">📞 Llamada</option>
+      <option value="visita">🚗 Visita en terreno</option>
+      <option value="reunion">👥 Reunión</option>
+      <option value="solicitud_interna">📤 Solicitud interna</option>
+      <option value="respuesta_autoridad">🏛️ Respuesta autoridad</option>
+      <option value="nota">📝 Nota / comentario</option>
+      <option value="otro">❓ Otro</option>
+    </select>
+    <label>¿Cuándo ocurrió?</label>
+    <input type="datetime-local" id="g_cuando">
+    <label>¿Quién hizo la gestión? (email)</label>
+    <input type="email" id="g_actor_email" placeholder="ej: asistente@gestionrepchile.cl">
+    <label>Nombre actor (opcional)</label>
+    <input type="text" id="g_actor_nombre" placeholder="ej: Jair">
+    <label>¿A quién va dirigida? (opcional)</label>
+    <input type="text" id="g_destinatario" placeholder="ej: Dyana / Municipalidad de Maule">
+    <label>Descripción de la gestión</label>
+    <textarea id="g_texto" placeholder="Ej: Le envié WhatsApp a Dyana pidiendo el PDF firmado del SAG. Quedó en mandarlo hoy en la tarde."></textarea>
+    <label>Adjunto (foto WhatsApp / PDF correo / etc · opcional)</label>
+    <input type="file" id="g_archivo" accept="image/*,application/pdf,.eml">
+    <div class="file-info" id="g_archivo_info"></div>
+    <div class="actions">
+      <button class="cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="ok" id="g_guardar" onclick="guardarGestion()">Guardar gestión</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://eknmtsrtfkzroxnovfqn.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbm10c3J0Zmt6cm94bm92ZnFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDY2ODgsImV4cCI6MjA5MDk4MjY4OH0.8Y4N0lw3DFN3Y8-R6ID7t_LAfgHWDM5N-oa4Ji9bncg';
@@ -83,89 +179,150 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 const params = new URLSearchParams(location.search);
 const codigo = params.get('codigo') || 'EXP-TALCA-PATENTE-DEFINITIVA';
 
+let _data = null;
+
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function fmtFecha(d){if(!d)return '—';try{return new Date(d).toLocaleString('es-CL',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch(_){return String(d);}}
+function fmtDia(d){if(!d)return '—';try{return new Date(d).toLocaleDateString('es-CL');}catch(_){return String(d);}}
+
+function semaforoColor(o){
+  const tieneArch = (o.archivos||[]).length > 0;
+  const tienBit = (o.bitacora||[]).length > 0;
+  if (o.estado === 'cumplido' && tieneArch) return 'verde';
+  if (o.estado === 'cumplido' && !tieneArch && tienBit) return 'amarillo';
+  if (o.estado === 'cumplido' && !tieneArch) return 'amarillo';
+  if (o.estado === 'en_proceso') return 'azul';
+  return 'rojo';
+}
 
 async function cargar(){
   try{
-    const {data:exp,error:e1} = await sb.schema('panel').from('expedientes').select('*').eq('codigo',codigo).single();
-    if(e1) throw e1;
-    if(!exp){document.getElementById('contenido').innerHTML='<div class="loading">Expediente no encontrado: '+esc(codigo)+'</div>';return;}
-
-    const {data:obls,error:e2} = await sb.schema('panel').from('cumplimiento_legal').select('*').in('id',exp.obligaciones_ids);
-    if(e2) throw e2;
-
-    const oblsOrdenadas = exp.obligaciones_ids.map(id => obls.find(o => o.id === id)).filter(Boolean);
-
-    const {data:articulos} = await sb.schema('panel').from('articulos_ley').select('id,titulo,contenido').in('id',exp.obligaciones_ids);
-    const mapArt = {};(articulos||[]).forEach(a=>mapArt[a.id]=a);
-
-    const {data:tareas} = await sb.schema('panel').from('cumplim_evidencia_tareas').select('*').in('obligacion_id',exp.obligaciones_ids).neq('estado','cancelado');
-    const mapTareas = {};(tareas||[]).forEach(t=>{(mapTareas[t.obligacion_id]=mapTareas[t.obligacion_id]||[]).push(t)});
-
-    let archivosTotal = {};
-    try{
-      const {data:archivos} = await sb.schema('panel').from('cumplimiento_archivos').select('*').in('obligacion_id',exp.obligaciones_ids);
-      (archivos||[]).forEach(a=>{(archivosTotal[a.obligacion_id]=archivosTotal[a.obligacion_id]||[]).push(a)});
-    }catch(_){}
-
-    const conRespaldo = oblsOrdenadas.filter(o => (archivosTotal[o.id]||[]).length > 0).length;
-
-    document.getElementById('t-codigo').textContent = exp.codigo;
-    document.getElementById('t-estado').textContent = exp.estado;
-    document.getElementById('t-respaldos').textContent = conRespaldo + '/' + oblsOrdenadas.length;
-
-    const toc = oblsOrdenadas.map((o,i) => {
-      const a = mapArt[o.articulo_id] || {titulo:'(sin título)'};
-      const tieneArch = (archivosTotal[o.id]||[]).length > 0;
-      return '<li class="'+(tieneArch?'completo':'falta')+'">'+esc(a.titulo)+(tieneArch?' ✓':' · falta respaldo')+'</li>';
-    }).join('');
-
-    const puntos = oblsOrdenadas.map((o,i) => {
-      const a = mapArt[o.articulo_id] || {titulo:'(sin título)',contenido:''};
-      const archs = archivosTotal[o.id]||[];
-      const ts = mapTareas[o.id]||[];
-      const tieneArch = archs.length > 0;
-      return ''
-        + '<div class="punto">'
-        + '  <div class="head">'
-        + '    <h3>'+(i+1)+'. '+esc(a.titulo)+'</h3>'
-        + '    <div class="meta">Estado: <strong>'+esc(o.estado)+'</strong>'
-        +        '<br>Plazo: '+esc(o.fecha_verificacion||'—')
-        +        '<br>Responsable: '+esc(o.responsable||'—')
-        +        '<br><span class="estado-respaldo '+(tieneArch?'ok':'falta')+'">'+(tieneArch?'✓ respaldo digital':'⚠ falta respaldo digital')+'</span>'
-        +     '</div>'
-        + '  </div>'
-        + '  <div class="descripcion">'+esc(a.contenido||'')+'</div>'
-        + '  <div class="archivo-box '+(tieneArch?'con-archivo':'')+'">'
-        +     (tieneArch
-              ? archs.map(ar => '📎 '+esc(ar.filename||'archivo')+' · '+esc(ar.mime_type||'')+(ar.storage_path?'<br><a class="pdf-link" href="#" onclick="abrir(\\''+esc(ar.storage_path)+'\\',\\''+esc(ar.bucket||'impulsa-documentos')+'\\');return false">Ver documento</a>':'')).join('<br>')
-              : 'Falta cargar el respaldo digital de este punto. Trabajo asignado a Jair (ver tareas abajo).'
-            )
-        + '  </div>'
-        +    (ts.length ? '<div class="tareas"><strong>📋 Tareas para completar este respaldo:</strong><ul>'
-                          + ts.map(t=>'<li>'+esc(t.descripcion)+' · <em>'+esc(t.responsable_nombre||t.responsable_email)+'</em> · plazo '+esc(t.fecha_meta||'sin fecha')+' · <strong>'+esc(t.estado)+'</strong></li>').join('')
-                          + '</ul></div>' : '')
-        + '</div>';
-    }).join('');
-
-    document.getElementById('contenido').innerHTML =
-        '<div class="cover">'
-      + '  <h1>'+esc(exp.titulo)+'</h1>'
-      + '  <p><strong>Destinatario:</strong> '+esc(exp.autoridad_destinataria)+'</p>'
-      + '  <p><strong>Solicitante:</strong> '+esc(exp.razon_social||'')+' · RUT '+esc(exp.rut_empresa||'')+'</p>'
-      + '  <p><strong>Sucursal:</strong> '+esc(exp.sucursal_id||'')+'</p>'
-      + '  <p><strong>Código expediente:</strong> '+esc(exp.codigo)+'</p>'
-      + '  <p style="margin-top:24px;font-size:12px;color:#6b7280">Fecha de impresión: '+new Date().toLocaleDateString('es-CL')+'</p>'
-      + '  <div class="badge">'+conRespaldo+' de '+oblsOrdenadas.length+' respaldos digitales cargados</div>'
-      + '</div>'
-      + (exp.cuerpo_html || '')
-      + '<div class="section"><h2>Índice de documentos adjuntos</h2><div class="toc"><ol>'+toc+'</ol></div></div>'
-      + puntos
-      + '<div class="firma"><div><div class="linea"></div><div class="label">Firma representante legal · Reciclean SpA</div></div><div><div class="linea"></div><div class="label">Recepción · I. Municipalidad de Maule</div></div></div>';
-
+    const {data,error} = await sb.schema('panel').rpc('expediente_get',{p_codigo:codigo});
+    if(error) throw error;
+    if(!data || data.error){
+      document.getElementById('contenido').innerHTML = '<div class="error">Expediente no encontrado: '+esc(codigo)+'</div>';
+      return;
+    }
+    _data = data;
+    render();
   }catch(err){
-    document.getElementById('contenido').innerHTML = '<div class="loading" style="color:#dc2626">Error: '+esc(err.message||err)+'</div>';
+    document.getElementById('contenido').innerHTML = '<div class="error">Error cargando: '+esc(err.message||JSON.stringify(err))+'</div>';
   }
+}
+
+function render(){
+  const exp = _data.expediente;
+  const obls = _data.obligaciones || [];
+  const totalArchivos = obls.reduce((s,o)=>s+(o.archivos||[]).length,0);
+  const totalGestiones = obls.reduce((s,o)=>s+(o.bitacora||[]).length,0);
+  const conRespaldo = obls.filter(o => (o.archivos||[]).length > 0).length;
+
+  document.getElementById('t-codigo').textContent = exp.codigo;
+  document.getElementById('t-estado').textContent = exp.estado;
+  document.getElementById('t-respaldos').textContent = conRespaldo+'/'+obls.length;
+  document.getElementById('t-gestiones').textContent = totalGestiones;
+
+  const mesaRows = obls.map(o => {
+    const color = semaforoColor(o);
+    const nArch = (o.archivos||[]).length;
+    const nBit = (o.bitacora||[]).length;
+    const nTareas = (o.tareas||[]).filter(t=>t.estado!=='hecho').length;
+    return '<tr onclick="irA('+o.id+')">'
+      + '<td><span class="dot '+color+'"></span><strong>'+o.orden+'.</strong> '+esc(o.titulo||'(sin título)')+'</td>'
+      + '<td>'+esc(o.estado)+'</td>'
+      + '<td>'+(nArch>0?'<span class="mini-chip ok">📎 '+nArch+'</span>':'<span class="mini-chip alerta">sin doc</span>')+'</td>'
+      + '<td>'+(nBit>0?'<span class="mini-chip">💬 '+nBit+'</span>':'<span class="mini-chip alerta">sin gestiones</span>')+'</td>'
+      + '<td>'+(nTareas>0?'<span class="mini-chip alerta">'+nTareas+' pend</span>':'<span class="mini-chip ok">ok</span>')+'</td>'
+      + '<td>'+fmtDia(o.fecha_verificacion)+'</td>'
+      + '</tr>';
+  }).join('');
+
+  const puntos = obls.map(o => renderPunto(o)).join('');
+
+  document.getElementById('contenido').innerHTML =
+      '<div class="cover">'
+    + '  <h1>'+esc(exp.titulo)+'</h1>'
+    + '  <p><strong>Destinatario:</strong> '+esc(exp.autoridad_destinataria)+'</p>'
+    + '  <p><strong>Solicitante:</strong> '+esc(exp.razon_social||'')+' · RUT '+esc(exp.rut_empresa||'')+'</p>'
+    + '  <p><strong>Sucursal:</strong> '+esc(exp.sucursal_id||'')+'</p>'
+    + '  <p><strong>Código:</strong> '+esc(exp.codigo)+'</p>'
+    + '  <p style="margin-top:24px;font-size:12px;color:#6b7280">Impreso: '+new Date().toLocaleDateString('es-CL')+'</p>'
+    + '  <div class="badge">'+conRespaldo+'/'+obls.length+' respaldos · '+totalGestiones+' gestiones registradas</div>'
+    + '</div>'
+    + (exp.cuerpo_html || '')
+    + '<div class="section"><h2>🎛️ Mesa de control · click en una fila para ir al punto</h2>'
+    + '  <div class="mesa"><table>'
+    + '    <thead><tr><th>Documento</th><th>Estado</th><th>Respaldo</th><th>Gestiones</th><th>Tareas</th><th>Plazo</th></tr></thead>'
+    + '    <tbody>'+mesaRows+'</tbody>'
+    + '  </table></div>'
+    + '</div>'
+    + puntos
+    + '<div class="firma"><div><div class="linea"></div><div class="label">Firma representante legal · Reciclean SpA</div></div><div><div class="linea"></div><div class="label">Recepción · '+esc(exp.autoridad_destinataria)+'</div></div></div>';
+}
+
+function renderPunto(o){
+  const archs = o.archivos||[];
+  const tieneArch = archs.length > 0;
+  const tareas = (o.tareas||[]).filter(t=>t.estado!=='cancelado');
+  const bit = o.bitacora||[];
+
+  return ''
+    + '<div class="punto" id="punto-'+o.id+'">'
+    + '  <div class="head">'
+    + '    <h3>'+o.orden+'. '+esc(o.titulo||'(sin título)')+'</h3>'
+    + '    <div class="meta">Estado: <strong>'+esc(o.estado)+'</strong>'
+    +        '<br>Plazo: '+fmtDia(o.fecha_verificacion)
+    +        '<br>Responsable: '+esc(o.responsable||'—')
+    +        '<br><span class="estado-respaldo '+(tieneArch?'ok':'falta')+'">'+(tieneArch?'✓ con respaldo':'⚠ falta respaldo')+'</span>'
+    +     '</div>'
+    + '  </div>'
+    + '  <div class="descripcion">'+esc(o.contenido||'')+'</div>'
+    + '  <div class="archivo-box '+(tieneArch?'con-archivo':'')+'">'
+    +     (tieneArch
+            ? archs.map(ar => '📎 '+esc(ar.filename||'archivo')+(ar.storage_path?' · <a class="pdf-link" href="#" onclick="abrir(\''+esc(ar.storage_path)+'\',\''+esc(ar.bucket||'impulsa-documentos')+'\');return false">Ver</a>':'')).join('<br>')
+            : 'Falta cargar respaldo digital. Ver tareas y gestiones abajo.'
+          )
+    + '  </div>'
+    +    (tareas.length ? '<div class="tareas"><strong>📋 Tareas planificadas:</strong><ul>'
+                        + tareas.map(t=>'<li>'+esc(t.descripcion)+' · <em>'+esc(t.responsable_nombre||t.responsable_email)+'</em> · plazo '+fmtDia(t.fecha_meta)+' · <strong>'+esc(t.estado)+'</strong></li>').join('')
+                        + '</ul></div>' : '')
+    + '  <div class="bitacora">'
+    + '    <div class="bit-head"><span>💬 Bitácora de gestiones · esfuerzo del equipo</span><span class="count">'+bit.length+'</span></div>'
+    +      (bit.length
+              ? '<ul class="bit-list">'+bit.map(b => renderBit(b)).join('')+'</ul>'
+              : '<div class="bit-vacia">Sin gestiones registradas. Tocá "Agregar gestión" para sumar tu primer WhatsApp/correo.</div>'
+            )
+    + '    <button class="btn-agregar" onclick="abrirModal('+o.id+',\''+esc(o.titulo||'').replace(/\'/g,"\\'")+'\')">➕ Agregar gestión</button>'
+    + '  </div>'
+    + '</div>';
+}
+
+function renderBit(b){
+  let adj = '';
+  if (b.archivo_path) {
+    const isImg = (b.archivo_mime||'').startsWith('image/');
+    if (isImg) {
+      adj = '<div class="bit-adjunto"><img src="" data-path="'+esc(b.archivo_path)+'" data-bucket="'+esc(b.archivo_bucket||'impulsa-documentos')+'" onclick="abrir(this.dataset.path,this.dataset.bucket)" alt="adjunto" onload="this.style.opacity=1"></div>';
+    } else {
+      adj = '<div class="bit-adjunto"><a class="pdf-link" href="#" onclick="abrir(\''+esc(b.archivo_path)+'\',\''+esc(b.archivo_bucket||'impulsa-documentos')+'\');return false">📎 '+esc(b.archivo_nombre||'adjunto')+'</a></div>';
+    }
+  }
+  return '<li class="bit-item">'
+    + '<span class="bit-tipo '+esc(b.tipo)+'">'+esc(b.tipo)+'</span>'
+    + '<strong>'+esc(b.actor_nombre||b.actor_email||'—')+'</strong>'
+    + (b.destinatario_nombre||b.destinatario_email ? ' → '+esc(b.destinatario_nombre||b.destinatario_email) : '')
+    + '<div class="bit-meta">'+fmtFecha(b.ocurrida_en)+'</div>'
+    + '<div class="bit-texto">'+esc(b.texto)+'</div>'
+    + adj
+    + '</li>';
+}
+
+function irA(id){
+  const el = document.getElementById('punto-'+id);
+  if(!el) return;
+  document.querySelectorAll('.punto[data-active="1"]').forEach(p=>p.removeAttribute('data-active'));
+  el.setAttribute('data-active','1');
+  el.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 async function abrir(path,bucket){
@@ -176,7 +333,101 @@ async function abrir(path,bucket){
   }catch(e){alert('No se pudo abrir: '+(e.message||e));}
 }
 window.abrir = abrir;
-cargar();
+window.irA = irA;
+
+// Cargar previews imágenes
+async function cargarPreviewsImagenes(){
+  const imgs = document.querySelectorAll('.bit-adjunto img[data-path]');
+  for (const img of imgs) {
+    try{
+      const s = await sb.storage.from(img.dataset.bucket).createSignedUrl(img.dataset.path,300);
+      if(!s.error) img.src = s.data.signedUrl;
+    }catch(_){}
+  }
+}
+
+function abrirModal(oblId, titulo){
+  document.getElementById('g_obligacion_id').value = oblId;
+  document.getElementById('g_punto_titulo').textContent = 'Punto: '+titulo;
+  document.getElementById('g_tipo').value = 'whatsapp';
+  document.getElementById('g_cuando').value = new Date().toISOString().slice(0,16);
+  document.getElementById('g_actor_email').value = localStorage.getItem('g_last_actor_email') || '';
+  document.getElementById('g_actor_nombre').value = localStorage.getItem('g_last_actor_nombre') || '';
+  document.getElementById('g_destinatario').value = '';
+  document.getElementById('g_texto').value = '';
+  document.getElementById('g_archivo').value = '';
+  document.getElementById('g_archivo_info').textContent = '';
+  document.getElementById('modalGestion').classList.add('open');
+}
+function cerrarModal(){document.getElementById('modalGestion').classList.remove('open');}
+window.abrirModal = abrirModal;
+window.cerrarModal = cerrarModal;
+
+document.getElementById('g_archivo').addEventListener('change', function(){
+  const f = this.files[0];
+  document.getElementById('g_archivo_info').textContent = f ? f.name+' · '+(f.size/1024).toFixed(1)+' KB' : '';
+});
+
+async function guardarGestion(){
+  const btn = document.getElementById('g_guardar');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  try{
+    const oblId = parseInt(document.getElementById('g_obligacion_id').value);
+    const tipo = document.getElementById('g_tipo').value;
+    const cuando = document.getElementById('g_cuando').value;
+    const actor_email = document.getElementById('g_actor_email').value.trim();
+    const actor_nombre = document.getElementById('g_actor_nombre').value.trim();
+    const destinatario = document.getElementById('g_destinatario').value.trim();
+    const texto = document.getElementById('g_texto').value.trim();
+    const file = document.getElementById('g_archivo').files[0];
+
+    if (!actor_email) throw new Error('Falta email del actor');
+    if (!texto) throw new Error('Falta descripción');
+
+    localStorage.setItem('g_last_actor_email', actor_email);
+    localStorage.setItem('g_last_actor_nombre', actor_nombre);
+
+    let archivo_path = null, archivo_nombre = null, archivo_mime = null, archivo_size = null;
+    if (file) {
+      const path = 'expediente/'+oblId+'/'+Date.now()+'_'+file.name.replace(/[^\w.\-]/g,'_');
+      const up = await sb.storage.from('impulsa-documentos').upload(path, file, {upsert:false});
+      if (up.error) throw new Error('Storage: '+up.error.message);
+      archivo_path = path;
+      archivo_nombre = file.name;
+      archivo_mime = file.type;
+      archivo_size = file.size;
+    }
+
+    const {data,error} = await sb.schema('panel').rpc('bitacora_registrar', {
+      p_obligacion_id: oblId,
+      p_tipo: tipo,
+      p_texto: texto,
+      p_actor_email: actor_email,
+      p_actor_nombre: actor_nombre || null,
+      p_destinatario_email: destinatario.includes('@') ? destinatario : null,
+      p_destinatario_nombre: !destinatario.includes('@') ? (destinatario||null) : null,
+      p_archivo_path: archivo_path,
+      p_archivo_nombre: archivo_nombre,
+      p_archivo_mime: archivo_mime,
+      p_archivo_size: archivo_size,
+      p_archivo_bucket: 'impulsa-documentos',
+      p_ocurrida_en: cuando ? new Date(cuando).toISOString() : null
+    });
+    if (error) throw error;
+
+    cerrarModal();
+    await cargar();
+    setTimeout(cargarPreviewsImagenes, 100);
+    irA(oblId);
+  }catch(e){
+    alert('Error: '+(e.message||e));
+  }finally{
+    btn.disabled = false; btn.textContent = 'Guardar gestión';
+  }
+}
+window.guardarGestion = guardarGestion;
+
+cargar().then(()=>setTimeout(cargarPreviewsImagenes, 200));
 </script>
 </body>
 </html>
