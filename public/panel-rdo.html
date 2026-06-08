@@ -1016,7 +1016,7 @@
         <button data-tab="incidentes_op" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabIncidentesOp">🛠️ Incidentes</button>
         <button data-tab="firmas_pend" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabFirmasPend">📝 Firmas pendientes</button>
         <button data-tab="tarifas_ext" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabTarifasExt">💰 Tarifas externas</button>
-        <button data-tab="cumplimiento" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCumplimiento">⚖️ Permisología</button>
+        <button data-tab="cumplimiento" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCumplimiento">📋 Trámites</button>
         <button data-tab="herramientas_ext" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabHerramientasExt">🌐 Herramientas ext.</button>
         <button data-tab="facturacion_grupo" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabFacturacionGrupo">💰 Facturación grupo</button>
         <button data-tab="vales_portal" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabValesPortal">📊 Vales portal</button>
@@ -3756,8 +3756,8 @@
       <div class="mb-3 rounded-2xl overflow-hidden" style="background:linear-gradient(135deg,#064e3b,#059669)">
         <div class="px-5 py-4 flex items-center justify-between flex-wrap gap-3 text-white">
           <div>
-            <div class="text-xl font-bold flex items-center gap-2">⚖️ Permisología</div>
-            <div class="text-xs opacity-85">Tus permisos por ley y artículo · vos elegís · Diego te ayuda</div>
+            <div class="text-xl font-bold flex items-center gap-2">📋 Trámites</div>
+            <div class="text-xs opacity-85">Tus trámites por comuna · vos elegís · Diego te ayuda</div>
           </div>
           <div class="flex items-center gap-2">
             <button type="button" id="permisologia_guia_btn" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1" title="Abrir guía flotante (arrastrable + redimensionable)">📚 Cómo usar</button>
@@ -3828,6 +3828,36 @@
         <div id="cump_mis_lista" class="space-y-1"></div>
       </div>
 
+      <!-- Selector COMUNAS (chips multi-select) · MVP visual 08-jun -->
+      <div class="mb-3 bg-white border border-stone-200 rounded-lg p-3">
+        <div class="text-xs font-bold text-stone-700 mb-2 uppercase tracking-wide">📍 Comunas · elegí una o varias para comparar procesos similares</div>
+        <div id="permisologia_comunas_chips" class="flex flex-wrap gap-2">
+          <button type="button" data-comuna="" class="permisologia-chip px-3 py-1.5 bg-emerald-600 text-white rounded-full text-xs font-bold hover:bg-emerald-700 transition">✓ Todas</button>
+          <button type="button" data-comuna="cerrillos" class="permisologia-chip px-3 py-1.5 bg-white border-2 border-emerald-200 text-stone-700 rounded-full text-xs font-semibold hover:bg-emerald-50 transition">Cerrillos</button>
+          <button type="button" data-comuna="maipu" class="permisologia-chip px-3 py-1.5 bg-white border-2 border-blue-200 text-stone-700 rounded-full text-xs font-semibold hover:bg-blue-50 transition">Maipú</button>
+          <button type="button" data-comuna="talca" class="permisologia-chip px-3 py-1.5 bg-white border-2 border-amber-200 text-stone-700 rounded-full text-xs font-semibold hover:bg-amber-50 transition">Talca</button>
+          <button type="button" data-comuna="puerto_montt" class="permisologia-chip px-3 py-1.5 bg-white border-2 border-indigo-200 text-stone-700 rounded-full text-xs font-semibold hover:bg-indigo-50 transition">Puerto Montt</button>
+        </div>
+      </div>
+
+      <!-- Selector TIPO TRÁMITE (provisorio · filtro frontend hasta BD post-freeze) -->
+      <div class="mb-3 bg-white border border-stone-200 rounded-lg p-3">
+        <div class="text-xs font-bold text-stone-700 mb-2 uppercase tracking-wide flex items-center justify-between flex-wrap gap-2">
+          <span>📑 Tipo de trámite</span>
+          <span class="text-[10px] font-normal text-stone-400 normal-case">post-freeze 15-jun: tipos se guardan en BD + auto-detección</span>
+        </div>
+        <div id="permisologia_tipos_chips" class="flex flex-wrap gap-2">
+          <button type="button" data-tipo="" class="permisologia-tipo-chip px-3 py-1.5 bg-emerald-600 text-white rounded-full text-xs font-bold">✓ Todos</button>
+          <button type="button" data-tipo="calificacion_tecnica" class="permisologia-tipo-chip px-3 py-1.5 bg-white border border-stone-300 text-stone-700 rounded-full text-xs">Calificación Técnica</button>
+          <button type="button" data-tipo="patente_provisoria" class="permisologia-tipo-chip px-3 py-1.5 bg-white border border-stone-300 text-stone-700 rounded-full text-xs">Patente Provisoria</button>
+          <button type="button" data-tipo="patente_definitiva" class="permisologia-tipo-chip px-3 py-1.5 bg-white border border-stone-300 text-stone-700 rounded-full text-xs">Patente Definitiva</button>
+          <button type="button" data-tipo="resolucion_sanitaria" class="permisologia-tipo-chip px-3 py-1.5 bg-white border border-stone-300 text-stone-700 rounded-full text-xs">Resolución Sanitaria</button>
+          <button type="button" data-tipo="resolucion_transporte_rnp" class="permisologia-tipo-chip px-3 py-1.5 bg-white border border-stone-300 text-stone-700 rounded-full text-xs">Resolución Transporte RNP</button>
+          <button type="button" id="permisologia_tipo_nuevo" class="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 border border-dashed border-stone-400 text-stone-600 rounded-full text-xs font-bold">+ Agregar tipo</button>
+        </div>
+      </div>
+
+      <!-- Filtros secundarios (estado · ley · texto) -->
       <div class="flex gap-2 mb-3 flex-wrap">
         <select id="cump_filtro_ley" class="px-2 py-1 border border-stone-300 rounded text-sm">
           <option value="">Todas las leyes</option>
@@ -3840,13 +3870,9 @@
           <option value="atrasada">Atrasada</option>
           <option value="no_aplica">No aplica</option>
         </select>
-        <select id="cump_filtro_sucursal" class="px-2 py-1 border border-stone-300 rounded text-sm">
+        <!-- Filtro sucursal escondido (lo reemplaza chips Comunas arriba) -->
+        <select id="cump_filtro_sucursal" class="hidden">
           <option value="">Todas las sucursales</option>
-          <option value="__transversal__">Solo transversales (sin sucursal)</option>
-          <option value="cerrillos">Cerrillos</option>
-          <option value="maipu">Maipu</option>
-          <option value="talca">Talca</option>
-          <option value="puerto_montt">Puerto Montt</option>
         </select>
         <input id="cump_filtro_texto" type="search" placeholder="Buscar en notas o responsable..." class="flex-1 px-2 py-1 border border-stone-300 rounded text-sm min-w-48">
       </div>
@@ -15552,6 +15578,140 @@ document.addEventListener('DOMContentLoaded', () => {
         else window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 50);
     });
+
+    // Chips COMUNAS · multi-select · 08-jun
+    (function setupComunaChips() {
+      var cont = document.getElementById('permisologia_comunas_chips');
+      if (!cont) return;
+      var seleccionadas = new Set(); // vacío = todas
+      function paintChips() {
+        cont.querySelectorAll('.permisologia-chip').forEach(function (b) {
+          var c = b.dataset.comuna || '';
+          var sel = (c === '' && seleccionadas.size === 0) || seleccionadas.has(c);
+          if (sel) {
+            b.className = 'permisologia-chip px-3 py-1.5 bg-emerald-600 text-white rounded-full text-xs font-bold hover:bg-emerald-700 transition';
+            if (!b.textContent.startsWith('✓')) b.textContent = '✓ ' + b.textContent.replace(/^✓ /,'');
+          } else {
+            b.className = 'permisologia-chip px-3 py-1.5 bg-white border-2 border-stone-300 text-stone-700 rounded-full text-xs font-semibold hover:bg-stone-50 transition';
+            b.textContent = b.textContent.replace(/^✓ /,'');
+          }
+        });
+        // Aplicar filtro al select existente (compatibilidad con renderCumplimiento)
+        var sel = document.getElementById('cump_filtro_sucursal');
+        if (sel) {
+          if (seleccionadas.size === 0) sel.value = '';
+          else if (seleccionadas.size === 1) sel.value = Array.from(seleccionadas)[0];
+          else sel.value = ''; // multi-select no soportado por el filtro original · fallback "todas"
+          sel.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        // Filtro multi-comuna real
+        window._permisologiaComunaSet = seleccionadas;
+        if (typeof renderCumplimiento === 'function') renderCumplimiento();
+      }
+      cont.addEventListener('click', function (e) {
+        var btn = e.target.closest('.permisologia-chip');
+        if (!btn) return;
+        var c = btn.dataset.comuna || '';
+        if (c === '') { seleccionadas.clear(); }
+        else {
+          if (seleccionadas.has(c)) seleccionadas.delete(c);
+          else seleccionadas.add(c);
+        }
+        paintChips();
+      });
+      paintChips();
+    })();
+
+    // Chips TIPO TRÁMITE · filtro frontend provisorio · 08-jun
+    (function setupTipoChips() {
+      var cont = document.getElementById('permisologia_tipos_chips');
+      if (!cont) return;
+      var tipoActivo = '';
+      function paint() {
+        cont.querySelectorAll('.permisologia-tipo-chip').forEach(function (b) {
+          var t = b.dataset.tipo || '';
+          var sel = (t === tipoActivo);
+          if (sel) b.className = 'permisologia-tipo-chip px-3 py-1.5 bg-emerald-600 text-white rounded-full text-xs font-bold';
+          else b.className = 'permisologia-tipo-chip px-3 py-1.5 bg-white border border-stone-300 text-stone-700 rounded-full text-xs hover:bg-stone-50';
+        });
+        window._permisologiaTipoActivo = tipoActivo;
+        if (typeof renderCumplimiento === 'function') renderCumplimiento();
+      }
+      cont.addEventListener('click', function (e) {
+        var btn = e.target.closest('.permisologia-tipo-chip');
+        if (!btn) return;
+        tipoActivo = btn.dataset.tipo || '';
+        paint();
+      });
+      document.getElementById('permisologia_tipo_nuevo')?.addEventListener('click', function () {
+        var nuevo = prompt('Nombre del nuevo tipo de trámite (ej: "Permiso Bombero"):');
+        if (!nuevo) return;
+        var slug = nuevo.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'permisologia-tipo-chip px-3 py-1.5 bg-white border border-stone-300 text-stone-700 rounded-full text-xs';
+        btn.dataset.tipo = slug;
+        btn.textContent = nuevo;
+        cont.insertBefore(btn, document.getElementById('permisologia_tipo_nuevo'));
+        alert('Tipo "' + nuevo + '" agregado solo en esta pantalla. Para que se guarde permanente y se auto-asigne a obligaciones, Pablo lo conecta a BD post-freeze 15-jun.');
+      });
+      paint();
+    })();
+
+    // Sidebar contextual: cuando silo Permisología activo, ocultar pestañas no-Trámites · 08-jun
+    function permisologiaApplyContextualSidebar() {
+      try {
+        var siloActivo = (typeof currentSilo !== 'undefined' && currentSilo) || '';
+        var enPermisologia = (siloActivo === '05');
+        document.querySelectorAll('button[data-tab]').forEach(function (b) {
+          var tab = b.dataset.tab;
+          if (enPermisologia) {
+            // Mantener visible: solo cumplimiento (Trámites) + inicio/portada/admin esencial
+            var keep = ['cumplimiento', 'inicio', 'portada', 'admin', 'manual'];
+            if (keep.indexOf(tab) === -1) b.classList.add('hidden');
+            else b.classList.remove('hidden');
+          } else {
+            b.classList.remove('hidden');
+          }
+        });
+      } catch (_) {}
+    }
+    // Hookear cambio de silo + carga inicial
+    var _origApplySiloTabs = window.applySiloTabs;
+    if (typeof _origApplySiloTabs === 'function') {
+      window.applySiloTabs = function () {
+        var r = _origApplySiloTabs.apply(this, arguments);
+        permisologiaApplyContextualSidebar();
+        return r;
+      };
+    }
+    document.getElementById('silo-selector')?.addEventListener('change', function () {
+      setTimeout(permisologiaApplyContextualSidebar, 100);
+    });
+    setTimeout(permisologiaApplyContextualSidebar, 2000);
+
+    // Hook al filtro real: filtrar por multi-comuna y por tipo activo
+    var _origRenderCumplimiento = renderCumplimiento;
+    renderCumplimiento = function () {
+      _origRenderCumplimiento.apply(this, arguments);
+      try {
+        var comunaSet = window._permisologiaComunaSet;
+        var tipo = window._permisologiaTipoActivo;
+        if ((comunaSet && comunaSet.size > 0) || tipo) {
+          var lista = document.getElementById('cump_lista');
+          if (!lista) return;
+          var items = lista.querySelectorAll('[data-cump-id]');
+          items.forEach(function (it) {
+            var row = (_cumpRows || []).find(function (r) { return String(r.id) === String(it.dataset.cumpId); });
+            if (!row) return;
+            var matchComuna = !comunaSet || comunaSet.size === 0 || comunaSet.has(String(row.sucursal_id || ''));
+            var matchTipo = !tipo; // sin BD aún, no se aplica · queda preparado
+            if (!(matchComuna && matchTipo)) it.style.display = 'none';
+            else it.style.display = '';
+          });
+        }
+      } catch (_) {}
+    };
 
     // Modal flotante guía · drag + maximize + open/close · 08-jun
     (function setupGuiaModal() {
