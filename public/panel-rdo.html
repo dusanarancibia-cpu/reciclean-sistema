@@ -792,6 +792,14 @@
             <span class="v4-emoji" aria-hidden="true">⚖️</span>
             Cumplimiento
           </a>
+          <a href="#" data-v4-tab="herramientas_ext" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🌐</span>
+            Herramientas ext.
+          </a>
+          <a href="#" data-v4-tab="facturacion_grupo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">💰</span>
+            Facturación grupo
+          </a>
         </div>
       </details>
 
@@ -1009,6 +1017,8 @@
         <button data-tab="firmas_pend" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabFirmasPend">📝 Firmas pendientes</button>
         <button data-tab="tarifas_ext" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabTarifasExt">💰 Tarifas externas</button>
         <button data-tab="cumplimiento" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCumplimiento">⚖️ Cumplimiento</button>
+        <button data-tab="herramientas_ext" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabHerramientasExt">🌐 Herramientas ext.</button>
+        <button data-tab="facturacion_grupo" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabFacturacionGrupo">💰 Facturación grupo</button>
         <button data-tab="vales_portal" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabValesPortal">📊 Vales portal</button>
         <button data-tab="piloto_pwa"  class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabPilotoPwa">📲 Piloto PWA</button>
         <button data-tab="mis_archivos" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabMisArchivos">📦 Mis archivos</button>
@@ -3854,6 +3864,80 @@
       <div id="cump_lista" class="space-y-2"></div>
     </section>
 
+    <!-- Tab Herramientas externas · D-FACTURACION-ETAPA-1 FASE 5 · PC2 Pablo 06-jun -->
+    <section id="tabHerramientasExt" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">🌐 Herramientas externas</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Registro maestro de las N herramientas externas del grupo Reciclean-Farex. Etapa 1: facturacion.cl · SII · CRM Impulsa.</p>
+        </div>
+        <button id="hext_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="hext_kpi_total">0</div>
+          <div class="text-xs text-stone-500">Total herramientas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-emerald-700" id="hext_kpi_activas">0</div>
+          <div class="text-xs text-stone-500">✅ Activas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-amber-700" id="hext_kpi_pendientes">0</div>
+          <div class="text-xs text-stone-500">⏳ Pendientes arranque</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-sky-700" id="hext_kpi_empresas">0</div>
+          <div class="text-xs text-stone-500">🏢 Empresas activas</div>
+        </div>
+      </div>
+
+      <div id="hext_lista" class="space-y-2">
+        <div class="text-xs text-stone-400 italic py-4 text-center">Cargando...</div>
+      </div>
+    </section>
+
+    <!-- Tab Facturacion grupo · D-FACTURACION-ETAPA-1 FASE 6 · PC2 Pablo 06-jun -->
+    <section id="tabFacturacionGrupo" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">💰 Facturación grupo</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Facturas multi-empresa multi-herramienta. Filtra según tu perfil. Marcar privada solo Dusan / Dyana / Pablo.</p>
+        </div>
+        <div class="flex gap-2 items-center flex-wrap">
+          <label class="text-xs flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" id="fg_solo_no_pagadas" class="w-4 h-4 accent-amber-600">
+            <span>Solo no pagadas</span>
+          </label>
+          <button id="fg_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="fg_kpi_total">0</div>
+          <div class="text-xs text-stone-500">Visibles para vos</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-amber-700" id="fg_kpi_no_pagadas">0</div>
+          <div class="text-xs text-stone-500">⏳ No pagadas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-violet-700" id="fg_kpi_privadas">0</div>
+          <div class="text-xs text-stone-500">🔒 Privadas (tuyas)</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-emerald-700" id="fg_kpi_monto">$0</div>
+          <div class="text-xs text-stone-500">Σ Total visible</div>
+        </div>
+      </div>
+
+      <div id="fg_lista" class="space-y-2">
+        <div class="text-xs text-stone-400 italic py-4 text-center">Cargando...</div>
+      </div>
+    </section>
+
     <!-- Tab Vales portal · G42 · D-PESAJES-DIARIA-001 · PC2 Pablo 03-jun PM -->
     <section id="tabValesPortal" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -4410,7 +4494,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -5061,6 +5145,8 @@ const TAB_SECTION_MAP = {
   firmas_pend: 'tabFirmasPend',
   tarifas_ext: 'tabTarifasExt',
   cumplimiento: 'tabCumplimiento',
+  herramientas_ext: 'tabHerramientasExt',
+  facturacion_grupo: 'tabFacturacionGrupo',
   vales_portal: 'tabValesPortal',
   piloto_pwa: 'tabPilotoPwa',
   mis_archivos: 'tabMisArchivos',
@@ -15242,6 +15328,155 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+
+// Tab Herramientas externas + Facturacion grupo · D-FACTURACION-ETAPA-1 · PC2 Pablo 06-jun
+(function () {
+  function $$(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function fmtMoney(n) { if (n == null) return '—'; try { return '$' + Number(n).toLocaleString('es-CL', { maximumFractionDigits: 0 }); } catch (_) { return '$' + n; } }
+  function fmtFecha(d) { if (!d) return '—'; try { return new Date(d).toLocaleDateString('es-CL'); } catch (_) { return d; } }
+  function badgeEstadoHext(estado) {
+    var map = {
+      activo: 'bg-emerald-100 text-emerald-800',
+      pendiente_arranque: 'bg-amber-100 text-amber-800',
+      pausado: 'bg-stone-200 text-stone-700',
+      fallando: 'bg-red-100 text-red-800'
+    };
+    var cls = map[estado] || 'bg-stone-100 text-stone-700';
+    return '<span class="inline-block ' + cls + ' px-2 py-0.5 rounded text-xs">' + esc(estado || '—') + '</span>';
+  }
+
+  async function loadHerramientasExt() {
+    var lista = $$('hext_lista');
+    if (!lista || !window.sb) return;
+    try {
+      var resp = await sb.rpc('herramientas_externas_estado');
+      if (resp.error) throw resp.error;
+      var rows = resp.data || [];
+      var activas = rows.filter(function (r) { return r.estado === 'activo'; }).length;
+      var pendientes = rows.filter(function (r) { return r.estado === 'pendiente_arranque'; }).length;
+      var empresasActivas = rows[0] ? Number(rows[0].empresas_activas || 0) : 0;
+      if ($$('hext_kpi_total')) $$('hext_kpi_total').textContent = rows.length;
+      if ($$('hext_kpi_activas')) $$('hext_kpi_activas').textContent = activas;
+      if ($$('hext_kpi_pendientes')) $$('hext_kpi_pendientes').textContent = pendientes;
+      if ($$('hext_kpi_empresas')) $$('hext_kpi_empresas').textContent = empresasActivas;
+      if (!rows.length) {
+        lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Sin herramientas configuradas.</div>';
+        return;
+      }
+      lista.innerHTML = rows.map(function (r) {
+        var ultima = r.ultima_corrida ? new Date(r.ultima_corrida).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }) : 'sin corrida';
+        return '<div class="bg-white border border-stone-200 rounded p-3">'
+          + '<div class="flex items-start justify-between gap-2 flex-wrap">'
+          + '<div class="flex-1 min-w-0">'
+          + '<div class="font-semibold text-sm text-stone-800">' + esc(r.nombre) + ' <span class="text-xs text-stone-400 font-normal">· prioridad ' + esc(r.prioridad_orden) + '</span></div>'
+          + '<div class="text-xs text-stone-500 mt-0.5">' + esc(r.codigo) + ' · ' + esc(r.tipo || '—') + ' · ' + esc(r.metodo_conexion || '—') + (r.responsable_pc ? ' · ' + esc(r.responsable_pc) : '') + '</div>'
+          + '<div class="text-xs text-stone-600 mt-1">⏱ ' + esc(r.frecuencia_cron || '—') + ' · última corrida: ' + esc(ultima) + '</div>'
+          + '</div>'
+          + '<div>' + badgeEstadoHext(r.estado) + '</div>'
+          + '</div>'
+          + (r.notas ? '<div class="text-xs text-stone-600 italic mt-1">' + esc(r.notas) + '</div>' : '')
+          + '</div>';
+      }).join('');
+    } catch (e) {
+      lista.innerHTML = '<div class="text-xs text-red-600 py-4 text-center">Error: ' + esc(e && e.message ? e.message : e) + '</div>';
+    }
+  }
+
+  var _fgRows = [];
+
+  async function loadFacturacionGrupo() {
+    var lista = $$('fg_lista');
+    if (!lista || !window.sb) return;
+    try {
+      var soloNoPagadas = !!($$('fg_solo_no_pagadas') && $$('fg_solo_no_pagadas').checked);
+      var resp = await sb.rpc('facturas_listar_visibles', { p_limit: 200, p_offset: 0, p_solo_no_pagadas: soloNoPagadas });
+      if (resp.error) throw resp.error;
+      _fgRows = resp.data || [];
+      renderFacturacionGrupo();
+    } catch (e) {
+      lista.innerHTML = '<div class="text-xs text-red-600 py-4 text-center">Error: ' + esc(e && e.message ? e.message : e) + '</div>';
+    }
+  }
+
+  function renderFacturacionGrupo() {
+    var lista = $$('fg_lista');
+    if (!lista) return;
+    var rows = _fgRows;
+    var email = '';
+    try { email = (window.currentUser && window.currentUser.email) || ''; } catch (_) {}
+    email = String(email || '').toLowerCase();
+    var total = rows.length;
+    var noPag = rows.filter(function (r) { return !r.pagada; }).length;
+    var privadasTuyas = rows.filter(function (r) { return r.privada && String(r.privada_marcada_por || '').toLowerCase() === email; }).length;
+    var suma = rows.reduce(function (acc, r) { return acc + (Number(r.monto_total) || 0); }, 0);
+    if ($$('fg_kpi_total')) $$('fg_kpi_total').textContent = total;
+    if ($$('fg_kpi_no_pagadas')) $$('fg_kpi_no_pagadas').textContent = noPag;
+    if ($$('fg_kpi_privadas')) $$('fg_kpi_privadas').textContent = privadasTuyas;
+    if ($$('fg_kpi_monto')) $$('fg_kpi_monto').textContent = fmtMoney(suma);
+    if (!rows.length) {
+      lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Sin facturas visibles para tu perfil. Cuando el scraper levante la primera tanda, aparecen acá.</div>';
+      return;
+    }
+    lista.innerHTML = rows.map(function (r) {
+      var puedeMarcar = String(r.privada_marcada_por || '').toLowerCase() === email
+        || (window.PANEL_ADMIN_EMAILS && window.PANEL_ADMIN_EMAILS.indexOf(email) >= 0);
+      var badgeCat = r.categoria_auto
+        ? '<span class="inline-block bg-sky-100 text-sky-800 px-2 py-0.5 rounded text-[10px] uppercase">' + esc(r.categoria_auto) + '</span>'
+        : '';
+      var badgePagada = r.pagada
+        ? '<span class="inline-block bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px]">pagada</span>'
+        : '<span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px]">no pagada</span>';
+      var badgePrivada = r.privada
+        ? '<span class="inline-block bg-violet-100 text-violet-800 px-2 py-0.5 rounded text-[10px]">🔒 privada</span>'
+        : '';
+      return '<div class="bg-white border border-stone-200 rounded p-3" data-id="' + r.id + '">'
+        + '<div class="flex items-start justify-between gap-2 flex-wrap">'
+        + '<div class="flex-1 min-w-0">'
+        + '<div class="font-semibold text-sm text-stone-800 truncate">' + esc(r.proveedor_nombre || r.proveedor_rut || 'sin proveedor') + ' · folio ' + esc(r.folio || '—') + '</div>'
+        + '<div class="text-xs text-stone-500 mt-0.5">' + esc(r.tipo_documento || 'factura') + ' · ' + fmtFecha(r.fecha_emision) + (r.proveedor_rut ? ' · ' + esc(r.proveedor_rut) : '') + '</div>'
+        + '<div class="flex gap-1 mt-1 flex-wrap">' + badgeCat + badgePagada + badgePrivada + '</div>'
+        + '</div>'
+        + '<div class="text-right whitespace-nowrap">'
+        + '<div class="font-bold text-sm text-stone-800">' + esc(fmtMoney(r.monto_total)) + '</div>'
+        + (r.iva ? '<div class="text-[10px] text-stone-400">IVA ' + esc(fmtMoney(r.iva)) + '</div>' : '')
+        + '</div>'
+        + '</div>'
+        + '<div class="mt-2 flex gap-1 flex-wrap">'
+        + '<button class="fg-toggle-privada text-[10px] px-2 py-0.5 ' + (r.privada ? 'bg-violet-100 text-violet-800' : 'bg-stone-100 text-stone-700') + ' rounded" data-id="' + r.id + '" data-privada="' + (r.privada ? '0' : '1') + '">'
+        + (r.privada ? (puedeMarcar ? '🔓 Quitar privada' : '🔒 privada (tu marca)') : '🔒 Marcar privada')
+        + '</button>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  async function togglePrivada(id, nuevoVal) {
+    try {
+      var resp = await sb.rpc('factura_marcar_privada', { p_factura_id: Number(id), p_privada: nuevoVal });
+      if (resp.error) throw resp.error;
+      loadFacturacionGrupo();
+    } catch (e) {
+      alert('No se pudo cambiar privacidad: ' + (e.message || e));
+    }
+  }
+
+  function initHextFg() {
+    document.querySelector('button[data-tab="herramientas_ext"]')?.addEventListener('click', function () { setTimeout(loadHerramientasExt, 100); });
+    document.querySelector('a[data-v4-tab="herramientas_ext"]')?.addEventListener('click', function () { setTimeout(loadHerramientasExt, 100); });
+    $$('hext_refresh')?.addEventListener('click', loadHerramientasExt);
+
+    document.querySelector('button[data-tab="facturacion_grupo"]')?.addEventListener('click', function () { setTimeout(loadFacturacionGrupo, 100); });
+    document.querySelector('a[data-v4-tab="facturacion_grupo"]')?.addEventListener('click', function () { setTimeout(loadFacturacionGrupo, 100); });
+    $$('fg_refresh')?.addEventListener('click', loadFacturacionGrupo);
+    $$('fg_solo_no_pagadas')?.addEventListener('change', loadFacturacionGrupo);
+    $$('fg_lista')?.addEventListener('click', function (e) {
+      var btn = e.target.closest('.fg-toggle-privada');
+      if (btn) togglePrivada(btn.dataset.id, btn.dataset.privada === '1');
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHextFg); else initHextFg();
 })();
 
 // Tab Vales Portal · G42 · D-PESAJES-DIARIA-001 · PC2 Pablo 03-jun PM
