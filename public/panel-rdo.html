@@ -15708,12 +15708,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('button[data-tab]').forEach(function (b) {
       b.addEventListener('click', function () { setTimeout(permisologiaApplyContextualSidebar, 30); });
     });
-    // MutationObserver: si applySiloTabs reescribe display, lo volvemos a aplicar
-    var sidebarNav = document.querySelector('nav, [role="tablist"]') || document.body;
-    try {
-      var mo = new MutationObserver(function () { permisologiaApplyContextualSidebar(); });
-      mo.observe(sidebarNav, { attributes: true, subtree: true, attributeFilter: ['class','style'] });
-    } catch (_) {}
+    // MutationObserver REMOVIDO 08-jun 15:00 · causaba loop infinito (page freeze)
+    // En su lugar: re-aplicar solo en eventos discretos (click tab + cambio silo + carga inicial)
     // Carga inicial
     setTimeout(permisologiaApplyContextualSidebar, 1500);
     setTimeout(permisologiaApplyContextualSidebar, 3500);
