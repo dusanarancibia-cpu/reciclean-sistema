@@ -15127,6 +15127,15 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (!_sessionEmail) _sessionEmail = await resolveSessionEmail();
       var resp = await sb.schema('panel').from('cumplimiento_legal').select('*').order('ley_id').order('articulo_id');
+      // Enrich con títulos amigables desde articulos_ley · 08-jun MVP
+      try {
+        var titRes = await sb.schema('panel').from('articulos_ley').select('ley_id,articulo,titulo');
+        if (titRes.data) {
+          var titMap = {};
+          titRes.data.forEach(function (t) { titMap[t.ley_id + '|' + t.articulo] = t.titulo; });
+          (resp.data || []).forEach(function (r) { r.titulo = titMap[r.ley_id + '|' + r.articulo_id] || null; });
+        }
+      } catch (_) {}
       if (resp.error) throw resp.error;
       _cumpRows = resp.data || [];
       poblarFiltroLey();
@@ -15199,10 +15208,12 @@ document.addEventListener('DOMContentLoaded', () => {
       var badgeAprob = r.requiere_aprobacion_gerencia
         ? '<span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px]" title="Requiere aprobacion gerencia antes de marcar cumplida">requiere gerencia</span>'
         : '';
+      var tituloAmigable = r.titulo || (esc(r.ley_id) + ' · Art. ' + esc(r.articulo_id));
       return '<div class="bg-white border border-stone-200 rounded p-3" data-id="' + r.id + '">'
         + '<div class="flex items-start justify-between gap-2 flex-wrap">'
         + '<div class="flex-1 min-w-0">'
-        + '<div class="font-semibold text-sm text-stone-800">' + esc(r.ley_id) + ' · Art. ' + esc(r.articulo_id) + '</div>'
+        + '<div class="font-semibold text-sm text-stone-800">' + esc(tituloAmigable) + '</div>'
+        + '<div class="text-[10px] text-stone-400 mt-0.5">' + esc(r.ley_id) + ' · Art. ' + esc(r.articulo_id) + '</div>'
         + '<div class="text-xs text-stone-500 mt-0.5">Responsable: ' + esc(r.responsable || '—') + ' · Verificado: ' + esc(fechaVer) + '</div>'
         + '<div class="flex gap-1 mt-1 flex-wrap">' + badgeSuc + badgeAprob + '</div>'
         + '</div>'
