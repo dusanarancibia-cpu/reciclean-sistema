@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expedientes · mesa de control general · Reciclean-Farex</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--primary:#059669;--dark:#064e3b;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--cream:#fef3c7;--amber:#d97706;--red:#dc2626;--blue:#2563eb;--bg:#f3f4f6}
+*{box-sizing:border-box}
+body{font-family:'Inter',sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.5}
+.toolbar{position:sticky;top:0;background:#111827;color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;z-index:10;flex-wrap:wrap;gap:12px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.toolbar h1{margin:0;font-size:16px;font-weight:800;letter-spacing:-.02em}
+.toolbar .info{font-size:13px;color:#9ca3af}
+.toolbar button{background:#059669;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px}
+.toolbar button.secondary{background:transparent;border:1px solid #4b5563}
+.container{max-width:1240px;margin:0 auto;padding:24px}
+.intro{background:#fff;border-radius:12px;padding:20px 24px;margin-bottom:20px;border:1px solid var(--border)}
+.intro h2{margin:0 0 6px;color:var(--dark);font-size:18px}
+.intro p{margin:0;color:var(--muted);font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.kpi .n{font-size:28px;font-weight:900;color:var(--dark);letter-spacing:-.03em;line-height:1}
+.kpi .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:6px}
+.kpi.alerta .n{color:var(--amber)}
+.kpi.rojo .n{color:var(--red)}
+.kpi.ok .n{color:#10b981}
+.matriz-wrap{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px}
+.matriz-wrap h3{margin:0;padding:16px 20px;background:#f9fafb;border-bottom:1px solid var(--border);font-size:14px;color:var(--dark);font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:12px;background:#f9fafb;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;position:sticky;top:64px}
+td{padding:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover{background:#fefce8;cursor:pointer}
+.codigo{font-family:ui-monospace,SFMono-Regular,monospace;font-size:11px;color:var(--muted)}
+.suc{font-weight:700;color:var(--dark)}
+.tipo{display:inline-block;background:#e0e7ff;color:#3730a3;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.pill.ok{background:#d1fae5;color:#065f46}
+.pill.alerta{background:#fef3c7;color:#92400e}
+.pill.rojo{background:#fee2e2;color:#991b1b}
+.pill.muted{background:#e5e7eb;color:#6b7280}
+.progressbar{display:flex;align-items:center;gap:8px}
+.bar{width:80px;height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden}
+.bar > div{height:100%;background:#10b981;transition:width .3s}
+.bar.amarillo > div{background:#f59e0b}
+.bar.rojo > div{background:#ef4444}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.dot.verde{background:#10b981}.dot.amarillo{background:#f59e0b}.dot.rojo{background:#ef4444}.dot.azul{background:#3b82f6}.dot.muted{background:#d1d5db}
+.muted{color:var(--muted);font-style:italic}
+.action{text-align:right}
+.action a{display:inline-block;background:var(--primary);color:#fff;padding:5px 12px;border-radius:5px;text-decoration:none;font-size:12px;font-weight:600}
+.action a:hover{background:#047857}
+.loading{padding:60px;text-align:center;color:var(--muted)}
+.error{padding:40px;color:var(--red);background:#fee2e2;border-radius:8px;font-family:monospace;font-size:13px}
+.filtros{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;background:#fff;padding:12px;border-radius:8px;border:1px solid var(--border)}
+.filtros button{background:#fff;border:1px solid var(--border);color:#374151;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600}
+.filtros button.active{background:var(--dark);color:#fff;border-color:var(--dark)}
+.filtros span{font-size:12px;color:var(--muted);align-self:center;margin-right:6px;font-weight:600}
+@media (max-width:768px){.kpis{grid-template-columns:repeat(2,1fr)}.toolbar{padding:10px 14px}.container{padding:14px}th,td{padding:8px}}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <div>
+    <h1>📂 Expedientes · mesa de control general</h1>
+    <div class="info">4 sucursales × 5 tipos de trámite</div>
+  </div>
+  <div>
+    <button class="secondary" onclick="window.location.href='/panel-rdo.html'">← Panel</button>
+    <button onclick="cargar()">🔄 Refrescar</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="intro">
+    <h2>Vista global de permisología</h2>
+    <p>Cada fila es un expediente (sucursal + tipo de trámite). Click para abrir su mesa de control detallada · agregar gestiones · imprimir el expediente completo para presentar a la autoridad.</p>
+  </div>
+
+  <div class="kpis" id="kpis">
+    <div class="kpi"><div class="n" id="k-total">—</div><div class="lbl">Expedientes</div></div>
+    <div class="kpi ok"><div class="n" id="k-conobls">—</div><div class="lbl">Con docs cargados</div></div>
+    <div class="kpi alerta"><div class="n" id="k-vacios">—</div><div class="lbl">Sin docs · falta info</div></div>
+    <div class="kpi rojo"><div class="n" id="k-vencidos">—</div><div class="lbl">Plazos &lt; 14 días</div></div>
+    <div class="kpi"><div class="n" id="k-gestiones">—</div><div class="lbl">Gestiones registradas</div></div>
+  </div>
+
+  <div class="filtros">
+    <span>Sucursal:</span>
+    <button data-suc="" class="active" onclick="filtrar('suc',this)">Todas</button>
+    <button data-suc="cerrillos" onclick="filtrar('suc',this)">Cerrillos</button>
+    <button data-suc="maipu" onclick="filtrar('suc',this)">Maipú</button>
+    <button data-suc="talca" onclick="filtrar('suc',this)">Talca</button>
+    <button data-suc="puerto_montt" onclick="filtrar('suc',this)">Puerto Montt</button>
+  </div>
+  <div class="filtros">
+    <span>Tipo:</span>
+    <button data-tip="" class="active" onclick="filtrar('tip',this)">Todos</button>
+    <button data-tip="calificacion_tecnica" onclick="filtrar('tip',this)">Calificación Técnica</button>
+    <button data-tip="patente_provisoria" onclick="filtrar('tip',this)">Patente Provisoria</button>
+    <button data-tip="patente_definitiva" onclick="filtrar('tip',this)">Patente Definitiva</button>
+    <button data-tip="resolucion_sanitaria" onclick="filtrar('tip',this)">Resolución Sanitaria</button>
+    <button data-tip="resolucion_transporte_rnp" onclick="filtrar('tip',this)">Transporte RNP</button>
+  </div>
+
+  <div class="matriz-wrap">
+    <h3>Matriz · 20 expedientes</h3>
+    <div id="tabla"><div class="loading">Cargando expedientes...</div></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://eknmtsrtfkzroxnovfqn.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbm10c3J0Zmt6cm94bm92ZnFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDY2ODgsImV4cCI6MjA5MDk4MjY4OH0.8Y4N0lw3DFN3Y8-R6ID7t_LAfgHWDM5N-oa4Ji9bncg';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+const SUC = {cerrillos:'Cerrillos', maipu:'Maipú', talca:'Talca (Maule)', puerto_montt:'Puerto Montt'};
+const TIP = {calificacion_tecnica:'Calif. Técnica', patente_provisoria:'Pat. Provisoria', patente_definitiva:'Pat. Definitiva', resolucion_sanitaria:'Res. Sanitaria', resolucion_transporte_rnp:'Transporte RNP'};
+
+let _data = [];
+let _filtros = {suc:'', tip:''};
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function fmtDia(d){if(!d)return '—';try{return new Date(d).toLocaleDateString('es-CL');}catch(_){return String(d);}}
+
+function diasAPlazo(d){if(!d)return null;const ms=new Date(d).getTime()-Date.now();return Math.floor(ms/86400000);}
+
+function semaforoFila(e){
+  if (e.sucursal_id === 'puerto_montt') return 'muted';
+  if (e.n_obls === 0) return 'rojo';
+  const pct = e.n_obls > 0 ? e.n_archivos / e.n_obls : 0;
+  const dias = diasAPlazo(e.plazo_mas_urgente);
+  if (pct >= 1) return 'verde';
+  if (dias !== null && dias <= 14) return 'rojo';
+  if (pct > 0) return 'amarillo';
+  return 'azul';
+}
+
+async function cargar(){
+  document.getElementById('tabla').innerHTML = '<div class="loading">Cargando...</div>';
+  try{
+    const {data,error} = await sb.schema('panel').rpc('expedientes_listar');
+    if(error) throw error;
+    _data = data || [];
+    renderKpis();
+    renderTabla();
+  }catch(err){
+    document.getElementById('tabla').innerHTML = '<div class="error">Error: '+esc(err.message||JSON.stringify(err))+'</div>';
+  }
+}
+
+function renderKpis(){
+  const total = _data.length;
+  const conobls = _data.filter(e => e.n_obls > 0).length;
+  const vacios = total - conobls;
+  const vencidos = _data.filter(e => {
+    const d = diasAPlazo(e.plazo_mas_urgente);
+    return d !== null && d <= 14;
+  }).length;
+  const gestiones = _data.reduce((s,e)=>s+(e.n_gestiones||0), 0);
+  document.getElementById('k-total').textContent = total;
+  document.getElementById('k-conobls').textContent = conobls;
+  document.getElementById('k-vacios').textContent = vacios;
+  document.getElementById('k-vencidos').textContent = vencidos;
+  document.getElementById('k-gestiones').textContent = gestiones;
+}
+
+function renderTabla(){
+  let rows = _data;
+  if (_filtros.suc) rows = rows.filter(e => e.sucursal_id === _filtros.suc);
+  if (_filtros.tip) rows = rows.filter(e => e.tipo_tramite === _filtros.tip);
+
+  if (!rows.length){
+    document.getElementById('tabla').innerHTML = '<div class="loading">No hay expedientes con esos filtros.</div>';
+    return;
+  }
+
+  const tbody = rows.map(e => {
+    const color = semaforoFila(e);
+    const pct = e.n_obls > 0 ? Math.round((e.n_archivos / e.n_obls) * 100) : 0;
+    const dias = diasAPlazo(e.plazo_mas_urgente);
+    const barCls = pct >= 60 ? '' : (pct > 0 ? 'amarillo' : 'rojo');
+    const plazoTxt = e.plazo_mas_urgente
+      ? fmtDia(e.plazo_mas_urgente) + ' (' + (dias>=0?dias+'d':'vencido')+')'
+      : '—';
+    const plazoPill = dias===null ? '' : (dias<=14 ? 'pill rojo' : (dias<=30 ? 'pill alerta' : 'pill ok'));
+    const link = '/expedientes/expediente.html?codigo='+encodeURIComponent(e.codigo);
+    return '<tr onclick="window.location.href=\''+link+'\'">'
+      + '<td><span class="dot '+color+'"></span><span class="suc">'+esc(SUC[e.sucursal_id]||e.sucursal_id)+'</span><div class="codigo">'+esc(e.codigo)+'</div></td>'
+      + '<td><span class="tipo">'+esc(TIP[e.tipo_tramite]||e.tipo_tramite)+'</span></td>'
+      + '<td>'+(e.n_obls>0
+            ? '<div class="progressbar"><div class="bar '+barCls+'"><div style="width:'+pct+'%"></div></div><span>'+e.n_archivos+'/'+e.n_obls+'</span></div>'
+            : '<span class="pill muted">sin docs</span>')+'</td>'
+      + '<td>'+(e.n_tareas_pend>0 ? '<span class="pill alerta">'+e.n_tareas_pend+' pend</span>' : '<span class="muted">—</span>')+'</td>'
+      + '<td>'+(e.n_gestiones>0 ? '<span class="pill ok">💬 '+e.n_gestiones+'</span>' : '<span class="muted">—</span>')+'</td>'
+      + '<td>'+(plazoPill ? '<span class="'+plazoPill+'">'+plazoTxt+'</span>' : '<span class="muted">'+plazoTxt+'</span>')+'</td>'
+      + '<td class="action"><a href="'+link+'" onclick="event.stopPropagation()">Abrir →</a></td>'
+      + '</tr>';
+  }).join('');
+
+  document.getElementById('tabla').innerHTML =
+      '<table>'
+    + '<thead><tr><th>Sucursal · código</th><th>Trámite</th><th>Respaldos</th><th>Tareas</th><th>Gestiones</th><th>Plazo más urgente</th><th></th></tr></thead>'
+    + '<tbody>'+tbody+'</tbody>'
+    + '</table>';
+}
+
+function filtrar(grupo, btn){
+  const val = btn.dataset[grupo];
+  _filtros[grupo] = val;
+  document.querySelectorAll('.filtros button[data-'+grupo+']').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTabla();
+}
+window.filtrar = filtrar;
+window.cargar = cargar;
+
+cargar();
+</script>
+</body>
+</html>

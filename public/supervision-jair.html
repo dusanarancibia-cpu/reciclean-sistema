@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supervisión Jair · Dusan + Cesar + Dyana · Reciclean-Farex</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--primary:#059669;--dark:#064e3b;--bg:#f3f4f6;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--amber:#d97706;--red:#dc2626;--blue:#2563eb}
+*{box-sizing:border-box}
+body{font-family:'Inter',sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.5}
+.bar{background:#111827;color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:10}
+.bar h1{margin:0;font-size:16px;font-weight:800}
+.bar .sub{font-size:12px;color:#9ca3af}
+.bar button{background:#059669;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px}
+.bar button.secondary{background:transparent;border:1px solid #4b5563}
+.cont{max-width:1280px;margin:0 auto;padding:24px}
+
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.kpi .n{font-size:30px;font-weight:900;color:var(--dark);line-height:1}
+.kpi .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:6px}
+.kpi.rojo .n{color:var(--red)}.kpi.amarillo .n{color:var(--amber)}.kpi.verde .n{color:#10b981}
+
+.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:24px;margin-bottom:24px}
+.box{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.box h3{margin:0;padding:14px 20px;background:#f9fafb;border-bottom:1px solid var(--border);font-size:14px;font-weight:700;color:var(--dark);display:flex;justify-content:space-between;align-items:center}
+.box h3 .count{font-size:11px;background:#e5e7eb;color:#374151;padding:3px 10px;border-radius:10px}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 14px;background:#f9fafb;border-bottom:1px solid var(--border);font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.pill.rojo{background:#fee2e2;color:#991b1b}.pill.amarillo{background:#fef3c7;color:#92400e}.pill.ok{background:#d1fae5;color:#065f46}.pill.gris{background:#e5e7eb;color:#6b7280}
+.bit-tipo{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;margin-right:6px;text-transform:uppercase}
+.bit-tipo.whatsapp{background:#25d366;color:#fff}.bit-tipo.correo{background:#2563eb;color:#fff}.bit-tipo.llamada{background:#7c3aed;color:#fff}.bit-tipo.visita{background:#ea580c;color:#fff}.bit-tipo.nota{background:#6b7280;color:#fff}.bit-tipo.reunion{background:#0891b2;color:#fff}.bit-tipo.solicitud_interna{background:#be185d;color:#fff}.bit-tipo.respuesta_autoridad{background:#064e3b;color:#fff}.bit-tipo.otro{background:#94a3b8;color:#fff}
+.timeline-item{padding:12px 16px;border-bottom:1px solid var(--border);font-size:12px}
+.timeline-item:last-child{border-bottom:none}
+.timeline-item .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.timeline-item .meta{color:var(--muted);font-size:11px;margin-top:4px}
+.loading{padding:40px;text-align:center;color:var(--muted)}
+.error{padding:16px;background:#fee2e2;color:#991b1b;border-radius:8px;margin:16px;font-size:13px}
+.empty{padding:30px;text-align:center;color:var(--muted);font-style:italic;font-size:13px}
+.por-suc{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px}
+.suc-card{background:#f9fafb;padding:12px;border-radius:8px;text-align:center;border:1px solid var(--border)}
+.suc-card .n{font-size:22px;font-weight:800;color:var(--dark);line-height:1}
+.suc-card .lbl{font-size:11px;color:var(--muted);margin-top:4px;text-transform:capitalize}
+.titulo-tarea{font-weight:600;color:var(--text)}
+.descr-tarea{color:var(--muted);font-size:11px;margin-top:2px}
+@media (max-width:900px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.por-suc{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div>
+    <h1>👁️ Supervisión Jair</h1>
+    <div class="sub">Vista compartida · Dusan + Cesar + Dyana</div>
+  </div>
+  <div>
+    <button class="secondary" onclick="window.location.href='/panel-rdo.html'">← Panel</button>
+    <button class="secondary" onclick="window.location.href='/expedientes/'">📂 Expedientes</button>
+    <button onclick="cargar()">🔄 Refrescar</button>
+  </div>
+</div>
+
+<div class="cont">
+  <div class="kpis">
+    <div class="kpi"><div class="n" id="k-total">—</div><div class="lbl">Pendientes</div></div>
+    <div class="kpi rojo"><div class="n" id="k-venc">—</div><div class="lbl">Vencidas</div></div>
+    <div class="kpi amarillo"><div class="n" id="k-sing">—</div><div class="lbl">Sin gestión 3+ días</div></div>
+    <div class="kpi verde"><div class="n" id="k-cerr">—</div><div class="lbl">Cerradas 7d</div></div>
+    <div class="kpi"><div class="n" id="k-gest">—</div><div class="lbl">Gestiones 7d</div></div>
+  </div>
+
+  <div class="box" style="margin-bottom:24px">
+    <h3>🏭 Distribución por sucursal</h3>
+    <div class="por-suc" id="por-suc"><div class="loading">...</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="box">
+      <h3>⚠️ Tareas trabadas <span class="count" id="cnt-trab">—</span></h3>
+      <div id="trabadas"><div class="loading">Cargando...</div></div>
+    </div>
+    <div class="box">
+      <h3>💬 Últimas gestiones de Jair <span class="count" id="cnt-tl">—</span></h3>
+      <div id="timeline"><div class="loading">Cargando...</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://eknmtsrtfkzroxnovfqn.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbm10c3J0Zmt6cm94bm92ZnFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDY2ODgsImV4cCI6MjA5MDk4MjY4OH0.8Y4N0lw3DFN3Y8-R6ID7t_LAfgHWDM5N-oa4Ji9bncg';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function fmtFecha(d){if(!d)return '—';try{return new Date(d).toLocaleString('es-CL',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch(_){return String(d);}}
+function fmtDia(d){if(!d)return '—';try{return new Date(d).toLocaleDateString('es-CL');}catch(_){return String(d);}}
+function fmtAgo(d){if(!d)return 'nunca';const ms=Date.now()-new Date(d).getTime();const h=Math.floor(ms/3600000);if(h<1)return 'hace minutos';if(h<24)return 'hace '+h+'h';return 'hace '+Math.floor(h/24)+'d';}
+
+async function cargar(){
+  try{
+    const {data,error}=await sb.schema('panel').rpc('supervision_jair');
+    if(error) throw error;
+    const k=data.kpis||{};
+    document.getElementById('k-total').textContent=k.tareas_totales||0;
+    document.getElementById('k-venc').textContent=k.vencidas||0;
+    document.getElementById('k-sing').textContent=k.sin_gestiones_3d||0;
+    document.getElementById('k-cerr').textContent=k.cerradas_7d||0;
+    document.getElementById('k-gest').textContent=k.gestiones_7d||0;
+    renderPorSuc(data.por_sucursal||[]);
+    renderTrabadas(data.trabadas||[]);
+    renderTimeline(data.timeline_reciente||[]);
+  }catch(e){
+    document.body.insertAdjacentHTML('beforeend','<div class="error">'+esc(e.message||JSON.stringify(e))+'</div>');
+  }
+}
+
+function renderPorSuc(arr){
+  if(!arr.length){document.getElementById('por-suc').innerHTML='<div class="empty" style="grid-column:1/-1">Sin datos</div>';return;}
+  document.getElementById('por-suc').innerHTML=arr.map(s =>
+    '<div class="suc-card"><div class="n">'+s.pendientes+'</div><div class="lbl">'+esc(s.sucursal)+'</div></div>'
+  ).join('');
+}
+
+function renderTrabadas(arr){
+  document.getElementById('cnt-trab').textContent=arr.length;
+  if(!arr.length){document.getElementById('trabadas').innerHTML='<div class="empty">Todo fluye · ningún cuello de botella detectado</div>';return;}
+  const rows=arr.map(t=>{
+    const dias=t.dias_vencida;
+    const cls=dias!==null && dias>0 ? 'rojo' : (t.ultima_gestion ? 'amarillo' : 'gris');
+    const txt=dias!==null && dias>0 ? 'Vencida '+dias+'d' : (t.ultima_gestion ? 'Sin gestión '+fmtAgo(t.ultima_gestion) : 'Sin gestiones');
+    return '<tr>'
+      +'<td><div class="titulo-tarea">'+esc(t.titulo||'(sin título)')+'</div><div class="descr-tarea">'+esc(t.sucursal)+' · '+esc(t.ley)+' · a '+esc(t.origen_destinatario||'—')+'</div></td>'
+      +'<td><span class="pill '+cls+'">'+txt+'</span></td>'
+      +'<td>'+fmtDia(t.fecha_meta)+'</td>'
+      +'</tr>';
+  }).join('');
+  document.getElementById('trabadas').innerHTML='<table><thead><tr><th>Tarea</th><th>Estado</th><th>Plazo</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+function renderTimeline(arr){
+  document.getElementById('cnt-tl').textContent=arr.length;
+  if(!arr.length){document.getElementById('timeline').innerHTML='<div class="empty">Sin gestiones registradas todavía. Cuando Jair use /mi-cola aparecen acá.</div>';return;}
+  document.getElementById('timeline').innerHTML=arr.map(b => ''
+    +'<div class="timeline-item">'
+    +'  <div class="head"><div><span class="bit-tipo '+esc(b.tipo_canal)+'">'+esc(b.tipo_canal)+'</span><strong>'+esc(b.titulo||'(sin título)')+'</strong></div><span class="meta">'+fmtFecha(b.cuando)+'</span></div>'
+    +'  <div>'+esc(b.texto)+'</div>'
+    +'  <div class="meta">'+esc(b.sucursal||'—')+' · '+esc(b.ley||'—')+(b.destinatario?' · a '+esc(b.destinatario):'')+'</div>'
+    +'</div>'
+  ).join('');
+}
+
+cargar();
+setInterval(cargar, 60000);
+</script>
+</body>
+</html>
