@@ -15661,34 +15661,47 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sidebar contextual: cuando silo Permisología activo, ocultar pestañas no-Trámites · 08-jun
     function permisologiaApplyContextualSidebar() {
       try {
-        var siloActivo = (typeof currentSilo !== 'undefined' && currentSilo) || '';
-        var enPermisologia = (siloActivo === '05');
+        var sel = document.getElementById('siloSelector');
+        var siloValue = sel ? sel.value : '';
+        // currentSilo vive en otro scope · me apoyo en el value del selector real
+        var enPermisologia = (siloValue === '05');
         document.querySelectorAll('button[data-tab]').forEach(function (b) {
           var tab = b.dataset.tab;
           if (enPermisologia) {
-            // Mantener visible: solo cumplimiento (Trámites) + inicio/portada/admin esencial
             var keep = ['cumplimiento', 'inicio', 'portada', 'admin', 'manual'];
-            if (keep.indexOf(tab) === -1) b.classList.add('hidden');
-            else b.classList.remove('hidden');
+            if (keep.indexOf(tab) === -1) b.classList.add('permisologia-tab-oculto');
+            else b.classList.remove('permisologia-tab-oculto');
           } else {
-            b.classList.remove('hidden');
+            b.classList.remove('permisologia-tab-oculto');
           }
         });
       } catch (_) {}
     }
-    // Hookear cambio de silo + carga inicial
-    var _origApplySiloTabs = window.applySiloTabs;
-    if (typeof _origApplySiloTabs === 'function') {
-      window.applySiloTabs = function () {
-        var r = _origApplySiloTabs.apply(this, arguments);
-        permisologiaApplyContextualSidebar();
-        return r;
-      };
-    }
-    document.getElementById('silo-selector')?.addEventListener('change', function () {
-      setTimeout(permisologiaApplyContextualSidebar, 100);
+    // Inyectar CSS para que !important triunfe sobre cualquier reaparición de applySiloTabs
+    (function injectContextualCSS() {
+      if (document.getElementById('permisologia_contextual_css')) return;
+      var st = document.createElement('style');
+      st.id = 'permisologia_contextual_css';
+      st.textContent = '.permisologia-tab-oculto { display: none !important; }';
+      document.head.appendChild(st);
+    })();
+    document.getElementById('siloSelector')?.addEventListener('change', function () {
+      setTimeout(permisologiaApplyContextualSidebar, 50);
+      setTimeout(permisologiaApplyContextualSidebar, 300);
     });
-    setTimeout(permisologiaApplyContextualSidebar, 2000);
+    // Re-aplicar después de cualquier click en sidebar (applySiloTabs interno revierte la visibility)
+    document.querySelectorAll('button[data-tab]').forEach(function (b) {
+      b.addEventListener('click', function () { setTimeout(permisologiaApplyContextualSidebar, 30); });
+    });
+    // MutationObserver: si applySiloTabs reescribe display, lo volvemos a aplicar
+    var sidebarNav = document.querySelector('nav, [role="tablist"]') || document.body;
+    try {
+      var mo = new MutationObserver(function () { permisologiaApplyContextualSidebar(); });
+      mo.observe(sidebarNav, { attributes: true, subtree: true, attributeFilter: ['class','style'] });
+    } catch (_) {}
+    // Carga inicial
+    setTimeout(permisologiaApplyContextualSidebar, 1500);
+    setTimeout(permisologiaApplyContextualSidebar, 3500);
 
     // Hook al filtro real: filtrar por multi-comuna y por tipo activo
     var _origRenderCumplimiento = renderCumplimiento;
