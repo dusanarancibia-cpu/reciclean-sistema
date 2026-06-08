@@ -15544,6 +15544,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // Scroll-to-top al activar pestaña Permisología · 08-jun
+    document.querySelector('button[data-tab="cumplimiento"]')?.addEventListener('click', function () {
+      setTimeout(function () {
+        var section = document.getElementById('tabCumplimiento');
+        if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        else window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 50);
+    });
+
     // Modal flotante guía · drag + maximize + open/close · 08-jun
     (function setupGuiaModal() {
       var modal = $$('permisologia_guia_modal');
