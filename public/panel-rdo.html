@@ -15415,6 +15415,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Diego contexto
     $$('cump_diego_ctx')?.addEventListener('click', abrirDiegoContexto);
 
+    // GUARDA · todo lo de Permisología MVP se ejecuta UNA sola vez · 08-jun fix freeze
+    if (window._permisologiaInited) { console.log('[Permisología] init ya ejecutado · skip'); return; }
+    window._permisologiaInited = true;
+
     // Helpers · MVP visual 08-jun
     function _permisologiaNombreCorto() {
       var nombre = (window._sessionUserNombre || (_sessionEmail || '').split('@')[0] || '').split(' ')[0];
