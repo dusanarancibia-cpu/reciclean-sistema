@@ -78,7 +78,7 @@ body{font-family:'Inter',sans-serif;margin:0;background:#f3f4f6;color:var(--text
 </div>
 <script>
 const SUPABASE_URL = 'https://eknmtsrtfkzroxnovfqn.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbm10c3J0Zmt6cm94bm92ZnFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU3NDc3MjAsImV4cCI6MjAzMTMyMzcyMH0.fpQB3iL_F8KOzwXP9wAm-Cy6yTpz8KfYa6XGCq0t-MQ';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbm10c3J0Zmt6cm94bm92ZnFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDY2ODgsImV4cCI6MjA5MDk4MjY4OH0.8Y4N0lw3DFN3Y8-R6ID7t_LAfgHWDM5N-oa4Ji9bncg';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 const params = new URLSearchParams(location.search);
 const codigo = params.get('codigo') || 'EXP-TALCA-PATENTE-DEFINITIVA';
@@ -104,7 +104,7 @@ async function cargar(){
 
     let archivosTotal = {};
     try{
-      const {data:archivos} = await sb.schema('panel').from('cumplim_archivos').select('*').in('obligacion_id',exp.obligaciones_ids);
+      const {data:archivos} = await sb.schema('panel').from('cumplimiento_archivos').select('*').in('obligacion_id',exp.obligaciones_ids);
       (archivos||[]).forEach(a=>{(archivosTotal[a.obligacion_id]=archivosTotal[a.obligacion_id]||[]).push(a)});
     }catch(_){}
 
