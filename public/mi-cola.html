@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi cola · Jair · Reciclean-Farex</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--primary:#059669;--dark:#064e3b;--bg:#f3f4f6;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--amber:#d97706;--red:#dc2626;--blue:#2563eb}
+*{box-sizing:border-box}
+body{font-family:'Inter',sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.5}
+.hero{background:linear-gradient(135deg,var(--primary),var(--dark));color:#fff;padding:24px 20px;text-align:center}
+.hero h1{margin:0 0 6px;font-size:22px;font-weight:900;letter-spacing:-.02em}
+.hero p{margin:0;opacity:.95;font-size:13px}
+.hero .kpis{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.hero .kpi{background:rgba(255,255,255,.15);padding:8px 14px;border-radius:20px;font-size:12px;font-weight:600}
+.hero .kpi strong{font-size:18px;display:block;line-height:1}
+.cont{max-width:720px;margin:0 auto;padding:20px 16px 80px}
+.loading{padding:60px;text-align:center;color:var(--muted)}
+.error{padding:16px;background:#fee2e2;color:#991b1b;border-radius:8px;margin:16px 0;font-size:13px}
+.empty{padding:40px;text-align:center;color:var(--muted);background:#fff;border-radius:12px;border:1px solid var(--border)}
+.empty .big{font-size:48px;margin-bottom:12px}
+
+.card{background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:16px;overflow:hidden;border:2px solid transparent;transition:border-color .2s}
+.card.priori-1{border-color:var(--red)}
+.card.priori-2{border-color:var(--amber)}
+.card .head{padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.card .num{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.card .badge-plazo{font-size:11px;font-weight:700;padding:4px 10px;border-radius:12px}
+.card .badge-plazo.vencida{background:#fee2e2;color:#991b1b}
+.card .badge-plazo.urgente{background:#fef3c7;color:#92400e}
+.card .badge-plazo.normal{background:#dcfce7;color:#065f46}
+.card h2{margin:4px 0 8px;font-size:17px;color:var(--dark);font-weight:800;line-height:1.3;padding:0 18px}
+.card .meta{padding:0 18px;font-size:12px;color:var(--muted);margin-bottom:10px;display:flex;gap:12px;flex-wrap:wrap}
+.card .meta strong{color:var(--text)}
+.card .descr{padding:0 18px;font-size:13px;color:#374151;margin-bottom:14px}
+.card .ultima-gestion{margin:10px 18px;padding:10px 12px;background:#fffbeb;border-left:3px solid var(--amber);border-radius:4px;font-size:12px;color:#92400e}
+.card .ultima-gestion strong{color:#78350f}
+.card .acciones{padding:14px 18px;background:#f9fafb;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.btn{padding:14px;border-radius:10px;border:none;font-weight:700;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;transition:transform .1s}
+.btn:active{transform:scale(0.97)}
+.btn.wa{background:#25d366;color:#fff}
+.btn.correo{background:#2563eb;color:#fff}
+.btn.llamada{background:#7c3aed;color:#fff}
+.btn.cumplido{background:var(--primary);color:#fff}
+.btn.traba{background:var(--red);color:#fff;grid-column:1/-1;margin-top:4px}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:100}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px 16px 0 0;max-width:520px;width:100%;padding:24px;max-height:85vh;overflow-y:auto;animation:slideUp .25s ease-out}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal h3{margin:0 0 14px;color:var(--dark);font-size:17px}
+.modal .ctx{background:#f9fafb;border-radius:8px;padding:10px;font-size:12px;color:var(--muted);margin-bottom:14px}
+.modal label{display:block;font-size:12px;font-weight:600;color:#374151;margin:10px 0 4px}
+.modal textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;min-height:90px;resize:vertical}
+.modal input[type=file]{font-size:13px}
+.modal .acts{margin-top:18px;display:flex;gap:10px}
+.modal .acts button{flex:1;padding:14px;border-radius:8px;border:none;font-weight:700;font-size:14px;cursor:pointer}
+.modal .cancel{background:#e5e7eb;color:#374151}
+.modal .ok{background:var(--primary);color:#fff}
+
+.confetti{position:fixed;top:30%;left:50%;transform:translateX(-50%);background:#fff;padding:24px 32px;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.2);text-align:center;z-index:200;display:none;font-size:18px;font-weight:800;color:var(--dark)}
+.confetti.show{display:block;animation:pop .4s}
+@keyframes pop{from{transform:translateX(-50%) scale(.6);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
+
+.auth-warn{margin:12px;padding:14px;background:#fef3c7;color:#92400e;border-radius:8px;font-size:13px;text-align:center}
+.auth-warn a{color:#92400e;font-weight:700}
+
+@media (max-width:600px){.card h2{font-size:16px}.btn{padding:16px;font-size:15px}}
+</style>
+</head>
+<body>
+<div class="hero">
+  <h1>👋 Hola Jair</h1>
+  <p>Lo que más traba hoy · 1 cosa a la vez</p>
+  <div class="kpis">
+    <div class="kpi"><strong id="k-pend">—</strong>pendientes</div>
+    <div class="kpi"><strong id="k-venc">—</strong>vencidas</div>
+    <div class="kpi"><strong id="k-7d">—</strong>esta semana</div>
+  </div>
+</div>
+
+<div class="cont">
+  <div id="auth_warn" class="auth-warn" style="display:none">
+    🔒 Iniciá sesión en <a href="/panel-rdo.html">/panel-rdo.html</a> para que tus gestiones queden guardadas con tu nombre.
+  </div>
+  <div id="lista"><div class="loading">Cargando...</div></div>
+</div>
+
+<!-- Modal gestión rápida -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h3 id="m_titulo">Registrar gestión</h3>
+    <div class="ctx" id="m_ctx"></div>
+    <input type="hidden" id="m_tarea_id">
+    <input type="hidden" id="m_canal">
+    <label>¿Qué pasó? (lo que dijiste · lo que respondieron · acuerdo)</label>
+    <textarea id="m_texto" placeholder="Ej: le mandé WA a Dyana, dijo que lo manda hoy 5pm"></textarea>
+    <label>Adjunto (opcional · foto WhatsApp / PDF)</label>
+    <input type="file" id="m_archivo" accept="image/*,application/pdf">
+    <div class="acts">
+      <button class="cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="ok" id="m_guardar" onclick="guardarRapido()">Guardar y siguiente</button>
+    </div>
+  </div>
+</div>
+
+<div class="confetti" id="confetti">✅ Listo · siguiente</div>
+
+<script>
+const SUPABASE_URL='https://eknmtsrtfkzroxnovfqn.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbm10c3J0Zmt6cm94bm92ZnFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDY2ODgsImV4cCI6MjA5MDk4MjY4OH0.8Y4N0lw3DFN3Y8-R6ID7t_LAfgHWDM5N-oa4Ji9bncg';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+const MI_EMAIL='asistente@gestionrepchile.cl';
+let _myEmail=MI_EMAIL, _myNombre='Jair', _isAuth=false;
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function diasAPlazo(d){if(!d)return null;return Math.floor((new Date(d).getTime()-Date.now())/86400000);}
+function fmtAgo(d){if(!d)return '—';const ms=Date.now()-new Date(d).getTime();const h=Math.floor(ms/3600000);if(h<1)return 'hace minutos';if(h<24)return 'hace '+h+'h';return 'hace '+Math.floor(h/24)+'d';}
+
+async function checkAuth(){
+  try{
+    const s=await sb.auth.getSession();
+    if(s?.data?.session?.user){
+      _isAuth=true;_myEmail=s.data.session.user.email||MI_EMAIL;
+    }else{
+      try{const rf=JSON.parse(localStorage.getItem('rf_session')||'{}');if(rf.email)_myEmail=rf.email;}catch(_){}
+      document.getElementById('auth_warn').style.display='block';
+    }
+  }catch(_){}
+}
+
+async function cargar(){
+  try{
+    const {data,error}=await sb.schema('panel').rpc('jair_cola',{p_email:MI_EMAIL,p_limit:5});
+    if(error) throw error;
+    document.getElementById('k-pend').textContent=data.total_pendientes||0;
+    document.getElementById('k-venc').textContent=data.vencidas||0;
+    document.getElementById('k-7d').textContent=data.criticas_7d||0;
+    render(data.cola||[]);
+  }catch(e){
+    document.getElementById('lista').innerHTML='<div class="error">'+esc(e.message||JSON.stringify(e))+'</div>';
+  }
+}
+
+function render(cola){
+  if(!cola.length){
+    document.getElementById('lista').innerHTML='<div class="empty"><div class="big">🎉</div><h2 style="margin:0 0 8px">¡Cola vacía!</h2><p style="margin:0">No tenés tareas pendientes.</p></div>';
+    return;
+  }
+  document.getElementById('lista').innerHTML=cola.map((t,i)=>renderCard(t,i+1)).join('');
+}
+
+function renderCard(t,n){
+  const dias=diasAPlazo(t.fecha_meta);
+  let plazoCls='normal',plazoTxt='Sin plazo';
+  if(dias!==null){
+    if(dias<0){plazoCls='vencida';plazoTxt='Vencida hace '+Math.abs(dias)+'d';}
+    else if(dias<=7){plazoCls='urgente';plazoTxt='Vence en '+dias+'d';}
+    else{plazoCls='normal';plazoTxt='Vence en '+dias+'d';}
+  }
+  const priori=dias!==null && dias<0 ? 'priori-1' : (dias!==null && dias<=7 ? 'priori-2' : '');
+  const dest=t.origen_nombre||t.origen_email||'—';
+  return ''
+    +'<div class="card '+priori+'" id="card-'+t.tarea_id+'">'
+    +'  <div class="head"><span class="num">#'+n+' · '+esc(t.sucursal_id||'').toUpperCase()+' · '+esc(t.ley_id||'')+'</span><span class="badge-plazo '+plazoCls+'">'+plazoTxt+'</span></div>'
+    +'  <h2>'+esc(t.titulo||t.descripcion)+'</h2>'
+    +'  <div class="meta"><span>👤 a <strong>'+esc(dest)+'</strong></span>'+(t.expediente_codigo?'<span>📂 '+esc(t.expediente_titulo||t.expediente_codigo)+'</span>':'')+'</div>'
+    +'  <div class="descr">'+esc(t.descripcion)+'</div>'
+    +  (t.ultima_gestion ? '<div class="ultima-gestion">💬 <strong>Última gestión:</strong> '+fmtAgo(t.ultima_gestion)+' · '+t.n_gestiones+' total</div>' : '<div class="ultima-gestion" style="background:#f3f4f6;border-color:#9ca3af;color:#6b7280">💤 Sin gestiones aún</div>')
+    +'  <div class="acciones">'
+    +'    <button class="btn wa" onclick="abrirModal('+t.tarea_id+',\'whatsapp\',\''+esc(t.titulo||'').replace(/\'/g,"\\'")+'\',\''+esc(dest).replace(/\'/g,"\\'")+'\')">📱 WhatsApp</button>'
+    +'    <button class="btn correo" onclick="abrirModal('+t.tarea_id+',\'correo\',\''+esc(t.titulo||'').replace(/\'/g,"\\'")+'\',\''+esc(dest).replace(/\'/g,"\\'")+'\')">📧 Correo</button>'
+    +'    <button class="btn llamada" onclick="abrirModal('+t.tarea_id+',\'llamada\',\''+esc(t.titulo||'').replace(/\'/g,"\\'")+'\',\''+esc(dest).replace(/\'/g,"\\'")+'\')">📞 Llamada</button>'
+    +'    <button class="btn cumplido" onclick="cumplir('+t.tarea_id+')">✓ Cumplido</button>'
+    +'    <button class="btn traba" onclick="trabarse('+t.tarea_id+',\''+esc(t.titulo||'').replace(/\'/g,"\\'")+'\')">🆘 No avanza · escalar a 3</button>'
+    +'  </div>'
+    +'</div>';
+}
+
+function abrirModal(tareaId,canal,titulo,dest){
+  document.getElementById('m_tarea_id').value=tareaId;
+  document.getElementById('m_canal').value=canal;
+  document.getElementById('m_titulo').textContent=({whatsapp:'📱 WhatsApp',correo:'📧 Correo',llamada:'📞 Llamada'}[canal]||'Gestión')+' · '+titulo;
+  document.getElementById('m_ctx').textContent='Destinatario: '+dest+' · plazo se moverá +2 días al guardar.';
+  document.getElementById('m_texto').value='';
+  document.getElementById('m_archivo').value='';
+  document.getElementById('modal').classList.add('open');
+  setTimeout(()=>document.getElementById('m_texto').focus(),200);
+}
+function cerrarModal(){document.getElementById('modal').classList.remove('open');}
+window.abrirModal=abrirModal;window.cerrarModal=cerrarModal;
+
+async function guardarRapido(){
+  const btn=document.getElementById('m_guardar');btn.disabled=true;btn.textContent='Guardando...';
+  try{
+    const tareaId=parseInt(document.getElementById('m_tarea_id').value);
+    const canal=document.getElementById('m_canal').value;
+    const texto=document.getElementById('m_texto').value.trim();
+    const file=document.getElementById('m_archivo').files[0];
+    if(!texto)throw new Error('Contame qué pasó');
+
+    const {error}=await sb.schema('panel').rpc('tarea_avanzar',{
+      p_tarea_id:tareaId,p_canal:canal,p_texto:texto,
+      p_actor_email:_myEmail,p_actor_nombre:_myNombre,p_bump_dias:2
+    });
+    if(error) throw error;
+
+    if(file && _isAuth){
+      const path='gestiones/'+tareaId+'/'+Date.now()+'_'+file.name.replace(/[^\w.\-]/g,'_');
+      const up=await sb.storage.from('impulsa-documentos').upload(path,file);
+      if(up.error){console.warn('upload fallo',up.error)}
+    }
+
+    cerrarModal();
+    showConfetti('✅ Listo · siguiente');
+    setTimeout(cargar,800);
+  }catch(e){
+    alert('Error: '+(e.message||e));
+  }finally{btn.disabled=false;btn.textContent='Guardar y siguiente';}
+}
+window.guardarRapido=guardarRapido;
+
+async function cumplir(tareaId){
+  if(!confirm('¿Marcar como CUMPLIDO? Esta acción cierra la tarea.'))return;
+  try{
+    const {error}=await sb.schema('panel').rpc('tarea_cerrar',{p_tarea_id:tareaId,p_nota:'Cerrada por Jair desde /mi-cola'});
+    if(error) throw error;
+    showConfetti('🎉 ¡Cerrada!');
+    setTimeout(cargar,800);
+  }catch(e){alert('Error: '+(e.message||e));}
+}
+window.cumplir=cumplir;
+
+async function trabarse(tareaId,titulo){
+  const motivo=prompt('¿Qué te traba? Se avisa a Dusan + Cesar + Dyana.','');
+  if(motivo===null)return;
+  try{
+    const {error}=await sb.schema('panel').rpc('tarea_avanzar',{
+      p_tarea_id:tareaId,p_canal:'nota',
+      p_texto:'🆘 ESCALADO 3 · '+titulo+' · Motivo: '+(motivo||'sin detalle'),
+      p_actor_email:_myEmail,p_actor_nombre:_myNombre,p_bump_dias:0
+    });
+    if(error) throw error;
+    showConfetti('📡 Escalado a los 3');
+    setTimeout(cargar,800);
+  }catch(e){alert('Error: '+(e.message||e));}
+}
+window.trabarse=trabarse;
+
+function showConfetti(t){
+  const el=document.getElementById('confetti');el.textContent=t;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),1500);
+}
+
+checkAuth().then(cargar);
+</script>
+</body>
+</html>
