@@ -3,158 +3,199 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cómo usar Permisología · guía visual Jair</title>
+<title>Cómo usar Cumplimiento Documental · guía visual</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{--primary:#059669;--dark:#064e3b;--light:#d1fae5;--amber:#d97706;--cream:#fef3c7;--red:#dc2626;--blue:#2563eb;--text:#111827;--muted:#6b7280;--border:#e5e7eb}
 *{box-sizing:border-box}
-body{font-family:'Inter',sans-serif;margin:0;background:#f9fafb;color:var(--text);line-height:1.5}
-.container{max-width:1200px;margin:0 auto;padding:24px}
-.hero{background:linear-gradient(135deg,var(--primary),var(--dark));color:#fff;padding:32px;border-radius:20px;text-align:center;margin-bottom:32px}
-.hero h1{margin:0 0 8px;font-size:2.25rem;font-weight:900;letter-spacing:-0.02em}
-.hero p{margin:0;opacity:0.95;font-size:1.05rem}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:32px}
-.step{background:#fff;border:2px solid var(--border);border-radius:16px;padding:24px;position:relative;transition:transform 0.15s}
-.step:hover{transform:translateY(-3px);border-color:var(--primary)}
-.step .num{position:absolute;top:-16px;left:20px;background:var(--primary);color:#fff;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.25rem;box-shadow:0 4px 12px rgba(5,150,105,0.3)}
-.step .icon{font-size:3rem;text-align:center;margin:12px 0 16px}
-.step h3{margin:0 0 8px;font-size:1.1rem;font-weight:800;color:var(--dark);text-align:center}
-.step p{margin:0;font-size:0.9rem;color:var(--text);text-align:center}
-.step .tip{margin-top:12px;padding:8px 12px;background:var(--cream);border-left:3px solid var(--amber);border-radius:6px;font-size:0.8rem;color:#92400e}
-.section{background:#fff;border:2px solid var(--border);border-radius:16px;padding:28px;margin-bottom:24px}
-.section h2{margin:0 0 16px;font-size:1.5rem;font-weight:800;color:var(--dark);display:flex;align-items:center;gap:10px}
-.help-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.help{padding:18px;border-radius:12px;border:2px solid}
-.help.dudas{background:#fef3c7;border-color:var(--amber)}
-.help.trabado{background:#dbeafe;border-color:var(--blue)}
-.help.error{background:#fee2e2;border-color:var(--red)}
-.help .icon{font-size:2rem;margin-bottom:8px}
-.help h4{margin:0 0 6px;font-size:1rem;font-weight:800}
-.help p{margin:0;font-size:0.85rem}
-.help .accion{margin-top:10px;padding:8px;background:rgba(255,255,255,0.6);border-radius:6px;font-size:0.8rem;font-weight:700}
-.example{background:#1e293b;color:#fff;padding:24px;border-radius:16px;margin-bottom:24px}
-.example h3{margin:0 0 16px;color:#86efac;font-size:1.1rem}
-.chat{background:rgba(255,255,255,0.1);padding:12px;border-radius:10px;margin-bottom:8px;font-size:0.9rem}
-.chat strong{color:#86efac}
-.chat.diego strong{color:#fbbf24}
-.footer{text-align:center;color:var(--muted);font-size:0.85rem;padding:24px;border-top:1px solid var(--border)}
-.footer .big{font-size:1.05rem;color:var(--dark);font-weight:700;margin-bottom:6px}
-@media (max-width:900px){.steps,.help-grid{grid-template-columns:1fr}.hero h1{font-size:1.5rem}}
+body{font-family:'Inter',sans-serif;margin:0;background:#f9fafb;color:var(--text);line-height:1.55}
+.container{max-width:1100px;margin:0 auto;padding:24px}
+.hero{background:linear-gradient(135deg,var(--primary),var(--dark));color:#fff;padding:32px;border-radius:20px;text-align:center;margin-bottom:24px}
+.hero h1{margin:0 0 8px;font-size:2rem;font-weight:900;letter-spacing:-0.02em}
+.hero p{margin:0;opacity:.95;font-size:1.05rem}
+.who{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:24px}
+.who .card{background:#fff;border:2px solid var(--border);border-radius:14px;padding:18px}
+.who .card h3{margin:0 0 10px;font-size:1.1rem;color:var(--dark);display:flex;align-items:center;gap:8px}
+.who .card .label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-bottom:6px}
+.section{background:#fff;border:2px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px}
+.section h2{margin:0 0 16px;font-size:1.35rem;color:var(--dark);display:flex;align-items:center;gap:10px;font-weight:800}
+.section h3{margin:18px 0 8px;font-size:1rem;color:var(--dark);font-weight:700}
+.section p{margin:0 0 10px;font-size:14px}
+.chips-demo{display:flex;gap:8px;flex-wrap:wrap;padding:12px;background:#f9fafb;border-radius:10px;margin:10px 0 18px;border:1px solid var(--border)}
+.chip{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;background:#fff;border:1px solid var(--border)}
+.chip.active{background:var(--primary);color:#fff;border-color:var(--dark)}
+.boton-demo{display:inline-block;padding:10px 16px;border-radius:8px;font-weight:700;font-size:13px;color:#fff;margin:3px}
+.boton-demo.wa{background:#25d366}.boton-demo.correo{background:#2563eb}.boton-demo.llamada{background:#7c3aed}.boton-demo.cumplido{background:var(--primary)}.boton-demo.plazo{background:#ea580c}.boton-demo.alarma{background:var(--red)}
+.callout{padding:12px 16px;border-radius:8px;margin:10px 0;font-size:13px;line-height:1.5}
+.callout.tip{background:#dbeafe;border-left:4px solid var(--blue);color:#1e40af}
+.callout.warn{background:#fef3c7;border-left:4px solid var(--amber);color:#92400e}
+.callout.crit{background:#fee2e2;border-left:4px solid var(--red);color:#991b1b}
+.callout.ok{background:#d1fae5;border-left:4px solid var(--primary);color:#065f46}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+th{text-align:left;padding:10px;background:#f9fafb;border-bottom:2px solid var(--border);font-size:11px;text-transform:uppercase;color:var(--muted)}
+td{padding:10px;border-bottom:1px solid var(--border)}
+.footer{text-align:center;color:var(--muted);font-size:.9rem;padding:24px;border-top:1px solid var(--border)}
+.footer .big{font-size:1.1rem;color:var(--dark);font-weight:700;margin-bottom:6px}
+@media (max-width:780px){.who{grid-template-columns:1fr}.hero h1{font-size:1.5rem}}
 </style>
 </head>
 <body>
 <div class="container">
 
 <div class="hero">
-  <h1>📚 Cómo usar Permisología</h1>
-  <p>6 pasos simples · cero jerga · 5 minutos y ya sabés</p>
+  <h1>📋 Cómo usar Cumplimiento Documental</h1>
+  <p>4 vistas · 1 sola pantalla · todos los permisos del grupo en un solo lugar</p>
 </div>
 
-<!-- Los 6 pasos -->
-<div class="steps">
-
-  <div class="step">
-    <div class="num">1</div>
-    <div class="icon">🔐</div>
-    <h3>Entrá al panel</h3>
-    <p>Abrí <strong>reciclean-sistema.vercel.app/panel-rdo.html</strong> · entrá con tu email y clave.</p>
-    <div class="tip">💡 Guardá el link en favoritos del celular.</div>
-  </div>
-
-  <div class="step">
-    <div class="num">2</div>
-    <div class="icon">⚖️</div>
-    <h3>Andá a Permisología</h3>
-    <p>En el menú de arriba elegí la pestaña <strong>"⚖️ Permisología"</strong>. Ahí están todos tus permisos.</p>
-    <div class="tip">💡 Si es tu primera vez verás un saludo verde con tu nombre.</div>
-  </div>
-
-  <div class="step">
-    <div class="num">3</div>
-    <div class="icon">👆</div>
-    <h3>Elegí por dónde empezar</h3>
-    <p>Vos elegís · hacé clic en cualquier permiso de la lista. <strong>El sistema NO te impone el orden.</strong></p>
-    <div class="tip">💡 Empezá por el más fácil para tomar ritmo.</div>
-  </div>
-
-  <div class="step">
-    <div class="num">4</div>
-    <div class="icon">📷</div>
-    <h3>Subí la foto del papel</h3>
-    <p>Sacá foto al papel firmado por SEREMI · arrastrá la imagen al recuadro · o tocá para elegir.</p>
-    <div class="tip">💡 Buena luz, papel completo, sello visible.</div>
-  </div>
-
-  <div class="step">
-    <div class="num">5</div>
-    <div class="icon">🤖</div>
-    <h3>Si dudás · Diego ayuda</h3>
-    <p>En cada permiso hay botón <strong>"Preguntar a Diego"</strong>. Le decís en palabras simples qué no entendés.</p>
-    <div class="tip">💡 Ej: "¿Qué papel exactamente piden en el Art 27?"</div>
-  </div>
-
-  <div class="step">
-    <div class="num">6</div>
-    <div class="icon">✅</div>
-    <h3>Listo · siguiente</h3>
-    <p>Aparece un cartel verde "Listo · evidencia subida". Te dice <strong>cuántos permisos te quedan</strong>. Elegí el siguiente.</p>
-    <div class="tip">💡 Cada uno cierra en ~2 minutos si tenés el papel.</div>
-  </div>
-
-</div>
-
-<!-- Qué hacer cuando... -->
 <div class="section">
-  <h2>🚨 ¿Qué hacer cuando...</h2>
-  <div class="help-grid">
-
-    <div class="help dudas">
-      <div class="icon">❓</div>
-      <h4>... no sé qué papel pedir</h4>
-      <p>El catálogo del artículo dice exactamente qué evidencia se necesita. Si igual dudás:</p>
-      <div class="accion">→ Botón "Preguntar a Diego" dentro del permiso</div>
+  <h2>👥 Quién entra y qué ve por defecto</h2>
+  <p>Entrás al panel · menú lateral <strong>⚖️ Cumplimiento</strong>. Arriba aparecen 4 chips. El sistema te abre automáticamente el chip que más te sirve según tu email.</p>
+  <div class="who">
+    <div class="card">
+      <h3>🎯 Jair · operativo</h3>
+      <div class="label">Default al entrar</div>
+      <p style="margin:0;font-size:13px"><strong>📥 Gestionador de documentos</strong> — top 5 tareas priorizadas para resolver hoy.</p>
     </div>
-
-    <div class="help trabado">
-      <div class="icon">⏳</div>
-      <h4>... estoy esperando a un tercero</h4>
-      <p>Si necesitás esperar a SEREMI, arquitecto, o aprobación Dusan: marcá el permiso como "en espera" y avanzá con otro.</p>
-      <div class="accion">→ Diego te sugiere cuál hacer mientras tanto</div>
+    <div class="card">
+      <h3>👁️ Dusan · Cesar · Dyana · supervisión</h3>
+      <div class="label">Default al entrar</div>
+      <p style="margin:0;font-size:13px"><strong>🎛️ Mesa de control</strong> — KPIs, alarmas activas, tareas trabadas y timeline en vivo.</p>
     </div>
-
-    <div class="help error">
-      <div class="icon">🆘</div>
-      <h4>... me trabo o falla algo</h4>
-      <p>Si subiste 2 veces la foto y dice que está mal, o si no entendés algo: botón <strong>"📡 Escalar a los 3"</strong>.</p>
-      <div class="accion">→ Cesar, Dyana y Dusan reciben el aviso al mismo tiempo</div>
-    </div>
-
   </div>
 </div>
 
-<!-- Ejemplo conversación -->
-<div class="example">
-  <h3>💬 Cómo se ve una conversación normal con Diego</h3>
-  <div class="chat"><strong>Vos:</strong> Diego, en el Art 27 de SEREMI Maipú me piden plan de manejo pero no sé cuál es el actual de la planta.</div>
-  <div class="chat diego"><strong>Diego:</strong> El plan vigente de Maipú lo aprobó SEREMI Salud RM en marzo 2025. Lo tenemos en la carpeta de Dyana · le pido que te lo mande por WhatsApp en 5 min. Mientras tanto ¿querés avanzar con el Art 26 de Cerrillos que no necesita ese plan?</div>
-  <div class="chat"><strong>Vos:</strong> Sí, dale.</div>
-  <div class="chat diego"><strong>Diego:</strong> Ya te abro Cerrillos Art 26 · necesitás foto de la autorización sanitaria. ¿La tenés en mano o pido a Dyana también?</div>
+<div class="section">
+  <h2>🧭 Las 4 vistas (chips arriba del silo)</h2>
+  <div class="chips-demo">
+    <span class="chip active">🎛️ Mesa de control</span>
+    <span class="chip">📥 Gestionador de documentos</span>
+    <span class="chip">📂 Expedientes</span>
+    <span class="chip">🗄️ Lista cruda (admin)</span>
+  </div>
+
+  <h3>🎛️ Mesa de control (supervisión)</h3>
+  <p>5 KPIs vivos (pendientes · vencidas · sin gestión 3 días · cerradas en 7 días · gestiones en 7 días) + distribución por sucursal + tareas trabadas clickeables + timeline live de las últimas 15 gestiones de Jair (auto-refresh 60s).</p>
+  <div class="callout crit">🚨 <strong>Banner rojo pulsante</strong> aparece arriba si hay escalamientos sin acusar. Cada uno tiene botón blanco <strong>✓ Acuso recibo</strong> que lo cierra.</div>
+  <div class="callout tip">💡 <strong>Click en cualquier tarea trabada</strong> → abre modal con 4 botones: 📱 WhatsApp · 📧 Correo · 📞 Llamada · 📅 Cambiar plazo. Podés actuar sin salir de la mesa.</div>
+
+  <h3>📥 Gestionador de documentos (operativo · Jair)</h3>
+  <p>Top 5 tareas priorizadas (vencidas primero, después &lt;7 días, después las sin gestiones). Filtros sucursal arriba: <strong>Todas · Cerrillos · Maipú · Talca · Puerto Montt</strong>, cada uno con contador en vivo.</p>
+  <p>Cada card tiene 5 botones grandes 1-tap:</p>
+  <div style="margin:10px 0">
+    <span class="boton-demo wa">📱 WhatsApp</span>
+    <span class="boton-demo correo">📧 Correo</span>
+    <span class="boton-demo llamada">📞 Llamada</span>
+    <span class="boton-demo cumplido">✓ Cumplido</span>
+    <br>
+    <span class="boton-demo plazo">📅 Cambiar plazo · avisar a otros</span>
+    <span class="boton-demo alarma">🆘 No avanza · escalar alarmas</span>
+  </div>
+  <div class="callout ok">Al registrar WhatsApp/Correo/Llamada → la tarea bumpea plazo +2 días automático y graba en bitácora con tu nombre.</div>
+
+  <h3>📂 Expedientes (mesa de control general)</h3>
+  <p>Matriz <strong>4 sucursales × 5 tipos de trámite = 20 expedientes</strong>. KPIs clickeables drill-down (Con docs · Sin docs · Plazos &lt;14d · Gestiones registradas). Cada expediente abre detalle con portada + N obligaciones + bitácora + botón 🖨️ <strong>Imprimir todo en 1 acto</strong> (para presentar a la autoridad municipal).</p>
+
+  <h3>🗄️ Lista cruda (admin)</h3>
+  <p>Vista plana de las 48 obligaciones para inspección/admin. 4 KPIs arriba clickeables: <strong>Al día · 7d · Vencidos · Falta foto</strong>. Click filtra la lista en vivo.</p>
 </div>
 
-<!-- Cosas que NO tenés que hacer -->
 <div class="section">
-  <h2>🛑 Cosas que <em>NO</em> tenés que hacer</h2>
-  <ul style="font-size:1rem;line-height:1.8;margin:0;padding-left:24px">
-    <li>❌ <strong>No esperar a que alguien te diga por dónde empezar.</strong> Vos decidís.</li>
-    <li>❌ <strong>No subir foto borrosa o cortada.</strong> Si Diego no valida, la rechaza y tenés que rehacerla.</li>
-    <li>❌ <strong>No tenerle miedo a equivocarte.</strong> Todo queda registrado, se puede deshacer.</li>
-    <li>❌ <strong>No avisarle solo a Dusan cuando te trabás.</strong> Usá "Escalar a los 3" · los 3 ven el mensaje al mismo tiempo.</li>
+  <h2>✏️ Cómo registrar una gestión (Jair)</h2>
+  <ol style="font-size:14px;line-height:1.8;padding-left:24px;margin:0">
+    <li>Entrá a <strong>📥 Gestionador de documentos</strong>.</li>
+    <li>Identificá la tarea de la card (título grande + a quién va dirigida).</li>
+    <li>Tap el botón del canal real que usaste: 📱 WhatsApp · 📧 Correo · 📞 Llamada.</li>
+    <li>Se abre modal: contá <strong>qué pasó</strong> en 2 líneas (ej: "le mandé WA a Dyana, dijo que lo manda hoy 5pm").</li>
+    <li>Opcional: adjunto (foto del WhatsApp, PDF del correo, etc).</li>
+    <li>Guardar → confetti verde → siguiente tarea.</li>
+  </ol>
+</div>
+
+<div class="section">
+  <h2>📅 Cómo cambiar el plazo de una tarea</h2>
+  <p>Lo usás cuando cambió la fecha real (Dyana dijo 5 días más · Bomberos viene el viernes · arquitecto cotizó +10 días).</p>
+  <ol style="font-size:14px;line-height:1.8;padding-left:24px;margin:0">
+    <li>En la card, tap <strong style="background:#ea580c;color:#fff;padding:2px 8px;border-radius:4px">📅 Cambiar plazo · avisar a otros</strong>.</li>
+    <li>Elegí nueva fecha (±1 año).</li>
+    <li><strong>Razón obligatoria:</strong> queda guardada en bitácora para que después se entienda por qué se movió.</li>
+    <li>Marcá a quién avisarle: <strong>Cesar · Juan · Ingrid · Dyana · Dusan</strong>. Reciben WhatsApp con la nueva fecha + razón.</li>
+    <li>Guardar.</li>
+  </ol>
+  <div class="callout tip">💡 Si no marcás a nadie, igual queda registrado el cambio en bitácora (visible en Mesa de control).</div>
+</div>
+
+<div class="section">
+  <h2>🆘 Cómo escalar una alarma (cuando estás trabado)</h2>
+  <p>Botón rojo grande abajo de cada card: <strong style="background:#dc2626;color:#fff;padding:2px 8px;border-radius:4px">🆘 No avanza · escalar alarmas (Cesar · Juan · Dyana · Dusan)</strong>.</p>
+  <ol style="font-size:14px;line-height:1.8;padding-left:24px;margin:0">
+    <li>Tap el botón rojo.</li>
+    <li>Te pide <strong>motivo</strong> (obligatorio · sin texto no se manda).</li>
+    <li>Sistema hace 3 cosas en paralelo:
+      <ul style="margin-top:6px">
+        <li>Manda <strong>WhatsApp real</strong> a los 4 (Cesar +56994541662 · Juan +56990552591 · Dyana +56967280603 · Dusan +56963069065)</li>
+        <li>Queda <strong>banner rojo pulsante</strong> en la Mesa de control hasta que alguno acuse</li>
+        <li>Plazo se mueve +1 día automático</li>
+      </ul>
+    </li>
+    <li>Cualquiera de los 4 que acuse recibo desde la Mesa cierra la alarma.</li>
+  </ol>
+  <div class="callout warn">⚠️ Es un canal serio · usalo cuando de verdad necesitás ayuda de los 4. No para dudas rutinarias.</div>
+</div>
+
+<div class="section">
+  <h2>🖨️ Cómo imprimir un expediente para llevar a la autoridad</h2>
+  <ol style="font-size:14px;line-height:1.8;padding-left:24px;margin:0">
+    <li>Entrá a <strong>📂 Expedientes</strong> → click en la fila del expediente (ej: <em>Talca Patente Definitiva</em>).</li>
+    <li>Se abre detalle con portada (Reciclean SpA · RUT · destinatario) + N obligaciones con su respaldo + bitácora.</li>
+    <li>Botón verde arriba <strong>🖨️ Imprimir todo</strong> → genera PDF con portada + cuerpo + N puntos + 2 líneas de firma.</li>
+    <li>Lo presentás físico o lo mandás como PDF único.</li>
+  </ol>
+</div>
+
+<div class="section">
+  <h2>🤖 Diego coach (chatbot)</h2>
+  <p>Diego conoce las 4 vistas, las RPCs y el estado real de tus expedientes. Cosas que le podés preguntar:</p>
+  <table>
+    <thead><tr><th>Si sos Jair</th><th>Si sos Dusan/Cesar/Dyana</th></tr></thead>
+    <tbody>
+      <tr><td>"¿qué hago primero?"</td><td>"¿cómo va Jair?"</td></tr>
+      <tr><td>"no puedo avanzar con SAG, ¿qué hago?"</td><td>"¿qué hay en Talca Patente Definitiva?"</td></tr>
+      <tr><td>"¿qué papel piden en SEREMI Talca?"</td><td>"dame las 3 tareas más trabadas"</td></tr>
+      <tr><td>"¿cuánto me queda para la provisoria?"</td><td>"¿cuántas alarmas abiertas hay?"</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">Diego siempre consulta datos vivos de la BD. No inventa. Si no sabe algo te lo dice.</div>
+</div>
+
+<div class="section">
+  <h2>👥 Quién hace qué</h2>
+  <table>
+    <thead><tr><th>Persona</th><th>Email panel</th><th>WhatsApp</th><th>Rol en Cumplimiento</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Jair Sanmartín</strong></td><td>asistente@gestionrepchile.cl</td><td>+56 9 8655 8236</td><td>Operador · gestiona los documentos</td></tr>
+      <tr><td><strong>Dusan Arancibia</strong></td><td>gerencia@gestionrepchile.cl</td><td>+56 9 6306 9065</td><td>CEO · firma + supervisión</td></tr>
+      <tr><td><strong>Cesar Mora</strong></td><td>soporte@gestionrepchile.cl</td><td>+56 9 9454 1662</td><td>Soporte · supervisión</td></tr>
+      <tr><td><strong>Dyana Pinto</strong></td><td>dpinto@sercotspa.cl</td><td>+56 9 6728 0603</td><td>SERCOT contabilidad · supervisión + fuente de docs</td></tr>
+      <tr><td><strong>Juan Mendoza</strong></td><td>comercial@gestionrepchile.cl</td><td>+56 9 9055 2591</td><td>Operativo planta · escalamiento</td></tr>
+      <tr><td><strong>Ingrid</strong></td><td>gestorcomercial@gestionrepchile.cl</td><td>+56 9 6190 8322</td><td>Operaciones · puede recibir aviso cambio plazo</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h2>🛑 Cosas que NO hay que hacer</h2>
+  <ul style="font-size:14px;line-height:1.9;margin:0;padding-left:24px">
+    <li>❌ <strong>No usar el escalamiento como duda rutinaria.</strong> Es para cuando estás trabado de verdad.</li>
+    <li>❌ <strong>No cambiar plazo sin razón.</strong> Si lo movés, escribí por qué (queda en bitácora).</li>
+    <li>❌ <strong>No subir foto borrosa o cortada.</strong> Si Diego no valida, la rechaza.</li>
+    <li>❌ <strong>No esperar a que alguien te diga por dónde empezar.</strong> El Gestionador te muestra el top 5 priorizado · vos elegís.</li>
+    <li>❌ <strong>No marcar Cumplido sin tener el respaldo.</strong> Cumplido = doc cargado + verificado.</li>
   </ul>
 </div>
 
 <div class="footer">
-  <div class="big">Cualquier duda · WhatsApp a Diego +56 9 6192 6365</div>
-  <div>Guía Permisología · Reciclean-Farex · 08-jun-2026</div>
+  <div class="big">Dudas: WhatsApp a Diego o consultá a Pablo (sistemas@gestionrepchile.cl)</div>
+  <div>Guía Cumplimiento Documental · Reciclean-Farex · 09-jun-2026 · v2</div>
 </div>
 
 </div>
