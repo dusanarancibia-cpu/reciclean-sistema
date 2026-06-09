@@ -9255,6 +9255,8 @@ function oppRenderCard(o) {
   const crmDot = esCrm ? '<span title="CRM Impulsa" class="inline-block w-2 h-2 rounded-full bg-purple-400 mr-1"></span>' : '';
   return `
     <div onclick="oppAbrirDrawer('${escapeHtml(o.oportunidad_id)}')"
+         role="button" tabindex="0"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"
          draggable="true"
          ondragstart="oppDragStart(event,'${escapeHtml(o.oportunidad_id)}','${escapeHtml(o.origen || '')}')"
          data-entity-type="oportunidad" data-entity-id="${escapeHtml(o.oportunidad_id)}" data-entity-nombre="${escapeHtml(o.titulo || '')}"
@@ -13843,7 +13845,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const preguntasHtml = abierto ? `<div class="p26-preguntas">${g.preguntas.map(renderPregunta).join('')}</div>` : '';
       return `
         <div class="p26-bloque" data-bloque="${num}">
-          <div class="p26-bloque-header" onclick="plan2026ToggleBloque(${num})">
+          <div class="p26-bloque-header" role="button" tabindex="0" onclick="plan2026ToggleBloque(${num})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
             <div class="flex items-center gap-2">
               <span class="text-stone-400">${chevron}</span>
               <span class="font-semibold text-stone-700">Bloque ${num}: ${esc(g.nombre)}</span>
@@ -13864,7 +13866,7 @@ document.addEventListener('DOMContentLoaded', () => {
       : '<span class="p26-badge-pendiente">PENDIENTE</span>';
     const corta = (r.pregunta || '').slice(0, 90) + ((r.pregunta || '').length > 90 ? '…' : '');
     return `
-      <div class="p26-pregunta" onclick="plan2026AbrirModal(${r.id})">
+      <div class="p26-pregunta" role="button" tabindex="0" onclick="plan2026AbrirModal(${r.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
         ${badge}
         <div class="flex-1 text-sm text-stone-700">
           <div><span class="font-semibold">#${r.id}.</span> ${esc(corta)}</div>
