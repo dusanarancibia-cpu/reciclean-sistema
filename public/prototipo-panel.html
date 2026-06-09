@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototipo nuevo panel Reciclean · 5 min de tu opinión</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; background: #f8fafc; color: #0f172a; margin: 0; }
+  .sync-banner { position: sticky; top: 0; background: #059669; color: white; padding: 8px 16px; font-size: 12px; text-align: center; z-index: 100; }
+  .sync-banner.warn { background: #d97706; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(15,23,42,0.06); margin-bottom: 16px; }
+  .btn { padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; transition: all .15s; }
+  .btn-green { background: #059669; color: white; }
+  .btn-green:hover { background: #047857; }
+  .btn-red { background: #fee2e2; color: #dc2626; }
+  .btn-red:hover { background: #fecaca; }
+  .btn-yellow { background: #fef3c7; color: #d97706; }
+  .btn-yellow:hover { background: #fde68a; }
+  .btn-secondary { background: #f1f5f9; color: #0f172a; }
+  .btn-secondary:hover { background: #e2e8f0; }
+  .perfil-card { padding: 24px; border-radius: 16px; cursor: pointer; transition: all .2s; border: 3px solid transparent; }
+  .perfil-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .perfil-card.selected { border-color: #059669; background: #ecfdf5; }
+  .panel-mockup { display: flex; min-height: 480px; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: white; }
+  .panel-sidebar { width: 200px; background: #1e293b; color: white; padding: 16px 12px; }
+  .panel-content { flex: 1; padding: 24px; background: #f8fafc; }
+  .sidebar-group { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin: 12px 0 6px; font-weight: 600; }
+  .sidebar-link { padding: 8px 10px; border-radius: 8px; margin-bottom: 4px; cursor: pointer; font-size: 13px; color: #cbd5e1; display: flex; align-items: center; gap: 10px; }
+  .sidebar-link:hover { background: #334155; }
+  .sidebar-link.active { background: #059669; color: white; }
+  .top-bar { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: white; border-bottom: 1px solid #e2e8f0; margin: -24px -24px 24px; }
+  .search-box { flex: 1; background: #f1f5f9; padding: 8px 14px; border-radius: 10px; font-size: 12px; color: #64748b; cursor: pointer; font-family: monospace; }
+  .search-box:hover { background: #e2e8f0; }
+  .item-card { background: white; border-radius: 12px; padding: 14px; margin-bottom: 10px; border-left: 4px solid #fbbf24; cursor: pointer; transition: all .15s; }
+  .item-card:hover { transform: translateX(2px); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .item-card.green { border-left-color: #059669; }
+  .item-card.red { border-left-color: #dc2626; }
+  .pill { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+  .pill-firma { background: #fef3c7; color: #d97706; }
+  .pill-revisar { background: #ecfdf5; color: #059669; }
+  .pill-urgente { background: #fee2e2; color: #dc2626; }
+  .feedback-bar { background: #0f172a; color: white; padding: 16px 20px; border-radius: 12px; margin-top: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .scenario-tag { display: inline-block; padding: 4px 10px; background: #ecfdf5; color: #059669; border-radius: 6px; font-size: 11px; font-weight: 600; margin-right: 8px; }
+  .cmdk-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: flex-start; justify-content: center; z-index: 1000; padding-top: 80px; }
+  .cmdk-overlay.open { display: flex; }
+  .cmdk { background: white; width: 90%; max-width: 600px; border-radius: 16px; padding: 20px; }
+  .cmdk-input { width: 100%; padding: 12px; border: 2px solid #059669; border-radius: 10px; font-size: 14px; font-family: 'Inter'; }
+  .cmdk-result { padding: 10px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+  .cmdk-result:hover { background: #f1f5f9; }
+  .ico { width: 18px; height: 18px; display: inline-block; text-align: center; }
+  .nada { text-align: center; padding: 40px; color: #94a3b8; font-style: italic; }
+  .resumen { background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%); border: 2px solid #059669; }
+  @media (max-width: 768px) {
+    .panel-mockup { flex-direction: column; }
+    .panel-sidebar { width: auto; }
+    .panel-content { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- R-AUD-036 · Vista provisional con fecha de demolición -->
+<div style="position:sticky;top:0;background:#1e293b;color:#94a3b8;padding:6px 16px;font-size:11px;text-align:center;z-index:200;font-family:monospace;">
+  🧪 PROTOTIPO PROVISIONAL · D-PANEL-REDISEÑO-001 · demolición ≤ 2026-07-06 (sprint 1) · <strong style="color:#fbbf24;">PASA si ≥2/3 personas votan "Me sirve" o "El nuevo"</strong> → Pablo construye G39+G40+G41 (15hr)
+</div>
+
+<!-- Banner sync siempre arriba -->
+<div id="syncBanner" class="sync-banner" style="top:30px;">
+  ✓ Guardado automático activado · todo tu feedback queda registrado
+</div>
+
+<div class="container">
+
+  <!-- INTRO -->
+  <div class="card" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white;">
+    <h1 style="font-size: 24px; font-weight: 800; margin: 0;">¡Hola! Soy Dusan 👋</h1>
+    <p style="font-size: 14px; margin-top: 8px; opacity: 0.95;">
+      Estamos pensando en cambiar el panel de Reciclean porque hoy tiene 26 botones diferentes y eso te puede marear. <strong>Antes de cambiar nada</strong>, quiero saber qué pensás vos.
+    </p>
+    <p style="font-size: 14px; margin-top: 8px; opacity: 0.95;">
+      Te tomas <strong>5 minutos</strong>, hacés clic en lo que te llame la atención y al final me decís si te sirve. Tu opinión decide si construimos esto o no.
+    </p>
+  </div>
+
+  <!-- PASO 1: Seleccionar perfil -->
+  <div class="card" id="paso1">
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; font-weight: 600;">Paso 1 de 3</div>
+    <h2 style="margin: 8px 0 16px; font-size: 18px;">¿Quién sos?</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+      <div class="perfil-card" data-perfil="andrea" onclick="seleccionarPerfil('andrea')" style="background: #fef3c7;">
+        <div style="font-size: 36px; text-align: center;">💼</div>
+        <h3 style="text-align: center; margin: 8px 0 4px; font-size: 16px;">Andrea</h3>
+        <p style="text-align: center; font-size: 12px; color: #64748b; margin: 0;">Comercial · Firmas · CRM</p>
+      </div>
+      <div class="perfil-card" data-perfil="ingrid" onclick="seleccionarPerfil('ingrid')" style="background: #ecfdf5;">
+        <div style="font-size: 36px; text-align: center;">🏭</div>
+        <h3 style="text-align: center; margin: 8px 0 4px; font-size: 16px;">Ingrid</h3>
+        <p style="text-align: center; font-size: 12px; color: #64748b; margin: 0;">Operaciones · Pesajes · Talca</p>
+      </div>
+      <div class="perfil-card" data-perfil="juan" onclick="seleccionarPerfil('juan')" style="background: #eff6ff;">
+        <div style="font-size: 36px; text-align: center;">⚖️</div>
+        <h3 style="text-align: center; margin: 8px 0 4px; font-size: 16px;">Juan</h3>
+        <p style="text-align: center; font-size: 12px; color: #64748b; margin: 0;">Planta Maipú · Registro · Turno</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 2: Ver el panel nuevo -->
+  <div id="paso2" style="display: none;">
+    <div class="card">
+      <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; font-weight: 600;">Paso 2 de 3</div>
+      <h2 style="margin: 8px 0 8px; font-size: 18px;">Así se vería tu nuevo panel</h2>
+      <p style="font-size: 13px; color: #475569; margin-bottom: 16px;">
+        En lugar de 26 botones, ves un menú chico a la izquierda con <strong>4 cosas principales</strong> + tus <strong>favoritos</strong>. Arriba hay una <strong>barra de búsqueda</strong> donde escribís lo que sea (cliente, factura, sucursal) y aparece al toque.
+        <br><br>
+        Probá hacer clic en los recuadros amarillos del medio · es como sería tu día normal.
+      </p>
+
+      <!-- PANEL MOCKUP -->
+      <div class="panel-mockup" id="panelMockup">
+        <!-- sidebar -->
+        <div class="panel-sidebar" id="sidebar"></div>
+        <!-- contenido -->
+        <div class="panel-content">
+          <div class="top-bar">
+            <div style="font-weight: 700; color: #0f172a;">Reciclean</div>
+            <div class="search-box" onclick="abrirCmdK()">🔍 Buscar lo que sea... (clic acá)</div>
+            <div style="background: #059669; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px;" id="userAvatar"></div>
+          </div>
+          <div id="panelContent"></div>
+        </div>
+      </div>
+
+      <!-- Feedback rápido por escenario -->
+      <div class="feedback-bar">
+        <div style="flex: 1; font-size: 13px;">
+          ¿Cómo te resulta esta pantalla?
+        </div>
+        <button class="btn btn-green" onclick="capturarFeedback('home','sirve')">✓ Me sirve</button>
+        <button class="btn btn-yellow" onclick="capturarFeedback('home','dudas')">? Tengo dudas</button>
+        <button class="btn btn-red" onclick="capturarFeedback('home','no')">✗ No me sirve</button>
+      </div>
+    </div>
+
+    <!-- ESCENARIO 2: probar búsqueda -->
+    <div class="card">
+      <h3 style="font-size: 16px; margin-top: 0;">Probá la búsqueda mágica</h3>
+      <p style="font-size: 13px; color: #475569;">
+        En vez de ir a buscar un cliente por menús, escribís el nombre y aparece. Hacé clic en el botón:
+      </p>
+      <button class="btn btn-green" onclick="abrirCmdK()" style="margin: 10px 0;">🔍 Probar buscar "Pincore"</button>
+      <div class="feedback-bar">
+        <div style="flex: 1; font-size: 13px;">
+          ¿La búsqueda te resulta fácil de usar?
+        </div>
+        <button class="btn btn-green" onclick="capturarFeedback('busqueda','sirve')">✓ Sí</button>
+        <button class="btn btn-yellow" onclick="capturarFeedback('busqueda','dudas')">? Dudas</button>
+        <button class="btn btn-red" onclick="capturarFeedback('busqueda','no')">✗ No</button>
+      </div>
+    </div>
+
+    <!-- ESCENARIO 3: comparación -->
+    <div class="card">
+      <h3 style="font-size: 16px; margin-top: 0;">Lo más importante</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div style="background: #fef2f2; padding: 14px; border-radius: 10px;">
+          <strong style="color: #dc2626;">😩 Hoy</strong>
+          <p style="font-size: 12px; margin: 6px 0 0; color: #475569;">26 botones distintos · te perdés buscando · no sabés cuál es el más urgente</p>
+        </div>
+        <div style="background: #ecfdf5; padding: 14px; border-radius: 10px;">
+          <strong style="color: #059669;">🎯 Nuevo</strong>
+          <p style="font-size: 12px; margin: 6px 0 0; color: #475569;">4 entradas + tus favoritos · home con lo del día arriba · búsqueda para lo demás</p>
+        </div>
+      </div>
+      <div class="feedback-bar">
+        <div style="flex: 1; font-size: 13px;">
+          ¿Preferís el nuevo o el de hoy?
+        </div>
+        <button class="btn btn-green" onclick="capturarFeedback('comparacion','sirve')">El nuevo</button>
+        <button class="btn btn-yellow" onclick="capturarFeedback('comparacion','dudas')">Probaría</button>
+        <button class="btn btn-red" onclick="capturarFeedback('comparacion','no')">El de hoy</button>
+      </div>
+    </div>
+
+    <button class="btn btn-green" onclick="mostrarPaso3()" style="font-size: 16px; padding: 14px 24px; display: block; width: 100%; margin: 20px 0;">Siguiente · Paso 3 de 3</button>
+  </div>
+
+  <!-- PASO 3: opinión final -->
+  <div id="paso3" style="display: none;">
+    <div class="card">
+      <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; font-weight: 600;">Paso 3 de 3</div>
+      <h2 style="margin: 8px 0 16px; font-size: 18px;">¿Algo que te gustaría agregar?</h2>
+      <textarea id="comentarioLibre" placeholder="Por ejemplo: 'me falta ver las facturas del día' o 'el color es muy verde' o 'cambiame el orden del menú'..." style="width: 100%; min-height: 120px; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 13px; resize: vertical;" oninput="guardarComentario()"></textarea>
+
+      <!-- QUÉ INCLUIRÍA EL PANEL REAL (MGEB-D) -->
+      <div style="margin: 20px 0; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 16px;">
+        <strong style="font-size: 14px;">¿Qué tendría el panel real si aprobás?</strong>
+        <p style="font-size: 12px; color: #64748b; margin: 6px 0 14px;">Pablo lo construye en ~15hr con estas 7 cosas incluidas:</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div style="background: white; border-radius: 8px; padding: 10px; border-left: 3px solid #059669;">
+            <strong style="font-size: 12px;">📥 Tu trabajo al entrar</strong>
+            <p style="font-size: 11px; color: #475569; margin: 4px 0 0;">Cuando abrís el panel, ves directo lo tuyo — no una lista de 26 botones</p>
+          </div>
+          <div style="background: white; border-radius: 8px; padding: 10px; border-left: 3px solid #059669;">
+            <strong style="font-size: 12px;">🗂 4 pestañas ordenadas</strong>
+            <p style="font-size: 11px; color: #475569; margin: 4px 0 0;">Mesa de trabajo · Gestión · Expedientes · Bitácora — todo adentro, nada por fuera</p>
+          </div>
+          <div style="background: white; border-radius: 8px; padding: 10px; border-left: 3px solid #059669;">
+            <strong style="font-size: 12px;">📖 Bitácora viva</strong>
+            <p style="font-size: 11px; color: #475569; margin: 4px 0 0;">Cada llamada, visita, mensaje o nota queda registrada en un solo lugar</p>
+          </div>
+          <div style="background: white; border-radius: 8px; padding: 10px; border-left: 3px solid #059669;">
+            <strong style="font-size: 12px;">⚡ Botones de acción rápida</strong>
+            <p style="font-size: 11px; color: #475569; margin: 4px 0 0;">1 toque para marcar cumplido · pedir más plazo · escalar a Dusan con aviso automático</p>
+          </div>
+          <div style="background: white; border-radius: 8px; padding: 10px; border-left: 3px solid #059669;">
+            <strong style="font-size: 12px;">📊 Números con detalle</strong>
+            <p style="font-size: 11px; color: #475569; margin: 4px 0 0;">Hacés clic en cualquier cifra y ves el desglose completo — no solo el total</p>
+          </div>
+          <div style="background: white; border-radius: 8px; padding: 10px; border-left: 3px solid #059669;">
+            <strong style="font-size: 12px;">🤖 Diego adentro del panel</strong>
+            <p style="font-size: 11px; color: #475569; margin: 4px 0 0;">Te avisa cuando algo vence · te ayuda a redactar · responde desde la misma pantalla</p>
+          </div>
+          <div style="background: white; border-radius: 8px; padding: 10px; border-left: 3px solid #059669; grid-column: span 2;">
+            <strong style="font-size: 12px;">🔗 Todo conectado solo</strong>
+            <p style="font-size: 11px; color: #475569; margin: 4px 0 0;">Lo que registrás acá aparece automático en el panel de Dusan — sin copiar ni pegar entre pantallas</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin: 20px 0;">
+        <strong style="font-size: 14px;">Pregunta final · honestidad total:</strong>
+        <div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 12px;">
+          <button class="btn btn-green" onclick="capturarFeedback('final','sirve')" style="padding: 16px;">✓ Construyan esto, me sirve</button>
+          <button class="btn btn-yellow" onclick="capturarFeedback('final','dudas')" style="padding: 16px;">? Necesito ver más</button>
+          <button class="btn btn-red" onclick="capturarFeedback('final','no')" style="padding: 16px;">✗ Mejor el que tenemos hoy</button>
+        </div>
+      </div>
+
+      <button class="btn btn-secondary" onclick="preguntarDiego()" style="margin-top: 10px;">❓ Pedir aclaración a Diego</button>
+
+      <!-- CRITERIO PASS/FAIL explícito -->
+      <div id="criterioPass" style="margin-top:16px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;padding:16px;font-size:13px;">
+        <strong>🎯 Criterio de validación</strong>
+        <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:#ecfdf5;padding:12px;border-radius:8px;border-left:4px solid #059669;">
+            <strong style="color:#059669;">✓ PASA → construimos</strong>
+            <p style="margin:4px 0 0;color:#475569;font-size:12px;">≥2 de 3 personas (Andrea + Ingrid + Juan) votan <em>"Me sirve"</em> o <em>"El nuevo"</em> en la pregunta final</p>
+          </div>
+          <div style="background:#fef2f2;padding:12px;border-radius:8px;border-left:4px solid #dc2626;">
+            <strong style="color:#dc2626;">✗ NO PASA → rediseñar</strong>
+            <p style="margin:4px 0 0;color:#475569;font-size:12px;">≤1 de 3 personas aprueban → volver a diseño antes de cargarle 15hr a Pablo</p>
+          </div>
+        </div>
+        <div id="marcadorVotos" style="margin-top:12px;text-align:center;font-size:12px;color:#64748b;">
+          Votos finales: <span id="contVotos">0</span>/3 · esperando respuestas...
+        </div>
+      </div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="card resumen" id="resumen" style="display: none;">
+      <h2 style="font-size: 20px; margin: 0 0 12px;">¡Listo! Tu opinión está guardada 🎉</h2>
+      <p style="font-size: 13px; color: #475569;">Esto se va a:</p>
+      <ul style="font-size: 13px; color: #475569; margin: 8px 0;">
+        <li>📥 Bandeja de Dusan (lo lee mañana 8:30)</li>
+        <li>📊 Tabla <code style="background:#f1f5f9; padding:2px 6px; border-radius:4px;">panel.validacion_rediseno_v1</code></li>
+        <li>🤖 Diego cartero para notificar a PC1 yo</li>
+      </ul>
+      <div id="resumenContenido" style="margin-top: 16px; font-size: 13px; background: #f1f5f9; padding: 14px; border-radius: 10px; font-family: monospace; white-space: pre-wrap;"></div>
+      <button class="btn btn-secondary" onclick="descargarFeedback()" style="margin-top: 12px;">⬇ Descargar mi feedback</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- CMD+K Overlay -->
+<div class="cmdk-overlay" id="cmdkOverlay" onclick="if(event.target===this) cerrarCmdK()">
+  <div class="cmdk">
+    <div style="font-size: 11px; color: #64748b; margin-bottom: 8px;">Buscador mágico · escribí cualquier cosa</div>
+    <input class="cmdk-input" type="text" id="cmdkInput" placeholder="ej: Pincore, factura HUAL, sucursal Maipú..." oninput="filtrarCmdK()" autofocus>
+    <div id="cmdkResults" style="margin-top: 12px; max-height: 300px; overflow-y: auto;"></div>
+    <p style="font-size: 11px; color: #94a3b8; margin-top: 8px;">Tip: en el panel real apretás <code>Ctrl+K</code> y aparece. En el celular tocás la barra de arriba.</p>
+  </div>
+</div>
+
+<script>
+// ===== Estado =====
+let perfil = null;
+let feedback = JSON.parse(localStorage.getItem('feedback_v1') || '{}');
+
+// ===== Contenidos por perfil =====
+const PERFILES = {
+  andrea: {
+    nombre: 'Andrea',
+    avatar: 'AR',
+    color: '#fef3c7',
+    sidebar: [
+      { grupo: 'HOY', links: [
+        { ico: '📥', label: 'Mi día', active: true },
+        { ico: '🎛', label: 'Mesa Control' }
+      ]},
+      { grupo: 'TRABAJO', links: [
+        { ico: '💼', label: 'Comercial' },
+        { ico: '🤖', label: 'Diego' }
+      ]},
+      { grupo: '★ FAVORITOS', links: [
+        { ico: '📊', label: 'Cartera HUAL' },
+        { ico: '✍', label: 'Firmas pendientes' },
+        { ico: '📞', label: 'Cotización Pincore' }
+      ]}
+    ],
+    saludo: 'Buenos días Andrea ☀️',
+    resumen: '3 firmas esperan tu revisión · 1 cotización Pincore pendiente · 5 clientes sin contactar esta semana',
+    items: [
+      { pill: 'firma', pillLabel: 'FIRMA', titulo: 'Salcobrand contrato anual', sub: 'Esperando hace 2 hr · revisaste 80%' },
+      { pill: 'revisar', pillLabel: 'REVISÁ', titulo: 'Cotización Pincore caja', sub: 'Margen subió a 32% · podés cerrar' },
+      { pill: 'urgente', pillLabel: 'URGENTE', titulo: 'HUAL no pagó 30 días', sub: 'Llamar antes que escale a Dusan' }
+    ]
+  },
+  ingrid: {
+    nombre: 'Ingrid',
+    avatar: 'IN',
+    color: '#ecfdf5',
+    sidebar: [
+      { grupo: 'HOY', links: [
+        { ico: '📥', label: 'Mi día', active: true },
+        { ico: '🎛', label: 'Mesa Control' }
+      ]},
+      { grupo: 'TRABAJO', links: [
+        { ico: '🏭', label: 'Operaciones' },
+        { ico: '🤖', label: 'Diego' }
+      ]},
+      { grupo: '★ FAVORITOS', links: [
+        { ico: '⚖️', label: 'Pesajes hoy Talca' },
+        { ico: '🚨', label: 'Alertas báscula' },
+        { ico: '🚛', label: 'Camiones activos' }
+      ]}
+    ],
+    saludo: 'Buenos días Ingrid ☀️',
+    resumen: '3 camiones sin cerrar pesaje · 1 alerta báscula · Cristian sin registrar entrada',
+    items: [
+      { pill: 'urgente', pillLabel: 'URGENTE', titulo: 'Báscula 2 Talca: diferencia 120 kg', sub: 'Pesaje 08:42 no cuadra con tara registrada' },
+      { pill: 'firma', pillLabel: 'REVISÁ', titulo: 'Camión Cordero: pesaje abierto 2 hr', sub: 'Entró 07:15 · sin cierre todavía' },
+      { pill: 'revisar', pillLabel: 'HOY', titulo: 'Pesajes Talca: 14 registrados', sub: '3 pendientes de confirmar · meta 20 hoy' }
+    ]
+  },
+  juan: {
+    nombre: 'Juan',
+    avatar: 'JM',
+    color: '#eff6ff',
+    sidebar: [
+      { grupo: 'HOY', links: [
+        { ico: '📥', label: 'Mi día', active: true },
+        { ico: '🎛', label: 'Mesa Control' }
+      ]},
+      { grupo: 'TRABAJO', links: [
+        { ico: '⚖️', label: 'Planta Maipú' },
+        { ico: '🤖', label: 'Diego' }
+      ]},
+      { grupo: '★ FAVORITOS', links: [
+        { ico: '📋', label: 'Mis pesajes' },
+        { ico: '🚛', label: 'Registro camiones' },
+        { ico: '✅', label: 'Checklist turno' }
+      ]}
+    ],
+    saludo: 'Buenos días Juan ☀️',
+    resumen: 'Turno mañana activo · 8 pesajes registrados hoy · checklist 60% completo',
+    items: [
+      { pill: 'revisar', pillLabel: 'TURNO', titulo: 'Checklist apertura Maipú', sub: '3 puntos pendientes: báscula, portón, registro' },
+      { pill: 'firma', pillLabel: 'REGISTRÁ', titulo: 'Camión Valenzuela llegó a las 9:30', sub: 'Material: cartón · tara pendiente de ingreso' },
+      { pill: 'urgente', pillLabel: 'URGENTE', titulo: 'Pesaje 09:15 sin contramuestra', sub: 'Nicolas registró pero falta foto báscula' }
+    ]
+  }
+};
+
+// ===== Render =====
+function seleccionarPerfil(p) {
+  perfil = p;
+  document.querySelectorAll('.perfil-card').forEach(el => el.classList.remove('selected'));
+  document.querySelector('[data-perfil="' + p + '"]').classList.add('selected');
+  feedback.perfil = p;
+  feedback.fecha = new Date().toISOString();
+  guardarFeedback();
+  renderPanel();
+  document.getElementById('paso2').style.display = 'block';
+  document.getElementById('paso2').scrollIntoView({ behavior: 'smooth' });
+}
+
+function renderPanel() {
+  const data = PERFILES[perfil];
+  // sidebar
+  document.getElementById('sidebar').innerHTML = data.sidebar.map(g => `
+    <div class="sidebar-group">${g.grupo}</div>
+    ${g.links.map(l => `<div class="sidebar-link ${l.active?'active':''}"><span class="ico">${l.ico}</span> ${l.label}</div>`).join('')}
+  `).join('');
+  // avatar
+  document.getElementById('userAvatar').textContent = data.avatar;
+  // contenido
+  document.getElementById('panelContent').innerHTML = `
+    <h2 style="font-size: 20px; font-weight: 700; margin: 0;">${data.saludo}</h2>
+    <p style="font-size: 13px; color: #64748b; margin: 6px 0 16px;">${data.resumen}</p>
+    ${data.items.map(it => `
+      <div class="item-card ${it.pill==='firma'?'green':it.pill==='urgente'?'red':''}" onclick="alert('En el panel real: te abre la ficha completa de esta cosa. Probá los botones del feedback abajo 👇')">
+        <span class="pill pill-${it.pill}">${it.pillLabel}</span>
+        <strong style="margin-left: 6px;">${it.titulo}</strong>
+        <div style="color: #94a3b8; font-size: 12px; margin-top: 4px;">${it.sub}</div>
+      </div>
+    `).join('')}
+  `;
+}
+
+// ===== Feedback =====
+function capturarFeedback(pantalla, respuesta) {
+  feedback[pantalla] = respuesta;
+  feedback.fecha_ultima = new Date().toISOString();
+  guardarFeedback();
+  mostrarSync();
+  // Marcar visual el botón clickeado
+  event.target.style.transform = 'scale(0.95)';
+  setTimeout(() => event.target.style.transform = '', 150);
+  // Si es el final, mostrar resumen
+  if (pantalla === 'final') {
+    mostrarResumen();
+    // Actualizar marcador de votos
+    const totalFinal = JSON.parse(localStorage.getItem('votos_finales_v1') || '[]');
+    totalFinal.push({ perfil: feedback.perfil, voto: respuesta, ts: new Date().toISOString() });
+    localStorage.setItem('votos_finales_v1', JSON.stringify(totalFinal));
+    const aprobados = totalFinal.filter(v => v.voto === 'sirve').length;
+    const el = document.getElementById('contVotos');
+    if (el) el.textContent = aprobados;
+  }
+}
+
+function guardarComentario() {
+  feedback.comentario = document.getElementById('comentarioLibre').value;
+  guardarFeedback();
+}
+
+function guardarFeedback() {
+  localStorage.setItem('feedback_v1', JSON.stringify(feedback));
+}
+
+function mostrarSync() {
+  const b = document.getElementById('syncBanner');
+  b.textContent = '✓ Guardado · ' + new Date().toLocaleTimeString();
+  b.classList.remove('warn');
+  setTimeout(() => b.textContent = '✓ Guardado automático activado · todo tu feedback queda registrado', 2000);
+}
+
+function mostrarPaso3() {
+  document.getElementById('paso3').style.display = 'block';
+  document.getElementById('paso3').scrollIntoView({ behavior: 'smooth' });
+}
+
+function mostrarResumen() {
+  const r = document.getElementById('resumen');
+  r.style.display = 'block';
+  document.getElementById('resumenContenido').textContent = JSON.stringify(feedback, null, 2);
+  r.scrollIntoView({ behavior: 'smooth' });
+}
+
+function descargarFeedback() {
+  const blob = new Blob([JSON.stringify(feedback, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'feedback-' + (feedback.perfil || 'anonimo') + '-' + Date.now() + '.json';
+  a.click();
+}
+
+// ===== Cmd+K =====
+const ITEMS_CMDK = [
+  { ico: '🏢', label: 'Pincore', sub: 'Cliente · Cartera al día · margen 32%' },
+  { ico: '🏢', label: 'HUAL', sub: 'Cliente · debe 30 días · llamar urgente' },
+  { ico: '🏢', label: 'Resimex', sub: 'Cliente · 12 oportunidades activas' },
+  { ico: '📍', label: 'Sucursal Maipú', sub: '2 faltas hoy · Juan' },
+  { ico: '📍', label: 'Sucursal Cerrillos', sub: '-18% vs meta semana' },
+  { ico: '📍', label: 'Sucursal Talca', sub: '+12% · Ingrid' },
+  { ico: '✍', label: 'Firma Salcobrand', sub: 'Esperando 2 hr' },
+  { ico: '💰', label: 'Factura HUAL mayo', sub: '$2.4M · pendiente cobro' },
+  { ico: '📜', label: 'DIN trim 2 Ley REP', sub: 'Vence 8 días' }
+];
+
+function abrirCmdK() {
+  document.getElementById('cmdkOverlay').classList.add('open');
+  document.getElementById('cmdkInput').value = '';
+  document.getElementById('cmdkInput').focus();
+  filtrarCmdK();
+}
+
+function cerrarCmdK() {
+  document.getElementById('cmdkOverlay').classList.remove('open');
+}
+
+function filtrarCmdK() {
+  const q = document.getElementById('cmdkInput').value.toLowerCase();
+  const filtrados = q ? ITEMS_CMDK.filter(i => (i.label + ' ' + i.sub).toLowerCase().includes(q)) : ITEMS_CMDK;
+  document.getElementById('cmdkResults').innerHTML = filtrados.length ? filtrados.map(i => `
+    <div class="cmdk-result" onclick="cerrarCmdK(); alert('En el panel real: te abre directamente la ficha de ' + ${JSON.stringify(i.label)} + '. Ahorrás 30 seg de menús.')">
+      <strong>${i.ico} ${i.label}</strong>
+      <div style="font-size: 11px; color: #64748b;">${i.sub}</div>
+    </div>
+  `).join('') : '<div class="nada">Nada con ese nombre · podés crearlo desde acá también</div>';
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); abrirCmdK(); }
+  if (e.key === 'Escape') cerrarCmdK();
+});
+
+function preguntarDiego() {
+  const pregunta = prompt('¿Qué le querés preguntar a Diego?');
+  if (pregunta) {
+    feedback.pregunta_diego = pregunta;
+    guardarFeedback();
+    alert('Listo, Diego va a responderte cuando lo lea Dusan o Pablo. Quedó guardada tu pregunta.');
+  }
+}
+</script>
+
+</body>
+</html>
