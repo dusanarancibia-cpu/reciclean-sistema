@@ -68,11 +68,18 @@ body{font-family:'Inter',sans-serif;margin:0;background:var(--bg);color:var(--te
 .auth-warn a{color:#92400e;font-weight:700}
 
 @media (max-width:600px){.card h2{font-size:16px}.btn{padding:16px;font-size:15px}}
+.suc-filtros{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 16px;padding:10px 12px;background:#fff;border:1px solid var(--border);border-radius:10px}
+.suc-filtros .suc-label{font-size:12px;color:var(--muted);font-weight:600;margin-right:4px}
+.suc-btn{background:#fff;color:#374151;border:1px solid var(--border);padding:7px 12px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.suc-btn:hover{background:#f3f4f6}
+.suc-btn.active{background:var(--primary);color:#fff;border-color:var(--dark)}
+.suc-btn .suc-n{font-size:11px;background:rgba(0,0,0,.1);padding:1px 6px;border-radius:8px;font-weight:700}
+.suc-btn.active .suc-n{background:rgba(255,255,255,.25)}
 </style>
 </head>
 <body>
 <div class="hero">
-  <h1>👋 Hola Jair</h1>
+  <h1>📥 Gestionador de documentos</h1>
   <p>Lo que más traba hoy · 1 cosa a la vez</p>
   <div class="kpis">
     <div class="kpi"><strong id="k-pend">—</strong>pendientes</div>
@@ -84,6 +91,14 @@ body{font-family:'Inter',sans-serif;margin:0;background:var(--bg);color:var(--te
 <div class="cont">
   <div id="auth_warn" class="auth-warn" style="display:none">
     🔒 Iniciá sesión en <a href="/panel-rdo.html">/panel-rdo.html</a> para que tus gestiones queden guardadas con tu nombre.
+  </div>
+  <div id="suc_filtros" class="suc-filtros">
+    <span class="suc-label">🏭 Sucursal:</span>
+    <button class="suc-btn active" data-suc="">Todas <span class="suc-n" id="suc-n-todas">—</span></button>
+    <button class="suc-btn" data-suc="cerrillos">Cerrillos <span class="suc-n" id="suc-n-cerrillos">—</span></button>
+    <button class="suc-btn" data-suc="maipu">Maipú <span class="suc-n" id="suc-n-maipu">—</span></button>
+    <button class="suc-btn" data-suc="talca">Talca <span class="suc-n" id="suc-n-talca">—</span></button>
+    <button class="suc-btn" data-suc="puerto_montt">Puerto Montt <span class="suc-n" id="suc-n-puerto_montt">—</span></button>
   </div>
   <div id="lista"><div class="loading">Cargando...</div></div>
 </div>
@@ -113,7 +128,7 @@ const SUPABASE_URL='https://eknmtsrtfkzroxnovfqn.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbm10c3J0Zmt6cm94bm92ZnFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDY2ODgsImV4cCI6MjA5MDk4MjY4OH0.8Y4N0lw3DFN3Y8-R6ID7t_LAfgHWDM5N-oa4Ji9bncg';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 const MI_EMAIL='asistente@gestionrepchile.cl';
-let _myEmail=MI_EMAIL, _myNombre='Jair', _isAuth=false;
+let _myEmail=MI_EMAIL, _myNombre='Jair', _isAuth=false, _sucFiltro='';
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function diasAPlazo(d){if(!d)return null;return Math.floor((new Date(d).getTime()-Date.now())/86400000);}
@@ -133,15 +148,35 @@ async function checkAuth(){
 
 async function cargar(){
   try{
-    const {data,error}=await sb.schema('panel').rpc('jair_cola',{p_email:MI_EMAIL,p_limit:5});
+    const params={p_email:MI_EMAIL,p_limit:5};
+    if(_sucFiltro) params.p_sucursal_id=_sucFiltro;
+    const {data,error}=await sb.schema('panel').rpc('jair_cola',params);
     if(error) throw error;
     document.getElementById('k-pend').textContent=data.total_pendientes||0;
     document.getElementById('k-venc').textContent=data.vencidas||0;
     document.getElementById('k-7d').textContent=data.criticas_7d||0;
+    // Pintar contadores por sucursal (siempre desde el total, no filtrado)
+    const ps=data.por_sucursal||{};
+    let totalAll=0;
+    ['cerrillos','maipu','talca','puerto_montt'].forEach(s=>{
+      const n=ps[s]||0; totalAll+=n;
+      const el=document.getElementById('suc-n-'+s); if(el) el.textContent=n;
+    });
+    const elT=document.getElementById('suc-n-todas'); if(elT) elT.textContent=totalAll;
     render(data.cola||[]);
   }catch(e){
     document.getElementById('lista').innerHTML='<div class="error">'+esc(e.message||JSON.stringify(e))+'</div>';
   }
+}
+
+function setSucFiltro(suc){
+  _sucFiltro=suc||'';
+  document.querySelectorAll('.suc-btn').forEach(b=>b.classList.toggle('active',(b.dataset.suc||'')===_sucFiltro));
+  cargar();
+}
+window.setSucFiltro=setSucFiltro;
+function _wireSucFiltros(){
+  document.querySelectorAll('.suc-btn').forEach(b=>b.addEventListener('click',()=>setSucFiltro(b.dataset.suc||'')));
 }
 
 function render(cola){
@@ -254,6 +289,7 @@ function showConfetti(t){
   setTimeout(()=>el.classList.remove('show'),1500);
 }
 
+_wireSucFiltros();
 checkAuth().then(cargar);
 </script>
 </body>
