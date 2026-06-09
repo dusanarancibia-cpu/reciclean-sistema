@@ -3791,24 +3791,24 @@
         </div>
       </div>
 
-      <!-- KPI strip 4 colores semáforo -->
+      <!-- KPI strip 4 colores semáforo · clickeables para filtrar lista cruda -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-        <div class="bg-emerald-50 border-2 border-emerald-600 rounded-lg p-3 text-center">
+        <button type="button" onclick="cumpKpiFiltrar('ok')" class="bg-emerald-50 border-2 border-emerald-600 rounded-lg p-3 text-center hover:bg-emerald-100 cursor-pointer transition" title="Filtrar lista a permisos al día (con respaldo)">
           <div class="text-3xl font-extrabold text-emerald-700" id="cump_kpi_ok">0</div>
           <div class="text-[10px] uppercase tracking-wide text-stone-600 mt-0.5">Al día</div>
-        </div>
-        <div class="bg-amber-50 border-2 border-amber-600 rounded-lg p-3 text-center">
+        </button>
+        <button type="button" onclick="cumpKpiFiltrar('7d')" class="bg-amber-50 border-2 border-amber-600 rounded-lg p-3 text-center hover:bg-amber-100 cursor-pointer transition" title="Filtrar a los que vencen en 7 días">
           <div class="text-3xl font-extrabold text-amber-700" id="permisologia_kpi_7d">0</div>
           <div class="text-[10px] uppercase tracking-wide text-stone-600 mt-0.5">7d</div>
-        </div>
-        <div class="bg-red-50 border-2 border-red-600 rounded-lg p-3 text-center">
+        </button>
+        <button type="button" onclick="cumpKpiFiltrar('vencidos')" class="bg-red-50 border-2 border-red-600 rounded-lg p-3 text-center hover:bg-red-100 cursor-pointer transition" title="Filtrar a permisos vencidos">
           <div class="text-3xl font-extrabold text-red-700" id="cump_kpi_atrasadas">0</div>
           <div class="text-[10px] uppercase tracking-wide text-stone-600 mt-0.5">Vencidos</div>
-        </div>
-        <div class="bg-stone-100 border-2 border-stone-400 rounded-lg p-3 text-center relative">
+        </button>
+        <button type="button" onclick="cumpKpiFiltrar('sinfoto')" class="bg-stone-100 border-2 border-stone-400 rounded-lg p-3 text-center hover:bg-stone-200 cursor-pointer transition relative" title="Filtrar a permisos sin foto/respaldo">
           <div class="text-3xl font-extrabold text-stone-700" id="permisologia_kpi_sinfoto">0</div>
           <div class="text-[10px] uppercase tracking-wide text-stone-600 mt-0.5">Falta foto</div>
-        </div>
+        </button>
       </div>
 
       <!-- Barra de progreso global -->
@@ -15212,12 +15212,25 @@ document.addEventListener('DOMContentLoaded', () => {
     var fEst = $$('cump_filtro_estado') ? $$('cump_filtro_estado').value : '';
     var fSuc = $$('cump_filtro_sucursal') ? $$('cump_filtro_sucursal').value : '';
     var fTxt = ($$('cump_filtro_texto') ? $$('cump_filtro_texto').value : '').toLowerCase().trim();
+    var fKpi = window._cumpKpiFiltro || '';
     var rows = _cumpRows;
     if (fLey) rows = rows.filter(function (r) { return r.ley_id === fLey; });
     if (fEst) rows = rows.filter(function (r) { return r.estado === fEst; });
     if (fSuc === '__transversal__') rows = rows.filter(function (r) { return !r.sucursal_id; });
     else if (fSuc) rows = rows.filter(function (r) { return r.sucursal_id === fSuc; });
     if (fTxt) rows = rows.filter(function (r) { return (String(r.notas || '').toLowerCase().indexOf(fTxt) >= 0) || (String(r.responsable || '').toLowerCase().indexOf(fTxt) >= 0); });
+    // KPI drill-down · 09-jun
+    if (fKpi === 'ok') {
+      rows = rows.filter(function (r) { return r.estado === 'cumplido' && (_archivosCache[r.id] || []).length > 0; });
+    } else if (fKpi === 'vencidos') {
+      var hoy = new Date(); hoy.setHours(0,0,0,0);
+      rows = rows.filter(function (r) { return r.fecha_verificacion && new Date(r.fecha_verificacion) < hoy && r.estado !== 'cumplido'; });
+    } else if (fKpi === '7d') {
+      var ahora = new Date(), lim = new Date(Date.now() + 7*86400000);
+      rows = rows.filter(function (r) { return r.fecha_verificacion && new Date(r.fecha_verificacion) >= ahora && new Date(r.fecha_verificacion) <= lim; });
+    } else if (fKpi === 'sinfoto') {
+      rows = rows.filter(function (r) { return !((_archivosCache[r.id] || []).length); });
+    }
     if ($$('cump_kpi_total')) $$('cump_kpi_total').textContent = _cumpRows.length;
     if ($$('cump_kpi_pendientes')) $$('cump_kpi_pendientes').textContent = _cumpRows.filter(function (r) { return r.estado === 'pendiente'; }).length;
     if ($$('cump_kpi_ok')) $$('cump_kpi_ok').textContent = _cumpRows.filter(function (r) { return r.estado === 'cumplida'; }).length;
@@ -15458,6 +15471,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // GUARDA · todo lo de Permisología MVP se ejecuta UNA sola vez · 08-jun fix freeze
     if (window._permisologiaInited) { console.log('[Permisología] init ya ejecutado · skip'); return; }
     window._permisologiaInited = true;
+
+    // Drill-down KPIs · click en Al día/7d/Vencidos/Falta foto filtra la lista cruda
+    window.cumpKpiFiltrar = function (k) {
+      if (window._cumpKpiFiltro === k) window._cumpKpiFiltro = '';
+      else window._cumpKpiFiltro = k;
+      renderCumplimiento();
+      var lista = $$('cump_lista');
+      if (lista) lista.scrollIntoView({behavior:'smooth', block:'start'});
+    };
 
     // Sub-vistas 09-jun · nada por fuera del panel · default por rol
     function _permisologiaActivarSubvista(k) {

@@ -55,6 +55,26 @@ tr:last-child td{border-bottom:none}
 .alarma-item .motivo{font-size:12px;background:rgba(0,0,0,.2);padding:6px 10px;border-radius:6px;margin-top:6px}
 .alarma-item button{background:#fff;color:#dc2626;border:none;padding:8px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:12px;white-space:nowrap}
 .alarma-item button:hover{background:#fef2f2}
+.kpi{cursor:pointer;transition:transform .12s, box-shadow .12s}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.08)}
+tr.trabada-click{cursor:pointer;transition:background .12s}
+tr.trabada-click:hover{background:#fef3c7}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:200;padding:16px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:12px;max-width:560px;width:100%;padding:24px;max-height:90vh;overflow-y:auto}
+.modal h3{margin:0 0 6px;color:var(--dark);font-size:18px}
+.modal .ctx{color:var(--muted);font-size:12px;margin-bottom:14px}
+.modal label{display:block;font-size:12px;font-weight:600;color:#374151;margin:10px 0 4px}
+.modal input,.modal select,.modal textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit}
+.modal textarea{min-height:70px;resize:vertical}
+.modal .check-list{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:12px}
+.modal .check-list label{display:flex;align-items:center;gap:6px;font-weight:500;cursor:pointer;padding:6px 8px;background:#f9fafb;border-radius:6px;margin:0}
+.modal .acts{margin-top:18px;display:flex;gap:10px;justify-content:flex-end}
+.modal .acts button{padding:10px 18px;border-radius:6px;border:none;font-weight:600;cursor:pointer;font-size:13px}
+.modal .cancel{background:#e5e7eb;color:#374151}
+.modal .ok{background:var(--primary);color:#fff}
+.btn-mini{padding:6px 10px;border-radius:6px;border:none;font-weight:600;cursor:pointer;font-size:11px;margin-right:6px;color:#fff}
+.btn-mini.wa{background:#25d366}.btn-mini.correo{background:#2563eb}.btn-mini.llamada{background:#7c3aed}.btn-mini.plazo{background:#ea580c}
 .suc-card{background:#f9fafb;padding:12px;border-radius:8px;text-align:center;border:1px solid var(--border)}
 .suc-card .n{font-size:22px;font-weight:800;color:var(--dark);line-height:1}
 .suc-card .lbl{font-size:11px;color:var(--muted);margin-top:4px;text-transform:capitalize}
@@ -181,7 +201,8 @@ function renderTrabadas(arr){
     const dias=t.dias_vencida;
     const cls=dias!==null && dias>0 ? 'rojo' : (t.ultima_gestion ? 'amarillo' : 'gris');
     const txt=dias!==null && dias>0 ? 'Vencida '+dias+'d' : (t.ultima_gestion ? 'Sin gestión '+fmtAgo(t.ultima_gestion) : 'Sin gestiones');
-    return '<tr>'
+    const datos=encodeURIComponent(JSON.stringify({tarea_id:t.tarea_id,obligacion_id:t.obligacion_id,titulo:t.titulo,sucursal:t.sucursal,ley:t.ley,dest:t.origen_destinatario,descripcion:t.descripcion,plazo:t.fecha_meta}));
+    return '<tr class="trabada-click" onclick="abrirAccion(\''+datos+'\')">'
       +'<td><div class="titulo-tarea">'+esc(t.titulo||'(sin título)')+'</div><div class="descr-tarea">'+esc(t.sucursal)+' · '+esc(t.ley)+' · a '+esc(t.origen_destinatario||'—')+'</div></td>'
       +'<td><span class="pill '+cls+'">'+txt+'</span></td>'
       +'<td>'+fmtDia(t.fecha_meta)+'</td>'
@@ -189,6 +210,95 @@ function renderTrabadas(arr){
   }).join('');
   document.getElementById('trabadas').innerHTML='<table><thead><tr><th>Tarea</th><th>Estado</th><th>Plazo</th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
+
+// Modal acción al hacer click en tarea trabada
+function abrirAccion(datosEnc){
+  const t=JSON.parse(decodeURIComponent(datosEnc));
+  const ctx='🏭 '+(t.sucursal||'—')+' · ⚖️ '+(t.ley||'—')+' · 👤 a '+(t.dest||'—')+' · 📅 plazo '+(t.plazo||'—');
+  const html=''
+    +'<div class="modal-bg open" id="mod-accion">'
+    +'  <div class="modal">'
+    +'    <h3>🎯 '+esc(t.titulo||'')+'</h3>'
+    +'    <div class="ctx">'+esc(ctx)+'</div>'
+    +'    <p style="font-size:13px;margin:0 0 10px">'+esc(t.descripcion||'')+'</p>'
+    +'    <div style="margin:12px 0">'
+    +'      <button class="btn-mini wa" onclick="accionRapida('+t.tarea_id+',\'whatsapp\',\''+esc(t.titulo||'').replace(/\'/g,"\\\\'")+'\',\''+esc(t.dest||'').replace(/\'/g,"\\\\'")+'\')">📱 Registrar WhatsApp</button>'
+    +'      <button class="btn-mini correo" onclick="accionRapida('+t.tarea_id+',\'correo\',\''+esc(t.titulo||'').replace(/\'/g,"\\\\'")+'\',\''+esc(t.dest||'').replace(/\'/g,"\\\\'")+'\')">📧 Registrar correo</button>'
+    +'      <button class="btn-mini llamada" onclick="accionRapida('+t.tarea_id+',\'llamada\',\''+esc(t.titulo||'').replace(/\'/g,"\\\\'")+'\',\''+esc(t.dest||'').replace(/\'/g,"\\\\'")+'\')">📞 Registrar llamada</button>'
+    +'      <button class="btn-mini plazo" onclick="abrirPlazo('+t.tarea_id+',\''+esc(t.titulo||'').replace(/\'/g,"\\\\'")+'\')">📅 Cambiar plazo</button>'
+    +'    </div>'
+    +'    <div class="acts"><button class="cancel" onclick="cerrarAccion()">Cerrar</button></div>'
+    +'  </div>'
+    +'</div>';
+  document.body.insertAdjacentHTML('beforeend',html);
+}
+function cerrarAccion(){const m=document.getElementById('mod-accion');if(m)m.remove();}
+window.abrirAccion=abrirAccion;window.cerrarAccion=cerrarAccion;
+
+async function accionRapida(tareaId,canal,titulo,dest){
+  const texto=prompt('¿Qué pasó? Texto que queda en la bitácora.','');
+  if(texto===null)return;
+  if(!texto.trim()){alert('Necesito qué decir');return;}
+  let actorEmail='gerencia@gestionrepchile.cl',actorNombre='Dusan';
+  try{const rf=JSON.parse(localStorage.getItem('rf_session')||'{}');if(rf.email)actorEmail=rf.email;if(rf.nombre)actorNombre=rf.nombre;}catch(_){}
+  try{
+    const {error}=await sb.schema('panel').rpc('tarea_avanzar',{
+      p_tarea_id:tareaId,p_canal:canal,p_texto:texto.trim(),
+      p_actor_email:actorEmail,p_actor_nombre:actorNombre,p_bump_dias:2
+    });
+    if(error) throw error;
+    cerrarAccion();cargar();
+  }catch(e){alert('Error: '+(e.message||e));}
+}
+window.accionRapida=accionRapida;
+
+function abrirPlazo(tareaId,titulo){
+  const html=''
+    +'<div class="modal-bg open" id="mod-plazo">'
+    +'  <div class="modal">'
+    +'    <h3>📅 Cambiar plazo</h3>'
+    +'    <div class="ctx">'+esc(titulo)+'</div>'
+    +'    <label>Nueva fecha</label>'
+    +'    <input type="date" id="pl-fecha" min="'+new Date(Date.now()-86400000*30).toISOString().slice(0,10)+'" max="'+new Date(Date.now()+86400000*365).toISOString().slice(0,10)+'">'
+    +'    <label>¿Por qué se mueve? (queda en bitácora)</label>'
+    +'    <textarea id="pl-razon" placeholder="Ej: conversé con Dyana, dijo que el SAG demora 5d más"></textarea>'
+    +'    <label>Avisar a (WhatsApp · marcá los que correspondan)</label>'
+    +'    <div class="check-list" id="pl-checks">'
+    +'      <label><input type="checkbox" value="soporte@gestionrepchile.cl"> Cesar Mora</label>'
+    +'      <label><input type="checkbox" value="comercial@gestionrepchile.cl"> Juan Mendoza</label>'
+    +'      <label><input type="checkbox" value="gestorcomercial@gestionrepchile.cl"> Ingrid</label>'
+    +'      <label><input type="checkbox" value="dpinto@sercotspa.cl"> Dyana</label>'
+    +'      <label><input type="checkbox" value="gerencia@gestionrepchile.cl"> Dusan</label>'
+    +'      <label><input type="checkbox" value="asistente@gestionrepchile.cl"> Jair</label>'
+    +'    </div>'
+    +'    <div class="acts"><button class="cancel" onclick="cerrarPlazo()">Cancelar</button><button class="ok" onclick="guardarPlazo('+tareaId+')">Guardar</button></div>'
+    +'  </div>'
+    +'</div>';
+  document.body.insertAdjacentHTML('beforeend',html);
+}
+function cerrarPlazo(){const m=document.getElementById('mod-plazo');if(m)m.remove();}
+window.abrirPlazo=abrirPlazo;window.cerrarPlazo=cerrarPlazo;
+
+async function guardarPlazo(tareaId){
+  const fecha=document.getElementById('pl-fecha').value;
+  const razon=document.getElementById('pl-razon').value.trim();
+  if(!fecha){alert('Falta fecha');return;}
+  if(!razon){alert('Falta razón · queda en bitácora para que después se entienda');return;}
+  const emails=[...document.querySelectorAll('#pl-checks input:checked')].map(c=>c.value);
+  let actorEmail='gerencia@gestionrepchile.cl',actorNombre='Dusan';
+  try{const rf=JSON.parse(localStorage.getItem('rf_session')||'{}');if(rf.email)actorEmail=rf.email;if(rf.nombre)actorNombre=rf.nombre;}catch(_){}
+  try{
+    const {data,error}=await sb.schema('panel').rpc('tarea_cambiar_plazo',{
+      p_tarea_id:tareaId,p_nuevo_plazo:fecha,p_razon:razon,
+      p_actor_email:actorEmail,p_actor_nombre:actorNombre,
+      p_notificar_emails:emails.length?emails:null
+    });
+    if(error) throw error;
+    cerrarPlazo();cerrarAccion();cargar();
+    alert('✓ Plazo cambiado'+(data.n_avisos?' · WhatsApp encolado a '+data.n_avisos+' personas':' · sin avisos'));
+  }catch(e){alert('Error: '+(e.message||e));}
+}
+window.guardarPlazo=guardarPlazo;
 
 function renderTimeline(arr){
   document.getElementById('cnt-tl').textContent=arr.length;
