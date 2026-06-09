@@ -26,6 +26,14 @@ body{font-family:'Inter',sans-serif;margin:0;background:var(--bg);color:var(--te
 .kpi.alerta .n{color:var(--amber)}
 .kpi.rojo .n{color:var(--red)}
 .kpi.ok .n{color:#10b981}
+.kpi.clickable{cursor:pointer;transition:transform .12s, box-shadow .12s}
+.kpi.clickable:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.kpi.active-filter{outline:3px solid var(--dark);outline-offset:-3px}
+.kpi.ok.active-filter{outline-color:#10b981}
+.kpi.alerta.active-filter{outline-color:var(--amber)}
+.kpi.rojo.active-filter{outline-color:var(--red)}
+.filtro-activo-banner{background:#fef3c7;border-left:4px solid var(--amber);padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.filtro-activo-banner button{background:#fff;border:1px solid var(--border);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600}
 .matriz-wrap{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px}
 .matriz-wrap h3{margin:0;padding:16px 20px;background:#f9fafb;border-bottom:1px solid var(--border);font-size:14px;color:var(--dark);font-weight:700}
 table{width:100%;border-collapse:collapse;font-size:13px}
@@ -79,11 +87,11 @@ tr:hover{background:#fefce8;cursor:pointer}
   </div>
 
   <div class="kpis" id="kpis">
-    <div class="kpi"><div class="n" id="k-total">—</div><div class="lbl">Expedientes</div></div>
-    <div class="kpi ok"><div class="n" id="k-conobls">—</div><div class="lbl">Con docs cargados</div></div>
-    <div class="kpi alerta"><div class="n" id="k-vacios">—</div><div class="lbl">Sin docs · falta info</div></div>
-    <div class="kpi rojo"><div class="n" id="k-vencidos">—</div><div class="lbl">Plazos &lt; 14 días</div></div>
-    <div class="kpi"><div class="n" id="k-gestiones">—</div><div class="lbl">Gestiones registradas</div></div>
+    <div class="kpi clickable" onclick="filtroKpi('todos')" title="Ver todos los expedientes"><div class="n" id="k-total">—</div><div class="lbl">Expedientes</div></div>
+    <div class="kpi ok clickable" onclick="filtroKpi('con_docs')" title="Filtrar a expedientes que ya tienen docs vinculados"><div class="n" id="k-conobls">—</div><div class="lbl">Con docs cargados</div></div>
+    <div class="kpi alerta clickable" onclick="filtroKpi('vacios')" title="Filtrar a expedientes que faltan llenar"><div class="n" id="k-vacios">—</div><div class="lbl">Sin docs · falta info</div></div>
+    <div class="kpi rojo clickable" onclick="filtroKpi('urgentes')" title="Filtrar a plazos menores a 14 días"><div class="n" id="k-vencidos">—</div><div class="lbl">Plazos &lt; 14 días</div></div>
+    <div class="kpi clickable" onclick="filtroKpi('con_gestiones')" title="Filtrar a expedientes con gestiones registradas"><div class="n" id="k-gestiones">—</div><div class="lbl">Gestiones registradas</div></div>
   </div>
 
   <div class="filtros">
@@ -119,7 +127,7 @@ const SUC = {cerrillos:'Cerrillos', maipu:'Maipú', talca:'Talca (Maule)', puert
 const TIP = {calificacion_tecnica:'Calif. Técnica', patente_provisoria:'Pat. Provisoria', patente_definitiva:'Pat. Definitiva', resolucion_sanitaria:'Res. Sanitaria', resolucion_transporte_rnp:'Transporte RNP'};
 
 let _data = [];
-let _filtros = {suc:'', tip:''};
+let _filtros = {suc:'', tip:'', kpi:''};
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function fmtDia(d){if(!d)return '—';try{return new Date(d).toLocaleDateString('es-CL');}catch(_){return String(d);}}
@@ -170,6 +178,10 @@ function renderTabla(){
   let rows = _data;
   if (_filtros.suc) rows = rows.filter(e => e.sucursal_id === _filtros.suc);
   if (_filtros.tip) rows = rows.filter(e => e.tipo_tramite === _filtros.tip);
+  if (_filtros.kpi === 'con_docs')      rows = rows.filter(e => e.n_obls > 0);
+  if (_filtros.kpi === 'vacios')        rows = rows.filter(e => !e.n_obls);
+  if (_filtros.kpi === 'urgentes')      rows = rows.filter(e => { const d=diasAPlazo(e.plazo_mas_urgente); return d!==null && d<=14; });
+  if (_filtros.kpi === 'con_gestiones') rows = rows.filter(e => (e.n_gestiones||0) > 0);
 
   if (!rows.length){
     document.getElementById('tabla').innerHTML = '<div class="loading">No hay expedientes con esos filtros.</div>';
@@ -215,6 +227,24 @@ function filtrar(grupo, btn){
 }
 window.filtrar = filtrar;
 window.cargar = cargar;
+
+function filtroKpi(kpi){
+  // toggle off si ya está activo
+  if (_filtros.kpi === kpi) _filtros.kpi = '';
+  else _filtros.kpi = (kpi === 'todos') ? '' : kpi;
+  // resaltar el KPI activo
+  document.querySelectorAll('.kpi').forEach(k=>k.classList.remove('active-filter'));
+  if (_filtros.kpi) {
+    const map = {con_docs:1, vacios:2, urgentes:3, con_gestiones:4};
+    const idx = map[_filtros.kpi];
+    if (idx) {
+      const all = document.querySelectorAll('.kpi');
+      if (all[idx]) all[idx].classList.add('active-filter');
+    }
+  }
+  renderTabla();
+}
+window.filtroKpi = filtroKpi;
 
 cargar();
 </script>

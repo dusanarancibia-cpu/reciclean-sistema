@@ -44,6 +44,7 @@ body{font-family:'Inter',sans-serif;margin:0;background:var(--bg);color:var(--te
 .btn.correo{background:#2563eb;color:#fff}
 .btn.llamada{background:#7c3aed;color:#fff}
 .btn.cumplido{background:var(--primary);color:#fff}
+.btn.plazo{background:#ea580c;color:#fff;grid-column:1/-1}
 .btn.traba{background:var(--red);color:#fff;grid-column:1/-1;margin-top:4px}
 
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:100}
@@ -209,6 +210,7 @@ function renderCard(t,n){
     +'    <button class="btn correo" onclick="abrirModal('+t.tarea_id+',\'correo\',\''+esc(t.titulo||'').replace(/\'/g,"\\'")+'\',\''+esc(dest).replace(/\'/g,"\\'")+'\')">📧 Correo</button>'
     +'    <button class="btn llamada" onclick="abrirModal('+t.tarea_id+',\'llamada\',\''+esc(t.titulo||'').replace(/\'/g,"\\'")+'\',\''+esc(dest).replace(/\'/g,"\\'")+'\')">📞 Llamada</button>'
     +'    <button class="btn cumplido" onclick="cumplir('+t.tarea_id+')">✓ Cumplido</button>'
+    +'    <button class="btn plazo" onclick="abrirPlazo('+t.tarea_id+',\''+esc(t.titulo||'').replace(/\'/g,"\\'")+'\')">📅 Cambiar plazo · avisar a otros</button>'
     +'    <button class="btn traba" onclick="trabarse('+t.tarea_id+',\''+esc(t.titulo||'').replace(/\'/g,"\\'")+'\')">🆘 No avanza · escalar alarmas (Cesar · Juan · Dyana · Dusan)</button>'
     +'  </div>'
     +'</div>';
@@ -267,6 +269,52 @@ async function cumplir(tareaId){
   }catch(e){alert('Error: '+(e.message||e));}
 }
 window.cumplir=cumplir;
+
+function abrirPlazo(tareaId,titulo){
+  const html=''
+    +'<div class="modal-bg open" id="mod-plazo" style="display:flex;align-items:center">'
+    +'  <div class="modal" style="max-width:520px">'
+    +'    <h3>📅 Cambiar plazo · avisar a otros</h3>'
+    +'    <div class="ctx" style="margin-bottom:12px;font-size:12px;color:#6b7280">'+esc(titulo)+'</div>'
+    +'    <label>Nueva fecha</label>'
+    +'    <input type="date" id="pl-fecha" min="'+new Date(Date.now()-86400000*30).toISOString().slice(0,10)+'" max="'+new Date(Date.now()+86400000*365).toISOString().slice(0,10)+'">'
+    +'    <label>¿Por qué se mueve? (queda en bitácora · obligatorio)</label>'
+    +'    <textarea id="pl-razon" placeholder="Ej: hablé con Dyana, dijo que SAG demora 5d más"></textarea>'
+    +'    <label>Avisar por WhatsApp a:</label>'
+    +'    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:12px" id="pl-checks">'
+    +'      <label style="display:flex;align-items:center;gap:6px;padding:6px;background:#f9fafb;border-radius:6px"><input type="checkbox" value="soporte@gestionrepchile.cl">Cesar Mora</label>'
+    +'      <label style="display:flex;align-items:center;gap:6px;padding:6px;background:#f9fafb;border-radius:6px"><input type="checkbox" value="comercial@gestionrepchile.cl">Juan Mendoza</label>'
+    +'      <label style="display:flex;align-items:center;gap:6px;padding:6px;background:#f9fafb;border-radius:6px"><input type="checkbox" value="gestorcomercial@gestionrepchile.cl">Ingrid</label>'
+    +'      <label style="display:flex;align-items:center;gap:6px;padding:6px;background:#f9fafb;border-radius:6px"><input type="checkbox" value="dpinto@sercotspa.cl">Dyana</label>'
+    +'      <label style="display:flex;align-items:center;gap:6px;padding:6px;background:#f9fafb;border-radius:6px"><input type="checkbox" value="gerencia@gestionrepchile.cl">Dusan</label>'
+    +'    </div>'
+    +'    <div class="actions" style="margin-top:18px;display:flex;gap:10px"><button class="cancel" onclick="cerrarPlazo()">Cancelar</button><button class="ok" onclick="guardarPlazo('+tareaId+')">Guardar</button></div>'
+    +'  </div>'
+    +'</div>';
+  document.body.insertAdjacentHTML('beforeend',html);
+}
+function cerrarPlazo(){const m=document.getElementById('mod-plazo');if(m)m.remove();}
+window.abrirPlazo=abrirPlazo;window.cerrarPlazo=cerrarPlazo;
+
+async function guardarPlazo(tareaId){
+  const fecha=document.getElementById('pl-fecha').value;
+  const razon=document.getElementById('pl-razon').value.trim();
+  if(!fecha){alert('Falta fecha');return;}
+  if(!razon){alert('Falta razón · obligatoria');return;}
+  const emails=[...document.querySelectorAll('#pl-checks input:checked')].map(c=>c.value);
+  try{
+    const {data,error}=await sb.schema('panel').rpc('tarea_cambiar_plazo',{
+      p_tarea_id:tareaId,p_nuevo_plazo:fecha,p_razon:razon,
+      p_actor_email:_myEmail,p_actor_nombre:_myNombre,
+      p_notificar_emails:emails.length?emails:null
+    });
+    if(error) throw error;
+    cerrarPlazo();
+    showConfetti('📅 Plazo cambiado'+(data.n_avisos?' · WA a '+data.n_avisos:''));
+    setTimeout(cargar,800);
+  }catch(e){alert('Error: '+(e.message||e));}
+}
+window.guardarPlazo=guardarPlazo;
 
 async function trabarse(tareaId,titulo){
   const motivo=prompt('¿Qué te traba? Se manda WhatsApp y queda alarma en panel a Cesar · Juan · Dyana · Dusan.','');
