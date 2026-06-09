@@ -3752,12 +3752,12 @@
     <!-- Tab Permisología · silo 05 · MVP visual rico 08-jun PC1 -->
     <section id="tabCumplimiento" class="tab-content hidden">
 
-      <!-- 4 sub-vistas internas · 09-jun nada-por-fuera · cargan via iframe (mismo dominio, sesión compartida) -->
-      <div id="permisologia_subnav" class="flex gap-2 mb-3 flex-wrap">
-        <button type="button" data-subv="tramites" class="permisologia-subv-btn active px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white">📋 Trámites</button>
-        <button type="button" data-subv="micola" class="permisologia-subv-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-200 text-stone-700 hover:bg-stone-300">🎯 Mi cola</button>
-        <button type="button" data-subv="expedientes" class="permisologia-subv-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-200 text-stone-700 hover:bg-stone-300">📂 Expedientes</button>
-        <button type="button" data-subv="supervision" class="permisologia-subv-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-200 text-stone-700 hover:bg-stone-300">👁️ Supervisión</button>
+      <!-- 4 sub-vistas internas · 09-jun fix UX · chips grandes · default por rol -->
+      <div id="permisologia_subnav" class="flex gap-2 mb-4 flex-wrap p-2 bg-stone-100 rounded-xl border border-stone-200">
+        <button type="button" data-subv="supervision" class="permisologia-subv-btn px-4 py-2.5 rounded-lg text-sm font-semibold bg-white text-stone-700 hover:bg-emerald-50 border border-stone-200 inline-flex items-center gap-2">👁️ <span>Supervisión</span><span class="text-xs opacity-60">(Dusan · Cesar · Dyana)</span></button>
+        <button type="button" data-subv="micola" class="permisologia-subv-btn px-4 py-2.5 rounded-lg text-sm font-semibold bg-white text-stone-700 hover:bg-emerald-50 border border-stone-200 inline-flex items-center gap-2">🎯 <span>Mi cola</span><span class="text-xs opacity-60">(operar)</span></button>
+        <button type="button" data-subv="expedientes" class="permisologia-subv-btn px-4 py-2.5 rounded-lg text-sm font-semibold bg-white text-stone-700 hover:bg-emerald-50 border border-stone-200 inline-flex items-center gap-2">📂 <span>Expedientes</span><span class="text-xs opacity-60">(20 carpetas)</span></button>
+        <button type="button" data-subv="tramites" class="permisologia-subv-btn px-4 py-2.5 rounded-lg text-sm font-semibold bg-white text-stone-500 hover:bg-stone-50 border border-stone-200 inline-flex items-center gap-2">🗄️ <span>Lista cruda</span><span class="text-xs opacity-60">(admin)</span></button>
       </div>
       <!-- Sub-vistas iframe -->
       <div id="permisologia_subv_micola" class="permisologia-subv-pane hidden"><iframe src="about:blank" data-src="/mi-cola.html" style="width:100%;height:calc(100vh - 220px);border:1px solid #e5e7eb;border-radius:12px;background:#fff"></iframe></div>
@@ -15459,32 +15459,50 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window._permisologiaInited) { console.log('[Permisología] init ya ejecutado · skip'); return; }
     window._permisologiaInited = true;
 
-    // Sub-vistas 09-jun · nada por fuera del panel
-    document.querySelectorAll('.permisologia-subv-btn').forEach(function (b) {
-      b.addEventListener('click', function () {
-        var k = b.dataset.subv;
-        document.querySelectorAll('.permisologia-subv-btn').forEach(function (x) {
-          x.classList.remove('active','bg-emerald-600','text-white');
-          x.classList.add('bg-stone-200','text-stone-700');
-        });
-        b.classList.add('active','bg-emerald-600','text-white');
-        b.classList.remove('bg-stone-200','text-stone-700');
-        // Mostrar el panel correcto
-        var paneTramites = $$('permisologia_subv_tramites');
-        if (paneTramites) paneTramites.style.display = (k === 'tramites') ? '' : 'none';
-        ['micola','expedientes','supervision'].forEach(function (kk) {
-          var pane = $$('permisologia_subv_' + kk);
-          if (!pane) return;
-          if (k === kk) {
-            pane.classList.remove('hidden');
-            var ifr = pane.querySelector('iframe');
-            if (ifr && ifr.src === 'about:blank' && ifr.dataset.src) ifr.src = ifr.dataset.src;
-          } else {
-            pane.classList.add('hidden');
-          }
-        });
+    // Sub-vistas 09-jun · nada por fuera del panel · default por rol
+    function _permisologiaActivarSubvista(k) {
+      document.querySelectorAll('.permisologia-subv-btn').forEach(function (x) {
+        x.classList.remove('active','bg-emerald-600','text-white','border-emerald-700');
+        x.classList.add('bg-white','text-stone-700','border-stone-200');
       });
+      var btnActivo = document.querySelector('.permisologia-subv-btn[data-subv="'+k+'"]');
+      if (btnActivo) {
+        btnActivo.classList.add('active','bg-emerald-600','text-white','border-emerald-700');
+        btnActivo.classList.remove('bg-white','text-stone-700','border-stone-200');
+      }
+      var paneTramites = $$('permisologia_subv_tramites');
+      if (paneTramites) paneTramites.style.display = (k === 'tramites') ? '' : 'none';
+      ['micola','expedientes','supervision'].forEach(function (kk) {
+        var pane = $$('permisologia_subv_' + kk);
+        if (!pane) return;
+        if (k === kk) {
+          pane.classList.remove('hidden');
+          var ifr = pane.querySelector('iframe');
+          if (ifr && ifr.src === 'about:blank' && ifr.dataset.src) ifr.src = ifr.dataset.src;
+        } else {
+          pane.classList.add('hidden');
+        }
+      });
+    }
+    document.querySelectorAll('.permisologia-subv-btn').forEach(function (b) {
+      b.addEventListener('click', function () { _permisologiaActivarSubvista(b.dataset.subv); });
     });
+    // Default por rol al cargar el silo Permisología
+    var _defaultSubv = 'expedientes';
+    try {
+      var rf = JSON.parse(localStorage.getItem('rf_session') || '{}');
+      var perfil = String(rf.perfil || rf.rol || '').toLowerCase();
+      var email  = String(rf.email || _sessionEmail || '').toLowerCase();
+      if (perfil === 'admin' || perfil === 'ceo' || perfil === 'gerencia'
+          || email === 'gerencia@gestionrepchile.cl'
+          || email === 'soporte@gestionrepchile.cl'
+          || email === 'dpinto@sercotspa.cl') {
+        _defaultSubv = 'supervision';
+      } else if (email === 'asistente@gestionrepchile.cl') {
+        _defaultSubv = 'micola';
+      }
+    } catch (_) {}
+    _permisologiaActivarSubvista(_defaultSubv);
 
     // Helpers · MVP visual 08-jun
     function _permisologiaNombreCorto() {
