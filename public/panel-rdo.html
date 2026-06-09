@@ -1020,6 +1020,7 @@
         <button data-tab="herramientas_ext" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabHerramientasExt">🌐 Herramientas ext.</button>
         <button data-tab="facturacion_grupo" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabFacturacionGrupo">💰 Facturación grupo</button>
         <button data-tab="vales_portal" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabValesPortal">📊 Vales portal</button>
+        <button data-tab="auditoria_ingesta" class="tab-btn py-3 px-3 text-stone-600"  role="tab" aria-selected="false" aria-controls="tabAuditoriaIngesta">🔍 Auditoría Ingesta</button>
         <button data-tab="piloto_pwa"  class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabPilotoPwa">📲 Piloto PWA</button>
         <button data-tab="mis_archivos" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabMisArchivos">📦 Mis archivos</button>
         <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabRdo">📈 RDO Resumen</button>
@@ -4153,6 +4154,87 @@
             </thead>
             <tbody id="vp_recientes_body"><tr><td colspan="9" class="text-center text-stone-400 py-4">Cargando...</td></tr></tbody>
           </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab Auditoría de Ingesta (Mig 231 facturación + pesajes · 09-jun) -->
+    <section id="tabAuditoriaIngesta" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">🔍 Auditoría de Ingesta</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Estado de pipelines automáticas: pesajes, facturas, banco. SLA verde <6h, naranja 6-24h, rojo >24h.</p>
+        </div>
+        <button id="audit_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+      </div>
+
+      <!-- Semáforos frescura (3 colores) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+        <div id="audit_pesajes_card" class="bg-white border border-stone-200 rounded p-3 hover:shadow-md transition">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold text-stone-700">⚖️ Pesajes</span>
+            <span id="audit_pesajes_semaforo" class="text-2xl">—</span>
+          </div>
+          <div class="text-xs text-stone-500 space-y-1">
+            <div>Última: <span id="audit_pesajes_fecha" class="font-mono">—</span></div>
+            <div>Registros 24h: <span id="audit_pesajes_count" class="font-bold text-stone-700">0</span></div>
+            <div>Estado: <span id="audit_pesajes_estado" class="font-semibold">—</span></div>
+          </div>
+        </div>
+        <div id="audit_facturas_card" class="bg-white border border-stone-200 rounded p-3 hover:shadow-md transition">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold text-stone-700">🧾 Facturas</span>
+            <span id="audit_facturas_semaforo" class="text-2xl">—</span>
+          </div>
+          <div class="text-xs text-stone-500 space-y-1">
+            <div>Última: <span id="audit_facturas_fecha" class="font-mono">—</span></div>
+            <div>Registros 24h: <span id="audit_facturas_count" class="font-bold text-stone-700">0</span></div>
+            <div>Estado: <span id="audit_facturas_estado" class="font-semibold">—</span></div>
+          </div>
+        </div>
+        <div id="audit_banco_card" class="bg-white border border-stone-200 rounded p-3 hover:shadow-md transition">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold text-stone-700">🏦 Banco BCI</span>
+            <span id="audit_banco_semaforo" class="text-2xl">—</span>
+          </div>
+          <div class="text-xs text-stone-500 space-y-1">
+            <div>Última: <span id="audit_banco_fecha" class="font-mono">—</span></div>
+            <div>Registros 24h: <span id="audit_banco_count" class="font-bold text-stone-700">0</span></div>
+            <div>Estado: <span id="audit_banco_estado" class="font-semibold">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de logs recientes -->
+      <div class="bg-white border border-stone-200 rounded mb-3">
+        <div class="px-3 py-2 border-b border-stone-200 text-sm font-semibold text-stone-700">📋 Últimas ingestas (últimas 24h)</div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs">
+            <thead class="bg-stone-50 text-xs text-stone-500 uppercase">
+              <tr>
+                <th class="text-left px-3 py-2">Hora</th>
+                <th class="text-left px-3 py-2">Fuente</th>
+                <th class="text-right px-3 py-2">Insertados</th>
+                <th class="text-right px-3 py-2">Actualizados</th>
+                <th class="text-right px-3 py-2">Saltados</th>
+                <th class="text-right px-3 py-2">Errores</th>
+                <th class="text-center px-3 py-2">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="audit_logs_body">
+              <tr><td colspan="7" class="text-center text-stone-400 py-4">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Botón forzar ingesta -->
+      <div class="bg-amber-50 border border-amber-200 rounded p-3 flex items-center justify-between gap-2">
+        <span class="text-sm text-amber-800">💡 Puede forzar una ingesta ahora (recomendado solo para testing):</span>
+        <div class="flex gap-2">
+          <button id="audit_forzar_pesajes" class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700">Pesajes</button>
+          <button id="audit_forzar_facturas" class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700">Facturas</button>
+          <button id="audit_forzar_banco" class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700">Banco</button>
         </div>
       </div>
     </section>
@@ -17126,6 +17208,133 @@ document.addEventListener('DOMContentLoaded', () => {
       b = e.target.closest('.ppwa-marcar-invitado');
       if (b) { marcarInvitado(b.dataset.id); }
     });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<script>
+(function() {
+  async function loadAuditoriaIngesta() {
+    try {
+      await window.__supabaseReady;
+      const sb = window.supabase;
+
+      // 1. Cargar frescura datos (semáforos)
+      const { data: frescura, error: e1 } = await sb.from('v_frescura_datos').select('*');
+      if (e1) throw e1;
+
+      // 2. Cargar logs recientes (últimas 24h)
+      const { data: logs, error: e2 } = await sb
+        .from('facturas_portal_raw')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (e2) throw e2;
+
+      // 3. Actualizar semáforos
+      const frData = {};
+      (frescura || []).forEach(f => { frData[f.fuente] = f; });
+
+      const updateCard = (fuente, prefix) => {
+        const data = frData[fuente];
+        const semBtn = document.getElementById(prefix + '_semaforo');
+        const fechaBtn = document.getElementById(prefix + '_fecha');
+        const countBtn = document.getElementById(prefix + '_count');
+        const estBtn = document.getElementById(prefix + '_estado');
+
+        if (!data) {
+          semBtn.textContent = '—';
+          fechaBtn.textContent = '—';
+          countBtn.textContent = '0';
+          estBtn.textContent = 'Sin datos';
+          return;
+        }
+
+        const estado = data.estado_semaforo || 'rojo';
+        const emoji = { 'verde': '🟢', 'naranja': '🟠', 'rojo': '🔴' }[estado] || '⚪';
+        semBtn.textContent = emoji;
+
+        fechaBtn.textContent = data.ultima_actualizacion ?
+          new Date(data.ultima_actualizacion).toLocaleString('es-CL', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) :
+          '—';
+
+        countBtn.textContent = data.registros_ultimas_24h || 0;
+        estBtn.textContent = estado.charAt(0).toUpperCase() + estado.slice(1);
+      };
+
+      updateCard('pesajes', 'audit_pesajes');
+      updateCard('facturas', 'audit_facturas');
+      updateCard('banco', 'audit_banco');
+
+      // 4. Actualizar tabla de logs
+      const tbody = document.getElementById('audit_logs_body');
+      if (!logs || logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-stone-400 py-4">Sin registros en las últimas 24h</td></tr>';
+      } else {
+        tbody.innerHTML = logs.map(log => {
+          const payload = log.payload || {};
+          const hora = new Date(log.created_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          const fuente = log.cron_job?.split('_').slice(1).join('_') || 'desconocida';
+          const inserts = payload.inserts || 0;
+          const updates = payload.updates || 0;
+          const skips = payload.skips || 0;
+          const errores = payload.errores || 0;
+          const estado = errores > 0 ? '❌ Error' : inserts > 0 || updates > 0 ? '✅ OK' : '⏭ Skip';
+
+          return `<tr class="border-t border-stone-100">
+            <td class="text-left px-3 py-2 font-mono text-stone-600">${hora}</td>
+            <td class="text-left px-3 py-2">${fuente}</td>
+            <td class="text-right px-3 py-2">${inserts}</td>
+            <td class="text-right px-3 py-2">${updates}</td>
+            <td class="text-right px-3 py-2">${skips}</td>
+            <td class="text-right px-3 py-2 ${errores > 0 ? 'text-red-600 font-bold' : ''}">${errores}</td>
+            <td class="text-center px-3 py-2 text-sm">${estado}</td>
+          </tr>`;
+        }).join('');
+      }
+
+      showToast('✅ Auditoría cargada', 'success', 2000);
+    } catch (e) {
+      console.error('[auditoria-ingesta] error:', e);
+      const tbody = document.getElementById('audit_logs_body');
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-red-700 py-4">Error: ' + (e?.message || e) + '</td></tr>';
+      showToast('❌ Error al cargar auditoría', 'error', 3000);
+    }
+  }
+  window.loadAuditoriaIngesta = loadAuditoriaIngesta;
+
+  async function forzarIngesta(fuente) {
+    try {
+      await window.__supabaseReady;
+      const sb = window.supabase;
+      const efName = fuente === 'pesajes' ? 'ingesta-vales-portal' :
+                     fuente === 'facturas' ? 'ingesta-facturas-portal' :
+                     'ingesta-movimientos-banco';
+
+      const response = await fetch(`/.netlify/functions/${efName}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ test: true })
+      });
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      showToast(`✅ ${fuente}: ${data.insertados || 0} inserts, ${data.actualizados || 0} updates`, 'success', 3000);
+      setTimeout(loadAuditoriaIngesta, 500);
+    } catch (e) {
+      console.error('[forzar-ingesta]', e);
+      showToast(`❌ Error en ${fuente}: ${e?.message || e}`, 'error', 3000);
+    }
+  }
+  window.forzarIngesta = forzarIngesta;
+
+  function init() {
+    document.querySelector('button[data-tab="auditoria_ingesta"]')?.addEventListener('click', function () { setTimeout(loadAuditoriaIngesta, 100); });
+    document.getElementById('audit_refresh')?.addEventListener('click', loadAuditoriaIngesta);
+    document.getElementById('audit_forzar_pesajes')?.addEventListener('click', function () { forzarIngesta('pesajes'); });
+    document.getElementById('audit_forzar_facturas')?.addEventListener('click', function () { forzarIngesta('facturas'); });
+    document.getElementById('audit_forzar_banco')?.addEventListener('click', function () { forzarIngesta('banco'); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
