@@ -44,6 +44,17 @@ tr:last-child td{border-bottom:none}
 .error{padding:16px;background:#fee2e2;color:#991b1b;border-radius:8px;margin:16px;font-size:13px}
 .empty{padding:30px;text-align:center;color:var(--muted);font-style:italic;font-size:13px}
 .por-suc{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px}
+.alarma-banner{background:#dc2626;color:#fff;padding:18px 20px;border-radius:12px;margin-bottom:20px;box-shadow:0 4px 20px rgba(220,38,38,.35);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 4px 20px rgba(220,38,38,.35)}50%{box-shadow:0 4px 30px rgba(220,38,38,.6)}}
+.alarma-banner .alarma-head{font-size:14px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.alarma-item{background:rgba(255,255,255,.12);padding:12px 14px;border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.alarma-item:last-child{margin-bottom:0}
+.alarma-item .info{flex:1;min-width:200px}
+.alarma-item .info strong{display:block;font-size:14px;margin-bottom:2px}
+.alarma-item .info .meta{font-size:11px;opacity:.9;margin-top:4px}
+.alarma-item .motivo{font-size:12px;background:rgba(0,0,0,.2);padding:6px 10px;border-radius:6px;margin-top:6px}
+.alarma-item button{background:#fff;color:#dc2626;border:none;padding:8px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:12px;white-space:nowrap}
+.alarma-item button:hover{background:#fef2f2}
 .suc-card{background:#f9fafb;padding:12px;border-radius:8px;text-align:center;border:1px solid var(--border)}
 .suc-card .n{font-size:22px;font-weight:800;color:var(--dark);line-height:1}
 .suc-card .lbl{font-size:11px;color:var(--muted);margin-top:4px;text-transform:capitalize}
@@ -66,6 +77,7 @@ tr:last-child td{border-bottom:none}
 </div>
 
 <div class="cont">
+  <div id="alarmas-box"></div>
   <div class="kpis">
     <div class="kpi"><div class="n" id="k-total">—</div><div class="lbl">Pendientes</div></div>
     <div class="kpi rojo"><div class="n" id="k-venc">—</div><div class="lbl">Vencidas</div></div>
@@ -111,6 +123,7 @@ async function cargar(){
     document.getElementById('k-sing').textContent=k.sin_gestiones_3d||0;
     document.getElementById('k-cerr').textContent=k.cerradas_7d||0;
     document.getElementById('k-gest').textContent=k.gestiones_7d||0;
+    renderAlarmas(data.escalamientos_abiertos||[]);
     renderPorSuc(data.por_sucursal||[]);
     renderTrabadas(data.trabadas||[]);
     renderTimeline(data.timeline_reciente||[]);
@@ -118,6 +131,41 @@ async function cargar(){
     document.body.insertAdjacentHTML('beforeend','<div class="error">'+esc(e.message||JSON.stringify(e))+'</div>');
   }
 }
+
+function renderAlarmas(arr){
+  const box=document.getElementById('alarmas-box');
+  if(!arr.length){box.innerHTML='';return;}
+  const items=arr.map(a=>{
+    const h=Math.floor(a.antiguedad_horas||0);
+    return '<div class="alarma-item">'
+      +'<div class="info">'
+      +  '<strong>🆘 ' + esc(a.titulo||'(sin título)') + '</strong>'
+      +  '<div class="meta">' + esc(a.sucursal||'—') + ' · ' + esc(a.ley||'—') + ' · abierto por <strong>' + esc(a.abierto_por||'Jair') + '</strong> hace ' + h + 'h</div>'
+      +  '<div class="motivo">💬 ' + esc(a.motivo) + '</div>'
+      +'</div>'
+      +'<button onclick="acusar('+a.id+')">✓ Acuso recibo</button>'
+      +'</div>';
+  }).join('');
+  box.innerHTML='<div class="alarma-banner"><div class="alarma-head">🚨 ALARMAS ACTIVAS · ' + arr.length + ' escalamiento(s) sin acusar</div>' + items + '</div>';
+}
+
+async function acusar(escalamId){
+  let actorEmail='gerencia@gestionrepchile.cl',actorNombre='Dusan';
+  try{
+    const rf=JSON.parse(localStorage.getItem('rf_session')||'{}');
+    if(rf.email) actorEmail=rf.email;
+    if(rf.nombre) actorNombre=rf.nombre;
+  }catch(_){}
+  try{
+    const {data,error}=await sb.schema('panel').rpc('escalamiento_acusar',{
+      p_escalam_id:escalamId, p_actor_email:actorEmail, p_actor_nombre:actorNombre
+    });
+    if(error) throw error;
+    if(data && data.ok===false) throw new Error(data.error);
+    cargar();
+  }catch(e){alert('Error: '+(e.message||e));}
+}
+window.acusar=acusar;
 
 function renderPorSuc(arr){
   if(!arr.length){document.getElementById('por-suc').innerHTML='<div class="empty" style="grid-column:1/-1">Sin datos</div>';return;}

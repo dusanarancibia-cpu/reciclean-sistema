@@ -209,7 +209,7 @@ function renderCard(t,n){
     +'    <button class="btn correo" onclick="abrirModal('+t.tarea_id+',\'correo\',\''+esc(t.titulo||'').replace(/\'/g,"\\'")+'\',\''+esc(dest).replace(/\'/g,"\\'")+'\')">📧 Correo</button>'
     +'    <button class="btn llamada" onclick="abrirModal('+t.tarea_id+',\'llamada\',\''+esc(t.titulo||'').replace(/\'/g,"\\'")+'\',\''+esc(dest).replace(/\'/g,"\\'")+'\')">📞 Llamada</button>'
     +'    <button class="btn cumplido" onclick="cumplir('+t.tarea_id+')">✓ Cumplido</button>'
-    +'    <button class="btn traba" onclick="trabarse('+t.tarea_id+',\''+esc(t.titulo||'').replace(/\'/g,"\\'")+'\')">🆘 No avanza · escalar a 3</button>'
+    +'    <button class="btn traba" onclick="trabarse('+t.tarea_id+',\''+esc(t.titulo||'').replace(/\'/g,"\\'")+'\')">🆘 No avanza · escalar alarmas (Cesar · Juan · Dyana · Dusan)</button>'
     +'  </div>'
     +'</div>';
 }
@@ -269,17 +269,20 @@ async function cumplir(tareaId){
 window.cumplir=cumplir;
 
 async function trabarse(tareaId,titulo){
-  const motivo=prompt('¿Qué te traba? Se avisa a Dusan + Cesar + Dyana.','');
+  const motivo=prompt('¿Qué te traba? Se manda WhatsApp y queda alarma en panel a Cesar · Juan · Dyana · Dusan.','');
   if(motivo===null)return;
+  if(!motivo.trim()){alert('Necesito que me digas qué te traba para mandar alarma.');return;}
   try{
-    const {error}=await sb.schema('panel').rpc('tarea_avanzar',{
-      p_tarea_id:tareaId,p_canal:'nota',
-      p_texto:'🆘 ESCALADO 3 · '+titulo+' · Motivo: '+(motivo||'sin detalle'),
-      p_actor_email:_myEmail,p_actor_nombre:_myNombre,p_bump_dias:0
+    const {data,error}=await sb.schema('panel').rpc('tarea_escalar_alarma',{
+      p_tarea_id:tareaId,
+      p_motivo:motivo.trim(),
+      p_actor_email:_myEmail,
+      p_actor_nombre:_myNombre
     });
     if(error) throw error;
-    showConfetti('📡 Escalado a los 3');
-    setTimeout(cargar,800);
+    if(data && data.ok===false) throw new Error(data.error||'no se pudo escalar');
+    showConfetti('🚨 Alarma enviada a 4 personas');
+    setTimeout(cargar,1000);
   }catch(e){alert('Error: '+(e.message||e));}
 }
 window.trabarse=trabarse;
