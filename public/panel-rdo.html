@@ -689,6 +689,10 @@
             <span class="v4-emoji" aria-hidden="true">🌪</span>
             Drift
           </a>
+          <a href="#" data-v4-tab="bandeja_ruts" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">🔢</span>
+            RUTs Inválidos
+          </a>
           <a href="#" data-v4-tab="oportunidades" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🎯</span>
             Oportunidades
@@ -1057,6 +1061,7 @@
         <button data-tab="borradores_diego" class="tab-btn py-3 px-3 text-stone-600"   role="tab" aria-selected="false" aria-controls="tabBorradoresDiego">📝 Borradores Diego</button>
         <button data-tab="bandeja_duplicados" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabBandejaDuplicados">🔀 Duplicados</button>
         <button data-tab="bandeja_drift" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabBandejaDrift">🌪 Drift</button>
+        <button data-tab="bandeja_ruts"  class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabBandejaRuts">🔢 RUTs Inválidos</button>
         <button data-tab="oportunidades" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabOportunidades">🎯 Oportunidades</button>
         <button data-tab="entregables"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabEntregables">📤 Entregables</button>
         <button data-tab="plan_2026"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPlan2026">🗳️ Plan 2026</button>
@@ -2911,6 +2916,69 @@
             <button onclick="bdriftCrearConfirmar()" id="bdriftCrearBtn"
                     class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-semibold">
               Crear y asignar opps
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA BANDEJA RUTS INVALIDOS (Cliente Único mig 289)
+         56 RUTs con DV inválido · 44 fast-track sugerencia 1-click
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabBandejaRuts" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🔢 RUTs Inválidos</h2>
+        <div class="flex items-center gap-3">
+          <select id="brutsCategoria" onchange="loadBandejaRuts()" class="text-sm border border-stone-300 rounded px-2 py-1">
+            <option value="">Todas las categorías</option>
+            <option value="dv_calculable">DV calculable (fast-track)</option>
+            <option value="digitos_extra">Dígitos extra</option>
+            <option value="caracter_invalido">Carácter inválido</option>
+            <option value="placeholder">Placeholder (9999...)</option>
+            <option value="vacio">Vacío</option>
+          </select>
+          <button onclick="loadBandejaRuts()" class="text-sm text-green-700 hover:underline">↺</button>
+        </div>
+      </div>
+      <div class="text-xs text-stone-600 bg-stone-50 border border-stone-200 rounded p-3 mb-3">
+        📌 Clientes de master con RUT que no valida módulo 11. Categorías:
+        <strong>DV calculable</strong> sugiere DV correcto 1-click ·
+        <strong>Dígitos extra</strong> requiere edición manual ·
+        <strong>Placeholder</strong> son ruts falsos (marcar sin RUT). Cada cambio queda en
+        <em>comentarios</em> del cliente con email + timestamp.
+      </div>
+      <div id="brutsContenedor" class="space-y-3">
+        <div class="text-sm text-stone-500">Cargando…</div>
+      </div>
+
+      <!-- Modal editar manual -->
+      <div id="brutsEditarModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-start justify-center overflow-y-auto py-6">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+          <div class="flex justify-between items-center px-5 py-3 border-b border-stone-200">
+            <h3 class="text-lg font-bold text-stone-800">✏️ Editar RUT manualmente</h3>
+            <button onclick="brutsEditarCerrar()" class="text-stone-400 hover:text-stone-700 text-2xl leading-none">×</button>
+          </div>
+          <div class="px-5 py-4 space-y-3">
+            <div id="brutsEditarResumen" class="bg-stone-50 border border-stone-200 rounded p-3 text-sm"></div>
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">RUT nuevo *</label>
+              <input id="brutsRutNuevo" type="text" placeholder="12345678-9"
+                     class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+              <div class="text-xs text-stone-400 mt-1">Se valida módulo 11 antes de guardar. Anti-duplicado contra el resto del master.</div>
+            </div>
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">Motivo (opcional)</label>
+              <input id="brutsMotivo" type="text" placeholder="Verificado con factura SII"
+                     class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+            </div>
+            <div id="brutsEditarMsg" class="hidden text-sm px-3 py-1.5 rounded"></div>
+          </div>
+          <div class="flex justify-end gap-2 px-5 py-3 border-t border-stone-200 bg-stone-50">
+            <button onclick="brutsEditarCerrar()" class="px-3 py-1.5 bg-white hover:bg-stone-100 border border-stone-300 rounded text-sm">Cancelar</button>
+            <button onclick="brutsEditarConfirmar()" id="brutsEditarBtn"
+                    class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-semibold">
+              Guardar RUT
             </button>
           </div>
         </div>
@@ -5630,6 +5698,7 @@ function setupTabs() {
       if (tabId === 'borradores_diego') loadBorradoresDiego();
       if (tabId === 'bandeja_duplicados') loadBandejaDuplicados();
       if (tabId === 'bandeja_drift') loadBandejaDrift();
+      if (tabId === 'bandeja_ruts') loadBandejaRuts();
       if (tabId === 'oportunidades') initOportunidadesKanban();
       if (tabId === 'entregables') initEntregables();
       if (tabId === 'bandeja_dieg') initBandejaDiego();
@@ -17288,6 +17357,136 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     if (error || (data && data.ok === false)) { alert('Error: ' + (error?.message || data?.error)); return; }
     loadBandejaDrift();
+  };
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Cliente Único · Bandeja RUTs Inválidos (mig 289)
+═══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  function eh(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  let _brutsCurrentId = null;
+  let _brutsCurrentNombre = '';
+
+  const CAT_BADGE = {
+    dv_calculable:    ['bg-emerald-100 text-emerald-800', '⚡ DV calculable'],
+    digitos_extra:    ['bg-amber-100 text-amber-800',     '🔢 Dígitos extra'],
+    caracter_invalido:['bg-rose-100 text-rose-800',       '⚠️ Char inválido'],
+    placeholder:      ['bg-purple-100 text-purple-800',   '🎭 Placeholder'],
+    vacio:            ['bg-stone-100 text-stone-700',     '∅ Vacío'],
+    no_calculable:    ['bg-stone-100 text-stone-700',     '? No calculable']
+  };
+
+  window.loadBandejaRuts = async function() {
+    const cont = document.getElementById('brutsContenedor');
+    if (!cont) return;
+    cont.innerHTML = '<div class="text-sm text-stone-500">Cargando…</div>';
+    const cat = document.getElementById('brutsCategoria').value;
+    let q = sb.schema('panel').from('v_bandeja_ruts_invalidos').select('*').limit(120);
+    if (cat) q = q.eq('categoria', cat);
+    const { data, error } = await q;
+    if (error) { cont.innerHTML = '<div class="text-sm text-red-600 p-3 bg-red-50 rounded">'+eh(error.message)+'</div>'; return; }
+    if (!data || data.length === 0) {
+      cont.innerHTML = '<div class="text-sm text-stone-500 p-6 bg-stone-50 rounded text-center">Sin RUTs inválidos para el filtro.</div>';
+      return;
+    }
+    cont.innerHTML = data.map(r => {
+      const cat = CAT_BADGE[r.categoria] || ['bg-stone-100 text-stone-700', r.categoria];
+      const sug = r.rut_sugerido
+        ? `<div class="mt-2 text-xs text-stone-600">Sugerencia: <span class="font-mono font-semibold text-emerald-700">${eh(r.rut_sugerido)}</span> <span class="text-stone-400">(${eh(r.sugerencia_display||'')})</span></div>`
+        : '<div class="mt-2 text-xs text-stone-500">Sin sugerencia automática · requiere edición manual</div>';
+      const accionesArr = [];
+      if (r.rut_sugerido) {
+        accionesArr.push(`<button onclick='brutsAplicarSugerencia("${eh(r.cliente_id)}",${JSON.stringify(r.rut_sugerido)},${JSON.stringify(r.razon_social||"")})'
+                                  class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded font-semibold">
+                          ⚡ Aplicar ${eh(r.rut_sugerido)}
+                        </button>`);
+      }
+      accionesArr.push(`<button onclick='brutsEditarAbrir("${eh(r.cliente_id)}",${JSON.stringify(r.razon_social||"")},${JSON.stringify(r.rut_actual||"")})'
+                                class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded font-semibold">
+                        ✏️ Editar manual
+                      </button>`);
+      accionesArr.push(`<button onclick='brutsMarcarSinRut("${eh(r.cliente_id)}",${JSON.stringify(r.razon_social||"")},${JSON.stringify(r.rut_actual||"")})'
+                                class="px-3 py-1.5 bg-stone-500 hover:bg-stone-600 text-white text-xs rounded font-semibold">
+                        ∅ Marcar sin RUT
+                      </button>`);
+      return `
+        <div class="bg-white border border-stone-200 rounded-lg p-4">
+          <div class="flex items-center gap-2 flex-wrap mb-2">
+            <span class="text-xs px-2 py-0.5 rounded ${cat[0]}">${cat[1]}</span>
+            <span class="text-xs px-2 py-0.5 rounded bg-stone-100 text-stone-700">${r.opps||0} opps</span>
+            <span class="text-xs px-2 py-0.5 rounded bg-stone-100 text-stone-700">${r.contactos||0} contactos</span>
+            <span class="text-xs px-2 py-0.5 rounded ${r.activo?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${r.activo?'activo':'inactivo'}</span>
+            <span class="text-xs text-stone-400">${eh(r.fuente_origen||'?')}</span>
+          </div>
+          <div class="text-lg font-semibold text-stone-800">${eh(r.razon_social||'(sin nombre)')}</div>
+          <div class="text-xs text-stone-500 mt-0.5">${eh(r.cliente_id)} · RUT actual: <span class="font-mono text-rose-700">${eh(r.rut_actual||'∅')}</span></div>
+          ${sug}
+          <div class="flex flex-wrap gap-2 mt-3">${accionesArr.join('')}</div>
+        </div>`;
+    }).join('');
+  };
+
+  window.brutsAplicarSugerencia = async function(clienteId, rutSugerido, nombre) {
+    if (!confirm(`Aplicar RUT ${rutSugerido} a "${nombre}"?\n\nSe valida módulo 11 antes de guardar.\nQueda registro en comentarios con tu email + timestamp.`)) return;
+    const { data, error } = await sb.rpc('corregir_rut_cliente', {
+      p_cliente_id: clienteId, p_rut_nuevo: rutSugerido, p_motivo: 'sugerencia_dv_recalculado'
+    });
+    if (error || (data && data.ok === false)) {
+      alert('Error: ' + (error?.message || data?.error || 'desconocido'));
+      return;
+    }
+    loadBandejaRuts();
+  };
+
+  window.brutsEditarAbrir = function(clienteId, nombre, rutActual) {
+    _brutsCurrentId = clienteId; _brutsCurrentNombre = nombre;
+    document.getElementById('brutsEditarResumen').innerHTML =
+      `<strong>${eh(nombre)}</strong><br><span class="text-xs text-stone-500">${eh(clienteId)} · RUT actual: <span class="font-mono text-rose-700">${eh(rutActual||'∅')}</span></span>`;
+    document.getElementById('brutsRutNuevo').value = '';
+    document.getElementById('brutsMotivo').value = '';
+    document.getElementById('brutsEditarMsg').classList.add('hidden');
+    document.getElementById('brutsEditarModal').classList.remove('hidden');
+  };
+  window.brutsEditarCerrar = function() { document.getElementById('brutsEditarModal').classList.add('hidden'); };
+
+  window.brutsEditarConfirmar = async function() {
+    const rutNuevo = document.getElementById('brutsRutNuevo').value.trim();
+    const motivo = document.getElementById('brutsMotivo').value.trim() || null;
+    const msg = document.getElementById('brutsEditarMsg');
+    if (!rutNuevo) {
+      msg.textContent = 'RUT requerido';
+      msg.className = 'text-sm px-3 py-1.5 rounded bg-red-50 text-red-700';
+      msg.classList.remove('hidden');
+      return;
+    }
+    const btn = document.getElementById('brutsEditarBtn');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    const { data, error } = await sb.rpc('corregir_rut_cliente', {
+      p_cliente_id: _brutsCurrentId, p_rut_nuevo: rutNuevo, p_motivo: motivo
+    });
+    btn.disabled = false; btn.textContent = 'Guardar RUT';
+    if (error || (data && data.ok === false)) {
+      msg.textContent = 'Error: ' + (error?.message || data?.error || 'desconocido');
+      if (data?.cliente_existente) msg.textContent += ' (cliente: ' + data.cliente_existente + ')';
+      msg.className = 'text-sm px-3 py-1.5 rounded bg-red-50 text-red-700';
+      msg.classList.remove('hidden');
+      return;
+    }
+    brutsEditarCerrar();
+    loadBandejaRuts();
+  };
+
+  window.brutsMarcarSinRut = async function(clienteId, nombre, rutActual) {
+    const motivo = prompt(`Marcar "${nombre}" sin RUT?\nRUT actual ${rutActual} se borrará (queda en comentarios).\n\nMotivo (opcional):`);
+    if (motivo === null) return;
+    const { data, error } = await sb.rpc('marcar_cliente_sin_rut', {
+      p_cliente_id: clienteId, p_motivo: motivo || null
+    });
+    if (error || (data && data.ok === false)) { alert('Error: ' + (error?.message || data?.error)); return; }
+    loadBandejaRuts();
   };
 })();
 </script>
