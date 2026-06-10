@@ -677,6 +677,10 @@
             <span class="v4-emoji" aria-hidden="true">💰</span>
             Decisor Venta
           </a>
+          <a href="#" data-v4-tab="borradores_diego" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">📝</span>
+            Borradores Diego
+          </a>
           <a href="#" data-v4-tab="oportunidades" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🎯</span>
             Oportunidades
@@ -1042,6 +1046,7 @@
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
         <button data-tab="mis_visitas"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabMisVisitas">📅 Mis Visitas</button>
         <button data-tab="decisor_venta"  class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabDecisorVenta">💰 Decisor Venta</button>
+        <button data-tab="borradores_diego" class="tab-btn py-3 px-3 text-stone-600"   role="tab" aria-selected="false" aria-controls="tabBorradoresDiego">📝 Borradores Diego</button>
         <button data-tab="oportunidades" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabOportunidades">🎯 Oportunidades</button>
         <button data-tab="entregables"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabEntregables">📤 Entregables</button>
         <button data-tab="plan_2026"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPlan2026">🗳️ Plan 2026</button>
@@ -2718,6 +2723,61 @@
             <button onclick="dvPrecioGuardar()" id="dvpGuardarBtn"
                     class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-semibold">
               Guardar precio
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA BORRADORES DIEGO (Plan Andrea F3 #19 MODO BORRADOR mig 282)
+         Pablo revisa respuestas que Diego propone antes de envío automático (F5)
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabBorradoresDiego" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">📝 Borradores Diego · revisión pre-envío</h2>
+        <div class="flex items-center gap-3">
+          <select id="bdFiltroEstado" onchange="loadBorradoresDiego()"
+                  class="text-sm border border-stone-300 rounded px-2 py-1">
+            <option value="pendiente_revision">Pendientes</option>
+            <option value="aprobada">Aprobadas</option>
+            <option value="rechazada">Rechazadas</option>
+            <option value="editada">Editadas</option>
+            <option value="">Todas</option>
+          </select>
+          <button onclick="loadBorradoresDiego()" class="text-sm text-green-700 hover:underline">↺</button>
+        </div>
+      </div>
+      <div class="text-xs text-stone-500 bg-amber-50 border border-amber-200 rounded p-3 mb-3">
+        ⚠ <strong>MODO BORRADOR</strong> (F3 #19): Diego NO envía estas respuestas automáticamente.
+        Las generamos a partir de mensajes a Diego (chatbot/WhatsApp). Tu revisión decide si en el futuro (F5)
+        las respuestas se mandan auto. Por ahora aprueba/rechaza para que el dataset quede sano.
+      </div>
+      <div id="bdContenedor" class="space-y-3">
+        <div class="text-sm text-stone-500">Cargando…</div>
+      </div>
+
+      <!-- Modal editar respuesta -->
+      <div id="bdEditarModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-start justify-center overflow-y-auto py-6">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4">
+          <div class="flex justify-between items-center px-5 py-3 border-b border-stone-200">
+            <h3 class="text-lg font-bold text-stone-800">✏️ Editar respuesta antes de aprobar</h3>
+            <button onclick="bdEditarCerrar()" class="text-stone-400 hover:text-stone-700 text-2xl leading-none">×</button>
+          </div>
+          <div class="px-5 py-4 space-y-3">
+            <div class="text-xs text-stone-500">Pregunta original</div>
+            <div id="bdePregunta" class="text-sm bg-stone-50 border border-stone-200 rounded p-2"></div>
+            <div class="text-xs text-stone-500 mt-3">Respuesta generada por Diego</div>
+            <div id="bdeOriginal" class="text-sm bg-stone-50 border border-stone-200 rounded p-2"></div>
+            <div class="text-xs text-stone-500 mt-3">Tu respuesta editada (se usará en F5 al enviar)</div>
+            <textarea id="bdeEditada" rows="4" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm"></textarea>
+            <div id="bdeMsg" class="hidden text-sm px-3 py-1.5 rounded"></div>
+          </div>
+          <div class="flex justify-end gap-2 px-5 py-3 border-t border-stone-200 bg-stone-50">
+            <button onclick="bdEditarCerrar()" class="px-3 py-1.5 bg-white hover:bg-stone-100 border border-stone-300 rounded text-sm">Cancelar</button>
+            <button onclick="bdEditarGuardar()" id="bdeBtn"
+                    class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-semibold">
+              Guardar como editada
             </button>
           </div>
         </div>
@@ -5434,6 +5494,7 @@ function setupTabs() {
       if (tabId === 'cartera')   initCartera();
       if (tabId === 'mis_visitas') loadMisVisitas();
       if (tabId === 'decisor_venta') loadDecisorVenta();
+      if (tabId === 'borradores_diego') loadBorradoresDiego();
       if (tabId === 'oportunidades') initOportunidadesKanban();
       if (tabId === 'entregables') initEntregables();
       if (tabId === 'bandeja_dieg') initBandejaDiego();
@@ -16908,6 +16969,162 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Plan Andrea F3 #19 · Borradores Diego MODO BORRADOR (mig 282)
+═══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  function bdEscapeHtml(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function bdBadgeIntent(intent) {
+    const map = {
+      'count_opps': ['bg-blue-100 text-blue-800', '📊 conteo opps'],
+      'ult_cotizacion': ['bg-purple-100 text-purple-800', '📋 última cotización'],
+      'rut': ['bg-stone-100 text-stone-800', '🆔 RUT'],
+      'telefono': ['bg-green-100 text-green-800', '📞 teléfono'],
+      'direcciones': ['bg-amber-100 text-amber-800', '📍 direcciones']
+    };
+    const [cls, label] = map[intent] || ['bg-stone-100 text-stone-700', intent];
+    return `<span class="text-xs px-2 py-0.5 rounded ${cls}">${label}</span>`;
+  }
+
+  function bdBadgeEstado(e) {
+    const map = {
+      'pendiente_revision': ['bg-amber-100 text-amber-800', '⏳ pendiente'],
+      'aprobada': ['bg-green-100 text-green-800', '✓ aprobada'],
+      'rechazada': ['bg-red-100 text-red-800', '✗ rechazada'],
+      'editada': ['bg-blue-100 text-blue-800', '✏️ editada'],
+      'enviada': ['bg-stone-200 text-stone-700', '📤 enviada']
+    };
+    const [cls, label] = map[e] || ['bg-stone-100 text-stone-700', e];
+    return `<span class="text-xs px-2 py-0.5 rounded ${cls}">${label}</span>`;
+  }
+
+  function bdBadgeMatch(score) {
+    if (score == null) return '<span class="text-xs px-2 py-0.5 rounded bg-stone-100 text-stone-600">sin match</span>';
+    const pct = Math.round(score * 100);
+    const cls = pct >= 80 ? 'bg-green-100 text-green-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800';
+    return `<span class="text-xs px-2 py-0.5 rounded ${cls}">${pct}% match</span>`;
+  }
+
+  window.loadBorradoresDiego = async function() {
+    const cont = document.getElementById('bdContenedor');
+    if (!cont) return;
+    cont.innerHTML = '<div class="text-sm text-stone-500">Cargando…</div>';
+
+    const estado = document.getElementById('bdFiltroEstado').value;
+    let q = sb.schema('panel').from('v_diego_borradores_pendientes').select('*').limit(50);
+    if (estado) q = q.eq('estado', estado);
+    const { data, error } = await q;
+    if (error) { cont.innerHTML = '<div class="text-sm text-red-600 p-3 bg-red-50 rounded">' + bdEscapeHtml(error.message) + '</div>'; return; }
+    if (!data || data.length === 0) {
+      cont.innerHTML = '<div class="text-sm text-stone-500 p-6 bg-stone-50 rounded text-center">Sin borradores para el filtro elegido.</div>';
+      return;
+    }
+
+    cont.innerHTML = data.map(b => {
+      const respuestaFinal = b.estado === 'editada' && b.respuesta_editada ? b.respuesta_editada : b.respuesta_generada;
+      const acciones = b.estado === 'pendiente_revision' ? `
+        <div class="flex gap-2 mt-3">
+          <button onclick="bdDecidir('${b.id}','aprobar')"
+                  class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded font-semibold">✓ Aprobar</button>
+          <button onclick="bdEditarAbrir('${b.id}')"
+                  class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded font-semibold">✏️ Editar</button>
+          <button onclick="bdDecidir('${b.id}','rechazar')"
+                  class="px-3 py-1 bg-stone-600 hover:bg-stone-700 text-white text-xs rounded font-semibold">✗ Rechazar</button>
+        </div>` : '';
+      const editadaBox = b.estado === 'editada' && b.respuesta_editada ? `
+        <div class="mt-2 bg-blue-50 border border-blue-200 rounded p-2">
+          <div class="text-xs font-semibold text-blue-700 mb-1">Respuesta editada (final F5)</div>
+          <div class="text-sm text-stone-800">${bdEscapeHtml(b.respuesta_editada)}</div>
+        </div>` : '';
+      const rechazoBox = b.motivo_rechazo ? `<div class="mt-2 text-xs text-red-700 italic">Motivo rechazo: ${bdEscapeHtml(b.motivo_rechazo)}</div>` : '';
+      return `
+        <div class="bg-white border border-stone-200 rounded-lg p-4">
+          <div class="flex items-start justify-between gap-3 mb-2">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap mb-1">
+                ${bdBadgeEstado(b.estado)}
+                ${bdBadgeIntent(b.intent_detectado)}
+                ${bdBadgeMatch(b.match_score)}
+                <span class="text-xs text-stone-500">${b.source||'?'} · ${b.user_email||b.user_phone||'?'}</span>
+              </div>
+              <div class="text-xs text-stone-400">${new Date(b.created_at).toLocaleString('es-CL')}</div>
+            </div>
+          </div>
+          <div class="bg-stone-50 border-l-4 border-stone-300 pl-3 py-1 mb-2">
+            <div class="text-xs text-stone-500">Usuario preguntó:</div>
+            <div class="text-sm text-stone-800">${bdEscapeHtml(b.pregunta_original)}</div>
+          </div>
+          <div class="bg-emerald-50 border-l-4 border-emerald-400 pl-3 py-1">
+            <div class="text-xs text-emerald-700">
+              Diego propone (cliente match: ${bdEscapeHtml(b.cliente_nombre||b.cliente_id_match||'sin match')}):
+            </div>
+            <div class="text-sm text-stone-800">${bdEscapeHtml(b.respuesta_generada)}</div>
+          </div>
+          ${editadaBox}
+          ${rechazoBox}
+          ${acciones}
+        </div>`;
+    }).join('');
+  };
+
+  window.bdDecidir = async function(borradorId, decision) {
+    let motivo = null;
+    if (decision === 'rechazar') {
+      motivo = prompt('Motivo del rechazo (opcional pero recomendado):');
+      if (motivo === null) return;  // canceló
+    }
+    const { data, error } = await sb.rpc('diego_borrador_decidir', {
+      p_borrador_id: borradorId,
+      p_decision: decision,
+      p_respuesta_editada: null,
+      p_motivo_rechazo: motivo
+    });
+    if (error || (data && data.ok === false)) {
+      alert('Error: ' + (error?.message || data?.error || 'desconocido'));
+      return;
+    }
+    loadBorradoresDiego();
+  };
+
+  window.bdEditarAbrir = async function(borradorId) {
+    const { data } = await sb.schema('panel').from('v_diego_borradores_pendientes')
+      .select('pregunta_original, respuesta_generada').eq('id', borradorId).maybeSingle();
+    if (!data) return;
+    document.getElementById('bdEditarModal').dataset.borradorId = borradorId;
+    document.getElementById('bdePregunta').textContent = data.pregunta_original;
+    document.getElementById('bdeOriginal').textContent = data.respuesta_generada;
+    document.getElementById('bdeEditada').value = data.respuesta_generada;
+    document.getElementById('bdeMsg').classList.add('hidden');
+    document.getElementById('bdEditarModal').classList.remove('hidden');
+  };
+
+  window.bdEditarCerrar = function() { document.getElementById('bdEditarModal').classList.add('hidden'); };
+
+  window.bdEditarGuardar = async function() {
+    const borradorId = document.getElementById('bdEditarModal').dataset.borradorId;
+    const editada = document.getElementById('bdeEditada').value.trim();
+    if (!editada) { document.getElementById('bdeMsg').textContent = 'La respuesta editada no puede estar vacía'; document.getElementById('bdeMsg').className = 'text-sm px-3 py-1.5 rounded bg-red-50 text-red-700'; document.getElementById('bdeMsg').classList.remove('hidden'); return; }
+    const btn = document.getElementById('bdeBtn');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    const { data, error } = await sb.rpc('diego_borrador_decidir', {
+      p_borrador_id: borradorId, p_decision: 'editar',
+      p_respuesta_editada: editada, p_motivo_rechazo: null
+    });
+    btn.disabled = false; btn.textContent = 'Guardar como editada';
+    if (error || (data && data.ok === false)) {
+      document.getElementById('bdeMsg').textContent = 'Error: ' + (error?.message || data?.error || 'desconocido');
+      document.getElementById('bdeMsg').className = 'text-sm px-3 py-1.5 rounded bg-red-50 text-red-700';
+      document.getElementById('bdeMsg').classList.remove('hidden');
+      return;
+    }
+    bdEditarCerrar();
+    loadBorradoresDiego();
+  };
 })();
 </script>
 
