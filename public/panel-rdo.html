@@ -8919,13 +8919,58 @@ window.carGuardarCliente = async function() {
 
   let error;
   if (_cliEditando) {
-    // Edición
+    // Edición → UPDATE directo
     ({ error } = await sb.schema('curated').from('clientes').update(payload).eq('cliente_id', _cliEditando));
   } else {
-    // Creación — generar ID tipo 'cli_<timestamp>'
-    payload.cliente_id = 'cli_' + Date.now();
-    payload.created_by = currentUser || 'panel-rdo';
-    ({ error } = await sb.schema('curated').from('clientes').insert(payload));
+    // Creación → Cliente Único v2 (mig 268): RPC crear_cliente_simple
+    // valida RUT, anti-dup RUT exacto y nombre fuzzy sim>0.7, genera cliente_id 'c<N>'
+    const tryCrear = async (forzar) => {
+      return await sb.rpc('crear_cliente_simple', {
+        p_razon_social: razonSocial,
+        p_rut: payload.rut,
+        p_sucursal_principal: payload.sucursal_principal,
+        p_telefono: payload.telefono,
+        p_email: payload.email,
+        p_comentarios: payload.comentarios,
+        p_fuente_origen: 'panel_rdo_carGuardarCliente',
+        p_forzar_si_similar: !!forzar
+      });
+    };
+
+    let { data: r, error: rpcErr } = await tryCrear(false);
+    if (rpcErr) {
+      error = rpcErr;
+    } else if (r && r.ok === false) {
+      // Caza errores anti-dup y permite forzar
+      const errTxt = (r.error || '') + '';
+      if (errTxt.includes('similar existe')) {
+        const cands = (r.similares || []).map(s => `· ${s.razon_social} (${s.rut||'sin RUT'}) score=${(+s.score).toFixed(2)}`).join('\n');
+        const ok = confirm(`Cliente similar ya existe:\n\n${cands}\n\n¿Crear igual? (queda marcado para revisión)`);
+        if (ok) {
+          ({ data: r, error: rpcErr } = await tryCrear(true));
+          if (rpcErr) error = rpcErr;
+          else if (r && r.ok === false) error = { message: r.error || 'creación rechazada' };
+        } else {
+          btn.disabled = false; btn.textContent = 'Guardar';
+          const msg = document.getElementById('clienteEditMsg');
+          msg.textContent = 'Creación cancelada por usuario (cliente similar existe)';
+          msg.className = 'text-sm text-amber-700 bg-amber-50 px-3 py-1.5 rounded';
+          msg.classList.remove('hidden');
+          return;
+        }
+      } else {
+        error = { message: r.error || 'crear_cliente_simple rechazó la creación', detalle: r };
+      }
+    }
+
+    // Si RPC OK, actualizar campos extra (la RPC solo guarda básicos)
+    if (!error && r && r.ok && r.cliente_id) {
+      const extra = { ...payload };
+      delete extra.razon_social; delete extra.rut; delete extra.sucursal_principal;
+      delete extra.telefono; delete extra.email; delete extra.comentarios;
+      delete extra.activo;
+      ({ error } = await sb.schema('curated').from('clientes').update(extra).eq('cliente_id', r.cliente_id));
+    }
   }
 
   btn.disabled = false; btn.textContent = 'Guardar';
