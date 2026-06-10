@@ -673,6 +673,10 @@
             <span class="v4-emoji" aria-hidden="true">📅</span>
             Mis Visitas
           </a>
+          <a href="#" data-v4-tab="decisor_venta" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">💰</span>
+            Decisor Venta
+          </a>
           <a href="#" data-v4-tab="oportunidades" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🎯</span>
             Oportunidades
@@ -1037,6 +1041,7 @@
         <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
         <button data-tab="mis_visitas"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabMisVisitas">📅 Mis Visitas</button>
+        <button data-tab="decisor_venta"  class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabDecisorVenta">💰 Decisor Venta</button>
         <button data-tab="oportunidades" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabOportunidades">🎯 Oportunidades</button>
         <button data-tab="entregables"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabEntregables">📤 Entregables</button>
         <button data-tab="plan_2026"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPlan2026">🗳️ Plan 2026</button>
@@ -2572,6 +2577,147 @@
             <button onclick="visitaProgramarConfirmar()" id="vpConfirmarBtn"
                     class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-medium">
               Programar
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA DECISOR VENTA (Plan Andrea F3 #17 fase 1+2 · migs 276-278+281)
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabDecisorVenta" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">💰 Decisor Venta · ¿a quién le vendo hoy?</h2>
+        <button onclick="dvEditarPrecioAbrir()"
+                class="px-3 py-1.5 bg-stone-700 hover:bg-stone-800 text-white text-sm rounded font-medium">
+          ✏️ Editar precio
+        </button>
+      </div>
+
+      <div class="bg-white border border-stone-200 rounded-lg p-4 mb-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div>
+            <label class="block text-xs text-stone-500 mb-1">Material</label>
+            <select id="dvMaterial" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+              <option value="">— Cargando…</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-stone-500 mb-1">Kg disponibles</label>
+            <input id="dvKg" type="number" value="1000" min="1"
+                   class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs text-stone-500 mb-1">Sucursal origen</label>
+            <select id="dvSucursal" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+              <option value="">— sin especificar —</option>
+              <option value="cerrillos">Cerrillos</option>
+              <option value="maipu">Maipú</option>
+              <option value="talca">Talca</option>
+              <option value="puerto_montt">Puerto Montt</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-stone-500 mb-1">Empresa</label>
+            <select id="dvEmpresa" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+              <option value="reciclean">Reciclean</option>
+              <option value="farex">Farex</option>
+            </select>
+          </div>
+        </div>
+        <button onclick="dvSugerir()" id="dvSugerirBtn"
+                class="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-semibold">
+          🔍 Sugerir compradores
+        </button>
+      </div>
+
+      <div id="dvAlertaStale" class="hidden bg-amber-50 border border-amber-300 text-amber-900 text-sm rounded p-3 mb-4"></div>
+      <div id="dvResultados" class="space-y-3"></div>
+
+      <!-- Modal Vendí aquí -->
+      <div id="dvVendiModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-start justify-center overflow-y-auto py-6">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+          <div class="flex justify-between items-center px-5 py-3 border-b border-stone-200">
+            <h3 class="text-lg font-bold text-stone-800">✓ Vendí aquí</h3>
+            <button onclick="dvVendiCerrar()" class="text-stone-400 hover:text-stone-700 text-2xl leading-none">×</button>
+          </div>
+          <div class="px-5 py-4 space-y-3">
+            <div id="dvVendiResumen" class="bg-stone-50 border border-stone-200 rounded p-3 text-sm"></div>
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">Kg vendidos</label>
+              <input id="dvvKg" type="number" min="1" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">Precio acordado CLP/kg</label>
+              <input id="dvvPrecio" type="number" min="0" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">Comentario (opcional)</label>
+              <textarea id="dvvComentario" rows="2" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm"
+                        placeholder="Ej: ajuste de precio por urgencia, guía despacho 4521…"></textarea>
+            </div>
+            <div id="dvvBono" class="hidden text-xs bg-emerald-50 border border-emerald-200 text-emerald-800 rounded p-2"></div>
+            <div id="dvvMsg" class="hidden text-sm px-3 py-1.5 rounded"></div>
+          </div>
+          <div class="flex justify-end gap-2 px-5 py-3 border-t border-stone-200 bg-stone-50">
+            <button onclick="dvVendiCerrar()" class="px-3 py-1.5 bg-white hover:bg-stone-100 border border-stone-300 rounded text-sm">Cancelar</button>
+            <button onclick="dvVendiConfirmar()" id="dvvConfirmarBtn"
+                    class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-semibold">
+              Registrar venta
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal editar precio -->
+      <div id="dvPrecioModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-start justify-center overflow-y-auto py-6">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+          <div class="flex justify-between items-center px-5 py-3 border-b border-stone-200">
+            <h3 class="text-lg font-bold text-stone-800">✏️ Editar precio comprador</h3>
+            <button onclick="dvPrecioCerrar()" class="text-stone-400 hover:text-stone-700 text-2xl leading-none">×</button>
+          </div>
+          <div class="px-5 py-4 space-y-3">
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">Comprador</label>
+              <select id="dvpComprador" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+                <option value="">— Cargando…</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">Material</label>
+              <select id="dvpMaterial" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm"></select>
+            </div>
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">Nuevo precio CLP/kg</label>
+              <input id="dvpPrecio" type="number" min="0" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+              <div id="dvpPrecioPrev" class="text-xs text-stone-500 mt-1"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="text-xs text-stone-600 flex items-center gap-1">
+                <input type="checkbox" id="dvpFoto"> Requiere foto previa
+              </label>
+              <div>
+                <label class="block text-xs text-stone-500 mb-1">Kg mínimo</label>
+                <input id="dvpKgMin" type="number" min="0" value="0" class="w-full border border-stone-300 rounded px-2 py-1 text-sm">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">Fuente del cambio</label>
+              <select id="dvpFuente" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+                <option value="aviso_comprador">Aviso del comprador</option>
+                <option value="consulta_andrea">Consulta de Andrea</option>
+                <option value="dusan_informa">Dusan me informó</option>
+                <option value="manual">Manual</option>
+              </select>
+            </div>
+            <div id="dvpMsg" class="hidden text-sm px-3 py-1.5 rounded"></div>
+          </div>
+          <div class="flex justify-end gap-2 px-5 py-3 border-t border-stone-200 bg-stone-50">
+            <button onclick="dvPrecioCerrar()" class="px-3 py-1.5 bg-white hover:bg-stone-100 border border-stone-300 rounded text-sm">Cancelar</button>
+            <button onclick="dvPrecioGuardar()" id="dvpGuardarBtn"
+                    class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-semibold">
+              Guardar precio
             </button>
           </div>
         </div>
@@ -5287,6 +5433,7 @@ function setupTabs() {
       if (tabId === 'reconciliacion') initReconciliacion();
       if (tabId === 'cartera')   initCartera();
       if (tabId === 'mis_visitas') loadMisVisitas();
+      if (tabId === 'decisor_venta') loadDecisorVenta();
       if (tabId === 'oportunidades') initOportunidadesKanban();
       if (tabId === 'entregables') initEntregables();
       if (tabId === 'bandeja_dieg') initBandejaDiego();
@@ -16761,6 +16908,286 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Plan Andrea F3 #17 · Decisor Venta (migs 276+277+278+281)
+     Tab top 5 compradores + editor precios + captura "vendí aquí" + bonos
+═══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  let _dvLastSugerencia = null;  // cache para modal Vendí aquí
+
+  function dvMsg(elId, text, kind) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    if (!text) { el.classList.add('hidden'); return; }
+    const palette = kind === 'error' ? 'bg-red-50 text-red-700' :
+                    kind === 'ok' ? 'bg-green-50 text-green-700' :
+                    'bg-amber-50 text-amber-700';
+    el.className = 'text-sm px-3 py-1.5 rounded ' + palette;
+    el.textContent = text;
+    el.classList.remove('hidden');
+  }
+
+  function dvFmtCLP(n) {
+    if (n == null || n === '') return '—';
+    return Number(n).toLocaleString('es-CL') + ' CLP';
+  }
+
+  function dvBadgeConfianza(c, dias) {
+    const map = {
+      'fresca': ['bg-green-100 text-green-800', '✓ fresca'],
+      'warning': ['bg-amber-100 text-amber-800', '⚠ ' + dias + 'd'],
+      'critica': ['bg-red-100 text-red-800', '🚨 ' + dias + 'd']
+    };
+    const [cls, label] = map[c] || ['bg-stone-100 text-stone-700', c];
+    return `<span class="text-xs px-2 py-0.5 rounded ${cls}">${label}</span>`;
+  }
+
+  window.loadDecisorVenta = async function() {
+    // Cargar materiales
+    const matSel = document.getElementById('dvMaterial');
+    const { data: mats } = await sb.schema('curated').from('materiales')
+      .select('material_id, nombre, categoria').eq('activo', true).order('nombre');
+    matSel.innerHTML = '<option value="">— Elegí material —</option>' +
+      (mats || []).map(m => `<option value="${escapeHtml(m.material_id)}">${escapeHtml(m.nombre)} (${escapeHtml(m.categoria||'')})</option>`).join('');
+
+    // Alerta precios stale (DeepSeek R1 mitigación)
+    const { data: stale } = await sb.schema('panel').from('v_decisor_precios_stale').select('*').limit(5);
+    const alerta = document.getElementById('dvAlertaStale');
+    if (stale && stale.length > 0) {
+      const crit = stale.filter(s => s.nivel === 'critico').length;
+      alerta.innerHTML =
+        `⚠ <strong>${stale.length}</strong> precio(s) sin actualizar hace >7 días` +
+        (crit > 0 ? ` (<strong>${crit} críticos >14d</strong>)` : '') +
+        `. Considerá actualizar antes de decidir. <button onclick="dvEditarPrecioAbrir()" class="underline ml-2">Editar precios</button>`;
+      alerta.classList.remove('hidden');
+    } else {
+      alerta.classList.add('hidden');
+    }
+  };
+
+  window.dvSugerir = async function() {
+    const material = document.getElementById('dvMaterial').value;
+    const kg = parseFloat(document.getElementById('dvKg').value);
+    const sucursal = document.getElementById('dvSucursal').value || null;
+    const empresa = document.getElementById('dvEmpresa').value;
+    const resDiv = document.getElementById('dvResultados');
+
+    if (!material) { resDiv.innerHTML = '<div class="text-sm text-red-600 p-3 bg-red-50 rounded">Elegí un material.</div>'; return; }
+    if (!kg || kg <= 0) { resDiv.innerHTML = '<div class="text-sm text-red-600 p-3 bg-red-50 rounded">Kg debe ser > 0.</div>'; return; }
+
+    resDiv.innerHTML = '<div class="text-sm text-stone-500 p-3">Buscando…</div>';
+    const { data, error } = await sb.rpc('f_sugerir_punto_venta', {
+      p_material_id: material, p_kg: kg, p_sucursal_origen: sucursal, p_empresa: empresa, p_limit: 5
+    });
+    if (error) { resDiv.innerHTML = '<div class="text-sm text-red-600 p-3 bg-red-50 rounded">Error: ' + escapeHtml(error.message) + '</div>'; return; }
+    if (!data || data.length === 0) {
+      resDiv.innerHTML = `
+        <div class="text-sm text-stone-500 p-6 bg-stone-50 rounded text-center">
+          No hay compradores con precio vigente para este material.<br>
+          <button onclick="dvEditarPrecioAbrir()" class="mt-3 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-medium">
+            ✏️ Cargar precio
+          </button>
+        </div>`;
+      return;
+    }
+    _dvLastSugerencia = { material, kg, sucursal, empresa, data };
+
+    // Render top 5 cards
+    resDiv.innerHTML = data.map((c, idx) => {
+      const numero = idx + 1;
+      const advertencias = [];
+      if (c.requiere_foto_previa) advertencias.push('📷 requiere foto previa');
+      if (!c.cumple_kg_minimo) advertencias.push(`⚠ kg < mínimo (${c.kg_minimo})`);
+      const advHtml = advertencias.length ? `<div class="text-xs text-amber-700 mt-1">${advertencias.join(' · ')}</div>` : '';
+      const condHtml = c.condicion_texto ? `<div class="text-xs text-stone-600 italic mt-1">"${escapeHtml(c.condicion_texto)}"</div>` : '';
+      const pagoHtml = c.pago_dias ? `Pago ${c.pago_dias}d` : '';
+      const retiraHtml = c.retira_o_recibe === 'retira_en_origen' ? '🚚 Retira' : '📦 Recibo en planta';
+      return `
+        <div class="bg-white border border-stone-200 rounded-lg p-4 hover:shadow transition">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-2xl">${numero === 1 ? '🥇' : numero === 2 ? '🥈' : numero === 3 ? '🥉' : '#' + numero}</span>
+                <h3 class="text-lg font-semibold text-stone-800">${escapeHtml(c.razon_social)}</h3>
+                ${dvBadgeConfianza(c.confianza, c.dias_desde_actualizacion)}
+              </div>
+              <div class="text-sm text-stone-600">${escapeHtml(c.comuna||'')}, ${escapeHtml((c.region||'').toUpperCase())} · ${retiraHtml}${pagoHtml ? ' · ' + pagoHtml : ''}</div>
+              ${condHtml}
+              ${advHtml}
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold text-stone-800">${dvFmtCLP(c.precio_clp_kg)}/kg</div>
+              <div class="text-sm text-stone-600">Total: <strong>${dvFmtCLP(c.precio_total)}</strong></div>
+              <button onclick="dvVendiAbrir(${idx})"
+                      class="mt-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-semibold">
+                ✓ Vendí aquí
+              </button>
+            </div>
+          </div>
+          <div id="dvBono_${idx}" class="text-xs text-stone-500 mt-2"></div>
+        </div>`;
+    }).join('');
+
+    // Cargar estado bono por cada comprador (P5 DeepSeek métrica)
+    for (let i = 0; i < data.length; i++) {
+      const c = data[i];
+      const { data: bonos } = await sb.rpc('f_estado_bono', { p_comprador_id: c.comprador_id, p_material_id: material });
+      if (bonos && bonos.length > 0) {
+        const b = bonos[0];
+        const pctNum = Number(b.pct_avance);
+        const color = pctNum >= 100 ? 'text-emerald-700' : pctNum >= 70 ? 'text-amber-700' : 'text-stone-500';
+        const premioTxt = b.premio?.tipo === 'extra_kg' ? `+$${b.premio.valor}/kg si llegás` :
+                          b.premio?.tipo === 'flat_clp' ? `+${dvFmtCLP(b.premio.valor)} flat si llegás` : '';
+        document.getElementById('dvBono_' + i).innerHTML =
+          `💰 <strong>${escapeHtml(b.nombre_bono)}</strong>: ` +
+          `<span class="${color}">${b.acumulado_kg}/${b.meta_kg} kg (${b.pct_avance}%)</span> ` +
+          `· faltan ${b.faltante_kg} kg · ${premioTxt}`;
+      }
+    }
+  };
+
+  window.dvVendiAbrir = function(idx) {
+    if (!_dvLastSugerencia) return;
+    const c = _dvLastSugerencia.data[idx];
+    document.getElementById('dvVendiResumen').innerHTML = `
+      <strong>${escapeHtml(c.razon_social)}</strong> · ${escapeHtml(_dvLastSugerencia.material)}<br>
+      Precio sugerido: ${dvFmtCLP(c.precio_clp_kg)}/kg · ${c.confianza === 'fresca' ? 'fresca' : c.dias_desde_actualizacion + 'd sin actualizar'}
+      ${c.requiere_foto_previa ? '<br>⚠ Recordá subir foto previa después de despachar' : ''}`;
+    document.getElementById('dvvKg').value = _dvLastSugerencia.kg;
+    document.getElementById('dvvPrecio').value = c.precio_clp_kg;
+    document.getElementById('dvvComentario').value = '';
+    document.getElementById('dvvBono').classList.add('hidden');
+    dvMsg('dvvMsg', '', '');
+    document.getElementById('dvVendiModal').dataset.compradorId = c.comprador_id;
+    document.getElementById('dvVendiModal').dataset.materialId = _dvLastSugerencia.material;
+    document.getElementById('dvVendiModal').classList.remove('hidden');
+  };
+
+  window.dvVendiCerrar = function() {
+    document.getElementById('dvVendiModal').classList.add('hidden');
+  };
+
+  window.dvVendiConfirmar = async function() {
+    const modal = document.getElementById('dvVendiModal');
+    const compradorId = modal.dataset.compradorId;
+    const materialId = modal.dataset.materialId;
+    const kg = parseFloat(document.getElementById('dvvKg').value);
+    const precio = parseFloat(document.getElementById('dvvPrecio').value);
+    const comentario = document.getElementById('dvvComentario').value.trim() || null;
+    if (!kg || kg <= 0) { dvMsg('dvvMsg', 'Kg debe ser > 0', 'error'); return; }
+    if (precio == null || precio < 0) { dvMsg('dvvMsg', 'Precio inválido', 'error'); return; }
+
+    const btn = document.getElementById('dvvConfirmarBtn');
+    btn.disabled = true; btn.textContent = 'Registrando…';
+    const empresa = document.getElementById('dvEmpresa').value;
+    const sucursal = document.getElementById('dvSucursal').value || null;
+    const decisionLog = _dvLastSugerencia ? {
+      material: _dvLastSugerencia.material, kg_consultados: _dvLastSugerencia.kg,
+      top5: _dvLastSugerencia.data.map(x => ({ comprador_id: x.comprador_id, precio: x.precio_clp_kg, confianza: x.confianza }))
+    } : null;
+
+    const { data, error } = await sb.rpc('registrar_venta_simple', {
+      p_comprador_id: compradorId, p_material_id: materialId,
+      p_kg: kg, p_precio_clp_kg: precio, p_empresa: empresa,
+      p_sucursal_origen: sucursal, p_comentario: comentario,
+      p_decision_log: decisionLog
+    });
+    btn.disabled = false; btn.textContent = 'Registrar venta';
+
+    if (error || (data && data.ok === false)) {
+      dvMsg('dvvMsg', 'Error: ' + (error?.message || data?.error || 'desconocido'), 'error');
+      return;
+    }
+
+    // Re-consultar bono después de la venta
+    const { data: bonosPost } = await sb.rpc('f_estado_bono', { p_comprador_id: compradorId, p_material_id: materialId });
+    if (bonosPost && bonosPost.length > 0) {
+      const b = bonosPost[0];
+      const bonoBox = document.getElementById('dvvBono');
+      bonoBox.innerHTML = `✓ Venta registrada. Bono <strong>${escapeHtml(b.nombre_bono)}</strong>: ${b.acumulado_kg}/${b.meta_kg} kg (${b.pct_avance}%) · faltan ${b.faltante_kg}.`;
+      bonoBox.classList.remove('hidden');
+    } else {
+      dvMsg('dvvMsg', '✓ Venta registrada · total ' + dvFmtCLP(kg * precio), 'ok');
+    }
+
+    setTimeout(() => { dvVendiCerrar(); dvSugerir(); }, 2000);
+  };
+
+  // -- Editor precios --
+  window.dvEditarPrecioAbrir = async function() {
+    const sel = document.getElementById('dvpComprador');
+    const { data: compradores } = await sb.schema('curated').from('puntos_venta_material')
+      .select('punto_venta_id, razon_social').eq('activo', true).order('razon_social');
+    sel.innerHTML = '<option value="">— Elegí comprador —</option>' +
+      (compradores || []).map(c => `<option value="${escapeHtml(c.punto_venta_id)}">${escapeHtml(c.razon_social)}</option>`).join('');
+    const matSel = document.getElementById('dvpMaterial');
+    const { data: mats } = await sb.schema('curated').from('materiales')
+      .select('material_id, nombre').eq('activo', true).order('nombre');
+    matSel.innerHTML = '<option value="">— Elegí material —</option>' +
+      (mats || []).map(m => `<option value="${escapeHtml(m.material_id)}">${escapeHtml(m.nombre)}</option>`).join('');
+    document.getElementById('dvpPrecio').value = '';
+    document.getElementById('dvpKgMin').value = 0;
+    document.getElementById('dvpFoto').checked = false;
+    document.getElementById('dvpPrecioPrev').textContent = '';
+    dvMsg('dvpMsg', '', '');
+    document.getElementById('dvPrecioModal').classList.remove('hidden');
+
+    // Cuando cambian comprador+material, mostrar precio actual
+    const refresh = async () => {
+      const cId = sel.value, mId = matSel.value;
+      if (!cId || !mId) { document.getElementById('dvpPrecioPrev').textContent = ''; return; }
+      const { data: prev } = await sb.schema('curated').from('comprador_precio_actual')
+        .select('precio_clp_kg, vigente_desde, updated_by, requiere_foto_previa, kg_minimo')
+        .eq('comprador_id', cId).eq('material_id', mId).is('vigente_hasta', null).maybeSingle();
+      if (prev) {
+        const dias = Math.floor((Date.now() - new Date(prev.vigente_desde)) / 86400000);
+        document.getElementById('dvpPrecioPrev').textContent =
+          `Precio actual: ${prev.precio_clp_kg} CLP/kg · hace ${dias}d · editor: ${prev.updated_by || '—'}`;
+        document.getElementById('dvpFoto').checked = !!prev.requiere_foto_previa;
+        document.getElementById('dvpKgMin').value = prev.kg_minimo || 0;
+      } else {
+        document.getElementById('dvpPrecioPrev').textContent = '(sin precio vigente · será el primero)';
+      }
+    };
+    sel.onchange = refresh;
+    matSel.onchange = refresh;
+  };
+
+  window.dvPrecioCerrar = function() {
+    document.getElementById('dvPrecioModal').classList.add('hidden');
+  };
+
+  window.dvPrecioGuardar = async function() {
+    const compradorId = document.getElementById('dvpComprador').value;
+    const materialId = document.getElementById('dvpMaterial').value;
+    const precio = parseFloat(document.getElementById('dvpPrecio').value);
+    const foto = document.getElementById('dvpFoto').checked;
+    const kgMin = parseFloat(document.getElementById('dvpKgMin').value) || 0;
+    const fuente = document.getElementById('dvpFuente').value;
+    if (!compradorId || !materialId) { dvMsg('dvpMsg', 'Elegí comprador y material', 'error'); return; }
+    if (precio == null || precio < 0 || isNaN(precio)) { dvMsg('dvpMsg', 'Precio inválido', 'error'); return; }
+
+    const btn = document.getElementById('dvpGuardarBtn');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    const { data, error } = await sb.rpc('actualizar_precio_comprador', {
+      p_comprador_id: compradorId, p_material_id: materialId, p_precio_clp_kg: precio,
+      p_requiere_foto: foto, p_kg_minimo: kgMin, p_fuente: fuente
+    });
+    btn.disabled = false; btn.textContent = 'Guardar precio';
+
+    if (error || (data && data.ok === false)) {
+      dvMsg('dvpMsg', 'Error: ' + (error?.message || data?.error || 'desconocido'), 'error');
+      return;
+    }
+    const deltaTxt = data.delta_pct != null ? ` · Δ ${data.delta_pct}%` : '';
+    const notifTxt = data.notif_cruzada ? ' · Diego avisó al editor anterior' : '';
+    dvMsg('dvpMsg', '✓ Precio actualizado' + deltaTxt + notifTxt, 'ok');
+    setTimeout(() => { dvPrecioCerrar(); if (typeof dvSugerir === 'function') dvSugerir(); }, 1500);
+  };
 })();
 </script>
 
