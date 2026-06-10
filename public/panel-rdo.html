@@ -685,6 +685,10 @@
             <span class="v4-emoji" aria-hidden="true">🔀</span>
             Duplicados
           </a>
+          <a href="#" data-v4-tab="bandeja_drift" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">🌪</span>
+            Drift
+          </a>
           <a href="#" data-v4-tab="oportunidades" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🎯</span>
             Oportunidades
@@ -1052,6 +1056,7 @@
         <button data-tab="decisor_venta"  class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabDecisorVenta">💰 Decisor Venta</button>
         <button data-tab="borradores_diego" class="tab-btn py-3 px-3 text-stone-600"   role="tab" aria-selected="false" aria-controls="tabBorradoresDiego">📝 Borradores Diego</button>
         <button data-tab="bandeja_duplicados" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabBandejaDuplicados">🔀 Duplicados</button>
+        <button data-tab="bandeja_drift" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabBandejaDrift">🌪 Drift</button>
         <button data-tab="oportunidades" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabOportunidades">🎯 Oportunidades</button>
         <button data-tab="entregables"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabEntregables">📤 Entregables</button>
         <button data-tab="plan_2026"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPlan2026">🗳️ Plan 2026</button>
@@ -2812,6 +2817,103 @@
       </div>
       <div id="bdupContenedor" class="space-y-3">
         <div class="text-sm text-stone-500">Cargando…</div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA BANDEJA DRIFT (Cliente Único mig 288)
+         Resolver 268 nombres → 160 grupos pendientes con SOTEXI 413 opps
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabBandejaDrift" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🌪 Drift cliente_nombre_libre</h2>
+        <div class="flex items-center gap-3">
+          <select id="bdriftFiltro" onchange="loadBandejaDrift()" class="text-sm border border-stone-300 rounded px-2 py-1">
+            <option value="pendientes">Pendientes</option>
+            <option value="resueltos">Resueltos</option>
+            <option value="todos">Todos</option>
+          </select>
+          <select id="bdriftDecision" onchange="loadBandejaDrift()" class="text-sm border border-stone-300 rounded px-2 py-1">
+            <option value="">Todas las decisiones</option>
+            <option value="revision_multi_match">Multi-match</option>
+            <option value="revision_score_medio">Score medio</option>
+            <option value="revision_score_bajo">Score bajo</option>
+            <option value="sin_match">Sin match</option>
+          </select>
+          <button onclick="loadBandejaDrift()" class="text-sm text-green-700 hover:underline">↺</button>
+        </div>
+      </div>
+      <div class="text-xs text-stone-600 bg-stone-50 border border-stone-200 rounded p-3 mb-3">
+        📌 Cada fila es 1 nombre que las opps usaban como texto libre (sin cliente_id master).
+        Decidí: <strong>Asignar</strong> (matchea con cliente existente), <strong>Crear nuevo</strong>
+        (no está en master), o <strong>Separados</strong> (no es un cliente, ej "Particular"). El ✓
+        actualiza TODAS las opps con ese nombre.
+      </div>
+      <div id="bdriftContenedor" class="space-y-3">
+        <div class="text-sm text-stone-500">Cargando…</div>
+      </div>
+
+      <!-- Modal asignar cliente existente -->
+      <div id="bdriftAsignarModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-start justify-center overflow-y-auto py-6">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+          <div class="flex justify-between items-center px-5 py-3 border-b border-stone-200">
+            <h3 class="text-lg font-bold text-stone-800">✓ Asignar a cliente master</h3>
+            <button onclick="bdriftAsignarCerrar()" class="text-stone-400 hover:text-stone-700 text-2xl leading-none">×</button>
+          </div>
+          <div class="px-5 py-4 space-y-3">
+            <div id="bdriftAsignarResumen" class="bg-stone-50 border border-stone-200 rounded p-3 text-sm"></div>
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">Buscar cliente en master</label>
+              <input id="bdriftBuscarCli" type="text" placeholder="Nombre o RUT…"
+                     oninput="bdriftBuscarCliente(this.value)"
+                     class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+              <div id="bdriftSugerencias" class="hidden bg-white border border-stone-200 rounded mt-1 max-h-48 overflow-y-auto z-10"></div>
+              <input type="hidden" id="bdriftClienteIdSel">
+              <span id="bdriftClienteSelTxt" class="text-xs text-green-700 font-semibold mt-1 block"></span>
+            </div>
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">Motivo (opcional)</label>
+              <input id="bdriftMotivoAsig" type="text" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+            </div>
+            <div id="bdriftAsignarMsg" class="hidden text-sm px-3 py-1.5 rounded"></div>
+          </div>
+          <div class="flex justify-end gap-2 px-5 py-3 border-t border-stone-200 bg-stone-50">
+            <button onclick="bdriftAsignarCerrar()" class="px-3 py-1.5 bg-white hover:bg-stone-100 border border-stone-300 rounded text-sm">Cancelar</button>
+            <button onclick="bdriftAsignarConfirmar()" id="bdriftAsignarBtn"
+                    class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-semibold">
+              Asignar y actualizar opps
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal crear nuevo -->
+      <div id="bdriftCrearModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-start justify-center overflow-y-auto py-6">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+          <div class="flex justify-between items-center px-5 py-3 border-b border-stone-200">
+            <h3 class="text-lg font-bold text-stone-800">➕ Crear cliente nuevo</h3>
+            <button onclick="bdriftCrearCerrar()" class="text-stone-400 hover:text-stone-700 text-2xl leading-none">×</button>
+          </div>
+          <div class="px-5 py-4 space-y-3">
+            <div id="bdriftCrearResumen" class="bg-stone-50 border border-stone-200 rounded p-3 text-sm"></div>
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">Razón social *</label>
+              <input id="bdriftRazonSocial" type="text" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">RUT (opcional)</label>
+              <input id="bdriftRut" type="text" placeholder="12345678-9" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+            </div>
+            <div id="bdriftCrearMsg" class="hidden text-sm px-3 py-1.5 rounded"></div>
+          </div>
+          <div class="flex justify-end gap-2 px-5 py-3 border-t border-stone-200 bg-stone-50">
+            <button onclick="bdriftCrearCerrar()" class="px-3 py-1.5 bg-white hover:bg-stone-100 border border-stone-300 rounded text-sm">Cancelar</button>
+            <button onclick="bdriftCrearConfirmar()" id="bdriftCrearBtn"
+                    class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-semibold">
+              Crear y asignar opps
+            </button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -5527,6 +5629,7 @@ function setupTabs() {
       if (tabId === 'decisor_venta') loadDecisorVenta();
       if (tabId === 'borradores_diego') loadBorradoresDiego();
       if (tabId === 'bandeja_duplicados') loadBandejaDuplicados();
+      if (tabId === 'bandeja_drift') loadBandejaDrift();
       if (tabId === 'oportunidades') initOportunidadesKanban();
       if (tabId === 'entregables') initEntregables();
       if (tabId === 'bandeja_dieg') initBandejaDiego();
@@ -17001,6 +17104,191 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Cliente Único · Bandeja Drift cliente_nombre_libre (mig 288)
+═══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  function eh(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  let _bdriftCurrentId = null;
+
+  window.loadBandejaDrift = async function() {
+    const cont = document.getElementById('bdriftContenedor');
+    if (!cont) return;
+    cont.innerHTML = '<div class="text-sm text-stone-500">Cargando…</div>';
+    const filtro = document.getElementById('bdriftFiltro').value;
+    const decision = document.getElementById('bdriftDecision').value;
+    let q = sb.schema('panel').from('v_bandeja_drift').select('*').limit(80);
+    if (filtro === 'pendientes') q = q.eq('resuelto', false);
+    if (filtro === 'resueltos') q = q.eq('resuelto', true);
+    if (decision) q = q.eq('decision', decision);
+    const { data, error } = await q;
+    if (error) { cont.innerHTML = '<div class="text-sm text-red-600 p-3 bg-red-50 rounded">'+eh(error.message)+'</div>'; return; }
+    if (!data || data.length === 0) {
+      cont.innerHTML = '<div class="text-sm text-stone-500 p-6 bg-stone-50 rounded text-center">Sin drift para el filtro.</div>';
+      return;
+    }
+    cont.innerHTML = data.map(d => {
+      const resueltoBadge = d.resuelto
+        ? `<span class="text-xs px-2 py-0.5 rounded bg-green-100 text-green-800">✓ ${eh(d.decision||'resuelto')}</span>`
+        : `<span class="text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-800">⏳ pendiente</span>`;
+      const topCand = d.top_candidato_id ? `
+        <div class="mt-2 text-xs text-stone-600">
+          Mejor sugerencia: <strong>${eh(d.top_candidato_nombre||'?')}</strong> (${eh(d.top_candidato_rut||'sin RUT')})
+          · score ${(Number(d.top_candidato_score||0)*100).toFixed(0)}% · ${d.n_candidatos} candidatos
+        </div>` : '<div class="mt-2 text-xs text-stone-500">Sin sugerencias master</div>';
+      const acciones = d.resuelto ? '' : `
+        <div class="flex flex-wrap gap-2 mt-3">
+          ${d.top_candidato_id ? `
+            <button onclick='bdriftAsignarRapido("${d.id}","${d.top_candidato_id}","${eh(d.top_candidato_nombre||'?').replace(/'/g,"&#39;")}",${d.opps_count})'
+                    class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded font-semibold">
+              ⚡ Asignar a "${eh((d.top_candidato_nombre||'?').slice(0,30))}"
+            </button>`:''}
+          <button onclick="bdriftAsignarAbrir('${d.id}','${eh((d.cliente_nombre_libre||'').replace(/'/g,'&#39;'))}',${d.opps_count})"
+                  class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded font-semibold">
+            🔍 Buscar otro
+          </button>
+          <button onclick="bdriftCrearAbrir('${d.id}','${eh((d.cliente_nombre_libre||'').replace(/'/g,'&#39;'))}',${d.opps_count})"
+                  class="px-3 py-1.5 bg-stone-700 hover:bg-stone-800 text-white text-xs rounded font-semibold">
+            ➕ Crear nuevo
+          </button>
+          <button onclick="bdriftSeparados('${d.id}',${d.opps_count})"
+                  class="px-3 py-1.5 bg-stone-500 hover:bg-stone-600 text-white text-xs rounded font-semibold">
+            ✗ No es cliente
+          </button>
+        </div>`;
+      return `
+        <div class="bg-white border border-stone-200 rounded-lg p-4">
+          <div class="flex items-center gap-2 flex-wrap mb-2">
+            ${resueltoBadge}
+            <span class="text-xs px-2 py-0.5 rounded bg-stone-100 text-stone-700">${d.opps_count} opps</span>
+            <span class="text-xs px-2 py-0.5 rounded bg-stone-100 text-stone-600">${eh(d.decision)}</span>
+          </div>
+          <div class="text-lg font-semibold text-stone-800">${eh(d.cliente_nombre_libre)}</div>
+          ${topCand}
+          ${acciones}
+        </div>`;
+    }).join('');
+  };
+
+  window.bdriftAsignarRapido = async function(driftId, clienteId, clienteNombre, opps) {
+    if (!confirm(`Asignar ${opps} opps de "${clienteNombre}" al cliente master?`)) return;
+    await bdriftEjecutarAsignar(driftId, clienteId, null);
+  };
+
+  async function bdriftEjecutarAsignar(driftId, clienteId, motivo) {
+    const { data, error } = await sb.rpc('resolver_drift_asignando', {
+      p_drift_id: driftId, p_cliente_id: clienteId, p_motivo: motivo
+    });
+    if (error || (data && data.ok === false)) {
+      alert('Error: ' + (error?.message || data?.error || 'desconocido'));
+      return;
+    }
+    loadBandejaDrift();
+  }
+
+  window.bdriftAsignarAbrir = function(driftId, nombreLibre, opps) {
+    _bdriftCurrentId = driftId;
+    document.getElementById('bdriftAsignarResumen').innerHTML = `<strong>"${eh(nombreLibre)}"</strong> · ${opps} opps a re-asignar`;
+    document.getElementById('bdriftBuscarCli').value = nombreLibre;
+    document.getElementById('bdriftClienteIdSel').value = '';
+    document.getElementById('bdriftClienteSelTxt').textContent = '';
+    document.getElementById('bdriftSugerencias').classList.add('hidden');
+    document.getElementById('bdriftMotivoAsig').value = '';
+    document.getElementById('bdriftAsignarMsg').classList.add('hidden');
+    document.getElementById('bdriftAsignarModal').classList.remove('hidden');
+    bdriftBuscarCliente(nombreLibre);
+  };
+  window.bdriftAsignarCerrar = function() { document.getElementById('bdriftAsignarModal').classList.add('hidden'); };
+
+  let _bdriftBuscarTimer = null;
+  window.bdriftBuscarCliente = function(val) {
+    clearTimeout(_bdriftBuscarTimer);
+    const sug = document.getElementById('bdriftSugerencias');
+    const v = (val||'').trim();
+    if (v.length < 2) { sug.classList.add('hidden'); return; }
+    _bdriftBuscarTimer = setTimeout(async () => {
+      const { data } = await sb.rpc('f_buscar_cliente_similar', { p_nombre: v, p_rut: null, p_limit: 8 });
+      const lista = (data||[]).filter(c => c.activo !== false);
+      if (lista.length === 0) { sug.classList.add('hidden'); return; }
+      sug.innerHTML = lista.map(c =>
+        `<div class="px-3 py-2 hover:bg-green-50 cursor-pointer text-sm border-b border-stone-100 last:border-0"
+              onclick="bdriftSeleccionarCliente('${eh(c.cliente_id)}','${eh((c.razon_social||'').replace(/'/g,"&#39;"))}')">
+          <span class="font-medium">${eh(c.razon_social||'—')}</span>
+          <span class="text-stone-400 text-xs ml-2">${eh(c.rut||'')} · ${(c.score*100).toFixed(0)}%</span>
+        </div>`).join('');
+      sug.classList.remove('hidden');
+    }, 300);
+  };
+
+  window.bdriftSeleccionarCliente = function(id, nombre) {
+    document.getElementById('bdriftClienteIdSel').value = id;
+    document.getElementById('bdriftClienteSelTxt').textContent = '✔ ' + nombre;
+    document.getElementById('bdriftSugerencias').classList.add('hidden');
+  };
+
+  window.bdriftAsignarConfirmar = async function() {
+    const clienteId = document.getElementById('bdriftClienteIdSel').value;
+    const motivo = document.getElementById('bdriftMotivoAsig').value.trim() || null;
+    if (!clienteId) { document.getElementById('bdriftAsignarMsg').textContent = 'Elegí un cliente del autocomplete'; document.getElementById('bdriftAsignarMsg').className = 'text-sm px-3 py-1.5 rounded bg-red-50 text-red-700'; document.getElementById('bdriftAsignarMsg').classList.remove('hidden'); return; }
+    const btn = document.getElementById('bdriftAsignarBtn');
+    btn.disabled = true; btn.textContent = 'Asignando…';
+    const { data, error } = await sb.rpc('resolver_drift_asignando', {
+      p_drift_id: _bdriftCurrentId, p_cliente_id: clienteId, p_motivo: motivo
+    });
+    btn.disabled = false; btn.textContent = 'Asignar y actualizar opps';
+    if (error || (data && data.ok === false)) {
+      document.getElementById('bdriftAsignarMsg').textContent = 'Error: ' + (error?.message || data?.error);
+      document.getElementById('bdriftAsignarMsg').className = 'text-sm px-3 py-1.5 rounded bg-red-50 text-red-700';
+      document.getElementById('bdriftAsignarMsg').classList.remove('hidden');
+      return;
+    }
+    bdriftAsignarCerrar();
+    loadBandejaDrift();
+  };
+
+  window.bdriftCrearAbrir = function(driftId, nombreLibre, opps) {
+    _bdriftCurrentId = driftId;
+    document.getElementById('bdriftCrearResumen').innerHTML = `<strong>"${eh(nombreLibre)}"</strong> · ${opps} opps quedarán con el cliente nuevo`;
+    document.getElementById('bdriftRazonSocial').value = nombreLibre;
+    document.getElementById('bdriftRut').value = '';
+    document.getElementById('bdriftCrearMsg').classList.add('hidden');
+    document.getElementById('bdriftCrearModal').classList.remove('hidden');
+  };
+  window.bdriftCrearCerrar = function() { document.getElementById('bdriftCrearModal').classList.add('hidden'); };
+
+  window.bdriftCrearConfirmar = async function() {
+    const rs = document.getElementById('bdriftRazonSocial').value.trim();
+    const rut = document.getElementById('bdriftRut').value.trim() || null;
+    if (!rs) { document.getElementById('bdriftCrearMsg').textContent = 'Razón social requerida'; document.getElementById('bdriftCrearMsg').className = 'text-sm px-3 py-1.5 rounded bg-red-50 text-red-700'; document.getElementById('bdriftCrearMsg').classList.remove('hidden'); return; }
+    const btn = document.getElementById('bdriftCrearBtn');
+    btn.disabled = true; btn.textContent = 'Creando…';
+    const { data, error } = await sb.rpc('resolver_drift_crear_cliente', {
+      p_drift_id: _bdriftCurrentId, p_razon_social: rs, p_rut: rut, p_motivo: null
+    });
+    btn.disabled = false; btn.textContent = 'Crear y asignar opps';
+    if (error || (data && data.ok === false)) {
+      document.getElementById('bdriftCrearMsg').textContent = 'Error: ' + (error?.message || data?.error);
+      document.getElementById('bdriftCrearMsg').className = 'text-sm px-3 py-1.5 rounded bg-red-50 text-red-700';
+      document.getElementById('bdriftCrearMsg').classList.remove('hidden');
+      return;
+    }
+    bdriftCrearCerrar();
+    loadBandejaDrift();
+  };
+
+  window.bdriftSeparados = async function(driftId, opps) {
+    const motivo = prompt(`¿Por qué "${opps} opps" no son un cliente de master? (ej: "particular", "test")`);
+    if (motivo === null) return;
+    const { data, error } = await sb.rpc('resolver_drift_separados', {
+      p_drift_id: driftId, p_motivo: motivo || null
+    });
+    if (error || (data && data.ok === false)) { alert('Error: ' + (error?.message || data?.error)); return; }
+    loadBandejaDrift();
+  };
 })();
 </script>
 
