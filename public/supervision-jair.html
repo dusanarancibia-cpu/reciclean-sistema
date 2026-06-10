@@ -80,6 +80,14 @@ tr.trabada-click:hover{background:#fef3c7}
 .suc-card .lbl{font-size:11px;color:var(--muted);margin-top:4px;text-transform:capitalize}
 .titulo-tarea{font-weight:600;color:var(--text)}
 .descr-tarea{color:var(--muted);font-size:11px;margin-top:2px}
+.global-bar{border-radius:12px;padding:14px 20px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;border:2px solid;margin-bottom:20px}
+.global-bar.verde{background:#ecfdf5;border-color:#059669}.global-bar.amarillo{background:#fffbeb;border-color:#d97706}.global-bar.rojo{background:#fef2f2;border-color:#dc2626}
+.global-bar .gsem{font-size:13px;font-weight:800;padding:4px 12px;border-radius:8px;letter-spacing:.04em}
+.global-bar .gsem.verde{background:#059669;color:#fff}.global-bar .gsem.amarillo{background:#d97706;color:#fff}.global-bar .gsem.rojo{background:#dc2626;color:#fff}
+.global-bar .gstat{font-size:12px;color:var(--muted);border-left:2px solid var(--border);padding-left:14px;min-width:80px}
+.global-bar .gstat strong{display:block;font-size:20px;font-weight:900;color:var(--text);line-height:1.1}
+.global-bar .gstat.warn strong{color:var(--amber)}.global-bar .gstat.danger strong{color:var(--red)}.global-bar .gstat.ok strong{color:#059669}
+.global-bar .gtitle{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;flex-basis:100%}
 @media (max-width:900px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.por-suc{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -98,6 +106,7 @@ tr.trabada-click:hover{background:#fef3c7}
 
 <div class="cont">
   <div id="alarmas-box"></div>
+  <div id="global-bar" style="display:none"></div>
   <div class="kpis">
     <div class="kpi"><div class="n" id="k-total">—</div><div class="lbl">Pendientes</div></div>
     <div class="kpi rojo"><div class="n" id="k-venc">—</div><div class="lbl">Vencidas</div></div>
@@ -143,6 +152,7 @@ async function cargar(){
     document.getElementById('k-sing').textContent=k.sin_gestiones_3d||0;
     document.getElementById('k-cerr').textContent=k.cerradas_7d||0;
     document.getElementById('k-gest').textContent=k.gestiones_7d||0;
+    renderGlobal(data.cumplimiento_global||{});
     renderAlarmas(data.escalamientos_abiertos||[]);
     renderPorSuc(data.por_sucursal||[]);
     renderTrabadas(data.trabadas||[]);
@@ -150,6 +160,29 @@ async function cargar(){
   }catch(e){
     document.body.insertAdjacentHTML('beforeend','<div class="error">'+esc(e.message||JSON.stringify(e))+'</div>');
   }
+}
+
+function renderGlobal(g){
+  const box=document.getElementById('global-bar');
+  if(!g||!g.semaforo_global){box.style.display='none';return;}
+  const sem=g.semaforo_global||'amarillo';
+  const semLabel={'verde':'✅ CUMPLIMIENTO OK','amarillo':'⚠️ ATENCIÓN','rojo':'🚨 CRÍTICO'}[sem]||sem.toUpperCase();
+  const pct=g.pct_cumplimiento||0;
+  const activas=g.activas||0,criticas=g.criticas||0,total=g.total_obligaciones||0,cumplidas=g.cumplidas||0;
+  const tPend=g.tareas_pendientes||0,tVenc=g.tareas_vencidas||0;
+  const escalam=g.escalamientos_abiertos||0;
+  const gest7=g.gestiones_7d||0;
+  box.className='global-bar '+sem;
+  box.style.display='flex';
+  box.innerHTML=''
+    +'<div class="gtitle">Cumplimiento Ley REP · Estado global</div>'
+    +'<span class="gsem '+sem+'">'+semLabel+'</span>'
+    +'<div class="gstat '+(pct<50?'danger':pct>=85?'ok':'warn')+'"><strong>'+pct+'%</strong>obligaciones<br>cumplidas</div>'
+    +'<div class="gstat"><strong>'+activas+'</strong>activas de '+total+'</div>'
+    +(criticas>0?'<div class="gstat danger"><strong>'+criticas+'</strong>críticas</div>':'<div class="gstat ok"><strong>'+cumplidas+'</strong>cumplidas</div>')
+    +'<div class="gstat '+(tVenc>0?'danger':'')+'"><strong>'+tPend+'</strong>tareas pend.'+(tVenc>0?' <span style="color:var(--red);font-size:10px">('+tVenc+' venc.)</span>':'')+'</div>'
+    +(escalam>0?'<div class="gstat danger"><strong>'+escalam+'</strong>escalam. abierto'+(escalam>1?'s':'')+'</div>':'')
+    +'<div class="gstat ok"><strong>'+gest7+'</strong>gestiones 7d</div>';
 }
 
 function renderAlarmas(arr){
