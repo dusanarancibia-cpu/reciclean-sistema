@@ -681,6 +681,10 @@
             <span class="v4-emoji" aria-hidden="true">📝</span>
             Borradores Diego
           </a>
+          <a href="#" data-v4-tab="bandeja_duplicados" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">🔀</span>
+            Duplicados
+          </a>
           <a href="#" data-v4-tab="oportunidades" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🎯</span>
             Oportunidades
@@ -1047,6 +1051,7 @@
         <button data-tab="mis_visitas"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabMisVisitas">📅 Mis Visitas</button>
         <button data-tab="decisor_venta"  class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabDecisorVenta">💰 Decisor Venta</button>
         <button data-tab="borradores_diego" class="tab-btn py-3 px-3 text-stone-600"   role="tab" aria-selected="false" aria-controls="tabBorradoresDiego">📝 Borradores Diego</button>
+        <button data-tab="bandeja_duplicados" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabBandejaDuplicados">🔀 Duplicados</button>
         <button data-tab="oportunidades" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabOportunidades">🎯 Oportunidades</button>
         <button data-tab="entregables"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabEntregables">📤 Entregables</button>
         <button data-tab="plan_2026"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPlan2026">🗳️ Plan 2026</button>
@@ -2781,6 +2786,32 @@
             </button>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA BANDEJA DUPLICADOS (Cliente Único mig 285)
+         Resolver mayordomo.duplicados_clientes_alertas pendientes
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabBandejaDuplicados" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🔀 Bandeja Duplicados Cliente</h2>
+        <div class="flex items-center gap-3">
+          <select id="bdupFiltro" onchange="loadBandejaDuplicados()" class="text-sm border border-stone-300 rounded px-2 py-1">
+            <option value="pendientes">Pendientes</option>
+            <option value="resueltos">Resueltos</option>
+            <option value="todos">Todos</option>
+          </select>
+          <button onclick="loadBandejaDuplicados()" class="text-sm text-green-700 hover:underline">↺</button>
+        </div>
+      </div>
+      <div class="text-xs text-stone-600 bg-stone-50 border border-stone-200 rounded p-3 mb-3">
+        📌 Cada par muestra los 2 clientes que el sistema detectó como posibles duplicados.
+        Decidí: <strong>Mergear</strong> (uno absorbe al otro · FKs se mueven automático ·
+        merge_log guarda revert info) o <strong>Separados</strong> (no son dup, solo cierra la alerta).
+      </div>
+      <div id="bdupContenedor" class="space-y-3">
+        <div class="text-sm text-stone-500">Cargando…</div>
       </div>
     </section>
 
@@ -5495,6 +5526,7 @@ function setupTabs() {
       if (tabId === 'mis_visitas') loadMisVisitas();
       if (tabId === 'decisor_venta') loadDecisorVenta();
       if (tabId === 'borradores_diego') loadBorradoresDiego();
+      if (tabId === 'bandeja_duplicados') loadBandejaDuplicados();
       if (tabId === 'oportunidades') initOportunidadesKanban();
       if (tabId === 'entregables') initEntregables();
       if (tabId === 'bandeja_dieg') initBandejaDiego();
@@ -16969,6 +17001,99 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Cliente Único · Bandeja Duplicados (mig 285)
+═══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  function bdupEH(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+  window.loadBandejaDuplicados = async function() {
+    const cont = document.getElementById('bdupContenedor');
+    if (!cont) return;
+    cont.innerHTML = '<div class="text-sm text-stone-500">Cargando…</div>';
+    const filtro = document.getElementById('bdupFiltro').value;
+    let q = sb.schema('panel').from('v_bandeja_duplicados').select('*').limit(80);
+    if (filtro === 'pendientes') q = q.eq('resuelto', false);
+    if (filtro === 'resueltos') q = q.eq('resuelto', true);
+    const { data, error } = await q;
+    if (error) { cont.innerHTML = '<div class="text-sm text-red-600 p-3 bg-red-50 rounded">'+bdupEH(error.message)+'</div>'; return; }
+    if (!data || data.length === 0) {
+      cont.innerHTML = '<div class="text-sm text-stone-500 p-6 bg-stone-50 rounded text-center">Sin duplicados para el filtro elegido.</div>';
+      return;
+    }
+    cont.innerHTML = data.map(d => {
+      const sim = d.similitud_nombre != null ? Math.round(Number(d.similitud_nombre)*100)+'% similitud' : 'sin score';
+      const resueltoBadge = d.resuelto ? `<span class="text-xs px-2 py-0.5 rounded bg-green-100 text-green-800">✓ resuelto por ${bdupEH(d.resuelto_por||'?')}</span>` :
+        '<span class="text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-800">⏳ pendiente</span>';
+      const accionesBox = d.resuelto ? `<div class="text-xs text-stone-500 italic">Acción: ${bdupEH(d.accion_tomada||'?')}</div>` : `
+        <div class="grid grid-cols-2 gap-2 mt-3">
+          <button onclick="bdupMergear('${d.alerta_id}','${d.cliente_id_existente}','${d.cliente_id_nuevo}', ${JSON.stringify((d.nuevo_master_nombre||d.razon_social_nueva||'')).replace(/"/g,'&quot;')}, ${JSON.stringify((d.existente_master_nombre||d.razon_social_existente||'')).replace(/"/g,'&quot;')})"
+                  class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded font-semibold text-left">
+            ← Mergear: "${bdupEH(d.existente_master_nombre||d.razon_social_existente||'?')}" gana<br>
+            <span class="text-[10px] opacity-75">(${d.opps_existente||0} opps absorberán las ${d.opps_nuevo||0} del otro)</span>
+          </button>
+          <button onclick="bdupMergear('${d.alerta_id}','${d.cliente_id_nuevo}','${d.cliente_id_existente}', ${JSON.stringify((d.existente_master_nombre||d.razon_social_existente||'')).replace(/"/g,'&quot;')}, ${JSON.stringify((d.nuevo_master_nombre||d.razon_social_nueva||'')).replace(/"/g,'&quot;')})"
+                  class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded font-semibold text-left">
+            → Mergear: "${bdupEH(d.nuevo_master_nombre||d.razon_social_nueva||'?')}" gana<br>
+            <span class="text-[10px] opacity-75">(${d.opps_nuevo||0} opps absorberán las ${d.opps_existente||0} del otro)</span>
+          </button>
+          <button onclick="bdupSeparados('${d.alerta_id}')" class="col-span-2 px-3 py-1.5 bg-stone-500 hover:bg-stone-600 text-white text-xs rounded font-semibold">
+            ✗ Separados (no son dup, solo cerrar alerta)
+          </button>
+        </div>`;
+      return `
+        <div class="bg-white border border-stone-200 rounded-lg p-4">
+          <div class="flex items-center gap-2 mb-2 flex-wrap">
+            ${resueltoBadge}
+            <span class="text-xs px-2 py-0.5 rounded bg-stone-100 text-stone-700">${bdupEH(sim)}</span>
+            ${d.rut_compartido ? `<span class="text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-800">RUT: ${bdupEH(d.rut_compartido)}</span>`:''}
+            <span class="text-xs text-stone-400">${new Date(d.detectado_at).toLocaleDateString('es-CL')}</span>
+          </div>
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="bg-blue-50 border border-blue-200 rounded p-2">
+              <div class="text-xs text-blue-700 font-semibold mb-1">CLIENTE A (cliente_id_nuevo)</div>
+              <div class="font-medium text-stone-800">${bdupEH(d.nuevo_master_nombre||d.razon_social_nueva||'—')}</div>
+              <div class="text-xs text-stone-500">${bdupEH(d.cliente_id_nuevo)} · RUT: ${bdupEH(d.nuevo_master_rut||'sin')} · ${d.nuevo_master_activo===false?'INACTIVO':'activo'}</div>
+              <div class="text-xs text-stone-500">Origen: ${bdupEH(d.nuevo_master_fuente||'?')} · ${d.opps_nuevo||0} opps</div>
+            </div>
+            <div class="bg-emerald-50 border border-emerald-200 rounded p-2">
+              <div class="text-xs text-emerald-700 font-semibold mb-1">CLIENTE B (cliente_id_existente)</div>
+              <div class="font-medium text-stone-800">${bdupEH(d.existente_master_nombre||d.razon_social_existente||'—')}</div>
+              <div class="text-xs text-stone-500">${bdupEH(d.cliente_id_existente)} · RUT: ${bdupEH(d.existente_master_rut||'sin')} · ${d.existente_master_activo===false?'INACTIVO':'activo'}</div>
+              <div class="text-xs text-stone-500">Origen: ${bdupEH(d.existente_master_fuente||'?')} · ${d.opps_existente||0} opps</div>
+            </div>
+          </div>
+          ${accionesBox}
+        </div>`;
+    }).join('');
+  };
+
+  window.bdupMergear = async function(alertaId, perdedorId, ganadorId, ganadorNombre, perdedorNombre) {
+    if (!confirm(`Mergear "${perdedorNombre}" → "${ganadorNombre}"?\n\nTODAS las FKs (opps, cotizaciones, contactos, etc.) se mueven al ganador.\nEl perdedor queda inactivo + merge_log conserva info para revert manual.\n\n¿Confirmás?`)) return;
+    const motivo = prompt('Motivo (opcional · queda registrado):') || 'humano_revision_bandeja';
+    const { data, error } = await sb.rpc('resolver_duplicado_mergeando', {
+      p_alerta_id: alertaId, p_perdedor: perdedorId, p_ganador: ganadorId, p_motivo: motivo
+    });
+    if (error || (data && data.ok === false)) {
+      alert('Error: ' + (error?.message || data?.error || 'desconocido'));
+      return;
+    }
+    const filas = data.merge?.filas_movidas || {};
+    const total = Object.values(filas).reduce((s,v)=>s+(typeof v==='number'?v:0), 0);
+    alert(`✓ Merge ejecutado. ${total} filas movidas a "${ganadorNombre}".`);
+    loadBandejaDuplicados();
+  };
+
+  window.bdupSeparados = async function(alertaId) {
+    const motivo = prompt('¿Por qué no son duplicados? (opcional):') || null;
+    const { data, error } = await sb.rpc('resolver_duplicado_separados', { p_alerta_id: alertaId, p_motivo: motivo });
+    if (error || (data && data.ok === false)) { alert('Error: ' + (error?.message || data?.error)); return; }
+    loadBandejaDuplicados();
+  };
 })();
 </script>
 
