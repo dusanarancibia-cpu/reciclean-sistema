@@ -669,6 +669,10 @@
             <span class="v4-emoji" aria-hidden="true">💳</span>
             Cartera
           </a>
+          <a href="#" data-v4-tab="mis_visitas" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📅</span>
+            Mis Visitas
+          </a>
           <a href="#" data-v4-tab="oportunidades" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🎯</span>
             Oportunidades
@@ -1032,6 +1036,7 @@
         <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
         <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
+        <button data-tab="mis_visitas"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabMisVisitas">📅 Mis Visitas</button>
         <button data-tab="oportunidades" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabOportunidades">🎯 Oportunidades</button>
         <button data-tab="entregables"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabEntregables">📤 Entregables</button>
         <button data-tab="plan_2026"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPlan2026">🗳️ Plan 2026</button>
@@ -2207,10 +2212,15 @@
             <div id="carDrawerOpCrm" class="text-xs text-stone-600">—</div>
           </div>
 
-          <div class="mt-5 pt-4 border-t border-stone-100">
+          <div class="mt-5 pt-4 border-t border-stone-100 space-y-2">
             <button id="carDrawerEditBtn" onclick="carAbrirEditar(_cartDrawerClienteId)"
                     class="w-full bg-stone-700 hover:bg-stone-800 text-white text-sm py-2 rounded font-semibold">
               ✏️ Editar datos completos
+            </button>
+            <!-- Plan Andrea F3 #16 · botón programar visita desde drawer -->
+            <button onclick="visitaProgramarAbrir(_cartDrawerClienteId, document.getElementById('carDrawerTitulo').textContent)"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm py-2 rounded font-semibold">
+              📅 Programar visita comercial
             </button>
           </div>
         </div>
@@ -2486,6 +2496,84 @@
             <div id="clienteEditMsg" class="text-sm hidden"></div>
           </div>
 
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA MIS VISITAS (Plan Andrea F3 #16 · mig 275)
+         Calendario semana + acciones realizada/no_realizada
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabMisVisitas" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">📅 Mis Visitas — esta semana</h2>
+        <div class="flex items-center gap-2">
+          <button onclick="loadMisVisitas()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+          <button onclick="visitaProgramarAbrir(null, null)"
+                  class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-medium">
+            + Programar visita
+          </button>
+        </div>
+      </div>
+      <div id="misVisitasMsg" class="hidden text-sm mb-3 px-3 py-2 rounded"></div>
+      <div id="misVisitasContenedor" class="space-y-3">
+        <div class="text-sm text-stone-500">Cargando…</div>
+      </div>
+
+      <!-- Modal mini · Programar visita -->
+      <div id="visitaProgramarModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-start justify-center overflow-y-auto py-6">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+          <div class="flex justify-between items-center px-5 py-3 border-b border-stone-200">
+            <h3 class="text-lg font-bold text-stone-800">📅 Programar visita</h3>
+            <button onclick="visitaProgramarCerrar()" class="text-stone-400 hover:text-stone-700 text-2xl leading-none">×</button>
+          </div>
+          <div class="px-5 py-4 space-y-3">
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">Cliente *</label>
+              <input id="vpCliente" type="text" placeholder="Buscar cliente (nombre o RUT)…"
+                     oninput="vpBuscarCliente(this.value)"
+                     class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+              <div id="vpClienteSugerencias" class="hidden bg-white border border-stone-200 rounded mt-1 max-h-48 overflow-y-auto z-10"></div>
+              <input type="hidden" id="vpClienteId">
+              <span id="vpClienteSeleccionado" class="text-xs text-green-700 font-semibold mt-1 block"></span>
+            </div>
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">Dirección (opcional)</label>
+              <select id="vpDireccion" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+                <option value="">— sin dirección específica —</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-stone-500 mb-1">Fecha *</label>
+                <input id="vpFecha" type="date" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-stone-500 mb-1">Sucursal Reciclean *</label>
+                <select id="vpSucursal" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm">
+                  <option value="">— seleccionar —</option>
+                  <option value="cerrillos">Cerrillos</option>
+                  <option value="maipu">Maipú</option>
+                  <option value="talca">Talca</option>
+                  <option value="puerto_montt">Puerto Montt</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs text-stone-500 mb-1">Comentario (opcional)</label>
+              <textarea id="vpComentario" rows="2" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm"
+                        placeholder="Ej: revisar contrato Q4, retirar muestras…"></textarea>
+            </div>
+            <div id="vpMsg" class="hidden text-sm px-3 py-1.5 rounded"></div>
+          </div>
+          <div class="flex justify-end gap-2 px-5 py-3 border-t border-stone-200 bg-stone-50">
+            <button onclick="visitaProgramarCerrar()"
+                    class="px-3 py-1.5 bg-white hover:bg-stone-100 border border-stone-300 rounded text-sm">Cancelar</button>
+            <button onclick="visitaProgramarConfirmar()" id="vpConfirmarBtn"
+                    class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-medium">
+              Programar
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -5198,6 +5286,7 @@ function setupTabs() {
       if (tabId === 'operativos') initOperativos();
       if (tabId === 'reconciliacion') initReconciliacion();
       if (tabId === 'cartera')   initCartera();
+      if (tabId === 'mis_visitas') loadMisVisitas();
       if (tabId === 'oportunidades') initOportunidadesKanban();
       if (tabId === 'entregables') initEntregables();
       if (tabId === 'bandeja_dieg') initBandejaDiego();
@@ -16672,6 +16761,216 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Plan Andrea F3 #16 · Mis Visitas (mig 275)
+     Tab calendario semana + modal programar + acciones realizada/no_realizada
+═══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  // Resolver email del caller (chain de 4 fuentes — memoria panel-rdo-sesion-fallback-chain)
+  function getCallerEmail() {
+    try {
+      if (typeof currentUser === 'string' && currentUser.includes('@')) return currentUser.toLowerCase();
+      const rf = localStorage.getItem('rf_session');
+      if (rf) { const o = JSON.parse(rf); if (o && o.email) return o.email.toLowerCase(); }
+      const sb_session = JSON.parse(localStorage.getItem('sb-eknmtsrtfkzroxnovfqn-auth-token') || 'null');
+      if (sb_session && sb_session.user && sb_session.user.email) return sb_session.user.email.toLowerCase();
+    } catch(e) {}
+    return null;
+  }
+
+  function vpSetMsg(text, kind) {
+    const el = document.getElementById('vpMsg');
+    if (!el) return;
+    if (!text) { el.classList.add('hidden'); return; }
+    const palette = kind === 'error' ? 'bg-red-50 text-red-700' :
+                    kind === 'ok' ? 'bg-green-50 text-green-700' :
+                    'bg-amber-50 text-amber-700';
+    el.className = 'text-sm px-3 py-1.5 rounded ' + palette;
+    el.textContent = text;
+    el.classList.remove('hidden');
+  }
+
+  window.loadMisVisitas = async function() {
+    const cont = document.getElementById('misVisitasContenedor');
+    if (!cont) return;
+    cont.innerHTML = '<div class="text-sm text-stone-500">Cargando…</div>';
+    const { data, error } = await sb.schema('panel').from('v_andrea_visitas_semana').select('*');
+    if (error) {
+      cont.innerHTML = '<div class="text-sm text-red-600 p-3 bg-red-50 rounded">Error: ' + (error.message || error) + '</div>';
+      return;
+    }
+    if (!data || data.length === 0) {
+      cont.innerHTML = `
+        <div class="text-sm text-stone-500 p-6 bg-stone-50 rounded text-center">
+          No tenés visitas programadas en los próximos 7 días.<br>
+          <button onclick="visitaProgramarAbrir(null, null)"
+                  class="mt-3 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm font-medium">
+            + Programar una visita
+          </button>
+        </div>`;
+      return;
+    }
+    // Agrupar por fecha
+    const porFecha = {};
+    data.forEach(v => { (porFecha[v.fecha_programada] = porFecha[v.fecha_programada] || []).push(v); });
+    const fechas = Object.keys(porFecha).sort();
+    cont.innerHTML = fechas.map(f => {
+      const fmt = new Date(f + 'T00:00:00').toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'short' });
+      const items = porFecha[f].map(v => {
+        const estadoColor = v.estado === 'programada' ? 'bg-amber-100 text-amber-800' :
+                            v.estado === 'realizada' ? 'bg-green-100 text-green-800' :
+                            'bg-stone-200 text-stone-700';
+        const accion = v.estado === 'programada' ? `
+          <div class="flex gap-2 mt-2">
+            <button onclick="visitaRealizada('${v.id}')" class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded">✓ Realizada</button>
+            <button onclick="visitaNoRealizada('${v.id}')" class="px-2 py-1 bg-stone-500 hover:bg-stone-600 text-white text-xs rounded">✗ No realizada</button>
+          </div>` : '';
+        const dir = v.direccion ? `<div class="text-xs text-stone-500 mt-0.5">📍 ${escapeHtml(v.direccion_etiqueta || '')} · ${escapeHtml(v.direccion)}</div>` : '';
+        const comentario = v.comentario ? `<div class="text-xs text-stone-600 mt-1 italic">"${escapeHtml(v.comentario)}"</div>` : '';
+        return `
+          <div class="bg-white border border-stone-200 rounded p-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-stone-800">${escapeHtml(v.cliente)}</div>
+                <div class="text-xs text-stone-500">${escapeHtml(v.cliente_rut || '')} · sucursal ${escapeHtml(v.sucursal_nombre || v.sucursal_origen)}</div>
+                ${dir}
+                ${comentario}
+              </div>
+              <span class="text-xs px-2 py-0.5 rounded ${estadoColor}">${v.estado}</span>
+            </div>
+            ${accion}
+          </div>`;
+      }).join('');
+      return `
+        <div>
+          <h3 class="text-sm font-semibold text-stone-700 mb-2 mt-3 first:mt-0 capitalize">${fmt}</h3>
+          <div class="space-y-2">${items}</div>
+        </div>`;
+    }).join('');
+  };
+
+  window.visitaRealizada = async function(id) {
+    const comentario = prompt('Comentario (opcional):') || null;
+    const { data, error } = await sb.rpc('visita_marcar_realizada', { p_id: id, p_comentario: comentario });
+    if (error || (data && data.ok === false)) {
+      alert('Error: ' + (error?.message || data?.error || 'desconocido'));
+      return;
+    }
+    loadMisVisitas();
+  };
+
+  window.visitaNoRealizada = async function(id) {
+    const motivo = prompt('Motivo (requerido):');
+    if (!motivo || !motivo.trim()) { alert('Motivo es obligatorio'); return; }
+    const { data, error } = await sb.rpc('visita_marcar_no_realizada', { p_id: id, p_motivo: motivo });
+    if (error || (data && data.ok === false)) {
+      alert('Error: ' + (error?.message || data?.error || 'desconocido'));
+      return;
+    }
+    loadMisVisitas();
+  };
+
+  // --- Modal programar visita ---
+  window.visitaProgramarAbrir = async function(clienteIdPrefill, clienteNombrePrefill) {
+    document.getElementById('vpCliente').value = clienteNombrePrefill || '';
+    document.getElementById('vpClienteId').value = clienteIdPrefill || '';
+    document.getElementById('vpClienteSeleccionado').textContent = clienteIdPrefill ? ('✔ ' + clienteNombrePrefill) : '';
+    document.getElementById('vpClienteSugerencias').classList.add('hidden');
+    document.getElementById('vpDireccion').innerHTML = '<option value="">— sin dirección específica —</option>';
+    // Fecha default = mañana
+    const m = new Date(); m.setDate(m.getDate() + 1);
+    document.getElementById('vpFecha').value = m.toISOString().slice(0, 10);
+    document.getElementById('vpSucursal').value = '';
+    document.getElementById('vpComentario').value = '';
+    vpSetMsg('', '');
+    document.getElementById('visitaProgramarModal').classList.remove('hidden');
+    if (clienteIdPrefill) await vpCargarDirecciones(clienteIdPrefill);
+  };
+
+  window.visitaProgramarCerrar = function() {
+    document.getElementById('visitaProgramarModal').classList.add('hidden');
+  };
+
+  let _vpBuscarTimer = null;
+  window.vpBuscarCliente = function(val) {
+    clearTimeout(_vpBuscarTimer);
+    const sug = document.getElementById('vpClienteSugerencias');
+    const v = (val || '').trim();
+    if (v.length < 2) { sug.classList.add('hidden'); return; }
+    _vpBuscarTimer = setTimeout(async () => {
+      const esRut = /^[0-9.\-Kk\s]+$/.test(v) && v.length >= 8;
+      const { data, error } = await sb.rpc('f_buscar_cliente_similar', {
+        p_nombre: esRut ? null : v, p_rut: esRut ? v : null, p_limit: 6
+      });
+      if (error) { sug.classList.add('hidden'); return; }
+      const lista = (data || []).filter(c => c.activo !== false);
+      if (lista.length === 0) { sug.classList.add('hidden'); return; }
+      sug.innerHTML = lista.map(c =>
+        `<div class="px-3 py-2 hover:bg-green-50 cursor-pointer text-sm border-b border-stone-100 last:border-0"
+              onclick="vpSeleccionarCliente('${escapeHtml(c.cliente_id)}','${escapeHtml((c.razon_social||'').replace(/'/g,"&#39;"))}')">
+           <span class="font-medium">${escapeHtml(c.razon_social || '—')}</span>
+           <span class="text-stone-400 text-xs ml-2">${escapeHtml(c.rut || '')}</span>
+         </div>`).join('');
+      sug.classList.remove('hidden');
+    }, 300);
+  };
+
+  window.vpSeleccionarCliente = async function(id, nombre) {
+    document.getElementById('vpClienteId').value = id;
+    document.getElementById('vpCliente').value = nombre;
+    document.getElementById('vpClienteSeleccionado').textContent = '✔ ' + nombre;
+    document.getElementById('vpClienteSugerencias').classList.add('hidden');
+    await vpCargarDirecciones(id);
+  };
+
+  async function vpCargarDirecciones(clienteId) {
+    const sel = document.getElementById('vpDireccion');
+    sel.innerHTML = '<option value="">— sin dirección específica —</option>';
+    const { data } = await sb.schema('curated').from('cliente_direcciones')
+      .select('id, etiqueta, direccion, sucursal_reciclean')
+      .eq('cliente_id', clienteId).eq('activa', true).order('es_principal', { ascending: false });
+    (data || []).forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.id;
+      opt.textContent = (d.etiqueta || 'Dirección') + ' — ' + (d.direccion || '').slice(0, 60);
+      sel.appendChild(opt);
+    });
+  }
+
+  window.visitaProgramarConfirmar = async function() {
+    const clienteId = document.getElementById('vpClienteId').value;
+    const fecha = document.getElementById('vpFecha').value;
+    const sucursal = document.getElementById('vpSucursal').value;
+    const direccionId = document.getElementById('vpDireccion').value || null;
+    const comentario = document.getElementById('vpComentario').value.trim() || null;
+    if (!clienteId) { vpSetMsg('Seleccioná un cliente del autocomplete.', 'error'); return; }
+    if (!fecha) { vpSetMsg('Fecha es requerida.', 'error'); return; }
+    if (!sucursal) { vpSetMsg('Sucursal Reciclean es requerida.', 'error'); return; }
+
+    const btn = document.getElementById('vpConfirmarBtn');
+    btn.disabled = true; btn.textContent = 'Programando…';
+    const { data, error } = await sb.rpc('visita_programar', {
+      p_cliente_id: clienteId,
+      p_fecha: fecha,
+      p_sucursal_origen: sucursal,
+      p_direccion_id: direccionId,
+      p_comentario: comentario
+    });
+    btn.disabled = false; btn.textContent = 'Programar';
+    if (error || (data && data.ok === false)) {
+      vpSetMsg('Error: ' + (error?.message || data?.error || 'desconocido'), 'error');
+      return;
+    }
+    vpSetMsg('✓ Visita programada.', 'ok');
+    setTimeout(() => {
+      visitaProgramarCerrar();
+      if (typeof loadMisVisitas === 'function') loadMisVisitas();
+    }, 800);
+  };
 })();
 </script>
 
