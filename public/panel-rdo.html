@@ -693,6 +693,10 @@
             <span class="v4-emoji" aria-hidden="true">📨</span>
             Bandeja Precios
           </a>
+          <a href="#" data-v4-tab="precios_vivos" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">💰</span>
+            Precios Vivos
+          </a>
           <a href="#" data-v4-tab="entregables" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📤</span>
             Entregables
@@ -1029,6 +1033,7 @@
         <button data-tab="cierres"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCierres">📅 Cierres</button>
         <button data-tab="precios"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabPrecios">💲 Precios</button>
         <button data-tab="bandeja_precios" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabBandejaPrecios">📨 Bandeja Precios</button>
+        <button data-tab="precios_vivos" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabPreciosVivos">💰 Precios Vivos</button>
         <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
         <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
@@ -1833,6 +1838,79 @@
           <div id="bpDrawerMsg" class="hidden text-xs p-2 rounded"></div>
         </div>
       </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA PRECIOS VIVOS (Tramo 10 · Precios V3 · PC5 2026-06-10)
+         Semáforo MG real vs meta por material × sucursal.
+         Fuente: curated.v_margen_vs_costos · Vigía 06:00 + Calibrador lunes.
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabPreciosVivos" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">💰 Precios Vivos — semáforo MG por material</h2>
+        <button onclick="window.pvCargar && window.pvCargar()" class="text-sm vo-text-verde-rec hover:underline">↺ Recargar</button>
+      </div>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div class="bg-white p-3 rounded-md shadow-sm">
+          <div class="text-xs text-stone-500">🟢 Verde (sobre meta)</div>
+          <div id="pvVerde" class="text-2xl font-bold text-emerald-600">—</div>
+        </div>
+        <div class="bg-white p-3 rounded-md shadow-sm">
+          <div class="text-xs text-stone-500">🟡 Amarillo (sobre piso)</div>
+          <div id="pvAmarillo" class="text-2xl font-bold text-amber-500">—</div>
+        </div>
+        <div class="bg-white p-3 rounded-md shadow-sm">
+          <div class="text-xs text-stone-500">🔴 Rojo (bajo piso)</div>
+          <div id="pvRojo" class="text-2xl font-bold text-red-600">—</div>
+        </div>
+        <div class="bg-white p-3 rounded-md shadow-sm">
+          <div class="text-xs text-stone-500">MG promedio</div>
+          <div id="pvMgProm" class="text-2xl font-bold text-stone-700">—</div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="flex flex-wrap gap-2 mb-3">
+        <select id="pvFiltroSucursal" onchange="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1">
+          <option value="">Todas las sucursales</option>
+          <option value="cerrillos">Cerrillos</option>
+          <option value="maipu">Maipú</option>
+          <option value="talca">Talca</option>
+          <option value="puerto_montt">Puerto Montt</option>
+        </select>
+        <select id="pvFiltroSemaforo" onchange="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1">
+          <option value="">Todos los semáforos</option>
+          <option value="rojo">🔴 Solo rojos</option>
+          <option value="amarillo">🟡 Solo amarillos</option>
+          <option value="verde">🟢 Solo verdes</option>
+        </select>
+        <input type="text" id="pvBuscar" placeholder="Buscar material..." oninput="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1 flex-1 min-w-36">
+      </div>
+
+      <!-- Tabla -->
+      <div class="overflow-x-auto rounded-md shadow-sm">
+        <table class="min-w-full text-sm">
+          <thead class="bg-stone-100 text-stone-600 text-xs uppercase">
+            <tr>
+              <th class="px-3 py-2 text-left">Material</th>
+              <th class="px-3 py-2 text-left">Sucursal</th>
+              <th class="px-3 py-2 text-right">Compra</th>
+              <th class="px-3 py-2 text-right">Venta</th>
+              <th class="px-3 py-2 text-right">MG real</th>
+              <th class="px-3 py-2 text-right">Meta MG</th>
+              <th class="px-3 py-2 text-right">vs Meta</th>
+              <th class="px-3 py-2 text-center">Semáforo</th>
+              <th class="px-3 py-2 text-left">Desde</th>
+            </tr>
+          </thead>
+          <tbody id="pvTbody">
+            <tr><td colspan="9" class="px-3 py-6 text-center text-stone-400">Cargando datos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-stone-400 mt-2">Fuente: curated.v_margen_vs_costos · Actualiza Vigía 06:00 AM + Calibrador cada lunes</p>
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -5304,6 +5382,7 @@ function setupTabs() {
       if (tabId === 'entregables') initEntregables();
       if (tabId === 'bandeja_dieg') initBandejaDiego();
       if (tabId === 'bandeja_precios') initBandejaPrecios();
+      if (tabId === 'precios_vivos')  window.initPreciosVivos && window.initPreciosVivos();
       if (tabId === 'ops_diarias')   initOpsDiarias();
       if (tabId === 'dieguito')  initDieguito();
       if (tabId === 'comercial')  initTabComercial();
@@ -12207,6 +12286,105 @@ document.addEventListener('DOMContentLoaded', () => {
   window.bpAprobar          = bpAprobar;
   window.bpRechazar         = bpRechazar;
   window.bpDebouncedSearch  = bpDebouncedSearch;
+})();
+</script>
+
+<!-- ============================================================
+     Tab Precios Vivos (Tramo 10 · Precios V3 · PC5 2026-06-10)
+     Lee curated.v_margen_vs_costos · semáforo + filtros + KPIs
+============================================================ -->
+<script>
+(function () {
+  let pvData = [];
+  let pvTimer = null;
+  const REFRESH_MS = 5 * 60 * 1000; // 5 min
+
+  async function pvCargar() {
+    if (typeof sb === 'undefined' || !sb) return;
+    const tbody = document.getElementById('pvTbody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-4 text-center text-stone-400">Cargando...</td></tr>';
+    try {
+      const { data, error } = await sb.schema('curated').from('v_margen_vs_costos').select('*');
+      if (error) throw error;
+      pvData = data || [];
+      pvActualizarKPIs();
+      pvFiltrar();
+    } catch (e) {
+      console.warn('[PreciosVivos] error:', e);
+      if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-4 text-center text-red-400">Error al cargar: ' + String(e).slice(0, 80) + '</td></tr>';
+    }
+  }
+
+  function pvActualizarKPIs() {
+    const verde   = pvData.filter(r => r.semaforo?.includes('verde')).length;
+    const amarillo = pvData.filter(r => r.semaforo?.includes('amarillo')).length;
+    const rojo    = pvData.filter(r => r.semaforo?.includes('rojo')).length;
+    const mgProm  = pvData.length
+      ? (pvData.reduce((s, r) => s + Number(r.mg_real_pct || 0), 0) / pvData.length).toFixed(1)
+      : null;
+    const el = (id) => document.getElementById(id);
+    if (el('pvVerde'))   el('pvVerde').textContent   = verde;
+    if (el('pvAmarillo')) el('pvAmarillo').textContent = amarillo;
+    if (el('pvRojo'))    el('pvRojo').textContent    = rojo;
+    if (el('pvMgProm'))  el('pvMgProm').textContent  = mgProm !== null ? mgProm + '%' : '—';
+  }
+
+  function pvFiltrar() {
+    const tbody = document.getElementById('pvTbody');
+    if (!tbody) return;
+    const suc = (document.getElementById('pvFiltroSucursal') || {}).value || '';
+    const sem = (document.getElementById('pvFiltroSemaforo') || {}).value || '';
+    const bus = ((document.getElementById('pvBuscar') || {}).value || '').toLowerCase();
+
+    let rows = pvData;
+    if (suc) rows = rows.filter(r => r.sucursal_id === suc);
+    if (sem) rows = rows.filter(r => (r.semaforo || '').toLowerCase().includes(sem));
+    if (bus) rows = rows.filter(r => (r.nombre || r.material_id || '').toLowerCase().includes(bus));
+
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-4 text-center text-stone-400">Sin resultados.</td></tr>';
+      return;
+    }
+
+    const fmtClp = (v) => v != null ? '$' + Number(v).toLocaleString('es-CL') + '/kg' : '—';
+    const fmtPct = (v) => v != null ? Number(v).toFixed(1) + '%' : '—';
+    const fmtDelta = (v) => {
+      if (v == null) return '—';
+      const n = Number(v);
+      return (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
+    };
+    const rowBg = (sem) => {
+      if ((sem || '').includes('rojo'))    return 'bg-red-50';
+      if ((sem || '').includes('amarillo')) return 'bg-amber-50';
+      return 'bg-emerald-50';
+    };
+
+    tbody.innerHTML = rows.map(r => `
+      <tr class="${rowBg(r.semaforo)} hover:bg-stone-50 border-b border-stone-100">
+        <td class="px-3 py-2 font-medium text-stone-800">${r.nombre || r.material_id}</td>
+        <td class="px-3 py-2 text-stone-600">${r.sucursal_nombre || r.sucursal_id}</td>
+        <td class="px-3 py-2 text-right font-mono text-stone-700">${fmtClp(r.precio_compra_clp)}</td>
+        <td class="px-3 py-2 text-right font-mono text-stone-700">${fmtClp(r.precio_venta_clp)}</td>
+        <td class="px-3 py-2 text-right font-semibold">${fmtPct(r.mg_real_pct)}</td>
+        <td class="px-3 py-2 text-right text-stone-500">${fmtPct(r.mg_meta_pct)}</td>
+        <td class="px-3 py-2 text-right ${Number(r.mg_vs_meta) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${fmtDelta(r.mg_vs_meta)}</td>
+        <td class="px-3 py-2 text-center text-base">${r.semaforo || '—'}</td>
+        <td class="px-3 py-2 text-stone-400 text-xs">${r.vigencia_desde || '—'}</td>
+      </tr>`).join('');
+  }
+
+  function initPreciosVivos() {
+    pvCargar();
+    if (pvTimer) clearInterval(pvTimer);
+    pvTimer = setInterval(() => {
+      const sec = document.getElementById('tabPreciosVivos');
+      if (sec && !sec.classList.contains('hidden')) pvCargar();
+    }, REFRESH_MS);
+  }
+
+  window.pvCargar        = pvCargar;
+  window.pvFiltrar       = pvFiltrar;
+  window.initPreciosVivos = initPreciosVivos;
 })();
 </script>
 
