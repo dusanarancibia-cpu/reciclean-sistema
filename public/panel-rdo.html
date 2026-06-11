@@ -4070,9 +4070,14 @@
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
         <div>
           <h2 class="text-xl font-bold text-stone-800">📝 Nombres en oportunidades</h2>
-          <p class="text-xs text-stone-500 mt-0.5">Oportunidades históricas con cliente_nombre_libre sin asignar a un cliente del master. Asigná al cliente correcto, marcá sin match, o descartá.</p>
+          <p class="text-xs text-stone-500 mt-0.5">Nombres libres con oportunidades activas en el último año. Asigná al cliente correcto, marcá sin match, o descartá.</p>
         </div>
-        <button id="adrift_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-stone-600 flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" id="adrift_ver_historico"> Ver histórico (3-7 años atrás)
+          </label>
+          <button id="adrift_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
       </div>
       <div class="grid grid-cols-3 gap-2 mb-3">
         <div class="bg-white border border-stone-200 rounded p-2">
@@ -16420,7 +16425,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const lista = $$('adrift_lista'); if (!lista) return;
     lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Cargando...</div>';
     try {
-      const { data, error } = await sb.schema('panel').from('v_andrea_drift_libre').select('*').limit(50);
+      const verHist = $$('adrift_ver_historico')?.checked;
+      const vista = verHist ? 'v_andrea_drift_libre_historico' : 'v_andrea_drift_libre';
+      const { data, error } = await sb.schema('panel').from(vista).select('*').limit(50);
       if (error) throw error;
       $$('adrift_kpi_total').textContent = (data || []).length;
       $$('adrift_kpi_opps').textContent = (data || []).reduce((a, r) => a + (r.opps_count || 0), 0);
@@ -16595,6 +16602,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $$('adrift_refresh')?.addEventListener('click', loadDrift);
     $$('aruts_refresh')?.addEventListener('click', loadRuts);
     $$('acomex_refresh')?.addEventListener('click', loadComex);
+    $$('adrift_ver_historico')?.addEventListener('change', loadDrift);
 
     // Delegated handlers
     $$('adup_lista')?.addEventListener('click', e => {
