@@ -4042,9 +4042,14 @@
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
         <div>
           <h2 class="text-xl font-bold text-stone-800">🔀 Duplicados clientes</h2>
-          <p class="text-xs text-stone-500 mt-0.5">Pares potencialmente duplicados detectados por similitud de nombre o RUT. Decidí si son el mismo cliente (mergear), o son distintos (ambos válidos), o desestimar.</p>
+          <p class="text-xs text-stone-500 mt-0.5">Pares con al menos un cliente activo (oportunidad no-terminal último año). Decidí si son el mismo (mergear), distintos, o desestimar.</p>
         </div>
-        <button id="adup_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-stone-600 flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" id="adup_ver_historico"> Ver histórico
+          </label>
+          <button id="adup_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
       </div>
       <div class="grid grid-cols-3 gap-2 mb-3">
         <div class="bg-white border border-stone-200 rounded p-2">
@@ -4103,9 +4108,14 @@
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
         <div>
           <h2 class="text-xl font-bold text-stone-800">🆔 RUTs a verificar</h2>
-          <p class="text-xs text-stone-500 mt-0.5">Clientes del master con RUT que no pasa el módulo 11. Corregí con el RUT real verificado con el cliente.</p>
+          <p class="text-xs text-stone-500 mt-0.5">Clientes activos con RUT que no pasa el módulo 11. Corregí con el RUT real verificado con el cliente.</p>
         </div>
-        <button id="aruts_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-stone-600 flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" id="aruts_ver_historico"> Ver histórico
+          </label>
+          <button id="aruts_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
       </div>
       <div class="grid grid-cols-2 gap-2 mb-3">
         <div class="bg-white border border-stone-200 rounded p-2">
@@ -16372,7 +16382,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const lista = $$('adup_lista'); if (!lista) return;
     lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Cargando...</div>';
     try {
-      const { data, error } = await sb.schema('panel').from('v_andrea_dup_pendientes').select('*');
+      const verHist = $$('adup_ver_historico')?.checked;
+      const vista = verHist ? 'v_andrea_dup_pendientes_historico' : 'v_andrea_dup_pendientes';
+      const { data, error } = await sb.schema('panel').from(vista).select('*');
       if (error) throw error;
       $$('adup_kpi_total').textContent = (data || []).length;
       $$('adup_kpi_alta').textContent = (data || []).filter(r => (r.similitud_nombre || 0) >= 0.7).length;
@@ -16481,7 +16493,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const lista = $$('aruts_lista'); if (!lista) return;
     lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Cargando...</div>';
     try {
-      const { data, error } = await sb.schema('panel').from('v_andrea_ruts_invalidos').select('*');
+      const verHist = $$('aruts_ver_historico')?.checked;
+      const vista = verHist ? 'v_andrea_ruts_invalidos_historico' : 'v_andrea_ruts_invalidos';
+      const { data, error } = await sb.schema('panel').from(vista).select('*');
       if (error) throw error;
       $$('aruts_kpi_total').textContent = (data || []).length;
       $$('aruts_kpi_corregidos').textContent = _rutsCorregidos;
@@ -16603,6 +16617,8 @@ document.addEventListener('DOMContentLoaded', () => {
     $$('aruts_refresh')?.addEventListener('click', loadRuts);
     $$('acomex_refresh')?.addEventListener('click', loadComex);
     $$('adrift_ver_historico')?.addEventListener('change', loadDrift);
+    $$('adup_ver_historico')?.addEventListener('change', loadDup);
+    $$('aruts_ver_historico')?.addEventListener('change', loadRuts);
 
     // Delegated handlers
     $$('adup_lista')?.addEventListener('click', e => {
