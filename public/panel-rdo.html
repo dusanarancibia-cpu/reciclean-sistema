@@ -967,6 +967,17 @@
           <option value="">Cargando…</option>
         </select>
       </div>
+      <!-- PC2 11-jun PM · "Ver como X" cosmético admin/dusan -->
+      <div id="vistaSimContainer" class="hidden items-center gap-2">
+        <label class="text-sm text-stone-600 font-medium" title="Vista cosmética: cambia qué tabs y orden se ven, NO cambia datos ni RLS">Ver como:</label>
+        <select id="vistaSimSelector" class="border border-amber-400 rounded px-2 py-1 text-sm focus:border-amber-600 focus:outline-none bg-amber-50">
+          <option value="">— Mi vista —</option>
+          <option value="andrea">👩 Andrea (comercial · silo 01)</option>
+          <option value="jair">👨 Jair (admin · silo 05)</option>
+          <option value="ingrid">👩 Ingrid (admin · silo 02)</option>
+          <option value="operaciones">🛠️ Operaciones (operaciones · silo 06)</option>
+        </select>
+      </div>
       <!-- Iconos externos (Gmail / Outlook / WhatsApp) -->
       <a href="https://mail.google.com" target="_blank" rel="noopener" class="hidden md:inline-flex p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition" title="Gmail" aria-label="Abrir Gmail">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -998,6 +1009,12 @@
   <div id="newAudioNotification" class="hidden bg-amber-50 border-l-4 border-amber-500 p-3 mx-6 mt-4 rounded">
     🎙️ <span class="font-semibold">Nuevo mensaje de Dusan sin escuchar.</span>
     <a href="#" onclick="document.querySelector('button[data-tab=comunicados]').click(); return false;" class="underline text-amber-800 ml-2">Escuchar ahora</a>
+  </div>
+
+  <!-- PC2 11-jun PM · Banner vista simulada (admin) -->
+  <div id="vistaSimBanner" class="hidden bg-amber-100 border-l-4 border-amber-500 p-2 mx-6 mt-2 rounded text-sm flex items-center justify-between">
+    <span>🎭 <strong>Vista cosmética como <span id="vistaSimNombre">…</span></strong> · Los tabs y orden son los de este usuario · Los datos siguen siendo los tuyos (RLS no cambia).</span>
+    <button onclick="restaurarMiVista()" class="text-xs px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded">Volver a mi vista</button>
   </div>
 
   <!-- F6 Transparencia Datos · pie fijo con metadata de la tab activa (R-AUD-frescura) -->
@@ -3072,6 +3089,9 @@
                 </div>
                 <div id="cotClienteSugerencias" role="listbox" aria-label="Sugerencias de clientes"
                      class="hidden border border-stone-200 rounded mt-1 bg-white shadow-md z-10 max-h-40 overflow-y-auto"></div>
+                <button type="button" id="cotClienteCrearBtn" onclick="cotAbrirCrearCliente()" class="hidden mt-1 text-xs px-2 py-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 rounded">
+                  + Crear nuevo cliente con este nombre
+                </button>
                 <input type="hidden" id="cotClienteId">
                 <span id="cotClienteSeleccionado" class="text-xs text-green-700 font-semibold mt-1 block" aria-live="polite"></span>
               </div>
@@ -5225,6 +5245,7 @@ async function hydrateSessionAndEnter(authUser) {
   await loadConfigPanel();     // carga "cajas" de configuración (refactor 08-may)
   await loadSilos();           // carga silos visibles + monta selector
   applySiloTabs();             // filtra pestañas según silo + perfil
+  if (typeof window.setupVistaSimulada === 'function') window.setupVistaSimulada();
   loadAccesoRapido();          // tarjeta de acceso al ecosistema externo
   loadAudios();
   loadPortadaAudio();
@@ -5615,6 +5636,85 @@ function applySiloTabs() {
     document.querySelector('button[data-tab="portada"]').click();
   }
 }
+
+// PC2 11-jun PM · Vista simulada "Ver como X" (cosmética, admin/dusan only)
+// Cambia currentProfile + currentSilo en memoria + re-aplica applySiloTabs.
+// NO toca JWT ni RLS. Útil para ensayar guion + soporte UX.
+const VISTAS_SIMULADAS = {
+  andrea:      { perfil: 'comercial',  silo: '01', nombre: 'Andrea Rivera (Comercial)' },
+  jair:        { perfil: 'admin',      silo: '05', nombre: 'Jair Sanmartín (Cumplimiento)' },
+  ingrid:      { perfil: 'admin',      silo: '02', nombre: 'Ingrid Cancino (Talca)' },
+  operaciones: { perfil: 'operaciones',silo: '06', nombre: 'Operaciones (genérico)' },
+};
+window._vistaSimOriginal = null;
+
+window.setupVistaSimulada = function() {
+  // Mostrar selector solo si perfil real es admin o dusan
+  // También espejar profile/silo a window para que tests/extras puedan leerlos
+  window.currentProfile = currentProfile;
+  window.currentSilo = currentSilo;
+  const cont = document.getElementById('vistaSimContainer');
+  if (!cont) return;
+  if (currentProfile === 'admin' || currentProfile === 'dusan') {
+    cont.classList.remove('hidden');
+    cont.classList.add('flex');
+  } else {
+    cont.classList.add('hidden');
+    cont.classList.remove('flex');
+  }
+};
+
+window.cambiarVistaSimulada = function(presetKey) {
+  if (!presetKey) { restaurarMiVista(); return; }
+  const preset = VISTAS_SIMULADAS[presetKey];
+  if (!preset) return;
+  // Guardar originales (solo la primera vez para no perderlos)
+  if (!_vistaSimOriginal) {
+    _vistaSimOriginal = { perfil: currentProfile, silo: currentSilo, user: currentUser };
+  }
+  currentProfile = preset.perfil;
+  currentSilo = preset.silo;
+  // Espejo a window para que consumidores externos puedan leer
+  window.currentProfile = currentProfile;
+  window.currentSilo = currentSilo;
+  // Re-aplicar visibilidad de tabs
+  if (typeof applySiloTabs === 'function') applySiloTabs();
+  // Banner
+  const banner = document.getElementById('vistaSimBanner');
+  const nombreEl = document.getElementById('vistaSimNombre');
+  if (banner && nombreEl) {
+    nombreEl.textContent = preset.nombre;
+    banner.classList.remove('hidden');
+  }
+  // Cambiar display de perfil en topbar
+  const profDisp = document.getElementById('userProfileDisplay');
+  if (profDisp) {
+    profDisp.textContent = preset.perfil + ' (sim)';
+    profDisp.classList.remove('bg-emerald-100','text-emerald-800');
+    profDisp.classList.add('bg-amber-100','text-amber-800');
+  }
+};
+
+window.restaurarMiVista = function() {
+  if (!_vistaSimOriginal) return;
+  currentProfile = _vistaSimOriginal.perfil;
+  currentSilo = _vistaSimOriginal.silo;
+  window.currentProfile = currentProfile;
+  window.currentSilo = currentSilo;
+  _vistaSimOriginal = null;
+  if (typeof applySiloTabs === 'function') applySiloTabs();
+  document.getElementById('vistaSimBanner')?.classList.add('hidden');
+  const sel = document.getElementById('vistaSimSelector');
+  if (sel) sel.value = '';
+  const profDisp = document.getElementById('userProfileDisplay');
+  if (profDisp) {
+    profDisp.textContent = currentProfile;
+    profDisp.classList.remove('bg-amber-100','text-amber-800');
+    profDisp.classList.add('bg-emerald-100','text-emerald-800');
+  }
+};
+
+document.getElementById('vistaSimSelector')?.addEventListener('change', e => cambiarVistaSimulada(e.target.value));
 
 window.logout = async function() {
   try { await sb.auth.signOut(); } catch(e) { console.warn('[Panel RDO] signOut error:', e); }
@@ -8651,13 +8751,30 @@ let _cotClienteTimer = null;
 async function buscarClienteCotizador(val) {
   clearTimeout(_cotClienteTimer);
   const sug = document.getElementById('cotClienteSugerencias');
-  if (val.trim().length < 2) { sug.classList.add('hidden'); return; }
+  const crearBtn = document.getElementById('cotClienteCrearBtn');
+  // Resetear: si el usuario edita después de seleccionar, limpiar cliente_id
+  const hidden = document.getElementById('cotClienteId');
+  if (hidden && hidden.value) {
+    hidden.value = '';
+    document.getElementById('cotClienteSeleccionado').textContent = '';
+    if (typeof cotRefrescarEditarClienteBtn === 'function') cotRefrescarEditarClienteBtn();
+  }
+  if (val.trim().length < 2) {
+    sug.classList.add('hidden');
+    if (crearBtn) crearBtn.classList.add('hidden');
+    return;
+  }
   _cotClienteTimer = setTimeout(async () => {
     const { data } = await sb.schema('curated').from('clientes')
       .select('cliente_id, razon_social, rut')
       .or(`razon_social.ilike.%${val}%,rut.ilike.%${val}%`)
       .eq('activo', true).limit(8);
-    if (!data || data.length === 0) { sug.classList.add('hidden'); return; }
+    if (!data || data.length === 0) {
+      sug.classList.add('hidden');
+      if (crearBtn) crearBtn.classList.remove('hidden');
+      return;
+    }
+    if (crearBtn) crearBtn.classList.add('hidden');
     sug.innerHTML = data.map(c =>
       `<div class="px-3 py-2 hover:bg-green-50 cursor-pointer text-sm border-b border-stone-100 last:border-0"
             onclick="seleccionarClienteCot('${escapeHtml(c.cliente_id)}','${escapeHtml(c.razon_social.replace(/'/g,"&#39;"))}')">
@@ -8668,6 +8785,34 @@ async function buscarClienteCotizador(val) {
     sug.classList.remove('hidden');
   }, 300);
 }
+
+// PC2 11-jun PM · cierre deuda DeepSeek post-merge #273
+// Abre modal Cartera (carAbrirEditar con id=null) con razón social prellenada.
+// Tras guardar exitoso, evento 'cliente:created' autoselecciona en Cotizador.
+window.cotAbrirCrearCliente = function() {
+  const txt = document.getElementById('cotClienteBuscar')?.value?.trim() || '';
+  // Si no existe el modal en este perfil, fallback a alert
+  if (typeof window.carAbrirCrear !== 'function') {
+    alert('El editor de cliente no está cargado. Probá desde la pestaña Cartera y volvé.');
+    return;
+  }
+  window._cotEsperandoClienteNuevo = true;
+  window.carAbrirCrear(txt);
+};
+
+// Escucha evento emitido tras crear cliente exitoso desde el modal de Cartera
+window.addEventListener('cliente:created', (e) => {
+  if (!window._cotEsperandoClienteNuevo) return;
+  window._cotEsperandoClienteNuevo = false;
+  const { cliente_id, razon_social } = e.detail || {};
+  if (!cliente_id) return;
+  // Autoseleccionar en Cotizador
+  if (typeof window.seleccionarClienteCot === 'function') {
+    window.seleccionarClienteCot(cliente_id, razon_social || '');
+  }
+  // Ocultar botón crear
+  document.getElementById('cotClienteCrearBtn')?.classList.add('hidden');
+});
 
 function seleccionarClienteCot(id, nombre) {
   document.getElementById('cotClienteId').value = id;
@@ -9380,6 +9525,34 @@ window.carCerrarEditar = function() {
   _cliEditando = null;
 };
 
+// PC2 11-jun PM · entry point para crear cliente desde otras pestañas (Cotizador)
+// Abre el modal vacío, con razón social opcionalmente prellenada.
+// El modal vive originalmente dentro de tabCartera (que está hidden cuando estamos en Cotizador).
+// Lo movemos al body para que el `position:fixed` no quede ocluido por parent display:none.
+window.carAbrirCrear = function(razonSocialPrefill) {
+  _cliEditando = null;
+  document.getElementById('clienteEditModalTitulo').textContent = 'Crear nuevo cliente';
+  document.getElementById('clienteEditMsg').classList.add('hidden');
+  // Limpiar todos los campos
+  ['cliRazonSocial','cliRut','cliSucursal','cliClientePara','cliSegmento','cliResponsable','cliTags',
+   'cliTelefono','cliEmail','cliDireccion','cliCiudad','cliRegion','cliSitioWeb','cliComentarios',
+   'cliFormaPago','cliServRetiro','cliServRetiroGratis','cliServContenedor','cliServCert',
+   'cliServCertFecha','cliServSegregacion','cliCobroFrecuencia','cliCobroMaterial','cliCondicionesPago',
+   'cliCompraDonacion','cliDetalleEnvio','cliBanco','cliTipoCuenta','cliNroCuenta'
+  ].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const activo = document.getElementById('cliActivo'); if (activo) activo.value = 'true';
+  if (razonSocialPrefill) {
+    const rs = document.getElementById('cliRazonSocial');
+    if (rs) rs.value = razonSocialPrefill;
+  }
+  const modal = document.getElementById('clienteEditModal');
+  // Mover al body si todavía está dentro de tabCartera u otro container hidden
+  if (modal && modal.parentElement !== document.body) {
+    document.body.appendChild(modal);
+  }
+  modal.classList.remove('hidden');
+};
+
 window.carGuardarCliente = async function() {
   const razonSocial = document.getElementById('cliRazonSocial').value.trim();
   if (!razonSocial) {
@@ -9455,9 +9628,17 @@ window.carGuardarCliente = async function() {
   msg.className = 'text-sm text-green-700 bg-green-50 px-3 py-1.5 rounded';
   msg.classList.remove('hidden');
 
+  // PC2 11-jun PM · evento para otros consumidores (Cotizador autoselecciona)
+  const wasCreating = !_cliEditando;
+  const savedId = _cliEditando || payload.cliente_id;
+  const savedRazon = payload.razon_social;
+  if (wasCreating) {
+    window.dispatchEvent(new CustomEvent('cliente:created', { detail: { cliente_id: savedId, razon_social: savedRazon } }));
+  }
+
   setTimeout(() => {
     carCerrarEditar();
-    loadCartera();
+    if (typeof loadCartera === 'function') loadCartera();
   }, 1200);
 };
 
