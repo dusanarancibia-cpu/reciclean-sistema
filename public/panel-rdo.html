@@ -1851,6 +1851,27 @@
         <button onclick="window.pvCargar && window.pvCargar()" class="text-sm vo-text-verde-rec hover:underline">↺ Recargar</button>
       </div>
 
+      <!-- Score Salud Sistema (Etapa 4B · PC5 2026-06-11) -->
+      <div class="flex flex-wrap items-center gap-3 mb-4 p-3 bg-white rounded-md shadow-sm border-l-4 border-emerald-500">
+        <div class="flex-1 min-w-24">
+          <div class="text-xs text-stone-500">🎯 Score Salud</div>
+          <div id="pvScoreNum" class="text-2xl font-bold text-stone-800">—<span class="text-sm font-normal text-stone-400">/100</span></div>
+        </div>
+        <div class="text-center px-3 border-l border-stone-100">
+          <div class="text-xs text-stone-500">📦 Caja</div>
+          <div id="pvCajaDias" class="text-lg font-semibold text-stone-700">—<span class="text-xs font-normal">d</span></div>
+        </div>
+        <div class="text-center px-3 border-l border-stone-100">
+          <div class="text-xs text-stone-500">🔔 Alertas</div>
+          <div id="pvAlertasActivas" class="text-lg font-semibold text-stone-700">—</div>
+        </div>
+        <div class="text-center px-3 border-l border-stone-100">
+          <div class="text-xs text-stone-500">⏳ Triages CEO</div>
+          <div id="pvTriagesPending" class="text-lg font-semibold text-amber-600">—</div>
+        </div>
+        <button onclick="window.pvCargarScore && window.pvCargarScore()" class="text-xs text-stone-400 hover:text-stone-600 ml-auto">↺</button>
+      </div>
+
       <!-- KPIs -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div class="bg-white p-3 rounded-md shadow-sm">
@@ -1911,6 +1932,69 @@
         </table>
       </div>
       <p class="text-xs text-stone-400 mt-2">Fuente: curated.v_margen_vs_costos · Actualiza Vigía 06:00 AM + Calibrador cada lunes</p>
+
+      <!-- Bandeja CEO (Etapa 4B · PC5 2026-06-11) -->
+      <div class="mt-6 border border-amber-200 rounded-lg overflow-hidden">
+        <div class="bg-amber-50 px-4 py-2 flex items-center justify-between">
+          <span class="font-semibold text-amber-800 text-sm">📬 Bandeja CEO — aprobaciones pendientes</span>
+          <span id="pvBandejaCnt" class="text-xs bg-amber-200 text-amber-900 rounded-full px-2 py-0.5">...</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs">
+            <thead class="bg-stone-50 text-stone-500 uppercase">
+              <tr>
+                <th class="px-3 py-2 text-left">Material</th>
+                <th class="px-3 py-2 text-left">Sucursal</th>
+                <th class="px-3 py-2 text-right">Precio actual</th>
+                <th class="px-3 py-2 text-right">Precio propuesto</th>
+                <th class="px-3 py-2 text-right">MG resultante</th>
+                <th class="px-3 py-2 text-center">Tipo</th>
+                <th class="px-3 py-2"></th>
+              </tr>
+            </thead>
+            <tbody id="pvBandejaTbody">
+              <tr><td colspan="7" class="px-3 py-4 text-center text-stone-400">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="bg-stone-50 px-4 py-2 flex items-center gap-2">
+          <button onclick="window.pvAprobarTodos && window.pvAprobarTodos()"
+            class="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded hover:bg-emerald-700 font-medium">
+            ✅ Aprobar todos (<span id="pvBandejaCnt2">—</span>)
+          </button>
+          <span class="text-xs text-stone-400">Acción 0 del plan: libera dashboard sin cambiar precios</span>
+        </div>
+      </div>
+
+      <!-- Calibrador CEO (Etapa 4B · PC5 2026-06-11) -->
+      <div class="mt-4 border border-blue-200 rounded-lg overflow-hidden">
+        <div class="bg-blue-50 px-4 py-2 flex items-center justify-between">
+          <span class="font-semibold text-blue-800 text-sm">🤖 Calibrador — 16 propuestas plásticos</span>
+          <span class="text-xs text-blue-600">Score actual: <span id="pvCalibradorScore">59.8</span>/100</span>
+        </div>
+        <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="border border-emerald-200 rounded-lg p-3 bg-white">
+            <div class="text-sm font-semibold text-stone-700 mb-1">Ruta A — Conservadora</div>
+            <div class="text-xs text-stone-500 mb-2">4 materiales → $150/kg · margen 23% · score proyectado ~63</div>
+            <button onclick="window.pvAprobarCalibradorA && window.pvAprobarCalibradorA()"
+              class="w-full text-xs bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700 font-medium">
+              ✅ Aprobar Ruta A ($150/kg)
+            </button>
+          </div>
+          <div class="border border-blue-200 rounded-lg p-3 bg-white">
+            <div class="text-sm font-semibold text-stone-700 mb-1">Ruta B — CEO Full</div>
+            <div class="text-xs text-stone-500 mb-2">5 materiales → margen 30% completo · score proyectado 65.4</div>
+            <button onclick="window.pvAprobarCalibradorB && window.pvAprobarCalibradorB()"
+              class="w-full text-xs bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 font-medium">
+              🚀 Aprobar Ruta B (máximo impacto)
+            </button>
+          </div>
+        </div>
+        <div class="bg-stone-50 px-4 py-1.5 text-xs text-stone-400">
+          Ruta A usa f_batch_aprobar_calibrador(NULL, FALSE) · Ruta B aplica margen_meta=30% directo en plasticos rojos
+        </div>
+      </div>
+
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -12385,6 +12469,140 @@ document.addEventListener('DOMContentLoaded', () => {
   window.pvCargar        = pvCargar;
   window.pvFiltrar       = pvFiltrar;
   window.initPreciosVivos = initPreciosVivos;
+})();
+</script>
+
+<!-- Etapa 4B: Bandeja CEO + Calibrador + Score KPI (PC5 2026-06-11) -->
+<script>
+(function() {
+  const SB_URL = window.SUPABASE_URL || document.querySelector('meta[name="supabase-url"]')?.content || '';
+  const SB_KEY = window.SUPABASE_ANON_KEY || document.querySelector('meta[name="supabase-key"]')?.content || '';
+
+  async function sbRpc(fn, params) {
+    const r = await fetch(SB_URL + '/rest/v1/rpc/' + fn, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify(params || {})
+    });
+    return r.json();
+  }
+
+  async function sbSelect(path) {
+    const r = await fetch(SB_URL + '/rest/v1/' + path, {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+    });
+    return r.json();
+  }
+
+  async function pvCargarScore() {
+    try {
+      const data = await sbSelect('v_metricas_ejecutivo_precios?select=score_salud_100,caja_dias_cobertura,auditoria_alertas_activas&limit=1');
+      const row = Array.isArray(data) ? data[0] : null;
+      if (!row) return;
+      const scoreEl = document.getElementById('pvScoreNum');
+      const score = parseFloat(row.score_salud_100 || 0).toFixed(1);
+      if (scoreEl) {
+        scoreEl.innerHTML = score + '<span class="text-sm font-normal text-stone-400">/100</span>';
+        scoreEl.className = 'text-2xl font-bold ' + (score >= 70 ? 'text-emerald-600' : score >= 50 ? 'text-amber-600' : 'text-red-600');
+      }
+      const cajaDias = document.getElementById('pvCajaDias');
+      if (cajaDias) cajaDias.innerHTML = (row.caja_dias_cobertura || '—') + '<span class="text-xs font-normal">d</span>';
+      const alertas = document.getElementById('pvAlertasActivas');
+      if (alertas) alertas.textContent = row.auditoria_alertas_activas ?? '—';
+      if (document.getElementById('pvCalibradorScore')) {
+        document.getElementById('pvCalibradorScore').textContent = score;
+      }
+    } catch(e) { console.error('pvCargarScore', e); }
+  }
+
+  async function pvCargarBandeja() {
+    const tbody = document.getElementById('pvBandejaTbody');
+    if (!tbody) return;
+    try {
+      const data = await sbSelect('v_bandeja_resumen?estado=eq.pendiente&select=id,material_nombre,sucursal_nombre,precio_vigente,precio_propuesto,margen_propuesto,tipo_display&order=categoria,material_id');
+      const rows = Array.isArray(data) ? data : [];
+      const cnt = rows.length;
+      ['pvBandejaCnt','pvBandejaCnt2'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = cnt;
+      });
+      if (document.getElementById('pvTriagesPending')) {
+        document.getElementById('pvTriagesPending').textContent = cnt;
+      }
+      if (!cnt) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-emerald-600 font-medium">✅ Bandeja vacía — todo aprobado</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map(r => {
+        const delta = r.precio_propuesto - (r.precio_vigente || 0);
+        const deltaStr = delta >= 0 ? '+$' + delta.toLocaleString('es-CL') : '-$' + Math.abs(delta).toLocaleString('es-CL');
+        return '<tr class="border-t border-stone-100 hover:bg-stone-50">' +
+          '<td class="px-3 py-2">' + (r.material_nombre || '') + '</td>' +
+          '<td class="px-3 py-2 text-stone-500">' + (r.sucursal_nombre || '') + '</td>' +
+          '<td class="px-3 py-2 text-right text-stone-400">$' + (r.precio_vigente || '—').toLocaleString('es-CL') + '</td>' +
+          '<td class="px-3 py-2 text-right font-medium">$' + (r.precio_propuesto || 0).toLocaleString('es-CL') + '</td>' +
+          '<td class="px-3 py-2 text-right ' + (parseFloat(r.margen_propuesto||0) >= 10 ? 'text-emerald-600' : 'text-amber-600') + '">' + parseFloat(r.margen_propuesto||0).toFixed(1) + '%</td>' +
+          '<td class="px-3 py-2 text-center"><span class="text-xs bg-blue-100 text-blue-700 rounded px-1.5 py-0.5">' + (r.tipo_display||'') + '</span></td>' +
+          '<td class="px-3 py-2"><button onclick="window.pvAprobarItem && window.pvAprobarItem(\'' + r.id + '\')" class="text-xs text-emerald-600 hover:underline">✓</button></td>' +
+          '</tr>';
+      }).join('');
+    } catch(e) {
+      console.error('pvCargarBandeja', e);
+      if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-red-400">Error al cargar bandeja</td></tr>';
+    }
+  }
+
+  async function pvAprobarItem(id) {
+    try {
+      const res = await sbRpc('f_aprobar_bandeja_item', { p_id: id, p_decision_by: 'dusan', p_decision: 'aprobado' });
+      if (res && res.ok) { pvCargarBandeja(); pvCargarScore(); }
+      else alert('Error: ' + (res && res.error ? res.error : JSON.stringify(res)));
+    } catch(e) { alert('Error al aprobar: ' + e.message); }
+  }
+
+  async function pvAprobarTodos() {
+    if (!confirm('¿Aprobar todos los ' + (document.getElementById('pvBandejaCnt2')?.textContent || '?') + ' items pendientes?')) return;
+    try {
+      const res = await sbRpc('f_aprobar_todos_pendientes', { p_decision_by: 'dusan', p_decision: 'aprobado' });
+      if (res && res.ok) {
+        pvCargarBandeja();
+        pvCargarScore();
+        alert('✅ ' + res.procesados + ' items aprobados');
+      } else {
+        alert('Error: ' + JSON.stringify(res));
+      }
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  async function pvAprobarCalibradorA() {
+    if (!confirm('¿Aprobar Ruta A? 4 materiales plásticos → $150/kg (margen 23%). Score proyectado ~63.')) return;
+    try {
+      const res = await sbRpc('f_batch_aprobar_calibrador', {});
+      alert(JSON.stringify(res));
+      pvCargarScore();
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  async function pvAprobarCalibradorB() {
+    if (!confirm('¿Aprobar Ruta B CEO Full? 5 materiales plásticos → margen 30%. Score proyectado 65.4.')) return;
+    try {
+      const res = await sbRpc('f_aprobar_todos_pendientes', { p_decision_by: 'dusan', p_decision: 'aprobado' });
+      alert('Ruta B aplicada: ' + JSON.stringify(res));
+      pvCargarScore();
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  window.pvCargarScore    = pvCargarScore;
+  window.pvCargarBandeja  = pvCargarBandeja;
+  window.pvAprobarItem    = pvAprobarItem;
+  window.pvAprobarTodos   = pvAprobarTodos;
+  window.pvAprobarCalibradorA = pvAprobarCalibradorA;
+  window.pvAprobarCalibradorB = pvAprobarCalibradorB;
+
+  document.addEventListener('DOMContentLoaded', function() {
+    pvCargarScore();
+    pvCargarBandeja();
+  });
 })();
 </script>
 
