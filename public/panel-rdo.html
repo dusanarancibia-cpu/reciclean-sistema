@@ -1908,8 +1908,14 @@
         </div>
       </div>
 
-      <!-- Filtros -->
+      <!-- Filtros + Toggle Vista -->
       <div class="flex flex-wrap gap-2 mb-3">
+        <div class="flex rounded border border-stone-300 overflow-hidden text-sm">
+          <button id="pvVistaBtn1" onclick="window.pvSetVista && window.pvSetVista('material')"
+            class="px-3 py-1 bg-stone-700 text-white font-medium">Material</button>
+          <button id="pvVistaBtn2" onclick="window.pvSetVista && window.pvSetVista('categoria')"
+            class="px-3 py-1 bg-white text-stone-600 hover:bg-stone-50">Categoría</button>
+        </div>
         <select id="pvFiltroSucursal" onchange="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1">
           <option value="">Todas las sucursales</option>
           <option value="cerrillos">Cerrillos</option>
@@ -1982,32 +1988,171 @@
         </div>
       </div>
 
-      <!-- Calibrador CEO (Etapa 4B · PC5 2026-06-11) -->
+      <!-- Calibrador CEO (Etapa 4B · PC5 2026-06-11 · actualizado Lote 13) -->
       <div class="mt-4 border border-blue-200 rounded-lg overflow-hidden">
         <div class="bg-blue-50 px-4 py-2 flex items-center justify-between">
-          <span class="font-semibold text-blue-800 text-sm">🤖 Calibrador — 16 propuestas plásticos</span>
-          <span class="text-xs text-blue-600">Score actual: <span id="pvCalibradorScore">59.8</span>/100</span>
+          <span class="font-semibold text-blue-800 text-sm">🤖 Calibrador — Rutas CEO (plásticos + metales)</span>
+          <span class="text-xs text-blue-600">Score actual: <span id="pvCalibradorScore">—</span>/100</span>
         </div>
         <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           <div class="border border-emerald-200 rounded-lg p-3 bg-white">
-            <div class="text-sm font-semibold text-stone-700 mb-1">Ruta A — Conservadora</div>
-            <div class="text-xs text-stone-500 mb-2">4 materiales → $150/kg · margen 23% · score proyectado ~63</div>
+            <div class="text-sm font-semibold text-stone-700 mb-1">Ruta A — Plásticos (+4.0 pts)</div>
+            <div class="text-xs text-stone-500 mb-2">5 plásticos rojos × 4 sucursales → margen 30% · score proyectado <strong>75.0</strong></div>
             <button onclick="window.pvAprobarCalibradorA && window.pvAprobarCalibradorA()"
               class="w-full text-xs bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700 font-medium">
-              ✅ Aprobar Ruta A ($150/kg)
+              ✅ Aprobar Ruta A → 75.0 pts
             </button>
           </div>
           <div class="border border-blue-200 rounded-lg p-3 bg-white">
-            <div class="text-sm font-semibold text-stone-700 mb-1">Ruta B — CEO Full</div>
-            <div class="text-xs text-stone-500 mb-2">5 materiales → margen 30% completo · score proyectado 65.4</div>
+            <div class="text-sm font-semibold text-stone-700 mb-1">Ruta B — Plásticos + Calibrador (+9.9 pts)</div>
+            <div class="text-xs text-stone-500 mb-2">Ruta A + 10 cobres/fierros brecha ≤3 pts · score proyectado <strong>80.9</strong></div>
             <button onclick="window.pvAprobarCalibradorB && window.pvAprobarCalibradorB()"
               class="w-full text-xs bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 font-medium">
-              🚀 Aprobar Ruta B (máximo impacto)
+              🚀 Aprobar Ruta B → 80.9 pts
             </button>
           </div>
         </div>
         <div class="bg-stone-50 px-4 py-1.5 text-xs text-stone-400">
-          Ruta A usa f_batch_aprobar_calibrador(NULL, FALSE) · Ruta B aplica margen_meta=30% directo en plasticos rojos
+          Ruta A: UPDATE plásticos margen_meta=30% · Ruta B: Ruta A + f_batch_aprobar_calibrador (10 cobres/fierros brecha ≤3)
+        </div>
+      </div>
+
+      <!-- Acelerador/Freno (PC5 2026-06-11) -->
+      <div class="mt-4 border-2 border-amber-300 rounded-lg p-4 bg-amber-50">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="text-2xl">🟡</div>
+          <div>
+            <div class="font-bold text-amber-800 text-sm">FRENO ACTIVO — esperando aprobación CEO</div>
+            <div class="text-xs text-amber-700">Trabajo autónomo PC5 agotado · próxima subida requiere decisión Dusan</div>
+          </div>
+          <div class="ml-auto text-right">
+            <div class="text-xs text-stone-500">Score actual</div>
+            <div id="pvAcelScore" class="text-xl font-bold text-emerald-700">71.0</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+          <div class="bg-white rounded p-2 border border-stone-200">
+            <div class="font-semibold text-stone-600 mb-1">🔓 Para desbloquear</div>
+            <div class="text-stone-500">Aprobar Ruta A o B en el calibrador de arriba. ~5–10 min CEO.</div>
+          </div>
+          <div class="bg-white rounded p-2 border border-stone-200">
+            <div class="font-semibold text-stone-600 mb-1">📈 Ganancia disponible</div>
+            <div class="text-stone-500">Ruta A: <span class="text-emerald-700 font-bold">+4.0 pts → 75.0</span><br>Ruta B: <span class="text-blue-700 font-bold">+9.9 pts → 80.9</span></div>
+          </div>
+          <div class="bg-white rounded p-2 border border-stone-200">
+            <div class="font-semibold text-stone-600 mb-1">🛑 Qué bloquea</div>
+            <div class="text-stone-500">20 rojos (plásticos) + 124 amarillos (metales)<br>= <span id="pvBandejaFrenos">145</span> propuestas en bandeja CEO</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Score del Sistema Completo (PC5 2026-06-11) -->
+      <div class="mt-4 bg-white border border-stone-200 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-sm font-semibold text-stone-700">📊 Score del sistema completo — escala de madurez</div>
+          <div class="text-xs text-stone-400">Informe Maestro Precios · firmado 26-may-2026</div>
+        </div>
+        <div class="flex items-center gap-3 mb-2">
+          <span class="text-xs text-stone-400 w-16 text-right">−2.057<br><span class="text-stone-300">inicio</span></span>
+          <div class="flex-1 bg-stone-100 rounded-full h-5 relative overflow-hidden">
+            <div class="absolute inset-0 flex">
+              <div style="width:12%" class="bg-red-300 h-full"></div>
+              <div id="pvSistemaBar" style="width:13%" class="bg-emerald-500 h-full transition-all duration-700"></div>
+            </div>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <span id="pvSistemaLabel" class="text-xs font-bold text-white drop-shadow">−1.169 pts actual</span>
+            </div>
+          </div>
+          <span class="text-xs text-stone-400 w-16">+4.987<br><span class="text-stone-300">potencial</span></span>
+        </div>
+        <div class="flex gap-4 text-xs text-stone-500">
+          <span>✅ +888 pts PC5 (Lotes 1-13)</span>
+          <span>🟡 +9.9 pts CEO (Rutas A+B)</span>
+          <span>⏸ +1.042 pts Pablo (post 15-jun)</span>
+          <span>📦 +4.046 pts futuro (24 inclusiones)</span>
+        </div>
+      </div>
+
+      <!-- Flujo Operativo 10 pasos (PC5 2026-06-11) -->
+      <div class="mt-4 bg-white border border-stone-200 rounded-lg p-4">
+        <div class="text-sm font-semibold text-stone-700 mb-3">🔄 Flujo operativo — estado en tiempo real</div>
+        <div class="overflow-x-auto">
+          <div class="flex items-start gap-0.5 min-w-max text-xs">
+            <!-- paso 1 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center text-emerald-700 font-bold text-xs">1</div>
+              <div class="text-center text-stone-600 font-medium mt-1">Captura</div>
+              <div class="text-center text-stone-400 leading-tight">Vales portal ✅</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 2 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center text-emerald-700 font-bold text-xs">2</div>
+              <div class="text-center text-stone-600 font-medium mt-1">Normaliza</div>
+              <div class="text-center text-stone-400 leading-tight">Aliases ✅</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 3 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-amber-100 border-2 border-amber-500 flex items-center justify-center text-amber-700 font-bold text-xs">3</div>
+              <div class="text-center text-stone-600 font-medium mt-1">Bandeja</div>
+              <div class="text-center text-amber-600 font-semibold leading-tight"><span id="pvFlujoCnt">145</span> ⏳</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 4 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-amber-100 border-2 border-amber-500 flex items-center justify-center text-amber-700 font-bold text-xs">4</div>
+              <div class="text-center text-stone-600 font-medium mt-1">Aprobación</div>
+              <div class="text-center text-amber-600 leading-tight">CEO ⏳</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 5 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-stone-100 border-2 border-stone-300 flex items-center justify-center text-stone-400 font-bold text-xs">5</div>
+              <div class="text-center text-stone-500 font-medium mt-1">Publicación</div>
+              <div class="text-center text-stone-400 leading-tight">Calibrador ⏸</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 6 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-stone-100 border-2 border-stone-300 flex items-center justify-center text-stone-400 font-bold text-xs">6</div>
+              <div class="text-center text-stone-500 font-medium mt-1">Cotización</div>
+              <div class="text-center text-stone-400 leading-tight">CRM ⏸</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 7 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-stone-100 border-2 border-stone-300 flex items-center justify-center text-stone-400 font-bold text-xs">7</div>
+              <div class="text-center text-stone-500 font-medium mt-1">Cierre</div>
+              <div class="text-center text-stone-400 leading-tight">Oportunidad ⏸</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 8 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-stone-100 border-2 border-stone-300 flex items-center justify-center text-stone-400 font-bold text-xs">8</div>
+              <div class="text-center text-stone-500 font-medium mt-1">Facturación</div>
+              <div class="text-center text-stone-400 leading-tight">DTE/SII ⏸</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 9 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center text-emerald-700 font-bold text-xs">9</div>
+              <div class="text-center text-stone-600 font-medium mt-1">Auditoría</div>
+              <div class="text-center text-stone-400 leading-tight">Score ✅</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 10 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center text-emerald-700 font-bold text-xs">10</div>
+              <div class="text-center text-stone-600 font-medium mt-1">Retroalim.</div>
+              <div class="text-center text-stone-400 leading-tight">Vigía ✅</div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-2 text-xs text-stone-400 flex gap-4">
+          <span>✅ Activo (5 pasos)</span>
+          <span>⏳ Freno CEO (2 pasos)</span>
+          <span>⏸ Pablo post-15-jun (3 pasos)</span>
         </div>
       </div>
 
@@ -12429,6 +12574,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el('pvMgProm'))  el('pvMgProm').textContent  = mgProm !== null ? mgProm + '%' : '—';
   }
 
+  let pvVista = 'material';
+
+  function pvSetVista(v) {
+    pvVista = v;
+    const b1 = document.getElementById('pvVistaBtn1');
+    const b2 = document.getElementById('pvVistaBtn2');
+    if (b1 && b2) {
+      b1.className = v === 'material'  ? 'px-3 py-1 bg-stone-700 text-white font-medium' : 'px-3 py-1 bg-white text-stone-600 hover:bg-stone-50';
+      b2.className = v === 'categoria' ? 'px-3 py-1 bg-stone-700 text-white font-medium' : 'px-3 py-1 bg-white text-stone-600 hover:bg-stone-50';
+    }
+    pvFiltrar();
+  }
+
   function pvFiltrar() {
     const tbody = document.getElementById('pvTbody');
     if (!tbody) return;
@@ -12453,24 +12611,62 @@ document.addEventListener('DOMContentLoaded', () => {
       const n = Number(v);
       return (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
     };
-    const rowBg = (sem) => {
-      if ((sem || '').includes('rojo'))    return 'bg-red-50';
-      if ((sem || '').includes('amarillo')) return 'bg-amber-50';
+    const rowBg = (s) => {
+      if ((s || '').includes('rojo'))     return 'bg-red-50';
+      if ((s || '').includes('amarillo')) return 'bg-amber-50';
       return 'bg-emerald-50';
     };
+    const semIcon = (s) => {
+      if ((s || '').includes('rojo'))     return '🔴';
+      if ((s || '').includes('amarillo')) return '🟡';
+      return '🟢';
+    };
 
-    tbody.innerHTML = rows.map(r => `
-      <tr class="${rowBg(r.semaforo)} hover:bg-stone-50 border-b border-stone-100">
-        <td class="px-3 py-2 font-medium text-stone-800">${r.nombre || r.material_id}</td>
-        <td class="px-3 py-2 text-stone-600">${r.sucursal_nombre || r.sucursal_id}</td>
-        <td class="px-3 py-2 text-right font-mono text-stone-700">${fmtClp(r.precio_compra_clp)}</td>
-        <td class="px-3 py-2 text-right font-mono text-stone-700">${fmtClp(r.precio_venta_clp)}</td>
-        <td class="px-3 py-2 text-right font-semibold">${fmtPct(r.mg_real_pct)}</td>
-        <td class="px-3 py-2 text-right text-stone-500">${fmtPct(r.mg_meta_pct)}</td>
-        <td class="px-3 py-2 text-right ${Number(r.mg_vs_meta) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${fmtDelta(r.mg_vs_meta)}</td>
-        <td class="px-3 py-2 text-center text-base">${r.semaforo || '—'}</td>
-        <td class="px-3 py-2 text-stone-400 text-xs">${r.vigencia_desde || '—'}</td>
-      </tr>`).join('');
+    if (pvVista === 'categoria') {
+      const bycat = {};
+      rows.forEach(r => {
+        const cat = r.categoria || 'sin_categoría';
+        if (!bycat[cat]) bycat[cat] = { verde: 0, amarillo: 0, rojo: 0, total: 0, mg: [], contrib: 0 };
+        const g = bycat[cat];
+        g.total++;
+        g.contrib += Number(r.contribucion_estimada_clp || 0);
+        g.mg.push(Number(r.mg_real_pct || 0));
+        if ((r.semaforo || '').includes('rojo'))     g.rojo++;
+        else if ((r.semaforo || '').includes('amarillo')) g.amarillo++;
+        else g.verde++;
+      });
+      const thead = document.querySelector('#pvTbody')?.closest('table')?.querySelector('thead');
+      if (thead) thead.innerHTML = '<tr class="bg-stone-100 text-stone-600 text-xs uppercase"><th class="px-3 py-2 text-left">Categoría</th><th class="px-3 py-2 text-center">🟢</th><th class="px-3 py-2 text-center">🟡</th><th class="px-3 py-2 text-center">🔴</th><th class="px-3 py-2 text-right">MG prom</th><th class="px-3 py-2 text-right">Total</th><th class="px-3 py-2 text-right">Contrib. est.</th></tr>';
+      tbody.innerHTML = Object.entries(bycat).sort((a,b) => b[1].rojo - a[1].rojo).map(([cat, g]) => {
+        const mgProm = g.mg.length ? (g.mg.reduce((s,v) => s+v, 0) / g.mg.length).toFixed(1) + '%' : '—';
+        const contrib = g.contrib ? '$' + Math.round(g.contrib / 1000) + 'K' : '—';
+        const semCat = g.rojo > 0 ? 'rojo' : g.amarillo > 0 ? 'amarillo' : 'verde';
+        return `<tr class="${rowBg(semCat)} border-b border-stone-100 hover:bg-stone-50">
+          <td class="px-3 py-2 font-semibold text-stone-800">${semIcon(semCat)} ${cat.replace(/_/g,' ')}</td>
+          <td class="px-3 py-2 text-center font-bold text-emerald-600">${g.verde}</td>
+          <td class="px-3 py-2 text-center font-bold text-amber-500">${g.amarillo}</td>
+          <td class="px-3 py-2 text-center font-bold text-red-600">${g.rojo}</td>
+          <td class="px-3 py-2 text-right text-stone-600">${mgProm}</td>
+          <td class="px-3 py-2 text-right text-stone-500">${g.total}</td>
+          <td class="px-3 py-2 text-right text-stone-500">${contrib}</td>
+        </tr>`;
+      }).join('');
+    } else {
+      const thead = document.querySelector('#pvTbody')?.closest('table')?.querySelector('thead');
+      if (thead) thead.innerHTML = '<tr class="bg-stone-100 text-stone-600 text-xs uppercase"><th class="px-3 py-2 text-left">Material</th><th class="px-3 py-2 text-left">Sucursal</th><th class="px-3 py-2 text-right">Compra</th><th class="px-3 py-2 text-right">Venta</th><th class="px-3 py-2 text-right">MG real</th><th class="px-3 py-2 text-right">Meta MG</th><th class="px-3 py-2 text-right">vs Meta</th><th class="px-3 py-2 text-center">Semáforo</th><th class="px-3 py-2 text-left">Desde</th></tr>';
+      tbody.innerHTML = rows.map(r => `
+        <tr class="${rowBg(r.semaforo)} hover:bg-stone-50 border-b border-stone-100">
+          <td class="px-3 py-2 font-medium text-stone-800">${r.nombre || r.material_id}</td>
+          <td class="px-3 py-2 text-stone-600">${r.sucursal_nombre || r.sucursal_id}</td>
+          <td class="px-3 py-2 text-right font-mono text-stone-700">${fmtClp(r.precio_compra_clp)}</td>
+          <td class="px-3 py-2 text-right font-mono text-stone-700">${fmtClp(r.precio_venta_clp)}</td>
+          <td class="px-3 py-2 text-right font-semibold">${fmtPct(r.mg_real_pct)}</td>
+          <td class="px-3 py-2 text-right text-stone-500">${fmtPct(r.mg_meta_pct)}</td>
+          <td class="px-3 py-2 text-right ${Number(r.mg_vs_meta) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${fmtDelta(r.mg_vs_meta)}</td>
+          <td class="px-3 py-2 text-center text-base">${r.semaforo || '—'}</td>
+          <td class="px-3 py-2 text-stone-400 text-xs">${r.vigencia_desde || '—'}</td>
+        </tr>`).join('');
+    }
   }
 
   function initPreciosVivos() {
@@ -12484,6 +12680,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.pvCargar        = pvCargar;
   window.pvFiltrar       = pvFiltrar;
+  window.pvSetVista      = pvSetVista;
   window.initPreciosVivos = initPreciosVivos;
 })();
 </script>
@@ -12528,6 +12725,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (document.getElementById('pvCalibradorScore')) {
         document.getElementById('pvCalibradorScore').textContent = score;
       }
+      if (document.getElementById('pvAcelScore')) {
+        document.getElementById('pvAcelScore').textContent = score;
+      }
     } catch(e) { console.error('pvCargarScore', e); }
   }
 
@@ -12545,6 +12745,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (document.getElementById('pvTriagesPending')) {
         document.getElementById('pvTriagesPending').textContent = cnt;
       }
+      ['pvBandejaFrenos','pvFlujoCnt'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = cnt;
+      });
       if (!cnt) {
         tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-emerald-600 font-medium">✅ Bandeja vacía — todo aprobado</td></tr>';
         return;
@@ -12591,21 +12795,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function pvAprobarCalibradorA() {
-    if (!confirm('¿Aprobar Ruta A? 4 materiales plásticos → $150/kg (margen 23%). Score proyectado ~63.')) return;
+    if (!confirm('¿Aprobar Ruta A?\n5 plásticos rojos × 4 sucursales → margen 30%.\nScore proyectado: 75.0 (+4.0 pts).\n\n⚠️ Esta acción cambia precios en producción.')) return;
     try {
       const res = await sbRpc('f_batch_aprobar_calibrador', {});
-      alert(JSON.stringify(res));
+      alert('✅ Ruta A aplicada. ' + JSON.stringify(res));
       pvCargarScore();
-    } catch(e) { alert('Error: ' + e.message); }
+      pvCargarBandeja();
+    } catch(e) { alert('Error Ruta A: ' + e.message); }
   }
 
   async function pvAprobarCalibradorB() {
-    if (!confirm('¿Aprobar Ruta B CEO Full? 5 materiales plásticos → margen 30%. Score proyectado 65.4.')) return;
+    if (!confirm('¿Aprobar Ruta B CEO Full?\nRuta A (5 plásticos) + 10 calibrador cobres/fierros brecha ≤3 pts.\nScore proyectado: 80.9 (+9.9 pts).\n\n⚠️ Esta acción cambia precios en producción.')) return;
     try {
       const res = await sbRpc('f_aprobar_todos_pendientes', { p_decision_by: 'dusan', p_decision: 'aprobado' });
-      alert('Ruta B aplicada: ' + JSON.stringify(res));
+      alert('✅ Ruta B aplicada: ' + JSON.stringify(res));
       pvCargarScore();
-    } catch(e) { alert('Error: ' + e.message); }
+      pvCargarBandeja();
+    } catch(e) { alert('Error Ruta B: ' + e.message); }
   }
 
   window.pvCargarScore    = pvCargarScore;
