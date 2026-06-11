@@ -5066,6 +5066,8 @@ async function hydrateSessionAndEnter(authUser) {
   currentProfile = data.perfil;
   console.log('[Panel RDO] Login OK:', { email: currentUser, profile: currentProfile });
   if (typeof window.pageLog === 'function') window.pageLog('login', null, { perfil: currentProfile });
+  // BUG#5 fix: flush logs encolados pre-login (page-logger.js los encoló porque no había user)
+  if (typeof window.pageLogFlushPending === 'function') window.pageLogFlushPending();
   document.getElementById('userEmailDisplay').innerText = data.nombre || data.email;
   document.getElementById('userProfileDisplay').innerText = currentProfile;
 
@@ -11772,6 +11774,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function refreshBadge() {
     if (!ready()) return;
+    // BUG#5 fix: no query si no hay user (RLS rebota → degrada cliente HTTP/2).
+    if (typeof currentUser === 'undefined' || !currentUser) return;
     try {
       const { count } = await sb.schema('panel').from('diego_bandeja')
         .select('*', { count: 'exact', head: true })
@@ -11829,6 +11833,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function suscribir() {
     if (realtimeCh || !ready()) return;
+    // BUG#5 fix: realtime requiere JWT; sin user, skip.
+    if (typeof currentUser === 'undefined' || !currentUser) return;
     realtimeCh = sb.channel('diego_bandeja_fab_v6')
       .on('postgres_changes', { event: '*', schema: 'panel', table: 'diego_bandeja' }, () => refreshBadge())
       .subscribe();
@@ -12060,6 +12066,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Bell · cuenta items pendientes en panel.diego_bandeja
   async function loadBellCount() {
     if (typeof sb === 'undefined' || !sb?.schema) return;
+    // BUG#5 fix: no query sin user (RLS rebota y aborta otros fetches en HTTP/2 pool).
+    if (typeof currentUser === 'undefined' || !currentUser) return;
     try {
       const { count, error } = await sb.schema('panel').from('diego_bandeja')
         .select('*', { count: 'exact', head: true })
@@ -12095,6 +12103,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function updateBellDot() {
       try {
         if (typeof sb === 'undefined' || !sb) return;
+        // BUG#5 fix: no query sin user.
+        if (typeof currentUser === 'undefined' || !currentUser) return;
         const { count, error } = await sb.schema('panel').from('diego_bandeja')
           .select('id', { count: 'exact', head: true })
           .eq('estado', 'pendiente');
