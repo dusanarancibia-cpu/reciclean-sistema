@@ -690,6 +690,10 @@
             <span class="v4-emoji" aria-hidden="true">🚢</span>
             Comex
           </a>
+          <a href="#" data-v4-tab="decisor_venta" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
+            <span class="v4-emoji" aria-hidden="true">💰</span>
+            Decisor venta
+          </a>
           <a href="#" data-v4-tab="comercial" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">💼</span>
             Comercial (CRM Impulsa)
@@ -1045,6 +1049,7 @@
         <button data-tab="andrea_drift_libre" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaDriftLibre">📝 Nombres opps</button>
         <button data-tab="andrea_ruts_invalidos" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaRutsInvalidos">🆔 RUTs a verificar</button>
         <button data-tab="andrea_comex" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaComex">🚢 Comex</button>
+        <button data-tab="decisor_venta" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabDecisorVenta">💰 Decisor venta</button>
         <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
         <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCotizador">📋 Cotizador</button>
         <button data-tab="evolucion"  class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabEvolucion">📈 Evolución</button>
@@ -4187,6 +4192,50 @@
       </div>
     </section>
 
+    <!-- ============================================================
+         PC2 11-jun · Decisor Venta UI (mig 276+277 + 296 backend ya existía)
+         ============================================================ -->
+    <section id="tabDecisorVenta" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">💰 Decisor de Venta</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Elegí material + kg disponibles. Te muestro los compradores ordenados por mejor precio, con bonos vigentes y precios viejos marcados. Registrás la venta con 1 click.</p>
+        </div>
+        <button id="dec_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+      </div>
+
+      <!-- Form selector -->
+      <div class="bg-white border border-stone-200 rounded p-3 mb-3">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-2 text-xs">
+          <label>Material *<select id="dec_material" class="w-full border rounded px-2 py-1 mt-0.5"><option value="">Elegí material…</option></select></label>
+          <label>Kg disponibles *<input id="dec_kg" type="number" min="1" step="1" class="w-full border rounded px-2 py-1 mt-0.5" placeholder="ej: 1000"></label>
+          <label>Sucursal origen *<select id="dec_sucursal" class="w-full border rounded px-2 py-1 mt-0.5"><option value="">Elegí sucursal…</option></select></label>
+          <label>Empresa<select id="dec_empresa" class="w-full border rounded px-2 py-1 mt-0.5"><option value="reciclean">Reciclean</option><option value="farex">Farex</option></select></label>
+        </div>
+        <p class="text-[10px] text-stone-400 mt-1">⚠️ Flete real con google-maps queda fuera por BUG#4 (key referrer-blocked, encolado a Dusan). Por ahora se compara solo por precio + bonos.</p>
+      </div>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-3 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="dec_kpi_total">0</div>
+          <div class="text-xs text-stone-500">Compradores con precio</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-amber-700" id="dec_kpi_stale">0</div>
+          <div class="text-xs text-stone-500">⏰ Con precio &gt;7 días</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-emerald-700" id="dec_kpi_top">—</div>
+          <div class="text-xs text-stone-500">🏆 Mejor total estimado</div>
+        </div>
+      </div>
+
+      <div id="dec_lista" class="space-y-2">
+        <div class="text-xs text-stone-400 italic py-4 text-center">Elegí material + kg + sucursal para empezar.</div>
+      </div>
+    </section>
+
     <!-- Tab Facturacion grupo · D-FACTURACION-ETAPA-1 FASE 6 · PC2 Pablo 06-jun -->
     <section id="tabFacturacionGrupo" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -4864,7 +4913,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -5534,7 +5583,8 @@ const TAB_SECTION_MAP = {
   andrea_dup_clientes: 'tabAndreaDupClientes',
   andrea_drift_libre: 'tabAndreaDriftLibre',
   andrea_ruts_invalidos: 'tabAndreaRutsInvalidos',
-  andrea_comex: 'tabAndreaComex'
+  andrea_comex: 'tabAndreaComex',
+  decisor_venta: 'tabDecisorVenta'
 };
 function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -16615,10 +16665,115 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { alert('No se pudo guardar: ' + (e.message || e)); }
   }
 
+  // ------------------ TAB 5 · Decisor Venta ------------------
+  let _decMatCache = null, _decSucCache = null;
+  async function decBootstrap() {
+    // Cargar selects una sola vez
+    if (!_decMatCache) {
+      const { data: mats } = await sb.schema('curated').from('materiales').select('material_id, nombre, categoria').eq('activo', true).order('nombre');
+      _decMatCache = mats || [];
+      const sel = $$('dec_material');
+      if (sel) sel.innerHTML = '<option value="">Elegí material…</option>' + _decMatCache.map(m => `<option value="${esc(m.material_id)}">${esc(m.nombre)} <span>(${esc(m.categoria || '-')})</span></option>`).join('');
+    }
+    if (!_decSucCache) {
+      const { data: sucs } = await sb.schema('curated').from('sucursales').select('sucursal_id, nombre').order('nombre');
+      _decSucCache = sucs || [];
+      const sel = $$('dec_sucursal');
+      if (sel) sel.innerHTML = '<option value="">Elegí sucursal…</option>' + _decSucCache.map(s => `<option value="${esc(s.sucursal_id)}">${esc(s.nombre)}</option>`).join('');
+    }
+  }
+  async function loadDecisor() {
+    const lista = $$('dec_lista'); if (!lista) return;
+    await decBootstrap();
+    const matId = $$('dec_material').value;
+    const kg = parseFloat($$('dec_kg').value);
+    const suc = $$('dec_sucursal').value;
+    if (!matId || !kg || kg <= 0 || !suc) {
+      lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Elegí material + kg + sucursal para empezar.</div>';
+      $$('dec_kpi_total').textContent = '0'; $$('dec_kpi_stale').textContent = '0'; $$('dec_kpi_top').textContent = '—';
+      return;
+    }
+    lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Calculando…</div>';
+    try {
+      const { data, error } = await sb.schema('panel').from('v_matriz_precios_compradores')
+        .select('*').eq('material_id', matId).not('precio_clp_kg', 'is', null);
+      if (error) throw error;
+      const filas = (data || []).map(r => ({
+        ...r,
+        precio: Number(r.precio_clp_kg || 0),
+        total_clp: Math.round(Number(r.precio_clp_kg || 0) * kg),
+        stale: (r.dias_desde_actualizacion || 0) > 7,
+      })).sort((a, b) => b.total_clp - a.total_clp);
+
+      // Bonos: una llamada por comprador top 5 (no spamear)
+      const bonos = {};
+      for (const f of filas.slice(0, 5)) {
+        try {
+          const { data: bonos_data } = await sb.rpc('f_estado_bono', { p_comprador_id: f.comprador_id, p_material_id: matId });
+          if (bonos_data && bonos_data.length) bonos[f.comprador_id] = bonos_data;
+        } catch (e) { /* silencioso */ }
+      }
+
+      $$('dec_kpi_total').textContent = filas.length;
+      $$('dec_kpi_stale').textContent = filas.filter(f => f.stale).length;
+      $$('dec_kpi_top').textContent = filas[0] ? '$' + filas[0].total_clp.toLocaleString('es-CL') : '—';
+
+      if (filas.length === 0) {
+        lista.innerHTML = '<div class="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">Ningún comprador activo tiene precio cargado para este material. Cargá un precio en la Bandeja Precios o actualizá el comprador.</div>';
+        return;
+      }
+      lista.innerHTML = filas.map((f, i) => {
+        const podio = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+        const bonoList = bonos[f.comprador_id] || [];
+        const bonoHtml = bonoList.length ? '<div class="mt-1 text-xs text-amber-700">' + bonoList.map(b => `🎁 ${esc(b.nombre_bono)}: ${Number(b.acumulado_kg||0).toLocaleString('es-CL')}/${Number(b.meta_kg||0).toLocaleString('es-CL')} kg (${(b.pct_avance||0).toFixed(0)}%) · faltan ${Number(b.faltante_kg||0).toLocaleString('es-CL')} kg`).join('<br>') + '</div>' : '';
+        return `
+        <div class="bg-white border ${i===0?'border-emerald-400':'border-stone-200'} rounded p-3">
+          <div class="flex items-start justify-between flex-wrap gap-2">
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-sm">${podio} ${esc(f.comprador)} <span class="text-xs text-stone-500">${esc(f.comuna || f.region || '')}</span></div>
+              <div class="text-xs text-stone-500">$${f.precio.toLocaleString('es-CL')}/kg × ${kg.toLocaleString('es-CL')} kg ${f.stale ? '<span class="ml-1 px-1 bg-amber-100 text-amber-800 rounded">⏰ precio '+f.dias_desde_actualizacion+'d</span>' : ''} ${f.requiere_foto_previa ? '<span class="ml-1 px-1 bg-sky-100 text-sky-800 rounded">📷 foto previa</span>' : ''}</div>
+              ${f.condicion_texto ? '<div class="text-xs text-stone-500 italic">'+esc(f.condicion_texto)+'</div>' : ''}
+              ${bonoHtml}
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-bold ${i===0?'text-emerald-700':'text-stone-700'}">$${f.total_clp.toLocaleString('es-CL')}</div>
+              <button class="dec-btn-vender mt-1 px-3 py-1 ${i===0?'bg-emerald-600 hover:bg-emerald-700':'bg-stone-500 hover:bg-stone-600'} text-white rounded text-xs"
+                data-comprador="${esc(f.comprador_id)}" data-material="${esc(matId)}" data-precio="${f.precio}" data-kg="${kg}" data-suc="${esc(suc)}">
+                Vender a este
+              </button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    } catch (e) {
+      lista.innerHTML = '<div class="text-sm text-red-700 bg-red-50 border border-red-200 rounded p-3">Error: ' + esc(e.message || String(e)) + '</div>';
+    }
+  }
+  async function decVender(comprador, material, precio, kg, sucursal) {
+    if (!confirm(`¿Registrar venta de ${kg} kg de ${material} a ${comprador} a $${precio}/kg?`)) return;
+    try {
+      const empresa = $$('dec_empresa').value;
+      const ctx = { source: 'decisor_venta_ui', material, kg, precio_kg: precio, sucursal };
+      const { data, error } = await sb.rpc('venta_material_capturar', {
+        p_comprador_id: comprador, p_material_id: material,
+        p_kg: kg, p_precio_clp_kg: precio,
+        p_sucursal_origen: sucursal, p_empresa: empresa,
+        p_fecha_venta: new Date().toISOString().slice(0,10),
+        p_guia_despacho: null, p_decision_context: ctx,
+        p_comentario: 'Capturada desde Decisor de Venta', p_estado: 'cotizada'
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Error');
+      const bonos = (data.estado_bonos || []).map(b => `${b.nombre_bono}: ${(b.pct_avance||0).toFixed(0)}%`).join(' · ');
+      alert('Venta registrada (estado cotizada). Total $' + Math.round(precio*kg).toLocaleString('es-CL') + (bonos ? '. Bonos: ' + bonos : ''));
+      loadDecisor();
+    } catch (e) { alert('No se pudo registrar: ' + (e.message || e)); }
+  }
+
   // ------------------ Wiring ------------------
   function init() {
     // Loaders al click del tab (ambos navbars)
-    [['andrea_dup_clientes', loadDup], ['andrea_drift_libre', loadDrift], ['andrea_ruts_invalidos', loadRuts], ['andrea_comex', loadComex]].forEach(([code, fn]) => {
+    [['andrea_dup_clientes', loadDup], ['andrea_drift_libre', loadDrift], ['andrea_ruts_invalidos', loadRuts], ['andrea_comex', loadComex], ['decisor_venta', decBootstrap]].forEach(([code, fn]) => {
       document.querySelector('button[data-tab="' + code + '"]')?.addEventListener('click', () => setTimeout(fn, 100));
       document.querySelector('a[data-v4-tab="' + code + '"]')?.addEventListener('click', () => setTimeout(fn, 100));
     });
@@ -16662,6 +16817,15 @@ document.addEventListener('DOMContentLoaded', () => {
     $$('acomex_nueva')?.addEventListener('click', () => $$('acomex_form').classList.toggle('hidden'));
     $$('acomex_f_cancelar')?.addEventListener('click', () => $$('acomex_form').classList.add('hidden'));
     $$('acomex_f_guardar')?.addEventListener('click', comexGuardar);
+
+    // Decisor Venta wiring
+    $$('dec_refresh')?.addEventListener('click', loadDecisor);
+    ['dec_material','dec_kg','dec_sucursal'].forEach(id => $$(id)?.addEventListener('change', loadDecisor));
+    $$('dec_kg')?.addEventListener('input', () => { clearTimeout(window._decT); window._decT = setTimeout(loadDecisor, 600); });
+    $$('dec_lista')?.addEventListener('click', e => {
+      const b = e.target.closest('.dec-btn-vender');
+      if (b) return decVender(b.dataset.comprador, b.dataset.material, Number(b.dataset.precio), Number(b.dataset.kg), b.dataset.suc);
+    });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

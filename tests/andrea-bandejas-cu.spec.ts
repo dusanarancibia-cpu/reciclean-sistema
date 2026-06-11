@@ -119,13 +119,49 @@ test.describe('Smoke Bandejas CU Andrea + Comex', () => {
     await page.screenshot({ path: 'test-results/comex.png', fullPage: true });
   });
 
-  test('Sin console errors críticos durante navegación 4 tabs', async ({ page }) => {
+  test('Tab Decisor Venta: selectores cargan + lista vacía hasta tener material+kg+sucursal', async ({ page }) => {
+    await login(page);
+    await abrirTab(page, 'decisor_venta', 'tabDecisorVenta');
+    // Selects pobladas via decBootstrap
+    await page.waitForFunction(() => {
+      const m = document.getElementById('dec_material') as HTMLSelectElement;
+      const s = document.getElementById('dec_sucursal') as HTMLSelectElement;
+      return m && s && m.options.length > 1 && s.options.length > 1;
+    }, { timeout: 10_000 });
+    // Lista debe mostrar mensaje "Elegí material…" porque faltan inputs
+    const listaTxt = await page.locator('#dec_lista').textContent();
+    expect(listaTxt).toMatch(/Elegí material|Calculando|comprador/i);
+    // Elegir el primer material que tenga precio cargado en v_matriz (no hardcoded a un nombre)
+    const matConPrecio = await page.evaluate(async () => {
+      const sb = (window as any).sb;
+      const { data } = await sb.schema('panel').from('v_matriz_precios_compradores')
+        .select('material_id').not('precio_clp_kg', 'is', null).limit(1);
+      return data?.[0]?.material_id || '';
+    });
+    expect(matConPrecio, 'No hay material con precio cargado en v_matriz_precios_compradores').not.toBe('');
+    await page.selectOption('#dec_material', matConPrecio);
+    await page.fill('#dec_kg', '500');
+    await page.selectOption('#dec_sucursal', 'cerrillos');
+    await page.waitForFunction(() => {
+      const el = document.querySelector('#dec_lista');
+      return el && !el.textContent?.includes('Calculando') && !el.textContent?.includes('Elegí material');
+    }, { timeout: 15_000 });
+    const total = parseInt(await page.locator('#dec_kpi_total').textContent() || '0');
+    expect(total).toBeGreaterThan(0);
+    // Top KPI debe tener formato $
+    const top = await page.locator('#dec_kpi_top').textContent() || '';
+    expect(top).toMatch(/^\$/);
+    await page.screenshot({ path: 'test-results/decisor-venta.png', fullPage: true });
+  });
+
+  test('Sin console errors críticos durante navegación 5 tabs', async ({ page }) => {
     await login(page);
     for (const [codigo, sec] of [
       ['andrea_dup_clientes', 'tabAndreaDupClientes'],
       ['andrea_drift_libre', 'tabAndreaDriftLibre'],
       ['andrea_ruts_invalidos', 'tabAndreaRutsInvalidos'],
       ['andrea_comex', 'tabAndreaComex'],
+      ['decisor_venta', 'tabDecisorVenta'],
     ]) {
       await abrirTab(page, codigo, sec);
       await page.waitForTimeout(1500);
