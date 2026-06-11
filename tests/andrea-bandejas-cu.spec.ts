@@ -154,7 +154,39 @@ test.describe('Smoke Bandejas CU Andrea + Comex', () => {
     await page.screenshot({ path: 'test-results/decisor-venta.png', fullPage: true });
   });
 
-  test('Sin console errors críticos durante navegación 5 tabs', async ({ page }) => {
+  test('Tab Cobranza: carga + selector empresa + KPIs', async ({ page }) => {
+    await login(page);
+    await abrirTab(page, 'andrea_cobranza', 'tabAndreaCobranza');
+    await page.waitForFunction(() => {
+      const el = document.querySelector('#cob_lista');
+      return el && !el.textContent?.includes('Cargando');
+    }, { timeout: 12_000 });
+    const clientes = parseInt(await page.locator('#cob_kpi_clientes').textContent() || '0');
+    expect(clientes).toBeGreaterThanOrEqual(0);
+    // Cambiar filtro empresa
+    await page.selectOption('#cob_empresa', 'reciclean');
+    await page.waitForFunction(() => {
+      const el = document.querySelector('#cob_lista');
+      return el && !el.textContent?.includes('Cargando');
+    }, { timeout: 12_000 });
+    await page.screenshot({ path: 'test-results/cobranza.png', fullPage: true });
+  });
+
+  test('Tab Actas: vista carga sin error y KPIs presentes', async ({ page }) => {
+    await login(page);
+    await abrirTab(page, 'andrea_actas', 'tabAndreaActas');
+    await page.waitForFunction(() => {
+      const el = document.querySelector('#act_lista');
+      return el && !el.textContent?.includes('Cargando');
+    }, { timeout: 10_000 });
+    const total = parseInt(await page.locator('#act_kpi_total').textContent() || '-1');
+    expect(total).toBeGreaterThanOrEqual(0);
+    const err = await page.locator('#act_lista').textContent();
+    expect(err).not.toMatch(/permission denied|Could not find/i);
+    await page.screenshot({ path: 'test-results/actas.png', fullPage: true });
+  });
+
+  test('Sin console errors críticos durante navegación 7 tabs', async ({ page }) => {
     await login(page);
     for (const [codigo, sec] of [
       ['andrea_dup_clientes', 'tabAndreaDupClientes'],
@@ -162,6 +194,8 @@ test.describe('Smoke Bandejas CU Andrea + Comex', () => {
       ['andrea_ruts_invalidos', 'tabAndreaRutsInvalidos'],
       ['andrea_comex', 'tabAndreaComex'],
       ['decisor_venta', 'tabDecisorVenta'],
+      ['andrea_cobranza', 'tabAndreaCobranza'],
+      ['andrea_actas', 'tabAndreaActas'],
     ]) {
       await abrirTab(page, codigo, sec);
       await page.waitForTimeout(1500);

@@ -694,6 +694,14 @@
             <span class="v4-emoji" aria-hidden="true">💰</span>
             Decisor venta
           </a>
+          <a href="#" data-v4-tab="andrea_cobranza" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
+            <span class="v4-emoji" aria-hidden="true">💸</span>
+            Cobranza
+          </a>
+          <a href="#" data-v4-tab="andrea_actas" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
+            <span class="v4-emoji" aria-hidden="true">📝</span>
+            Actas
+          </a>
           <a href="#" data-v4-tab="comercial" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">💼</span>
             Comercial (CRM Impulsa)
@@ -1050,6 +1058,8 @@
         <button data-tab="andrea_ruts_invalidos" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaRutsInvalidos">🆔 RUTs a verificar</button>
         <button data-tab="andrea_comex" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaComex">🚢 Comex</button>
         <button data-tab="decisor_venta" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabDecisorVenta">💰 Decisor venta</button>
+        <button data-tab="andrea_cobranza" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaCobranza">💸 Cobranza</button>
+        <button data-tab="andrea_actas" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaActas">📝 Actas</button>
         <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
         <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCotizador">📋 Cotizador</button>
         <button data-tab="evolucion"  class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabEvolucion">📈 Evolución</button>
@@ -4236,6 +4246,80 @@
       </div>
     </section>
 
+    <!-- ============================================================
+         PC2 11-jun · Cobranza + Actas (PDFs) · DeepSeek #2
+         EFs cobranza-pdf-reporte + acta-pdf-render ya deployadas.
+         ============================================================ -->
+
+    <!-- Tab COBRANZA -->
+    <section id="tabAndreaCobranza" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">💸 Cobranza</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Facturas pendientes de pago con buckets aging 0-30/31-60/60+. Generá el PDF mensual para Dusan.</p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <select id="cob_empresa" class="border rounded px-2 py-1 text-xs">
+            <option value="todas">Todas las empresas</option>
+            <option value="reciclean">Reciclean</option>
+            <option value="farex">Farex</option>
+          </select>
+          <input id="cob_mes" type="month" class="border rounded px-2 py-1 text-xs">
+          <button id="cob_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+          <button id="cob_pdf" class="px-3 py-1 bg-sky-600 text-white rounded text-xs hover:bg-sky-700">📄 Generar PDF</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-4 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="cob_kpi_clientes">0</div>
+          <div class="text-xs text-stone-500">Clientes morosos</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="cob_kpi_facturas">0</div>
+          <div class="text-xs text-stone-500">N° facturas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="cob_kpi_total">$0</div>
+          <div class="text-xs text-stone-500">Total pendiente</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-red-700" id="cob_kpi_critico">0%</div>
+          <div class="text-xs text-stone-500">% crítico &gt;60d</div>
+        </div>
+      </div>
+      <div id="cob_lista" class="space-y-2">
+        <div class="text-xs text-stone-400 italic py-4 text-center">Cargando…</div>
+      </div>
+    </section>
+
+    <!-- Tab ACTAS -->
+    <section id="tabAndreaActas" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">📝 Actas</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Tus actas (PDI / compras). Generá el PDF, firmá pendientes, descargá copia para el cliente.</p>
+        </div>
+        <button id="act_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+      </div>
+      <div class="grid grid-cols-3 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="act_kpi_total">0</div>
+          <div class="text-xs text-stone-500">Total actas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-amber-700" id="act_kpi_pendientes">0</div>
+          <div class="text-xs text-stone-500">⏳ Firma pendiente</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-emerald-700" id="act_kpi_con_pdf">0</div>
+          <div class="text-xs text-stone-500">📄 Con PDF</div>
+        </div>
+      </div>
+      <div id="act_lista" class="space-y-2">
+        <div class="text-xs text-stone-400 italic py-4 text-center">Cargando…</div>
+      </div>
+    </section>
+
     <!-- Tab Facturacion grupo · D-FACTURACION-ETAPA-1 FASE 6 · PC2 Pablo 06-jun -->
     <section id="tabFacturacionGrupo" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -4913,7 +4997,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -5584,7 +5668,9 @@ const TAB_SECTION_MAP = {
   andrea_drift_libre: 'tabAndreaDriftLibre',
   andrea_ruts_invalidos: 'tabAndreaRutsInvalidos',
   andrea_comex: 'tabAndreaComex',
-  decisor_venta: 'tabDecisorVenta'
+  decisor_venta: 'tabDecisorVenta',
+  andrea_cobranza: 'tabAndreaCobranza',
+  andrea_actas: 'tabAndreaActas'
 };
 function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -16770,10 +16856,127 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { alert('No se pudo registrar: ' + (e.message || e)); }
   }
 
+  // ------------------ TAB 6 · Cobranza ------------------
+  function fmtCLP(n) { if (n == null || isNaN(n)) return '$0'; return '$' + Number(n).toLocaleString('es-CL', { maximumFractionDigits: 0 }); }
+  async function loadCobranza() {
+    const lista = $$('cob_lista'); if (!lista) return;
+    lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Cargando…</div>';
+    try {
+      const empresa = $$('cob_empresa').value;
+      let q = sb.schema('panel').from('v_andrea_cobranza').select('*');
+      if (empresa !== 'todas') q = q.eq('empresa', empresa);
+      const { data, error } = await q.order('monto_pendiente_total', { ascending: false });
+      if (error) throw error;
+      const filas = data || [];
+      const total = filas.reduce((a, f) => a + Number(f.monto_pendiente_total || 0), 0);
+      const totalFac = filas.reduce((a, f) => a + Number(f.n_facturas || 0), 0);
+      const total60 = filas.reduce((a, f) => a + Number(f.bucket_60_mas || 0), 0);
+      const pct = total > 0 ? Math.round(total60 / total * 100) : 0;
+      $$('cob_kpi_clientes').textContent = filas.length;
+      $$('cob_kpi_facturas').textContent = totalFac;
+      $$('cob_kpi_total').textContent = fmtCLP(total);
+      $$('cob_kpi_critico').textContent = pct + '%';
+      if (filas.length === 0) {
+        lista.innerHTML = '<div class="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded p-3">✓ Sin morosos.</div>';
+        return;
+      }
+      lista.innerHTML = filas.slice(0, 30).map((f, i) => `
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="flex items-start justify-between flex-wrap gap-2">
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-sm">${i+1}. ${esc(f.razon_social || '—')} <span class="text-xs text-stone-500">${esc(f.empresa || '')}</span></div>
+              <div class="text-xs text-stone-500">RUT ${esc(f.rut_proveedor || '—')} · ${f.n_facturas || 0} factura(s) · aging máx ${f.aging_mas_viejo || 0}d ${f.dias_sin_gestion != null ? '· sin gestión '+f.dias_sin_gestion+'d' : ''}</div>
+              <div class="text-xs mt-1">
+                <span class="bg-stone-100 px-1 rounded">0-30: ${fmtCLP(f.bucket_0_30)}</span>
+                <span class="bg-amber-100 px-1 rounded ml-1">31-60: ${fmtCLP(f.bucket_31_60)}</span>
+                <span class="bg-red-100 px-1 rounded ml-1">60+: ${fmtCLP(f.bucket_60_mas)}</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-bold text-stone-700">${fmtCLP(f.monto_pendiente_total)}</div>
+            </div>
+          </div>
+        </div>`).join('');
+    } catch (e) {
+      lista.innerHTML = '<div class="text-sm text-red-700 bg-red-50 border border-red-200 rounded p-3">Error: ' + esc(e.message || String(e)) + '</div>';
+    }
+  }
+  async function cobGenerarPdf() {
+    const btn = $$('cob_pdf'); if (!btn) return;
+    const empresa = $$('cob_empresa').value;
+    const mes = $$('cob_mes').value || new Date().toISOString().slice(0, 7);
+    const orig = btn.textContent; btn.disabled = true; btn.textContent = 'Generando…';
+    try {
+      const { data, error } = await sb.functions.invoke('cobranza-pdf-reporte', { body: { empresa, mes } });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Error');
+      window.open(data.signed_url, '_blank');
+    } catch (e) {
+      alert('Error PDF: ' + (e.message || e));
+    } finally {
+      btn.disabled = false; btn.textContent = orig;
+    }
+  }
+
+  // ------------------ TAB 7 · Actas ------------------
+  async function loadActas() {
+    const lista = $$('act_lista'); if (!lista) return;
+    lista.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Cargando…</div>';
+    try {
+      const { data, error } = await sb.schema('panel').from('v_andrea_actas').select('*').limit(50);
+      if (error) throw error;
+      const filas = data || [];
+      $$('act_kpi_total').textContent = filas.length;
+      $$('act_kpi_pendientes').textContent = filas.filter(a => a.firma_pendiente).length;
+      $$('act_kpi_con_pdf').textContent = filas.filter(a => a.tiene_pdf).length;
+      if (filas.length === 0) {
+        lista.innerHTML = '<div class="text-sm text-stone-500 bg-stone-50 border border-stone-200 rounded p-3">No tenés actas todavía. Las actas se crean desde otros flujos (PDI, compras).</div>';
+        return;
+      }
+      lista.innerHTML = filas.map(a => `
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="flex items-start justify-between flex-wrap gap-2">
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-sm">📝 ${esc((a.tipo||'').toUpperCase())} · ${esc(a.cliente || '—')}</div>
+              <div class="text-xs text-stone-500">Fecha ${esc(a.fecha || '—')} · creada ${esc(new Date(a.created_at).toLocaleDateString('es-CL'))}</div>
+              ${a.firma_pendiente ? '<span class="text-xs px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded">⏳ Firma pendiente</span>' : '<span class="text-xs px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded">✓ Firmada '+esc(a.firmado_por || '')+'</span>'}
+              ${a.tiene_pdf ? '<span class="text-xs px-1.5 py-0.5 bg-sky-100 text-sky-800 rounded ml-1">📄 PDF generado</span>' : ''}
+              ${a.notas ? '<div class="text-xs text-stone-600 italic mt-1">'+esc(a.notas).slice(0,200)+'</div>' : ''}
+            </div>
+            <div class="flex flex-col gap-1">
+              <button class="act-btn-pdf px-2 py-1 bg-sky-600 text-white rounded text-xs hover:bg-sky-700" data-id="${esc(a.id)}">📄 Generar PDF</button>
+              ${a.firma_pendiente ? '<button class="act-btn-firmar px-2 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700" data-id="'+esc(a.id)+'">✍️ Firmar</button>' : ''}
+            </div>
+          </div>
+        </div>`).join('');
+    } catch (e) {
+      lista.innerHTML = '<div class="text-sm text-red-700 bg-red-50 border border-red-200 rounded p-3">Error: ' + esc(e.message || String(e)) + '</div>';
+    }
+  }
+  async function actGenerarPdf(actaId) {
+    try {
+      const { data, error } = await sb.functions.invoke('acta-pdf-render', { body: { acta_id: actaId } });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Error');
+      window.open(data.signed_url, '_blank');
+      loadActas();
+    } catch (e) { alert('Error PDF: ' + (e.message || e)); }
+  }
+  async function actFirmar(actaId) {
+    const nombre = prompt('Nombre de quien firma:');
+    if (!nombre || nombre.trim().length < 2) return;
+    try {
+      const { data, error } = await sb.rpc('firmar_acta', { p_acta_id: actaId, p_firmado_por_nombre: nombre.trim() });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Error');
+      loadActas();
+    } catch (e) { alert('Error firma: ' + (e.message || e)); }
+  }
+
   // ------------------ Wiring ------------------
   function init() {
     // Loaders al click del tab (ambos navbars)
-    [['andrea_dup_clientes', loadDup], ['andrea_drift_libre', loadDrift], ['andrea_ruts_invalidos', loadRuts], ['andrea_comex', loadComex], ['decisor_venta', decBootstrap]].forEach(([code, fn]) => {
+    [['andrea_dup_clientes', loadDup], ['andrea_drift_libre', loadDrift], ['andrea_ruts_invalidos', loadRuts], ['andrea_comex', loadComex], ['decisor_venta', decBootstrap], ['andrea_cobranza', loadCobranza], ['andrea_actas', loadActas]].forEach(([code, fn]) => {
       document.querySelector('button[data-tab="' + code + '"]')?.addEventListener('click', () => setTimeout(fn, 100));
       document.querySelector('a[data-v4-tab="' + code + '"]')?.addEventListener('click', () => setTimeout(fn, 100));
     });
@@ -16817,6 +17020,20 @@ document.addEventListener('DOMContentLoaded', () => {
     $$('acomex_nueva')?.addEventListener('click', () => $$('acomex_form').classList.toggle('hidden'));
     $$('acomex_f_cancelar')?.addEventListener('click', () => $$('acomex_form').classList.add('hidden'));
     $$('acomex_f_guardar')?.addEventListener('click', comexGuardar);
+
+    // Cobranza wiring
+    $$('cob_refresh')?.addEventListener('click', loadCobranza);
+    $$('cob_empresa')?.addEventListener('change', loadCobranza);
+    $$('cob_pdf')?.addEventListener('click', cobGenerarPdf);
+    // Default mes = mes actual
+    const cobMes = $$('cob_mes'); if (cobMes && !cobMes.value) cobMes.value = new Date().toISOString().slice(0, 7);
+
+    // Actas wiring
+    $$('act_refresh')?.addEventListener('click', loadActas);
+    $$('act_lista')?.addEventListener('click', e => {
+      const p = e.target.closest('.act-btn-pdf'); if (p) return actGenerarPdf(p.dataset.id);
+      const f = e.target.closest('.act-btn-firmar'); if (f) return actFirmar(f.dataset.id);
+    });
 
     // Decisor Venta wiring
     $$('dec_refresh')?.addEventListener('click', loadDecisor);
