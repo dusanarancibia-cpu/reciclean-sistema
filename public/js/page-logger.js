@@ -10,7 +10,18 @@
     return null;
   }
 
+  // BUG#5 fix 11-jun PC2: si no hay user resuelto, NO disparamos el POST a curated.page_logs.
+  // El insert con usuario_id=null violaba constraint NOT NULL → 400 → supabase-js degrada
+  // la conexión HTTP/2 pool y aborta signinWithPassword con ERR_ABORTED.
+  // Política: log solo cuando hay user. Si no hay, encolamos y reintentamos post-login.
+  var _pending = [];
   function log(evento, seccion, metadata) {
+    var user = resolveUser();
+    if (!user) {
+      // Encolar para retry post-login (max 20 items para evitar memory leak)
+      if (_pending.length < 20) _pending.push({ evento: evento, seccion: seccion, metadata: metadata });
+      return;
+    }
     fetch(SUPA + '/rest/v1/page_logs', {
       method: 'POST',
       headers: {
@@ -23,7 +34,7 @@
       body: JSON.stringify({
         pagina: window.location.pathname,
         seccion: seccion || null,
-        usuario_id: resolveUser(),
+        usuario_id: user,
         evento: evento || 'pageview',
         metadata: metadata || null
       }),
@@ -31,8 +42,17 @@
     }).catch(function () {});
   }
 
-  window.pageLog = log;
+  function flushPending() {
+    if (!resolveUser() || _pending.length === 0) return;
+    var items = _pending.splice(0);
+    items.forEach(function (it) { log(it.evento, it.seccion, it.metadata); });
+  }
 
+  window.pageLog = log;
+  window.pageLogFlushPending = flushPending;
+
+  // pageview en DOMContentLoaded: solo si ya hay user resuelto (sesión persistente).
+  // Si es first-login, log('login') desde hydrateSessionAndEnter llamará flushPending.
   document.addEventListener('DOMContentLoaded', function () { log('pageview'); });
 
   window.addEventListener('error', function (e) {
