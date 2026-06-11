@@ -6,5 +6,13 @@
     { "source": "/ejemplos",         "destination": "/diego-ejemplos.html",     "permanent": false },
     { "source": "/dar-feedback",     "destination": "/diego-feedback.html",     "permanent": false },
     { "source": "/videos-diego",     "destination": "/diego-video-script.html", "permanent": false }
+  ],
+  "headers": [
+    {
+      "source": "/(.*\\.html)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" }
+      ]
+    }
   ]
 }
