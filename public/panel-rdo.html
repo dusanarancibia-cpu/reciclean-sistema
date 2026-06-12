@@ -6001,15 +6001,37 @@ function applySiloTabs() {
   }
 
   // Filtro adicional por perfil — usa requiere_perfil del catálogo
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    const t = btn.getAttribute('data-tab');
-    let visible = tabsHabilitadas.has(t);
-    // Buscar definición de la pestaña en el catálogo
-    const pestanaDef = PESTANAS_CATALOGO.find(p => p.codigo === t);
+  // Capa 2 fix 12-jun-PM: extiende filtrado a sidebar v4 (a[data-v4-tab])
+  // Antes solo filtraba .tab-btn (navbar viejo, oculto por CSS), dejando
+  // el sidebar v4 con 54 tabs visibles para todos los silos.
+  const aplicarVisibilidad = (el, code) => {
+    let visible = tabsHabilitadas.has(code);
+    const pestanaDef = PESTANAS_CATALOGO.find(p => p.codigo === code);
     if (pestanaDef?.requiere_perfil && Array.isArray(pestanaDef.requiere_perfil)) {
       if (!pestanaDef.requiere_perfil.includes(currentProfile)) visible = false;
     }
-    btn.style.display = visible ? '' : 'none';
+    // Override en el atributo HTML (caso "data-v4-tab-perfil")
+    const perfilAttr = el.getAttribute('data-v4-tab-perfil') || el.getAttribute('data-tab-perfil');
+    if (perfilAttr) {
+      const lista = perfilAttr.split(',').map(s => s.trim()).filter(Boolean);
+      if (lista.length && !lista.includes(currentProfile)) visible = false;
+    }
+    el.style.display = visible ? '' : 'none';
+    return visible;
+  };
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    aplicarVisibilidad(btn, btn.getAttribute('data-tab'));
+  });
+  document.querySelectorAll('a[data-v4-tab]').forEach(a => {
+    aplicarVisibilidad(a, a.getAttribute('data-v4-tab'));
+  });
+
+  // Categorías del sidebar v4: si todas las entradas quedaron ocultas, ocultar la categoría
+  document.querySelectorAll('details.v4-cat').forEach(cat => {
+    const items = cat.querySelectorAll('a[data-v4-tab]');
+    const visibles = Array.from(items).filter(a => a.style.display !== 'none').length;
+    cat.style.display = visibles === 0 ? 'none' : '';
   });
 
   // Si la pestaña activa quedó oculta, volver a Portada
