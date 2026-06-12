@@ -9697,14 +9697,21 @@ window.carAplicarCategoria = async function() {
 // ============================================================
 // TAB OPORTUNIDADES KANBAN (D-OP-12) — v2 con Impulsa CRM
 // ============================================================
+// Capa 1 · Embudo Comercial Antifrágil · 11 estados canónicos
+// Migración 12-jun-2026: nombres en español, secuenciados según el flujo real.
+// La bifurcación V/C después de FACTURAR se decide por metadata.dte_codigo (33=venta, 46=compra).
 const OPP_ESTADOS = [
-  { id: 'recibida',      nombre: 'Recibida',      color: 'bg-stone-100' },
-  { id: 'en_evaluacion', nombre: 'En evaluación', color: 'bg-amber-50' },
-  { id: 'activada',      nombre: 'Activada',      color: 'bg-blue-50' },
-  { id: 'monitoreo',     nombre: 'Monitoreo',     color: 'bg-purple-50' },
-  { id: 'respondida',    nombre: 'Respondida',    color: 'bg-cyan-50' },
-  { id: 'ganada',        nombre: 'Ganada',        color: 'bg-green-50' },
-  { id: 'perdida',       nombre: 'Perdida',       color: 'bg-red-50' },
+  { id: 'prospeccion',     nombre: '🛂 Prospección',     color: 'bg-stone-100', emoji: '🛂' },
+  { id: 'cotizacion',      nombre: '📋 Cotización',      color: 'bg-amber-50',  emoji: '📋' },
+  { id: 'negociando',      nombre: '🤝 Negociando',      color: 'bg-cyan-50',   emoji: '🤝' },
+  { id: 'coord_retiro',    nombre: '🚚 Coord. Retiro',   color: 'bg-blue-50',   emoji: '🚚' },
+  { id: 'retirado',        nombre: '✅ Retirado',        color: 'bg-emerald-50', emoji: '✅' },
+  { id: 'facturar',        nombre: '📄 FACTURAR',        color: 'bg-violet-50', emoji: '📄' },
+  { id: 'cobranza',        nombre: '💸 Cobranza',        color: 'bg-sky-50',    emoji: '💸', rama: 'venta' },
+  { id: 'ganada',          nombre: '🏆 Ganada',          color: 'bg-green-100', emoji: '🏆', rama: 'venta' },
+  { id: 'esperando_pago',  nombre: '⏳ Esperando Pago',  color: 'bg-yellow-50', emoji: '⏳', rama: 'compra' },
+  { id: 'pagado',          nombre: '💰 Pagado',          color: 'bg-lime-100',  emoji: '💰', rama: 'compra' },
+  { id: 'perdida',         nombre: '✗ Perdida',          color: 'bg-red-50',    emoji: '✗' },
 ];
 let _oppDrawerId   = null;
 let _oppDrawerOrig = null;
@@ -9754,10 +9761,11 @@ async function loadOportunidadesKanban() {
   const mostrarCerrados = document.getElementById('oppMostrarCerrados')?.checked ?? false;
   const buscar = (document.getElementById('oppFiltroBuscar')?.value || '').trim();
 
-  let q = sb.schema('curated').from('vw_oportunidades_kanban').select('*').order('fecha_recepcion', { ascending: false });
+  // Capa 1 · usa la vista v2 (11 estados nuevos + flags metadata + rama V/C inferida)
+  let q = sb.schema('panel').from('v_oportunidades_kanban_v2').select('*').order('fecha_recepcion', { ascending: false });
   if (origenFiltro === 'rdo') q = q.neq('origen', 'crm_impulsa');
   else if (origenFiltro === 'crm') q = q.eq('origen', 'crm_impulsa');
-  if (!mostrarCerrados) q = q.not('estado', 'in', '("ganada","perdida","estandarizada","descartada")');
+  if (!mostrarCerrados) q = q.not('estado', 'in', '("ganada","perdida","pagado")');
   if (buscar) {
     const s = buscar.replace(/'/g, "''");
     q = q.or(`titulo.ilike.%${s}%,cliente_nombre.ilike.%${s}%`);
@@ -9799,11 +9807,16 @@ async function loadOportunidadesKanban() {
     porEstado[o.estado].push(o);
   });
 
-  const estadosVisibles = mostrarCerrados ? OPP_ESTADOS : OPP_ESTADOS.filter(e => !['ganada','perdida'].includes(e.id));
+  const estadosVisibles = mostrarCerrados ? OPP_ESTADOS : OPP_ESTADOS.filter(e => !['ganada','perdida','pagado'].includes(e.id));
   const kpisMap = new Map((kpis || []).map(k => [k.estado, k]));
-  const nCols = estadosVisibles.length;
-  const colsCls = nCols <= 4 ? 'xl:grid-cols-4' : 'xl:grid-cols-5';
-  cont.className = `grid grid-cols-1 md:grid-cols-2 ${colsCls} gap-3`;
+  // Capa 2 · layout flex con scroll horizontal para 10 columnas
+  cont.className = 'flex gap-2 overflow-x-auto pb-2 snap-x';
+
+  // Cajón espera factura: tarjetas con metadata.cajon_espera_factura=true se separan dentro de FACTURAR
+  const opsFacturar = porEstado['facturar'] || [];
+  const facturarCajon = opsFacturar.filter(o => o.cajon_espera_factura === true);
+  const facturarMain  = opsFacturar.filter(o => !o.cajon_espera_factura);
+  porEstado['facturar'] = facturarMain;
 
   cont.innerHTML = estadosVisibles.map(e => {
     const k = kpisMap.get(e.id);
@@ -9813,16 +9826,28 @@ async function loadOportunidadesKanban() {
     const visible = todos.slice(0, LIMIT_PER_COL);
     const resto = todos.length - visible.length;
     const cards = visible.map(oppRenderCard).join('');
-    const masBtn = resto > 0 ? `<div class="text-xs text-stone-400 italic py-2 text-center">+${resto.toLocaleString('es-CL')} más — usa búsqueda para filtrar</div>` : '';
+    const masBtn = resto > 0 ? `<div class="text-xs text-stone-400 italic py-2 text-center">+${resto.toLocaleString('es-CL')} más — usa búsqueda</div>` : '';
     const emptyMsg = todos.length === 0 ? '<div class="text-xs text-stone-400 italic py-3 text-center">Sin oportunidades</div>' : '';
+
+    // Sub-zona cajón espera solo en columna FACTURAR
+    const cajonZone = (e.id === 'facturar' && facturarCajon.length > 0) ? `
+      <div class="mt-2 p-2 rounded border border-dashed border-amber-400 bg-amber-50">
+        <div class="text-[10px] font-bold uppercase text-amber-800 mb-1">⏳ Espera factura proveedor (${facturarCajon.length})</div>
+        <div class="space-y-1">${facturarCajon.map(oppRenderCard).join('')}</div>
+      </div>` : '';
+
+    const ramaBorder = e.rama === 'venta' ? 'border-l-4 border-l-sky-400'
+                     : e.rama === 'compra' ? 'border-l-4 border-l-amber-400' : '';
+
     return `
-      <div class="${e.color} rounded-lg p-3 min-h-[200px]"
+      <div class="${e.color} ${ramaBorder} rounded-lg p-2 min-w-[200px] max-w-[230px] flex-shrink-0 snap-start"
            ondragover="event.preventDefault()" ondrop="oppDrop(event,'${e.id}')">
-        <div class="flex justify-between items-baseline mb-2 pb-2 border-b border-stone-200">
-          <h3 class="font-semibold text-stone-800">${escapeHtml(e.nombre)}</h3>
-          <div class="text-xs text-stone-500">${cant.toLocaleString('es-CL')} · ${uf.toLocaleString('es-CL', { maximumFractionDigits: 1 })} UF</div>
+        <div class="flex justify-between items-baseline mb-2 pb-1.5 border-b border-stone-200">
+          <h3 class="font-semibold text-sm text-stone-800 truncate" title="${escapeHtml(e.nombre)}">${escapeHtml(e.nombre)}</h3>
+          <div class="text-[10px] text-stone-500 whitespace-nowrap ml-1">${cant.toLocaleString('es-CL')}${uf>0?' · '+uf.toLocaleString('es-CL',{maximumFractionDigits:1})+' UF':''}</div>
         </div>
-        <div class="space-y-2">${cards}${masBtn}${emptyMsg}</div>
+        <div class="space-y-1.5">${cards}${masBtn}${emptyMsg}</div>
+        ${cajonZone}
       </div>`;
   }).join('');
 }
@@ -9866,6 +9891,46 @@ window.oppDragStart = function(event, oppId, origen) {
   event.dataTransfer.setData('text/plain', oppId);
 };
 
+// Helper · selector DTE para columna FACTURAR (33 venta · 46 compra · SII Chile Res 86/2016)
+function _oppPickDte() {
+  return new Promise(resolve => {
+    const back = document.createElement('div');
+    back.className = 'fixed inset-0 bg-black/50 z-[10000] flex items-center justify-center';
+    back.innerHTML = `
+      <div class="bg-white rounded-xl p-5 max-w-md w-full mx-4 shadow-2xl">
+        <h3 class="text-lg font-bold text-stone-800 mb-1">📄 Tipo de factura SII</h3>
+        <p class="text-sm text-stone-600 mb-4">Esta oportunidad pasa a FACTURAR. ¿Qué DTE corresponde emitir?</p>
+        <div class="space-y-2">
+          <button data-dte="33" class="w-full text-left p-3 rounded-lg border-2 border-sky-200 hover:bg-sky-50 hover:border-sky-400 transition">
+            <div class="font-bold text-sky-700">33 · Factura de Venta</div>
+            <div class="text-xs text-stone-600 mt-0.5">Cliente compra a Reciclean (rama Venta → Cobranza → Ganada)</div>
+          </button>
+          <button data-dte="46" class="w-full text-left p-3 rounded-lg border-2 border-amber-200 hover:bg-amber-50 hover:border-amber-400 transition">
+            <div class="font-bold text-amber-700">46 · Factura de Compra</div>
+            <div class="text-xs text-stone-600 mt-0.5">Reciclean compra a proveedor sin DTE (rama Compra → Esperando Pago → Pagado)</div>
+          </button>
+        </div>
+        <button data-cancel class="mt-4 w-full py-2 text-sm text-stone-500 hover:text-stone-800">Cancelar</button>
+      </div>`;
+    document.body.appendChild(back);
+    back.querySelectorAll('button[data-dte]').forEach(b => {
+      b.addEventListener('click', () => { back.remove(); resolve(b.dataset.dte); });
+    });
+    back.querySelector('button[data-cancel]').addEventListener('click', () => { back.remove(); resolve(null); });
+    back.addEventListener('click', e => { if (e.target === back) { back.remove(); resolve(null); } });
+  });
+}
+
+// Helper para mostrar toast
+function _oppToast(msg, type = 'info') {
+  const colors = { ok: 'bg-green-100 text-green-800', err: 'bg-red-100 text-red-800', info: 'bg-blue-100 text-blue-800', warn: 'bg-amber-100 text-amber-900' };
+  const tmp = document.createElement('div');
+  tmp.className = `fixed top-4 right-4 ${colors[type] || colors.info} text-sm px-4 py-2 rounded shadow-lg z-50 max-w-sm`;
+  tmp.textContent = msg;
+  document.body.appendChild(tmp);
+  setTimeout(() => tmp.remove(), 4000);
+}
+
 window.oppDrop = async function(event, estadoDestino) {
   event.preventDefault();
   const oppId = _oppDragId;
@@ -9874,18 +9939,35 @@ window.oppDrop = async function(event, estadoDestino) {
   if (!oppId) return;
 
   if (origen === 'crm_impulsa') {
-    const tmp = document.createElement('div');
-    tmp.className = 'fixed top-4 right-4 bg-purple-100 text-purple-800 text-sm px-4 py-2 rounded shadow z-50';
-    tmp.textContent = 'CRM Impulsa — solo lectura. El estado no se puede cambiar desde el panel.';
-    document.body.appendChild(tmp);
-    setTimeout(() => tmp.remove(), 3000);
+    _oppToast('CRM Impulsa — solo lectura. El estado no se puede cambiar desde el panel.', 'warn');
     return;
   }
 
-  const { error } = await sb.schema('curated').from('oportunidades')
-    .update({ estado: estadoDestino, updated_by: (currentUser || 'desconocido') })
-    .eq('oportunidad_id', oppId);
-  if (!error) await loadOportunidadesKanban();
+  // Capa 2 · si destino es FACTURAR, pedir DTE (33 venta o 46 compra) antes de mover
+  let dte = null;
+  if (estadoDestino === 'facturar') {
+    dte = await _oppPickDte();
+    if (!dte) return; // canceló
+  }
+
+  // Capa 1 · usa RPC canónica con validaciones de permisos, salto, bifurcación V/C, audit
+  const { data, error } = await sb.rpc('mover_oportunidad', {
+    p_opp_id: oppId,
+    p_nuevo_estado: estadoDestino,
+    p_motivo: 'drag&drop kanban',
+    p_dte_codigo: dte
+  });
+
+  if (error) {
+    _oppToast('Error: ' + error.message, 'err');
+    return;
+  }
+  if (data && data.ok === false) {
+    _oppToast('No se pudo mover: ' + (data.error || 'razón desconocida'), 'err');
+    return;
+  }
+  _oppToast(`Movida a ${estadoDestino}` + (dte ? ` · DTE ${dte}` : ''), 'ok');
+  await loadOportunidadesKanban();
 };
 
 // ── Drawer ───────────────────────────────────────────────────
