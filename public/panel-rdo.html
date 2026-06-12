@@ -666,6 +666,12 @@
       <details class="v4-cat" open>
         <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">👥 Gestión</summary>
         <div class="mt-1 space-y-0.5">
+          <!-- Capa 2 · Mi Día (bandeja personal del usuario logueado) -->
+          <a href="#" data-v4-tab="mi_dia" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📅</span>
+            Mi Día
+            <span id="miDiaBadge" class="ml-auto bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full hidden">0</span>
+          </a>
           <a href="#" data-v4-tab="cartera" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">💳</span>
             Cartera
@@ -1076,6 +1082,7 @@
         <button data-tab="andrea_ruts_invalidos" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaRutsInvalidos">🆔 RUTs a verificar</button>
         <button data-tab="andrea_comex" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaComex">🚢 Comex</button>
         <button data-tab="decisor_venta" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabDecisorVenta">💰 Decisor venta</button>
+        <button data-tab="mi_dia" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabMiDia">📅 Mi Día</button>
         <button data-tab="andrea_cobranza" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaCobranza">💸 Cobranza</button>
         <button data-tab="andrea_actas" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaActas">📝 Actas</button>
         <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
@@ -2131,6 +2138,29 @@
             <button onclick="recCerrarMatchModal()" class="px-3 py-1.5 bg-stone-200 rounded hover:bg-stone-300 text-sm">Cancelar</button>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA MI DÍA — Capa 2 · Bandeja personal del usuario
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabMiDia" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">📅 Mi Día</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Tus oportunidades estancadas y visitas de hoy · Capa 1 Embudo Comercial</p>
+        </div>
+        <button onclick="loadMiDia()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+      <!-- KPIs Mi Día -->
+      <div id="miDiaKpis" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"></div>
+      <!-- Lista de items pendientes -->
+      <div id="miDiaItems" class="space-y-2">
+        <div class="skeleton" aria-busy="true"></div>
+      </div>
+      <!-- Empty state -->
+      <div id="miDiaEmpty" class="hidden p-8 text-center text-stone-500 text-sm bg-white rounded-lg border border-stone-200">
+        🎉 Tu bandeja está al día. No hay oportunidades estancadas ni visitas agendadas para hoy.
       </div>
     </section>
 
@@ -5802,6 +5832,7 @@ function setupTabs() {
       if (tabId === 'reconciliacion') initReconciliacion();
       if (tabId === 'cartera')   initCartera();
       if (tabId === 'oportunidades') initOportunidadesKanban();
+      if (tabId === 'mi_dia')    loadMiDia();
       if (tabId === 'entregables') initEntregables();
       if (tabId === 'bandeja_dieg') initBandejaDiego();
       if (tabId === 'bandeja_precios') initBandejaPrecios();
@@ -9750,6 +9781,78 @@ async function initOportunidadesKanban() {
     _oppSucursalesMap = new Map((sucs || []).map(s => [s.sucursal_id, s.nombre]));
   }
   await loadOportunidadesKanban();
+}
+
+// Capa 2 · Mi Día · bandeja personal del usuario logueado (panel.v_mi_dia)
+async function loadMiDia() {
+  const cont   = document.getElementById('miDiaItems');
+  const empty  = document.getElementById('miDiaEmpty');
+  const kpis   = document.getElementById('miDiaKpis');
+  const badge  = document.getElementById('miDiaBadge');
+  if (!cont) return;
+
+  cont.innerHTML = '<div class="skeleton" aria-busy="true"></div>';
+  empty?.classList.add('hidden');
+
+  const { data, error } = await sb.schema('panel').from('v_mi_dia').select('*');
+  if (error) {
+    cont.innerHTML = `<div class="text-red-600">Error: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  const items = data || [];
+
+  // KPIs por tipo
+  const nOpps    = items.filter(i => i.tipo === 'opp_pendiente').length;
+  const nVisitas = items.filter(i => i.tipo === 'visita_hoy').length;
+  const nUrgentes = items.filter(i => Number(i.dias) > 7).length;
+  if (kpis) {
+    kpis.innerHTML = `
+      <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
+        <div class="text-2xl font-bold text-amber-700">${nOpps}</div>
+        <div class="text-xs text-amber-800">Opps estancadas</div>
+      </div>
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+        <div class="text-2xl font-bold text-blue-700">${nVisitas}</div>
+        <div class="text-xs text-blue-800">Visitas hoy</div>
+      </div>
+      <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+        <div class="text-2xl font-bold text-red-700">${nUrgentes}</div>
+        <div class="text-xs text-red-800">+7 días sin tocar</div>
+      </div>
+      <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+        <div class="text-2xl font-bold text-green-700">${items.length}</div>
+        <div class="text-xs text-green-800">Total pendientes</div>
+      </div>`;
+  }
+
+  // Badge sidebar
+  if (badge) {
+    if (items.length > 0) { badge.textContent = items.length; badge.classList.remove('hidden'); }
+    else                  { badge.classList.add('hidden'); }
+  }
+
+  if (items.length === 0) {
+    cont.innerHTML = '';
+    empty?.classList.remove('hidden');
+    return;
+  }
+
+  cont.innerHTML = items.map(i => {
+    const icon = i.tipo === 'opp_pendiente' ? '🎯' : '📅';
+    const urgClass = Number(i.dias) > 7 ? 'border-l-red-500 bg-red-50' : 'border-l-amber-400 bg-white';
+    const dias = i.tipo === 'opp_pendiente' ? `${Math.floor(Number(i.dias||0))}d sin tocar` : '';
+    const click = i.tipo === 'opp_pendiente' ? `onclick="oppAbrirDrawer('${escapeHtml(i.ref_id)}')"` : '';
+    return `
+      <div class="${urgClass} border-l-4 rounded-lg p-3 shadow-sm hover:shadow-md transition cursor-pointer" ${click}>
+        <div class="flex justify-between items-start gap-3">
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-stone-800 text-sm">${icon} ${escapeHtml(i.titulo || '—')}</div>
+            <div class="text-xs text-stone-600 mt-0.5">Estado: <strong>${escapeHtml(i.detalle || '')}</strong></div>
+          </div>
+          <div class="text-xs text-stone-500 whitespace-nowrap">${dias}</div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 async function loadOportunidadesKanban() {
