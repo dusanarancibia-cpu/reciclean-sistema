@@ -666,6 +666,12 @@
       <details class="v4-cat" open>
         <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">👥 Gestión</summary>
         <div class="mt-1 space-y-0.5">
+          <!-- Capa 2 · Mi Día (bandeja personal del usuario logueado) -->
+          <a href="#" data-v4-tab="mi_dia" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📅</span>
+            Mi Día
+            <span id="miDiaBadge" class="ml-auto bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full hidden">0</span>
+          </a>
           <a href="#" data-v4-tab="cartera" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">💳</span>
             Cartera
@@ -1080,6 +1086,7 @@
         <button data-tab="herramientas_ext" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabHerramientasExt">🌐 Herramientas ext.</button>
         <button data-tab="facturacion_grupo" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabFacturacionGrupo">💰 Facturación grupo</button>
         <button data-tab="vales_portal" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabValesPortal">📊 Vales portal</button>
+        <button data-tab="auditoria_ingesta" class="tab-btn py-3 px-3 text-stone-600"  role="tab" aria-selected="false" aria-controls="tabAuditoriaIngesta">🔍 Auditoría Ingesta</button>
         <button data-tab="piloto_pwa"  class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabPilotoPwa">📲 Piloto PWA</button>
         <button data-tab="mis_archivos" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabMisArchivos">📦 Mis archivos</button>
         <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabRdo">📈 RDO Resumen</button>
@@ -1088,6 +1095,7 @@
         <button data-tab="andrea_ruts_invalidos" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaRutsInvalidos">🆔 RUTs a verificar</button>
         <button data-tab="andrea_comex" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaComex">🚢 Comex</button>
         <button data-tab="decisor_venta" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabDecisorVenta">💰 Decisor venta</button>
+        <button data-tab="mi_dia" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabMiDia">📅 Mi Día</button>
         <button data-tab="andrea_cobranza" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaCobranza">💸 Cobranza</button>
         <button data-tab="andrea_actas" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaActas">📝 Actas</button>
         <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
@@ -2450,6 +2458,29 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA MI DÍA — Capa 2 · Bandeja personal del usuario
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabMiDia" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">📅 Mi Día</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Tus oportunidades estancadas y visitas de hoy · Capa 1 Embudo Comercial</p>
+        </div>
+        <button onclick="loadMiDia()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
+      </div>
+      <!-- KPIs Mi Día -->
+      <div id="miDiaKpis" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"></div>
+      <!-- Lista de items pendientes -->
+      <div id="miDiaItems" class="space-y-2">
+        <div class="skeleton" aria-busy="true"></div>
+      </div>
+      <!-- Empty state -->
+      <div id="miDiaEmpty" class="hidden p-8 text-center text-stone-500 text-sm bg-white rounded-lg border border-stone-200">
+        🎉 Tu bandeja está al día. No hay oportunidades estancadas ni visitas agendadas para hoy.
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
          PESTAÑA CARTERA (D-OP-11) — Andrea cliente-detalle
     ═══════════════════════════════════════════════════════════ -->
     <section id="tabCartera" class="tab-content hidden">
@@ -2881,8 +2912,18 @@
         </div>
       </div>
 
-      <!-- Filtros Kanban — origen CRM/RDO + cerrados + búsqueda -->
+      <!-- Filtros Kanban — alcance owner + origen + cerrados + búsqueda -->
       <div class="bg-white p-3 rounded shadow-sm mb-4 flex flex-wrap gap-3 items-end">
+        <!-- Capa 2b · filtro alcance "Mías / Mi sucursal / Todo el silo" -->
+        <div>
+          <label for="oppFiltroAlcance" class="block text-xs text-stone-500 mb-1">Mostrar</label>
+          <select id="oppFiltroAlcance" onchange="loadOportunidadesKanban()"
+                  class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="mias">👤 Mías</option>
+            <option value="sucursal">🏢 Mi sucursal</option>
+            <option value="todo" selected>🌐 Todo el silo</option>
+          </select>
+        </div>
         <div>
           <label for="oppFiltroOrigen" class="block text-xs text-stone-500 mb-1">Origen</label>
           <select id="oppFiltroOrigen" onchange="loadOportunidadesKanban()"
@@ -2949,16 +2990,23 @@
             <div class="text-xs text-stone-500 mb-1">Estado actual</div>
             <div id="oppDrawerEstadoActual" class="font-medium text-stone-800 mb-2">—</div>
             <label for="oppDrawerEstadoSelect" class="block text-xs text-stone-500 mb-1">Cambiar a:</label>
+            <!-- Capa 2b · 11 estados nuevos del Embudo Comercial Antifrágil -->
             <select id="oppDrawerEstadoSelect"
                     class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none mb-2">
-              <option value="recibida">Recibida</option>
-              <option value="en_evaluacion">En evaluación</option>
-              <option value="activada">Activada</option>
-              <option value="monitoreo">Monitoreo</option>
-              <option value="respondida">Respondida</option>
-              <option value="ganada">Ganada</option>
-              <option value="perdida">Perdida</option>
+              <option value="prospeccion">🛂 Prospección</option>
+              <option value="cotizacion">📋 Cotización</option>
+              <option value="negociando">🤝 Negociando</option>
+              <option value="coord_retiro">🚚 Coord. Retiro</option>
+              <option value="retirado">✅ Retirado</option>
+              <option value="facturar">📄 FACTURAR (elige DTE)</option>
+              <option value="cobranza">💸 Cobranza (rama venta)</option>
+              <option value="ganada">🏆 Ganada</option>
+              <option value="esperando_pago">⏳ Esperando Pago (rama compra)</option>
+              <option value="pagado">💰 Pagado</option>
+              <option value="perdida">✗ Perdida</option>
             </select>
+            <!-- Bifurcación V/C visible cuando ya hay DTE asignado -->
+            <div id="oppDrawerDteBadge" class="hidden mb-2 text-xs px-2 py-1 rounded"></div>
             <button id="oppDrawerMoverBtn" onclick="oppMoverEstado()"
                     class="w-full bg-green-700 hover:bg-green-800 text-white text-sm py-1.5 rounded">
               Mover
@@ -2996,10 +3044,23 @@
             </dl>
           </div>
 
-          <!-- Adjuntos -->
-          <div id="oppDrawerAdjuntosSection" class="hidden mt-4 pt-3 border-t border-stone-200">
-            <div class="text-xs font-semibold text-stone-600 mb-2">Documentos adjuntos</div>
-            <div id="oppDrawerAdjuntos" class="space-y-1 text-sm text-stone-600"></div>
+          <!-- Adjuntos (Capa 2b · panel.opp_archivos + bucket opp-files) -->
+          <div class="mt-4 pt-3 border-t border-stone-200">
+            <div class="flex justify-between items-center mb-2">
+              <div class="text-xs font-semibold text-stone-700">📎 Documentos adjuntos</div>
+              <label class="text-xs text-green-700 hover:underline cursor-pointer">
+                <input type="file" id="oppDrawerSubirInput" class="hidden" onchange="oppSubirArchivo(event)">
+                ⬆ Subir
+              </label>
+            </div>
+            <div id="oppDrawerAdjuntos" class="space-y-1 text-xs text-stone-600">—</div>
+            <div id="oppDrawerSubirMsg" class="hidden mt-1 text-xs"></div>
+          </div>
+
+          <!-- Historial movimientos (Capa 2b · panel.opp_seguimiento) -->
+          <div class="mt-4 pt-3 border-t border-stone-200">
+            <div class="text-xs font-semibold text-stone-700 mb-2">📜 Historial de movimientos</div>
+            <div id="oppDrawerAudit" class="space-y-1 text-xs text-stone-600 max-h-48 overflow-y-auto">—</div>
           </div>
         </div>
       </div>
@@ -4802,6 +4863,87 @@
       </div>
     </section>
 
+    <!-- Tab Auditoría de Ingesta (Mig 231 facturación + pesajes · 09-jun) -->
+    <section id="tabAuditoriaIngesta" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">🔍 Auditoría de Ingesta</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Estado de pipelines automáticas: pesajes, facturas, banco. SLA verde <6h, naranja 6-24h, rojo >24h.</p>
+        </div>
+        <button id="audit_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+      </div>
+
+      <!-- Semáforos frescura (3 colores) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+        <div id="audit_pesajes_card" class="bg-white border border-stone-200 rounded p-3 hover:shadow-md transition">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold text-stone-700">⚖️ Pesajes</span>
+            <span id="audit_pesajes_semaforo" class="text-2xl">—</span>
+          </div>
+          <div class="text-xs text-stone-500 space-y-1">
+            <div>Última: <span id="audit_pesajes_fecha" class="font-mono">—</span></div>
+            <div>Registros 24h: <span id="audit_pesajes_count" class="font-bold text-stone-700">0</span></div>
+            <div>Estado: <span id="audit_pesajes_estado" class="font-semibold">—</span></div>
+          </div>
+        </div>
+        <div id="audit_facturas_card" class="bg-white border border-stone-200 rounded p-3 hover:shadow-md transition">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold text-stone-700">🧾 Facturas</span>
+            <span id="audit_facturas_semaforo" class="text-2xl">—</span>
+          </div>
+          <div class="text-xs text-stone-500 space-y-1">
+            <div>Última: <span id="audit_facturas_fecha" class="font-mono">—</span></div>
+            <div>Registros 24h: <span id="audit_facturas_count" class="font-bold text-stone-700">0</span></div>
+            <div>Estado: <span id="audit_facturas_estado" class="font-semibold">—</span></div>
+          </div>
+        </div>
+        <div id="audit_banco_card" class="bg-white border border-stone-200 rounded p-3 hover:shadow-md transition">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold text-stone-700">🏦 Banco BCI</span>
+            <span id="audit_banco_semaforo" class="text-2xl">—</span>
+          </div>
+          <div class="text-xs text-stone-500 space-y-1">
+            <div>Última: <span id="audit_banco_fecha" class="font-mono">—</span></div>
+            <div>Registros 24h: <span id="audit_banco_count" class="font-bold text-stone-700">0</span></div>
+            <div>Estado: <span id="audit_banco_estado" class="font-semibold">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de logs recientes -->
+      <div class="bg-white border border-stone-200 rounded mb-3">
+        <div class="px-3 py-2 border-b border-stone-200 text-sm font-semibold text-stone-700">📋 Últimas ingestas (últimas 24h)</div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs">
+            <thead class="bg-stone-50 text-xs text-stone-500 uppercase">
+              <tr>
+                <th class="text-left px-3 py-2">Hora</th>
+                <th class="text-left px-3 py-2">Fuente</th>
+                <th class="text-right px-3 py-2">Insertados</th>
+                <th class="text-right px-3 py-2">Actualizados</th>
+                <th class="text-right px-3 py-2">Saltados</th>
+                <th class="text-right px-3 py-2">Errores</th>
+                <th class="text-center px-3 py-2">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="audit_logs_body">
+              <tr><td colspan="7" class="text-center text-stone-400 py-4">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Botón forzar ingesta -->
+      <div class="bg-amber-50 border border-amber-200 rounded p-3 flex items-center justify-between gap-2">
+        <span class="text-sm text-amber-800">💡 Puede forzar una ingesta ahora (recomendado solo para testing):</span>
+        <div class="flex gap-2">
+          <button id="audit_forzar_pesajes" class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700">Pesajes</button>
+          <button id="audit_forzar_facturas" class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700">Facturas</button>
+          <button id="audit_forzar_banco" class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700">Banco</button>
+        </div>
+      </div>
+    </section>
+
     <!-- Tab Piloto PWA (mig 195 backend · Pablo 02-jun PM) -->
     <section id="tabPilotoPwa" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -5453,6 +5595,11 @@ async function hydrateSessionAndEnter(authUser) {
   currentUser = data.email;
   currentProfile = data.perfil;
   console.log('[Panel RDO] Login OK:', { email: currentUser, profile: currentProfile });
+  // Capa 2b · cachear sucursal_id del usuario para filtro "Mi sucursal" del kanban
+  try {
+    const { data: dot } = await sb.schema('panel').from('dotacion').select('sucursal').eq('email', currentUser).maybeSingle();
+    window._miSucursalId = dot?.sucursal || null;
+  } catch(_) { window._miSucursalId = null; }
   if (typeof window.pageLog === 'function') window.pageLog('login', null, { perfil: currentProfile });
   // BUG#5 fix: flush logs encolados pre-login (page-logger.js los encoló porque no había user)
   if (typeof window.pageLogFlushPending === 'function') window.pageLogFlushPending();
@@ -6036,6 +6183,7 @@ function setupTabs() {
       if (tabId === 'reconciliacion') initReconciliacion();
       if (tabId === 'cartera')   initCartera();
       if (tabId === 'oportunidades') initOportunidadesKanban();
+      if (tabId === 'mi_dia')    loadMiDia();
       if (tabId === 'entregables') initEntregables();
       if (tabId === 'bandeja_dieg') initBandejaDiego();
       if (tabId === 'bandeja_precios') initBandejaPrecios();
@@ -9932,14 +10080,21 @@ window.carAplicarCategoria = async function() {
 // ============================================================
 // TAB OPORTUNIDADES KANBAN (D-OP-12) — v2 con Impulsa CRM
 // ============================================================
+// Capa 1 · Embudo Comercial Antifrágil · 11 estados canónicos
+// Migración 12-jun-2026: nombres en español, secuenciados según el flujo real.
+// La bifurcación V/C después de FACTURAR se decide por metadata.dte_codigo (33=venta, 46=compra).
 const OPP_ESTADOS = [
-  { id: 'recibida',      nombre: 'Recibida',      color: 'bg-stone-100' },
-  { id: 'en_evaluacion', nombre: 'En evaluación', color: 'bg-amber-50' },
-  { id: 'activada',      nombre: 'Activada',      color: 'bg-blue-50' },
-  { id: 'monitoreo',     nombre: 'Monitoreo',     color: 'bg-purple-50' },
-  { id: 'respondida',    nombre: 'Respondida',    color: 'bg-cyan-50' },
-  { id: 'ganada',        nombre: 'Ganada',        color: 'bg-green-50' },
-  { id: 'perdida',       nombre: 'Perdida',       color: 'bg-red-50' },
+  { id: 'prospeccion',     nombre: '🛂 Prospección',     color: 'bg-stone-100', emoji: '🛂' },
+  { id: 'cotizacion',      nombre: '📋 Cotización',      color: 'bg-amber-50',  emoji: '📋' },
+  { id: 'negociando',      nombre: '🤝 Negociando',      color: 'bg-cyan-50',   emoji: '🤝' },
+  { id: 'coord_retiro',    nombre: '🚚 Coord. Retiro',   color: 'bg-blue-50',   emoji: '🚚' },
+  { id: 'retirado',        nombre: '✅ Retirado',        color: 'bg-emerald-50', emoji: '✅' },
+  { id: 'facturar',        nombre: '📄 FACTURAR',        color: 'bg-violet-50', emoji: '📄' },
+  { id: 'cobranza',        nombre: '💸 Cobranza',        color: 'bg-sky-50',    emoji: '💸', rama: 'venta' },
+  { id: 'ganada',          nombre: '🏆 Ganada',          color: 'bg-green-100', emoji: '🏆', rama: 'venta' },
+  { id: 'esperando_pago',  nombre: '⏳ Esperando Pago',  color: 'bg-yellow-50', emoji: '⏳', rama: 'compra' },
+  { id: 'pagado',          nombre: '💰 Pagado',          color: 'bg-lime-100',  emoji: '💰', rama: 'compra' },
+  { id: 'perdida',         nombre: '✗ Perdida',          color: 'bg-red-50',    emoji: '✗' },
 ];
 let _oppDrawerId   = null;
 let _oppDrawerOrig = null;
@@ -9980,6 +10135,78 @@ async function initOportunidadesKanban() {
   await loadOportunidadesKanban();
 }
 
+// Capa 2 · Mi Día · bandeja personal del usuario logueado (panel.v_mi_dia)
+async function loadMiDia() {
+  const cont   = document.getElementById('miDiaItems');
+  const empty  = document.getElementById('miDiaEmpty');
+  const kpis   = document.getElementById('miDiaKpis');
+  const badge  = document.getElementById('miDiaBadge');
+  if (!cont) return;
+
+  cont.innerHTML = '<div class="skeleton" aria-busy="true"></div>';
+  empty?.classList.add('hidden');
+
+  const { data, error } = await sb.schema('panel').from('v_mi_dia').select('*');
+  if (error) {
+    cont.innerHTML = `<div class="text-red-600">Error: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  const items = data || [];
+
+  // KPIs por tipo
+  const nOpps    = items.filter(i => i.tipo === 'opp_pendiente').length;
+  const nVisitas = items.filter(i => i.tipo === 'visita_hoy').length;
+  const nUrgentes = items.filter(i => Number(i.dias) > 7).length;
+  if (kpis) {
+    kpis.innerHTML = `
+      <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
+        <div class="text-2xl font-bold text-amber-700">${nOpps}</div>
+        <div class="text-xs text-amber-800">Opps estancadas</div>
+      </div>
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+        <div class="text-2xl font-bold text-blue-700">${nVisitas}</div>
+        <div class="text-xs text-blue-800">Visitas hoy</div>
+      </div>
+      <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+        <div class="text-2xl font-bold text-red-700">${nUrgentes}</div>
+        <div class="text-xs text-red-800">+7 días sin tocar</div>
+      </div>
+      <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+        <div class="text-2xl font-bold text-green-700">${items.length}</div>
+        <div class="text-xs text-green-800">Total pendientes</div>
+      </div>`;
+  }
+
+  // Badge sidebar
+  if (badge) {
+    if (items.length > 0) { badge.textContent = items.length; badge.classList.remove('hidden'); }
+    else                  { badge.classList.add('hidden'); }
+  }
+
+  if (items.length === 0) {
+    cont.innerHTML = '';
+    empty?.classList.remove('hidden');
+    return;
+  }
+
+  cont.innerHTML = items.map(i => {
+    const icon = i.tipo === 'opp_pendiente' ? '🎯' : '📅';
+    const urgClass = Number(i.dias) > 7 ? 'border-l-red-500 bg-red-50' : 'border-l-amber-400 bg-white';
+    const dias = i.tipo === 'opp_pendiente' ? `${Math.floor(Number(i.dias||0))}d sin tocar` : '';
+    const click = i.tipo === 'opp_pendiente' ? `onclick="oppAbrirDrawer('${escapeHtml(i.ref_id)}')"` : '';
+    return `
+      <div class="${urgClass} border-l-4 rounded-lg p-3 shadow-sm hover:shadow-md transition cursor-pointer" ${click}>
+        <div class="flex justify-between items-start gap-3">
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-stone-800 text-sm">${icon} ${escapeHtml(i.titulo || '—')}</div>
+            <div class="text-xs text-stone-600 mt-0.5">Estado: <strong>${escapeHtml(i.detalle || '')}</strong></div>
+          </div>
+          <div class="text-xs text-stone-500 whitespace-nowrap">${dias}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
 async function loadOportunidadesKanban() {
   const cont = document.getElementById('oppKanban');
   cont.innerHTML = '<div class="skeleton" aria-busy="true"></div>';
@@ -9988,11 +10215,22 @@ async function loadOportunidadesKanban() {
   const embudoFiltro    = document.getElementById('oppFiltroEmbudo')?.value ?? '';
   const mostrarCerrados = document.getElementById('oppMostrarCerrados')?.checked ?? false;
   const buscar = (document.getElementById('oppFiltroBuscar')?.value || '').trim();
+  // Capa 2b · filtro alcance owner (mias / sucursal / todo)
+  const alcanceFiltro = document.getElementById('oppFiltroAlcance')?.value ?? 'todo';
 
-  let q = sb.schema('curated').from('vw_oportunidades_kanban').select('*').order('fecha_recepcion', { ascending: false });
+  // Capa 1 · usa la vista v2 (11 estados nuevos + flags metadata + rama V/C inferida)
+  let q = sb.schema('panel').from('v_oportunidades_kanban_v2').select('*').order('fecha_recepcion', { ascending: false });
   if (origenFiltro === 'rdo') q = q.neq('origen', 'crm_impulsa');
   else if (origenFiltro === 'crm') q = q.eq('origen', 'crm_impulsa');
-  if (!mostrarCerrados) q = q.not('estado', 'in', '("ganada","perdida","estandarizada","descartada")');
+  if (!mostrarCerrados) q = q.not('estado', 'in', '("ganada","perdida","pagado")');
+
+  // Capa 2b · filtro por responsable o por sucursal del usuario logueado
+  if (alcanceFiltro === 'mias' && typeof currentUser === 'string' && currentUser) {
+    q = q.eq('responsable', currentUser);
+  } else if (alcanceFiltro === 'sucursal') {
+    const miSuc = window._miSucursalId;
+    if (miSuc) q = q.eq('sucursal_id', miSuc);
+  }
   if (buscar) {
     const s = buscar.replace(/'/g, "''");
     q = q.or(`titulo.ilike.%${s}%,cliente_nombre.ilike.%${s}%`);
@@ -10034,11 +10272,16 @@ async function loadOportunidadesKanban() {
     porEstado[o.estado].push(o);
   });
 
-  const estadosVisibles = mostrarCerrados ? OPP_ESTADOS : OPP_ESTADOS.filter(e => !['ganada','perdida'].includes(e.id));
+  const estadosVisibles = mostrarCerrados ? OPP_ESTADOS : OPP_ESTADOS.filter(e => !['ganada','perdida','pagado'].includes(e.id));
   const kpisMap = new Map((kpis || []).map(k => [k.estado, k]));
-  const nCols = estadosVisibles.length;
-  const colsCls = nCols <= 4 ? 'xl:grid-cols-4' : 'xl:grid-cols-5';
-  cont.className = `grid grid-cols-1 md:grid-cols-2 ${colsCls} gap-3`;
+  // Capa 2 · layout flex con scroll horizontal para 10 columnas
+  cont.className = 'flex gap-2 overflow-x-auto pb-2 snap-x';
+
+  // Cajón espera factura: tarjetas con metadata.cajon_espera_factura=true se separan dentro de FACTURAR
+  const opsFacturar = porEstado['facturar'] || [];
+  const facturarCajon = opsFacturar.filter(o => o.cajon_espera_factura === true);
+  const facturarMain  = opsFacturar.filter(o => !o.cajon_espera_factura);
+  porEstado['facturar'] = facturarMain;
 
   cont.innerHTML = estadosVisibles.map(e => {
     const k = kpisMap.get(e.id);
@@ -10048,16 +10291,28 @@ async function loadOportunidadesKanban() {
     const visible = todos.slice(0, LIMIT_PER_COL);
     const resto = todos.length - visible.length;
     const cards = visible.map(oppRenderCard).join('');
-    const masBtn = resto > 0 ? `<div class="text-xs text-stone-400 italic py-2 text-center">+${resto.toLocaleString('es-CL')} más — usa búsqueda para filtrar</div>` : '';
+    const masBtn = resto > 0 ? `<div class="text-xs text-stone-400 italic py-2 text-center">+${resto.toLocaleString('es-CL')} más — usa búsqueda</div>` : '';
     const emptyMsg = todos.length === 0 ? '<div class="text-xs text-stone-400 italic py-3 text-center">Sin oportunidades</div>' : '';
+
+    // Sub-zona cajón espera solo en columna FACTURAR
+    const cajonZone = (e.id === 'facturar' && facturarCajon.length > 0) ? `
+      <div class="mt-2 p-2 rounded border border-dashed border-amber-400 bg-amber-50">
+        <div class="text-[10px] font-bold uppercase text-amber-800 mb-1">⏳ Espera factura proveedor (${facturarCajon.length})</div>
+        <div class="space-y-1">${facturarCajon.map(oppRenderCard).join('')}</div>
+      </div>` : '';
+
+    const ramaBorder = e.rama === 'venta' ? 'border-l-4 border-l-sky-400'
+                     : e.rama === 'compra' ? 'border-l-4 border-l-amber-400' : '';
+
     return `
-      <div class="${e.color} rounded-lg p-3 min-h-[200px]"
+      <div class="${e.color} ${ramaBorder} rounded-lg p-2 min-w-[200px] max-w-[230px] flex-shrink-0 snap-start"
            ondragover="event.preventDefault()" ondrop="oppDrop(event,'${e.id}')">
-        <div class="flex justify-between items-baseline mb-2 pb-2 border-b border-stone-200">
-          <h3 class="font-semibold text-stone-800">${escapeHtml(e.nombre)}</h3>
-          <div class="text-xs text-stone-500">${cant.toLocaleString('es-CL')} · ${uf.toLocaleString('es-CL', { maximumFractionDigits: 1 })} UF</div>
+        <div class="flex justify-between items-baseline mb-2 pb-1.5 border-b border-stone-200">
+          <h3 class="font-semibold text-sm text-stone-800 truncate" title="${escapeHtml(e.nombre)}">${escapeHtml(e.nombre)}</h3>
+          <div class="text-[10px] text-stone-500 whitespace-nowrap ml-1">${cant.toLocaleString('es-CL')}${uf>0?' · '+uf.toLocaleString('es-CL',{maximumFractionDigits:1})+' UF':''}</div>
         </div>
-        <div class="space-y-2">${cards}${masBtn}${emptyMsg}</div>
+        <div class="space-y-1.5">${cards}${masBtn}${emptyMsg}</div>
+        ${cajonZone}
       </div>`;
   }).join('');
 }
@@ -10101,6 +10356,46 @@ window.oppDragStart = function(event, oppId, origen) {
   event.dataTransfer.setData('text/plain', oppId);
 };
 
+// Helper · selector DTE para columna FACTURAR (33 venta · 46 compra · SII Chile Res 86/2016)
+function _oppPickDte() {
+  return new Promise(resolve => {
+    const back = document.createElement('div');
+    back.className = 'fixed inset-0 bg-black/50 z-[10000] flex items-center justify-center';
+    back.innerHTML = `
+      <div class="bg-white rounded-xl p-5 max-w-md w-full mx-4 shadow-2xl">
+        <h3 class="text-lg font-bold text-stone-800 mb-1">📄 Tipo de factura SII</h3>
+        <p class="text-sm text-stone-600 mb-4">Esta oportunidad pasa a FACTURAR. ¿Qué DTE corresponde emitir?</p>
+        <div class="space-y-2">
+          <button data-dte="33" class="w-full text-left p-3 rounded-lg border-2 border-sky-200 hover:bg-sky-50 hover:border-sky-400 transition">
+            <div class="font-bold text-sky-700">33 · Factura de Venta</div>
+            <div class="text-xs text-stone-600 mt-0.5">Cliente compra a Reciclean (rama Venta → Cobranza → Ganada)</div>
+          </button>
+          <button data-dte="46" class="w-full text-left p-3 rounded-lg border-2 border-amber-200 hover:bg-amber-50 hover:border-amber-400 transition">
+            <div class="font-bold text-amber-700">46 · Factura de Compra</div>
+            <div class="text-xs text-stone-600 mt-0.5">Reciclean compra a proveedor sin DTE (rama Compra → Esperando Pago → Pagado)</div>
+          </button>
+        </div>
+        <button data-cancel class="mt-4 w-full py-2 text-sm text-stone-500 hover:text-stone-800">Cancelar</button>
+      </div>`;
+    document.body.appendChild(back);
+    back.querySelectorAll('button[data-dte]').forEach(b => {
+      b.addEventListener('click', () => { back.remove(); resolve(b.dataset.dte); });
+    });
+    back.querySelector('button[data-cancel]').addEventListener('click', () => { back.remove(); resolve(null); });
+    back.addEventListener('click', e => { if (e.target === back) { back.remove(); resolve(null); } });
+  });
+}
+
+// Helper para mostrar toast
+function _oppToast(msg, type = 'info') {
+  const colors = { ok: 'bg-green-100 text-green-800', err: 'bg-red-100 text-red-800', info: 'bg-blue-100 text-blue-800', warn: 'bg-amber-100 text-amber-900' };
+  const tmp = document.createElement('div');
+  tmp.className = `fixed top-4 right-4 ${colors[type] || colors.info} text-sm px-4 py-2 rounded shadow-lg z-50 max-w-sm`;
+  tmp.textContent = msg;
+  document.body.appendChild(tmp);
+  setTimeout(() => tmp.remove(), 4000);
+}
+
 window.oppDrop = async function(event, estadoDestino) {
   event.preventDefault();
   const oppId = _oppDragId;
@@ -10109,18 +10404,35 @@ window.oppDrop = async function(event, estadoDestino) {
   if (!oppId) return;
 
   if (origen === 'crm_impulsa') {
-    const tmp = document.createElement('div');
-    tmp.className = 'fixed top-4 right-4 bg-purple-100 text-purple-800 text-sm px-4 py-2 rounded shadow z-50';
-    tmp.textContent = 'CRM Impulsa — solo lectura. El estado no se puede cambiar desde el panel.';
-    document.body.appendChild(tmp);
-    setTimeout(() => tmp.remove(), 3000);
+    _oppToast('CRM Impulsa — solo lectura. El estado no se puede cambiar desde el panel.', 'warn');
     return;
   }
 
-  const { error } = await sb.schema('curated').from('oportunidades')
-    .update({ estado: estadoDestino, updated_by: (currentUser || 'desconocido') })
-    .eq('oportunidad_id', oppId);
-  if (!error) await loadOportunidadesKanban();
+  // Capa 2 · si destino es FACTURAR, pedir DTE (33 venta o 46 compra) antes de mover
+  let dte = null;
+  if (estadoDestino === 'facturar') {
+    dte = await _oppPickDte();
+    if (!dte) return; // canceló
+  }
+
+  // Capa 1 · usa RPC canónica con validaciones de permisos, salto, bifurcación V/C, audit
+  const { data, error } = await sb.rpc('mover_oportunidad', {
+    p_opp_id: oppId,
+    p_nuevo_estado: estadoDestino,
+    p_motivo: 'drag&drop kanban',
+    p_dte_codigo: dte
+  });
+
+  if (error) {
+    _oppToast('Error: ' + error.message, 'err');
+    return;
+  }
+  if (data && data.ok === false) {
+    _oppToast('No se pudo mover: ' + (data.error || 'razón desconocida'), 'err');
+    return;
+  }
+  _oppToast(`Movida a ${estadoDestino}` + (dte ? ` · DTE ${dte}` : ''), 'ok');
+  await loadOportunidadesKanban();
 };
 
 // ── Drawer ───────────────────────────────────────────────────
@@ -10137,7 +10449,7 @@ window.oppAbrirDrawer = async function(oppId) {
   resetIds.forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
   document.getElementById('oppDrawerTags').innerHTML = '';
 
-  const { data: o, error } = await sb.schema('curated').from('vw_oportunidades_kanban').select('*').eq('oportunidad_id', oppId).maybeSingle();
+  const { data: o, error } = await sb.schema('panel').from('v_oportunidades_kanban_v2').select('*').eq('oportunidad_id', oppId).maybeSingle();
   if (error || !o) {
     document.getElementById('oppDrawerTitulo').textContent = 'Error cargando oportunidad';
     return;
@@ -10195,23 +10507,122 @@ window.oppAbrirDrawer = async function(oppId) {
     } else { razonRow.classList.add('hidden'); }
   } else if (impulsaSection) { impulsaSection.classList.add('hidden'); }
 
-  const adjSection = document.getElementById('oppDrawerAdjuntosSection');
+  // Capa 2b · Badge DTE bifurcación V/C
+  const dteBadge = document.getElementById('oppDrawerDteBadge');
+  if (dteBadge) {
+    if (o.dte_codigo === '33') {
+      dteBadge.className = 'mb-2 text-xs px-2 py-1 rounded bg-sky-100 text-sky-800 font-semibold';
+      dteBadge.textContent = '🌊 Rama VENTA · DTE 33 emitido';
+      dteBadge.classList.remove('hidden');
+    } else if (o.dte_codigo === '46') {
+      dteBadge.className = 'mb-2 text-xs px-2 py-1 rounded bg-amber-100 text-amber-900 font-semibold';
+      dteBadge.textContent = '🏭 Rama COMPRA · DTE 46 emitido (cambio de sujeto IVA)';
+      dteBadge.classList.remove('hidden');
+    } else {
+      dteBadge.classList.add('hidden');
+    }
+  }
+
+  // Capa 2b · Adjuntos canónicos (panel.opp_archivos) — histórico Impulsa + nuevos
   const adjDiv = document.getElementById('oppDrawerAdjuntos');
-  if (o.external_crm_id && adjSection && adjDiv) {
-    const { data: adjs } = await sb.schema('curated').from('oportunidades_adjuntos')
-      .select('nombre_archivo, extension, ruta_local')
-      .eq('external_crm_id', o.external_crm_id)
-      .limit(50);
+  if (adjDiv) {
+    let q = sb.schema('panel').from('opp_archivos').select('*');
+    if (o.cliente_id) {
+      q = q.or(`oportunidad_id.eq.${oppId},cliente_id.eq.${escapeHtml(o.cliente_id)}`);
+    } else {
+      q = q.eq('oportunidad_id', oppId);
+    }
+    const { data: adjs } = await q.order('fecha_subida', { ascending: false }).limit(50);
     if (adjs && adjs.length > 0) {
-      adjSection.classList.remove('hidden');
-      adjDiv.innerHTML = adjs.map(a =>
-        `<div class="flex items-center gap-2 text-xs text-stone-600 py-0.5">
-          <span class="text-stone-400">${escapeHtml(a.extension || '📄')}</span>
-          <span class="truncate">${escapeHtml(a.nombre_archivo)}</span>
-        </div>`
-      ).join('');
-    } else { adjSection.classList.add('hidden'); }
-  } else if (adjSection) { adjSection.classList.add('hidden'); }
+      adjDiv.innerHTML = adjs.map(a => {
+        const ts = a.fecha_subida ? new Date(a.fecha_subida).toLocaleDateString('es-CL') : '';
+        const badge = a.origen === 'impulsa'
+          ? '<span class="text-[10px] px-1 bg-purple-100 text-purple-700 rounded">Impulsa</span>'
+          : '<span class="text-[10px] px-1 bg-green-100 text-green-700 rounded">Nuevo</span>';
+        return `<div class="flex items-center justify-between gap-2 py-1 border-b border-stone-100">
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <span>📄</span>
+            <span class="truncate" title="${escapeHtml(a.nombre)}">${escapeHtml(a.nombre || a.archivo_path)}</span>
+          </div>
+          <div class="flex items-center gap-1 whitespace-nowrap">
+            ${badge}
+            <span class="text-[10px] text-stone-400">${ts}</span>
+          </div>
+        </div>`;
+      }).join('');
+    } else {
+      adjDiv.innerHTML = '<div class="text-stone-400 italic">Sin archivos aún</div>';
+    }
+  }
+
+  // Capa 2b · Historial de movimientos (panel.opp_seguimiento)
+  const auditDiv = document.getElementById('oppDrawerAudit');
+  if (auditDiv && !esCrm) {
+    const { data: hist } = await sb.schema('panel').from('opp_seguimiento')
+      .select('*').eq('oportunidad_id', oppId).order('creado_en', { ascending: false }).limit(20);
+    if (hist && hist.length > 0) {
+      auditDiv.innerHTML = hist.map(h => {
+        const ts = h.creado_en ? new Date(h.creado_en).toLocaleString('es-CL') : '';
+        const okIcon = h.resultado === 'ok' ? '✓' : '✗';
+        const okColor = h.resultado === 'ok' ? 'text-green-700' : 'text-red-600';
+        const dte = h.dte_codigo ? ` · DTE ${h.dte_codigo}` : '';
+        return `<div class="flex items-start gap-2 py-1 border-b border-stone-100">
+          <span class="${okColor} font-mono">${okIcon}</span>
+          <div class="flex-1 min-w-0">
+            <div><strong>${escapeHtml(h.estado_anterior || '—')}</strong> → <strong>${escapeHtml(h.estado_nuevo)}</strong>${dte}</div>
+            <div class="text-[10px] text-stone-500">${ts} · ${escapeHtml(h.actor || '')}</div>
+            ${h.motivo ? `<div class="text-[10px] text-stone-600 italic">${escapeHtml(h.motivo)}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    } else {
+      auditDiv.innerHTML = '<div class="text-stone-400 italic">Sin movimientos registrados aún</div>';
+    }
+  } else if (auditDiv) {
+    auditDiv.innerHTML = '<div class="text-stone-400 italic">CRM Impulsa · sin audit local</div>';
+  }
+};
+
+// Capa 2b · Subida real al bucket opp-files
+window.oppSubirArchivo = async function(event) {
+  const file = event.target.files?.[0];
+  if (!file || !_oppDrawerId) return;
+  const msg = document.getElementById('oppDrawerSubirMsg');
+  msg.className = 'mt-1 text-xs text-blue-700';
+  msg.textContent = `Subiendo ${file.name}…`;
+  msg.classList.remove('hidden');
+
+  const path = `${_oppDrawerId}/${Date.now()}_${file.name}`;
+  const up = await sb.storage.from('opp-files').upload(path, file, { upsert: false });
+  if (up.error) {
+    msg.className = 'mt-1 text-xs text-red-700';
+    msg.textContent = 'Error: ' + up.error.message;
+    return;
+  }
+
+  // Registrar en panel.opp_archivos
+  const cli = document.getElementById('oppDrawerCliente')?.dataset?.cliId || null;
+  const ins = await sb.schema('panel').from('opp_archivos').insert({
+    oportunidad_id: _oppDrawerId,
+    cliente_id: cli,
+    archivo_path: path,
+    nombre: file.name,
+    tipo: file.type || (file.name.split('.').pop() || ''),
+    tamano_bytes: file.size,
+    origen: 'nuevo',
+    bucket: 'opp-files',
+    subido_por: (typeof currentUser === 'string' ? currentUser : null)
+  });
+  if (ins.error) {
+    msg.className = 'mt-1 text-xs text-amber-700';
+    msg.textContent = 'Subido al bucket pero error al registrar: ' + ins.error.message;
+    return;
+  }
+  msg.className = 'mt-1 text-xs text-green-700';
+  msg.textContent = `✓ ${file.name} subido`;
+  event.target.value = '';
+  // Recargar adjuntos
+  if (_oppDrawerId) await oppAbrirDrawer(_oppDrawerId);
 };
 
 window.oppCerrarDrawer = function() {
@@ -10228,11 +10639,21 @@ window.oppMoverEstado = async function() {
   const msg = document.getElementById('oppDrawerMsg');
   const btn = document.getElementById('oppDrawerMoverBtn');
   msg.classList.add('hidden');
-  btn.disabled = true; btn.textContent = 'Moviendo…';
 
-  const { error } = await sb.schema('curated').from('oportunidades')
-    .update({ estado: nuevoEstado, updated_by: (currentUser || 'desconocido') })
-    .eq('oportunidad_id', _oppDrawerId);
+  // Capa 2b · pasar por RPC canónica con DTE selector en FACTURAR
+  let dte = null;
+  if (nuevoEstado === 'facturar' && typeof _oppPickDte === 'function') {
+    dte = await _oppPickDte();
+    if (!dte) return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Moviendo…';
+  const { data, error } = await sb.rpc('mover_oportunidad', {
+    p_opp_id: _oppDrawerId,
+    p_nuevo_estado: nuevoEstado,
+    p_motivo: 'drawer manual',
+    p_dte_codigo: dte
+  });
   btn.disabled = false; btn.textContent = 'Mover';
 
   if (error) {
@@ -10241,8 +10662,14 @@ window.oppMoverEstado = async function() {
     msg.classList.remove('hidden');
     return;
   }
+  if (data && data.ok === false) {
+    msg.className = 'mt-2 text-xs p-2 rounded bg-red-50 text-red-700';
+    msg.textContent = 'Rechazado: ' + (data.error || '');
+    msg.classList.remove('hidden');
+    return;
+  }
   msg.className = 'mt-2 text-xs p-2 rounded bg-green-50 text-green-700';
-  msg.textContent = 'Estado actualizado.';
+  msg.textContent = `Estado actualizado a ${nuevoEstado}` + (dte ? ` · DTE ${dte}` : '');
   msg.classList.remove('hidden');
   await loadOportunidadesKanban();
   if (_oppDrawerId) await oppAbrirDrawer(_oppDrawerId);
@@ -18783,6 +19210,133 @@ document.addEventListener('DOMContentLoaded', () => {
       b = e.target.closest('.ppwa-marcar-invitado');
       if (b) { marcarInvitado(b.dataset.id); }
     });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<script>
+(function() {
+  async function loadAuditoriaIngesta() {
+    try {
+      await window.__supabaseReady;
+      const sb = window.supabase;
+
+      // 1. Cargar frescura datos (semáforos)
+      const { data: frescura, error: e1 } = await sb.from('v_frescura_datos').select('*');
+      if (e1) throw e1;
+
+      // 2. Cargar logs recientes (últimas 24h)
+      const { data: logs, error: e2 } = await sb
+        .from('facturas_portal_raw')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (e2) throw e2;
+
+      // 3. Actualizar semáforos
+      const frData = {};
+      (frescura || []).forEach(f => { frData[f.fuente] = f; });
+
+      const updateCard = (fuente, prefix) => {
+        const data = frData[fuente];
+        const semBtn = document.getElementById(prefix + '_semaforo');
+        const fechaBtn = document.getElementById(prefix + '_fecha');
+        const countBtn = document.getElementById(prefix + '_count');
+        const estBtn = document.getElementById(prefix + '_estado');
+
+        if (!data) {
+          semBtn.textContent = '—';
+          fechaBtn.textContent = '—';
+          countBtn.textContent = '0';
+          estBtn.textContent = 'Sin datos';
+          return;
+        }
+
+        const estado = data.estado_semaforo || 'rojo';
+        const emoji = { 'verde': '🟢', 'naranja': '🟠', 'rojo': '🔴' }[estado] || '⚪';
+        semBtn.textContent = emoji;
+
+        fechaBtn.textContent = data.ultima_actualizacion ?
+          new Date(data.ultima_actualizacion).toLocaleString('es-CL', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) :
+          '—';
+
+        countBtn.textContent = data.registros_ultimas_24h || 0;
+        estBtn.textContent = estado.charAt(0).toUpperCase() + estado.slice(1);
+      };
+
+      updateCard('pesajes', 'audit_pesajes');
+      updateCard('facturas', 'audit_facturas');
+      updateCard('banco', 'audit_banco');
+
+      // 4. Actualizar tabla de logs
+      const tbody = document.getElementById('audit_logs_body');
+      if (!logs || logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-stone-400 py-4">Sin registros en las últimas 24h</td></tr>';
+      } else {
+        tbody.innerHTML = logs.map(log => {
+          const payload = log.payload || {};
+          const hora = new Date(log.created_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          const fuente = log.cron_job?.split('_').slice(1).join('_') || 'desconocida';
+          const inserts = payload.inserts || 0;
+          const updates = payload.updates || 0;
+          const skips = payload.skips || 0;
+          const errores = payload.errores || 0;
+          const estado = errores > 0 ? '❌ Error' : inserts > 0 || updates > 0 ? '✅ OK' : '⏭ Skip';
+
+          return `<tr class="border-t border-stone-100">
+            <td class="text-left px-3 py-2 font-mono text-stone-600">${hora}</td>
+            <td class="text-left px-3 py-2">${fuente}</td>
+            <td class="text-right px-3 py-2">${inserts}</td>
+            <td class="text-right px-3 py-2">${updates}</td>
+            <td class="text-right px-3 py-2">${skips}</td>
+            <td class="text-right px-3 py-2 ${errores > 0 ? 'text-red-600 font-bold' : ''}">${errores}</td>
+            <td class="text-center px-3 py-2 text-sm">${estado}</td>
+          </tr>`;
+        }).join('');
+      }
+
+      showToast('✅ Auditoría cargada', 'success', 2000);
+    } catch (e) {
+      console.error('[auditoria-ingesta] error:', e);
+      const tbody = document.getElementById('audit_logs_body');
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-red-700 py-4">Error: ' + (e?.message || e) + '</td></tr>';
+      showToast('❌ Error al cargar auditoría', 'error', 3000);
+    }
+  }
+  window.loadAuditoriaIngesta = loadAuditoriaIngesta;
+
+  async function forzarIngesta(fuente) {
+    try {
+      await window.__supabaseReady;
+      const sb = window.supabase;
+      const efName = fuente === 'pesajes' ? 'ingesta-vales-portal' :
+                     fuente === 'facturas' ? 'ingesta-facturas-portal' :
+                     'ingesta-movimientos-banco';
+
+      const response = await fetch(`/.netlify/functions/${efName}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ test: true })
+      });
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      showToast(`✅ ${fuente}: ${data.insertados || 0} inserts, ${data.actualizados || 0} updates`, 'success', 3000);
+      setTimeout(loadAuditoriaIngesta, 500);
+    } catch (e) {
+      console.error('[forzar-ingesta]', e);
+      showToast(`❌ Error en ${fuente}: ${e?.message || e}`, 'error', 3000);
+    }
+  }
+  window.forzarIngesta = forzarIngesta;
+
+  function init() {
+    document.querySelector('button[data-tab="auditoria_ingesta"]')?.addEventListener('click', function () { setTimeout(loadAuditoriaIngesta, 100); });
+    document.getElementById('audit_refresh')?.addEventListener('click', loadAuditoriaIngesta);
+    document.getElementById('audit_forzar_pesajes')?.addEventListener('click', function () { forzarIngesta('pesajes'); });
+    document.getElementById('audit_forzar_facturas')?.addEventListener('click', function () { forzarIngesta('facturas'); });
+    document.getElementById('audit_forzar_banco')?.addEventListener('click', function () { forzarIngesta('banco'); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
