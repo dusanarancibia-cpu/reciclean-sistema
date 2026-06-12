@@ -547,7 +547,11 @@ async function loadDesdeVista() {
   ]);
 
   if(e1 || !precios || !precios.length) {
-    showLoginError('No hay precios disponibles. El administrador debe publicar precios desde el Panel.');
+    const { data: cfgMant } = await _supa.from('config_precios').select('valor').eq('clave','mantenimiento').single();
+    const msg = cfgMant?.valor === 'true'
+      ? '⏳ Precios en actualización. Contáctanos para cotizar.'
+      : 'No hay precios disponibles. El administrador debe publicar precios desde el Panel.';
+    showLoginError(msg);
     return;
   }
 
