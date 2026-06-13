@@ -282,8 +282,9 @@
     .dieg-dropzone { border: 2px dashed #d6d3d1; border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all .2s; background: #fafaf9; }
     .dieg-dropzone.drag-over { border-color: #2C5F2D; background: #f0fdf4; }
     .dieg-dropzone.has-file  { border-color: #2C5F2D; background: #f0fdf4; }
-    /* Capa 2 v4 · Scrollbar visible + grueso para el kanban horizontal */
-    .kanban-scroll { scrollbar-color: #10b981 #e2e8f0; scrollbar-width: auto; scroll-behavior: smooth; }
+    /* Capa 2 v5 · Scrollbar horizontal ARRIBA del kanban (rotateX truco) */
+    .kanban-scroll { scrollbar-color: #10b981 #e2e8f0; scrollbar-width: auto; scroll-behavior: smooth; transform: rotateX(180deg); }
+    .kanban-scroll > * { transform: rotateX(180deg); }
     .kanban-scroll::-webkit-scrollbar { height: 14px; }
     .kanban-scroll::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 8px; margin: 0 8px; }
     .kanban-scroll::-webkit-scrollbar-thumb { background: linear-gradient(90deg,#10b981,#059669); border-radius: 8px; border: 2px solid #e2e8f0; }
@@ -9996,7 +9997,7 @@ async function loadOportunidadesKanban() {
   const kpisMap = new Map((kpis || []).map(k => [k.estado, k]));
   // Capa 2 v4 · layout flex con scrollbar horizontal visible + botones de navegación
   // Columnas a 200px sin compresión. El usuario navega con scroll o botones ← →.
-  cont.className = 'kanban-scroll flex gap-2 overflow-x-auto pb-3 snap-x';
+  cont.className = 'kanban-scroll flex gap-2 overflow-x-auto pt-3 snap-x';
 
   // Cajón espera factura: tarjetas con metadata.cajon_espera_factura=true se separan dentro de FACTURAR
   const opsFacturar = porEstado['facturar'] || [];
