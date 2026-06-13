@@ -9979,8 +9979,10 @@ async function loadOportunidadesKanban() {
 
   const estadosVisibles = mostrarCerrados ? OPP_ESTADOS : OPP_ESTADOS.filter(e => !['ganada','perdida','pagado'].includes(e.id));
   const kpisMap = new Map((kpis || []).map(k => [k.estado, k]));
-  // Capa 2 · layout flex con scroll horizontal para 10 columnas
-  cont.className = 'flex gap-2 overflow-x-auto pb-2 snap-x';
+  // Capa 2 v3 · layout flex 10 cols visibles
+  // STYLE INLINE para garantizar aplicación (Tailwind build-time no compila clases dinámicas)
+  // -mx-* rompe el padding del max-w-6xl del <main> para ganar ancho útil
+  cont.className = 'flex gap-1 overflow-x-auto pb-2 snap-x -mx-4 px-2';
 
   // Cajón espera factura: tarjetas con metadata.cajon_espera_factura=true se separan dentro de FACTURAR
   const opsFacturar = porEstado['facturar'] || [];
@@ -10010,13 +10012,14 @@ async function loadOportunidadesKanban() {
                      : e.rama === 'compra' ? 'border-l-4 border-l-amber-400' : '';
 
     return `
-      <div class="${e.color} ${ramaBorder} rounded-lg p-2 min-w-[160px] max-w-[180px] flex-shrink-0 snap-start"
+      <div class="${e.color} ${ramaBorder} rounded-lg p-1.5 snap-start"
+           style="flex:1 1 0;min-width:110px;max-width:170px"
            ondragover="event.preventDefault()" ondrop="oppDrop(event,'${e.id}')">
-        <div class="flex justify-between items-baseline mb-2 pb-1.5 border-b border-stone-200">
-          <h3 class="font-semibold text-sm text-stone-800 truncate" title="${escapeHtml(e.nombre)}">${escapeHtml(e.nombre)}</h3>
-          <div class="text-[10px] text-stone-500 whitespace-nowrap ml-1">${cant.toLocaleString('es-CL')}${uf>0?' · '+uf.toLocaleString('es-CL',{maximumFractionDigits:1})+' UF':''}</div>
+        <div class="flex justify-between items-baseline mb-1.5 pb-1 border-b border-stone-200">
+          <h3 class="font-semibold text-xs text-stone-800 truncate" title="${escapeHtml(e.nombre)}">${escapeHtml(e.nombre)}</h3>
+          <div style="font-size:9px" class="text-stone-500 whitespace-nowrap ml-1">${cant.toLocaleString('es-CL')}${uf>0?' · '+uf.toLocaleString('es-CL',{maximumFractionDigits:1})+' UF':''}</div>
         </div>
-        <div class="space-y-1.5">${cards}${masBtn}${emptyMsg}</div>
+        <div class="space-y-1">${cards}${masBtn}${emptyMsg}</div>
         ${cajonZone}
       </div>`;
   }).join('');
