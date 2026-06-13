@@ -10310,7 +10310,9 @@ async function loadOportunidadesKanban() {
     porEstado[o.estado].push(o);
   });
 
-  const estadosVisibles = mostrarCerrados ? OPP_ESTADOS : OPP_ESTADOS.filter(e => !['ganada','perdida','pagado'].includes(e.id));
+  // Capa 2 v6 · siempre mostrar las 11 columnas (incluyendo ganada, perdida, pagado)
+  // El usuario filtra por scroll horizontal, no escondiéndolas.
+  const estadosVisibles = OPP_ESTADOS;
   const kpisMap = new Map((kpis || []).map(k => [k.estado, k]));
   // Capa 2 v4 · layout flex con scrollbar horizontal visible + botones de navegación
   // Columnas a 200px sin compresión. El usuario navega con scroll o botones ← →.
