@@ -2583,6 +2583,7 @@
                   title="Crear oportunidad para cualquier cliente (RDO puro o nuevo)">
             ➕ Nueva oportunidad
           </button>
+          <button onclick="abrirGuiaEmbudo()" class="text-sm text-stone-600 hover:text-green-700 hover:underline" title="Cómo funciona el embudo">📖 Guía</button>
           <button onclick="loadOportunidadesKanban()" class="text-sm text-green-700 hover:underline">↺ Recargar</button>
         </div>
       </div>
@@ -10354,6 +10355,82 @@ window.oppCerrarDrawer = function() {
   document.getElementById('oppDrawer').classList.add('hidden');
   _oppDrawerId   = null;
   _oppDrawerOrig = null;
+};
+
+// ════════════════════════════════════════════════════════════════════
+// Capa 2 v7 · Guía del Embudo Comercial Antifrágil
+// Documento vivo: explica las 11 columnas, quién mueve qué, y qué requisitos
+// tiene cada transición. Sin edición — solo lectura.
+// Cuando llegue un pedido real de cambio (renombrar columna, etc.), recién
+// ahí evaluar admin editable.
+// ════════════════════════════════════════════════════════════════════
+const _GUIA_COLUMNAS = [
+  { e: '🛂', n: 'Prospección', desc: 'Primer contacto con el cliente. Lo crea el recepcionista en sucursal, una llamada, WhatsApp de Diego o el trigger automático de pesaje (cuando llega material sin opp abierta).', mueve: 'Cualquiera del silo Comercial · Recepcionista', requisito: 'Solo cliente + material. Lo mínimo.', siguiente: '📋 Cotización' },
+  { e: '📋', n: 'Cotización', desc: 'Andrea o Ingrid generan la cotización con precio + flete + condiciones. PDF para enviar al cliente.', mueve: 'Comercial · admin', requisito: '—', siguiente: '🤝 Negociando o 🚚 Coord. Retiro si ya está cerrado' },
+  { e: '🤝', n: 'Negociando', desc: 'El cliente discute precio o condiciones. Hay back-and-forth de propuestas.', mueve: 'Comercial · admin', requisito: '—', siguiente: '🚚 Coord. Retiro o ✗ Perdida' },
+  { e: '🚚', n: 'Coord. Retiro', desc: 'Se acordó la operación. Se agenda fecha, chofer, ruta. La ficha pasa al equipo de Servicio.', mueve: 'Comercial · admin (recepcionista NO puede mover desde aquí)', requisito: 'Cliente confirmó', siguiente: '✅ Retirado' },
+  { e: '✅', n: 'Retirado', desc: 'Material físicamente movido. Guía + acta firmadas. Listo para facturar.', mueve: 'Comercial · admin', requisito: 'Operación física completada', siguiente: '📄 FACTURAR' },
+  { e: '📄', n: 'FACTURAR', desc: '<strong>Punto de bifurcación según SII Chile (Res. 86/2016).</strong> Se emite DTE 33 (Factura Venta) si el cliente compra a Reciclean, o DTE 46 (Factura Compra) si Reciclean compra al proveedor (cambio de sujeto IVA).', mueve: 'Comercial · admin · Jair (cumplimiento)', requisito: '<strong>Elegir DTE 33 o 46 en el modal</strong>', siguiente: '💸 Cobranza (rama Venta) o ⏳ Esperando Pago (rama Compra)', rama: 'BIFURCA' },
+  { e: '💸', n: 'Cobranza', desc: '<span class="text-sky-700 font-semibold">[RAMA VENTA]</span> El cliente recibió la factura 33 y debe pagarnos. Dyana gestiona el cobro.', mueve: 'Comercial · admin · Dyana', requisito: 'DTE 33 emitido (factura venta)', siguiente: '🏆 Ganada', rama: 'VENTA' },
+  { e: '🏆', n: 'Ganada', desc: '<span class="text-sky-700 font-semibold">[RAMA VENTA]</span> El cliente pagó. Venta cerrada con éxito. Se contabiliza como ingreso.', mueve: 'admin · Comercial', requisito: 'Cobro confirmado', siguiente: '— (estado final)', rama: 'VENTA' },
+  { e: '⏳', n: 'Esperando Pago', desc: '<span class="text-amber-800 font-semibold">[RAMA COMPRA]</span> Reciclean emitió factura 46 al proveedor (cambio sujeto IVA). El proveedor espera que le paguemos.', mueve: 'Comercial · admin · Dyana', requisito: 'DTE 46 emitido (factura compra)', siguiente: '💰 Pagado', rama: 'COMPRA' },
+  { e: '💰', n: 'Pagado', desc: '<span class="text-amber-800 font-semibold">[RAMA COMPRA]</span> Reciclean pagó al proveedor. Compra cerrada. Se contabiliza como egreso.', mueve: 'admin · Comercial', requisito: 'Pago al proveedor ejecutado', siguiente: '— (estado final)', rama: 'COMPRA' },
+  { e: '✗', n: 'Perdida', desc: 'El cliente desistió, no respondió, o la operación cayó. La opp queda archivada con motivo.', mueve: 'Cualquiera (sin saltos)', requisito: 'Motivo recomendado (en el campo motivo de la RPC)', siguiente: '— (estado final)' }
+];
+
+window.abrirGuiaEmbudo = function() {
+  let html = '';
+  for (const c of _GUIA_COLUMNAS) {
+    const ramaBadge = c.rama === 'BIFURCA' ? '<span class="text-xs bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded ml-2">bifurca</span>'
+                     : c.rama === 'VENTA' ? '<span class="text-xs bg-sky-100 text-sky-800 px-1.5 py-0.5 rounded ml-2">rama Venta</span>'
+                     : c.rama === 'COMPRA' ? '<span class="text-xs bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded ml-2">rama Compra</span>' : '';
+    html += `
+      <div class="border-b border-stone-200 py-3">
+        <div class="flex items-baseline gap-2 mb-1">
+          <span class="text-2xl">${c.e}</span>
+          <span class="font-bold text-stone-800 text-lg">${c.n}</span>
+          ${ramaBadge}
+        </div>
+        <div class="text-sm text-stone-600 mb-2">${c.desc}</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+          <div><span class="font-semibold text-stone-700">👤 Quién mueve:</span> ${c.mueve}</div>
+          <div><span class="font-semibold text-stone-700">📋 Requisito:</span> ${c.requisito}</div>
+          <div><span class="font-semibold text-stone-700">➡ Siguiente:</span> ${c.siguiente}</div>
+        </div>
+      </div>`;
+  }
+  const backdrop = document.createElement('div');
+  backdrop.id = 'guiaEmbudoBackdrop';
+  backdrop.className = 'fixed inset-0 bg-black/60 z-[10000] flex items-start justify-center overflow-y-auto p-4';
+  backdrop.innerHTML = `
+    <div class="bg-white rounded-xl max-w-4xl w-full my-8 shadow-2xl">
+      <div class="sticky top-0 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-4 rounded-t-xl flex justify-between items-center">
+        <div>
+          <h2 class="text-xl font-bold">📖 Guía del Embudo Comercial</h2>
+          <p class="text-xs opacity-90 mt-0.5">11 columnas · 5 cinturones · bifurcación SII 33/46 después de FACTURAR</p>
+        </div>
+        <button onclick="document.getElementById('guiaEmbudoBackdrop').remove()" class="text-white hover:bg-emerald-800 rounded-full w-8 h-8 flex items-center justify-center text-xl">×</button>
+      </div>
+      <div class="p-5">
+        <div class="bg-stone-50 rounded-lg p-3 mb-4 text-sm text-stone-700">
+          <strong>Reglas generales:</strong>
+          <ul class="list-disc list-inside mt-1 space-y-0.5">
+            <li>Cada movimiento queda <strong>auditado</strong> en panel.opp_seguimiento (quién, cuándo, motivo, DTE)</li>
+            <li>Recepcionistas: solo pueden mover entre las <strong>3 primeras columnas</strong></li>
+            <li>Salto máximo permitido: <strong>3 columnas</strong> (excepto Perdida, que se puede mover desde cualquier lado)</li>
+            <li>Admin (Dusan/Pablo) y Owner del silo: libres de todas las restricciones de salto</li>
+            <li>Perfil "read" (ej. Jair Cumplimiento): solo lectura, no mueve</li>
+          </ul>
+        </div>
+        ${html}
+        <div class="mt-4 bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-900">
+          <strong>⚠ ¿Querés cambiar una columna, agregar otra o reordenar?</strong><br>
+          Hoy las 11 columnas están definidas en el código + BD (CHECK constraint). Cualquier cambio requiere firma de Dusan + deploy. Cuando aparezca el primer pedido real, evaluamos si construir un admin editable.
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(backdrop);
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
 };
 
 window.oppMoverEstado = async function() {
