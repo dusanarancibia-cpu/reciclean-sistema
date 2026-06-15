@@ -871,6 +871,11 @@
             <span class="v4-emoji" aria-hidden="true">🟢</span>
             Estado vivo 4 PCs
           </a>
+          <a href="#" data-v4-tab="mesa_control_99_99" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">🎛️</span>
+            Mesa de Control 99-99
+            <span id="mesaControl9999Score" class="ml-auto text-[10px] bg-stone-200 text-stone-700 px-1.5 rounded hidden">—</span>
+          </a>
           <a href="#" data-v4-tab="bucle_vivo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
             <span class="v4-emoji" aria-hidden="true">🔁</span>
             Bucle vivo
@@ -1129,6 +1134,7 @@
         <button data-tab="comercial"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabComercial">💼 Comercial</button>
         <button data-tab="pcs_vivo"       class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPcsVivo">🟢 Estado vivo 4 PCs</button>
         <button data-tab="diego_coord"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabDiegoCoord">🎭 Diego Coordinador</button>
+        <button data-tab="mesa_control_99_99" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabMesaControl9999">🎛️ Mesa de Control 99-99</button>
         <button data-tab="bucle_vivo"     class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabBucleVivo">🔁 Bucle vivo</button>
         <button data-tab="dod_dashboard"  class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabDodDashboard">✅ DoD dashboard</button>
         <button data-tab="gantt"          class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabGantt">📊 Gantt Viva</button>
@@ -3949,6 +3955,85 @@
       </div>
     </section>
 
+    <!-- Mesa de Control Plan 99-99 (D-PLAN-99-99-001 Fase 3 · PC2 Pablo 15-jun) · dusan+admin -->
+    <section id="tabMesaControl9999" class="tab-content hidden">
+      <div class="bg-gradient-to-r from-emerald-50 to-stone-50 border border-emerald-200 rounded-lg p-3 mb-4">
+        <div class="flex items-start justify-between flex-wrap gap-2">
+          <div>
+            <h2 class="text-xl font-bold text-emerald-900">🎛️ Mesa de Control · Plan 99-99</h2>
+            <p class="text-xs text-stone-600 mt-1">Estado vivo del plan firmado en <code>plan-claude-code-99-99.html</code>. Meta SLO 99.5% año 1. Refresh 60s.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="mesaControl9999Sync" class="text-[10px] text-stone-400"></span>
+            <button id="mesaControl9999Refresh" class="px-2 py-1 bg-stone-200 text-stone-700 rounded text-xs hover:bg-stone-300">↻</button>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="text-sm font-semibold text-stone-700 mb-2">📊 KPIs vivos</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+        <div class="bg-white border border-stone-200 rounded p-3 cursor-pointer hover:border-emerald-300" data-mc-drill="firmas_reglas">
+          <div class="text-[10px] text-stone-500 uppercase">% verif 30d</div>
+          <div class="text-2xl font-bold mt-1 text-stone-800" id="mcKpiVerif">—</div>
+          <div class="text-[10px] text-stone-400">meta 70%</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3 cursor-pointer hover:border-emerald-300" data-mc-drill="bucle_vivo">
+          <div class="text-[10px] text-stone-500 uppercase">Sanciones</div>
+          <div class="text-2xl font-bold mt-1 text-stone-800" id="mcKpiSanciones">—</div>
+          <div class="text-[10px] text-stone-400">meta 0</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3 cursor-pointer hover:border-emerald-300" data-mc-drill="firmas_reglas">
+          <div class="text-[10px] text-stone-500 uppercase">Críticas Pablo</div>
+          <div class="text-2xl font-bold mt-1 text-stone-800" id="mcKpiTareas">—</div>
+          <div class="text-[10px] text-stone-400">meta &lt;30</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3 cursor-pointer hover:border-emerald-300" data-mc-drill="bucle_vivo">
+          <div class="text-[10px] text-stone-500 uppercase">Score salud</div>
+          <div class="text-2xl font-bold mt-1 text-stone-800" id="mcKpiScore">—</div>
+          <div class="text-[10px] text-stone-400">/100 · meta ≥70</div>
+        </div>
+      </div>
+
+      <h3 class="text-sm font-semibold text-stone-700 mb-2">📈 6 fases · live</h3>
+      <div class="bg-white border border-stone-200 rounded overflow-hidden mb-4">
+        <table class="w-full text-xs">
+          <thead class="bg-stone-100"><tr class="text-left"><th class="px-2 py-1.5 w-8 text-stone-600">#</th><th class="px-2 py-1.5 text-stone-600">Fase</th><th class="px-2 py-1.5 w-24 text-stone-600">Estado</th><th class="px-2 py-1.5 text-stone-600">Detalle</th></tr></thead>
+          <tbody id="mcFasesTbody"><tr><td colspan="4" class="text-center text-stone-400 py-4">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3 class="text-sm font-semibold text-stone-700 mb-2">🌊 Ondas + brechas D-NNN</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+        <div class="bg-white border border-stone-200 rounded p-3"><div class="text-[10px] text-stone-500 uppercase">Onda 1</div><div class="text-base font-semibold mt-1 text-stone-800" id="mcOnda1">—</div><div class="text-[10px] text-stone-400" id="mcOnda1Det">—</div></div>
+        <div class="bg-white border border-stone-200 rounded p-3"><div class="text-[10px] text-stone-500 uppercase">Onda 2</div><div class="text-base font-semibold mt-1 text-stone-800" id="mcOnda2">—</div><div class="text-[10px] text-stone-400" id="mcOnda2Det">—</div></div>
+        <div class="bg-white border border-stone-200 rounded p-3"><div class="text-[10px] text-stone-500 uppercase">Brechas D-NNN</div><div class="text-base font-semibold mt-1 text-stone-800" id="mcBrechas">—</div><div class="text-[10px] text-stone-400" id="mcBrechasDet">SPECs v2</div></div>
+      </div>
+
+      <h3 class="text-sm font-semibold text-stone-700 mb-2">🛡️ SHADOW v12 + Firmas</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+        <div class="bg-white border border-stone-200 rounded p-3"><div class="text-[10px] text-stone-500 uppercase">Procesadas</div><div class="text-lg font-semibold mt-1 text-stone-800" id="mcShadowTotal">—</div></div>
+        <div class="bg-white border border-emerald-200 rounded p-3"><div class="text-[10px] text-emerald-700 uppercase">Verdes</div><div class="text-lg font-semibold mt-1 text-emerald-700" id="mcShadowVerdes">—</div></div>
+        <div class="bg-white border border-red-200 rounded p-3"><div class="text-[10px] text-red-700 uppercase">Falsas</div><div class="text-lg font-semibold mt-1 text-red-700" id="mcShadowFalsas">—</div></div>
+        <div class="bg-white border border-amber-200 rounded p-3 cursor-pointer hover:border-emerald-300" data-mc-drill="firmas_reglas"><div class="text-[10px] text-amber-700 uppercase">Firmas pend</div><div class="text-lg font-semibold mt-1 text-amber-700" id="mcFirmasPend">—</div></div>
+      </div>
+
+      <h3 class="text-sm font-semibold text-stone-700 mb-2">👥 Score individual por PC (SHADOW v12)</h3>
+      <div class="bg-white border border-stone-200 rounded overflow-hidden mb-4">
+        <table class="w-full text-xs">
+          <thead class="bg-stone-100"><tr class="text-left"><th class="px-2 py-1.5 text-stone-600">PC</th><th class="px-2 py-1.5 w-16 text-stone-600">Total</th><th class="px-2 py-1.5 w-16 text-stone-600 text-emerald-700">Verdes</th><th class="px-2 py-1.5 w-16 text-stone-600 text-red-700">Falsas</th><th class="px-2 py-1.5 w-20 text-stone-600">% Falso</th><th class="px-2 py-1.5 w-20 text-stone-600">Cobertura</th><th class="px-2 py-1.5 w-20 text-stone-600">Sanción</th></tr></thead>
+          <tbody id="mcPcScoreTbody"><tr><td colspan="7" class="text-center text-stone-400 py-3">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="bg-white border border-stone-200 rounded p-3 text-xs space-y-2">
+        <div><span class="text-stone-500">Reglas grabadas hoy:</span> <span id="mcReglasHoy" class="font-medium text-stone-800">—</span></div>
+        <div><span class="text-stone-500">Canary pieza 10:</span> <span id="mcCanary" class="font-medium text-stone-800">—</span></div>
+        <div><span class="text-stone-500">ALT3 Panel firma:</span> <span id="mcAlt3" class="font-medium text-stone-800">—</span></div>
+        <div><span class="text-stone-500">Branch protection:</span> <span id="mcBranchProt" class="font-medium text-stone-800">—</span></div>
+      </div>
+      <div class="text-[10px] text-stone-400 mt-3" id="mcSnapshot">Snapshot: —</div>
+    </section>
+
     <!-- SPEC-BUCLE-AUTOMATICO-RUNTIME-V1 FASE 3 · Tab Bucle vivo (PC2 Pablo 2026-06-02 mig 157+163) - SOLO Dusan/admin -->
     <section id="tabBucleVivo" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -5432,7 +5517,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas', 'firmas_reglas'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas', 'firmas_reglas', 'mesa_control_99_99'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -6191,6 +6276,7 @@ const TAB_SECTION_MAP = {
   incidentes_op: 'tabIncidentesOp',
   firmas_pend: 'tabFirmasPend',
   firmas_reglas: 'tabFirmasReglas',
+  mesa_control_99_99: 'tabMesaControl9999',
   tarifas_ext: 'tabTarifasExt',
   cumplimiento: 'tabCumplimiento',
   herramientas_ext: 'tabHerramientasExt',
@@ -16497,6 +16583,107 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ============================================================
+  // Mesa de Control Plan 99-99 (D-PLAN-99-99-001 Fase 3 · PC2 Pablo 15-jun)
+  // Consume RPCs panel.estatus_plan_99_99 + public.mesa_control_99_99_kpis
+  // + public.v_pc_score_individual (widget H)
+  // ============================================================
+  async function loadMesaControl9999() {
+    var setText = function(id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
+    var setHTML = function(id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
+    try {
+      var token = (typeof currentUser !== 'undefined' && currentUser && (currentUser.access_token || currentUser.token))
+                  || (sb && sb.auth && sb.auth.getSession ? (await sb.auth.getSession()).data.session?.access_token : null);
+      if (!token) { setHTML('mcFasesTbody', '<tr><td colspan="4" class="text-center text-amber-700 py-4">Sin sesión</td></tr>'); return; }
+      var SUPA = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : (typeof SUPABASE_URL_LOCAL !== 'undefined' ? SUPABASE_URL_LOCAL : 'https://eknmtsrtfkzroxnovfqn.supabase.co');
+      var apikey = (typeof SUPABASE_ANON_KEY !== 'undefined') ? SUPABASE_ANON_KEY : null;
+      var headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+      if (apikey) headers.apikey = apikey;
+      var [rEstatus, rKpis, rPcScore] = await Promise.all([
+        fetch(SUPA + '/rest/v1/rpc/estatus_plan_99_99', { method: 'POST', headers: headers, body: '{}' }),
+        fetch(SUPA + '/rest/v1/rpc/mesa_control_99_99_kpis', { method: 'POST', headers: headers, body: '{}' }),
+        fetch(SUPA + '/rest/v1/v_pc_score_individual?select=*', { headers: headers })
+      ]);
+      var estatus = await rEstatus.json();
+      var kpis = await rKpis.json();
+      var pcScore = await rPcScore.json();
+      if (!rEstatus.ok) { setHTML('mcFasesTbody', '<tr><td colspan="4" class="text-center text-red-600 py-4">Error</td></tr>'); return; }
+      var k = (kpis && kpis.kpis) || {};
+      setText('mcKpiVerif', (k.verificadas_30d_pct != null ? k.verificadas_30d_pct + '%' : '—'));
+      setText('mcKpiSanciones', (k.sanciones_activas != null ? k.sanciones_activas : '—'));
+      setText('mcKpiTareas', (k.tareas_criticas_pablo != null ? k.tareas_criticas_pablo : '—'));
+      setText('mcKpiScore', (k.score_salud != null ? k.score_salud + '/100' : '—'));
+      var sideBadge = document.getElementById('mesaControl9999Score');
+      if (sideBadge && k.score_salud != null) {
+        sideBadge.textContent = k.score_salud + '/100';
+        sideBadge.classList.remove('hidden');
+        sideBadge.className = 'ml-auto text-[10px] px-1.5 rounded font-medium ' +
+          (k.score_salud >= 70 ? 'bg-emerald-200 text-emerald-800' : k.score_salud >= 40 ? 'bg-amber-200 text-amber-800' : 'bg-red-200 text-red-800');
+      }
+      var fases = (kpis && kpis.fases) || [];
+      var colorMap = { verde: 'bg-emerald-100 text-emerald-800', amarillo: 'bg-amber-100 text-amber-800', rojo: 'bg-red-100 text-red-800', gris: 'bg-stone-100 text-stone-700' };
+      var rows = fases.map(function(f) {
+        var badge = colorMap[f.color] || colorMap.gris;
+        var det = (f.detalle || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        var nom = (f.nombre || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        return '<tr class="border-t border-stone-100"><td class="px-2 py-1.5 text-stone-500">' + f.n + '</td><td class="px-2 py-1.5 text-stone-800">' + nom + '</td><td class="px-2 py-1.5"><span class="text-[10px] px-1.5 py-0.5 rounded ' + badge + '">' + (f.estado || '—') + '</span></td><td class="px-2 py-1.5 text-stone-500">' + det + '</td></tr>';
+      }).join('');
+      setHTML('mcFasesTbody', rows || '<tr><td colspan="4" class="text-center text-stone-400 py-4">Sin fases</td></tr>');
+      var o1 = estatus.onda_1 || {};
+      var o2 = estatus.onda_2 || {};
+      var br = estatus.d_nnn_brechas_14jun || {};
+      setText('mcOnda1', o1.estado === 'completada' ? '✓ ' + (o1.piezas || 10) + ' piezas' : (o1.estado || '—'));
+      setText('mcOnda1Det', 'commits: ' + ((o1.commits_main || []).join(', ')));
+      setText('mcOnda2', (o2.done || 0) + '/' + (o2.total || 8) + ' · ' + (o2.progreso_pct || 0) + '%');
+      setText('mcOnda2Det', 'pend: ' + (o2.pendiente || 0) + ' · claimed: ' + (o2.claimed || 0));
+      setText('mcBrechas', (br.specs || []).length + ' SPECs v2 · ' + (br.pendientes || 0) + ' pend');
+      setText('mcBrechasDet', (br.specs || []).slice(0, 2).join(' · '));
+      setText('mcShadowTotal', (k.shadow_v12_total != null ? k.shadow_v12_total : '—'));
+      setText('mcShadowVerdes', (k.shadow_v12_verdes != null ? k.shadow_v12_verdes + ' (' + (k.shadow_v12_pct_sentenciadas || 0) + '%)' : '—'));
+      setText('mcShadowFalsas', (k.shadow_v12_falsas != null ? k.shadow_v12_falsas : '—'));
+      setText('mcFirmasPend', (k.firmas_pendientes_panel_alt3 != null ? k.firmas_pendientes_panel_alt3 : '—'));
+      // Widget H · Score por PC
+      var pcRows = (Array.isArray(pcScore) ? pcScore : []).map(function(pc) {
+        var pctFalso = parseFloat(pc.shadow_pct_falso_real) || 0;
+        var color = pctFalso >= 5 ? 'text-red-700' : pctFalso >= 2 ? 'text-amber-700' : 'text-stone-700';
+        var sancion = pc.sancion_activa ? '<span class="text-[10px] bg-red-200 text-red-800 px-1.5 rounded">sí</span>' : '<span class="text-stone-400">—</span>';
+        return '<tr class="border-t border-stone-100"><td class="px-2 py-1.5 font-medium text-stone-800">' + (pc.pc_nombre || '—').replace(/</g, '&lt;') + '</td><td class="px-2 py-1.5 text-stone-600">' + (pc.total_afirmaciones || 0) + '</td><td class="px-2 py-1.5 text-emerald-700">' + (pc.shadow_verdes || 0) + '</td><td class="px-2 py-1.5 text-red-700">' + (pc.shadow_falsas || 0) + '</td><td class="px-2 py-1.5 ' + color + '">' + pctFalso + '%</td><td class="px-2 py-1.5 text-stone-600">' + (pc.shadow_cobertura_pct || 0) + '%</td><td class="px-2 py-1.5">' + sancion + '</td></tr>';
+      }).join('');
+      setHTML('mcPcScoreTbody', pcRows || '<tr><td colspan="7" class="text-center text-stone-400 py-3">Sin datos</td></tr>');
+      setText('mcReglasHoy', (estatus.reglas_grabadas_hoy || []).join(', ') || '—');
+      setText('mcCanary', estatus.canary_pieza_10 || '—');
+      setText('mcAlt3', estatus.alt3_panel_firma || '—');
+      setText('mcBranchProt', estatus.branch_protection_reciclean_sistema || '—');
+      setText('mcSnapshot', 'Snapshot: ' + (estatus.ts ? new Date(estatus.ts).toLocaleString('es-CL') : '—'));
+      var sync = document.getElementById('mesaControl9999Sync');
+      if (sync) sync.textContent = 'Sync: ' + new Date().toLocaleTimeString('es-CL');
+    } catch (e) {
+      setHTML('mcFasesTbody', '<tr><td colspan="4" class="text-center text-red-600 py-4">Error: ' + (e?.message || e) + '</td></tr>');
+    }
+  }
+  function setupMesaControl9999AutoRefresh() {
+    var btn = document.getElementById('mesaControl9999Refresh');
+    if (btn) btn.addEventListener('click', loadMesaControl9999);
+    document.querySelectorAll('[data-mc-drill]').forEach(function(card) {
+      card.addEventListener('click', function() {
+        var dest = card.getAttribute('data-mc-drill');
+        var btnDest = document.querySelector('button[data-tab="' + dest + '"]') || document.querySelector('a[data-v4-tab="' + dest + '"]');
+        if (btnDest) btnDest.click();
+      });
+    });
+    setInterval(function() {
+      var sec = document.getElementById('tabMesaControl9999');
+      if (sec && !sec.classList.contains('hidden')) loadMesaControl9999();
+    }, 60000);
+    var perfil = (typeof currentProfile !== 'undefined') ? currentProfile : null;
+    if (perfil === 'dusan' || perfil === 'admin') setTimeout(loadMesaControl9999, 2000);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupMesaControl9999AutoRefresh);
+  } else {
+    setupMesaControl9999AutoRefresh();
+  }
+
+  // ============================================================
   // ALT3 Firmas reglas (R-AUD-084 anti-fabricación · 15-jun PC2)
   // Consume EF firmas-pendientes + RPC firmar_item_pendiente
   // ============================================================
@@ -16809,6 +16996,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     bind('firmas_pend', loadFirmas);
     bind('firmas_reglas', loadFirmasReglas);
+    bind('mesa_control_99_99', loadMesaControl9999);
     bind('tarifas_ext', loadTarifas);
 
     // Form Firma
