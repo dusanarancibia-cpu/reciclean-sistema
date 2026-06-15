@@ -1,0 +1,57 @@
+name: lint-panel-rdo
+
+# 806b6adb · linter sintaxis pre-merge para panel-rdo.html
+# Pareja con R-AUD-064 (validar parse JS pre-merge)
+# Bloqueante: PR con SyntaxError en script inline NO mergea
+
+on:
+  pull_request:
+    branches: [main, prod]
+    paths:
+      - 'public/panel-rdo.html'
+      - '.github/workflows/lint-panel-rdo.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'public/panel-rdo.html'
+
+jobs:
+  lint:
+    name: Validar sintaxis panel-rdo.html
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install html-validate
+        run: npm install -g html-validate@9
+
+      - name: html-validate
+        run: |
+          html-validate public/panel-rdo.html || {
+            echo "::warning::html-validate detectó issues (no bloqueante)"
+            true
+          }
+
+      - name: Parse JS inline (R-AUD-064)
+        run: |
+          node -e "
+            const fs = require('fs');
+            const html = fs.readFileSync('public/panel-rdo.html', 'utf8');
+            const scripts = html.match(/<script[\s\S]*?<\/script>/gi) || [];
+            let errors = 0;
+            scripts.forEach((s, i) => {
+              const code = s.replace(/<script[^>]*>/, '').replace(/<\/script>/, '');
+              if (!code.trim() || code.includes('src=')) return;
+              try { new Function(code); } catch(e) {
+                errors++;
+                console.error('Script ' + i + ': ' + e.message);
+              }
+            });
+            console.log('Total scripts inline: ' + scripts.length + ' · errors: ' + errors);
+            if (errors > 0) process.exit(1);
+          "
