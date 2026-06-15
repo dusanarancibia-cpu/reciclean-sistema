@@ -4040,6 +4040,26 @@
         <div><span class="text-stone-500">ALT3 Panel firma:</span> <span id="mcAlt3" class="font-medium text-stone-800">—</span></div>
         <div><span class="text-stone-500">Branch protection:</span> <span id="mcBranchProt" class="font-medium text-stone-800">—</span></div>
       </div>
+
+      <h3 class="text-sm font-semibold text-stone-700 mt-4 mb-2">🐤 Canarios progresivos · HTML L274+L432#6</h3>
+      <div class="bg-white border border-stone-200 rounded overflow-hidden mb-4">
+        <table class="w-full text-xs">
+          <thead class="bg-stone-100">
+            <tr class="text-left">
+              <th class="px-2 py-1.5 text-stone-600">Flag</th>
+              <th class="px-2 py-1.5 w-20 text-stone-600">Stage</th>
+              <th class="px-2 py-1.5 w-24 text-stone-600">Err/lat ratio</th>
+              <th class="px-2 py-1.5 text-stone-600">Última decisión</th>
+              <th class="px-2 py-1.5 w-12 text-stone-600">Log</th>
+            </tr>
+          </thead>
+          <tbody id="mcCanariosTbody"><tr><td colspan="5" class="text-center text-stone-400 py-3">Cargando…</td></tr></tbody>
+        </table>
+        <div class="px-2 py-1 bg-stone-50 text-[10px] text-stone-500 border-t border-stone-200">
+          Determinístico hash(email)%100 &lt; stage · cron <code>canary_auditor_15min</code> evalúa cada 15 min · rollback automático si err_ratio ≥ 2× o lat_ratio ≥ 1.5×
+        </div>
+      </div>
+
       <div class="text-[10px] text-stone-400 mt-3" id="mcSnapshot">Snapshot: —</div>
     </section>
 
@@ -16697,6 +16717,38 @@ document.addEventListener('DOMContentLoaded', () => {
       setText('mcAlt3', estatus.alt3_panel_firma || '—');
       setText('mcBranchProt', estatus.branch_protection_reciclean_sistema || '—');
       setText('mcSnapshot', 'Snapshot: ' + (estatus.ts ? new Date(estatus.ts).toLocaleString('es-CL') : '—'));
+      // Widget Canarios · consume panel.v_canary_estado (PC2 15-jun · HTML L274+L432#6)
+      try {
+        var rCan = await fetch(SUPA + '/rest/v1/v_canary_estado?select=*&limit=20', { headers: headers });
+        var canarios = await rCan.json();
+        if (Array.isArray(canarios) && canarios.length) {
+          var canRows = canarios.map(function(c) {
+            var stage = c.stage || 0;
+            var stageBadge = stage === 0 ? 'bg-stone-200 text-stone-700' : stage === 100 ? 'bg-emerald-200 text-emerald-800' : stage >= 10 ? 'bg-amber-200 text-amber-800' : 'bg-amber-100 text-amber-700';
+            var errBase = parseFloat((c.baseline_metricas || {}).error_rate) || 0;
+            var errCur = parseFloat((c.current_metricas || {}).error_rate) || 0;
+            var errRatio = errBase > 0 ? (errCur / errBase).toFixed(2) : '—';
+            var latBase = parseFloat((c.baseline_metricas || {}).latencia_p95_ms) || 0;
+            var latCur = parseFloat((c.current_metricas || {}).latencia_p95_ms) || 0;
+            var latRatio = latBase > 0 ? (latCur / latBase).toFixed(2) : '—';
+            var ratioColor = (parseFloat(errRatio) >= 2 || parseFloat(latRatio) >= 1.5) ? 'text-red-700' : 'text-stone-600';
+            var ud = c.ultima_decision || {};
+            var udText = ud.motivo ? (ud.motivo + ' · ' + (ud.decidido_por || '')) : '—';
+            var slugEsc = (c.slug || '').replace(/</g, '&lt;');
+            return '<tr class="border-t border-stone-100"><td class="px-2 py-1.5 font-medium text-stone-800">' + slugEsc
+                 + (c.activo ? '' : ' <span class="text-[10px] text-stone-400">(inactivo)</span>') + '</td>'
+                 + '<td class="px-2 py-1.5"><span class="text-[10px] px-1.5 py-0.5 rounded ' + stageBadge + '">' + stage + '%</span></td>'
+                 + '<td class="px-2 py-1.5 text-[10px] ' + ratioColor + '">' + errRatio + ' · ' + latRatio + '</td>'
+                 + '<td class="px-2 py-1.5 text-stone-500 text-[11px]">' + udText.replace(/</g, '&lt;') + '</td>'
+                 + '<td class="px-2 py-1.5 text-stone-500">' + (c.decisiones_total || 0) + '</td></tr>';
+          }).join('');
+          setHTML('mcCanariosTbody', canRows);
+        } else {
+          setHTML('mcCanariosTbody', '<tr><td colspan="5" class="text-center text-stone-400 py-3">Sin canarios activos · primer flag desde panel.canary_promover(slug)</td></tr>');
+        }
+      } catch (errC) {
+        setHTML('mcCanariosTbody', '<tr><td colspan="5" class="text-center text-red-600 py-3">Error vista: ' + (errC?.message || errC) + '</td></tr>');
+      }
       var sync = document.getElementById('mesaControl9999Sync');
       if (sync) sync.textContent = 'Sync: ' + new Date().toLocaleTimeString('es-CL');
     } catch (e) {
