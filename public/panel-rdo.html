@@ -795,6 +795,11 @@
             <span class="v4-emoji" aria-hidden="true">📝</span>
             <span>Firmas pendientes</span>
           </a>
+          <a href="#" data-v4-tab="firmas_reglas" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">🔏</span>
+            <span>Firmas reglas (ALT3)</span>
+            <span id="firmasReglasBadge" class="ml-auto text-[10px] bg-amber-500 text-white px-1.5 rounded hidden">0</span>
+          </a>
           <a href="#" data-v4-tab="tarifas_ext" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">💰</span>
             <span>Tarifas externas</span>
@@ -1075,6 +1080,7 @@
         <button data-tab="despacho_coord" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabDespachoCoord">🚚 Coord. despacho</button>
         <button data-tab="incidentes_op" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabIncidentesOp">🛠️ Incidentes</button>
         <button data-tab="firmas_pend" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabFirmasPend">📝 Firmas pendientes</button>
+        <button data-tab="firmas_reglas" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabFirmasReglas">🔏 Firmas reglas (ALT3)</button>
         <button data-tab="tarifas_ext" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabTarifasExt">💰 Tarifas externas</button>
         <button data-tab="cumplimiento" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCumplimiento">📋 Trámites</button>
         <button data-tab="herramientas_ext" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabHerramientasExt">🌐 Herramientas ext.</button>
@@ -3856,6 +3862,21 @@
       <div id="firmaLista" class="space-y-2"></div>
     </section>
 
+    <!-- ALT3 Firmas reglas (R-AUD-084) · tab cierre anti-fabricación · solo dusan+admin -->
+    <section id="tabFirmasReglas" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🔏 Firmas de reglas pendientes <span class="text-xs font-normal text-stone-500">(ALT3 · R-AUD-084)</span></h2>
+        <div class="flex items-center gap-2">
+          <span id="firmasReglasUltimaSync" class="text-[10px] text-stone-400"></span>
+          <button id="firmasReglasRefresh" class="px-2 py-1 bg-stone-200 text-stone-700 rounded text-xs hover:bg-stone-300">↻ Refrescar</button>
+        </div>
+      </div>
+      <p class="text-sm text-stone-500 mb-3">Reglas, decisiones técnicas y propuestas que los PCs encolan esperando tu firma textual literal. Al aprobar, el texto queda registrado con SHA256 en <code>panel.firmas_textuales_dusan</code> y se vuelve verificable por <code>panel.validar_firma_dusan()</code>.</p>
+      <div id="firmasReglasLista" class="space-y-2">
+        <div class="text-center text-stone-400 text-sm py-8">Cargando…</div>
+      </div>
+    </section>
+
     <!-- D-FEATURE-CARTERO-007 · Tarifas externas -->
     <section id="tabTarifasExt" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -5095,7 +5116,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas', 'firmas_reglas'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -5853,6 +5874,7 @@ const TAB_SECTION_MAP = {
   despacho_coord: 'tabDespachoCoord',
   incidentes_op: 'tabIncidentesOp',
   firmas_pend: 'tabFirmasPend',
+  firmas_reglas: 'tabFirmasReglas',
   tarifas_ext: 'tabTarifasExt',
   cumplimiento: 'tabCumplimiento',
   herramientas_ext: 'tabHerramientasExt',
@@ -15843,6 +15865,121 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { alert('No se pudo descargar: ' + (e?.message || e)); }
   }
 
+  // ============================================================
+  // ALT3 Firmas reglas (R-AUD-084 anti-fabricación · 15-jun PC2)
+  // Consume EF firmas-pendientes + RPC firmar_item_pendiente
+  // ============================================================
+  var __firmasReglasTimer = null;
+  async function loadFirmasReglas() {
+    var lista = document.getElementById('firmasReglasLista');
+    var sync = document.getElementById('firmasReglasUltimaSync');
+    var badge = document.getElementById('firmasReglasBadge');
+    if (!lista) return;
+    try {
+      var token = (typeof currentUser !== 'undefined' && currentUser && (currentUser.access_token || currentUser.token))
+                  || (sb && sb.auth && sb.auth.getSession ? (await sb.auth.getSession()).data.session?.access_token : null);
+      if (!token) { lista.innerHTML = '<div class="text-center text-amber-700 text-sm py-8">Sin sesión activa · iniciá sesión para ver firmas pendientes.</div>'; return; }
+      var SUPA = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : (typeof SUPABASE_URL_LOCAL !== 'undefined' ? SUPABASE_URL_LOCAL : 'https://eknmtsrtfkzroxnovfqn.supabase.co');
+      var r = await fetch(SUPA + '/functions/v1/firmas-pendientes', { headers: { Authorization: 'Bearer ' + token } });
+      var j = await r.json();
+      if (!r.ok || !j || j.ok === false) { lista.innerHTML = '<div class="text-center text-red-600 text-sm py-6">No pude cargar (' + (j && j.error || r.status) + ')</div>'; return; }
+      var items = j.items || [];
+      if (badge) {
+        if (items.length > 0) { badge.textContent = String(items.length); badge.classList.remove('hidden'); }
+        else { badge.classList.add('hidden'); }
+      }
+      if (sync) sync.textContent = 'Última sync: ' + new Date().toLocaleTimeString('es-CL');
+      if (items.length === 0) {
+        lista.innerHTML = '<div class="text-center text-emerald-700 text-sm py-8">✓ Sin firmas pendientes</div>';
+        return;
+      }
+      lista.innerHTML = items.map(function(it) {
+        var pc = String(it.pc_solicitante || '').replace(/[^A-Za-z0-9_]/g, '');
+        var expira = it.expira_at ? new Date(it.expira_at).toLocaleDateString('es-CL') : '—';
+        var ctx = it.contexto || {};
+        var ctxStr = (ctx.spec ? ('SPEC: ' + ctx.spec) : '') + (ctx.estimacion_h ? (' · ' + ctx.estimacion_h + 'h') : '');
+        var texto = String(it.texto_propuesto || '');
+        var textoEsc = texto.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        var titEsc = String(it.titulo || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return '<div class="bg-white border border-amber-300 rounded p-3" data-fr-id="' + it.id + '">'
+          + '<div class="flex items-start justify-between gap-2">'
+          + '<div class="flex-1 min-w-0">'
+          + '<div class="text-xs text-amber-700 font-mono">#' + it.id + ' · ' + pc + ' · expira ' + expira + '</div>'
+          + '<div class="font-semibold text-stone-800 text-sm mt-1">' + titEsc + '</div>'
+          + (ctxStr ? '<div class="text-[11px] text-stone-500 mt-1">' + ctxStr.replace(/</g, '&lt;') + '</div>' : '')
+          + '<div class="mt-2 p-2 bg-stone-50 border border-stone-200 rounded text-[12px] font-mono text-stone-700 max-h-32 overflow-y-auto whitespace-pre-wrap">' + textoEsc + '</div>'
+          + '</div>'
+          + '<div class="flex flex-col gap-1 shrink-0">'
+          + '<button class="px-2 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700" data-fr-action="aprobar" data-fr-id="' + it.id + '">✓ Aprobar 1-click</button>'
+          + '<button class="px-2 py-1 bg-stone-200 text-stone-700 rounded text-xs hover:bg-stone-300" data-fr-action="rechazar" data-fr-id="' + it.id + '">✗ Rechazar</button>'
+          + '</div>'
+          + '</div>'
+          + '</div>';
+      }).join('');
+      // Bind acciones
+      lista.querySelectorAll('button[data-fr-action]').forEach(function(b) {
+        b.addEventListener('click', function() {
+          var id = parseInt(b.getAttribute('data-fr-id'), 10);
+          var accion = b.getAttribute('data-fr-action');
+          var card = b.closest('[data-fr-id]');
+          var textoEl = card ? card.querySelector('.font-mono.text-stone-700') : null;
+          var texto = textoEl ? textoEl.textContent : '';
+          firmarItemReglas(id, accion, texto);
+        });
+      });
+    } catch (e) {
+      lista.innerHTML = '<div class="text-center text-red-600 text-sm py-6">Error: ' + (e?.message || e) + '</div>';
+    }
+  }
+
+  async function firmarItemReglas(id, accion, textoLiteral) {
+    try {
+      if (accion === 'aprobar') {
+        var ok = confirm('Vas a firmar:\n\n' + textoLiteral.slice(0, 500) + (textoLiteral.length > 500 ? '…' : '') + '\n\nEsto registra el texto literal con SHA256 en panel.firmas_textuales_dusan. ¿Confirmás?');
+        if (!ok) return;
+      } else {
+        var motivo = prompt('Motivo de rechazo (opcional · queda registrado):', '');
+      }
+      var token = (typeof currentUser !== 'undefined' && currentUser && (currentUser.access_token || currentUser.token))
+                  || (sb && sb.auth && sb.auth.getSession ? (await sb.auth.getSession()).data.session?.access_token : null);
+      var SUPA = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : (typeof SUPABASE_URL_LOCAL !== 'undefined' ? SUPABASE_URL_LOCAL : 'https://eknmtsrtfkzroxnovfqn.supabase.co');
+      var body = (accion === 'aprobar')
+        ? { id: id, texto_literal: textoLiteral, aceptar: true }
+        : { id: id, aceptar: false, motivo_rechazo: motivo || 'sin motivo' };
+      var r = await fetch(SUPA + '/functions/v1/firmas-pendientes', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      var j = await r.json();
+      if (!r.ok || j.ok === false) { alert('No pude registrar: ' + (j.error || r.status)); return; }
+      // Refresh inmediato
+      loadFirmasReglas();
+    } catch (e) {
+      alert('Error: ' + (e?.message || e));
+    }
+  }
+
+  // Auto-refresh 30s solo cuando el tab está activo
+  function setupFirmasReglasAutoRefresh() {
+    var btn = document.getElementById('firmasReglasRefresh');
+    if (btn) btn.addEventListener('click', loadFirmasReglas);
+    setInterval(function() {
+      var sec = document.getElementById('tabFirmasReglas');
+      if (sec && !sec.classList.contains('hidden')) loadFirmasReglas();
+    }, 30000);
+    // Badge load inicial (silencioso) si el usuario es dusan/admin
+    var perfil = (typeof currentProfile !== 'undefined') ? currentProfile : null;
+    if (perfil === 'dusan' || perfil === 'admin') {
+      setTimeout(loadFirmasReglas, 1500);
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupFirmasReglasAutoRefresh);
+  } else {
+    setupFirmasReglasAutoRefresh();
+  }
+
   async function loadFirmas() {
     var lista = document.getElementById('firmaLista');
     if (!ready()) { showError(lista, 'Sesión no detectada.'); return; }
@@ -16040,6 +16177,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelector('a[data-v4-tab="' + tab + '"]')?.addEventListener('click', function () { setTimeout(loader, 100); });
     };
     bind('firmas_pend', loadFirmas);
+    bind('firmas_reglas', loadFirmasReglas);
     bind('tarifas_ext', loadTarifas);
 
     // Form Firma
