@@ -687,6 +687,10 @@
             <span class="v4-emoji" aria-hidden="true">🎯</span>
             Oportunidades
           </a>
+          <a href="#" data-v4-tab="mis_visitas" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📅</span>
+            Mis Visitas
+          </a>
           <!-- PC2 11-jun · Trio bandejas Cliente Único Andrea + Comex -->
           <a href="#" data-v4-tab="andrea_dup_clientes" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
             <span class="v4-emoji" aria-hidden="true">🔀</span>
@@ -735,6 +739,10 @@
           <a href="#" data-v4-tab="bandeja_precios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📨</span>
             Bandeja Precios
+          </a>
+          <a href="#" data-v4-tab="precios_vivos" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">💰</span>
+            Precios Vivos
           </a>
           <a href="#" data-v4-tab="entregables" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📤</span>
@@ -879,6 +887,11 @@
             <span class="v4-emoji" aria-hidden="true">📊</span>
             Gantt Viva
           </a>
+          <a href="#" data-v4-tab="borradores_diego" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">📝</span>
+            Borradores Diego
+          </a>
+          <!-- PC2 11-jun PM · entrada 'bandeja_duplicados' (admin-only) eliminada · reemplazada por 'andrea_dup_clientes' (visible a comercial) para que Andrea pueda decidir duplicados desde su silo. Backend sigue activo por si se reactiva. -->
         </div>
       </details>
     </nav>
@@ -1098,6 +1111,7 @@
         <button data-tab="cierres"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCierres">📅 Cierres</button>
         <button data-tab="precios"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabPrecios">💲 Precios</button>
         <button data-tab="bandeja_precios" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabBandejaPrecios">📨 Bandeja Precios</button>
+        <button data-tab="precios_vivos" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabPreciosVivos">💰 Precios Vivos</button>
         <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
         <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
@@ -1902,6 +1916,308 @@
           <div id="bpDrawerMsg" class="hidden text-xs p-2 rounded"></div>
         </div>
       </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA PRECIOS VIVOS (Tramo 10 · Precios V3 · PC5 2026-06-10)
+         Semáforo MG real vs meta por material × sucursal.
+         Fuente: curated.v_margen_vs_costos · Vigía 06:00 + Calibrador lunes.
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabPreciosVivos" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-stone-800">💰 Precios Vivos — semáforo MG por material</h2>
+        <button onclick="window.pvCargar && window.pvCargar()" class="text-sm vo-text-verde-rec hover:underline">↺ Recargar</button>
+      </div>
+
+      <!-- Score Salud Sistema (Etapa 4B · PC5 2026-06-11) -->
+      <div class="flex flex-wrap items-center gap-3 mb-4 p-3 bg-white rounded-md shadow-sm border-l-4 border-emerald-500">
+        <div class="flex-1 min-w-24">
+          <div class="text-xs text-stone-500">🎯 Score Salud</div>
+          <div id="pvScoreNum" class="text-2xl font-bold text-stone-800">—<span class="text-sm font-normal text-stone-400">/100</span></div>
+        </div>
+        <div class="text-center px-3 border-l border-stone-100">
+          <div class="text-xs text-stone-500">📦 Caja</div>
+          <div id="pvCajaDias" class="text-lg font-semibold text-stone-700">—<span class="text-xs font-normal">d</span></div>
+        </div>
+        <div class="text-center px-3 border-l border-stone-100">
+          <div class="text-xs text-stone-500">🔔 Alertas</div>
+          <div id="pvAlertasActivas" class="text-lg font-semibold text-stone-700">—</div>
+        </div>
+        <div class="text-center px-3 border-l border-stone-100">
+          <div class="text-xs text-stone-500">⏳ Triages CEO</div>
+          <div id="pvTriagesPending" class="text-lg font-semibold text-amber-600">—</div>
+        </div>
+        <button onclick="window.pvCargarScore && window.pvCargarScore()" class="text-xs text-stone-400 hover:text-stone-600 ml-auto">↺</button>
+      </div>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div class="bg-white p-3 rounded-md shadow-sm">
+          <div class="text-xs text-stone-500">🟢 Verde (sobre meta)</div>
+          <div id="pvVerde" class="text-2xl font-bold text-emerald-600">—</div>
+        </div>
+        <div class="bg-white p-3 rounded-md shadow-sm">
+          <div class="text-xs text-stone-500">🟡 Amarillo (sobre piso)</div>
+          <div id="pvAmarillo" class="text-2xl font-bold text-amber-500">—</div>
+        </div>
+        <div class="bg-white p-3 rounded-md shadow-sm">
+          <div class="text-xs text-stone-500">🔴 Rojo (bajo piso)</div>
+          <div id="pvRojo" class="text-2xl font-bold text-red-600">—</div>
+        </div>
+        <div class="bg-white p-3 rounded-md shadow-sm">
+          <div class="text-xs text-stone-500">MG promedio</div>
+          <div id="pvMgProm" class="text-2xl font-bold text-stone-700">—</div>
+        </div>
+      </div>
+
+      <!-- Filtros + Toggle Vista -->
+      <div class="flex flex-wrap gap-2 mb-3">
+        <div class="flex rounded border border-stone-300 overflow-hidden text-sm">
+          <button id="pvVistaBtn1" onclick="window.pvSetVista && window.pvSetVista('material')"
+            class="px-3 py-1 bg-stone-700 text-white font-medium">Material</button>
+          <button id="pvVistaBtn2" onclick="window.pvSetVista && window.pvSetVista('categoria')"
+            class="px-3 py-1 bg-white text-stone-600 hover:bg-stone-50">Categoría</button>
+        </div>
+        <select id="pvFiltroSucursal" onchange="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1">
+          <option value="">Todas las sucursales</option>
+          <option value="cerrillos">Cerrillos</option>
+          <option value="maipu">Maipú</option>
+          <option value="talca">Talca</option>
+          <option value="puerto_montt">Puerto Montt</option>
+        </select>
+        <select id="pvFiltroSemaforo" onchange="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1">
+          <option value="">Todos los semáforos</option>
+          <option value="rojo">🔴 Solo rojos</option>
+          <option value="amarillo">🟡 Solo amarillos</option>
+          <option value="verde">🟢 Solo verdes</option>
+        </select>
+        <input type="text" id="pvBuscar" placeholder="Buscar material..." oninput="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1 flex-1 min-w-36">
+      </div>
+
+      <!-- Tabla -->
+      <div class="overflow-x-auto rounded-md shadow-sm">
+        <table class="min-w-full text-sm">
+          <thead class="bg-stone-100 text-stone-600 text-xs uppercase">
+            <tr>
+              <th class="px-3 py-2 text-left">Material</th>
+              <th class="px-3 py-2 text-left">Sucursal</th>
+              <th class="px-3 py-2 text-right">Compra</th>
+              <th class="px-3 py-2 text-right">Venta</th>
+              <th class="px-3 py-2 text-right">MG real</th>
+              <th class="px-3 py-2 text-right">Meta MG</th>
+              <th class="px-3 py-2 text-right">vs Meta</th>
+              <th class="px-3 py-2 text-center">Semáforo</th>
+              <th class="px-3 py-2 text-left">Desde</th>
+            </tr>
+          </thead>
+          <tbody id="pvTbody">
+            <tr><td colspan="9" class="px-3 py-6 text-center text-stone-400">Cargando datos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-stone-400 mt-2">Fuente: curated.v_margen_vs_costos · Actualiza Vigía 06:00 AM + Calibrador cada lunes</p>
+
+      <!-- Bandeja CEO (Etapa 4B · PC5 2026-06-11) -->
+      <div class="mt-6 border border-amber-200 rounded-lg overflow-hidden">
+        <div class="bg-amber-50 px-4 py-2 flex items-center justify-between">
+          <span class="font-semibold text-amber-800 text-sm">📬 Bandeja CEO — aprobaciones pendientes</span>
+          <span id="pvBandejaCnt" class="text-xs bg-amber-200 text-amber-900 rounded-full px-2 py-0.5">...</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs">
+            <thead class="bg-stone-50 text-stone-500 uppercase">
+              <tr>
+                <th class="px-3 py-2 text-left">Material</th>
+                <th class="px-3 py-2 text-left">Sucursal</th>
+                <th class="px-3 py-2 text-right">Precio actual</th>
+                <th class="px-3 py-2 text-right">Precio propuesto</th>
+                <th class="px-3 py-2 text-right">MG resultante</th>
+                <th class="px-3 py-2 text-center">Tipo</th>
+                <th class="px-3 py-2"></th>
+              </tr>
+            </thead>
+            <tbody id="pvBandejaTbody">
+              <tr><td colspan="7" class="px-3 py-4 text-center text-stone-400">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="bg-stone-50 px-4 py-2 flex items-center gap-2">
+          <button onclick="window.pvAprobarTodos && window.pvAprobarTodos()"
+            class="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded hover:bg-emerald-700 font-medium">
+            ✅ Aprobar todos (<span id="pvBandejaCnt2">—</span>)
+          </button>
+          <span class="text-xs text-stone-400">Acción 0 del plan: libera dashboard sin cambiar precios</span>
+        </div>
+      </div>
+
+      <!-- Calibrador CEO (Etapa 4B · PC5 2026-06-11 · actualizado Lote 13) -->
+      <div class="mt-4 border border-blue-200 rounded-lg overflow-hidden">
+        <div class="bg-blue-50 px-4 py-2 flex items-center justify-between">
+          <span class="font-semibold text-blue-800 text-sm">🤖 Calibrador — Rutas CEO (plásticos + metales)</span>
+          <span class="text-xs text-blue-600">Score actual: <span id="pvCalibradorScore">—</span>/100</span>
+        </div>
+        <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="border border-emerald-200 rounded-lg p-3 bg-white">
+            <div class="text-sm font-semibold text-stone-700 mb-1">Ruta A — Plásticos (+4.0 pts)</div>
+            <div class="text-xs text-stone-500 mb-2">5 plásticos rojos × 4 sucursales → margen 30% · score proyectado <strong>75.0</strong></div>
+            <button onclick="window.pvAprobarCalibradorA && window.pvAprobarCalibradorA()"
+              class="w-full text-xs bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700 font-medium">
+              ✅ Aprobar Ruta A → 75.0 pts
+            </button>
+          </div>
+          <div class="border border-blue-200 rounded-lg p-3 bg-white">
+            <div class="text-sm font-semibold text-stone-700 mb-1">Ruta B — Plásticos + Calibrador (+9.9 pts)</div>
+            <div class="text-xs text-stone-500 mb-2">Ruta A + 10 cobres/fierros brecha ≤3 pts · score proyectado <strong>80.9</strong></div>
+            <button onclick="window.pvAprobarCalibradorB && window.pvAprobarCalibradorB()"
+              class="w-full text-xs bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 font-medium">
+              🚀 Aprobar Ruta B → 80.9 pts
+            </button>
+          </div>
+        </div>
+        <div class="bg-stone-50 px-4 py-1.5 text-xs text-stone-400">
+          Ruta A: UPDATE plásticos margen_meta=30% · Ruta B: Ruta A + f_batch_aprobar_calibrador (10 cobres/fierros brecha ≤3)
+        </div>
+      </div>
+
+      <!-- Acelerador/Freno (PC5 2026-06-11) -->
+      <div class="mt-4 border-2 border-amber-300 rounded-lg p-4 bg-amber-50">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="text-2xl">🟡</div>
+          <div>
+            <div class="font-bold text-amber-800 text-sm">FRENO ACTIVO — esperando aprobación CEO</div>
+            <div class="text-xs text-amber-700">Trabajo autónomo PC5 agotado · próxima subida requiere decisión Dusan</div>
+          </div>
+          <div class="ml-auto text-right">
+            <div class="text-xs text-stone-500">Score actual</div>
+            <div id="pvAcelScore" class="text-xl font-bold text-emerald-700">71.0</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+          <div class="bg-white rounded p-2 border border-stone-200">
+            <div class="font-semibold text-stone-600 mb-1">🔓 Para desbloquear</div>
+            <div class="text-stone-500">Aprobar Ruta A o B en el calibrador de arriba. ~5–10 min CEO.</div>
+          </div>
+          <div class="bg-white rounded p-2 border border-stone-200">
+            <div class="font-semibold text-stone-600 mb-1">📈 Ganancia disponible</div>
+            <div class="text-stone-500">Ruta A: <span class="text-emerald-700 font-bold">+4.0 pts → 75.0</span><br>Ruta B: <span class="text-blue-700 font-bold">+9.9 pts → 80.9</span></div>
+          </div>
+          <div class="bg-white rounded p-2 border border-stone-200">
+            <div class="font-semibold text-stone-600 mb-1">🛑 Qué bloquea</div>
+            <div class="text-stone-500">20 rojos (plásticos) + 124 amarillos (metales)<br>= <span id="pvBandejaFrenos">145</span> propuestas en bandeja CEO</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Score del Sistema Completo (PC5 2026-06-11) -->
+      <div class="mt-4 bg-white border border-stone-200 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-sm font-semibold text-stone-700">📊 Score del sistema completo — escala de madurez</div>
+          <div class="text-xs text-stone-400">Informe Maestro Precios · firmado 26-may-2026</div>
+        </div>
+        <div class="flex items-center gap-3 mb-2">
+          <span class="text-xs text-stone-400 w-16 text-right">−2.057<br><span class="text-stone-300">inicio</span></span>
+          <div class="flex-1 bg-stone-100 rounded-full h-5 relative overflow-hidden">
+            <div class="absolute inset-0 flex">
+              <div style="width:12%" class="bg-red-300 h-full"></div>
+              <div id="pvSistemaBar" style="width:13%" class="bg-emerald-500 h-full transition-all duration-700"></div>
+            </div>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <span id="pvSistemaLabel" class="text-xs font-bold text-white drop-shadow">−1.169 pts actual</span>
+            </div>
+          </div>
+          <span class="text-xs text-stone-400 w-16">+4.987<br><span class="text-stone-300">potencial</span></span>
+        </div>
+        <div class="flex gap-4 text-xs text-stone-500">
+          <span>✅ +888 pts PC5 (Lotes 1-13)</span>
+          <span>🟡 +9.9 pts CEO (Rutas A+B)</span>
+          <span>⏸ +1.042 pts Pablo (post 15-jun)</span>
+          <span>📦 +4.046 pts futuro (24 inclusiones)</span>
+        </div>
+      </div>
+
+      <!-- Flujo Operativo 10 pasos (PC5 2026-06-11) -->
+      <div class="mt-4 bg-white border border-stone-200 rounded-lg p-4">
+        <div class="text-sm font-semibold text-stone-700 mb-3">🔄 Flujo operativo — estado en tiempo real</div>
+        <div class="overflow-x-auto">
+          <div class="flex items-start gap-0.5 min-w-max text-xs">
+            <!-- paso 1 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center text-emerald-700 font-bold text-xs">1</div>
+              <div class="text-center text-stone-600 font-medium mt-1">Captura</div>
+              <div class="text-center text-stone-400 leading-tight">Vales portal ✅</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 2 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center text-emerald-700 font-bold text-xs">2</div>
+              <div class="text-center text-stone-600 font-medium mt-1">Normaliza</div>
+              <div class="text-center text-stone-400 leading-tight">Aliases ✅</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 3 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-amber-100 border-2 border-amber-500 flex items-center justify-center text-amber-700 font-bold text-xs">3</div>
+              <div class="text-center text-stone-600 font-medium mt-1">Bandeja</div>
+              <div class="text-center text-amber-600 font-semibold leading-tight"><span id="pvFlujoCnt">145</span> ⏳</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 4 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-amber-100 border-2 border-amber-500 flex items-center justify-center text-amber-700 font-bold text-xs">4</div>
+              <div class="text-center text-stone-600 font-medium mt-1">Aprobación</div>
+              <div class="text-center text-amber-600 leading-tight">CEO ⏳</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 5 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-stone-100 border-2 border-stone-300 flex items-center justify-center text-stone-400 font-bold text-xs">5</div>
+              <div class="text-center text-stone-500 font-medium mt-1">Publicación</div>
+              <div class="text-center text-stone-400 leading-tight">Calibrador ⏸</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 6 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-stone-100 border-2 border-stone-300 flex items-center justify-center text-stone-400 font-bold text-xs">6</div>
+              <div class="text-center text-stone-500 font-medium mt-1">Cotización</div>
+              <div class="text-center text-stone-400 leading-tight">CRM ⏸</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 7 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-stone-100 border-2 border-stone-300 flex items-center justify-center text-stone-400 font-bold text-xs">7</div>
+              <div class="text-center text-stone-500 font-medium mt-1">Cierre</div>
+              <div class="text-center text-stone-400 leading-tight">Oportunidad ⏸</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 8 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-stone-100 border-2 border-stone-300 flex items-center justify-center text-stone-400 font-bold text-xs">8</div>
+              <div class="text-center text-stone-500 font-medium mt-1">Facturación</div>
+              <div class="text-center text-stone-400 leading-tight">DTE/SII ⏸</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 9 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center text-emerald-700 font-bold text-xs">9</div>
+              <div class="text-center text-stone-600 font-medium mt-1">Auditoría</div>
+              <div class="text-center text-stone-400 leading-tight">Score ✅</div>
+            </div>
+            <div class="text-stone-300 mt-3 text-sm">→</div>
+            <!-- paso 10 -->
+            <div class="flex flex-col items-center w-16">
+              <div class="w-8 h-8 rounded-full bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center text-emerald-700 font-bold text-xs">10</div>
+              <div class="text-center text-stone-600 font-medium mt-1">Retroalim.</div>
+              <div class="text-center text-stone-400 leading-tight">Vigía ✅</div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-2 text-xs text-stone-400 flex gap-4">
+          <span>✅ Activo (5 pasos)</span>
+          <span>⏳ Freno CEO (2 pasos)</span>
+          <span>⏸ Pablo post-15-jun (3 pasos)</span>
+        </div>
+      </div>
+
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -5910,6 +6226,7 @@ function setupTabs() {
       if (tabId === 'entregables') initEntregables();
       if (tabId === 'bandeja_dieg') initBandejaDiego();
       if (tabId === 'bandeja_precios') initBandejaPrecios();
+      if (tabId === 'precios_vivos')  window.initPreciosVivos && window.initPreciosVivos();
       if (tabId === 'ops_diarias')   initOpsDiarias();
       if (tabId === 'dieguito')  initDieguito();
       if (tabId === 'comercial')  initTabComercial();
@@ -12605,11 +12922,24 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      const j = await r.json();
-      if (!r.ok) return { error: j.error || `HTTP ${r.status}` };
-      return j;
+      // 831b0c40 · mensajes especificos por status para que Andrea/Jair sepan que hacer
+      if (!r.ok) {
+        let detalle = '';
+        try { const j = await r.json(); detalle = j.error || j.message || ''; } catch (_) {}
+        if (r.status === 401) return { error: 'Tu sesion caduco. Cerra y volve a abrir el panel para que Diego te entienda.', code: 401 };
+        if (r.status === 403) return { error: 'Diego no tiene permiso para esta accion con tu perfil. Avisame por WhatsApp.', code: 403 };
+        if (r.status === 413) return { error: 'El archivo o mensaje es muy grande (>20 MB). Mandalo en partes mas chicas.', code: 413 };
+        if (r.status >= 500)  return { error: 'Diego esta caido. Lo estoy revisando · probate en 5 min.', code: r.status };
+        return { error: detalle || `Diego no responde (HTTP ${r.status})`, code: r.status };
+      }
+      return await r.json();
     } catch (e) {
-      return { error: String(e?.message || e) };
+      // Network error mas amigable
+      const msg = String(e?.message || e);
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+        return { error: 'No hay conexion con Diego. Revisa tu Internet.', code: 'NET' };
+      }
+      return { error: msg };
     }
   }
 
@@ -13261,6 +13591,300 @@ document.addEventListener('DOMContentLoaded', () => {
   window.bpAprobar          = bpAprobar;
   window.bpRechazar         = bpRechazar;
   window.bpDebouncedSearch  = bpDebouncedSearch;
+})();
+</script>
+
+<!-- ============================================================
+     Tab Precios Vivos (Tramo 10 · Precios V3 · PC5 2026-06-10)
+     Lee curated.v_margen_vs_costos · semáforo + filtros + KPIs
+============================================================ -->
+<script>
+(function () {
+  let pvData = [];
+  let pvTimer = null;
+  const REFRESH_MS = 5 * 60 * 1000; // 5 min
+
+  async function pvCargar() {
+    if (typeof sb === 'undefined' || !sb) return;
+    const tbody = document.getElementById('pvTbody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-4 text-center text-stone-400">Cargando...</td></tr>';
+    try {
+      const { data, error } = await sb.schema('curated').from('v_margen_vs_costos').select('*');
+      if (error) throw error;
+      pvData = data || [];
+      pvActualizarKPIs();
+      pvFiltrar();
+    } catch (e) {
+      console.warn('[PreciosVivos] error:', e);
+      if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-4 text-center text-red-400">Error al cargar: ' + String(e).slice(0, 80) + '</td></tr>';
+    }
+  }
+
+  function pvActualizarKPIs() {
+    const verde   = pvData.filter(r => r.semaforo?.includes('verde')).length;
+    const amarillo = pvData.filter(r => r.semaforo?.includes('amarillo')).length;
+    const rojo    = pvData.filter(r => r.semaforo?.includes('rojo')).length;
+    const mgProm  = pvData.length
+      ? (pvData.reduce((s, r) => s + Number(r.mg_real_pct || 0), 0) / pvData.length).toFixed(1)
+      : null;
+    const el = (id) => document.getElementById(id);
+    if (el('pvVerde'))   el('pvVerde').textContent   = verde;
+    if (el('pvAmarillo')) el('pvAmarillo').textContent = amarillo;
+    if (el('pvRojo'))    el('pvRojo').textContent    = rojo;
+    if (el('pvMgProm'))  el('pvMgProm').textContent  = mgProm !== null ? mgProm + '%' : '—';
+  }
+
+  let pvVista = 'material';
+
+  function pvSetVista(v) {
+    pvVista = v;
+    const b1 = document.getElementById('pvVistaBtn1');
+    const b2 = document.getElementById('pvVistaBtn2');
+    if (b1 && b2) {
+      b1.className = v === 'material'  ? 'px-3 py-1 bg-stone-700 text-white font-medium' : 'px-3 py-1 bg-white text-stone-600 hover:bg-stone-50';
+      b2.className = v === 'categoria' ? 'px-3 py-1 bg-stone-700 text-white font-medium' : 'px-3 py-1 bg-white text-stone-600 hover:bg-stone-50';
+    }
+    pvFiltrar();
+  }
+
+  function pvFiltrar() {
+    const tbody = document.getElementById('pvTbody');
+    if (!tbody) return;
+    const suc = (document.getElementById('pvFiltroSucursal') || {}).value || '';
+    const sem = (document.getElementById('pvFiltroSemaforo') || {}).value || '';
+    const bus = ((document.getElementById('pvBuscar') || {}).value || '').toLowerCase();
+
+    let rows = pvData;
+    if (suc) rows = rows.filter(r => r.sucursal_id === suc);
+    if (sem) rows = rows.filter(r => (r.semaforo || '').toLowerCase().includes(sem));
+    if (bus) rows = rows.filter(r => (r.nombre || r.material_id || '').toLowerCase().includes(bus));
+
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-4 text-center text-stone-400">Sin resultados.</td></tr>';
+      return;
+    }
+
+    const fmtClp = (v) => v != null ? '$' + Number(v).toLocaleString('es-CL') + '/kg' : '—';
+    const fmtPct = (v) => v != null ? Number(v).toFixed(1) + '%' : '—';
+    const fmtDelta = (v) => {
+      if (v == null) return '—';
+      const n = Number(v);
+      return (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
+    };
+    const rowBg = (s) => {
+      if ((s || '').includes('rojo'))     return 'bg-red-50';
+      if ((s || '').includes('amarillo')) return 'bg-amber-50';
+      return 'bg-emerald-50';
+    };
+    const semIcon = (s) => {
+      if ((s || '').includes('rojo'))     return '🔴';
+      if ((s || '').includes('amarillo')) return '🟡';
+      return '🟢';
+    };
+
+    if (pvVista === 'categoria') {
+      const bycat = {};
+      rows.forEach(r => {
+        const cat = r.categoria || 'sin_categoría';
+        if (!bycat[cat]) bycat[cat] = { verde: 0, amarillo: 0, rojo: 0, total: 0, mg: [], contrib: 0 };
+        const g = bycat[cat];
+        g.total++;
+        g.contrib += Number(r.contribucion_estimada_clp || 0);
+        g.mg.push(Number(r.mg_real_pct || 0));
+        if ((r.semaforo || '').includes('rojo'))     g.rojo++;
+        else if ((r.semaforo || '').includes('amarillo')) g.amarillo++;
+        else g.verde++;
+      });
+      const thead = document.querySelector('#pvTbody')?.closest('table')?.querySelector('thead');
+      if (thead) thead.innerHTML = '<tr class="bg-stone-100 text-stone-600 text-xs uppercase"><th class="px-3 py-2 text-left">Categoría</th><th class="px-3 py-2 text-center">🟢</th><th class="px-3 py-2 text-center">🟡</th><th class="px-3 py-2 text-center">🔴</th><th class="px-3 py-2 text-right">MG prom</th><th class="px-3 py-2 text-right">Total</th><th class="px-3 py-2 text-right">Contrib. est.</th></tr>';
+      tbody.innerHTML = Object.entries(bycat).sort((a,b) => b[1].rojo - a[1].rojo).map(([cat, g]) => {
+        const mgProm = g.mg.length ? (g.mg.reduce((s,v) => s+v, 0) / g.mg.length).toFixed(1) + '%' : '—';
+        const contrib = g.contrib ? '$' + Math.round(g.contrib / 1000) + 'K' : '—';
+        const semCat = g.rojo > 0 ? 'rojo' : g.amarillo > 0 ? 'amarillo' : 'verde';
+        return `<tr class="${rowBg(semCat)} border-b border-stone-100 hover:bg-stone-50">
+          <td class="px-3 py-2 font-semibold text-stone-800">${semIcon(semCat)} ${cat.replace(/_/g,' ')}</td>
+          <td class="px-3 py-2 text-center font-bold text-emerald-600">${g.verde}</td>
+          <td class="px-3 py-2 text-center font-bold text-amber-500">${g.amarillo}</td>
+          <td class="px-3 py-2 text-center font-bold text-red-600">${g.rojo}</td>
+          <td class="px-3 py-2 text-right text-stone-600">${mgProm}</td>
+          <td class="px-3 py-2 text-right text-stone-500">${g.total}</td>
+          <td class="px-3 py-2 text-right text-stone-500">${contrib}</td>
+        </tr>`;
+      }).join('');
+    } else {
+      const thead = document.querySelector('#pvTbody')?.closest('table')?.querySelector('thead');
+      if (thead) thead.innerHTML = '<tr class="bg-stone-100 text-stone-600 text-xs uppercase"><th class="px-3 py-2 text-left">Material</th><th class="px-3 py-2 text-left">Sucursal</th><th class="px-3 py-2 text-right">Compra</th><th class="px-3 py-2 text-right">Venta</th><th class="px-3 py-2 text-right">MG real</th><th class="px-3 py-2 text-right">Meta MG</th><th class="px-3 py-2 text-right">vs Meta</th><th class="px-3 py-2 text-center">Semáforo</th><th class="px-3 py-2 text-left">Desde</th></tr>';
+      tbody.innerHTML = rows.map(r => `
+        <tr class="${rowBg(r.semaforo)} hover:bg-stone-50 border-b border-stone-100">
+          <td class="px-3 py-2 font-medium text-stone-800">${r.nombre || r.material_id}</td>
+          <td class="px-3 py-2 text-stone-600">${r.sucursal_nombre || r.sucursal_id}</td>
+          <td class="px-3 py-2 text-right font-mono text-stone-700">${fmtClp(r.precio_compra_clp)}</td>
+          <td class="px-3 py-2 text-right font-mono text-stone-700">${fmtClp(r.precio_venta_clp)}</td>
+          <td class="px-3 py-2 text-right font-semibold">${fmtPct(r.mg_real_pct)}</td>
+          <td class="px-3 py-2 text-right text-stone-500">${fmtPct(r.mg_meta_pct)}</td>
+          <td class="px-3 py-2 text-right ${Number(r.mg_vs_meta) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${fmtDelta(r.mg_vs_meta)}</td>
+          <td class="px-3 py-2 text-center text-base">${r.semaforo || '—'}</td>
+          <td class="px-3 py-2 text-stone-400 text-xs">${r.vigencia_desde || '—'}</td>
+        </tr>`).join('');
+    }
+  }
+
+  function initPreciosVivos() {
+    pvCargar();
+    if (pvTimer) clearInterval(pvTimer);
+    pvTimer = setInterval(() => {
+      const sec = document.getElementById('tabPreciosVivos');
+      if (sec && !sec.classList.contains('hidden')) pvCargar();
+    }, REFRESH_MS);
+  }
+
+  window.pvCargar        = pvCargar;
+  window.pvFiltrar       = pvFiltrar;
+  window.pvSetVista      = pvSetVista;
+  window.initPreciosVivos = initPreciosVivos;
+})();
+</script>
+
+<!-- Etapa 4B: Bandeja CEO + Calibrador + Score KPI (PC5 2026-06-11) -->
+<script>
+(function() {
+  const SB_URL = window.SUPABASE_URL || document.querySelector('meta[name="supabase-url"]')?.content || '';
+  const SB_KEY = window.SUPABASE_ANON_KEY || document.querySelector('meta[name="supabase-key"]')?.content || '';
+
+  async function sbRpc(fn, params) {
+    const r = await fetch(SB_URL + '/rest/v1/rpc/' + fn, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify(params || {})
+    });
+    return r.json();
+  }
+
+  async function sbSelect(path) {
+    const r = await fetch(SB_URL + '/rest/v1/' + path, {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+    });
+    return r.json();
+  }
+
+  async function pvCargarScore() {
+    try {
+      const data = await sbSelect('v_metricas_ejecutivo_precios?select=score_salud_100,caja_dias_cobertura,auditoria_alertas_activas&limit=1');
+      const row = Array.isArray(data) ? data[0] : null;
+      if (!row) return;
+      const scoreEl = document.getElementById('pvScoreNum');
+      const score = parseFloat(row.score_salud_100 || 0).toFixed(1);
+      if (scoreEl) {
+        scoreEl.innerHTML = score + '<span class="text-sm font-normal text-stone-400">/100</span>';
+        scoreEl.className = 'text-2xl font-bold ' + (score >= 70 ? 'text-emerald-600' : score >= 50 ? 'text-amber-600' : 'text-red-600');
+      }
+      const cajaDias = document.getElementById('pvCajaDias');
+      if (cajaDias) cajaDias.innerHTML = (row.caja_dias_cobertura || '—') + '<span class="text-xs font-normal">d</span>';
+      const alertas = document.getElementById('pvAlertasActivas');
+      if (alertas) alertas.textContent = row.auditoria_alertas_activas ?? '—';
+      if (document.getElementById('pvCalibradorScore')) {
+        document.getElementById('pvCalibradorScore').textContent = score;
+      }
+      if (document.getElementById('pvAcelScore')) {
+        document.getElementById('pvAcelScore').textContent = score;
+      }
+    } catch(e) { console.error('pvCargarScore', e); }
+  }
+
+  async function pvCargarBandeja() {
+    const tbody = document.getElementById('pvBandejaTbody');
+    if (!tbody) return;
+    try {
+      const data = await sbSelect('v_bandeja_resumen?estado=eq.pendiente&select=id,material_nombre,sucursal_nombre,precio_vigente,precio_propuesto,margen_propuesto,tipo_display&order=categoria,material_id');
+      const rows = Array.isArray(data) ? data : [];
+      const cnt = rows.length;
+      ['pvBandejaCnt','pvBandejaCnt2'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = cnt;
+      });
+      if (document.getElementById('pvTriagesPending')) {
+        document.getElementById('pvTriagesPending').textContent = cnt;
+      }
+      ['pvBandejaFrenos','pvFlujoCnt'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = cnt;
+      });
+      if (!cnt) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-emerald-600 font-medium">✅ Bandeja vacía — todo aprobado</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map(r => {
+        const delta = r.precio_propuesto - (r.precio_vigente || 0);
+        const deltaStr = delta >= 0 ? '+$' + delta.toLocaleString('es-CL') : '-$' + Math.abs(delta).toLocaleString('es-CL');
+        return '<tr class="border-t border-stone-100 hover:bg-stone-50">' +
+          '<td class="px-3 py-2">' + (r.material_nombre || '') + '</td>' +
+          '<td class="px-3 py-2 text-stone-500">' + (r.sucursal_nombre || '') + '</td>' +
+          '<td class="px-3 py-2 text-right text-stone-400">$' + (r.precio_vigente || '—').toLocaleString('es-CL') + '</td>' +
+          '<td class="px-3 py-2 text-right font-medium">$' + (r.precio_propuesto || 0).toLocaleString('es-CL') + '</td>' +
+          '<td class="px-3 py-2 text-right ' + (parseFloat(r.margen_propuesto||0) >= 10 ? 'text-emerald-600' : 'text-amber-600') + '">' + parseFloat(r.margen_propuesto||0).toFixed(1) + '%</td>' +
+          '<td class="px-3 py-2 text-center"><span class="text-xs bg-blue-100 text-blue-700 rounded px-1.5 py-0.5">' + (r.tipo_display||'') + '</span></td>' +
+          '<td class="px-3 py-2"><button onclick="window.pvAprobarItem && window.pvAprobarItem(\'' + r.id + '\')" class="text-xs text-emerald-600 hover:underline">✓</button></td>' +
+          '</tr>';
+      }).join('');
+    } catch(e) {
+      console.error('pvCargarBandeja', e);
+      if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-red-400">Error al cargar bandeja</td></tr>';
+    }
+  }
+
+  async function pvAprobarItem(id) {
+    try {
+      const res = await sbRpc('f_aprobar_bandeja_item', { p_id: id, p_decision_by: 'dusan', p_decision: 'aprobado' });
+      if (res && res.ok) { pvCargarBandeja(); pvCargarScore(); }
+      else alert('Error: ' + (res && res.error ? res.error : JSON.stringify(res)));
+    } catch(e) { alert('Error al aprobar: ' + e.message); }
+  }
+
+  async function pvAprobarTodos() {
+    if (!confirm('¿Aprobar todos los ' + (document.getElementById('pvBandejaCnt2')?.textContent || '?') + ' items pendientes?')) return;
+    try {
+      const res = await sbRpc('f_aprobar_todos_pendientes', { p_decision_by: 'dusan', p_decision: 'aprobado' });
+      if (res && res.ok) {
+        pvCargarBandeja();
+        pvCargarScore();
+        alert('✅ ' + res.procesados + ' items aprobados');
+      } else {
+        alert('Error: ' + JSON.stringify(res));
+      }
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  async function pvAprobarCalibradorA() {
+    if (!confirm('¿Aprobar Ruta A?\n5 plásticos rojos × 4 sucursales → margen 30%.\nScore proyectado: 75.0 (+4.0 pts).\n\n⚠️ Esta acción cambia precios en producción.')) return;
+    try {
+      const res = await sbRpc('f_batch_aprobar_calibrador', {});
+      alert('✅ Ruta A aplicada. ' + JSON.stringify(res));
+      pvCargarScore();
+      pvCargarBandeja();
+    } catch(e) { alert('Error Ruta A: ' + e.message); }
+  }
+
+  async function pvAprobarCalibradorB() {
+    if (!confirm('¿Aprobar Ruta B CEO Full?\nRuta A (5 plásticos) + 10 calibrador cobres/fierros brecha ≤3 pts.\nScore proyectado: 80.9 (+9.9 pts).\n\n⚠️ Esta acción cambia precios en producción.')) return;
+    try {
+      const res = await sbRpc('f_aprobar_todos_pendientes', { p_decision_by: 'dusan', p_decision: 'aprobado' });
+      alert('✅ Ruta B aplicada: ' + JSON.stringify(res));
+      pvCargarScore();
+      pvCargarBandeja();
+    } catch(e) { alert('Error Ruta B: ' + e.message); }
+  }
+
+  window.pvCargarScore    = pvCargarScore;
+  window.pvCargarBandeja  = pvCargarBandeja;
+  window.pvAprobarItem    = pvAprobarItem;
+  window.pvAprobarTodos   = pvAprobarTodos;
+  window.pvAprobarCalibradorA = pvAprobarCalibradorA;
+  window.pvAprobarCalibradorB = pvAprobarCalibradorB;
+
+  document.addEventListener('DOMContentLoaded', function() {
+    pvCargarScore();
+    pvCargarBandeja();
+  });
 })();
 </script>
 
@@ -15220,7 +15844,14 @@ document.addEventListener('DOMContentLoaded', () => {
       var data = await r.json().catch(function () { return null; });
       if (!r.ok || !data || !data.ok) {
         resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
-        resp.textContent = (data && data.error) ? data.error : 'No pude enviar. Probá de nuevo en un minuto.';
+        // 831b0c40 · mensaje especifico por status
+        var msgErr;
+        if (r.status === 401) msgErr = 'Tu sesion caduco. Cerra y abri el panel de nuevo.';
+        else if (r.status === 403) msgErr = 'No tenes permiso para mandar esto. Avisame por WhatsApp.';
+        else if (r.status === 413) msgErr = 'El mensaje es muy largo (>20 MB). Mandalo en partes.';
+        else if (r.status >= 500) msgErr = 'Diego esta caido. Probate en 5 min.';
+        else msgErr = (data && data.error) ? data.error : ('No pude enviar (HTTP ' + r.status + '). Reintenta en 1 min.');
+        resp.textContent = msgErr;
         resp.style.display = 'block';
         submitBtn.disabled = false;
         submitBtn.textContent = 'Enviar';
