@@ -12922,11 +12922,24 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      const j = await r.json();
-      if (!r.ok) return { error: j.error || `HTTP ${r.status}` };
-      return j;
+      // 831b0c40 · mensajes especificos por status para que Andrea/Jair sepan que hacer
+      if (!r.ok) {
+        let detalle = '';
+        try { const j = await r.json(); detalle = j.error || j.message || ''; } catch (_) {}
+        if (r.status === 401) return { error: 'Tu sesion caduco. Cerra y volve a abrir el panel para que Diego te entienda.', code: 401 };
+        if (r.status === 403) return { error: 'Diego no tiene permiso para esta accion con tu perfil. Avisame por WhatsApp.', code: 403 };
+        if (r.status === 413) return { error: 'El archivo o mensaje es muy grande (>20 MB). Mandalo en partes mas chicas.', code: 413 };
+        if (r.status >= 500)  return { error: 'Diego esta caido. Lo estoy revisando · probate en 5 min.', code: r.status };
+        return { error: detalle || `Diego no responde (HTTP ${r.status})`, code: r.status };
+      }
+      return await r.json();
     } catch (e) {
-      return { error: String(e?.message || e) };
+      // Network error mas amigable
+      const msg = String(e?.message || e);
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+        return { error: 'No hay conexion con Diego. Revisa tu Internet.', code: 'NET' };
+      }
+      return { error: msg };
     }
   }
 
@@ -15831,7 +15844,14 @@ document.addEventListener('DOMContentLoaded', () => {
       var data = await r.json().catch(function () { return null; });
       if (!r.ok || !data || !data.ok) {
         resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
-        resp.textContent = (data && data.error) ? data.error : 'No pude enviar. Probá de nuevo en un minuto.';
+        // 831b0c40 · mensaje especifico por status
+        var msgErr;
+        if (r.status === 401) msgErr = 'Tu sesion caduco. Cerra y abri el panel de nuevo.';
+        else if (r.status === 403) msgErr = 'No tenes permiso para mandar esto. Avisame por WhatsApp.';
+        else if (r.status === 413) msgErr = 'El mensaje es muy largo (>20 MB). Mandalo en partes.';
+        else if (r.status >= 500) msgErr = 'Diego esta caido. Probate en 5 min.';
+        else msgErr = (data && data.error) ? data.error : ('No pude enviar (HTTP ' + r.status + '). Reintenta en 1 min.');
+        resp.textContent = msgErr;
         resp.style.display = 'block';
         submitBtn.disabled = false;
         submitBtn.textContent = 'Enviar';
