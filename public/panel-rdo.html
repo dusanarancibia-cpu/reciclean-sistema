@@ -803,6 +803,11 @@
             <span class="v4-emoji" aria-hidden="true">📝</span>
             <span>Firmas pendientes</span>
           </a>
+          <a href="#" data-v4-tab="firmas_reglas" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">🔏</span>
+            <span>Firmas reglas (ALT3)</span>
+            <span id="firmasReglasBadge" class="ml-auto text-[10px] bg-amber-500 text-white px-1.5 rounded hidden">0</span>
+          </a>
           <a href="#" data-v4-tab="tarifas_ext" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">💰</span>
             <span>Tarifas externas</span>
@@ -865,6 +870,11 @@
           <a href="#" data-v4-tab="pcs_vivo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
             <span class="v4-emoji" aria-hidden="true">🟢</span>
             Estado vivo 4 PCs
+          </a>
+          <a href="#" data-v4-tab="mesa_control_99_99" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">🎛️</span>
+            Mesa de Control 99-99
+            <span id="mesaControl9999Score" class="ml-auto text-[10px] bg-stone-200 text-stone-700 px-1.5 rounded hidden">—</span>
           </a>
           <a href="#" data-v4-tab="bucle_vivo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
             <span class="v4-emoji" aria-hidden="true">🔁</span>
@@ -1088,6 +1098,7 @@
         <button data-tab="despacho_coord" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabDespachoCoord">🚚 Coord. despacho</button>
         <button data-tab="incidentes_op" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabIncidentesOp">🛠️ Incidentes</button>
         <button data-tab="firmas_pend" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabFirmasPend">📝 Firmas pendientes</button>
+        <button data-tab="firmas_reglas" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabFirmasReglas">🔏 Firmas reglas (ALT3)</button>
         <button data-tab="tarifas_ext" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabTarifasExt">💰 Tarifas externas</button>
         <button data-tab="cumplimiento" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCumplimiento">📋 Trámites</button>
         <button data-tab="herramientas_ext" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabHerramientasExt">🌐 Herramientas ext.</button>
@@ -1123,6 +1134,7 @@
         <button data-tab="comercial"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabComercial">💼 Comercial</button>
         <button data-tab="pcs_vivo"       class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPcsVivo">🟢 Estado vivo 4 PCs</button>
         <button data-tab="diego_coord"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabDiegoCoord">🎭 Diego Coordinador</button>
+        <button data-tab="mesa_control_99_99" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabMesaControl9999">🎛️ Mesa de Control 99-99</button>
         <button data-tab="bucle_vivo"     class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabBucleVivo">🔁 Bucle vivo</button>
         <button data-tab="dod_dashboard"  class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabDodDashboard">✅ DoD dashboard</button>
         <button data-tab="gantt"          class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabGantt">📊 Gantt Viva</button>
@@ -3943,6 +3955,85 @@
       </div>
     </section>
 
+    <!-- Mesa de Control Plan 99-99 (D-PLAN-99-99-001 Fase 3 · PC2 Pablo 15-jun) · dusan+admin -->
+    <section id="tabMesaControl9999" class="tab-content hidden">
+      <div class="bg-gradient-to-r from-emerald-50 to-stone-50 border border-emerald-200 rounded-lg p-3 mb-4">
+        <div class="flex items-start justify-between flex-wrap gap-2">
+          <div>
+            <h2 class="text-xl font-bold text-emerald-900">🎛️ Mesa de Control · Plan 99-99</h2>
+            <p class="text-xs text-stone-600 mt-1">Estado vivo del plan firmado en <code>plan-claude-code-99-99.html</code>. Meta SLO 99.5% año 1. Refresh 60s.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="mesaControl9999Sync" class="text-[10px] text-stone-400"></span>
+            <button id="mesaControl9999Refresh" class="px-2 py-1 bg-stone-200 text-stone-700 rounded text-xs hover:bg-stone-300">↻</button>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="text-sm font-semibold text-stone-700 mb-2">📊 KPIs vivos</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+        <div class="bg-white border border-stone-200 rounded p-3 cursor-pointer hover:border-emerald-300" data-mc-drill="firmas_reglas">
+          <div class="text-[10px] text-stone-500 uppercase">% verif 30d</div>
+          <div class="text-2xl font-bold mt-1 text-stone-800" id="mcKpiVerif">—</div>
+          <div class="text-[10px] text-stone-400">meta 70%</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3 cursor-pointer hover:border-emerald-300" data-mc-drill="bucle_vivo">
+          <div class="text-[10px] text-stone-500 uppercase">Sanciones</div>
+          <div class="text-2xl font-bold mt-1 text-stone-800" id="mcKpiSanciones">—</div>
+          <div class="text-[10px] text-stone-400">meta 0</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3 cursor-pointer hover:border-emerald-300" data-mc-drill="firmas_reglas">
+          <div class="text-[10px] text-stone-500 uppercase">Críticas Pablo</div>
+          <div class="text-2xl font-bold mt-1 text-stone-800" id="mcKpiTareas">—</div>
+          <div class="text-[10px] text-stone-400">meta &lt;30</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-3 cursor-pointer hover:border-emerald-300" data-mc-drill="bucle_vivo">
+          <div class="text-[10px] text-stone-500 uppercase">Score salud</div>
+          <div class="text-2xl font-bold mt-1 text-stone-800" id="mcKpiScore">—</div>
+          <div class="text-[10px] text-stone-400">/100 · meta ≥70</div>
+        </div>
+      </div>
+
+      <h3 class="text-sm font-semibold text-stone-700 mb-2">📈 6 fases · live</h3>
+      <div class="bg-white border border-stone-200 rounded overflow-hidden mb-4">
+        <table class="w-full text-xs">
+          <thead class="bg-stone-100"><tr class="text-left"><th class="px-2 py-1.5 w-8 text-stone-600">#</th><th class="px-2 py-1.5 text-stone-600">Fase</th><th class="px-2 py-1.5 w-24 text-stone-600">Estado</th><th class="px-2 py-1.5 text-stone-600">Detalle</th></tr></thead>
+          <tbody id="mcFasesTbody"><tr><td colspan="4" class="text-center text-stone-400 py-4">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3 class="text-sm font-semibold text-stone-700 mb-2">🌊 Ondas + brechas D-NNN</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+        <div class="bg-white border border-stone-200 rounded p-3"><div class="text-[10px] text-stone-500 uppercase">Onda 1</div><div class="text-base font-semibold mt-1 text-stone-800" id="mcOnda1">—</div><div class="text-[10px] text-stone-400" id="mcOnda1Det">—</div></div>
+        <div class="bg-white border border-stone-200 rounded p-3"><div class="text-[10px] text-stone-500 uppercase">Onda 2</div><div class="text-base font-semibold mt-1 text-stone-800" id="mcOnda2">—</div><div class="text-[10px] text-stone-400" id="mcOnda2Det">—</div></div>
+        <div class="bg-white border border-stone-200 rounded p-3"><div class="text-[10px] text-stone-500 uppercase">Brechas D-NNN</div><div class="text-base font-semibold mt-1 text-stone-800" id="mcBrechas">—</div><div class="text-[10px] text-stone-400" id="mcBrechasDet">SPECs v2</div></div>
+      </div>
+
+      <h3 class="text-sm font-semibold text-stone-700 mb-2">🛡️ SHADOW v12 + Firmas</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+        <div class="bg-white border border-stone-200 rounded p-3"><div class="text-[10px] text-stone-500 uppercase">Procesadas</div><div class="text-lg font-semibold mt-1 text-stone-800" id="mcShadowTotal">—</div></div>
+        <div class="bg-white border border-emerald-200 rounded p-3"><div class="text-[10px] text-emerald-700 uppercase">Verdes</div><div class="text-lg font-semibold mt-1 text-emerald-700" id="mcShadowVerdes">—</div></div>
+        <div class="bg-white border border-red-200 rounded p-3"><div class="text-[10px] text-red-700 uppercase">Falsas</div><div class="text-lg font-semibold mt-1 text-red-700" id="mcShadowFalsas">—</div></div>
+        <div class="bg-white border border-amber-200 rounded p-3 cursor-pointer hover:border-emerald-300" data-mc-drill="firmas_reglas"><div class="text-[10px] text-amber-700 uppercase">Firmas pend</div><div class="text-lg font-semibold mt-1 text-amber-700" id="mcFirmasPend">—</div></div>
+      </div>
+
+      <h3 class="text-sm font-semibold text-stone-700 mb-2">👥 Score individual por PC (SHADOW v12)</h3>
+      <div class="bg-white border border-stone-200 rounded overflow-hidden mb-4">
+        <table class="w-full text-xs">
+          <thead class="bg-stone-100"><tr class="text-left"><th class="px-2 py-1.5 text-stone-600">PC</th><th class="px-2 py-1.5 w-16 text-stone-600">Total</th><th class="px-2 py-1.5 w-16 text-stone-600 text-emerald-700">Verdes</th><th class="px-2 py-1.5 w-16 text-stone-600 text-red-700">Falsas</th><th class="px-2 py-1.5 w-20 text-stone-600">% Falso</th><th class="px-2 py-1.5 w-20 text-stone-600">Cobertura</th><th class="px-2 py-1.5 w-20 text-stone-600">Sanción</th></tr></thead>
+          <tbody id="mcPcScoreTbody"><tr><td colspan="7" class="text-center text-stone-400 py-3">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="bg-white border border-stone-200 rounded p-3 text-xs space-y-2">
+        <div><span class="text-stone-500">Reglas grabadas hoy:</span> <span id="mcReglasHoy" class="font-medium text-stone-800">—</span></div>
+        <div><span class="text-stone-500">Canary pieza 10:</span> <span id="mcCanary" class="font-medium text-stone-800">—</span></div>
+        <div><span class="text-stone-500">ALT3 Panel firma:</span> <span id="mcAlt3" class="font-medium text-stone-800">—</span></div>
+        <div><span class="text-stone-500">Branch protection:</span> <span id="mcBranchProt" class="font-medium text-stone-800">—</span></div>
+      </div>
+      <div class="text-[10px] text-stone-400 mt-3" id="mcSnapshot">Snapshot: —</div>
+    </section>
+
     <!-- SPEC-BUCLE-AUTOMATICO-RUNTIME-V1 FASE 3 · Tab Bucle vivo (PC2 Pablo 2026-06-02 mig 157+163) - SOLO Dusan/admin -->
     <section id="tabBucleVivo" class="tab-content hidden">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -4170,6 +4261,21 @@
         </div>
       </div>
       <div id="firmaLista" class="space-y-2"></div>
+    </section>
+
+    <!-- ALT3 Firmas reglas (R-AUD-084) · tab cierre anti-fabricación · solo dusan+admin -->
+    <section id="tabFirmasReglas" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🔏 Firmas de reglas pendientes <span class="text-xs font-normal text-stone-500">(ALT3 · R-AUD-084)</span></h2>
+        <div class="flex items-center gap-2">
+          <span id="firmasReglasUltimaSync" class="text-[10px] text-stone-400"></span>
+          <button id="firmasReglasRefresh" class="px-2 py-1 bg-stone-200 text-stone-700 rounded text-xs hover:bg-stone-300">↻ Refrescar</button>
+        </div>
+      </div>
+      <p class="text-sm text-stone-500 mb-3">Reglas, decisiones técnicas y propuestas que los PCs encolan esperando tu firma textual literal. Al aprobar, el texto queda registrado con SHA256 en <code>panel.firmas_textuales_dusan</code> y se vuelve verificable por <code>panel.validar_firma_dusan()</code>.</p>
+      <div id="firmasReglasLista" class="space-y-2">
+        <div class="text-center text-stone-400 text-sm py-8">Cargando…</div>
+      </div>
     </section>
 
     <!-- D-FEATURE-CARTERO-007 · Tarifas externas -->
@@ -5411,7 +5517,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas', 'firmas_reglas', 'mesa_control_99_99'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -6169,6 +6275,8 @@ const TAB_SECTION_MAP = {
   despacho_coord: 'tabDespachoCoord',
   incidentes_op: 'tabIncidentesOp',
   firmas_pend: 'tabFirmasPend',
+  firmas_reglas: 'tabFirmasReglas',
+  mesa_control_99_99: 'tabMesaControl9999',
   tarifas_ext: 'tabTarifasExt',
   cumplimiento: 'tabCumplimiento',
   herramientas_ext: 'tabHerramientasExt',
@@ -12922,11 +13030,24 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      const j = await r.json();
-      if (!r.ok) return { error: j.error || `HTTP ${r.status}` };
-      return j;
+      // 831b0c40 · mensajes especificos por status para que Andrea/Jair sepan que hacer
+      if (!r.ok) {
+        let detalle = '';
+        try { const j = await r.json(); detalle = j.error || j.message || ''; } catch (_) {}
+        if (r.status === 401) return { error: 'Tu sesion caduco. Cerra y volve a abrir el panel para que Diego te entienda.', code: 401 };
+        if (r.status === 403) return { error: 'Diego no tiene permiso para esta accion con tu perfil. Avisame por WhatsApp.', code: 403 };
+        if (r.status === 413) return { error: 'El archivo o mensaje es muy grande (>20 MB). Mandalo en partes mas chicas.', code: 413 };
+        if (r.status >= 500)  return { error: 'Diego esta caido. Lo estoy revisando · probate en 5 min.', code: r.status };
+        return { error: detalle || `Diego no responde (HTTP ${r.status})`, code: r.status };
+      }
+      return await r.json();
     } catch (e) {
-      return { error: String(e?.message || e) };
+      // Network error mas amigable
+      const msg = String(e?.message || e);
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+        return { error: 'No hay conexion con Diego. Revisa tu Internet.', code: 'NET' };
+      }
+      return { error: msg };
     }
   }
 
@@ -15831,7 +15952,14 @@ document.addEventListener('DOMContentLoaded', () => {
       var data = await r.json().catch(function () { return null; });
       if (!r.ok || !data || !data.ok) {
         resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
-        resp.textContent = (data && data.error) ? data.error : 'No pude enviar. Probá de nuevo en un minuto.';
+        // 831b0c40 · mensaje especifico por status
+        var msgErr;
+        if (r.status === 401) msgErr = 'Tu sesion caduco. Cerra y abri el panel de nuevo.';
+        else if (r.status === 403) msgErr = 'No tenes permiso para mandar esto. Avisame por WhatsApp.';
+        else if (r.status === 413) msgErr = 'El mensaje es muy largo (>20 MB). Mandalo en partes.';
+        else if (r.status >= 500) msgErr = 'Diego esta caido. Probate en 5 min.';
+        else msgErr = (data && data.error) ? data.error : ('No pude enviar (HTTP ' + r.status + '). Reintenta en 1 min.');
+        resp.textContent = msgErr;
         resp.style.display = 'block';
         submitBtn.disabled = false;
         submitBtn.textContent = 'Enviar';
@@ -16454,6 +16582,222 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { alert('No se pudo descargar: ' + (e?.message || e)); }
   }
 
+  // ============================================================
+  // Mesa de Control Plan 99-99 (D-PLAN-99-99-001 Fase 3 · PC2 Pablo 15-jun)
+  // Consume RPCs panel.estatus_plan_99_99 + public.mesa_control_99_99_kpis
+  // + public.v_pc_score_individual (widget H)
+  // ============================================================
+  async function loadMesaControl9999() {
+    var setText = function(id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
+    var setHTML = function(id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
+    try {
+      var token = (typeof currentUser !== 'undefined' && currentUser && (currentUser.access_token || currentUser.token))
+                  || (sb && sb.auth && sb.auth.getSession ? (await sb.auth.getSession()).data.session?.access_token : null);
+      if (!token) { setHTML('mcFasesTbody', '<tr><td colspan="4" class="text-center text-amber-700 py-4">Sin sesión</td></tr>'); return; }
+      var SUPA = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : (typeof SUPABASE_URL_LOCAL !== 'undefined' ? SUPABASE_URL_LOCAL : 'https://eknmtsrtfkzroxnovfqn.supabase.co');
+      var apikey = (typeof SUPABASE_ANON_KEY !== 'undefined') ? SUPABASE_ANON_KEY : null;
+      var headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+      if (apikey) headers.apikey = apikey;
+      var [rEstatus, rKpis, rPcScore] = await Promise.all([
+        fetch(SUPA + '/rest/v1/rpc/estatus_plan_99_99', { method: 'POST', headers: headers, body: '{}' }),
+        fetch(SUPA + '/rest/v1/rpc/mesa_control_99_99_kpis', { method: 'POST', headers: headers, body: '{}' }),
+        fetch(SUPA + '/rest/v1/v_pc_score_individual?select=*', { headers: headers })
+      ]);
+      var estatus = await rEstatus.json();
+      var kpis = await rKpis.json();
+      var pcScore = await rPcScore.json();
+      if (!rEstatus.ok) { setHTML('mcFasesTbody', '<tr><td colspan="4" class="text-center text-red-600 py-4">Error</td></tr>'); return; }
+      var k = (kpis && kpis.kpis) || {};
+      setText('mcKpiVerif', (k.verificadas_30d_pct != null ? k.verificadas_30d_pct + '%' : '—'));
+      setText('mcKpiSanciones', (k.sanciones_activas != null ? k.sanciones_activas : '—'));
+      setText('mcKpiTareas', (k.tareas_criticas_pablo != null ? k.tareas_criticas_pablo : '—'));
+      setText('mcKpiScore', (k.score_salud != null ? k.score_salud + '/100' : '—'));
+      var sideBadge = document.getElementById('mesaControl9999Score');
+      if (sideBadge && k.score_salud != null) {
+        sideBadge.textContent = k.score_salud + '/100';
+        sideBadge.classList.remove('hidden');
+        sideBadge.className = 'ml-auto text-[10px] px-1.5 rounded font-medium ' +
+          (k.score_salud >= 70 ? 'bg-emerald-200 text-emerald-800' : k.score_salud >= 40 ? 'bg-amber-200 text-amber-800' : 'bg-red-200 text-red-800');
+      }
+      var fases = (kpis && kpis.fases) || [];
+      var colorMap = { verde: 'bg-emerald-100 text-emerald-800', amarillo: 'bg-amber-100 text-amber-800', rojo: 'bg-red-100 text-red-800', gris: 'bg-stone-100 text-stone-700' };
+      var rows = fases.map(function(f) {
+        var badge = colorMap[f.color] || colorMap.gris;
+        var det = (f.detalle || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        var nom = (f.nombre || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        return '<tr class="border-t border-stone-100"><td class="px-2 py-1.5 text-stone-500">' + f.n + '</td><td class="px-2 py-1.5 text-stone-800">' + nom + '</td><td class="px-2 py-1.5"><span class="text-[10px] px-1.5 py-0.5 rounded ' + badge + '">' + (f.estado || '—') + '</span></td><td class="px-2 py-1.5 text-stone-500">' + det + '</td></tr>';
+      }).join('');
+      setHTML('mcFasesTbody', rows || '<tr><td colspan="4" class="text-center text-stone-400 py-4">Sin fases</td></tr>');
+      var o1 = estatus.onda_1 || {};
+      var o2 = estatus.onda_2 || {};
+      var br = estatus.d_nnn_brechas_14jun || {};
+      setText('mcOnda1', o1.estado === 'completada' ? '✓ ' + (o1.piezas || 10) + ' piezas' : (o1.estado || '—'));
+      setText('mcOnda1Det', 'commits: ' + ((o1.commits_main || []).join(', ')));
+      setText('mcOnda2', (o2.done || 0) + '/' + (o2.total || 8) + ' · ' + (o2.progreso_pct || 0) + '%');
+      setText('mcOnda2Det', 'pend: ' + (o2.pendiente || 0) + ' · claimed: ' + (o2.claimed || 0));
+      setText('mcBrechas', (br.specs || []).length + ' SPECs v2 · ' + (br.pendientes || 0) + ' pend');
+      setText('mcBrechasDet', (br.specs || []).slice(0, 2).join(' · '));
+      setText('mcShadowTotal', (k.shadow_v12_total != null ? k.shadow_v12_total : '—'));
+      setText('mcShadowVerdes', (k.shadow_v12_verdes != null ? k.shadow_v12_verdes + ' (' + (k.shadow_v12_pct_sentenciadas || 0) + '%)' : '—'));
+      setText('mcShadowFalsas', (k.shadow_v12_falsas != null ? k.shadow_v12_falsas : '—'));
+      setText('mcFirmasPend', (k.firmas_pendientes_panel_alt3 != null ? k.firmas_pendientes_panel_alt3 : '—'));
+      // Widget H · Score por PC
+      var pcRows = (Array.isArray(pcScore) ? pcScore : []).map(function(pc) {
+        var pctFalso = parseFloat(pc.shadow_pct_falso_real) || 0;
+        var color = pctFalso >= 5 ? 'text-red-700' : pctFalso >= 2 ? 'text-amber-700' : 'text-stone-700';
+        var sancion = pc.sancion_activa ? '<span class="text-[10px] bg-red-200 text-red-800 px-1.5 rounded">sí</span>' : '<span class="text-stone-400">—</span>';
+        return '<tr class="border-t border-stone-100"><td class="px-2 py-1.5 font-medium text-stone-800">' + (pc.pc_nombre || '—').replace(/</g, '&lt;') + '</td><td class="px-2 py-1.5 text-stone-600">' + (pc.total_afirmaciones || 0) + '</td><td class="px-2 py-1.5 text-emerald-700">' + (pc.shadow_verdes || 0) + '</td><td class="px-2 py-1.5 text-red-700">' + (pc.shadow_falsas || 0) + '</td><td class="px-2 py-1.5 ' + color + '">' + pctFalso + '%</td><td class="px-2 py-1.5 text-stone-600">' + (pc.shadow_cobertura_pct || 0) + '%</td><td class="px-2 py-1.5">' + sancion + '</td></tr>';
+      }).join('');
+      setHTML('mcPcScoreTbody', pcRows || '<tr><td colspan="7" class="text-center text-stone-400 py-3">Sin datos</td></tr>');
+      setText('mcReglasHoy', (estatus.reglas_grabadas_hoy || []).join(', ') || '—');
+      setText('mcCanary', estatus.canary_pieza_10 || '—');
+      setText('mcAlt3', estatus.alt3_panel_firma || '—');
+      setText('mcBranchProt', estatus.branch_protection_reciclean_sistema || '—');
+      setText('mcSnapshot', 'Snapshot: ' + (estatus.ts ? new Date(estatus.ts).toLocaleString('es-CL') : '—'));
+      var sync = document.getElementById('mesaControl9999Sync');
+      if (sync) sync.textContent = 'Sync: ' + new Date().toLocaleTimeString('es-CL');
+    } catch (e) {
+      setHTML('mcFasesTbody', '<tr><td colspan="4" class="text-center text-red-600 py-4">Error: ' + (e?.message || e) + '</td></tr>');
+    }
+  }
+  function setupMesaControl9999AutoRefresh() {
+    var btn = document.getElementById('mesaControl9999Refresh');
+    if (btn) btn.addEventListener('click', loadMesaControl9999);
+    document.querySelectorAll('[data-mc-drill]').forEach(function(card) {
+      card.addEventListener('click', function() {
+        var dest = card.getAttribute('data-mc-drill');
+        var btnDest = document.querySelector('button[data-tab="' + dest + '"]') || document.querySelector('a[data-v4-tab="' + dest + '"]');
+        if (btnDest) btnDest.click();
+      });
+    });
+    setInterval(function() {
+      var sec = document.getElementById('tabMesaControl9999');
+      if (sec && !sec.classList.contains('hidden')) loadMesaControl9999();
+    }, 60000);
+    var perfil = (typeof currentProfile !== 'undefined') ? currentProfile : null;
+    if (perfil === 'dusan' || perfil === 'admin') setTimeout(loadMesaControl9999, 2000);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupMesaControl9999AutoRefresh);
+  } else {
+    setupMesaControl9999AutoRefresh();
+  }
+
+  // ============================================================
+  // ALT3 Firmas reglas (R-AUD-084 anti-fabricación · 15-jun PC2)
+  // Consume EF firmas-pendientes + RPC firmar_item_pendiente
+  // ============================================================
+  var __firmasReglasTimer = null;
+  async function loadFirmasReglas() {
+    var lista = document.getElementById('firmasReglasLista');
+    var sync = document.getElementById('firmasReglasUltimaSync');
+    var badge = document.getElementById('firmasReglasBadge');
+    if (!lista) return;
+    try {
+      var token = (typeof currentUser !== 'undefined' && currentUser && (currentUser.access_token || currentUser.token))
+                  || (sb && sb.auth && sb.auth.getSession ? (await sb.auth.getSession()).data.session?.access_token : null);
+      if (!token) { lista.innerHTML = '<div class="text-center text-amber-700 text-sm py-8">Sin sesión activa · iniciá sesión para ver firmas pendientes.</div>'; return; }
+      var SUPA = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : (typeof SUPABASE_URL_LOCAL !== 'undefined' ? SUPABASE_URL_LOCAL : 'https://eknmtsrtfkzroxnovfqn.supabase.co');
+      var r = await fetch(SUPA + '/functions/v1/firmas-pendientes', { headers: { Authorization: 'Bearer ' + token } });
+      var j = await r.json();
+      if (!r.ok || !j || j.ok === false) { lista.innerHTML = '<div class="text-center text-red-600 text-sm py-6">No pude cargar (' + (j && j.error || r.status) + ')</div>'; return; }
+      var items = j.items || [];
+      if (badge) {
+        if (items.length > 0) { badge.textContent = String(items.length); badge.classList.remove('hidden'); }
+        else { badge.classList.add('hidden'); }
+      }
+      if (sync) sync.textContent = 'Última sync: ' + new Date().toLocaleTimeString('es-CL');
+      if (items.length === 0) {
+        lista.innerHTML = '<div class="text-center text-emerald-700 text-sm py-8">✓ Sin firmas pendientes</div>';
+        return;
+      }
+      lista.innerHTML = items.map(function(it) {
+        var pc = String(it.pc_solicitante || '').replace(/[^A-Za-z0-9_]/g, '');
+        var expira = it.expira_at ? new Date(it.expira_at).toLocaleDateString('es-CL') : '—';
+        var ctx = it.contexto || {};
+        var ctxStr = (ctx.spec ? ('SPEC: ' + ctx.spec) : '') + (ctx.estimacion_h ? (' · ' + ctx.estimacion_h + 'h') : '');
+        var texto = String(it.texto_propuesto || '');
+        var textoEsc = texto.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        var titEsc = String(it.titulo || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return '<div class="bg-white border border-amber-300 rounded p-3" data-fr-id="' + it.id + '">'
+          + '<div class="flex items-start justify-between gap-2">'
+          + '<div class="flex-1 min-w-0">'
+          + '<div class="text-xs text-amber-700 font-mono">#' + it.id + ' · ' + pc + ' · expira ' + expira + '</div>'
+          + '<div class="font-semibold text-stone-800 text-sm mt-1">' + titEsc + '</div>'
+          + (ctxStr ? '<div class="text-[11px] text-stone-500 mt-1">' + ctxStr.replace(/</g, '&lt;') + '</div>' : '')
+          + '<div class="mt-2 p-2 bg-stone-50 border border-stone-200 rounded text-[12px] font-mono text-stone-700 max-h-32 overflow-y-auto whitespace-pre-wrap">' + textoEsc + '</div>'
+          + '</div>'
+          + '<div class="flex flex-col gap-1 shrink-0">'
+          + '<button class="px-2 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700" data-fr-action="aprobar" data-fr-id="' + it.id + '">✓ Aprobar 1-click</button>'
+          + '<button class="px-2 py-1 bg-stone-200 text-stone-700 rounded text-xs hover:bg-stone-300" data-fr-action="rechazar" data-fr-id="' + it.id + '">✗ Rechazar</button>'
+          + '</div>'
+          + '</div>'
+          + '</div>';
+      }).join('');
+      // Bind acciones
+      lista.querySelectorAll('button[data-fr-action]').forEach(function(b) {
+        b.addEventListener('click', function() {
+          var id = parseInt(b.getAttribute('data-fr-id'), 10);
+          var accion = b.getAttribute('data-fr-action');
+          var card = b.closest('[data-fr-id]');
+          var textoEl = card ? card.querySelector('.font-mono.text-stone-700') : null;
+          var texto = textoEl ? textoEl.textContent : '';
+          firmarItemReglas(id, accion, texto);
+        });
+      });
+    } catch (e) {
+      lista.innerHTML = '<div class="text-center text-red-600 text-sm py-6">Error: ' + (e?.message || e) + '</div>';
+    }
+  }
+
+  async function firmarItemReglas(id, accion, textoLiteral) {
+    try {
+      if (accion === 'aprobar') {
+        var ok = confirm('Vas a firmar:\n\n' + textoLiteral.slice(0, 500) + (textoLiteral.length > 500 ? '…' : '') + '\n\nEsto registra el texto literal con SHA256 en panel.firmas_textuales_dusan. ¿Confirmás?');
+        if (!ok) return;
+      } else {
+        var motivo = prompt('Motivo de rechazo (opcional · queda registrado):', '');
+      }
+      var token = (typeof currentUser !== 'undefined' && currentUser && (currentUser.access_token || currentUser.token))
+                  || (sb && sb.auth && sb.auth.getSession ? (await sb.auth.getSession()).data.session?.access_token : null);
+      var SUPA = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : (typeof SUPABASE_URL_LOCAL !== 'undefined' ? SUPABASE_URL_LOCAL : 'https://eknmtsrtfkzroxnovfqn.supabase.co');
+      var body = (accion === 'aprobar')
+        ? { id: id, texto_literal: textoLiteral, aceptar: true }
+        : { id: id, aceptar: false, motivo_rechazo: motivo || 'sin motivo' };
+      var r = await fetch(SUPA + '/functions/v1/firmas-pendientes', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      var j = await r.json();
+      if (!r.ok || j.ok === false) { alert('No pude registrar: ' + (j.error || r.status)); return; }
+      // Refresh inmediato
+      loadFirmasReglas();
+    } catch (e) {
+      alert('Error: ' + (e?.message || e));
+    }
+  }
+
+  // Auto-refresh 30s solo cuando el tab está activo
+  function setupFirmasReglasAutoRefresh() {
+    var btn = document.getElementById('firmasReglasRefresh');
+    if (btn) btn.addEventListener('click', loadFirmasReglas);
+    setInterval(function() {
+      var sec = document.getElementById('tabFirmasReglas');
+      if (sec && !sec.classList.contains('hidden')) loadFirmasReglas();
+    }, 30000);
+    // Badge load inicial (silencioso) si el usuario es dusan/admin
+    var perfil = (typeof currentProfile !== 'undefined') ? currentProfile : null;
+    if (perfil === 'dusan' || perfil === 'admin') {
+      setTimeout(loadFirmasReglas, 1500);
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupFirmasReglasAutoRefresh);
+  } else {
+    setupFirmasReglasAutoRefresh();
+  }
+
   async function loadFirmas() {
     var lista = document.getElementById('firmaLista');
     if (!ready()) { showError(lista, 'Sesión no detectada.'); return; }
@@ -16651,6 +16995,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelector('a[data-v4-tab="' + tab + '"]')?.addEventListener('click', function () { setTimeout(loader, 100); });
     };
     bind('firmas_pend', loadFirmas);
+    bind('firmas_reglas', loadFirmasReglas);
+    bind('mesa_control_99_99', loadMesaControl9999);
     bind('tarifas_ext', loadTarifas);
 
     // Form Firma
