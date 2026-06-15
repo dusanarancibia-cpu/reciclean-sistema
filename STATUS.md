@@ -89,9 +89,74 @@ Total Supabase: **84 tablas** + **11 vistas**.
 
 | Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
 |---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **22-abr-2026** (baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **15-jun-2026** | 68+ | — | — | — | — | — |
 
 > _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+
+---
+
+## Resumen del dia 15-jun-2026 — en palabras sencillas
+
+### Que se hizo hoy (7 PRs mergeados a main, 1834 lineas nuevas)
+
+**Dusan** (6 PRs mergeados + revision):
+
+1. **Mensajes de error claros para Diego** (PR #300)
+   - Antes: cuando Diego fallaba, el usuario veia codigos tecnicos como "HTTP 401" o "HTTP 500" que no significan nada.
+   - Ahora: mensajes en espanol que dicen exactamente que hacer. Ejemplo: "Tu sesion caduco. Cerra y volve a abrir el panel" o "Diego esta caido, probate en 5 min".
+   - Impacto: menos confusiones del equipo cuando Diego tiene problemas.
+
+2. **Lint automatico del panel** (PR #301)
+   - Se agrego un chequeo automatico que bloquea cualquier cambio al panel si tiene errores de codigo.
+   - Es como un "corrector ortografico" pero para codigo: si alguien mete un error, GitHub no deja mergear hasta que se arregle.
+   - Impacto: menos riesgo de romper el panel en produccion.
+
+3. **Tab de Firmas para aprobar reglas** (PR #302)
+   - Nuevo tab en el panel donde Dusan puede aprobar o rechazar propuestas tecnicas con un solo click.
+   - Cada aprobacion queda registrada con firma digital (SHA256) — es decir, hay prueba de que Dusan lo aprobo, cuando y que decia exactamente.
+   - Ya hay 3 firmas esperando: Fase 5 evidencia, Diego canary 10%, y cifrado de datos clientes (Ley 21.719).
+   - Impacto: Dusan tiene el control de decisiones criticas sin depender de que se lo cuenten por WhatsApp.
+
+4. **Mesa de Control completa** (PR #304)
+   - Nuevo tab con vista de helicoptero de todo el sistema: 4 indicadores principales, 6 fases del plan en vivo, estado del SHADOW v12.
+   - Widget nuevo que muestra el puntaje de cada PC (computador/punto de control) individual.
+   - Se refresca solo cada 60 segundos.
+   - Impacto: Dusan puede ver de un vistazo si algo esta mal sin preguntar a nadie.
+
+5. **Grafico de tendencia SHADOW** (PR #306)
+   - Minigrafico SVG que muestra como va evolucionando la calidad del SHADOW v12 durante el dia.
+   - Linea amber marca la meta de 70%. Puntos verdes = ok, rojos = problema.
+   - Impacto: se ve la tendencia en el tiempo, no solo el numero actual.
+
+6. **Merge final del widget de Pablo** (PR #308)
+   - Dusan reviso y aprobo el trabajo de Pablo (widget Canarios) y lo mergeo a produccion.
+
+**Pablo** (1 commit tecnico):
+
+1. **Widget Canarios en Mesa de Control** (PR #308)
+   - Tabla nueva que muestra el estado de los "canarios" (despliegues graduales que prueban cambios con un % pequeno de trafico antes de activarlos para todos).
+   - Muestra: nombre del canario, etapa (0% gris, 1-9% ambar claro, 10-99% ambar, 100% verde), ratio de errores vs la linea base, y las decisiones tomadas.
+   - Si hay problemas (errores x2 o latencia x1.5), se marca rojo automaticamente.
+   - Impacto: se puede ver de un vistazo si un cambio nuevo esta causando problemas antes de activarlo al 100%.
+
+### Resumen ejecutivo
+
+| Quien | PRs | Lineas | Foco principal |
+|---|---|---|---|
+| Dusan | 6 | ~1780 | Panel RDO: Mesa de Control, firmas digitales, UX errores Diego, CI |
+| Pablo | 1 | ~52 | Panel RDO: widget Canarios progresivos |
+
+### Nivel de avance actualizado
+
+| Area | Antes | Ahora | Motivo |
+|---|---|---|---|
+| Panel RDO — Mesa de Control | No existia | 70% | Tab funcional con 6 widgets, falta pulir y testing en produccion |
+| Panel RDO — Firmas reglas | No existia | 80% | Tab operativo con 3 firmas pendientes, falta uso real por Dusan |
+| Panel RDO — UX errores Diego | Basico | 100% | 5 tipos de error con mensajes claros desplegados |
+| CI/CD — Lint panel-rdo | No existia | 100% | Workflow activo bloqueando PRs con errores |
+| Plan 99-99 — Canarios | Backend listo | 60% | Widget UI listo, falta datos reales de canarios activos |
+| SHADOW v12 — Tendencia | Solo numero | 80% | Sparkline funcional, falta validar con mas datos historicos |
 
 ---
 
