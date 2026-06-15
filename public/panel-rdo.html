@@ -3715,6 +3715,29 @@
         <div><span class="text-stone-500">ALT3 Panel firma 1-click:</span> <span id="mcAlt3" class="font-medium text-stone-800">—</span></div>
         <div><span class="text-stone-500">Branch protection reciclean-sistema:</span> <span id="mcBranchProt" class="font-medium text-stone-800">—</span></div>
       </div>
+      <h3 class="text-sm font-semibold text-stone-700 mb-2 mt-4">🛡️ SHADOW v12 verificador (7d observación)</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-3">
+          <div class="text-[10px] text-stone-500 uppercase tracking-wide">Procesadas</div>
+          <div class="text-lg font-semibold mt-1 text-stone-800" id="mcShadowTotal">—</div>
+          <div class="text-[10px] text-stone-400">580 afirmaciones</div>
+        </div>
+        <div class="bg-white border border-emerald-200 rounded p-3">
+          <div class="text-[10px] text-emerald-700 uppercase tracking-wide">Verdes</div>
+          <div class="text-lg font-semibold mt-1 text-emerald-700" id="mcShadowVerdes">—</div>
+          <div class="text-[10px] text-stone-400">SHADOW</div>
+        </div>
+        <div class="bg-white border border-red-200 rounded p-3">
+          <div class="text-[10px] text-red-700 uppercase tracking-wide">Falsas</div>
+          <div class="text-lg font-semibold mt-1 text-red-700" id="mcShadowFalsas">—</div>
+          <div class="text-[10px] text-stone-400">cero FP confirmado</div>
+        </div>
+        <div class="bg-white border border-amber-200 rounded p-3 cursor-pointer hover:border-emerald-300" data-mc-drill="firmas_reglas" title="Ir a Firmas reglas">
+          <div class="text-[10px] text-amber-700 uppercase tracking-wide">Firmas pendientes</div>
+          <div class="text-lg font-semibold mt-1 text-amber-700" id="mcFirmasPend">—</div>
+          <div class="text-[10px] text-stone-400">ALT3 1-click</div>
+        </div>
+      </div>
       <div class="text-[10px] text-stone-400 mt-3" id="mcSnapshot">Snapshot: —</div>
     </section>
 
@@ -16000,6 +16023,11 @@ document.addEventListener('DOMContentLoaded', () => {
       setText('mcCanary', estatus.canary_pieza_10 || '—');
       setText('mcAlt3', estatus.alt3_panel_firma || '—');
       setText('mcBranchProt', estatus.branch_protection_reciclean_sistema || '—');
+      // SHADOW v12 KPIs (post-RPC mejorado 15-jun)
+      setText('mcShadowTotal', (k.shadow_v12_total != null ? k.shadow_v12_total : '—'));
+      setText('mcShadowVerdes', (k.shadow_v12_verdes != null ? k.shadow_v12_verdes + ' (' + (k.shadow_v12_pct_sentenciadas || 0) + '%)' : '—'));
+      setText('mcShadowFalsas', (k.shadow_v12_falsas != null ? k.shadow_v12_falsas : '—'));
+      setText('mcFirmasPend', (k.firmas_pendientes_panel_alt3 != null ? k.firmas_pendientes_panel_alt3 : '—'));
       setText('mcSnapshot', 'Snapshot: ' + (estatus.ts ? new Date(estatus.ts).toLocaleString('es-CL') : '—') + ' · bucle cerrados ' + (estatus.bucle_eslabones_cerrados_plan_99_99 || 0));
       var sync = document.getElementById('mesaControl9999Sync');
       if (sync) sync.textContent = 'Sync: ' + new Date().toLocaleTimeString('es-CL');
