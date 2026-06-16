@@ -1,7 +1,7 @@
 # STATUS — Reciclean-Farex Sistema
 
 > **Snapshot de `temas_en_progreso` (Supabase).** Respuesta canónica a "status / cómo vamos / detalle".
-> **Última regeneración:** 22-abr-2026 14:15 · **68 filas** (25 parents + 43 sub-tareas)
+> **Última regeneración:** 16-jun-2026 · **27 iniciativas padre**
 
 ---
 
@@ -15,83 +15,85 @@
 
 ---
 
-## Tareas padre (25 iniciativas) — ordenadas por fecha y prioridad
+## Resumen sesion 15-jun-2026 — en palabras sencillas
 
-| Código | % | Depto | Responsable | Tema (≤15) | Tiempo | Fecha lím. | Ruta archivo principal | Banda · Siguiente |
-|---|---|---|---|---|---|---|---|---|
-| **I-08** | 10% | Tecnología | Dusan | Rotación keys | 20min | **22-abr 🔥** | — | 💡 URGENTE K3+Meta |
-| **I-15** | 0% | Finanzas y A. | Dusan | Notion Plus | 30min | **25-abr** | — | 💡 Contratar workspace |
-| **I-01** | 30% | Tecnología | Claude | Mapa BD + FKs | 1h | **29-abr** | — | 📋 Mapear FKs+ER+RLS |
-| **I-10** | 40% | Comercial | Dusan | Sprint ventas | 2sem | **28-abr ⚠️** | — | 🔨 ATRASADO |
-| **I-09** | 15% | Tecnología | Pablo | Infra VPS + hub | 2d | **28-abr** | — | 📋 Requires I-08 + DO |
-| **I-12** | 30% | Gerencia General | Dusan | Diego v5.0 live | 2sem | **🚀 30-abr** | `Plan Ecosistema Digital/Observaciones para Diego Agente/` | 📋 Lanzamiento oficial |
-| **I-04** | 90% | Gerencia General | Claude | Tracker temas | 30min | **30-abr** | — | 🔍 Pablo wirea n8n |
-| **I-19** | 30% | Gerencia General | Dusan | Plan 2026-2030 | 2h | **30-abr** | `Plan Ecosistema Digital/Plan_Operativo_v2_FINAL_Lunes_2026-04-21.pptx` | 📋 Alinear con I-10, I-12 |
-| **I-11** | 50% | Tecnología | Pablo | ACI deploy | 1sem | **5-may** | `Cesar - Order/02_Asistente_Comercial_Integrado/.../SPEC_v3_FINAL...docx` | 🔨 Requires I-09 VPS |
-| **I-18** | 0% | Comercial | Dusan | Contrato Resimple | 1h | **10-may** | `Comercial/.../Resimple/10-2025 Contrato Resimple...aspx` | 💡 Revisar vigencia 2026 |
-| **I-05** | 30% | Tecnología | Claude | Panel temas | 3h | **10-may** | — | 📋 Esperando green light build |
-| **I-03** | 20% | Tecnología | Dusan | Eval BI tools | 2h | **10-may** | `Cesar - Order/07_Archivo_y_Respaldos/Respaldos/admin_panel_v83.html` | 📋 Contrastar contexto |
-| **I-16** | 0% | Tecnología | Pablo | Diego v5.1 | 2sem | **15-may** | — | 💡 Post v5.0 estable |
-| **I-02** | 10% | Gerencia General | Dusan | Viz informes | 2sem | **15-may** | — | 💡 Decidir consumidor |
-| **I-20** | 10% | Comercial | Dusan | Propuestas activas | 1sem | **15-may** | `Comercial/.../[8 PDFs de propuestas]` | 💡 Revisar 8 propuestas |
-| **I-13** | 5% | Tecnología | Pablo | Deuda técnica | 3sem | **20-may** | — | 💡 11 subtareas post 30-abr |
-| **I-06** | 15% | Gerencia General | Dusan | Ecosistema int. | 1sem | **20-may** | `Plan Ecosistema Digital/Ecosistema_Digital_Reciclean_Farex_v2.pptx` | 💡 Overlap I-02/I-03 |
-| **I-07** | 10% | Tecnología | Claude | Eval diagramas | 30min | **20-may** | — | 💡 ECharts para I-05 |
-| **I-21** | 20% | Operaciones | Dusan | Puerto Montt ops | 1mes | **30-jun** | `Patrimonio/Empresa Puerto Montt/` | 💡 Permisos SAG + roadmap |
-| **I-14** | 10% | Tecnología | Dusan | Blindaje Diego | 1h | — | — | 💡 PUK SIM + 2FA Meta |
-| **I-17** | 20% | Tecnología | Claude | Docs Mermaid+EC | 2h | — | — | 💡 Post I-05 build |
-| **I-22** | 25% | Tecnología | Dusan | Guia Chatbot | 2sem | — | `Claude Code/ChatBot/produccion/Guia_Chatbot_Reciclean.pptx` | 💡 Deploy post 30-abr |
-| **I-23** | 15% | Gerencia General | Dusan | Monday implement | 3h | — | `Claude Code/Documentacion/Monday_Guia_Implementacion_Reciclean_v2.pptx` | 💡 Decidir Monday vs tracker |
-| **I-24** | 20% | Recursos Humanos | Dusan | Descripcion cargos | 2h | — | `equipo-procesos/.../Descripción de cargo Asistente Comercial.docx` | 💡 Consolidar 3 cargos |
-| **I-25** | 30% | Legal y Compliance | Dusan | Permisos Talca | 3h | — | `Permisos y Resoluciones/Permisos de Talca/` | 💡 Revisar vigencia |
+### Que hizo Dusan
+
+1. **Aprobo y mergeo 8 PRs** en un solo dia — la sesion mas productiva del mes.
+2. **Mesa de Control Plan 99-99** (PR #304): nuevo tab en el panel RDO que muestra de un vistazo la salud del sistema — puntaje por PC, fases del plan, sanciones activas, verificaciones 30 dias. Se refresca solo cada 60 segundos.
+3. **Tab Firmas reglas** (PR #302): Dusan ahora puede aprobar o rechazar decisiones tecnicas con 1 click. Hay 3 firmas pendientes esperando su aprobacion (v13 evidencia, Diego canary 10%, cifrado clientes Ley 21.719).
+4. **Sparkline SHADOW v12** (PR #306): grafico de tendencia SVG en Mesa de Control que muestra como evoluciona el % de afirmaciones verificadas hora a hora.
+5. **Mensajes claros en errores Diego** (PR #300): cuando Diego se cae o hay problemas de red, ahora el panel dice en espanol que paso y que hacer (en vez de "HTTP 401" que nadie entendia).
+6. **Linter automatico** (PR #301): proteccion nueva que bloquea PRs si tienen errores de JavaScript — primer guardia real del Plan 99-99.
+7. **Deploy a produccion** (PR #305 + #307): todo lo anterior subido a prod con firma delegada de Pablo.
+
+### Que hizo Pablo
+
+1. **Widget Canarios en Mesa Control** (PR #308): nueva seccion en la Mesa de Control que muestra el estado de los canarios progresivos — el sistema que prueba cambios de Diego gradualmente (primero 1%, despues 10%, etc.) antes de activarlos para todos.
+2. **Revision y firma delegada**: autorizo el deploy a produccion de los 5 commits acumulados del dia.
+
+### En resumen
+
+Fue un dia de **infraestructura de confianza**: se construyeron las herramientas para que Dusan vea la salud del sistema, firme decisiones importantes, y los cambios a Diego se prueben de forma gradual antes de afectar al equipo. No se tocaron precios ni datos comerciales — todo fue blindaje y visibilidad.
 
 ---
 
-## Semana crítica (22-30 abr)
+## Tareas padre (27 iniciativas) — foto Supabase 16-jun-2026
 
-| Día | Quién | Qué urge |
-|---|---|---|
-| **Hoy 22-abr** | Dusan | Rotar K3 + Meta (I-08) · Contratar DO (I-09.1) · Notion (I-15) |
-| 23-abr | Dusan | Enviar 30 msgs WA (I-10.2) · Lista 50 prospectos (I-10.1) |
-| 25-abr | Dusan | Demos Diego (I-10.3) · Ingrid completa teléfonos (I-11.1) |
-| 26-abr | Pablo regresa | Sesión 1 backup+SQL (I-12.1) · Cierre cliente #1 (I-10.5) |
-| 27-abr | Pablo | Sesión 2 prompt+GCal (I-12.2) · VPS deploy (I-09.3) |
-| 28-abr | Pablo | Sesión 3 Curador+tests (I-12.3) · Import workflows (I-09.5) |
-| 29-abr | Dusan | Respuestas oro (I-12.4) · Memoria conv (I-13.1) |
-| **30-abr 🚀** | Dusan+Pablo | **LANZAMIENTO Diego v5.0** (I-12.5) |
-
----
-
-## Directorio de tablas Supabase (conectadas al tracker)
-
-| Tabla / Vista | Propósito | Iniciativas que la usan |
-|---|---|---|
-| `temas_en_progreso` | Source of truth iniciativas | Todas |
-| `v_status_consolidado` | Query canónica "status" | Todas |
-| `v_temas_jerarquia` | Parent-hijo visualización | I-04 |
-| `v_renames_historial` | Audit de renames | Auditoría |
-| `v_directorio_tablas` | Meta-tabla de tablas | I-01 |
-| `v_progreso_temporal` | Evolución % por día | Gráfico avance |
-| `v_progreso_diario_global` | Agregado diario | Gráfico avance |
-| `temas_snapshot_diario` | Capturas % por fecha | Gráfico avance |
-| `usuarios_autorizados` | Whitelist + delegación | I-04, I-11, I-12 |
-| `conversaciones` | Buffer WA Diego (803 rows) | I-12 |
-| `memoria_diego` | Facts + episodios Diego | I-12, I-13 |
-| `precios` (246) · `materiales` (95) · `proveedores` (73) | Catálogo comercial | I-03, I-11, I-20 |
-| `metas_comerciales` (116) | KPIs comercial | I-02, I-10 |
-| `procesos_empresa` | SOPs validados | I-23, I-24 |
-
-Total Supabase: **84 tablas** + **11 vistas**.
-
----
-
-## Progreso diario (baseline)
-
-| Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
+| Código | % | Banda | Depto | Responsable | Titulo | Siguiente |
 |---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **I-26** | 100% | ✅ Superado | Comercial | Pablo | CRM Panel RDO | Completado. 3 sub-tareas cerradas. |
+| **I-16** | 95% | 🔍 Revisión | Tecnología | Pablo | Diego v5.1 LIVE | Smoke final Andrea cotizador. Validar Gantt + Estado 4 PCs. |
+| **I-27** | 95% | 🔍 Revisión | Legal | Pablo | Cumplimiento RDO | Verificación final pre-merge a prod. |
+| **I-04** | 90% | 🔍 Revisión | Gerencia | Claude | Tracker temas | CLAUDE.md apunta a v2. Wiring n8n Pablo. |
+| **I-06** | 80% | 🔍 Revisión | Gerencia | Dusan | Ecosistema int. | Integrar KPIs en panel RDO. Validar flujo material V2. |
+| **I-14** | 80% | 🔍 Revisión | Tecnología | Dusan | Blindaje Diego | Activar 2FA con cuenta gerencia como piloto. |
+| **I-10** | 78% | 🧪 Validado | Comercial | Dusan | Sprint ventas | Poblar kanban oportunidades reales. Drag-and-drop columnas. |
+| **I-19** | 70% | 🧪 Validado | Gerencia | Dusan | Plan 2026-2030 | Gantt Viva 115 filas. Falta KPIs operativos + hitos reales. |
+| **I-11** | 70% | 🧪 Validado | Tecnología | Pablo | ACI deploy | Testing Ingrid+Andrea datos reales. Bandeja precios completa. |
+| **I-24** | 65% | 🧪 Validado | RRHH | Dusan | Descripcion cargos | Andrea revisa T11. Consolidar cargos Ingrid, Nicolas, Juan. |
+| **I-13** | 48% | 🔨 Build | Tecnología | Pablo | Deuda técnica | Items pendientes. Monitorear headers no-cache Vercel. |
+| **I-01** | 30% | 📋 Spec | Tecnología | Claude | Mapa BD + FKs | Mapear FKs + diagrama ER + decidir RLS particionadas. |
+| **I-05** | 30% | 📋 Spec | Tecnología | Claude | Panel temas | Build status.html interactivo. Migrar a API live. |
+| **I-02** | 30% | 📋 Spec | Gerencia | Dusan | Viz informes | Conectar informes visuales al panel. Decidir formato. |
+| **I-25** | 30% | 📋 Spec | Legal | Dusan | Permisos Talca | Revisar vigencia cada permiso + fechas renovacion. |
+| **I-22** | 25% | 📋 Spec | Tecnología | Dusan | Guia Chatbot | Revisar guia + decidir deploy. |
+| **I-03** | 20% | 📋 Spec | Tecnología | Dusan | Eval BI tools | Contrastar con contexto real (84 tablas, Panel RDO live). |
+| **I-21** | 20% | 📋 Spec | Operaciones | Dusan | Puerto Montt ops | Permisos SAG + roadmap apertura. |
+| **I-17** | 20% | 📋 Spec | Tecnología | Claude | Docs Mermaid+EC | Post I-05 build. |
+| **I-09** | 15% | 💡 Diseño | Tecnología | Pablo | Infra VPS + hub | Contratar DO. Pablo ejecuta scripts. |
+| **I-23** | 15% | 💡 Diseño | Gerencia | Dusan | Monday implement | Decidir Monday vs tracker interno. |
+| **I-08** | 10% | 💡 Diseño | Tecnología | Dusan | Rotación keys | Rotar K3 + Meta token. |
+| **I-20** | 10% | 💡 Diseño | Comercial | Dusan | Propuestas activas | Revisar 8 PDFs propuestas. |
+| **I-07** | 10% | 💡 Diseño | Tecnología | Claude | Eval diagramas | ECharts para I-05 cuando arranque build. |
+| **I-15** | 0% | 💡 Diseño | Finanzas | Dusan | Notion Plus | Contratar + setup workspace. |
+| **I-18** | 0% | 💡 Diseño | Comercial | Dusan | Contrato Resimple | Abrir PDF + decidir renovacion. |
+| **I-12** | 0% | ~~Descartado~~ | Gerencia | Dusan | Diego v5.0 live | Cancelado 22-abr. Saltamos a v5.1 (I-16). |
 
-> _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+---
+
+## Progreso diario (evolución)
+
+| Fecha | Iniciativas | % promedio | Superados | En revisión | Validado | Build | Spec/Diseño |
+|---|---|---|---|---|---|---|---|
+| 22-abr-2026 (baseline) | 25 | 15.9% | 0 | 1 | 0 | 4 | 20 |
+| **16-jun-2026** (hoy) | 27 | 38.5% | 1 | 5 | 4 | 1 | 16 |
+
+> Avance neto +22.6 puntos porcentuales en 8 semanas. 1 iniciativa cerrada (I-26 CRM). 5 en revisión final.
+
+---
+
+## Semana 16-20 jun — foco sugerido
+
+| Día | Quién | Que toca |
+|---|---|---|
+| **Lun 16** | Dusan | Firmar 3 items pendientes en tab ALT3 (v13, Diego canary, cifrado) |
+| **Lun 16** | Pablo | Smoke final Diego v5.1 con Andrea (I-16 → 100%) |
+| Mar 17 | Pablo | Cerrar I-27 Cumplimiento RDO (merge final a prod) |
+| Mar 17 | Dusan | Poblar kanban embudo con oportunidades reales (I-10) |
+| Mie 18 | Dusan | 2FA cuenta gerencia piloto (I-14 → 100%) |
+| Jue 19 | Pablo | Deuda técnica sprint (I-13) |
+| Vie 20 | Ambos | Revisión semanal + snapshot progreso |
 
 ---
 
