@@ -23,8 +23,8 @@
 | **I-15** | 0% | Finanzas y A. | Dusan | Notion Plus | 30min | **25-abr** | — | 💡 Contratar workspace |
 | **I-01** | 30% | Tecnología | Claude | Mapa BD + FKs | 1h | **29-abr** | — | 📋 Mapear FKs+ER+RLS |
 | **I-10** | 40% | Comercial | Dusan | Sprint ventas | 2sem | **28-abr ⚠️** | — | 🔨 ATRASADO |
-| **I-09** | 15% | Tecnología | Pablo | Infra VPS + hub | 2d | **28-abr** | — | 📋 Requires I-08 + DO |
-| **I-12** | 30% | Gerencia General | Dusan | Diego v5.0 live | 2sem | **🚀 30-abr** | `Plan Ecosistema Digital/Observaciones para Diego Agente/` | 📋 Lanzamiento oficial |
+| **I-09** | 30% | Tecnología | Pablo | Infra VPS + hub | 2d | **28-abr** | — | 📋 5 workflows CI migrados + k6 smoke/load activos (17-jun) |
+| **I-12** | 45% | Gerencia General | Dusan | Diego v5.0 live | 2sem | **🚀 30-abr** | `Plan Ecosistema Digital/Observaciones para Diego Agente/` | 🔨 Módulo Diego-Precios funcional (17-jun) · Falta validar prod |
 | **I-04** | 90% | Gerencia General | Claude | Tracker temas | 30min | **30-abr** | — | 🔍 Pablo wirea n8n |
 | **I-19** | 30% | Gerencia General | Dusan | Plan 2026-2030 | 2h | **30-abr** | `Plan Ecosistema Digital/Plan_Operativo_v2_FINAL_Lunes_2026-04-21.pptx` | 📋 Alinear con I-10, I-12 |
 | **I-11** | 50% | Tecnología | Pablo | ACI deploy | 1sem | **5-may** | `Cesar - Order/02_Asistente_Comercial_Integrado/.../SPEC_v3_FINAL...docx` | 🔨 Requires I-09 VPS |
@@ -34,11 +34,11 @@
 | **I-16** | 0% | Tecnología | Pablo | Diego v5.1 | 2sem | **15-may** | — | 💡 Post v5.0 estable |
 | **I-02** | 10% | Gerencia General | Dusan | Viz informes | 2sem | **15-may** | — | 💡 Decidir consumidor |
 | **I-20** | 10% | Comercial | Dusan | Propuestas activas | 1sem | **15-may** | `Comercial/.../[8 PDFs de propuestas]` | 💡 Revisar 8 propuestas |
-| **I-13** | 5% | Tecnología | Pablo | Deuda técnica | 3sem | **20-may** | — | 💡 11 subtareas post 30-abr |
+| **I-13** | 20% | Tecnología | Pablo | Deuda técnica | 3sem | **20-may** | — | 📋 CI/CD pipeline limpio (OWASP+k6+linter desbloqueados 17-jun) |
 | **I-06** | 15% | Gerencia General | Dusan | Ecosistema int. | 1sem | **20-may** | `Plan Ecosistema Digital/Ecosistema_Digital_Reciclean_Farex_v2.pptx` | 💡 Overlap I-02/I-03 |
 | **I-07** | 10% | Tecnología | Claude | Eval diagramas | 30min | **20-may** | — | 💡 ECharts para I-05 |
 | **I-21** | 20% | Operaciones | Dusan | Puerto Montt ops | 1mes | **30-jun** | `Patrimonio/Empresa Puerto Montt/` | 💡 Permisos SAG + roadmap |
-| **I-14** | 10% | Tecnología | Dusan | Blindaje Diego | 1h | — | — | 💡 PUK SIM + 2FA Meta |
+| **I-14** | 25% | Tecnología | Dusan | Blindaje Diego | 1h | — | — | 📋 Smoke tests E2E + OWASP ZAP + Gitleaks activos (17-jun) |
 | **I-17** | 20% | Tecnología | Claude | Docs Mermaid+EC | 2h | — | — | 💡 Post I-05 build |
 | **I-22** | 25% | Tecnología | Dusan | Guia Chatbot | 2sem | — | `Claude Code/ChatBot/produccion/Guia_Chatbot_Reciclean.pptx` | 💡 Deploy post 30-abr |
 | **I-23** | 15% | Gerencia General | Dusan | Monday implement | 3h | — | `Claude Code/Documentacion/Monday_Guia_Implementacion_Reciclean_v2.pptx` | 💡 Decidir Monday vs tracker |
@@ -89,9 +89,10 @@ Total Supabase: **84 tablas** + **11 vistas**.
 
 | Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
 |---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **22-abr-2026** (baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **17-jun-2026** | 68 | 19.4% | 0 | 1 | 5 | 62 |
 
-> _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+> _Avances 17-jun: I-09 15→30% · I-12 30→45% · I-13 5→20% · I-14 10→25% (Diego-Precios + CI/CD pipeline completo)_
 
 ---
 
