@@ -234,7 +234,7 @@
       precio_clp_kg: it.precio_clp_kg,
       fecha_vigencia: new Date().toISOString().slice(0, 10),
       confidence_score: it.confidence ?? 0.5,
-      ruta: 'diego_chat_archivo',
+      ruta: 'manual',
       hash_dedup: hashDedup(cliente.id, it.material_descrito, it.precio_clp_kg),
       estado: 'pendiente',
       destino_tipo,
