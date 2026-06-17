@@ -5,13 +5,15 @@ name: k6 Performance · Pieza #4 Plan 99-99 (HTML L432 + L414)
 # Bloquea PR si performance se degrada (p95 panel >3s, p99 Diego >20s)
 
 on:
+  # FIX C2.a-style (17-jun-2026): paths filter removido del trigger
+  # pull_request para evitar deadlock estructural con k6 SMOKE como required
+  # check. Sin esto, todo PR meta-CI que no toque tests/k6/** o public/** o
+  # supabase/functions/** queda BLOQUEADO indefinidamente con check en estado
+  # "Expected · Waiting for status". Mismo patrón aplicado a lint-panel-rdo.yml
+  # en PR #319 (verificado runtime con 6 merges no-admin posteriores).
+  # Costo: k6 SMOKE corre ~22s en cada PR a main (overhead aceptable).
   pull_request:
     branches: [main]
-    paths:
-      - 'tests/k6/**'
-      - 'public/**'
-      - 'supabase/functions/**'
-      - '.github/workflows/k6.yml'
   push:
     branches: [main]
     paths:

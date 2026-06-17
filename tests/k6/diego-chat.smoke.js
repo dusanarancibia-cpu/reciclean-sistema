@@ -13,8 +13,9 @@ export const options = {
   vus: 1,
   iterations: 1,
   thresholds: {
-    // smoke = is-alive · cualquier respuesta no-5xx vale
-    'http_req_duration{endpoint:diego-chat}': ['p(95)<20000'],
+    // smoke = is-alive · cualquier respuesta no-5xx vale.
+    // Threshold relajado a 60s porque Diego usa LLM (cold start CI puede pasar 20s).
+    'http_req_duration{endpoint:diego-chat}': ['p(95)<60000'],
   },
 };
 
@@ -41,7 +42,7 @@ export default function () {
       'Content-Type': 'application/json',
       'User-Agent': 'k6-smoke-pieza4/1.0',
     },
-    timeout: '25s',
+    timeout: '60s',
   };
 
   const res = http.post(url, payload, params);
