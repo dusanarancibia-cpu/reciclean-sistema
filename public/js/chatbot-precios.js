@@ -26,6 +26,8 @@
   // ─────────────────────────────────────────────────────────
   const EF_PROCESAR_PRECIOS_URL =
     'https://eknmtsrtfkzroxnovfqn.functions.supabase.co/procesar-precios';
+  const EF_DIEGO_CHAT_PROCESS_URL =
+    'https://eknmtsrtfkzroxnovfqn.functions.supabase.co/diego-chat-process';
   const TIMEOUT_CLIENTE_NUEVO_MS = 30_000; // V3: 30 segundos
   const SEPARADORES_CLIENTES = /\s*(?:,|;|\sy\s|\se\s|\+)\s*/i; // V4
   // H3 · Umbrales auto-aprobación por confidence_score (C2 17-jun PM-4)
@@ -330,6 +332,106 @@
   }
 
   // ─────────────────────────────────────────────────────────
+  // C1 (17-jun PM-4) · delegarADiegoLLM
+  //
+  // Path único: en lugar de que el frontend haga su propio INSERT (path
+  // antiguo `insertarPropuestas`), enviamos los items extraídos a Diego LLM
+  // vía EF `diego-chat-process`. Diego LLM tiene la tool `proponer_precio`
+  // registrada en su SYSTEM_PROMPT desde v75+ y es responsable de:
+  //   1. Decidir destino_tipo (referente vs histórico) según el cliente
+  //   2. Llamar a la tool por cada item · 1 INSERT por item con `ruta='dusan'`
+  //   3. Notificar a Dusan/Andrea por su pipeline (panel.diego_outbox_whatsapp)
+  //   4. Devolver narrativa al usuario
+  //
+  // El frontend ya NO inserta y ya NO notifica. Cierra el spirit de la
+  // Opción C del documento PC1 14:50 CLT.
+  //
+  // Cola item refactor: mayordomo.cola_construccion id 0696576f.
+  // ─────────────────────────────────────────────────────────
+  async function delegarADiegoLLM(items, cliente, destino_tipo_sugerido, sb, sucursal_id, mensajeOriginal) {
+    if (!items || items.length === 0) {
+      return { ok: false, motivo: 'sin_items', reply: 'No tengo items para registrar.' };
+    }
+
+    // Construir mensaje narrativo para Diego LLM. Incluye contexto explícito
+    // para que el LLM no tenga que adivinar cliente ni sucursal.
+    const lista = items.map((it) => {
+      const conf = (it.confidence ?? 0.5).toFixed(2);
+      return `  - ${it.material_descrito || it.material_id_match || 'material'} → $${it.precio_clp_kg} (conf ${conf})`;
+    }).join('\n');
+
+    const mensaje = [
+      `El usuario quiere registrar precios para el cliente "${cliente.razon_social}" (cliente_id=${cliente.id}).`,
+      `Sucursal: ${sucursal_id || 'cerrillos'}.`,
+      `Destino sugerido: ${destino_tipo_sugerido} (referente porque el cliente está marcado como referente, o histórico si no).`,
+      `Mensaje original del usuario: "${mensajeOriginal || '(sin texto)'}"`,
+      ``,
+      `Items extraídos del archivo (${items.length}):`,
+      lista,
+      ``,
+      `Por favor registralos en staging.precios_propuestos usando la tool proponer_precio. Una llamada por item.`,
+    ].join('\n');
+
+    // Obtener JWT del usuario logueado (la EF tiene verify_jwt=true)
+    let jwt = null;
+    try {
+      if (sb && sb.auth && typeof sb.auth.getSession === 'function') {
+        const { data } = await sb.auth.getSession();
+        jwt = data?.session?.access_token || null;
+      }
+    } catch (_e) {
+      // sigue con anon · la EF lo rechazará si verify_jwt
+    }
+    const token = jwt || getAnonKey();
+
+    try {
+      const res = await fetch(EF_DIEGO_CHAT_PROCESS_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'apikey': getAnonKey(),
+        },
+        body: JSON.stringify({
+          message: mensaje,
+          cliente_id: cliente.id,
+          sucursal_id: sucursal_id || 'cerrillos',
+          destino_tipo: destino_tipo_sugerido,
+          items_count: items.length,
+          metadata: {
+            origen: 'chatbot-precios.js C1',
+            n_items: items.length,
+            destino_sugerido: destino_tipo_sugerido,
+          },
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.error) {
+        return {
+          ok: false,
+          motivo: json.error || `http_${res.status}`,
+          reply: `❌ Diego no pudo registrar (${json.error || res.status}). Reintenta o re-tipea manualmente.`,
+        };
+      }
+      // Diego LLM responde con narrativa + posiblemente n_propuestas_creadas en metadata
+      const reply = json.reply || json.message || json.respuesta ||
+                    `✅ Diego procesó tu pedido para "${cliente.razon_social}".`;
+      return {
+        ok: true,
+        reply,
+        n_propuestas_creadas: json.metadata?.n_propuestas_creadas || json.n_propuestas_creadas || null,
+        raw: json,
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        motivo: `red_fallo: ${e.message}`,
+        reply: `❌ Error de red al contactar a Diego: ${e.message}`,
+      };
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────
   // V6 · notificarAprobadores(destino_tipo, n_propuestas, cliente, sb)
   // Lee teléfonos vivos de panel.dotacion (sin hardcodear) y encola WhatsApp
   // + dispara evento de badge para que panel-rdo.html actualice contador.
@@ -458,43 +560,49 @@
         continue;
       }
 
-      // Insertar + notificar
-      const ins = await insertarPropuestas(r.items, cliente, destino_tipo, sb, sucursal_id);
-      if (ins.n_insertadas > 0) {
-        await notificarAprobadores(destino_tipo, ins.n_insertadas, cliente, sb);
+      // C1 (17-jun PM-4) · path único · delegar a Diego LLM en lugar de
+      // hacer INSERT local. Mantenemos los filtros H3 (descarte low conf)
+      // y la EF H6 (líneas perdidas) acá porque NO son responsabilidad del
+      // LLM · son señales pre-LLM.
+
+      // H3 · descartar items con confidence < umbral antes de mandar al LLM
+      const itemsParaDiego = [];
+      const lineas_low_conf = [];
+      for (const it of r.items) {
+        const conf = it.confidence ?? 0.5;
+        if (conf < CONFIDENCE_MIN_REQUERIDO) {
+          lineas_low_conf.push({
+            material_descrito: it.material_descrito,
+            precio_clp_kg: it.precio_clp_kg,
+            confidence: conf,
+            fuente_linea: it.fuente_linea?.slice(0, 200),
+          });
+          continue;
+        }
+        itemsParaDiego.push(it);
       }
 
-      // H3 + H4 + H6 (C2 17-jun): feedback enriquecido al usuario
+      // Diego LLM (Opción C) hace los INSERTs + notificaciones
+      const ins = await delegarADiegoLLM(itemsParaDiego, cliente, destino_tipo, sb, sucursal_id, mensaje);
+
+      // Componer feedback al usuario · narrativa LLM + señales pre-LLM (H3+H6)
       const partes = [];
-      if (ins.n_insertadas > 0) {
-        partes.push(
-          `✅ ${ins.n_insertadas} propuesta(s) de "${cliente.razon_social}" en bandeja ` +
-          `(tipo: ${destino_tipo}).`
-        );
+      if (ins.ok) {
+        partes.push(ins.reply);
+        if (ins.n_propuestas_creadas != null) {
+          partes.push(`(Diego creó ${ins.n_propuestas_creadas} propuesta(s).)`);
+        }
+      } else {
+        partes.push(ins.reply);
       }
-      if (ins.n_auto_aprobadas > 0) {
-        partes.push(
-          `🤖 ${ins.n_auto_aprobadas} auto-aprobada(s) por confidence ≥ ${CONFIDENCE_AUTO_APROBAR}.`
-        );
-      }
-      if (ins.n_duplicadas > 0) {
-        const dup = ins.lineas_duplicadas
-          .slice(0, 3)
-          .map((l) => `"${l.material_descrito}" ($${l.precio_clp_kg})`)
-          .join(', ');
-        const sufijo = ins.lineas_duplicadas.length > 3 ? ` y ${ins.lineas_duplicadas.length - 3} más` : '';
-        partes.push(
-          `🔁 ${ins.n_duplicadas} duplicada(s) (ya cargadas hoy): ${dup}${sufijo}.`
-        );
-      }
-      if (ins.n_descartadas_low_conf > 0) {
-        const low = ins.lineas_low_conf
+      if (lineas_low_conf.length > 0) {
+        const low = lineas_low_conf
           .slice(0, 3)
           .map((l) => `"${l.fuente_linea || l.material_descrito}" (conf ${l.confidence.toFixed(2)})`)
           .join('\n  · ');
-        const sufijo = ins.lineas_low_conf.length > 3 ? `\n  · ...y ${ins.lineas_low_conf.length - 3} más` : '';
+        const sufijo = lineas_low_conf.length > 3 ? `\n  · ...y ${lineas_low_conf.length - 3} más` : '';
         partes.push(
-          `⚠️ ${ins.n_descartadas_low_conf} línea(s) descartada(s) por confianza baja. ` +
+          `⚠️ ${lineas_low_conf.length} línea(s) descartada(s) por confianza baja antes de Diego. ` +
           `Re-tipeá como "MATERIAL $PRECIO":\n  · ${low}${sufijo}`
         );
       }
@@ -508,17 +616,21 @@
       }
       if (partes.length === 0) {
         partes.push(`(Sin movimientos para "${cliente.razon_social}".)`);
-      } else if (ins.n_insertadas > 0) {
-        partes.push('Andrea/Dusan reciben aviso.');
       }
+      // Nota: Diego LLM notifica a Dusan/Andrea por su propio pipeline
+      // (panel.diego_outbox_whatsapp via tool proponer_precio). El frontend
+      // ya NO encola WhatsApp.
       uiMensaje(partes.join('\n'));
       resultados.push({
         cliente: cliente.razon_social,
-        n: ins.n_insertadas,
-        n_auto_aprobadas: ins.n_auto_aprobadas,
-        n_duplicadas: ins.n_duplicadas,
-        n_descartadas_low_conf: ins.n_descartadas_low_conf,
+        ok_diego: ins.ok,
+        n_propuestas_creadas: ins.n_propuestas_creadas, // null si Diego no lo expuso
+        n_descartadas_pre_llm: lineas_low_conf.length,
+        n_lineas_perdidas_ef: r.metricas
+          ? Math.max(0, (r.metricas.n_lineas || 0) - (r.metricas.n_items_extraidos || 0))
+          : 0,
         destino_tipo,
+        motivo: ins.ok ? null : ins.motivo,
       });
     }
 
@@ -534,13 +646,18 @@
     extraerCliente,
     crearClienteConTimeout,
     procesarArchivo,
+    // DEPRECATED desde v1.3.0 (C1 path único): ambas funciones se mantienen
+    // exportadas para tests legacy y rollback, pero el orquestador ya NO las
+    // usa. El INSERT y la notificación los hace Diego LLM via tool
+    // proponer_precio. Borrar en v2.0.0 si nadie depende.
     insertarPropuestas,
     notificarAprobadores,
     getTelefonosAprobadores,
     mostrarConfirmacion,
+    delegarADiegoLLM,
     procesarMensajeConArchivo,
-    _version: '1.2.0',
-    _firma: 'D-DIEGO-PRECIOS-CLIENTE-001 · 17-jun-2026 PM-4 · C2 UX (H3+H4+H6)',
+    _version: '1.3.0',
+    _firma: 'D-DIEGO-PRECIOS-CLIENTE-001 · 17-jun-2026 PM-4 · C1 path único Diego LLM',
     _config: {
       CONFIDENCE_AUTO_APROBAR,
       CONFIDENCE_MIN_REQUERIDO,
