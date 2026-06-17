@@ -234,7 +234,13 @@
       precio_clp_kg: it.precio_clp_kg,
       fecha_vigencia: new Date().toISOString().slice(0, 10),
       confidence_score: it.confidence ?? 0.5,
-      ruta: 'manual',
+      // FIX 17-jun-2026 PM-4 (PC2 Pablo): 'manual' no esta en CHECK constraint
+      // precios_propuestos_ruta_check (acepta solo auto/andrea/dusan/competencia).
+      // INSERT rechazado en silencio desde el deploy original · 0 filas reales.
+      // Opcion A del documento CONTEXTO-D-DIEGO-PRECIOS-CLIENTE-001-PARA-PABLO.md
+      // (PC1 Dusan auto-caza R-AUD-077). Refactor path unico (Opcion C) queda
+      // encolado para proximo sprint.
+      ruta: 'dusan',
       hash_dedup: hashDedup(cliente.id, it.material_descrito, it.precio_clp_kg),
       estado: 'pendiente',
       destino_tipo,
