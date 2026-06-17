@@ -13181,6 +13181,72 @@ document.addEventListener('DOMContentLoaded', () => {
     pendingFile = null;
     attachPreview.style.display = 'none';
 
+    // [INTERCEPTOR · D-DIEGO-PRECIOS-CLIENTE-001 · 16-jun-2026]
+    // Si el mensaje matchea "graba precios de X" + hay archivo + ChatbotPrecios cargó,
+    // divergir al flujo de precios cliente (auto-aprobado, sin botones).
+    const matchPrecios = msg && attach &&
+      /graba(?:r)?\s+(?:los\s+|estos\s+|estos\s+nuevos\s+)?precios?\s+(?:de|del|para)\s+(.+)/i.test(msg) &&
+      typeof window.ChatbotPrecios !== 'undefined' &&
+      typeof window.ChatbotPrecios.procesarMensajeConArchivo === 'function';
+    if (matchPrecios) {
+      try {
+        console.log('[Precios] interceptor activo · descargando archivo de Storage...');
+        const dl = await sb.storage.from('diego-chat-files').download(attach.file_url);
+        if (dl.error) throw dl.error;
+        const archivoFile = new File([dl.data], attach.file_name, { type: attach.file_mime || 'text/plain' });
+        const ctx = {
+          sb: sb,
+          sucursal_id: (typeof window.currentSucursal !== 'undefined' && window.currentSucursal) || 'cerrillos',
+          metadatos: { usuario_email: getUserEmail() || 'anon' },
+          // Auto-aprobado: si cliente no existe, crear como histórico; siempre confirmar items.
+          uiPreguntar: function (nombreCliente, cb) {
+            console.log('[Precios] auto-creando cliente nuevo como histórico:', nombreCliente);
+            cb('si');
+          },
+          uiRenderResumen: function (resumen, cb) {
+            console.log('[Precios] auto-confirmando', resumen.n_items, 'items para', resumen.cliente);
+            cb('si');
+          },
+          uiMensaje: function (texto) {
+            if (texto === 'asistente_general') return;
+            history = history.filter(h => h.role !== 'thinking');
+            history.push({ role: 'diego', mensaje: texto, ts: Date.now() });
+            render();
+          }
+        };
+        const resultado = await window.ChatbotPrecios.procesarMensajeConArchivo(msg, archivoFile, ctx);
+        history = history.filter(h => h.role !== 'thinking');
+        if (resultado.ok) {
+          const total = (resultado.resultados || []).reduce((s, r) => s + (r.n || 0), 0);
+          history.push({
+            role: 'diego',
+            mensaje: '✅ ' + total + ' propuesta(s) creadas en bandeja. Andrea y Dusan reciben aviso.',
+            ts: Date.now()
+          });
+        } else {
+          history.push({
+            role: 'diego',
+            mensaje: '❌ ' + (resultado.motivo || 'No pude procesar los precios'),
+            ts: Date.now()
+          });
+        }
+        render();
+        sendBtn.disabled = false;
+        refreshBadge();
+        return; // NO llamar a callDiego original
+      } catch (errPrecios) {
+        history = history.filter(h => h.role !== 'thinking');
+        history.push({
+          role: 'diego',
+          mensaje: '❌ Error flujo precios: ' + (errPrecios.message || errPrecios) + ' · sigo flujo normal',
+          ts: Date.now()
+        });
+        render();
+        console.error('[Precios] interceptor fallo:', errPrecios);
+        // Fallback: continuar con flujo Diego normal
+      }
+    }
+
     const resp = await callDiego(msg, attach);
     // Quitar el "thinking"
     history = history.filter(h => h.role !== 'thinking');
@@ -19899,6 +19965,158 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('audit_forzar_banco')?.addEventListener('click', function () { forzarIngesta('banco'); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- D-DIEGO-PRECIOS-CLIENTE-001 · flujo Diego recibe precios cliente · 16-jun-2026 -->
+<script src="/js/chatbot-precios.js" defer></script>
+
+<!-- D-DIEGO-PRECIOS-CLIENTE-001 · Puente FAB Diego ↔ ChatbotPrecios · 16-jun-2026 (v3 ANTIFRAGIL) -->
+<script>
+(function ensurePreciosFlow() {
+  const MAX_RETRIES = 10;
+  const RETRY_INTERVAL = 500;
+  let retries = 0;
+  let applied = false;
+
+  function renderBotones(textoMsg, btns) {
+    const chatBody = document.getElementById('diegoChatBody');
+    if (!chatBody) return null;
+    const wrap = document.createElement('div');
+    wrap.className = 'diego-msg diego';
+    const botonesHtml = btns.map(function (b) {
+      return '<button data-val="' + b.val + '" style="background:' + b.bg + ';color:' + b.fg + ';border:0;padding:6px 14px;border-radius:6px;cursor:pointer;margin-right:6px;">' + b.label + '</button>';
+    }).join('');
+    wrap.innerHTML = '<div>' + textoMsg + '</div><div style="margin-top:8px;">' + botonesHtml + '</div>';
+    chatBody.appendChild(wrap);
+    chatBody.scrollTop = chatBody.scrollHeight;
+    return wrap;
+  }
+
+  function applyPatch() {
+    if (applied) return true;
+    if (typeof window.ChatbotPrecios === 'undefined') {
+      console.warn('[Precios] ChatbotPrecios aun no disponible (intento ' + (retries + 1) + '/' + MAX_RETRIES + ')');
+      return false;
+    }
+    const fab = document.getElementById('diegoFab');
+    if (!fab) {
+      console.warn('[Precios] FAB Diego aun no disponible (intento ' + (retries + 1) + '/' + MAX_RETRIES + ')');
+      return false;
+    }
+
+    const originalSend = window.diegoEnviarMensaje || function () {};
+
+    window.diegoEnviarMensaje = async function (mensaje, archivo) {
+      const matchPrecios = mensaje && /graba(?:r)?\s+(?:los\s+|estos\s+|estos\s+nuevos\s+)?precios?\s+(?:de|del|para)\s+(.+)/i.test(mensaje);
+      if (!matchPrecios || !archivo) {
+        return originalSend(mensaje, archivo);
+      }
+      try {
+        const ctx = {
+          sb: window.sb,
+          sucursal_id: window.currentSucursal || 'cerrillos',
+          metadatos: { usuario_email: window.currentUser || 'anon' },
+
+          uiPreguntar: function (nombreCliente, cb) {
+            const wrap = renderBotones(
+              'No encontré el cliente "' + nombreCliente + '". ¿Lo creo como histórico?',
+              [
+                { val: 'si', label: 'Sí', bg: '#059669', fg: '#fff' },
+                { val: 'no', label: 'No', bg: '#e5e7eb', fg: '#1f2937' }
+              ]
+            );
+            if (!wrap) { cb('no'); return; }
+            const handler = function (e) {
+              const t = e.target.closest('button[data-val]');
+              if (!t || !wrap.contains(t)) return;
+              wrap.remove();
+              document.removeEventListener('click', handler);
+              cb(t.dataset.val);
+            };
+            document.addEventListener('click', handler);
+            setTimeout(function () {
+              if (wrap.parentNode) {
+                wrap.remove();
+                document.removeEventListener('click', handler);
+                cb(null);
+              }
+            }, 30000);
+          },
+
+          uiRenderResumen: function (resumen, cb) {
+            const lista = (resumen.muestra || []).map(function (s) { return '<li>' + s + '</li>'; }).join('');
+            const tipoLbl = resumen.destino_tipo === 'referente'
+              ? '🟢 Cliente referente (afecta precios vivos)'
+              : '🟡 Cliente histórico (solo registro)';
+            const wrap = renderBotones(
+              '<strong>' + resumen.n_items + ' precios para ' + resumen.cliente + '</strong><br>' +
+              tipoLbl + '<ul style="margin:6px 0 4px 18px;padding:0;font-size:0.9em;">' + lista + '</ul>' +
+              '¿Creo las propuestas?',
+              [
+                { val: 'si', label: 'Sí, crear', bg: '#059669', fg: '#fff' },
+                { val: 'no', label: 'Cancelar', bg: '#e5e7eb', fg: '#1f2937' }
+              ]
+            );
+            if (!wrap) { cb('no'); return; }
+            const handler = function (e) {
+              const t = e.target.closest('button[data-val]');
+              if (!t || !wrap.contains(t)) return;
+              wrap.remove();
+              document.removeEventListener('click', handler);
+              cb(t.dataset.val);
+            };
+            document.addEventListener('click', handler);
+          },
+
+          uiMensaje: function (texto) {
+            if (texto === 'asistente_general') return;
+            if (window.diegoAgregarMensaje) window.diegoAgregarMensaje(texto, 'diego');
+          }
+        };
+
+        const resultado = await window.ChatbotPrecios.procesarMensajeConArchivo(mensaje, archivo, ctx);
+
+        if (resultado.ok) {
+          const total = (resultado.resultados || []).reduce(function (s, r) { return s + (r.n || 0); }, 0);
+          if (window.diegoAgregarMensaje) {
+            window.diegoAgregarMensaje('✅ ' + total + ' propuesta(s) en bandeja. Andrea y Dusan reciben aviso.', 'diego');
+          }
+        } else {
+          if (window.diegoAgregarMensaje) {
+            window.diegoAgregarMensaje('❌ ' + (resultado.motivo || 'No pude procesar'), 'diego');
+          }
+        }
+      } catch (err) {
+        if (window.diegoAgregarMensaje) {
+          window.diegoAgregarMensaje('❌ Error en flujo de precios: ' + (err.message || err), 'diego');
+        }
+        console.error('[Precios] excepcion en orquestador:', err);
+      }
+    };
+
+    applied = true;
+    console.log('[Precios] ✅ Puente FAB ↔ ChatbotPrecios activado tras ' + (retries + 1) + ' intento(s)');
+    return true;
+  }
+
+  function tryApply() {
+    if (applyPatch()) return;
+    retries++;
+    if (retries < MAX_RETRIES) {
+      setTimeout(tryApply, RETRY_INTERVAL);
+    } else {
+      console.error('[Precios] ❌ No se pudo activar el puente despues de ' + MAX_RETRIES + ' intentos. Recarga con Ctrl+Shift+R.');
+    }
+  }
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(tryApply, 100);
+  } else {
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(tryApply, 100); });
+    window.addEventListener('load', function () { setTimeout(tryApply, 300); });
+  }
+  setTimeout(tryApply, 2000);
 })();
 </script>
 
