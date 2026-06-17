@@ -5,6 +5,12 @@ name: OWASP ZAP Baseline · Pieza #8 Plan 99-99 (HTML L432 + L417)
 # Para activar bloqueante en PR: descomentar el step "Fail on alerts" y marcar required en branch protection.
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'public/**'
+      - 'supabase/functions/**'
+      - '.github/workflows/owasp-zap-baseline.yml'
   schedule:
     - cron: '0 12 * * 1'  # Lunes 09:00 CLT scan baseline semanal
   workflow_dispatch:
