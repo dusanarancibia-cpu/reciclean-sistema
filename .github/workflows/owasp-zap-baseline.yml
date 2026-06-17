@@ -1,0 +1,43 @@
+name: OWASP ZAP Baseline · Pieza #8 Plan 99-99 (HTML L432 + L417)
+
+# Guardia GH bloqueante sobre PCs (R-AUD-083)
+# Escaneo DAST contra superficie pública panel-rdo · informe-only inicial.
+# Para activar bloqueante en PR: descomentar el step "Fail on alerts" y marcar required en branch protection.
+
+on:
+  schedule:
+    - cron: '0 12 * * 1'  # Lunes 09:00 CLT scan baseline semanal
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'URL objetivo del escaneo (default panel-rdo prod)'
+        required: false
+        default: 'https://panel-rdo.vercel.app'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  zap-baseline:
+    name: ZAP Baseline scan (informe)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: ${{ inputs.target_url || 'https://panel-rdo.vercel.app' }}
+          fail_action: false  # ☢️ informe-only · NO bloquea hasta tuning manual Pablo
+          artifact_name: zap-baseline-report
+          allow_issue_writing: true
+          cmd_options: '-a -j -m 5 -T 60'
+
+      - name: Comment summary on schedule
+        if: github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('Pieza #8 Plan 99-99 · ZAP baseline weekly scan completed · revisar artifact zap-baseline-report');
