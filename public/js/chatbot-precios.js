@@ -28,6 +28,12 @@
     'https://eknmtsrtfkzroxnovfqn.functions.supabase.co/procesar-precios';
   const TIMEOUT_CLIENTE_NUEVO_MS = 30_000; // V3: 30 segundos
   const SEPARADORES_CLIENTES = /\s*(?:,|;|\sy\s|\se\s|\+)\s*/i; // V4
+  // H3 · Umbrales auto-aprobación por confidence_score (C2 17-jun PM-4)
+  // >= 0.9 · auto-aprueba como histórico · no requiere ojo humano
+  //  < 0.6 · descarta · pide al usuario re-tipear esa línea
+  // 0.6 a 0.89 · bandeja humana normal
+  const CONFIDENCE_AUTO_APROBAR = 0.9;
+  const CONFIDENCE_MIN_REQUERIDO = 0.6;
 
   // ─────────────────────────────────────────────────────────
   // V1 · detectarIntencion(mensaje) → { intencion, raw_clientes } | null
@@ -219,44 +225,97 @@
   }
 
   // ─────────────────────────────────────────────────────────
-  // insertarPropuestas(items, cliente, destino_tipo, sb) → { n_insertadas }
+  // insertarPropuestas(items, cliente, destino_tipo, sb)
+  //   → { n_insertadas, n_auto_aprobadas, n_duplicadas, n_descartadas_low_conf,
+  //       lineas_low_conf, lineas_duplicadas }
+  //
+  // H3 (C2 17-jun): umbrales por confidence_score · auto-aprueba >= 0.9 ·
+  //                 descarta < 0.6 con feedback al usuario.
+  // H4 (C2 17-jun): captura UNIQUE violation (23505) como "ya cargado hoy" ·
+  //                 inserta fila a fila para distinguir éxito vs duplicado.
   // ─────────────────────────────────────────────────────────
   async function insertarPropuestas(items, cliente, destino_tipo, sb, sucursal_id) {
-    if (!items || items.length === 0) return { n_insertadas: 0 };
+    const out = {
+      n_insertadas: 0,
+      n_auto_aprobadas: 0,
+      n_duplicadas: 0,
+      n_descartadas_low_conf: 0,
+      lineas_low_conf: [],
+      lineas_duplicadas: [],
+    };
+    if (!items || items.length === 0) return out;
     if (!['referente', 'historico'].includes(destino_tipo)) {
       throw new Error(`destino_tipo inválido: ${destino_tipo}`);
     }
 
-    const filas = items.map((it) => ({
-      cliente_id: cliente.id,
-      material_id: it.material_id_match, // puede ser null, el matcher posterior lo resuelve
-      sucursal_id: sucursal_id || 'cerrillos', // default si no hay contexto
-      precio_clp_kg: it.precio_clp_kg,
-      fecha_vigencia: new Date().toISOString().slice(0, 10),
-      confidence_score: it.confidence ?? 0.5,
-      // FIX 17-jun-2026 PM-4 (PC2 Pablo): 'manual' no esta en CHECK constraint
-      // precios_propuestos_ruta_check (acepta solo auto/andrea/dusan/competencia).
-      // INSERT rechazado en silencio desde el deploy original · 0 filas reales.
-      // Opcion A del documento CONTEXTO-D-DIEGO-PRECIOS-CLIENTE-001-PARA-PABLO.md
-      // (PC1 Dusan auto-caza R-AUD-077). Refactor path unico (Opcion C) queda
-      // encolado para proximo sprint.
-      ruta: 'dusan',
-      hash_dedup: hashDedup(cliente.id, it.material_descrito, it.precio_clp_kg),
-      estado: 'pendiente',
-      destino_tipo,
-      notas: `Diego chat · fuente: ${it.fuente_linea?.slice(0, 200)}`,
-    }));
+    const hoy = new Date().toISOString().slice(0, 10);
+    const ahoraIso = new Date().toISOString();
 
-    const { data, error } = await sb
-      .schema('staging')
-      .from('precios_propuestos')
-      .insert(filas)
-      .select('id');
+    for (const it of items) {
+      const conf = it.confidence ?? 0.5;
 
-    if (error) {
-      throw new Error(`insertarPropuestas falló: ${error.message}`);
+      // H3 · descartar low confidence con feedback al usuario
+      if (conf < CONFIDENCE_MIN_REQUERIDO) {
+        out.n_descartadas_low_conf += 1;
+        out.lineas_low_conf.push({
+          material_descrito: it.material_descrito,
+          precio_clp_kg: it.precio_clp_kg,
+          confidence: conf,
+          fuente_linea: it.fuente_linea?.slice(0, 200),
+        });
+        continue;
+      }
+
+      // H3 · auto-aprobar high confidence como histórico
+      const autoAprueba = conf >= CONFIDENCE_AUTO_APROBAR && destino_tipo === 'historico';
+
+      const fila = {
+        cliente_id: cliente.id,
+        material_id: it.material_id_match, // puede ser null, el matcher posterior lo resuelve
+        sucursal_id: sucursal_id || 'cerrillos', // default si no hay contexto
+        precio_clp_kg: it.precio_clp_kg,
+        fecha_vigencia: hoy,
+        confidence_score: conf,
+        // FIX Opción A 17-jun PM-4: CHECK acepta auto/andrea/dusan/competencia.
+        // Refactor path único (Opción C) encolado cola 0696576f para sprint próximo.
+        ruta: 'dusan',
+        hash_dedup: hashDedup(cliente.id, it.material_descrito, it.precio_clp_kg),
+        estado: autoAprueba ? 'aprobado' : 'pendiente',
+        destino_tipo,
+        notas: `Diego chat · fuente: ${it.fuente_linea?.slice(0, 200)}`,
+        ...(autoAprueba && {
+          aprobado_por: 'auto_confidence',
+          aprobado_at: ahoraIso,
+        }),
+      };
+
+      const { error } = await sb
+        .schema('staging')
+        .from('precios_propuestos')
+        .insert([fila]);
+
+      if (error) {
+        // H4 · UNIQUE violation (Postgres 23505) = duplicado del mismo día
+        const esDuplicado =
+          error.code === '23505' ||
+          /duplicate key|hash_dedup/i.test(error.message || '');
+        if (esDuplicado) {
+          out.n_duplicadas += 1;
+          out.lineas_duplicadas.push({
+            material_descrito: it.material_descrito,
+            precio_clp_kg: it.precio_clp_kg,
+          });
+          continue;
+        }
+        // cualquier otro error sí es bug · propagar
+        throw new Error(`insertarPropuestas falló (línea "${it.material_descrito}"): ${error.message}`);
+      }
+
+      out.n_insertadas += 1;
+      if (autoAprueba) out.n_auto_aprobadas += 1;
     }
-    return { n_insertadas: data?.length || 0 };
+
+    return out;
   }
 
   function hashDedup(cliente_id, material, precio) {
@@ -400,14 +459,67 @@
       }
 
       // Insertar + notificar
-      const { n_insertadas } = await insertarPropuestas(r.items, cliente, destino_tipo, sb, sucursal_id);
-      await notificarAprobadores(destino_tipo, n_insertadas, cliente, sb);
+      const ins = await insertarPropuestas(r.items, cliente, destino_tipo, sb, sucursal_id);
+      if (ins.n_insertadas > 0) {
+        await notificarAprobadores(destino_tipo, ins.n_insertadas, cliente, sb);
+      }
 
-      uiMensaje(
-        `✅ ${n_insertadas} propuesta(s) de "${cliente.razon_social}" en bandeja ` +
-        `(tipo: ${destino_tipo}). Andrea/Dusan reciben aviso.`
-      );
-      resultados.push({ cliente: cliente.razon_social, n: n_insertadas, destino_tipo });
+      // H3 + H4 + H6 (C2 17-jun): feedback enriquecido al usuario
+      const partes = [];
+      if (ins.n_insertadas > 0) {
+        partes.push(
+          `✅ ${ins.n_insertadas} propuesta(s) de "${cliente.razon_social}" en bandeja ` +
+          `(tipo: ${destino_tipo}).`
+        );
+      }
+      if (ins.n_auto_aprobadas > 0) {
+        partes.push(
+          `🤖 ${ins.n_auto_aprobadas} auto-aprobada(s) por confidence ≥ ${CONFIDENCE_AUTO_APROBAR}.`
+        );
+      }
+      if (ins.n_duplicadas > 0) {
+        const dup = ins.lineas_duplicadas
+          .slice(0, 3)
+          .map((l) => `"${l.material_descrito}" ($${l.precio_clp_kg})`)
+          .join(', ');
+        const sufijo = ins.lineas_duplicadas.length > 3 ? ` y ${ins.lineas_duplicadas.length - 3} más` : '';
+        partes.push(
+          `🔁 ${ins.n_duplicadas} duplicada(s) (ya cargadas hoy): ${dup}${sufijo}.`
+        );
+      }
+      if (ins.n_descartadas_low_conf > 0) {
+        const low = ins.lineas_low_conf
+          .slice(0, 3)
+          .map((l) => `"${l.fuente_linea || l.material_descrito}" (conf ${l.confidence.toFixed(2)})`)
+          .join('\n  · ');
+        const sufijo = ins.lineas_low_conf.length > 3 ? `\n  · ...y ${ins.lineas_low_conf.length - 3} más` : '';
+        partes.push(
+          `⚠️ ${ins.n_descartadas_low_conf} línea(s) descartada(s) por confianza baja. ` +
+          `Re-tipeá como "MATERIAL $PRECIO":\n  · ${low}${sufijo}`
+        );
+      }
+      // H6 (C2 17-jun): exponer líneas de archivo que no se extrajeron
+      if (r.metricas && r.metricas.n_lineas > r.metricas.n_items_extraidos) {
+        const perdidas = r.metricas.n_lineas - r.metricas.n_items_extraidos;
+        partes.push(
+          `❓ ${perdidas} línea(s) del archivo no pude leer. ` +
+          `Si te falta alguna, re-tipeá como "MATERIAL $PRECIO".`
+        );
+      }
+      if (partes.length === 0) {
+        partes.push(`(Sin movimientos para "${cliente.razon_social}".)`);
+      } else if (ins.n_insertadas > 0) {
+        partes.push('Andrea/Dusan reciben aviso.');
+      }
+      uiMensaje(partes.join('\n'));
+      resultados.push({
+        cliente: cliente.razon_social,
+        n: ins.n_insertadas,
+        n_auto_aprobadas: ins.n_auto_aprobadas,
+        n_duplicadas: ins.n_duplicadas,
+        n_descartadas_low_conf: ins.n_descartadas_low_conf,
+        destino_tipo,
+      });
     }
 
     return { ok: true, resultados };
@@ -427,7 +539,11 @@
     getTelefonosAprobadores,
     mostrarConfirmacion,
     procesarMensajeConArchivo,
-    _version: '1.1.0',
-    _firma: 'D-DIEGO-PRECIOS-CLIENTE-001 · 16-jun-2026 · placeholders resueltos',
+    _version: '1.2.0',
+    _firma: 'D-DIEGO-PRECIOS-CLIENTE-001 · 17-jun-2026 PM-4 · C2 UX (H3+H4+H6)',
+    _config: {
+      CONFIDENCE_AUTO_APROBAR,
+      CONFIDENCE_MIN_REQUERIDO,
+    },
   };
 })();
