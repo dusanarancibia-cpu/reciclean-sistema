@@ -744,6 +744,10 @@
             <span class="v4-emoji" aria-hidden="true">💰</span>
             Precios Vivos
           </a>
+          <a href="#" data-v4-tab="errores_bucles" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🚦</span>
+            Errores y Bucles
+          </a>
           <a href="#" data-v4-tab="cronograma_24h" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">⏰</span>
             Cronograma 24h
@@ -1127,6 +1131,7 @@
         <button data-tab="precios"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabPrecios">💲 Precios</button>
         <button data-tab="bandeja_precios" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabBandejaPrecios">📨 Bandeja Precios</button>
         <button data-tab="precios_vivos" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabPreciosVivos">💰 Precios Vivos</button>
+        <button data-tab="errores_bucles" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabErroresBucles">🚦 Errores y Bucles</button>
         <button data-tab="cronograma_24h" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCronograma24h">⏰ Cronograma 24h</button>
         <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
         <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
@@ -2237,6 +2242,74 @@
 
     </section>
 
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA ERRORES Y BUCLES (T-39 · panel.hallazgos_precios H1-H10)
+         Catálogo vivo de hallazgos del sistema precios con estado real.
+         Consume: panel.hallazgos_precios (mig 292 PR #162).
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabErroresBucles" data-tab="errores_bucles" role="tabpanel"
+             aria-labelledby="tabErroresBuclesLabel"
+             class="tab-content hidden p-4 md:p-6 bg-stone-50">
+
+      <header class="mb-4">
+        <h2 class="text-2xl font-bold text-stone-800 flex items-center gap-2">
+          <span>🚦</span><span>Errores y Bucles · Hallazgos H1-H10 Sistema Precios</span>
+        </h2>
+        <p class="text-sm text-stone-500 mt-1">
+          Estado verificado contra BD. Auto-refresh cada 5 min.
+          Fuente: <code>panel.hallazgos_precios</code> · semáforo: verde ✅ resuelto · amarillo ⚠️ en curso · rojo 🔴 abierto · gris ⚪ política.
+        </p>
+      </header>
+
+      <!-- KPIs resumen -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5" id="ebKpis">
+        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
+          <div class="text-3xl font-bold text-emerald-700" id="ebVerde">—</div>
+          <div class="text-xs text-stone-600 mt-1">Resueltos</div>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
+          <div class="text-3xl font-bold text-amber-700" id="ebAmarillo">—</div>
+          <div class="text-xs text-stone-600 mt-1">En curso</div>
+        </div>
+        <div class="bg-rose-50 border border-rose-200 rounded-lg p-3 text-center">
+          <div class="text-3xl font-bold text-rose-700" id="ebRojo">—</div>
+          <div class="text-xs text-stone-600 mt-1">Abiertos</div>
+        </div>
+        <div class="bg-stone-100 border border-stone-300 rounded-lg p-3 text-center">
+          <div class="text-3xl font-bold text-stone-700" id="ebGris">—</div>
+          <div class="text-xs text-stone-600 mt-1">Política</div>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="bg-white rounded-lg shadow border border-stone-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="bg-stone-100 text-xs uppercase text-stone-600">
+              <tr>
+                <th class="px-3 py-2 text-left">ID</th>
+                <th class="px-3 py-2 text-left">Semáforo</th>
+                <th class="px-3 py-2 text-left">Título</th>
+                <th class="px-3 py-2 text-left">Estado</th>
+                <th class="px-3 py-2 text-left">Responsable</th>
+                <th class="px-3 py-2 text-left">Resolución</th>
+                <th class="px-3 py-2 text-left">Notas</th>
+              </tr>
+            </thead>
+            <tbody id="ebTbody">
+              <tr><td colspan="7" class="px-3 py-6 text-center text-stone-400">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <footer class="mt-4 text-xs text-stone-500">
+        Última actualización: <span id="ebLastUpdate">—</span> · auto-refresh 5 min.
+      </footer>
+
+    </section>
+
     <!-- ═══════════════════════════════════════════════════════════
          PESTAÑA CRONOGRAMA 24H (T-45 · V4 Sistema Precios + Apéndice Comercial V8)
          14 hitos diarios del flujo automatizado de precios (06:00 Vigía → 23:00 Auditor-Antimito).
@@ -2392,7 +2465,6 @@
       </footer>
 
     </section>
-
     <!-- ═══════════════════════════════════════════════════════════
          PESTAÑA OPERATIVOS (D-OP-10 · bucket storage 'operativos' + curated.operativos_metadata)
          Destranca Cony: deja WhatsApp → migra al panel para subir PDFs.
@@ -6525,6 +6597,7 @@ function setupTabs() {
       if (tabId === 'bandeja_dieg') initBandejaDiego();
       if (tabId === 'bandeja_precios') initBandejaPrecios();
       if (tabId === 'precios_vivos')  window.initPreciosVivos && window.initPreciosVivos();
+      if (tabId === 'errores_bucles') window.initErroresBucles && window.initErroresBucles();
       if (tabId === 'ops_diarias')   initOpsDiarias();
       if (tabId === 'dieguito')  initDieguito();
       if (tabId === 'comercial')  initTabComercial();
@@ -14106,6 +14179,94 @@ document.addEventListener('DOMContentLoaded', () => {
   window.pvFiltrar       = pvFiltrar;
   window.pvSetVista      = pvSetVista;
   window.initPreciosVivos = initPreciosVivos;
+})();
+</script>
+
+<!-- ============================================================
+     Tab Errores y Bucles (T-39 · PC2 Pablo 2026-06-19 post-PR #162)
+     Lee panel.hallazgos_precios · semáforo H1-H10 + KPIs + auto-refresh
+============================================================ -->
+<script>
+(function () {
+  let ebData = [];
+  let ebTimer = null;
+  const EB_REFRESH_MS = 5 * 60 * 1000;
+
+  function ebEscape(s) {
+    if (s == null) return '';
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function ebSemEmoji(s) {
+    if (s === 'verde')    return '<span title="resuelto">✅</span>';
+    if (s === 'amarillo') return '<span title="en curso">⚠️</span>';
+    if (s === 'rojo')     return '<span title="abierto">🔴</span>';
+    if (s === 'gris')     return '<span title="política">⚪</span>';
+    return '<span>—</span>';
+  }
+
+  function ebActualizarKPIs() {
+    const v = ebData.filter(r => r.semaforo === 'verde').length;
+    const a = ebData.filter(r => r.semaforo === 'amarillo').length;
+    const r = ebData.filter(r => r.semaforo === 'rojo').length;
+    const g = ebData.filter(r => r.semaforo === 'gris').length;
+    const el = (id) => document.getElementById(id);
+    if (el('ebVerde'))    el('ebVerde').textContent    = v;
+    if (el('ebAmarillo')) el('ebAmarillo').textContent = a;
+    if (el('ebRojo'))     el('ebRojo').textContent     = r;
+    if (el('ebGris'))     el('ebGris').textContent     = g;
+  }
+
+  function ebRender() {
+    const tbody = document.getElementById('ebTbody');
+    if (!tbody) return;
+    if (!ebData.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-stone-400">Sin hallazgos en panel.hallazgos_precios.</td></tr>';
+      return;
+    }
+    const rowClass = { verde: 'bg-emerald-50', amarillo: 'bg-amber-50', rojo: 'bg-rose-50', gris: 'bg-stone-50' };
+    tbody.innerHTML = ebData.map(h => {
+      const rc = rowClass[h.semaforo] || '';
+      return '<tr class="border-t border-stone-200 ' + rc + '">'
+        + '<td class="px-3 py-2 font-mono font-semibold text-stone-700">' + ebEscape(h.id) + '</td>'
+        + '<td class="px-3 py-2 text-center text-lg">' + ebSemEmoji(h.semaforo) + '</td>'
+        + '<td class="px-3 py-2 font-medium text-stone-800">' + ebEscape(h.titulo) + '<div class="text-xs text-stone-500 mt-0.5">' + ebEscape(h.descripcion || '') + '</div></td>'
+        + '<td class="px-3 py-2 text-xs text-stone-600">' + ebEscape(h.estado) + '</td>'
+        + '<td class="px-3 py-2 text-xs text-stone-600">' + ebEscape(h.responsable || '—') + '</td>'
+        + '<td class="px-3 py-2 text-xs text-stone-600">' + (h.evidencia_resolucion ? ebEscape(h.evidencia_resolucion) : '<span class="text-stone-400 italic">pendiente</span>') + '</td>'
+        + '<td class="px-3 py-2 text-xs text-stone-500">' + ebEscape(h.notas || '') + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  async function ebCargar() {
+    if (typeof sb === 'undefined' || !sb) return;
+    const tbody = document.getElementById('ebTbody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-stone-400">Cargando…</td></tr>';
+    try {
+      const { data, error } = await sb.schema('panel').from('hallazgos_precios').select('*').order('id');
+      if (error) throw error;
+      ebData = data || [];
+      ebActualizarKPIs();
+      ebRender();
+      const el = document.getElementById('ebLastUpdate');
+      if (el) el.textContent = new Date().toLocaleString('es-CL');
+    } catch (e) {
+      console.warn('[ErroresBucles] error:', e);
+      if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-rose-500">Error al cargar: ' + String(e).slice(0, 120) + '</td></tr>';
+    }
+  }
+
+  function initErroresBucles() {
+    ebCargar();
+    if (ebTimer) clearInterval(ebTimer);
+    ebTimer = setInterval(ebCargar, EB_REFRESH_MS);
+  }
+
+  window.ebCargar          = ebCargar;
+  window.initErroresBucles = initErroresBucles;
 })();
 </script>
 
