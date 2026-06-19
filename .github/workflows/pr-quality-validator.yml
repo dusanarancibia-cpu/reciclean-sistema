@@ -1,0 +1,176 @@
+name: PR Quality Validator · Protección Completa · Todos los PRs
+
+# Guardia GH bloqueante sobre PCs (R-AUD-083 · Plan 99-99)
+# Aplica a TODOS los PRs sin excepción · todos los paths · todos los PCs.
+# Replicado desde reciclean-rdo 2026-06-19 (R-GIT-002)
+#
+# Reglas que valida:
+#   1. R-AUD-086 — bloque auditoría obligatorio en TODOS los PRs
+#   2. T-XX + §X.X — obligatorio si el PR toca supabase/ o scripts/
+#   3. Fuentes: — obligatorio si el PR modifica CLAUDE.md
+#   4. Label — todo PR debe tener al menos 1 label asignado
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+
+  # ─────────────────────────────────────────────────
+  # CHECK 1 — R-AUD-086 obligatorio en TODOS los PRs
+  # ─────────────────────────────────────────────────
+  check-r-aud-086:
+    name: "CHECK 1 · R-AUD-086 · Todos los PRs"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validar bloque auditoría R-AUD-086
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          echo "=== CHECK 1: Bloque auditoría R-AUD-086 (obligatorio en TODOS los PRs) ==="
+
+          if echo "$PR_BODY" | grep -q 'Qué voy a hacer\|Que voy a hacer\|R-AUD-086'; then
+            echo "✅ Bloque R-AUD-086 encontrado"
+          else
+            echo ""
+            echo "❌ FALTA: Bloque auditoría R-AUD-086"
+            echo ""
+            echo "Todo PR debe incluir:"
+            echo "  📦 Propuesta técnica"
+            echo "  Qué voy a hacer: [1 línea concreta]"
+            echo "  Archivos que toco: [lista de paths]"
+            echo "  Reglas R-AUD que aplican: [lista]"
+            echo "  Riesgos que veo: [lista corta]"
+            echo "  Evidencia de que no rompo nada: [1 línea]"
+            echo "  Checkbox DeepSeek: [ ] Auditado"
+            exit 1
+          fi
+
+  # ─────────────────────────────────────────────────
+  # CHECK 2 — T-XX + §X.X para PRs de código
+  # ─────────────────────────────────────────────────
+  check-code-pr-scope:
+    name: "CHECK 2 · T-XX + §X.X · PRs supabase/ o scripts/"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detectar si es PR de código
+        id: detect
+        run: |
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD 2>/dev/null || echo "")
+          echo "Archivos cambiados:"
+          echo "$CHANGED"
+          if echo "$CHANGED" | grep -qE '^(supabase/|scripts/)'; then
+            echo "is_code_pr=true" >> "$GITHUB_OUTPUT"
+            echo "→ PR de código — requiere T-XX + §X.X"
+          else
+            echo "is_code_pr=false" >> "$GITHUB_OUTPUT"
+            echo "→ No toca supabase/ ni scripts/ — CHECK 2 omitido"
+          fi
+
+      - name: Validar T-XX + §X.X
+        if: steps.detect.outputs.is_code_pr == 'true'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          echo "=== CHECK 2: T-XX + §X.X (PR toca supabase/ o scripts/) ==="
+          ERRORS=0
+
+          if echo "$PR_BODY" | grep -qE 'T-[0-9]+'; then
+            echo "✅ T-XX encontrado"
+          else
+            echo "❌ FALTA: T-XX — referencia de tarea del backlog"
+            ERRORS=$((ERRORS + 1))
+          fi
+
+          if echo "$PR_BODY" | grep -qE '§[0-9]+\.[0-9]+'; then
+            echo "✅ §X.X encontrado"
+          else
+            echo "❌ FALTA: §X.X — objetivo del Apéndice Comercial"
+            ERRORS=$((ERRORS + 1))
+          fi
+
+          if [ "$ERRORS" -gt 0 ]; then
+            echo ""
+            echo "🚫 PR de código rechazado: $ERRORS campo(s) faltante(s)"
+            exit 1
+          fi
+          echo "✅ CHECK 2 aprobado"
+
+  # ─────────────────────────────────────────────────
+  # CHECK 3 — Fuentes: obligatorio si toca CLAUDE.md
+  # ─────────────────────────────────────────────────
+  check-claude-md:
+    name: "CHECK 3 · Fuentes · PRs que modifican CLAUDE.md"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detectar si CLAUDE.md fue modificado
+        id: detect
+        run: |
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD 2>/dev/null || echo "")
+          if echo "$CHANGED" | grep -q 'CLAUDE.md'; then
+            echo "claude_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "claude_changed=false" >> "$GITHUB_OUTPUT"
+            echo "→ CLAUDE.md no modificado — CHECK 3 omitido"
+          fi
+
+      - name: Validar que secciones nuevas tienen Fuentes
+        if: steps.detect.outputs.claude_changed == 'true'
+        run: |
+          echo "=== CHECK 3: Fuentes obligatorio en secciones nuevas de CLAUDE.md ==="
+
+          NEW_HEADERS=$(git diff origin/${{ github.base_ref }}...HEAD -- CLAUDE.md \
+            | grep '^+## ' | grep -v '^+++' || echo "")
+
+          if [ -z "$NEW_HEADERS" ]; then
+            echo "✅ No hay secciones nuevas — CHECK 3 omitido"
+            exit 0
+          fi
+
+          NEW_CONTENT=$(git diff origin/${{ github.base_ref }}...HEAD -- CLAUDE.md \
+            | grep '^+' | grep -v '^+++' || echo "")
+
+          if echo "$NEW_CONTENT" | grep -q 'Fuentes\|fuentes\|SHA256\|panel\.config_ui'; then
+            echo "✅ Referencia a Fuentes encontrada"
+          else
+            echo "❌ FALTA: Campo 'Fuentes' en sección nueva de CLAUDE.md"
+            exit 1
+          fi
+
+  # ─────────────────────────────────────────────────
+  # CHECK 4 — Label obligatorio en todos los PRs
+  # ─────────────────────────────────────────────────
+  check-label:
+    name: "CHECK 4 · Label · Todos los PRs"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar que el PR tiene al menos 1 label
+        env:
+          LABELS: ${{ toJson(github.event.pull_request.labels) }}
+        run: |
+          echo "=== CHECK 4: Label obligatorio en todos los PRs ==="
+          echo "Labels actuales: $LABELS"
+
+          COUNT=$(echo "$LABELS" | python3 -c "import sys,json; data=json.load(sys.stdin); print(len(data))")
+
+          if [ "$COUNT" -gt 0 ]; then
+            echo "✅ $COUNT label(s) asignado(s)"
+          else
+            echo "❌ FALTA: El PR no tiene ningún label"
+            echo ""
+            echo "Desde CLI: gh pr edit <número> --add-label 'tipo: gobernanza'"
+            exit 1
+          fi
