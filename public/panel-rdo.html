@@ -752,6 +752,10 @@
             <span class="v4-emoji" aria-hidden="true">⏰</span>
             Cronograma 24h
           </a>
+          <a href="#" data-v4-tab="analisis_micro" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📊</span>
+            Análisis Micro/Macro
+          </a>
           <a href="#" data-v4-tab="entregables" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📤</span>
             Entregables
@@ -1133,6 +1137,7 @@
         <button data-tab="precios_vivos" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabPreciosVivos">💰 Precios Vivos</button>
         <button data-tab="errores_bucles" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabErroresBucles">🚦 Errores y Bucles</button>
         <button data-tab="cronograma_24h" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCronograma24h">⏰ Cronograma 24h</button>
+        <button data-tab="analisis_micro" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabAnalisisMicro">📊 Análisis Micro/Macro</button>
         <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
         <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
@@ -2465,6 +2470,97 @@
       </footer>
 
     </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA ANÁLISIS MICRO/MACRO (T-38a Material + T-38b Sector)
+         Consume panel.v_proveedores_clasificados + panel.v_vales_clasificados_30d
+         Clasificación heurística vía funciones panel.fn_clasificar_familia/sector (mig 293).
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabAnalisisMicro" data-tab="analisis_micro" role="tabpanel"
+             aria-labelledby="tabAnalisisMicroLabel"
+             class="tab-content hidden p-4 md:p-6 bg-stone-50">
+
+      <header class="mb-4">
+        <h2 class="text-2xl font-bold text-stone-800 flex items-center gap-2">
+          <span>📊</span><span>Análisis Micro/Macro · Material y Sector</span>
+        </h2>
+        <p class="text-sm text-stone-500 mt-1">
+          Datos vivos últimos 30 días. Auto-refresh 5 min. Clasificación heurística (puede ajustarse en función <code>panel.fn_clasificar_familia</code> / <code>panel.fn_clasificar_sector</code>).
+        </p>
+      </header>
+
+      <!-- Sub-pestañas -->
+      <div class="flex gap-2 mb-4 border-b border-stone-300">
+        <button id="amTabMaterialBtn" type="button" class="px-4 py-2 font-medium border-b-2 border-emerald-600 text-emerald-700">📦 Material</button>
+        <button id="amTabSectorBtn" type="button" class="px-4 py-2 font-medium border-b-2 border-transparent text-stone-500 hover:text-stone-700">🏷️ Sector</button>
+        <span class="ml-auto text-xs text-stone-500 self-center">Sucursal:
+          <select id="amFiltroSucursal" class="ml-1 border border-stone-300 rounded px-2 py-1 text-xs bg-white">
+            <option value="">Todas</option>
+            <option value="Maipú">Maipú</option>
+            <option value="Cerrillos">Cerrillos</option>
+            <option value="Talca">Talca</option>
+            <option value="Puerto Montt">Puerto Montt</option>
+          </select>
+        </span>
+      </div>
+
+      <!-- Vista Material -->
+      <div id="amVistaMaterial">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+          <div class="bg-stone-200 border border-stone-300 rounded-lg p-3 text-center"><div class="text-xs text-stone-600">Ferrosos</div><div class="text-2xl font-bold text-stone-800" id="amKpiFerrosos">—</div><div class="text-xs text-stone-500" id="amKpiFerrososKg">— kg</div></div>
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center"><div class="text-xs text-amber-700">No-ferrosos</div><div class="text-2xl font-bold text-amber-800" id="amKpiNoFerrosos">—</div><div class="text-xs text-stone-500" id="amKpiNoFerrososKg">— kg</div></div>
+          <div class="bg-sky-50 border border-sky-200 rounded-lg p-3 text-center"><div class="text-xs text-sky-700">Plásticos</div><div class="text-2xl font-bold text-sky-800" id="amKpiPlasticos">—</div><div class="text-xs text-stone-500" id="amKpiPlasticosKg">— kg</div></div>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center"><div class="text-xs text-emerald-700">Papel</div><div class="text-2xl font-bold text-emerald-800" id="amKpiPapel">—</div><div class="text-xs text-stone-500" id="amKpiPapelKg">— kg</div></div>
+          <div class="bg-stone-50 border border-stone-200 rounded-lg p-3 text-center"><div class="text-xs text-stone-600">Otros</div><div class="text-2xl font-bold text-stone-700" id="amKpiOtros">—</div><div class="text-xs text-stone-500" id="amKpiOtrosKg">— kg</div></div>
+        </div>
+        <div class="bg-white rounded-lg shadow border border-stone-200 overflow-hidden">
+          <table class="min-w-full text-sm">
+            <thead class="bg-stone-100 text-xs uppercase text-stone-600">
+              <tr>
+                <th class="px-3 py-2 text-left">Sucursal</th>
+                <th class="px-3 py-2 text-left">Familia</th>
+                <th class="px-3 py-2 text-right">Kg total 30d</th>
+                <th class="px-3 py-2 text-right"># Vales</th>
+                <th class="px-3 py-2 text-right"># Proveedores</th>
+              </tr>
+            </thead>
+            <tbody id="amTbodyMaterial"><tr><td colspan="5" class="px-3 py-6 text-center text-stone-400">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Vista Sector -->
+      <div id="amVistaSector" class="hidden">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center"><div class="text-xs text-blue-700">Industria</div><div class="text-2xl font-bold text-blue-800" id="amKpiIndustria">—</div></div>
+          <div class="bg-purple-50 border border-purple-200 rounded-lg p-3 text-center"><div class="text-xs text-purple-700">Retail/Comercio</div><div class="text-2xl font-bold text-purple-800" id="amKpiRetail">—</div></div>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center"><div class="text-xs text-emerald-700">Municipal/Reciclaje</div><div class="text-2xl font-bold text-emerald-800" id="amKpiMunicipal">—</div></div>
+          <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center"><div class="text-xs text-orange-700">Construcción</div><div class="text-2xl font-bold text-orange-800" id="amKpiConstruccion">—</div></div>
+          <div class="bg-stone-100 border border-stone-300 rounded-lg p-3 text-center"><div class="text-xs text-stone-600">Particular/Otros</div><div class="text-2xl font-bold text-stone-700" id="amKpiParticular">—</div></div>
+        </div>
+        <div class="bg-white rounded-lg shadow border border-stone-200 overflow-hidden">
+          <table class="min-w-full text-sm">
+            <thead class="bg-stone-100 text-xs uppercase text-stone-600">
+              <tr>
+                <th class="px-3 py-2 text-left">Proveedor</th>
+                <th class="px-3 py-2 text-left">Sector</th>
+                <th class="px-3 py-2 text-left">Familia principal</th>
+                <th class="px-3 py-2 text-left">Sucursal</th>
+                <th class="px-3 py-2 text-left">Segmento</th>
+                <th class="px-3 py-2 text-right">Kg 30d</th>
+              </tr>
+            </thead>
+            <tbody id="amTbodySector"><tr><td colspan="6" class="px-3 py-6 text-center text-stone-400">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <footer class="mt-4 text-xs text-stone-500">
+        Última actualización: <span id="amLastUpdate">—</span> · fuente: <code>panel.v_proveedores_clasificados</code> + <code>panel.v_vales_clasificados_30d</code>.
+      </footer>
+
+    </section>
+
     <!-- ═══════════════════════════════════════════════════════════
          PESTAÑA OPERATIVOS (D-OP-10 · bucket storage 'operativos' + curated.operativos_metadata)
          Destranca Cony: deja WhatsApp → migra al panel para subir PDFs.
@@ -6598,6 +6694,7 @@ function setupTabs() {
       if (tabId === 'bandeja_precios') initBandejaPrecios();
       if (tabId === 'precios_vivos')  window.initPreciosVivos && window.initPreciosVivos();
       if (tabId === 'errores_bucles') window.initErroresBucles && window.initErroresBucles();
+      if (tabId === 'analisis_micro') window.initAnalisisMicro && window.initAnalisisMicro();
       if (tabId === 'ops_diarias')   initOpsDiarias();
       if (tabId === 'dieguito')  initDieguito();
       if (tabId === 'comercial')  initTabComercial();
@@ -14267,6 +14364,180 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.ebCargar          = ebCargar;
   window.initErroresBucles = initErroresBucles;
+})();
+</script>
+
+<!-- ============================================================
+     Tab Análisis Micro/Macro (T-38a Material + T-38b Sector)
+     PC2 Pablo 2026-06-19 · post-D-OVERRIDE-PRECIOS-PABLO-001
+     Consume panel.v_proveedores_clasificados + panel.v_vales_clasificados_30d
+============================================================ -->
+<script>
+(function () {
+  let amVista = 'material';
+  let amProveedores = [];
+  let amVales = [];
+  let amTimer = null;
+  const AM_REFRESH_MS = 5 * 60 * 1000;
+
+  function amEscape(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function amFmtKg(n) {
+    if (n == null) return '—';
+    return Number(n).toLocaleString('es-CL', { maximumFractionDigits: 0 }) + ' kg';
+  }
+
+  function amFamiliaLabel(f) {
+    const map = { ferrosos: 'Ferrosos', no_ferrosos: 'No-ferrosos', plasticos: 'Plásticos', papel: 'Papel', otros: 'Otros', sin_dato: 'Sin dato' };
+    return map[f] || f;
+  }
+
+  function amSectorLabel(s) {
+    const map = { industria: 'Industria', retail_comercio: 'Retail/Comercio', municipal_reciclaje: 'Municipal/Reciclaje', construccion: 'Construcción', particular: 'Particular', otros: 'Otros', sin_dato: 'Sin dato' };
+    return map[s] || s;
+  }
+
+  function amSetVista(v) {
+    amVista = v;
+    const btnMat = document.getElementById('amTabMaterialBtn');
+    const btnSec = document.getElementById('amTabSectorBtn');
+    const vistaM = document.getElementById('amVistaMaterial');
+    const vistaS = document.getElementById('amVistaSector');
+    if (v === 'material') {
+      btnMat && (btnMat.className = 'px-4 py-2 font-medium border-b-2 border-emerald-600 text-emerald-700');
+      btnSec && (btnSec.className = 'px-4 py-2 font-medium border-b-2 border-transparent text-stone-500 hover:text-stone-700');
+      vistaM && vistaM.classList.remove('hidden');
+      vistaS && vistaS.classList.add('hidden');
+    } else {
+      btnMat && (btnMat.className = 'px-4 py-2 font-medium border-b-2 border-transparent text-stone-500 hover:text-stone-700');
+      btnSec && (btnSec.className = 'px-4 py-2 font-medium border-b-2 border-emerald-600 text-emerald-700');
+      vistaM && vistaM.classList.add('hidden');
+      vistaS && vistaS.classList.remove('hidden');
+    }
+    amRender();
+  }
+
+  function amFiltroSucursal() {
+    const el = document.getElementById('amFiltroSucursal');
+    return el ? (el.value || '') : '';
+  }
+
+  function amRenderMaterial() {
+    const suc = amFiltroSucursal();
+    const filtered = suc ? amVales.filter(v => v.sucursal === suc) : amVales;
+    const kpis = { ferrosos: { n: 0, kg: 0 }, no_ferrosos: { n: 0, kg: 0 }, plasticos: { n: 0, kg: 0 }, papel: { n: 0, kg: 0 }, otros: { n: 0, kg: 0 }, sin_dato: { n: 0, kg: 0 } };
+    filtered.forEach(v => {
+      const f = v.familia;
+      if (!kpis[f]) kpis[f] = { n: 0, kg: 0 };
+      kpis[f].n += Number(v.n_vales || 0);
+      kpis[f].kg += Number(v.kg_total || 0);
+    });
+
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setEl('amKpiFerrosos', kpis.ferrosos.n);     setEl('amKpiFerrososKg', amFmtKg(kpis.ferrosos.kg));
+    setEl('amKpiNoFerrosos', kpis.no_ferrosos.n); setEl('amKpiNoFerrososKg', amFmtKg(kpis.no_ferrosos.kg));
+    setEl('amKpiPlasticos', kpis.plasticos.n);    setEl('amKpiPlasticosKg', amFmtKg(kpis.plasticos.kg));
+    setEl('amKpiPapel', kpis.papel.n);            setEl('amKpiPapelKg', amFmtKg(kpis.papel.kg));
+    setEl('amKpiOtros', (kpis.otros.n + kpis.sin_dato.n));
+    setEl('amKpiOtrosKg', amFmtKg(kpis.otros.kg + kpis.sin_dato.kg));
+
+    const tbody = document.getElementById('amTbodyMaterial');
+    if (!tbody) return;
+    const rows = filtered.slice().sort((a, b) => Number(b.kg_total || 0) - Number(a.kg_total || 0));
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-stone-400">Sin datos.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(r =>
+      '<tr class="border-t border-stone-200 hover:bg-stone-50">'
+      + '<td class="px-3 py-2">' + amEscape(r.sucursal) + '</td>'
+      + '<td class="px-3 py-2">' + amEscape(amFamiliaLabel(r.familia)) + '</td>'
+      + '<td class="px-3 py-2 text-right font-mono">' + amFmtKg(r.kg_total) + '</td>'
+      + '<td class="px-3 py-2 text-right">' + (r.n_vales || 0) + '</td>'
+      + '<td class="px-3 py-2 text-right">' + (r.proveedores_unicos || 0) + '</td>'
+      + '</tr>'
+    ).join('');
+  }
+
+  function amRenderSector() {
+    const suc = amFiltroSucursal();
+    const filtered = suc ? amProveedores.filter(p => p.sucursal_principal === suc) : amProveedores;
+    const counts = { industria: 0, retail_comercio: 0, municipal_reciclaje: 0, construccion: 0, particular: 0, otros: 0, sin_dato: 0 };
+    filtered.forEach(p => { const s = p.sector || 'sin_dato'; counts[s] = (counts[s] || 0) + 1; });
+
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setEl('amKpiIndustria', counts.industria);
+    setEl('amKpiRetail', counts.retail_comercio);
+    setEl('amKpiMunicipal', counts.municipal_reciclaje);
+    setEl('amKpiConstruccion', counts.construccion);
+    setEl('amKpiParticular', counts.particular + counts.otros + counts.sin_dato);
+
+    const tbody = document.getElementById('amTbodySector');
+    if (!tbody) return;
+    const rows = filtered.slice().sort((a, b) => Number(b.total_kg_30d || 0) - Number(a.total_kg_30d || 0)).slice(0, 100);
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="px-3 py-4 text-center text-stone-400">Sin datos.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(p =>
+      '<tr class="border-t border-stone-200 hover:bg-stone-50">'
+      + '<td class="px-3 py-2">' + amEscape(p.nombre_canonico) + '</td>'
+      + '<td class="px-3 py-2 text-xs">' + amEscape(amSectorLabel(p.sector)) + '</td>'
+      + '<td class="px-3 py-2 text-xs">' + amEscape(amFamiliaLabel(p.familia)) + '</td>'
+      + '<td class="px-3 py-2 text-xs">' + amEscape(p.sucursal_principal || '—') + '</td>'
+      + '<td class="px-3 py-2 text-xs">' + amEscape(p.segmento || '—') + '</td>'
+      + '<td class="px-3 py-2 text-right font-mono text-xs">' + amFmtKg(p.total_kg_30d) + '</td>'
+      + '</tr>'
+    ).join('');
+  }
+
+  function amRender() {
+    if (amVista === 'material') amRenderMaterial();
+    else amRenderSector();
+  }
+
+  async function amCargar() {
+    if (typeof sb === 'undefined' || !sb) return;
+    try {
+      const [pRes, vRes] = await Promise.all([
+        sb.schema('panel').from('v_proveedores_clasificados').select('*'),
+        sb.schema('panel').from('v_vales_clasificados_30d').select('*')
+      ]);
+      if (pRes.error) throw pRes.error;
+      if (vRes.error) throw vRes.error;
+      amProveedores = pRes.data || [];
+      amVales = vRes.data || [];
+      amRender();
+      const el = document.getElementById('amLastUpdate');
+      if (el) el.textContent = new Date().toLocaleString('es-CL');
+    } catch (e) {
+      console.warn('[AnalisisMicro] error:', e);
+      const tbodyM = document.getElementById('amTbodyMaterial');
+      const tbodyS = document.getElementById('amTbodySector');
+      const msg = '<tr><td colspan="6" class="px-3 py-4 text-center text-rose-500">Error: ' + amEscape(String(e).slice(0, 120)) + '</td></tr>';
+      if (tbodyM) tbodyM.innerHTML = msg;
+      if (tbodyS) tbodyS.innerHTML = msg;
+    }
+  }
+
+  function initAnalisisMicro() {
+    const btnMat = document.getElementById('amTabMaterialBtn');
+    const btnSec = document.getElementById('amTabSectorBtn');
+    const filtro = document.getElementById('amFiltroSucursal');
+    btnMat && btnMat.addEventListener('click', () => amSetVista('material'));
+    btnSec && btnSec.addEventListener('click', () => amSetVista('sector'));
+    filtro && filtro.addEventListener('change', amRender);
+    amCargar();
+    if (amTimer) clearInterval(amTimer);
+    amTimer = setInterval(amCargar, AM_REFRESH_MS);
+  }
+
+  window.amCargar          = amCargar;
+  window.initAnalisisMicro = initAnalisisMicro;
 })();
 </script>
 
