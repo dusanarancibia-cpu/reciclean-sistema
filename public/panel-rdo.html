@@ -744,6 +744,10 @@
             <span class="v4-emoji" aria-hidden="true">💰</span>
             Precios Vivos
           </a>
+          <a href="#" data-v4-tab="cronograma_24h" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">⏰</span>
+            Cronograma 24h
+          </a>
           <a href="#" data-v4-tab="entregables" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📤</span>
             Entregables
@@ -1123,6 +1127,7 @@
         <button data-tab="precios"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabPrecios">💲 Precios</button>
         <button data-tab="bandeja_precios" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabBandejaPrecios">📨 Bandeja Precios</button>
         <button data-tab="precios_vivos" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabPreciosVivos">💰 Precios Vivos</button>
+        <button data-tab="cronograma_24h" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCronograma24h">⏰ Cronograma 24h</button>
         <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
         <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
@@ -2229,6 +2234,162 @@
           <span>⏸ Pablo post-15-jun (3 pasos)</span>
         </div>
       </div>
+
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA CRONOGRAMA 24H (T-45 · V4 Sistema Precios + Apéndice Comercial V8)
+         14 hitos diarios del flujo automatizado de precios (06:00 Vigía → 23:00 Auditor-Antimito).
+         Datos estáticos sin BD. Origen: mayordomo/snippets/T-45-cronograma-24h.html
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabCronograma24h" data-tab="cronograma_24h" role="tabpanel"
+             aria-labelledby="tabCronograma24hLabel"
+             class="tab-content hidden p-4 md:p-6 bg-stone-50">
+
+      <header class="mb-6">
+        <h2 class="text-2xl font-bold text-stone-800 flex items-center gap-2">
+          <span>⏰</span><span>Cronograma 24h · Un día en el Sistema de Precios</span>
+        </h2>
+        <p class="text-sm text-stone-500 mt-1">
+          14 hitos diarios del flujo automatizado de precios.
+          Hora chilena (CLT). Ejecutor: <span class="text-emerald-700 font-medium">auto</span> · <span class="text-amber-700 font-medium">Andrea</span> · <span class="text-rose-700 font-medium">Dusan</span> · <span class="text-stone-600 font-medium">sistema</span>.
+        </p>
+      </header>
+
+      <ol class="relative border-l-2 border-stone-300 ml-3 space-y-5">
+
+        <li class="ml-6">
+          <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-emerald-50"><span class="w-2 h-2 bg-white rounded-full"></span></span>
+          <div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
+            <div class="flex items-center justify-between mb-1"><span class="text-xs font-mono text-stone-500">06:00</span><span class="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded">auto</span></div>
+            <h3 class="font-semibold text-stone-800">Vigía-Vencimientos</h3>
+            <p class="text-xs text-stone-600">Cron diario. Detecta precios con <code>vigencia_hasta</code> próxima (≤7 días) y crea alertas en bandeja CEO.</p>
+          </div>
+        </li>
+
+        <li class="ml-6">
+          <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-emerald-50"><span class="w-2 h-2 bg-white rounded-full"></span></span>
+          <div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
+            <div class="flex items-center justify-between mb-1"><span class="text-xs font-mono text-stone-500">07:00</span><span class="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded">auto</span></div>
+            <h3 class="font-semibold text-stone-800">Captura-Mercado</h3>
+            <p class="text-xs text-stone-600">Sync LME (cobre/aluminio) + BCCh (USD/CLP, IPC) + WTI. Alimenta <code>curated.macro_precios</code> + brecha LME por material.</p>
+          </div>
+        </li>
+
+        <li class="ml-6">
+          <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-emerald-50"><span class="w-2 h-2 bg-white rounded-full"></span></span>
+          <div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
+            <div class="flex items-center justify-between mb-1"><span class="text-xs font-mono text-stone-500">07:30</span><span class="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded">auto</span></div>
+            <h3 class="font-semibold text-stone-800">Triage-IA propuestas</h3>
+            <p class="text-xs text-stone-600">Diego clasifica propuestas pendientes en <code>staging.precios_propuestos</code> con scoring 4 métricas. Auto-aprueba con regla restrictiva (H-30 auditoría pesimista).</p>
+          </div>
+        </li>
+
+        <li class="ml-6">
+          <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-amber-500 rounded-full ring-4 ring-amber-50"><span class="w-2 h-2 bg-white rounded-full"></span></span>
+          <div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
+            <div class="flex items-center justify-between mb-1"><span class="text-xs font-mono text-stone-500">08:30</span><span class="text-xs px-2 py-0.5 bg-amber-100 text-amber-800 rounded">Andrea</span></div>
+            <h3 class="font-semibold text-stone-800">Revisión Bandeja CEO</h3>
+            <p class="text-xs text-stone-600">Andrea aprueba/rechaza propuestas que no pasaron triage. Drill-down por material + filtro sucursal (T-36).</p>
+          </div>
+        </li>
+
+        <li class="ml-6">
+          <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-stone-500 rounded-full ring-4 ring-stone-50"><span class="w-2 h-2 bg-white rounded-full"></span></span>
+          <div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
+            <div class="flex items-center justify-between mb-1"><span class="text-xs font-mono text-stone-500">09:00</span><span class="text-xs px-2 py-0.5 bg-stone-100 text-stone-800 rounded">sistema</span></div>
+            <h3 class="font-semibold text-stone-800">Sync a public.precios</h3>
+            <p class="text-xs text-stone-600">Trigger curated → public copia precios aprobados a tabla pública para Cotizador.</p>
+          </div>
+        </li>
+
+        <li class="ml-6">
+          <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-stone-500 rounded-full ring-4 ring-stone-50"><span class="w-2 h-2 bg-white rounded-full"></span></span>
+          <div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
+            <div class="flex items-center justify-between mb-1"><span class="text-xs font-mono text-stone-500">09:00-17:00</span><span class="text-xs px-2 py-0.5 bg-stone-100 text-stone-800 rounded">sistema</span></div>
+            <h3 class="font-semibold text-stone-800">Operación comercial diaria</h3>
+            <p class="text-xs text-stone-600">Andrea cotiza · transportistas pesan en portal · Diego responde por WhatsApp · ingresos vales se anotan en <code>curated.vales_portal_externo</code>.</p>
+          </div>
+        </li>
+
+        <li class="ml-6">
+          <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-emerald-50"><span class="w-2 h-2 bg-white rounded-full"></span></span>
+          <div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
+            <div class="flex items-center justify-between mb-1"><span class="text-xs font-mono text-stone-500">12:00</span><span class="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded">auto</span></div>
+            <h3 class="font-semibold text-stone-800">Mid-day check</h3>
+            <p class="text-xs text-stone-600">Refresh matview <code>v_cartera_detalle</code> + recálculo KPIs precios vivos.</p>
+          </div>
+        </li>
+
+        <li class="ml-6">
+          <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-emerald-50"><span class="w-2 h-2 bg-white rounded-full"></span></span>
+          <div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
+            <div class="flex items-center justify-between mb-1"><span class="text-xs font-mono text-stone-500">16:00</span><span class="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded">auto</span></div>
+            <h3 class="font-semibold text-stone-800">Calibrador-Margen</h3>
+            <p class="text-xs text-stone-600">Evalúa rendimiento MoM y cambia modo Acelerador/Freno/Neutro (T-41). FRENO si MG empeora &gt;10% MoM.</p>
+          </div>
+        </li>
+
+        <li class="ml-6">
+          <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-emerald-50"><span class="w-2 h-2 bg-white rounded-full"></span></span>
+          <div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
+            <div class="flex items-center justify-between mb-1"><span class="text-xs font-mono text-stone-500">17:00</span><span class="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded">auto</span></div>
+            <h3 class="font-semibold text-stone-800">Cartero-Diego</h3>
+            <p class="text-xs text-stone-600">Diego envía propuestas pendientes a destinatarios (Comercial/Finanzas/Operaciones) vía WhatsApp + panel inbox.</p>
+          </div>
+        </li>
+
+        <li class="ml-6">
+          <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-rose-500 rounded-full ring-4 ring-rose-50"><span class="w-2 h-2 bg-white rounded-full"></span></span>
+          <div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
+            <div class="flex items-center justify-between mb-1"><span class="text-xs font-mono text-stone-500">18:30</span><span class="text-xs px-2 py-0.5 bg-rose-100 text-rose-800 rounded">Dusan</span></div>
+            <h3 class="font-semibold text-stone-800">CEO check Bandeja</h3>
+            <p class="text-xs text-stone-600">Dusan revisa bandeja CEO y firma propuestas escaladas (1-click sign T-23).</p>
+          </div>
+        </li>
+
+        <li class="ml-6">
+          <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-stone-500 rounded-full ring-4 ring-stone-50"><span class="w-2 h-2 bg-white rounded-full"></span></span>
+          <div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
+            <div class="flex items-center justify-between mb-1"><span class="text-xs font-mono text-stone-500">19:00</span><span class="text-xs px-2 py-0.5 bg-stone-100 text-stone-800 rounded">sistema</span></div>
+            <h3 class="font-semibold text-stone-800">Cierre operativo</h3>
+            <p class="text-xs text-stone-600">Snapshot diario de KPIs (resultado mes, punto equilibrio, semáforo, score op/estratégico) en <code>panel.kpi_precios_diario</code>.</p>
+          </div>
+        </li>
+
+        <li class="ml-6">
+          <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-emerald-50"><span class="w-2 h-2 bg-white rounded-full"></span></span>
+          <div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
+            <div class="flex items-center justify-between mb-1"><span class="text-xs font-mono text-stone-500">20:00</span><span class="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded">auto</span></div>
+            <h3 class="font-semibold text-stone-800">Vigía objetivos vs real</h3>
+            <p class="text-xs text-stone-600">Refresh vista <code>panel.v_objetivos_vs_real_mes</code> (G-01). Alerta si pct_cumplimiento mensual cae &lt;80% antes del cierre de mes.</p>
+          </div>
+        </li>
+
+        <li class="ml-6">
+          <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-stone-500 rounded-full ring-4 ring-stone-50"><span class="w-2 h-2 bg-white rounded-full"></span></span>
+          <div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
+            <div class="flex items-center justify-between mb-1"><span class="text-xs font-mono text-stone-500">21:00</span><span class="text-xs px-2 py-0.5 bg-stone-100 text-stone-800 rounded">sistema</span></div>
+            <h3 class="font-semibold text-stone-800">Backup + audit log</h3>
+            <p class="text-xs text-stone-600">Snapshot tablas críticas + audit log del día (qué cambió, quién, cuándo).</p>
+          </div>
+        </li>
+
+        <li class="ml-6">
+          <span class="absolute -left-2.5 flex items-center justify-center w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-emerald-50"><span class="w-2 h-2 bg-white rounded-full"></span></span>
+          <div class="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
+            <div class="flex items-center justify-between mb-1"><span class="text-xs font-mono text-stone-500">23:00</span><span class="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded">auto</span></div>
+            <h3 class="font-semibold text-stone-800">Auditor-Antimito</h3>
+            <p class="text-xs text-stone-600">Cron de cierre. Audita afirmaciones del día (R-AUD-024 + R-AUD-088), valida cifras vs BD, marca falsas + alerta Dusan vía WhatsApp si hay desvíos.</p>
+          </div>
+        </li>
+
+      </ol>
+
+      <footer class="mt-8 p-4 bg-stone-100 border border-stone-200 rounded-lg text-xs text-stone-600">
+        <strong>Fuente:</strong> T-45 (seguimiento-100-tareas.txt) · V4 Sistema Precios + Apéndice Comercial V8.
+        Estado de cada hito en producción: <a href="#" data-v4-tab="errores_bucles" class="text-emerald-700 underline">ver Tab Errores y Bucles</a>.
+      </footer>
 
     </section>
 
