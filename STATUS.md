@@ -1,7 +1,8 @@
 # STATUS — Reciclean-Farex Sistema
 
 > **Snapshot de `temas_en_progreso` (Supabase).** Respuesta canónica a "status / cómo vamos / detalle".
-> **Última regeneración:** 22-abr-2026 14:15 · **68 filas** (25 parents + 43 sub-tareas)
+> **Última regeneración:** 21-jun-2026 · **68 filas** (25 parents + 43 sub-tareas)
+> **Sprint activo:** Plan 99-99 + Diego Precios + Panel Tabs
 
 ---
 
@@ -89,9 +90,21 @@ Total Supabase: **84 tablas** + **11 vistas**.
 
 | Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
 |---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **22-abr-2026** (baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **21-jun-2026** (actual) | 68 | — | — | — | — | — |
 
-> _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+### Avance sprint 16-21 junio 2026
+
+| Area | Avance | Responsable | Detalle |
+|---|---|---|---|
+| Diego Precios | 70% | Dusan | Flujo cliente OK, C1 path unico, C2 UX mejorada |
+| CI/CD Plan 99-99 | 60% | Dusan + Pablo | k6 scripts, ZAP fix, pr-quality-validator, smoke E2E |
+| Panel Tabs nuevos | 80% | Dusan | Tab Errores (t39), Cronograma (t45), Analisis (t38ab) |
+| Tab KPIs Home | 50% | Dusan | PR #378 abierto, 7 cards computables |
+| Promocion a prod | 20% | Pablo | PR #349 abierto, 24 commits pendientes de review |
+| Smoke tests CI | Bloqueado | Equipo | 10+ issues automaticos fallando, requiere diagnostico |
+
+> Ver detalle completo: `docs/AVANCE-SEMANA-16-21-JUN-2026.md`
 
 ---
 
