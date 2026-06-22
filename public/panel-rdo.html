@@ -777,6 +777,10 @@
             <span class="v4-emoji" aria-hidden="true">📦</span>
             Bóveda Histórica
           </a>
+          <a href="#" data-v4-tab="flujo_operativo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🔄</span>
+            Flujo Operativo
+          </a>
           <a href="#" data-v4-tab="entregables" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📤</span>
             Entregables
@@ -1164,6 +1168,7 @@
         <button data-tab="modo_precios"  class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabModoPrecios">⚙️ Acelerador/Freno</button>
         <button data-tab="calculadora_precios" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabCalculadoraPrecios">🧮 Calculadora Precios</button>
         <button data-tab="boveda_historica" class="tab-btn py-3 px-3 text-stone-600"   role="tab" aria-selected="false" aria-controls="tabBovedaHistorica">📦 Bóveda Histórica</button>
+        <button data-tab="flujo_operativo" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabFlujoOperativo">🔄 Flujo Operativo</button>
         <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
         <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
@@ -3114,6 +3119,49 @@
 
       <footer class="mt-4 text-xs text-stone-500">
         Calculado en: <span id="kpiCalculadoEn">—</span> · fuente: <code>panel.v_kpi_precios_home</code> (mig 294) · auto-refresh 5 min.
+      </footer>
+
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA FLUJO OPERATIVO (T-44 · 10 etapas pipeline precios)
+         Consume panel.f_flujo_operativo_status (mig 271)
+         Badges OK / PARCIAL / ROTO por etapa · debugging visual
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabFlujoOperativo" data-tab="flujo_operativo" role="tabpanel"
+             aria-labelledby="tabFlujoOperativoLabel"
+             class="tab-content hidden p-4 md:p-6 bg-stone-50">
+
+      <header class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-2xl font-bold text-stone-800 flex items-center gap-2">
+            <span>🔄</span><span>Flujo Operativo · pipeline de precios</span>
+          </h2>
+          <p class="text-sm text-stone-500 mt-1">
+            10 etapas con badges OK / PARCIAL / ROTO · debugging visual cuando algo falla en el pipeline.
+            Auto-refresh 10 min. Fuente: <code>panel.f_flujo_operativo_status</code>.
+          </p>
+        </div>
+        <button id="floRefrescar" type="button"
+                class="bg-stone-200 hover:bg-stone-300 text-stone-800 px-3 py-1.5 rounded text-sm">
+          🔄 Actualizar
+        </button>
+      </header>
+
+      <div class="bg-white border rounded-lg p-3 mb-4" id="floResumenBox">
+        <div class="text-xs text-stone-500 uppercase tracking-wider mb-1">Resumen pipeline</div>
+        <div class="text-sm font-medium" id="floResumen">Cargando…</div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" id="floGrid">
+        <!-- 10 cards inyectadas por initFlujoOperativo · placeholder mientras carga -->
+        <div class="bg-white border rounded-lg p-3 text-center text-sm text-stone-400 col-span-full">
+          Cargando 10 etapas…
+        </div>
+      </div>
+
+      <footer class="mt-4 text-xs text-stone-500">
+        Última actualización: <span id="floLastUpdate">—</span>
       </footer>
 
     </section>
@@ -7257,6 +7305,7 @@ function setupTabs() {
       if (tabId === 'modo_precios') window.initModoPrecios && window.initModoPrecios();
       if (tabId === 'calculadora_precios') window.initCalculadoraPrecios && window.initCalculadoraPrecios();
       if (tabId === 'boveda_historica') window.initBovedaHistorica && window.initBovedaHistorica();
+      if (tabId === 'flujo_operativo') window.initFlujoOperativo && window.initFlujoOperativo();
       if (tabId === 'ops_diarias')   initOpsDiarias();
       if (tabId === 'dieguito')  initDieguito();
       if (tabId === 'comercial')  initTabComercial();
@@ -16123,6 +16172,103 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.bovCargar           = bovCargar;
   window.initBovedaHistorica = initBovedaHistorica;
+})();
+</script>
+
+<!-- ============================================================
+     Tab Flujo Operativo (T-44 · PC2 Pablo 2026-06-22)
+     Consume panel.f_flujo_operativo_status (mig 271)
+============================================================ -->
+<script>
+(function () {
+  let floTimer = null;
+  const FLO_REFRESH_MS = 10 * 60 * 1000;
+
+  // SAFELIST Tailwind (usadas dinámicamente por badge según OK/PARCIAL/ROTO):
+  // border-emerald-400 bg-emerald-50 text-emerald-700
+  // border-amber-400   bg-amber-50   text-amber-700
+  // border-rose-400    bg-rose-50    text-rose-700
+  // border-stone-300   bg-stone-50   text-stone-600
+  function floStyles(badge) {
+    const map = {
+      OK:      { border: 'border-emerald-400', bg: 'bg-emerald-50', text: 'text-emerald-700', icon: '🟢' },
+      PARCIAL: { border: 'border-amber-400',   bg: 'bg-amber-50',   text: 'text-amber-700',   icon: '🟡' },
+      ROTO:    { border: 'border-rose-400',    bg: 'bg-rose-50',    text: 'text-rose-700',    icon: '🔴' }
+    };
+    return map[badge] || { border: 'border-stone-300', bg: 'bg-stone-50', text: 'text-stone-600', icon: '⚪' };
+  }
+
+  function floEscape(s) {
+    if (s == null) return '';
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function floRenderEtapa(etapa) {
+    const st = floStyles(etapa.badge);
+    return '<div class="bg-white border-2 ' + st.border + ' ' + st.bg + ' rounded-lg p-3 flex flex-col gap-1">'
+      + '<div class="flex items-center justify-between text-xs">'
+      +   '<span class="text-stone-500 font-mono">#' + (etapa.numero != null ? etapa.numero : '?') + '</span>'
+      +   '<span class="' + st.text + ' font-bold">' + st.icon + ' ' + floEscape(etapa.badge || '—') + '</span>'
+      + '</div>'
+      + '<div class="text-sm font-semibold text-stone-800">' + floEscape(etapa.nombre || '—') + '</div>'
+      + '<div class="text-xs text-stone-600">' + floEscape(etapa.detalle || '—') + '</div>'
+      + '</div>';
+  }
+
+  function floRender(data) {
+    const grid = document.getElementById('floGrid');
+    if (!grid) return;
+    const etapas = (data && Array.isArray(data.etapas)) ? data.etapas : [];
+    if (!etapas.length) {
+      grid.innerHTML = '<div class="bg-white border rounded-lg p-3 text-center text-sm text-stone-400 col-span-full">Sin etapas reportadas.</div>';
+      return;
+    }
+    grid.innerHTML = etapas.map(floRenderEtapa).join('');
+
+    const resBox = document.getElementById('floResumenBox');
+    const res    = document.getElementById('floResumen');
+    if (res) res.textContent = (data && data.resumen_pipeline) ? data.resumen_pipeline : 'Sin resumen disponible';
+    if (resBox) {
+      resBox.classList.remove('border-emerald-400','border-amber-400','border-rose-400','border-stone-300','bg-emerald-50','bg-amber-50','bg-rose-50','bg-stone-50');
+      const rotos    = etapas.filter(e => e.badge === 'ROTO').length;
+      const parcial  = etapas.filter(e => e.badge === 'PARCIAL').length;
+      const globalSt = rotos > 0 ? floStyles('ROTO') : (parcial > 0 ? floStyles('PARCIAL') : floStyles('OK'));
+      [globalSt.border, globalSt.bg].forEach(c => c.split(' ').forEach(x => resBox.classList.add(x)));
+    }
+  }
+
+  async function floCargar() {
+    if (typeof sb === 'undefined' || !sb) return;
+    try {
+      const { data, error } = await sb.schema('panel').rpc('f_flujo_operativo_status');
+      if (error) throw error;
+      floRender(data || {});
+      const el = document.getElementById('floLastUpdate');
+      if (el) el.textContent = new Date().toLocaleString('es-CL');
+    } catch (e) {
+      console.warn('[FlujoOperativo] error:', e);
+      const res = document.getElementById('floResumen');
+      if (res) res.textContent = 'Error cargando flujo: ' + (e.message || String(e)).slice(0, 120);
+      const grid = document.getElementById('floGrid');
+      if (grid) grid.innerHTML = '<div class="bg-white border border-rose-300 rounded-lg p-3 text-center text-sm text-rose-600 col-span-full">No se pudo cargar el flujo.</div>';
+    }
+  }
+
+  function initFlujoOperativo() {
+    floCargar();
+    const btn = document.getElementById('floRefrescar');
+    if (btn && !btn.dataset.bound) {
+      btn.addEventListener('click', floCargar);
+      btn.dataset.bound = '1';
+    }
+    if (floTimer) clearInterval(floTimer);
+    floTimer = setInterval(floCargar, FLO_REFRESH_MS);
+  }
+
+  window.floCargar          = floCargar;
+  window.initFlujoOperativo = initFlujoOperativo;
 })();
 </script>
 
