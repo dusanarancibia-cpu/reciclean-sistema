@@ -1,7 +1,41 @@
 # STATUS — Reciclean-Farex Sistema
 
 > **Snapshot de `temas_en_progreso` (Supabase).** Respuesta canónica a "status / cómo vamos / detalle".
-> **Última regeneración:** 22-abr-2026 14:15 · **68 filas** (25 parents + 43 sub-tareas)
+> **Última regeneración:** 22-jun-2026 16:00 · **68 filas** (25 parents + 43 sub-tareas)
+
+---
+
+## Sprint PRECIOS-VIVOS-2026 — Fase A COMPLETADA (22-jun-2026)
+
+> 10 tabs frontend + 1 suite E2E en un solo dia. Fase A cerrada.
+
+| Tarea | Descripcion | Responsable | PR | Estado |
+|-------|-------------|-------------|-----|--------|
+| T-35 | Tab Precios Vivos (filtro categoria + leyenda) | Pablo | #407 | ✅ 100% |
+| T-36 | Bandeja Aprobacion (filtro sucursal + badge + aprobar masivo + fix R-AUD-024) | Pablo | #411 | ✅ 100% |
+| T-37 | Tablero Acceso Precios (12 KPIs agregados — cierra Fase A) | Pablo | #418 | ✅ 100% |
+| T-38cd | Analisis Micro/Macro (Geografia + Macro Chile) | Pablo | #382 | ✅ 100% |
+| T-40 | Anticipacion Tendencias (4 indicadores adelantados) | Pablo | #384 | ✅ 100% |
+| T-41 | Acelerador/Freno (3 modos x 6 acciones, DeepSeek-ready) | Pablo | #386 | ✅ 100% |
+| T-42 | Calculadora Precios (6 sliders interactivos) | Pablo | #388 | ✅ 100% |
+| T-43 | KPIs Precios Home (7 cards + 2 placeholders) | Pablo | #378 | ✅ 100% |
+| T-44 | Flujo Operativo (10 etapas pipeline + semaforos) | Pablo | #415 | ✅ 100% |
+| T-46 | Boveda Historica (serie temporal + banda ±1.5σ) | Pablo | #390 | ✅ 100% |
+| T-405 | Smoke E2E Playwright Fase A (5 tabs + regresion) | Pablo | #405 | ✅ 100% |
+
+**Merges (Dusan):** 11 PRs revisados y aprobados entre 14:04 y 15:54
+
+### Pendientes Fase B (siguiente)
+
+| Sub-tarea | Descripcion | Estado |
+|-----------|-------------|--------|
+| T-37e P8 | Boveda historica link a T-46 | Pendiente |
+| T-37e P9 | Alertas Diego integradas | Pendiente |
+| T-37e P10 | Roles activos | Pendiente |
+| T-37e P12 | Score operacional + estrategico | Pendiente |
+| Backend RPC | Migrar queries a RPCs server-side | Pendiente |
+| Mobile QA | Responsive en todos los tabs nuevos | Pendiente |
+| DeepSeek | Activar IA en T-41 y T-42 | Pendiente |
 
 ---
 
@@ -85,13 +119,14 @@ Total Supabase: **84 tablas** + **11 vistas**.
 
 ---
 
-## Progreso diario (baseline)
+## Progreso diario
 
-| Fecha | Temas totales | % promedio | Superados | En revisión | En build | En diseño/spec |
+| Fecha | Temas totales | % promedio | Superados | En revision | En build | En diseno/spec |
 |---|---|---|---|---|---|---|
-| **22-abr-2026** (hoy baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| 22-abr-2026 (baseline) | 68 | 15.9% | 0 | 1 | 4 | 63 |
+| **22-jun-2026** | 79 | — | **11** | 7 | 5 | 56 |
 
-> _A medida que avances, Claude captura snapshot diario y este bloque muestra evolución día a día._
+> Sprint PRECIOS-VIVOS-2026 Fase A: +11 tareas completadas en un dia (10 features + 1 test suite).
 
 ---
 
