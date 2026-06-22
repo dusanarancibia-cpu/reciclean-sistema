@@ -106,9 +106,10 @@ test.describe('Fase A frontend · 5 tabs PRECIOS-VIVOS-2026', () => {
       }
 
       // 5. No errores críticos en consola (RPC/permisos/types)
-      // Se permite warning, pero NO permission denied, function not found, ni TypeError
+      // Se permite warning, pero NO permission denied, function not found, ni TypeError/ReferenceError
+      // (DeepSeek 22-jun: ReferenceError cubre dispatcher llamando init de IIFE no cargada)
       const criticos = consoleErrors.filter(e =>
-        /Could not find the function|permission denied|42501|PGRST202|TypeError/i.test(e)
+        /Could not find the function|permission denied|42501|PGRST202|TypeError|ReferenceError/i.test(e)
       );
       expect(criticos, `Console errors críticos en ${tab.name}: ${JSON.stringify(criticos)}`).toEqual([]);
 
