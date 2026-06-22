@@ -14493,6 +14493,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // SAFELIST Tailwind (clases usadas dinámicamente en bpActualizarBadge via cls.split):
+  // bg-rose-600 bg-amber-500 bg-emerald-600 text-white
+  // Si el build pasa a safelist explícita, agregar estas en tailwind.config.js
+  // (DeepSeek 22-jun · runtime split no detectable por scanner literal).
   function bpActualizarBadge(pendientes) {
     // Umbrales SPEC-T36c: >50 rojo · 10-50 amarillo · ≤10 verde · 0 oculto
     const n = Number(pendientes || 0);
@@ -14538,15 +14542,21 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { return 'cargando'; }
   }
 
+  // Helper centralizado · obtiene email del usuario logueado
+  // Soporta currentUser como string (uso real actual) o como objeto
+  // window.currentUser.email (compatibilidad futura). Devuelve null si no hay sesión.
+  function bpObtenerEmailUsuario() {
+    if (typeof currentUser === 'string' && currentUser.includes('@')) return currentUser;
+    if (window.currentUser && typeof window.currentUser.email === 'string') return window.currentUser.email;
+    return null;
+  }
+
   async function bpAprobarTodos() {
     if (bpEstadoPermiso() !== 'ceo') {
       alert('Sólo perfil gerencia_ceo puede aprobar batch.');
       return;
     }
-    // currentUser es string en este panel (email), no objeto · guard contra null
-    const email = (typeof currentUser === 'string' && currentUser.includes('@'))
-      ? currentUser
-      : ((window.currentUser && window.currentUser.email) || null);
+    const email = bpObtenerEmailUsuario();
     if (!email) {
       alert('Sesión expirada. Recargá la página y volvé a intentar.');
       return;
