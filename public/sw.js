@@ -1,6 +1,5 @@
-const CACHE_NAME = 'reciclean-v3';
+const CACHE_NAME = 'reciclean-v4';
 const ASSETS_TO_CACHE = [
-  '/',
   '/asistente.html',
   '/index.html'
 ];
@@ -37,7 +36,14 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Para assets locales: network first, fallback a cache
+  // HTML siempre fresco (cache: 'reload' bypass CDN + browser cache)
+  const isHtml = event.request.headers.get('accept')?.includes('text/html');
+  if (isHtml) {
+    event.respondWith(fetch(event.request, { cache: 'reload' }));
+    return;
+  }
+
+  // Otros assets: network first, fallback a cache
   event.respondWith(
     fetch(event.request)
       .then(response => {
