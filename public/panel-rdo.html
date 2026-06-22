@@ -2482,7 +2482,7 @@
 
       <header class="mb-4">
         <h2 class="text-2xl font-bold text-stone-800 flex items-center gap-2">
-          <span>📊</span><span>Análisis Micro/Macro · Material y Sector</span>
+          <span>📊</span><span>Análisis Micro/Macro · Material · Sector · Geografía · Macro</span>
         </h2>
         <p class="text-sm text-stone-500 mt-1">
           Datos vivos últimos 30 días. Auto-refresh 5 min. Clasificación heurística (puede ajustarse en función <code>panel.fn_clasificar_familia</code> / <code>panel.fn_clasificar_sector</code>).
@@ -2493,6 +2493,8 @@
       <div class="flex gap-2 mb-4 border-b border-stone-300">
         <button id="amTabMaterialBtn" type="button" class="px-4 py-2 font-medium border-b-2 border-emerald-600 text-emerald-700">📦 Material</button>
         <button id="amTabSectorBtn" type="button" class="px-4 py-2 font-medium border-b-2 border-transparent text-stone-500 hover:text-stone-700">🏷️ Sector</button>
+        <button id="amTabGeografiaBtn" type="button" class="px-4 py-2 font-medium border-b-2 border-transparent text-stone-500 hover:text-stone-700">🗺️ Geografía</button>
+        <button id="amTabMacroBtn" type="button" class="px-4 py-2 font-medium border-b-2 border-transparent text-stone-500 hover:text-stone-700">📡 Macro Chile</button>
         <span class="ml-auto text-xs text-stone-500 self-center">Sucursal:
           <select id="amFiltroSucursal" class="ml-1 border border-stone-300 rounded px-2 py-1 text-xs bg-white">
             <option value="">Todas</option>
@@ -2555,8 +2557,90 @@
         </div>
       </div>
 
+      <!-- Vista Geografía (T-38c) -->
+      <div id="amVistaGeografia" class="hidden">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4" id="amGeoKpis">
+          <div class="bg-white border border-stone-300 rounded-lg p-3">
+            <div class="text-xs text-stone-500 uppercase tracking-wider">Sucursales con precios vivos</div>
+            <div class="text-2xl font-bold text-stone-800 mt-1" id="amGeoNSuc">—</div>
+          </div>
+          <div class="bg-white border border-stone-300 rounded-lg p-3">
+            <div class="text-xs text-stone-500 uppercase tracking-wider">Materiales totales</div>
+            <div class="text-2xl font-bold text-stone-800 mt-1" id="amGeoNMat">—</div>
+          </div>
+          <div class="bg-white border border-stone-300 rounded-lg p-3">
+            <div class="text-xs text-stone-500 uppercase tracking-wider">Compra avg nacional</div>
+            <div class="text-2xl font-bold text-stone-800 mt-1" id="amGeoCompraProm">—</div>
+          </div>
+          <div class="bg-white border border-stone-300 rounded-lg p-3">
+            <div class="text-xs text-stone-500 uppercase tracking-wider">Margen avg nacional</div>
+            <div class="text-2xl font-bold text-emerald-700 mt-1" id="amGeoMargenProm">—</div>
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow border border-stone-200 overflow-hidden">
+          <table class="min-w-full text-sm">
+            <thead class="bg-stone-100 text-xs uppercase text-stone-600">
+              <tr>
+                <th class="px-3 py-2 text-left">Sucursal</th>
+                <th class="px-3 py-2 text-right"># Precios</th>
+                <th class="px-3 py-2 text-right">P. Compra avg</th>
+                <th class="px-3 py-2 text-right">P. Venta avg</th>
+                <th class="px-3 py-2 text-right">Margen %</th>
+                <th class="px-3 py-2 text-right">Diferencial vs nac.</th>
+                <th class="px-3 py-2 text-left">Última actualización</th>
+              </tr>
+            </thead>
+            <tbody id="amTbodyGeografia"><tr><td colspan="7" class="px-3 py-6 text-center text-stone-400">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+        <p class="text-xs text-stone-400 mt-2">
+          Fuente: <code>curated.materiales_sucursal_precios</code> + <code>curated.sucursales</code> · sólo precios vigentes hoy.
+        </p>
+      </div>
+
+      <!-- Vista Macro Chile (T-38d · PLACEHOLDER honesto · sin fuente macro externa) -->
+      <div id="amVistaMacro" class="hidden">
+        <div class="bg-white border border-stone-300 rounded-lg p-4">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-3xl">📡</span>
+            <div>
+              <div class="text-lg font-semibold text-stone-800">Indicadores Macro Chile</div>
+              <div class="text-xs text-stone-500">Pendiente conexión con fuentes de datos externas</div>
+            </div>
+          </div>
+          <table class="min-w-full text-sm border-t border-stone-200">
+            <tbody>
+              <tr class="border-b border-stone-100">
+                <td class="px-3 py-3 w-1/2">💵 USD/CLP</td>
+                <td class="px-3 py-3 text-amber-700 text-xs">Requiere BCCh API (credenciales pendientes)</td>
+              </tr>
+              <tr class="border-b border-stone-100">
+                <td class="px-3 py-3">📊 IPC Chile</td>
+                <td class="px-3 py-3 text-amber-700 text-xs">Requiere BCCh API</td>
+              </tr>
+              <tr class="border-b border-stone-100">
+                <td class="px-3 py-3">🛢️ WTI</td>
+                <td class="px-3 py-3 text-amber-700 text-xs">Requiere EIA / Quandl</td>
+              </tr>
+              <tr class="border-b border-stone-100">
+                <td class="px-3 py-3">🔗 LME Cobre</td>
+                <td class="px-3 py-3 text-amber-700 text-xs">Requiere LME API key (paga)</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-3">🏭 IMACON</td>
+                <td class="px-3 py-3 text-amber-700 text-xs">Requiere BCCh API</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="text-xs text-stone-500 mt-3">
+            Una vez disponibles las credenciales, PC5 activa las EFs <code>lme-sync</code> + <code>macro-sync</code>
+            y este placeholder se reemplaza por valores vivos. No se inventan números mientras tanto.
+          </p>
+        </div>
+      </div>
+
       <footer class="mt-4 text-xs text-stone-500">
-        Última actualización: <span id="amLastUpdate">—</span> · fuente: <code>panel.v_proveedores_clasificados</code> + <code>panel.v_vales_clasificados_30d</code>.
+        Última actualización: <span id="amLastUpdate">—</span> · fuente: <code>panel.v_proveedores_clasificados</code> + <code>panel.v_vales_clasificados_30d</code> + <code>curated.materiales_sucursal_precios</code>.
       </footer>
 
     </section>
@@ -14403,21 +14487,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function amSetVista(v) {
     amVista = v;
-    const btnMat = document.getElementById('amTabMaterialBtn');
-    const btnSec = document.getElementById('amTabSectorBtn');
-    const vistaM = document.getElementById('amVistaMaterial');
-    const vistaS = document.getElementById('amVistaSector');
-    if (v === 'material') {
-      btnMat && (btnMat.className = 'px-4 py-2 font-medium border-b-2 border-emerald-600 text-emerald-700');
-      btnSec && (btnSec.className = 'px-4 py-2 font-medium border-b-2 border-transparent text-stone-500 hover:text-stone-700');
-      vistaM && vistaM.classList.remove('hidden');
-      vistaS && vistaS.classList.add('hidden');
-    } else {
-      btnMat && (btnMat.className = 'px-4 py-2 font-medium border-b-2 border-transparent text-stone-500 hover:text-stone-700');
-      btnSec && (btnSec.className = 'px-4 py-2 font-medium border-b-2 border-emerald-600 text-emerald-700');
-      vistaM && vistaM.classList.add('hidden');
-      vistaS && vistaS.classList.remove('hidden');
-    }
+    const tabs = {
+      material:  { btn: 'amTabMaterialBtn',  vista: 'amVistaMaterial'  },
+      sector:    { btn: 'amTabSectorBtn',    vista: 'amVistaSector'    },
+      geografia: { btn: 'amTabGeografiaBtn', vista: 'amVistaGeografia' },
+      macro:     { btn: 'amTabMacroBtn',     vista: 'amVistaMacro'     }
+    };
+    const active   = 'px-4 py-2 font-medium border-b-2 border-emerald-600 text-emerald-700';
+    const inactive = 'px-4 py-2 font-medium border-b-2 border-transparent text-stone-500 hover:text-stone-700';
+    Object.keys(tabs).forEach(k => {
+      const btn = document.getElementById(tabs[k].btn);
+      const div = document.getElementById(tabs[k].vista);
+      if (btn) btn.className = (k === v) ? active : inactive;
+      if (div) div.classList[(k === v) ? 'remove' : 'add']('hidden');
+    });
     amRender();
   }
 
@@ -14496,8 +14579,122 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function amRender() {
-    if (amVista === 'material') amRenderMaterial();
-    else amRenderSector();
+    if (amVista === 'material')       amRenderMaterial();
+    else if (amVista === 'sector')    amRenderSector();
+    else if (amVista === 'geografia') amRenderGeografia();
+    // 'macro' es placeholder estático · no requiere render
+  }
+
+  let amGeoData = [];
+
+  function amFmtClp(n) {
+    if (n == null || isNaN(n)) return '—';
+    return '$' + Math.round(n).toLocaleString('es-CL');
+  }
+
+  function amRenderGeografia() {
+    const suc = amFiltroSucursal();
+    const filtered = suc ? amGeoData.filter(r => r.sucursal_nombre === suc) : amGeoData;
+
+    const tbody = document.getElementById('amTbodyGeografia');
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+    if (!filtered.length) {
+      setEl('amGeoNSuc', '0');
+      setEl('amGeoNMat', '0');
+      setEl('amGeoCompraProm', '—');
+      setEl('amGeoMargenProm', '—');
+      if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-6 text-center text-stone-400">Sin precios vigentes.</td></tr>';
+      return;
+    }
+
+    const nSuc = filtered.length;
+    const nMat = filtered.reduce((s, r) => s + Number(r.n_precios || 0), 0);
+    const compraTot = filtered.reduce((s, r) => s + Number(r.compra_avg || 0), 0);
+    const margenTot = filtered.reduce((s, r) => s + Number(r.margen_pct || 0), 0);
+    const compraProm = compraTot / nSuc;
+    const margenProm = margenTot / nSuc;
+
+    setEl('amGeoNSuc', nSuc);
+    setEl('amGeoNMat', nMat.toLocaleString('es-CL'));
+    setEl('amGeoCompraProm', amFmtClp(compraProm));
+    setEl('amGeoMargenProm', isNaN(margenProm) ? '—' : margenProm.toFixed(1) + '%');
+
+    const rows = filtered.slice().sort((a, b) => Number(b.compra_avg || 0) - Number(a.compra_avg || 0));
+    if (!tbody) return;
+    tbody.innerHTML = rows.map(r => {
+      const diff = compraProm > 0 ? ((Number(r.compra_avg || 0) - compraProm) / compraProm * 100) : 0;
+      // Reciclean compra chatarra · pagar caro = menos margen (ROJO),
+      // pagar barato = más margen (VERDE). Convención invertida vs ventas tradicionales.
+      const diffClase = diff > 5 ? 'text-rose-700' : (diff < -5 ? 'text-emerald-700' : 'text-stone-500');
+      const ult = r.ultima_actualizacion ? new Date(r.ultima_actualizacion).toLocaleDateString('es-CL') : '—';
+      return '<tr class="border-t border-stone-200 hover:bg-stone-50">'
+        + '<td class="px-3 py-2">' + amEscape(r.sucursal_nombre || r.sucursal_id) + '</td>'
+        + '<td class="px-3 py-2 text-right">' + (r.n_precios || 0) + '</td>'
+        + '<td class="px-3 py-2 text-right font-mono">' + amFmtClp(r.compra_avg) + '</td>'
+        + '<td class="px-3 py-2 text-right font-mono">' + amFmtClp(r.venta_avg) + '</td>'
+        + '<td class="px-3 py-2 text-right">' + (r.margen_pct != null ? Number(r.margen_pct).toFixed(1) + '%' : '—') + '</td>'
+        + '<td class="px-3 py-2 text-right ' + diffClase + '">' + (diff >= 0 ? '+' : '') + diff.toFixed(1) + '%</td>'
+        + '<td class="px-3 py-2 text-xs">' + ult + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  async function amCargarGeografia() {
+    if (typeof sb === 'undefined' || !sb) return;
+    try {
+      // TODO: si curated.materiales_sucursal_precios crece >20k filas vigentes,
+      // migrar a RPC server-side panel.f_geografia_resumen() para evitar
+      // pull masivo + agregación cliente (riesgo memoria navegador, latencia).
+      // Hoy con ~312 precios vivos el limit es generoso.
+      const today = new Date().toISOString().slice(0, 10);
+      const { data, error } = await sb.schema('curated')
+        .from('materiales_sucursal_precios')
+        .select('sucursal_id, precio_compra_clp, precio_venta_clp, vigencia_desde, vigencia_hasta')
+        .or('vigencia_hasta.is.null,vigencia_hasta.gte.' + today)
+        .limit(20000);
+      if (error) throw error;
+
+      const { data: sucData, error: sucErr } = await sb.schema('curated')
+        .from('sucursales')
+        .select('sucursal_id, nombre')
+        .limit(50);
+      if (sucErr) throw sucErr;
+      const sucMap = {};
+      (sucData || []).forEach(s => { sucMap[s.sucursal_id] = s.nombre; });
+
+      const agg = {};
+      (data || []).forEach(r => {
+        const sid = r.sucursal_id;
+        if (!agg[sid]) agg[sid] = { sucursal_id: sid, sucursal_nombre: sucMap[sid] || sid, n: 0, sumCompra: 0, sumVenta: 0, sumMargen: 0, nMargen: 0, ultima: null };
+        const a = agg[sid];
+        a.n += 1;
+        a.sumCompra += Number(r.precio_compra_clp || 0);
+        a.sumVenta  += Number(r.precio_venta_clp || 0);
+        const pv = Number(r.precio_venta_clp || 0);
+        const pc = Number(r.precio_compra_clp || 0);
+        if (pv > 0) {
+          a.sumMargen += (pv - pc) / pv * 100;
+          a.nMargen += 1;
+        }
+        if (r.vigencia_desde && (!a.ultima || r.vigencia_desde > a.ultima)) a.ultima = r.vigencia_desde;
+      });
+
+      amGeoData = Object.values(agg).map(a => ({
+        sucursal_id: a.sucursal_id,
+        sucursal_nombre: a.sucursal_nombre,
+        n_precios: a.n,
+        compra_avg: a.n > 0 ? a.sumCompra / a.n : 0,
+        venta_avg:  a.n > 0 ? a.sumVenta  / a.n : 0,
+        margen_pct: a.nMargen > 0 ? a.sumMargen / a.nMargen : null,
+        ultima_actualizacion: a.ultima
+      }));
+    } catch (e) {
+      console.warn('[AnalisisMicro·Geografia] error:', e);
+      amGeoData = [];
+      const tbody = document.getElementById('amTbodyGeografia');
+      if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-rose-500">Error: ' + amEscape(String(e).slice(0, 120)) + '</td></tr>';
+    }
   }
 
   async function amCargar() {
@@ -14505,7 +14702,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const [pRes, vRes] = await Promise.all([
         sb.schema('panel').from('v_proveedores_clasificados').select('*'),
-        sb.schema('panel').from('v_vales_clasificados_30d').select('*')
+        sb.schema('panel').from('v_vales_clasificados_30d').select('*'),
+        amCargarGeografia()
       ]);
       if (pRes.error) throw pRes.error;
       if (vRes.error) throw vRes.error;
@@ -14527,9 +14725,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function initAnalisisMicro() {
     const btnMat = document.getElementById('amTabMaterialBtn');
     const btnSec = document.getElementById('amTabSectorBtn');
+    const btnGeo = document.getElementById('amTabGeografiaBtn');
+    const btnMac = document.getElementById('amTabMacroBtn');
     const filtro = document.getElementById('amFiltroSucursal');
     btnMat && btnMat.addEventListener('click', () => amSetVista('material'));
     btnSec && btnSec.addEventListener('click', () => amSetVista('sector'));
+    btnGeo && btnGeo.addEventListener('click', () => amSetVista('geografia'));
+    btnMac && btnMac.addEventListener('click', () => amSetVista('macro'));
     filtro && filtro.addEventListener('change', amRender);
     amCargar();
     if (amTimer) clearInterval(amTimer);
