@@ -752,6 +752,10 @@
             <span class="v4-emoji" aria-hidden="true">⏰</span>
             Cronograma 24h
           </a>
+          <a href="#" data-v4-tab="kpi_precios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🎯</span>
+            KPIs Precios Home
+          </a>
           <a href="#" data-v4-tab="analisis_micro" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📊</span>
             Análisis Micro/Macro
@@ -1153,6 +1157,7 @@
         <button data-tab="precios_vivos" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabPreciosVivos">💰 Precios Vivos</button>
         <button data-tab="errores_bucles" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabErroresBucles">🚦 Errores y Bucles</button>
         <button data-tab="cronograma_24h" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCronograma24h">⏰ Cronograma 24h</button>
+        <button data-tab="kpi_precios"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabKpiPrecios">🎯 KPIs Precios Home</button>
         <button data-tab="analisis_micro" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabAnalisisMicro">📊 Análisis Micro/Macro</button>
         <button data-tab="indicadores_adel" class="tab-btn py-3 px-3 text-stone-600"   role="tab" aria-selected="false" aria-controls="tabIndicadoresAdel">📡 Anticipación Tendencias</button>
         <button data-tab="modo_precios"  class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabModoPrecios">⚙️ Acelerador/Freno</button>
@@ -2984,6 +2989,107 @@
         <div class="text-lg font-bold" id="bovAlerta">—</div>
         <div class="text-xs text-stone-500" id="bovAlertaDetalle">—</div>
       </div>
+
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA KPIs PRECIOS HOME (T-43 · 7 cards computables + 1 placeholder)
+         Consume panel.v_kpi_precios_home (mig 294)
+         8 cards seguimiento-100: a Resultado mes · b Precios vivos · c Semáforo ·
+         e Score op · f Score estratégico · g Web pública · h Trigger sync
+         T-43d (Punto equilibrio) NO incluido · bloqueado por panel.costos_fijos
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabKpiPrecios" data-tab="kpi_precios" role="tabpanel"
+             aria-labelledby="tabKpiPreciosLabel"
+             class="tab-content hidden p-4 md:p-6 bg-stone-50">
+
+      <header class="mb-4">
+        <h2 class="text-2xl font-bold text-stone-800 flex items-center gap-2">
+          <span>🎯</span><span>KPIs Precios Home · vista ejecutiva</span>
+        </h2>
+        <p class="text-sm text-stone-500 mt-1">
+          7 KPIs vivos + 1 placeholder. Auto-refresh 5 min. Fuente: <code>panel.v_kpi_precios_home</code>.
+          <span class="text-xs text-amber-700">Nota: T-43d Punto equilibrio bloqueado hasta crear <code>panel.costos_fijos</code>.</span>
+        </p>
+      </header>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+        <!-- T-43a Resultado mes -->
+        <div class="bg-white border border-stone-300 rounded-lg shadow p-4">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">T-43a · Resultado mes</div>
+          <div class="text-3xl font-bold mt-2 text-stone-400" id="kpiResultadoMes">—</div>
+          <div class="text-xs text-stone-500 mt-1" id="kpiResultadoMesEstado">Pendiente fuente contable</div>
+        </div>
+
+        <!-- T-43b Precios vivos -->
+        <div class="bg-white border border-stone-300 rounded-lg shadow p-4">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">T-43b · Precios vivos</div>
+          <div class="text-3xl font-bold text-emerald-700 mt-2" id="kpiPreciosVivos">—</div>
+          <div class="text-xs text-stone-500 mt-1">Total en <code>curated</code></div>
+        </div>
+
+        <!-- T-43c Semáforo -->
+        <div class="bg-white border border-stone-300 rounded-lg shadow p-4">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">T-43c · Semáforo MG</div>
+          <div class="text-2xl font-bold mt-2">
+            <span class="text-emerald-700" id="kpiSemVerde">—</span>
+            <span class="text-stone-400 text-sm mx-1">/</span>
+            <span class="text-amber-600" id="kpiSemAmarillo">—</span>
+            <span class="text-stone-400 text-sm mx-1">/</span>
+            <span class="text-rose-700" id="kpiSemRojo">—</span>
+          </div>
+          <div class="text-xs text-stone-500 mt-1">verde / amarillo / rojo</div>
+        </div>
+
+        <!-- T-43e Score operacional -->
+        <div class="bg-white border border-stone-300 rounded-lg shadow p-4">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">T-43e · Score operacional</div>
+          <div class="text-3xl font-bold text-sky-700 mt-2" id="kpiScoreOp">—</div>
+          <div class="text-xs text-stone-500 mt-1">de 100 puntos</div>
+        </div>
+
+        <!-- T-43f Score estratégico -->
+        <div class="bg-white border border-stone-300 rounded-lg shadow p-4">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">T-43f · Score estratégico</div>
+          <div class="text-3xl font-bold mt-2 text-stone-400" id="kpiScoreEst">—</div>
+          <div class="text-xs text-stone-500 mt-1" id="kpiScoreEstEstado">Pendiente fórmula V8</div>
+        </div>
+
+        <!-- T-43g Web pública -->
+        <div class="bg-white border border-stone-300 rounded-lg shadow p-4">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">T-43g · Web pública sync</div>
+          <div class="text-3xl font-bold mt-2" id="kpiSyncPct">—</div>
+          <div class="text-xs text-stone-500 mt-1" id="kpiSyncDetalle"><code>public / curated</code></div>
+        </div>
+
+        <!-- T-43h Trigger sync -->
+        <div class="bg-white border border-stone-300 rounded-lg shadow p-4">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">T-43h · Trigger freshness</div>
+          <div class="text-3xl font-bold mt-2" id="kpiTriggerHoras">—</div>
+          <div class="text-xs text-stone-500 mt-1" id="kpiTriggerDetalle">horas desde último update</div>
+        </div>
+
+        <!-- Bonus · Caja días cobertura -->
+        <div class="bg-white border border-stone-300 rounded-lg shadow p-4">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">Bonus · Caja cobertura</div>
+          <div class="text-3xl font-bold mt-2" id="kpiCajaDias">—</div>
+          <div class="text-xs text-stone-500 mt-1">días de cobertura</div>
+        </div>
+
+      </div>
+
+      <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900" id="kpiPlaceholderInfo">
+        <strong>2 KPIs en placeholder:</strong>
+        <ul class="ml-4 mt-1 list-disc">
+          <li><strong>T-43a Resultado mes</strong>: requiere vista contable (ingresos − costos del mes). No existe aún en BD.</li>
+          <li><strong>T-43f Score estratégico</strong>: fórmula del V8 Plan Maestro 2026 (rango -2.057 inicial → +4.987 target). Pendiente definir el cálculo.</li>
+        </ul>
+      </div>
+
+      <footer class="mt-4 text-xs text-stone-500">
+        Calculado en: <span id="kpiCalculadoEn">—</span> · fuente: <code>panel.v_kpi_precios_home</code> (mig 294) · auto-refresh 5 min.
+      </footer>
 
     </section>
 
@@ -7120,6 +7226,7 @@ function setupTabs() {
       if (tabId === 'bandeja_precios') initBandejaPrecios();
       if (tabId === 'precios_vivos')  window.initPreciosVivos && window.initPreciosVivos();
       if (tabId === 'errores_bucles') window.initErroresBucles && window.initErroresBucles();
+      if (tabId === 'kpi_precios')    window.initKpiPrecios && window.initKpiPrecios();
       if (tabId === 'analisis_micro') window.initAnalisisMicro && window.initAnalisisMicro();
       if (tabId === 'indicadores_adel') window.initIndicadoresAdel && window.initIndicadoresAdel();
       if (tabId === 'modo_precios') window.initModoPrecios && window.initModoPrecios();
@@ -15845,6 +15952,106 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.bovCargar           = bovCargar;
   window.initBovedaHistorica = initBovedaHistorica;
+})();
+</script>
+
+<!-- ============================================================
+     Tab KPIs Precios Home (T-43 · PC2 Pablo 2026-06-19)
+     Consume panel.v_kpi_precios_home (mig 294)
+============================================================ -->
+<script>
+(function () {
+  let kpiTimer = null;
+  const KPI_REFRESH_MS = 5 * 60 * 1000;
+
+  function kpiFmt(n, opts) {
+    opts = opts || {};
+    if (n == null) return '—';
+    const num = Number(n);
+    if (opts.pct) return num.toFixed(1) + '%';
+    if (opts.clp) return '$' + num.toLocaleString('es-CL', { maximumFractionDigits: 0 });
+    return num.toLocaleString('es-CL', { maximumFractionDigits: 1 });
+  }
+
+  function kpiColor(sem) {
+    const map = { verde: 'text-emerald-700', amarillo: 'text-amber-600', rojo: 'text-rose-700', gris: 'text-stone-500', sin_dato: 'text-stone-400' };
+    return map[sem] || 'text-stone-500';
+  }
+
+  function kpiSetText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+  function kpiSetClass(id, cls) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('text-emerald-700','text-amber-600','text-rose-700','text-stone-400','text-stone-500','text-sky-700');
+    el.classList.add(cls);
+  }
+
+  async function kpiCargar() {
+    if (typeof sb === 'undefined' || !sb) return;
+    try {
+      const { data, error } = await sb.schema('panel').from('v_kpi_precios_home').select('*').limit(1);
+      if (error) throw error;
+      const row = (data && data[0]) || {};
+
+      if (row.t43a_resultado_mes_clp != null) {
+        kpiSetText('kpiResultadoMes', kpiFmt(row.t43a_resultado_mes_clp, { clp: true }));
+        kpiSetClass('kpiResultadoMes', 'text-stone-800');
+      } else {
+        kpiSetText('kpiResultadoMes', 'Pendiente');
+        kpiSetText('kpiResultadoMesEstado', row.t43a_estado || 'pendiente_fuente_contable');
+      }
+
+      kpiSetText('kpiPreciosVivos', row.t43b_precios_vivos != null ? row.t43b_precios_vivos : '—');
+
+      kpiSetText('kpiSemVerde', row.t43c_verde != null ? row.t43c_verde : '—');
+      kpiSetText('kpiSemAmarillo', row.t43c_amarillo != null ? row.t43c_amarillo : '—');
+      kpiSetText('kpiSemRojo', row.t43c_rojo != null ? row.t43c_rojo : '—');
+
+      kpiSetText('kpiScoreOp', row.t43e_score_operacional != null ? row.t43e_score_operacional : '—');
+
+      if (row.t43f_score_estrategico != null) {
+        kpiSetText('kpiScoreEst', kpiFmt(row.t43f_score_estrategico));
+        kpiSetClass('kpiScoreEst', 'text-stone-800');
+      } else {
+        kpiSetText('kpiScoreEst', 'Pendiente');
+        kpiSetText('kpiScoreEstEstado', row.t43f_estado || 'pendiente_formula_v8');
+      }
+
+      kpiSetText('kpiSyncPct', row.t43g_sync_pct != null ? kpiFmt(row.t43g_sync_pct, { pct: true }) : '—');
+      kpiSetClass('kpiSyncPct', kpiColor(row.t43g_semaforo));
+      kpiSetText('kpiSyncDetalle',
+        (row.t43g_public_count != null && row.t43g_curated_count != null)
+          ? row.t43g_public_count + ' / ' + row.t43g_curated_count + ' (public / curated)'
+          : 'public / curated');
+
+      kpiSetText('kpiTriggerHoras', row.t43h_horas_desde_update != null ? row.t43h_horas_desde_update + 'h' : '—');
+      kpiSetClass('kpiTriggerHoras', kpiColor(row.t43h_semaforo));
+      kpiSetText('kpiTriggerDetalle',
+        row.t43h_changes_24h != null
+          ? row.t43h_changes_24h + ' cambios 24h'
+          : 'horas desde último update');
+
+      kpiSetText('kpiCajaDias', row.caja_dias_cobertura != null ? row.caja_dias_cobertura + 'd' : '—');
+      kpiSetClass('kpiCajaDias', kpiColor(row.caja_semaforo));
+
+      kpiSetText('kpiCalculadoEn', row.calculado_en
+        ? new Date(row.calculado_en).toLocaleString('es-CL')
+        : '—');
+
+    } catch (e) {
+      console.warn('[KpiPrecios] error:', e);
+      kpiSetText('kpiCalculadoEn', 'Error: ' + String(e).slice(0, 80));
+    }
+  }
+
+  function initKpiPrecios() {
+    kpiCargar();
+    if (kpiTimer) clearInterval(kpiTimer);
+    kpiTimer = setInterval(kpiCargar, KPI_REFRESH_MS);
+  }
+
+  window.kpiCargar       = kpiCargar;
+  window.initKpiPrecios  = initKpiPrecios;
 })();
 </script>
 
