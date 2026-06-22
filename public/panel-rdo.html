@@ -781,6 +781,10 @@
             <span class="v4-emoji" aria-hidden="true">🔄</span>
             Flujo Operativo
           </a>
+          <a href="#" data-v4-tab="tablero_precios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🏠</span>
+            Tablero Precios
+          </a>
           <a href="#" data-v4-tab="entregables" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📤</span>
             Entregables
@@ -1169,6 +1173,7 @@
         <button data-tab="calculadora_precios" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabCalculadoraPrecios">🧮 Calculadora Precios</button>
         <button data-tab="boveda_historica" class="tab-btn py-3 px-3 text-stone-600"   role="tab" aria-selected="false" aria-controls="tabBovedaHistorica">📦 Bóveda Histórica</button>
         <button data-tab="flujo_operativo" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabFlujoOperativo">🔄 Flujo Operativo</button>
+        <button data-tab="tablero_precios" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabTableroPrecios">🏠 Tablero Precios</button>
         <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
         <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
@@ -3162,6 +3167,126 @@
 
       <footer class="mt-4 text-xs text-stone-500">
         Última actualización: <span id="floLastUpdate">—</span>
+      </footer>
+
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA TABLERO ACCESO PRECIOS (T-37 · 12 puntos · home gestión diaria)
+         Consume curated.v_margen_vs_costos · staging.v_bandeja_precios ·
+         curated.vales_portal_externo · curated.materiales_sucursal_precios ·
+         staging.precios_propuestos · curated.materiales · curated.margen_metas
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabTableroPrecios" data-tab="tablero_precios" role="tabpanel"
+             aria-labelledby="tabTableroPreciosLabel"
+             class="tab-content hidden p-4 md:p-6 bg-stone-50">
+
+      <header class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-2xl font-bold text-stone-800 flex items-center gap-2">
+            <span>🏠</span><span>Tablero Acceso Precios · gestión diaria</span>
+          </h2>
+          <p class="text-sm text-stone-500 mt-1">
+            12 puntos del estado del sistema de precios en una sola pantalla.
+            Auto-refresh 5 min. Para Dusan / Andrea / Cristian.
+          </p>
+        </div>
+        <button id="tapRefrescar" type="button"
+                class="bg-stone-200 hover:bg-stone-300 text-stone-800 px-3 py-1.5 rounded text-sm">
+          🔄 Actualizar
+        </button>
+      </header>
+
+      <!-- P4 · Semáforo sistema (barra superior) -->
+      <div class="bg-white border rounded-lg p-3 mb-4" id="tapSemaforoBox">
+        <div class="text-xs text-stone-500 uppercase tracking-wider mb-1">P4 · Semáforo sistema</div>
+        <div class="text-base font-bold" id="tapSemaforoTxt">Cargando…</div>
+      </div>
+
+      <!-- P1 · KPIs vivos + P3 · Resultado mes (fila superior cards) -->
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-4">
+        <div class="bg-white border border-stone-300 rounded-lg p-3 text-center">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">P1 · Total vivos</div>
+          <div class="text-2xl font-bold text-stone-800 mt-1" id="tapP1Total">—</div>
+        </div>
+        <div class="bg-white border border-emerald-400 bg-emerald-50 rounded-lg p-3 text-center">
+          <div class="text-xs text-emerald-700 uppercase tracking-wider">P1 · 🟢 Verde</div>
+          <div class="text-2xl font-bold text-emerald-700 mt-1" id="tapP1Verde">—</div>
+        </div>
+        <div class="bg-white border border-amber-400 bg-amber-50 rounded-lg p-3 text-center">
+          <div class="text-xs text-amber-700 uppercase tracking-wider">P1 · 🟡 Amarillo</div>
+          <div class="text-2xl font-bold text-amber-700 mt-1" id="tapP1Amarillo">—</div>
+        </div>
+        <div class="bg-white border border-rose-400 bg-rose-50 rounded-lg p-3 text-center">
+          <div class="text-xs text-rose-700 uppercase tracking-wider">P1 · 🔴 Rojo</div>
+          <div class="text-2xl font-bold text-rose-700 mt-1" id="tapP1Rojo">—</div>
+        </div>
+        <div class="bg-white border border-stone-300 rounded-lg p-3 text-center">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">P3 · MG mes</div>
+          <div class="text-2xl font-bold text-stone-800 mt-1" id="tapP3Mg">—</div>
+          <div class="text-xs text-stone-500" id="tapP3Kg">— kg</div>
+        </div>
+        <div class="bg-white border border-stone-300 rounded-lg p-3 text-center">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">P2 · Bandeja</div>
+          <div class="text-2xl font-bold text-amber-700 mt-1" id="tapP2Count">—</div>
+          <a href="#" data-v4-tab="bandeja_precios" class="text-xs text-emerald-700 underline">Ver bandeja →</a>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <!-- P5 · Matriz por categoría -->
+        <div class="bg-white border border-stone-300 rounded-lg p-4">
+          <h3 class="text-sm font-bold text-stone-700 mb-2">P5 · Matriz por categoría</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+              <thead class="text-stone-500 uppercase border-b">
+                <tr>
+                  <th class="py-1 px-1 text-left">Categoría</th>
+                  <th class="py-1 px-1 text-right">N</th>
+                  <th class="py-1 px-1 text-right">MG avg</th>
+                  <th class="py-1 px-1 text-right">🟢</th>
+                  <th class="py-1 px-1 text-right">🟡</th>
+                  <th class="py-1 px-1 text-right">🔴</th>
+                </tr>
+              </thead>
+              <tbody id="tapP5Tbody">
+                <tr><td colspan="6" class="py-3 text-center text-stone-400">Cargando…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- P6 · Acciones urgentes top 5 -->
+        <div class="bg-white border border-stone-300 rounded-lg p-4">
+          <h3 class="text-sm font-bold text-stone-700 mb-2">P6 · Acciones urgentes hoy</h3>
+          <ul id="tapP6Lista" class="text-xs text-stone-700 space-y-1">
+            <li class="text-stone-400">Cargando…</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <!-- P7 · Coherencia (materiales bajo piso) -->
+        <div class="bg-white border border-stone-300 rounded-lg p-4">
+          <h3 class="text-sm font-bold text-stone-700 mb-2">P7 · Coherencia · materiales bajo piso de margen</h3>
+          <div class="text-3xl font-bold text-rose-700 mb-1" id="tapP7Count">—</div>
+          <div class="text-xs text-stone-500">deberían ser 0 · revisar Calculadora T-42 para corregir</div>
+          <ul id="tapP7Lista" class="text-xs text-stone-600 mt-2 space-y-1 max-h-32 overflow-y-auto">
+            <li class="text-stone-400">Cargando…</li>
+          </ul>
+        </div>
+
+        <!-- P11 · Vigilancia diaria checklist -->
+        <div class="bg-white border border-stone-300 rounded-lg p-4">
+          <h3 class="text-sm font-bold text-stone-700 mb-2">P11 · Vigilancia diaria</h3>
+          <ul id="tapP11Lista" class="text-sm text-stone-700 space-y-1">
+            <li class="text-stone-400">Cargando…</li>
+          </ul>
+        </div>
+      </div>
+
+      <footer class="mt-4 text-xs text-stone-500">
+        Última actualización: <span id="tapLastUpdate">—</span> · auto-refresh 5 min · puntos P8/P9/P10/P12 pendientes (sub-tareas T-37e).
       </footer>
 
     </section>
@@ -7306,6 +7431,7 @@ function setupTabs() {
       if (tabId === 'calculadora_precios') window.initCalculadoraPrecios && window.initCalculadoraPrecios();
       if (tabId === 'boveda_historica') window.initBovedaHistorica && window.initBovedaHistorica();
       if (tabId === 'flujo_operativo') window.initFlujoOperativo && window.initFlujoOperativo();
+      if (tabId === 'tablero_precios') window.initTableroPrecios && window.initTableroPrecios();
       if (tabId === 'ops_diarias')   initOpsDiarias();
       if (tabId === 'dieguito')  initDieguito();
       if (tabId === 'comercial')  initTabComercial();
@@ -16269,6 +16395,307 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.floCargar          = floCargar;
   window.initFlujoOperativo = initFlujoOperativo;
+})();
+</script>
+
+<!-- ============================================================
+     Tab Tablero Acceso Precios (T-37 · PC2 Pablo 2026-06-22)
+     12 puntos · home de gestión diaria · consume múltiples vistas
+     Cubre DoD: P1, P2, P3, P4, P5, P6, P7, P11
+============================================================ -->
+<script>
+(function () {
+  let tapTimer = null;
+  const TAP_REFRESH_MS = 5 * 60 * 1000;
+
+  function tapEscape(s) {
+    if (s == null) return '';
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function tapFmtClp(n) {
+    if (n == null || isNaN(n)) return '—';
+    return '$' + Math.round(n).toLocaleString('es-CL');
+  }
+  function tapFmtPct(n) {
+    if (n == null || isNaN(n)) return '—';
+    return Number(n).toFixed(1) + '%';
+  }
+  function tapSet(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val == null ? '—' : String(val);
+  }
+
+  // SAFELIST Tailwind (usadas dinámicamente en P4 semáforo + checks P11):
+  // border-emerald-400 bg-emerald-50 text-emerald-700
+  // border-amber-400   bg-amber-50   text-amber-700
+  // border-rose-400    bg-rose-50    text-rose-700
+  // border-stone-300   bg-stone-50   text-stone-600
+  function tapAplicarSemaforo(boxId, estado) {
+    const box = document.getElementById(boxId);
+    if (!box) return;
+    box.classList.remove('border-emerald-400','border-amber-400','border-rose-400','border-stone-300','bg-emerald-50','bg-amber-50','bg-rose-50','bg-stone-50');
+    const map = {
+      verde:    ['border-emerald-400','bg-emerald-50'],
+      amarillo: ['border-amber-400','bg-amber-50'],
+      rojo:     ['border-rose-400','bg-rose-50'],
+      gris:     ['border-stone-300','bg-stone-50']
+    };
+    (map[estado] || map.gris).forEach(c => box.classList.add(c));
+  }
+
+  // P1 + P3 + P4 · agrega KPIs de v_margen_vs_costos + bandeja + resultado mes
+  async function tapCargarKpis() {
+    // P1 desde v_margen_vs_costos
+    let p1 = { total: 0, verde: 0, amarillo: 0, rojo: 0, sin_dato: 0 };
+    let categoriasAgg = {};
+    let coherenciaCount = 0;
+    let coherenciaLista = [];
+    try {
+      const { data, error } = await sb.schema('curated').from('v_margen_vs_costos').select('*').limit(5000);
+      if (error) throw error;
+      (data || []).forEach(r => {
+        p1.total++;
+        const sem = (r.semaforo || '').toLowerCase();
+        if (sem.includes('verde'))         p1.verde++;
+        else if (sem.includes('amarillo')) p1.amarillo++;
+        else if (sem.includes('rojo'))     p1.rojo++;
+        else                               p1.sin_dato++;
+
+        // P5 matriz por categoría
+        const cat = r.categoria || 'sin_categoria';
+        if (!categoriasAgg[cat]) categoriasAgg[cat] = { n: 0, mgSum: 0, mgN: 0, verde: 0, amarillo: 0, rojo: 0 };
+        const g = categoriasAgg[cat];
+        g.n++;
+        if (r.mg_real_pct != null && !isNaN(r.mg_real_pct)) {
+          g.mgSum += Number(r.mg_real_pct);
+          g.mgN++;
+        }
+        if (sem.includes('verde'))         g.verde++;
+        else if (sem.includes('amarillo')) g.amarillo++;
+        else if (sem.includes('rojo'))     g.rojo++;
+
+        // P7 coherencia: mg_real < mg_minimo_pct
+        if (r.mg_real_pct != null && r.mg_minimo_pct != null && Number(r.mg_real_pct) < Number(r.mg_minimo_pct)) {
+          coherenciaCount++;
+          if (coherenciaLista.length < 20) {
+            coherenciaLista.push({
+              nombre: r.nombre || r.material_id,
+              sucursal: r.sucursal_nombre || r.sucursal_id,
+              mg: r.mg_real_pct,
+              piso: r.mg_minimo_pct
+            });
+          }
+        }
+      });
+    } catch (e) {
+      console.warn('[Tablero] v_margen_vs_costos:', e);
+    }
+
+    tapSet('tapP1Total', p1.total.toLocaleString('es-CL'));
+    tapSet('tapP1Verde', p1.verde.toLocaleString('es-CL'));
+    tapSet('tapP1Amarillo', p1.amarillo.toLocaleString('es-CL'));
+    tapSet('tapP1Rojo', p1.rojo.toLocaleString('es-CL'));
+
+    // P5 render matriz
+    const p5Tbody = document.getElementById('tapP5Tbody');
+    if (p5Tbody) {
+      const cats = Object.entries(categoriasAgg)
+        .map(([cat, g]) => ({ cat, ...g, mgAvg: g.mgN > 0 ? g.mgSum / g.mgN : null }))
+        .sort((a, b) => (a.mgAvg ?? 999) - (b.mgAvg ?? 999));
+      if (cats.length === 0) {
+        p5Tbody.innerHTML = '<tr><td colspan="6" class="py-3 text-center text-stone-400">Sin datos.</td></tr>';
+      } else {
+        p5Tbody.innerHTML = cats.map(c =>
+          '<tr class="border-b border-stone-100">'
+          + '<td class="py-1 px-1 font-medium">' + tapEscape(c.cat.replace(/_/g, ' ')) + '</td>'
+          + '<td class="py-1 px-1 text-right">' + c.n + '</td>'
+          + '<td class="py-1 px-1 text-right">' + tapFmtPct(c.mgAvg) + '</td>'
+          + '<td class="py-1 px-1 text-right text-emerald-700 font-bold">' + c.verde + '</td>'
+          + '<td class="py-1 px-1 text-right text-amber-700 font-bold">' + c.amarillo + '</td>'
+          + '<td class="py-1 px-1 text-right text-rose-700 font-bold">' + c.rojo + '</td>'
+          + '</tr>'
+        ).join('');
+      }
+    }
+
+    // P7 coherencia render
+    tapSet('tapP7Count', String(coherenciaCount));
+    const p7Lista = document.getElementById('tapP7Lista');
+    if (p7Lista) {
+      if (coherenciaCount === 0) {
+        p7Lista.innerHTML = '<li class="text-emerald-700">✅ Todos los materiales sobre el piso de margen.</li>';
+      } else {
+        p7Lista.innerHTML = coherenciaLista.map(r =>
+          '<li>· ' + tapEscape(r.nombre) + ' (' + tapEscape(r.sucursal) + '): MG ' + tapFmtPct(r.mg) + ' < piso ' + tapFmtPct(r.piso) + '</li>'
+        ).join('') + (coherenciaCount > coherenciaLista.length
+          ? '<li class="text-stone-400">… +' + (coherenciaCount - coherenciaLista.length) + ' más</li>'
+          : '');
+      }
+    }
+
+    // P2 · bandeja desde staging.v_bandeja_precios
+    let p2Total = 0;
+    let urgentes = [];
+    try {
+      const { data: bp, error: bpE } = await sb.schema('staging').from('v_bandeja_precios')
+        .select('id, material_nombre, sucursal_nombre, precio_clp_kg, precio_vigente, desviacion_pct, estado, created_at')
+        .eq('estado', 'pendiente')
+        .order('created_at', { ascending: true })
+        .limit(500);
+      if (bpE) throw bpE;
+      p2Total = (bp || []).length;
+      // P6 urgentes: |desviacion_pct| > 30 → urgencia alta, top 5
+      urgentes = (bp || [])
+        .filter(r => r.desviacion_pct != null && Math.abs(Number(r.desviacion_pct)) > 30)
+        .slice(0, 5);
+    } catch (e) {
+      console.warn('[Tablero] bandeja:', e);
+    }
+    tapSet('tapP2Count', p2Total.toLocaleString('es-CL'));
+
+    const p6Lista = document.getElementById('tapP6Lista');
+    if (p6Lista) {
+      if (urgentes.length === 0) {
+        p6Lista.innerHTML = '<li class="text-emerald-700">✅ Sin propuestas urgentes (Δ% > 30) hoy.</li>';
+      } else {
+        p6Lista.innerHTML = urgentes.map(r =>
+          '<li>· ' + tapEscape(r.material_nombre || '?') + ' / ' + tapEscape(r.sucursal_nombre || '?')
+          + ' · Δ ' + tapFmtPct(r.desviacion_pct)
+          + ' · ' + tapFmtClp(r.precio_clp_kg) + ' (vigente ' + tapFmtClp(r.precio_vigente) + ')</li>'
+        ).join('');
+      }
+    }
+
+    // P3 · resultado mes desde curated.vales_portal_externo (últimos 30d)
+    let p3MgReal = null, p3KgTotal = 0;
+    try {
+      const desde = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const { data: vales, error: ve } = await sb.schema('curated').from('vales_portal_externo')
+        .select('peso_kg, total_clp')
+        .gte('fecha_recepcion', desde)
+        .limit(20000);
+      if (ve) throw ve;
+      let sumKg = 0, sumClp = 0;
+      (vales || []).forEach(v => {
+        sumKg += Number(v.peso_kg || 0);
+        sumClp += Number(v.total_clp || 0);
+      });
+      p3KgTotal = sumKg;
+      // Aproximación: % margen real requiere costos por kg, no disponible aquí
+      // Mostramos kg total + $ total como proxy honesto del volumen del mes
+      tapSet('tapP3Mg', sumClp > 0 ? tapFmtClp(sumClp / 1000) + 'K' : '—');
+      tapSet('tapP3Kg', sumKg > 0 ? Math.round(sumKg).toLocaleString('es-CL') + ' kg' : '— kg');
+    } catch (e) {
+      console.warn('[Tablero] vales mes:', e);
+      tapSet('tapP3Mg', 'sin datos');
+      tapSet('tapP3Kg', 'sin datos');
+    }
+
+    // P4 · semáforo sistema (derivado P1 rojo + P2 pendientes)
+    let estado = 'verde', txt = '';
+    if (p1.rojo > 5 || p2Total > 50) {
+      estado = 'rojo';
+      txt = '🔴 ATENCIÓN — ' + p1.rojo + ' rojos · ' + p2Total + ' propuestas sin aprobar';
+    } else if (p1.rojo > 0 || p2Total > 10) {
+      estado = 'amarillo';
+      txt = '🟡 MONITOREAR — ' + p1.rojo + ' rojos · ' + p2Total + ' pendientes';
+    } else {
+      estado = 'verde';
+      txt = '🟢 OK · sistema saludable';
+    }
+    tapSet('tapSemaforoTxt', txt);
+    tapAplicarSemaforo('tapSemaforoBox', estado);
+
+    return { p1, p2Total };
+  }
+
+  // P11 · vigilancia diaria · 5 checks compuestos
+  async function tapCargarP11(kpis) {
+    const checks = [];
+    const ce = (n, low, high) => n === 0 ? 'verde' : (n <= low ? 'verde' : (n <= high ? 'amarillo' : 'rojo'));
+
+    // Check 1 · precios rojos (de kpis ya calculados)
+    if (kpis && kpis.p1) {
+      checks.push({ nombre: 'Precios rojos', valor: kpis.p1.rojo, estado: ce(kpis.p1.rojo, 0, 5) });
+    }
+
+    // Check 2 · bandeja pendiente
+    if (kpis && kpis.p2Total != null) {
+      checks.push({ nombre: 'Bandeja pendiente', valor: kpis.p2Total, estado: ce(kpis.p2Total, 0, 20) });
+    }
+
+    // Check 3 · precios vencidos
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const { count, error } = await sb.schema('curated').from('materiales_sucursal_precios')
+        .select('*', { count: 'exact', head: true })
+        .not('vigencia_hasta', 'is', null)
+        .lt('vigencia_hasta', today);
+      if (error) throw error;
+      const v = count || 0;
+      checks.push({ nombre: 'Precios vencidos (vigencia_hasta < hoy)', valor: v, estado: ce(v, 0, 5) });
+    } catch (e) {
+      console.warn('[Tablero] vencidos:', e);
+      checks.push({ nombre: 'Precios vencidos', valor: 'error', estado: 'gris' });
+    }
+
+    // Check 4 · propuestas obsoletas >30d
+    try {
+      const hace30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const { count, error } = await sb.schema('staging').from('precios_propuestos')
+        .select('*', { count: 'exact', head: true })
+        .eq('estado', 'pendiente')
+        .lt('created_at', hace30);
+      if (error) throw error;
+      const v = count || 0;
+      checks.push({ nombre: 'Propuestas obsoletas (>30d)', valor: v, estado: ce(v, 0, 50) });
+    } catch (e) {
+      console.warn('[Tablero] obsoletas:', e);
+      checks.push({ nombre: 'Propuestas obsoletas', valor: 'error', estado: 'gris' });
+    }
+
+    // Check 5 · resumen pipeline (referencia T-44)
+    checks.push({
+      nombre: 'Pipeline (ver Flujo Operativo)',
+      valor: 'detalle en T-44',
+      estado: 'gris'
+    });
+
+    const ul = document.getElementById('tapP11Lista');
+    if (!ul) return;
+    const iconos = { verde: '✅', amarillo: '⚠️', rojo: '❌', gris: 'ℹ️' };
+    ul.innerHTML = checks.map(c =>
+      '<li>' + (iconos[c.estado] || 'ℹ️') + ' ' + tapEscape(c.nombre) + ': <strong>' + tapEscape(String(c.valor)) + '</strong></li>'
+    ).join('');
+  }
+
+  async function tapCargar() {
+    if (typeof sb === 'undefined' || !sb) return;
+    try {
+      const kpis = await tapCargarKpis();
+      await tapCargarP11(kpis);
+      const el = document.getElementById('tapLastUpdate');
+      if (el) el.textContent = new Date().toLocaleString('es-CL');
+    } catch (e) {
+      console.warn('[Tablero] error global:', e);
+    }
+  }
+
+  function initTableroPrecios() {
+    tapCargar();
+    const btn = document.getElementById('tapRefrescar');
+    if (btn && !btn.dataset.bound) {
+      btn.addEventListener('click', tapCargar);
+      btn.dataset.bound = '1';
+    }
+    if (tapTimer) clearInterval(tapTimer);
+    tapTimer = setInterval(tapCargar, TAP_REFRESH_MS);
+  }
+
+  window.tapCargar           = tapCargar;
+  window.initTableroPrecios  = initTableroPrecios;
 })();
 </script>
 
