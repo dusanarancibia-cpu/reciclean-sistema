@@ -14820,6 +14820,13 @@ document.addEventListener('DOMContentLoaded', () => {
   let indTimer = null;
   const IND_REFRESH_MS = 30 * 60 * 1000;
 
+  // SAFELIST Tailwind · clases usadas dinámicamente en indColorClasses().
+  // Aparecen como strings literales aquí para que el scanner de Tailwind las detecte.
+  // Si el build pasa a usar safelist explícita, agregar estas en tailwind.config.js:
+  //   border-emerald-400 bg-emerald-50 text-emerald-700
+  //   border-amber-400   bg-amber-50   text-amber-700
+  //   border-rose-400    bg-rose-50    text-rose-700
+  //   border-stone-300   bg-stone-50   text-stone-500 text-stone-700
   function indColorClasses(sem) {
     const map = {
       verde:     { card: 'border-emerald-400 bg-emerald-50', txt: 'text-emerald-700' },
