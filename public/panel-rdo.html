@@ -2043,7 +2043,19 @@
           <option value="amarillo">🟡 Solo amarillos</option>
           <option value="verde">🟢 Solo verdes</option>
         </select>
+        <select id="pvFiltroCategoria" onchange="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1">
+          <option value="">Todas las categorías</option>
+        </select>
         <input type="text" id="pvBuscar" placeholder="Buscar material..." oninput="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1 flex-1 min-w-36">
+      </div>
+
+      <!-- Leyenda umbrales semáforo (T-35 · SPEC L130) -->
+      <div class="flex flex-wrap gap-3 text-xs text-stone-500 mb-3 px-1">
+        <span><span class="text-base">🟢</span> MG real ≥ Meta</span>
+        <span><span class="text-base">🟡</span> Entre piso y meta</span>
+        <span><span class="text-base">🔴</span> MG real bajo el piso</span>
+        <span><span class="text-base">⚪</span> Sin datos suficientes</span>
+        <span class="text-stone-400">· Los umbrales exactos dependen de la categoría · ver márgenes meta en la Calculadora</span>
       </div>
 
       <!-- Tabla -->
@@ -14684,6 +14696,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
       pvData = data || [];
       pvActualizarKPIs();
+      pvPopularCategoriasFiltro();
       pvFiltrar();
     } catch (e) {
       console.warn('[PreciosVivos] error:', e);
@@ -14718,16 +14731,37 @@ document.addEventListener('DOMContentLoaded', () => {
     pvFiltrar();
   }
 
+  function pvPopularCategoriasFiltro() {
+    const sel = document.getElementById('pvFiltroCategoria');
+    if (!sel) return;
+    // Reset completo + preservar selección previa si la categoría sigue existiendo.
+    // Evita acumular categorías obsoletas si un material se reclasifica (DeepSeek 22-jun).
+    const valPrevia = sel.value;
+    sel.innerHTML = '<option value="">Todas las categorías</option>';
+    const cats = [...new Set((pvData || []).map(r => r.categoria).filter(Boolean))].sort();
+    cats.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c.replace(/_/g, ' ');
+      sel.appendChild(opt);
+    });
+    if (valPrevia && Array.from(sel.options).some(o => o.value === valPrevia)) {
+      sel.value = valPrevia;
+    }
+  }
+
   function pvFiltrar() {
     const tbody = document.getElementById('pvTbody');
     if (!tbody) return;
     const suc = (document.getElementById('pvFiltroSucursal') || {}).value || '';
     const sem = (document.getElementById('pvFiltroSemaforo') || {}).value || '';
+    const cat = (document.getElementById('pvFiltroCategoria') || {}).value || '';
     const bus = ((document.getElementById('pvBuscar') || {}).value || '').toLowerCase();
 
     let rows = pvData;
     if (suc) rows = rows.filter(r => r.sucursal_id === suc);
     if (sem) rows = rows.filter(r => (r.semaforo || '').toLowerCase().includes(sem));
+    if (cat) rows = rows.filter(r => r.categoria === cat);
     if (bus) rows = rows.filter(r => (r.nombre || r.material_id || '').toLowerCase().includes(bus));
 
     if (!rows.length) {
