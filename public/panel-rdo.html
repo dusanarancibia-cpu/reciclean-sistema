@@ -16453,6 +16453,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let coherenciaCount = 0;
     let coherenciaLista = [];
     try {
+      // TODO: si rows supera 4000, migrar a RPC server-side panel.f_tablero_kpis()
+      // (DeepSeek 22-jun · hoy ~312 precios vivos, limit 5000 es generoso pero finito).
       const { data, error } = await sb.schema('curated').from('v_margen_vs_costos').select('*').limit(5000);
       if (error) throw error;
       (data || []).forEach(r => {
