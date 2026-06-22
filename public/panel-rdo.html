@@ -739,6 +739,7 @@
           <a href="#" data-v4-tab="bandeja_precios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📨</span>
             Bandeja Precios
+            <span id="bpBadgeSidebar" class="bp-badge-counter hidden ml-auto text-xs font-bold px-1.5 py-0.5 rounded-full">0</span>
           </a>
           <a href="#" data-v4-tab="precios_vivos" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">💰</span>
@@ -1153,7 +1154,7 @@
         <button data-tab="evolucion"  class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabEvolucion">📈 Evolución</button>
         <button data-tab="cierres"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCierres">📅 Cierres</button>
         <button data-tab="precios"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabPrecios">💲 Precios</button>
-        <button data-tab="bandeja_precios" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabBandejaPrecios">📨 Bandeja Precios</button>
+        <button data-tab="bandeja_precios" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabBandejaPrecios">📨 Bandeja Precios <span id="bpBadgeNavbar" class="bp-badge-counter hidden text-xs font-bold px-1.5 py-0.5 rounded-full ml-1">0</span></button>
         <button data-tab="precios_vivos" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabPreciosVivos">💰 Precios Vivos</button>
         <button data-tab="errores_bucles" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabErroresBucles">🚦 Errores y Bucles</button>
         <button data-tab="cronograma_24h" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCronograma24h">⏰ Cronograma 24h</button>
@@ -1839,9 +1840,15 @@
     ═══════════════════════════════════════════════════════════ -->
     <section id="tabBandejaPrecios" class="tab-content hidden">
       <!-- D-VISUAL-ORO fix tarea 61941445 (3 gaps): Inter aplicado via body, verde Reciclean #059669, rounded-md -->
-      <div class="flex justify-between items-center mb-4">
+      <div class="flex justify-between items-center mb-4 gap-2 flex-wrap">
         <h2 class="text-xl font-bold text-stone-800">📨 Bandeja Precios — propuestas para aprobación</h2>
-        <button onclick="loadBandejaPrecios()" class="text-sm vo-text-verde-rec hover:underline">↺ Recargar</button>
+        <div class="flex items-center gap-2">
+          <button id="bpAprobarTodos" type="button" onclick="bpAprobarTodos()"
+                  class="hidden bg-emerald-700 hover:bg-emerald-800 text-white text-sm px-3 py-1.5 rounded font-medium">
+            ✅ Aprobar todos (<span id="bpAprobarTodosCnt">0</span>)
+          </button>
+          <button onclick="loadBandejaPrecios()" class="text-sm vo-text-verde-rec hover:underline">↺ Recargar</button>
+        </div>
       </div>
 
       <!-- KPI bar (rounded-md + verde Reciclean) -->
@@ -1882,6 +1889,12 @@
             <option value="auto">auto</option>
             <option value="andrea">andrea</option>
             <option value="dusan">dusan</option>
+          </select>
+        </div>
+        <div>
+          <label for="bpFiltroSucursal" class="block text-xs text-stone-500 mb-1">Sucursal</label>
+          <select id="bpFiltroSucursal" onchange="loadBandejaPrecios()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todas las sucursales</option>
           </select>
         </div>
         <div class="flex-1 min-w-[12rem]">
@@ -14454,19 +14467,129 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { console.warn('bp kpis exc:', e); }
   }
 
+  // T-36 · helpers para filtro sucursal + badge counter + guard permisos
+  function bpPopularSucursalFiltro(data) {
+    const sel = document.getElementById('bpFiltroSucursal');
+    if (!sel) return;
+    // Reset completo + preservar selección (patrón canónico T-35 post-DeepSeek)
+    const valPrevia = sel.value;
+    sel.innerHTML = '<option value="">Todas las sucursales</option>';
+    const sucs = [...new Set((data || [])
+      .map(r => [r.sucursal_id, r.sucursal_nombre])
+      .filter(([id]) => id))]
+      .reduce((acc, [id, nombre]) => {
+        if (!acc.find(s => s.id === id)) acc.push({ id, nombre: nombre || id });
+        return acc;
+      }, [])
+      .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+    sucs.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.nombre;
+      sel.appendChild(opt);
+    });
+    if (valPrevia && Array.from(sel.options).some(o => o.value === valPrevia)) {
+      sel.value = valPrevia;
+    }
+  }
+
+  function bpActualizarBadge(pendientes) {
+    // Umbrales SPEC-T36c: >50 rojo · 10-50 amarillo · ≤10 verde · 0 oculto
+    const n = Number(pendientes || 0);
+    let cls = '';
+    if (n === 0)       cls = '';
+    else if (n > 50)   cls = 'bg-rose-600 text-white';
+    else if (n >= 10)  cls = 'bg-amber-500 text-white';
+    else               cls = 'bg-emerald-600 text-white';
+
+    ['bpBadgeSidebar', 'bpBadgeNavbar'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (n === 0) {
+        el.classList.add('hidden');
+      } else {
+        el.classList.remove('hidden');
+        el.textContent = String(n);
+        el.classList.remove('bg-rose-600','bg-amber-500','bg-emerald-600','text-white');
+        cls.split(' ').forEach(c => el.classList.add(c));
+      }
+    });
+
+    const btn = document.getElementById('bpAprobarTodos');
+    const btnCnt = document.getElementById('bpAprobarTodosCnt');
+    if (btnCnt) btnCnt.textContent = String(n);
+    if (btn) {
+      const puede = bpEstadoPermiso() === 'ceo';
+      btn.classList.toggle('hidden', !puede || n === 0);
+    }
+  }
+
+  // Guard cliente-side · sin hardcode de email · 3 estados cargando/ceo/no_ceo
+  function bpEstadoPermiso() {
+    try {
+      if (typeof window.userPerfil === 'string' && window.userPerfil) {
+        return window.userPerfil === 'gerencia_ceo' ? 'ceo' : 'no_ceo';
+      }
+      const u = (window.currentUser || {});
+      if (typeof u === 'object' && u.perfil) {
+        return u.perfil === 'gerencia_ceo' ? 'ceo' : 'no_ceo';
+      }
+      return 'cargando';
+    } catch (e) { return 'cargando'; }
+  }
+
+  async function bpAprobarTodos() {
+    if (bpEstadoPermiso() !== 'ceo') {
+      alert('Sólo perfil gerencia_ceo puede aprobar batch.');
+      return;
+    }
+    // currentUser es string en este panel (email), no objeto · guard contra null
+    const email = (typeof currentUser === 'string' && currentUser.includes('@'))
+      ? currentUser
+      : ((window.currentUser && window.currentUser.email) || null);
+    if (!email) {
+      alert('Sesión expirada. Recargá la página y volvé a intentar.');
+      return;
+    }
+    const cntEl = document.getElementById('bpAprobarTodosCnt');
+    const cnt = cntEl ? Number(cntEl.textContent) || 0 : 0;
+    if (cnt === 0) return;
+    if (!confirm('¿Aprobar las ' + cnt + ' propuestas pendientes?')) return;
+
+    const btn = document.getElementById('bpAprobarTodos');
+    if (btn) btn.disabled = true;
+    try {
+      const { data, error } = await sb.rpc('f_aprobar_todos_pendientes', {
+        p_decision_by: email,
+        p_decision: 'aprobado'
+      });
+      if (error) throw error;
+      if (window.showToast) window.showToast('✅ Batch aprobado · ' + cnt + ' propuestas', 'success');
+      else alert('✅ Batch aprobado · ' + cnt + ' propuestas');
+      loadBandejaPrecios();
+    } catch (e) {
+      alert('Error aprobando batch: ' + (e.message || String(e)).slice(0, 120));
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+  window.bpAprobarTodos = bpAprobarTodos;
+
   async function loadBandejaPrecios() {
     if (typeof sb === 'undefined' || !sb) return;
     const tbody = document.getElementById('bpTbody');
     if (!tbody) return;
-    const estado = document.getElementById('bpFiltroEstado').value;
-    const ruta   = document.getElementById('bpFiltroRuta').value;
-    const buscar = (document.getElementById('bpFiltroBuscar').value || '').trim();
+    const estado   = document.getElementById('bpFiltroEstado').value;
+    const ruta     = document.getElementById('bpFiltroRuta').value;
+    const sucursal = (document.getElementById('bpFiltroSucursal') || {}).value || '';
+    const buscar   = (document.getElementById('bpFiltroBuscar').value || '').trim();
 
     let q = sb.schema('staging').from('v_bandeja_precios')
       .select('id, cliente_id, cliente_nombre, material_id, material_nombre, sucursal_id, sucursal_nombre, precio_clp_kg, precio_vigente, desviacion_pct, confidence_score, ruta, estado, fecha_vigencia, created_at, revisando_por, lock_until, notas')
       .order('created_at', { ascending: false }).limit(200);
-    if (estado) q = q.eq('estado', estado);
-    if (ruta)   q = q.eq('ruta', ruta);
+    if (estado)   q = q.eq('estado', estado);
+    if (ruta)     q = q.eq('ruta', ruta);
+    if (sucursal) q = q.eq('sucursal_id', sucursal);
 
     const { data, error } = await q;
     if (error) {
@@ -14474,6 +14597,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     let rows = data ?? [];
+    bpPopularSucursalFiltro(rows);
     if (buscar) {
       const q2 = buscar.toLowerCase();
       rows = rows.filter(r =>
@@ -14482,6 +14606,9 @@ document.addEventListener('DOMContentLoaded', () => {
         || (r.notas ?? '').toLowerCase().includes(q2)
       );
     }
+    // Badge counter: contar pendientes (siempre, sin importar el filtro estado/sucursal/texto)
+    const totalPendientes = (data || []).filter(r => r.estado === 'pendiente').length;
+    bpActualizarBadge(totalPendientes);
     if (rows.length === 0) {
       tbody.innerHTML = '<tr><td colspan="10" class="px-3 py-4 text-center text-stone-400">Sin propuestas para este filtro.</td></tr>';
       loadKpis();
@@ -16176,18 +16303,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // T-36 fix R-AUD-024: usar currentUser real, no hardcode 'dusan'
   async function pvAprobarItem(id) {
+    if (typeof currentUser !== 'string' || !currentUser) {
+      alert('Sesión expirada. Recargá la página y volvé a intentar.');
+      return;
+    }
     try {
-      const res = await sbRpc('f_aprobar_bandeja_item', { p_id: id, p_decision_by: 'dusan', p_decision: 'aprobado' });
+      const res = await sbRpc('f_aprobar_bandeja_item', { p_id: id, p_decision_by: currentUser, p_decision: 'aprobado' });
       if (res && res.ok) { pvCargarBandeja(); pvCargarScore(); }
       else alert('Error: ' + (res && res.error ? res.error : JSON.stringify(res)));
     } catch(e) { alert('Error al aprobar: ' + e.message); }
   }
 
   async function pvAprobarTodos() {
+    if (typeof currentUser !== 'string' || !currentUser) {
+      alert('Sesión expirada. Recargá la página y volvé a intentar.');
+      return;
+    }
     if (!confirm('¿Aprobar todos los ' + (document.getElementById('pvBandejaCnt2')?.textContent || '?') + ' items pendientes?')) return;
     try {
-      const res = await sbRpc('f_aprobar_todos_pendientes', { p_decision_by: 'dusan', p_decision: 'aprobado' });
+      const res = await sbRpc('f_aprobar_todos_pendientes', { p_decision_by: currentUser, p_decision: 'aprobado' });
       if (res && res.ok) {
         pvCargarBandeja();
         pvCargarScore();
@@ -16209,9 +16345,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function pvAprobarCalibradorB() {
+    if (typeof currentUser !== 'string' || !currentUser) {
+      alert('Sesión expirada. Recargá la página y volvé a intentar.');
+      return;
+    }
     if (!confirm('¿Aprobar Ruta B CEO Full?\nRuta A (5 plásticos) + 10 calibrador cobres/fierros brecha ≤3 pts.\nScore proyectado: 80.9 (+9.9 pts).\n\n⚠️ Esta acción cambia precios en producción.')) return;
     try {
-      const res = await sbRpc('f_aprobar_todos_pendientes', { p_decision_by: 'dusan', p_decision: 'aprobado' });
+      const res = await sbRpc('f_aprobar_todos_pendientes', { p_decision_by: currentUser, p_decision: 'aprobado' });
       alert('✅ Ruta B aplicada: ' + JSON.stringify(res));
       pvCargarScore();
       pvCargarBandeja();
