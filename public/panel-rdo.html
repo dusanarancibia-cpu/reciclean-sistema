@@ -14624,6 +14624,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!tbody) return;
     tbody.innerHTML = rows.map(r => {
       const diff = compraProm > 0 ? ((Number(r.compra_avg || 0) - compraProm) / compraProm * 100) : 0;
+      // Reciclean compra chatarra · pagar caro = menos margen (ROJO),
+      // pagar barato = más margen (VERDE). Convención invertida vs ventas tradicionales.
       const diffClase = diff > 5 ? 'text-rose-700' : (diff < -5 ? 'text-emerald-700' : 'text-stone-500');
       const ult = r.ultima_actualizacion ? new Date(r.ultima_actualizacion).toLocaleDateString('es-CL') : '—';
       return '<tr class="border-t border-stone-200 hover:bg-stone-50">'
@@ -14641,6 +14643,10 @@ document.addEventListener('DOMContentLoaded', () => {
   async function amCargarGeografia() {
     if (typeof sb === 'undefined' || !sb) return;
     try {
+      // TODO: si curated.materiales_sucursal_precios crece >20k filas vigentes,
+      // migrar a RPC server-side panel.f_geografia_resumen() para evitar
+      // pull masivo + agregación cliente (riesgo memoria navegador, latencia).
+      // Hoy con ~312 precios vivos el limit es generoso.
       const today = new Date().toISOString().slice(0, 10);
       const { data, error } = await sb.schema('curated')
         .from('materiales_sucursal_precios')
