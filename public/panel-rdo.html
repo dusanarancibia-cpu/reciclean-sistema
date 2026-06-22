@@ -768,6 +768,10 @@
             <span class="v4-emoji" aria-hidden="true">🧮</span>
             Calculadora Precios
           </a>
+          <a href="#" data-v4-tab="boveda_historica" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📦</span>
+            Bóveda Histórica
+          </a>
           <a href="#" data-v4-tab="entregables" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📤</span>
             Entregables
@@ -1153,6 +1157,7 @@
         <button data-tab="indicadores_adel" class="tab-btn py-3 px-3 text-stone-600"   role="tab" aria-selected="false" aria-controls="tabIndicadoresAdel">📡 Anticipación Tendencias</button>
         <button data-tab="modo_precios"  class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabModoPrecios">⚙️ Acelerador/Freno</button>
         <button data-tab="calculadora_precios" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabCalculadoraPrecios">🧮 Calculadora Precios</button>
+        <button data-tab="boveda_historica" class="tab-btn py-3 px-3 text-stone-600"   role="tab" aria-selected="false" aria-controls="tabBovedaHistorica">📦 Bóveda Histórica</button>
         <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
         <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
@@ -2903,6 +2908,81 @@
           📤 Publicar como propuesta
         </button>
         <span class="text-xs text-stone-500" id="calcPublicarMsg"></span>
+      </div>
+
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA BÓVEDA HISTÓRICA (T-46 · serie temporal + banda ±1.5σ)
+         Consume panel.f_boveda_historica + panel.f_boveda_ventana_optima (mig 272)
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabBovedaHistorica" data-tab="boveda_historica" role="tabpanel"
+             aria-labelledby="tabBovedaHistoricaLabel"
+             class="tab-content hidden p-4 md:p-6 bg-stone-50">
+
+      <header class="mb-4">
+        <h2 class="text-2xl font-bold text-stone-800 flex items-center gap-2">
+          <span>📦</span><span>Bóveda Histórica · ventana móvil</span>
+        </h2>
+        <p class="text-sm text-stone-500 mt-1">
+          Evolución de precios + banda ±1.5σ por material. Ventana óptima: 14d (cobre/aluminio) ·
+          45d (fierro) · 90d (papel/plástico). Fuente: <code>panel.f_boveda_historica</code>.
+        </p>
+      </header>
+
+      <div class="grid md:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="block text-xs text-stone-600 mb-1">Material</label>
+          <select id="bovMaterial" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm bg-white">
+            <option value="">(cargando…)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-600 mb-1">Sucursal</label>
+          <select id="bovSucursal" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm bg-white">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-600 mb-1">Ventana (días · 0 = óptima)</label>
+          <input type="number" id="bovVentana" min="0" max="365" step="1" value="0"
+                 class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm bg-white">
+        </div>
+      </div>
+
+      <div class="bg-white border border-stone-300 rounded-lg p-4 mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <div class="text-sm font-semibold text-stone-800" id="bovHeader">Seleccioná material</div>
+          <div class="text-xs text-stone-500" id="bovVentanaInfo">—</div>
+        </div>
+        <div id="bovContent" class="min-h-[180px]">
+          <p class="text-sm text-stone-500">Cargando…</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4" id="bovStatsBox">
+        <div class="bg-white border border-stone-300 rounded-lg p-3">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">N puntos</div>
+          <div class="text-xl font-bold text-stone-800 mt-1" id="bovStatN">—</div>
+        </div>
+        <div class="bg-white border border-stone-300 rounded-lg p-3">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">Promedio</div>
+          <div class="text-xl font-bold text-stone-800 mt-1" id="bovStatProm">—</div>
+        </div>
+        <div class="bg-white border border-stone-300 rounded-lg p-3">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">Límite inferior</div>
+          <div class="text-xl font-bold text-emerald-700 mt-1" id="bovStatInf">—</div>
+        </div>
+        <div class="bg-white border border-stone-300 rounded-lg p-3">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">Límite superior</div>
+          <div class="text-xl font-bold text-rose-700 mt-1" id="bovStatSup">—</div>
+        </div>
+      </div>
+
+      <div class="bg-white border rounded-lg p-3" id="bovAlertaBox">
+        <div class="text-xs text-stone-500 uppercase tracking-wider mb-1">Último precio</div>
+        <div class="text-lg font-bold" id="bovAlerta">—</div>
+        <div class="text-xs text-stone-500" id="bovAlertaDetalle">—</div>
       </div>
 
     </section>
@@ -7044,6 +7124,7 @@ function setupTabs() {
       if (tabId === 'indicadores_adel') window.initIndicadoresAdel && window.initIndicadoresAdel();
       if (tabId === 'modo_precios') window.initModoPrecios && window.initModoPrecios();
       if (tabId === 'calculadora_precios') window.initCalculadoraPrecios && window.initCalculadoraPrecios();
+      if (tabId === 'boveda_historica') window.initBovedaHistorica && window.initBovedaHistorica();
       if (tabId === 'ops_diarias')   initOpsDiarias();
       if (tabId === 'dieguito')  initDieguito();
       if (tabId === 'comercial')  initTabComercial();
@@ -15556,6 +15637,214 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.calcRecompute          = calcRecompute;
   window.initCalculadoraPrecios = initCalculadoraPrecios;
+})();
+</script>
+
+<!-- ============================================================
+     Tab Bóveda Histórica (T-46 · PC2 Pablo 2026-06-22)
+     Consume panel.f_boveda_historica + f_boveda_ventana_optima (mig 272)
+============================================================ -->
+<script>
+(function () {
+  let bovCargado = false;
+  let bovDebounce = null;
+
+  function bovFmtClp(n) {
+    if (n == null || isNaN(n)) return '—';
+    return '$' + Math.round(n).toLocaleString('es-CL');
+  }
+  function bovSet(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+  function bovSetHtml(id, html) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  }
+
+  async function bovLoadMateriales() {
+    if (typeof sb === 'undefined' || !sb) return;
+    try {
+      const { data, error } = await sb.schema('curated')
+        .from('materiales')
+        .select('material_id, nombre_display')
+        .order('nombre_display')
+        .limit(500);
+      if (error) throw error;
+      const sel = document.getElementById('bovMaterial');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">(seleccionar)</option>' +
+        (data || []).map(m =>
+          '<option value="' + m.material_id + '">' + (m.nombre_display || m.material_id) + '</option>'
+        ).join('');
+    } catch (e) {
+      console.warn('[Boveda] materiales:', e);
+    }
+  }
+
+  async function bovLoadSucursales() {
+    if (typeof sb === 'undefined' || !sb) return;
+    try {
+      const { data, error } = await sb.schema('curated')
+        .from('sucursales')
+        .select('sucursal_id, nombre')
+        .order('nombre')
+        .limit(50);
+      if (error) throw error;
+      const sel = document.getElementById('bovSucursal');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">Todas</option>' +
+        (data || []).map(s =>
+          '<option value="' + s.sucursal_id + '">' + (s.nombre || s.sucursal_id) + '</option>'
+        ).join('');
+    } catch (e) {
+      console.warn('[Boveda] sucursales:', e);
+    }
+  }
+
+  function bovRenderSerie(serie, est) {
+    if (!serie || serie.length === 0) {
+      return '<p class="text-sm text-stone-500">Sin puntos en la ventana.</p>';
+    }
+    const filas = serie.slice(-30).map(p => {
+      const precio = p.precio_compra;
+      const outOf = (est && precio != null && (precio < est.limite_inferior || precio > est.limite_superior));
+      const clase = outOf ? 'text-rose-700 font-semibold' : 'text-stone-700';
+      return '<tr class="' + clase + '">' +
+             '<td class="py-1 px-2">' + (p.fecha || '—') + '</td>' +
+             '<td class="py-1 px-2 text-right">' + bovFmtClp(precio) + '</td>' +
+             '<td class="py-1 px-2 text-right text-stone-500">' + bovFmtClp(p.precio_venta) + '</td>' +
+             '<td class="py-1 px-2 text-xs text-stone-500">' + (p.sucursal_id || '—') + '</td>' +
+             '</tr>';
+    }).join('');
+    return '<div class="overflow-x-auto"><table class="w-full text-sm">' +
+           '<thead class="text-xs text-stone-500 uppercase border-b border-stone-200">' +
+           '<tr><th class="py-1 px-2 text-left">Fecha</th>' +
+           '<th class="py-1 px-2 text-right">P.Compra</th>' +
+           '<th class="py-1 px-2 text-right">P.Venta</th>' +
+           '<th class="py-1 px-2 text-left">Sucursal</th></tr></thead>' +
+           '<tbody>' + filas + '</tbody></table></div>' +
+           '<p class="text-xs text-stone-400 mt-2">Mostrando últimos ' + Math.min(30, serie.length) + ' de ' + serie.length + ' puntos.</p>';
+  }
+
+  function bovClearStats() {
+    bovSet('bovStatN', '—');
+    bovSet('bovStatProm', '—');
+    bovSet('bovStatInf', '—');
+    bovSet('bovStatSup', '—');
+    bovSet('bovAlerta', '—');
+    bovSet('bovAlertaDetalle', '—');
+    const box = document.getElementById('bovAlertaBox');
+    if (box) {
+      box.classList.remove('border-emerald-400','border-rose-400','border-amber-400','bg-emerald-50','bg-rose-50','bg-amber-50');
+      box.classList.add('border-stone-300');
+    }
+  }
+
+  async function bovCargar() {
+    const matSel = document.getElementById('bovMaterial');
+    const sucSel = document.getElementById('bovSucursal');
+    const venIn  = document.getElementById('bovVentana');
+    if (!matSel) return;
+    const materialId = matSel.value || '';
+    const sucursalId = (sucSel && sucSel.value) ? sucSel.value : null;
+    const ventana    = venIn ? Number(venIn.value) : 0;
+
+    if (!materialId) {
+      bovSet('bovHeader', 'Seleccioná material');
+      bovSet('bovVentanaInfo', '—');
+      bovSetHtml('bovContent', '<p class="text-sm text-stone-500">Esperando material…</p>');
+      bovClearStats();
+      return;
+    }
+    if (typeof sb === 'undefined' || !sb) {
+      bovSetHtml('bovContent', '<p class="text-sm text-rose-600">Supabase no disponible</p>');
+      return;
+    }
+
+    bovSet('bovHeader', materialId);
+    bovSetHtml('bovContent', '<p class="text-sm text-stone-500">Cargando…</p>');
+
+    try {
+      const { data, error } = await sb.schema('panel')
+        .rpc('f_boveda_historica', {
+          p_material_id: materialId,
+          p_sucursal_id: sucursalId,
+          p_ventana_dias: ventana && ventana > 0 ? ventana : null
+        });
+      if (error) throw error;
+      const row = data || {};
+      const ven = row.ventana || {};
+      const est = row.estadisticas || {};
+      const ult = row.ultimo || {};
+      const serie = row.serie || [];
+
+      bovSet('bovVentanaInfo', (ven.dias ? ven.dias + 'd' : '—') + ' · ' + (ven.razon || ''));
+      bovSet('bovStatN', est.n_puntos != null ? est.n_puntos : '—');
+      bovSet('bovStatProm', bovFmtClp(est.promedio));
+      bovSet('bovStatInf', bovFmtClp(est.limite_inferior));
+      bovSet('bovStatSup', bovFmtClp(est.limite_superior));
+
+      if (ult.semaforo === 'sin_datos') {
+        bovSetHtml('bovContent', '<div class="text-sm text-amber-700">⏳ ' + (ult.alerta || 'Insuficientes puntos para análisis') + '</div>');
+      } else {
+        bovSetHtml('bovContent', bovRenderSerie(serie, est));
+      }
+
+      const alertaEl = document.getElementById('bovAlerta');
+      const detEl    = document.getElementById('bovAlertaDetalle');
+      const box      = document.getElementById('bovAlertaBox');
+      if (alertaEl && detEl && box) {
+        box.classList.remove('border-stone-300','border-emerald-400','border-rose-400','border-amber-400','bg-emerald-50','bg-rose-50','bg-amber-50');
+        alertaEl.classList.remove('text-stone-500','text-emerald-700','text-rose-700','text-amber-700');
+        if (ult.semaforo === 'verde') {
+          alertaEl.textContent = '✅ ' + bovFmtClp(ult.precio_compra) + ' · dentro de rango';
+          alertaEl.classList.add('text-emerald-700');
+          box.classList.add('border-emerald-400','bg-emerald-50');
+        } else if (ult.semaforo === 'rojo') {
+          alertaEl.textContent = '⚠️ ' + bovFmtClp(ult.precio_compra) + ' · outlier';
+          alertaEl.classList.add('text-rose-700');
+          box.classList.add('border-rose-400','bg-rose-50');
+        } else if (ult.semaforo === 'sin_datos') {
+          alertaEl.textContent = '⏳ Sin datos suficientes';
+          alertaEl.classList.add('text-amber-700');
+          box.classList.add('border-amber-400','bg-amber-50');
+        } else {
+          alertaEl.textContent = bovFmtClp(ult.precio_compra);
+          alertaEl.classList.add('text-stone-500');
+          box.classList.add('border-stone-300');
+        }
+        detEl.textContent = ult.alerta || '—';
+      }
+    } catch (e) {
+      console.warn('[Boveda] error:', e);
+      bovSetHtml('bovContent', '<p class="text-sm text-rose-600">Error: ' + (e.message || String(e)).slice(0, 120) + '</p>');
+      bovClearStats();
+    }
+  }
+
+  function bovBindChange() {
+    const fire = () => {
+      if (bovDebounce) clearTimeout(bovDebounce);
+      bovDebounce = setTimeout(bovCargar, 200);
+    };
+    ['bovMaterial','bovSucursal','bovVentana'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('change', fire);
+      if (el && id === 'bovVentana') el.addEventListener('input', fire);
+    });
+  }
+
+  async function initBovedaHistorica() {
+    if (bovCargado) { bovCargar(); return; }
+    bovCargado = true;
+    bovBindChange();
+    await Promise.all([bovLoadMateriales(), bovLoadSucursales()]);
+    bovCargar();
+  }
+
+  window.bovCargar           = bovCargar;
+  window.initBovedaHistorica = initBovedaHistorica;
 })();
 </script>
 
