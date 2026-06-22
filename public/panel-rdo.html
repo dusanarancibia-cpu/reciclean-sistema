@@ -756,6 +756,10 @@
             <span class="v4-emoji" aria-hidden="true">📊</span>
             Análisis Micro/Macro
           </a>
+          <a href="#" data-v4-tab="indicadores_adel" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📡</span>
+            Anticipación Tendencias
+          </a>
           <a href="#" data-v4-tab="entregables" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📤</span>
             Entregables
@@ -1138,6 +1142,7 @@
         <button data-tab="errores_bucles" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabErroresBucles">🚦 Errores y Bucles</button>
         <button data-tab="cronograma_24h" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCronograma24h">⏰ Cronograma 24h</button>
         <button data-tab="analisis_micro" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabAnalisisMicro">📊 Análisis Micro/Macro</button>
+        <button data-tab="indicadores_adel" class="tab-btn py-3 px-3 text-stone-600"   role="tab" aria-selected="false" aria-controls="tabIndicadoresAdel">📡 Anticipación Tendencias</button>
         <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
         <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
@@ -2641,6 +2646,68 @@
 
       <footer class="mt-4 text-xs text-stone-500">
         Última actualización: <span id="amLastUpdate">—</span> · fuente: <code>panel.v_proveedores_clasificados</code> + <code>panel.v_vales_clasificados_30d</code> + <code>curated.materiales_sucursal_precios</code>.
+      </footer>
+
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA ANTICIPACIÓN TENDENCIAS (T-40 · 4 indicadores adelantados)
+         Consume panel.f_indicadores_adelantados (mig 270)
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabIndicadoresAdel" data-tab="indicadores_adel" role="tabpanel"
+             aria-labelledby="tabIndicadoresAdelLabel"
+             class="tab-content hidden p-4 md:p-6 bg-stone-50">
+
+      <header class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-2xl font-bold text-stone-800 flex items-center gap-2">
+            <span>📡</span><span>Anticipación Tendencias · 4 señales adelantadas</span>
+          </h2>
+          <p class="text-sm text-stone-500 mt-1">
+            Predicción 7-14d antes del impacto en margen. Auto-refresh 30 min.
+            Fuente: <code>panel.f_indicadores_adelantados</code>.
+          </p>
+        </div>
+        <button id="indRefrescar" type="button"
+                class="bg-stone-200 hover:bg-stone-300 text-stone-800 px-3 py-1.5 rounded text-sm">
+          🔄 Actualizar
+        </button>
+      </header>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div class="bg-white border rounded-lg p-4" id="indCardI1">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">T-40a · LME Cobre</div>
+          <div class="text-2xl font-bold mt-2 text-stone-800" id="indI1Valor">—</div>
+          <div class="text-sm mt-1" id="indI1Lectura">—</div>
+          <div class="text-xs text-stone-500 mt-1" id="indI1Variacion">variación 3d: —</div>
+        </div>
+        <div class="bg-white border rounded-lg p-4" id="indCardI2">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">T-40b · Volumen mes</div>
+          <div class="text-2xl font-bold mt-2 text-stone-800" id="indI2Valor">—</div>
+          <div class="text-sm mt-1" id="indI2Lectura">—</div>
+          <div class="text-xs text-stone-500 mt-1" id="indI2Detalle">30d vs 60d: —</div>
+        </div>
+        <div class="bg-white border rounded-lg p-4" id="indCardI3">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">T-40c · Cotizaciones viejas</div>
+          <div class="text-2xl font-bold mt-2 text-stone-800" id="indI3Valor">—</div>
+          <div class="text-sm mt-1" id="indI3Lectura">—</div>
+          <a href="#" data-v4-tab="bandeja_precios" class="text-xs text-emerald-700 underline mt-1 inline-block">→ Bandeja Aprobación</a>
+        </div>
+        <div class="bg-white border rounded-lg p-4" id="indCardI4">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">T-40d · Peak estacional</div>
+          <div class="text-2xl font-bold mt-2 text-stone-800" id="indI4Valor">—</div>
+          <div class="text-sm mt-1" id="indI4Lectura">—</div>
+          <div class="text-xs text-stone-500 mt-1" id="indI4Meses">—</div>
+        </div>
+      </div>
+
+      <div class="bg-white border rounded-lg p-3" id="indResumenBox">
+        <div class="text-xs text-stone-500 uppercase tracking-wider mb-1">Resumen ejecutivo</div>
+        <div class="text-sm font-medium" id="indResumen">Cargando…</div>
+      </div>
+
+      <footer class="mt-4 text-xs text-stone-500">
+        Última actualización: <span id="indLastUpdate">—</span>
       </footer>
 
     </section>
@@ -6779,6 +6846,7 @@ function setupTabs() {
       if (tabId === 'precios_vivos')  window.initPreciosVivos && window.initPreciosVivos();
       if (tabId === 'errores_bucles') window.initErroresBucles && window.initErroresBucles();
       if (tabId === 'analisis_micro') window.initAnalisisMicro && window.initAnalisisMicro();
+      if (tabId === 'indicadores_adel') window.initIndicadoresAdel && window.initIndicadoresAdel();
       if (tabId === 'ops_diarias')   initOpsDiarias();
       if (tabId === 'dieguito')  initDieguito();
       if (tabId === 'comercial')  initTabComercial();
@@ -14740,6 +14808,112 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.amCargar          = amCargar;
   window.initAnalisisMicro = initAnalisisMicro;
+})();
+</script>
+
+<!-- ============================================================
+     Tab Anticipación Tendencias (T-40 · PC2 Pablo 2026-06-22)
+     Consume panel.f_indicadores_adelantados (mig 270)
+============================================================ -->
+<script>
+(function () {
+  let indTimer = null;
+  const IND_REFRESH_MS = 30 * 60 * 1000;
+
+  // SAFELIST Tailwind · clases usadas dinámicamente en indColorClasses().
+  // Aparecen como strings literales aquí para que el scanner de Tailwind las detecte.
+  // Si el build pasa a usar safelist explícita, agregar estas en tailwind.config.js:
+  //   border-emerald-400 bg-emerald-50 text-emerald-700
+  //   border-amber-400   bg-amber-50   text-amber-700
+  //   border-rose-400    bg-rose-50    text-rose-700
+  //   border-stone-300   bg-stone-50   text-stone-500 text-stone-700
+  function indColorClasses(sem) {
+    const map = {
+      verde:     { card: 'border-emerald-400 bg-emerald-50', txt: 'text-emerald-700' },
+      amarillo:  { card: 'border-amber-400 bg-amber-50',     txt: 'text-amber-700' },
+      rojo:      { card: 'border-rose-400 bg-rose-50',       txt: 'text-rose-700' },
+      sin_datos: { card: 'border-stone-300 bg-stone-50',     txt: 'text-stone-500' }
+    };
+    return map[sem] || { card: 'border-stone-300', txt: 'text-stone-700' };
+  }
+
+  function indSet(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val == null ? '—' : String(val);
+  }
+
+  function indApplyCard(cardId, lecturaId, sem) {
+    const card = document.getElementById(cardId);
+    const lect = document.getElementById(lecturaId);
+    if (!card || !lect) return;
+    card.classList.remove('border-emerald-400','border-amber-400','border-rose-400','border-stone-300','bg-emerald-50','bg-amber-50','bg-rose-50','bg-stone-50');
+    lect.classList.remove('text-emerald-700','text-amber-700','text-rose-700','text-stone-500','text-stone-700');
+    const c = indColorClasses(sem);
+    c.card.split(' ').forEach(cls => card.classList.add(cls));
+    lect.classList.add(c.txt);
+  }
+
+  async function indCargar() {
+    if (typeof sb === 'undefined' || !sb) return;
+    try {
+      const { data, error } = await sb.schema('panel').rpc('f_indicadores_adelantados');
+      if (error) throw error;
+      const row = data || {};
+
+      const i1 = row.i1_lme_cobre || {};
+      indSet('indI1Valor', i1.valor_usd_lb != null ? '$' + Number(i1.valor_usd_lb).toFixed(2) + ' USD/lb' : '—');
+      indSet('indI1Lectura', i1.lectura || (i1.semaforo === 'sin_datos' ? 'Sin datos LME' : '—'));
+      indSet('indI1Variacion', i1.variacion_3d != null ? 'Variación 3d: ' + Number(i1.variacion_3d).toFixed(1) + '%' : 'Variación 3d: —');
+      indApplyCard('indCardI1','indI1Lectura', i1.semaforo);
+
+      const i2 = row.i2_volumen || {};
+      indSet('indI2Valor', i2.variacion_pct != null ? Number(i2.variacion_pct).toFixed(1) + '%' : '—');
+      indSet('indI2Lectura', i2.lectura || '—');
+      const k30 = i2.kg_30d != null ? Math.round(i2.kg_30d).toLocaleString('es-CL') : '—';
+      const k60 = i2.kg_60d != null ? Math.round(i2.kg_60d).toLocaleString('es-CL') : '—';
+      indSet('indI2Detalle', '30d: ' + k30 + 'kg · 60d: ' + k60 + 'kg');
+      indApplyCard('indCardI2','indI2Lectura', i2.semaforo);
+
+      const i3 = row.i3_cotizaciones_viejas || {};
+      indSet('indI3Valor', i3.n_viejas != null ? i3.n_viejas : '—');
+      indSet('indI3Lectura', i3.lectura || (i3.n_viejas != null ? i3.n_viejas + ' sin aprobar >30d' : '—'));
+      indApplyCard('indCardI3','indI3Lectura', i3.semaforo);
+
+      const i4 = row.i4_peak_estacional || {};
+      indSet('indI4Valor', i4.temporada || '—');
+      indSet('indI4Lectura', i4.lectura || '—');
+      indSet('indI4Meses', i4.meses || '—');
+      indApplyCard('indCardI4','indI4Lectura', i4.semaforo);
+
+      const resumen = document.getElementById('indResumen');
+      const box     = document.getElementById('indResumenBox');
+      if (resumen) resumen.textContent = row.resumen || 'Sin resumen disponible';
+      if (box) {
+        box.classList.remove('border-emerald-400','border-amber-400','border-rose-400','border-stone-300','bg-emerald-50','bg-amber-50','bg-rose-50');
+        const c = indColorClasses(row.resumen_semaforo);
+        c.card.split(' ').forEach(cls => box.classList.add(cls));
+      }
+
+      indSet('indLastUpdate', new Date().toLocaleString('es-CL'));
+    } catch (e) {
+      console.warn('[Indicadores] error:', e);
+      indSet('indResumen', 'Error: ' + (e.message || String(e)).slice(0, 120));
+    }
+  }
+
+  function initIndicadoresAdel() {
+    indCargar();
+    const btn = document.getElementById('indRefrescar');
+    if (btn && !btn.dataset.bound) {
+      btn.addEventListener('click', indCargar);
+      btn.dataset.bound = '1';
+    }
+    if (indTimer) clearInterval(indTimer);
+    indTimer = setInterval(indCargar, IND_REFRESH_MS);
+  }
+
+  window.indCargar           = indCargar;
+  window.initIndicadoresAdel = initIndicadoresAdel;
 })();
 </script>
 
