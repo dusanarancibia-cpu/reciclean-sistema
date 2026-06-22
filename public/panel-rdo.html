@@ -2055,7 +2055,7 @@
         <span><span class="text-base">🟡</span> Entre piso y meta</span>
         <span><span class="text-base">🔴</span> MG real bajo el piso</span>
         <span><span class="text-base">⚪</span> Sin datos suficientes</span>
-        <span class="text-stone-400">· Metas en <code>panel.margen_metas</code> por categoría</span>
+        <span class="text-stone-400">· Los umbrales exactos dependen de la categoría · ver márgenes meta en la Calculadora</span>
       </div>
 
       <!-- Tabla -->
@@ -14734,16 +14734,20 @@ document.addEventListener('DOMContentLoaded', () => {
   function pvPopularCategoriasFiltro() {
     const sel = document.getElementById('pvFiltroCategoria');
     if (!sel) return;
-    const actuales = new Set(Array.from(sel.options).map(o => o.value));
+    // Reset completo + preservar selección previa si la categoría sigue existiendo.
+    // Evita acumular categorías obsoletas si un material se reclasifica (DeepSeek 22-jun).
+    const valPrevia = sel.value;
+    sel.innerHTML = '<option value="">Todas las categorías</option>';
     const cats = [...new Set((pvData || []).map(r => r.categoria).filter(Boolean))].sort();
     cats.forEach(c => {
-      if (!actuales.has(c)) {
-        const opt = document.createElement('option');
-        opt.value = c;
-        opt.textContent = c.replace(/_/g, ' ');
-        sel.appendChild(opt);
-      }
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c.replace(/_/g, ' ');
+      sel.appendChild(opt);
     });
+    if (valPrevia && Array.from(sel.options).some(o => o.value === valPrevia)) {
+      sel.value = valPrevia;
+    }
   }
 
   function pvFiltrar() {
