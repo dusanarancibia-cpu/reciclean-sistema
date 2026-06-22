@@ -764,6 +764,10 @@
             <span class="v4-emoji" aria-hidden="true">⚙️</span>
             Acelerador/Freno
           </a>
+          <a href="#" data-v4-tab="calculadora_precios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🧮</span>
+            Calculadora Precios
+          </a>
           <a href="#" data-v4-tab="entregables" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📤</span>
             Entregables
@@ -1148,6 +1152,7 @@
         <button data-tab="analisis_micro" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabAnalisisMicro">📊 Análisis Micro/Macro</button>
         <button data-tab="indicadores_adel" class="tab-btn py-3 px-3 text-stone-600"   role="tab" aria-selected="false" aria-controls="tabIndicadoresAdel">📡 Anticipación Tendencias</button>
         <button data-tab="modo_precios"  class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabModoPrecios">⚙️ Acelerador/Freno</button>
+        <button data-tab="calculadora_precios" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabCalculadoraPrecios">🧮 Calculadora Precios</button>
         <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
         <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
         <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
@@ -2778,6 +2783,127 @@
       </div>
 
       <div class="text-xs text-stone-500" id="modoPermisoMsg"></div>
+
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA CALCULADORA PRECIOS (T-42 · 6 sliders + P.Max / P.Lista / P.Ejec)
+         Fórmulas canónicas SPEC-T42 · publica a staging.precios_propuestos
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabCalculadoraPrecios" data-tab="calculadora_precios" role="tabpanel"
+             aria-labelledby="tabCalculadoraPreciosLabel"
+             class="tab-content hidden p-4 md:p-6 bg-stone-50">
+
+      <header class="mb-4">
+        <h2 class="text-2xl font-bold text-stone-800 flex items-center gap-2">
+          <span>🧮</span><span>Calculadora P.Max / P.Lista / P.Ejec</span>
+        </h2>
+        <p class="text-sm text-stone-500 mt-1">
+          Simulador con 6 sliders. Semáforo MG conectado a <code>curated.margen_metas</code>.
+          Publica a <code>staging.precios_propuestos</code> con ruta <code>manual_calc</code>.
+        </p>
+      </header>
+
+      <div class="grid md:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="block text-xs text-stone-600 mb-1">Material</label>
+          <select id="calcMaterial" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm bg-white">
+            <option value="">(cargando…)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-600 mb-1">Sucursal</label>
+          <select id="calcSucursal" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm bg-white">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-600 mb-1">Categoría margen</label>
+          <select id="calcCategoria" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm bg-white">
+            <option value="">(cargando…)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-x-6 gap-y-3 bg-white border border-stone-300 rounded-lg p-4 mb-4">
+        <label class="block">
+          <span class="text-xs text-stone-600">T-42a · Precio compra <strong id="calcLblP">$6.000</strong>/kg</span>
+          <input type="range" id="calcP" min="50" max="12000" step="50" value="6000" class="w-full">
+        </label>
+        <label class="block">
+          <span class="text-xs text-stone-600">T-42b · Margen objetivo <strong id="calcLblMg">30%</strong></span>
+          <input type="range" id="calcMg" min="5" max="60" step="1" value="30" class="w-full">
+        </label>
+        <label class="block">
+          <span class="text-xs text-stone-600">T-42c · Flete <strong id="calcLblFl">$150</strong>/kg</span>
+          <input type="range" id="calcFl" min="0" max="300" step="10" value="150" class="w-full">
+        </label>
+        <label class="block">
+          <span class="text-xs text-stone-600">T-42d · Spread Lista/Máx <strong id="calcLblB">20%</strong></span>
+          <input type="range" id="calcB" min="5" max="40" step="1" value="20" class="w-full">
+        </label>
+        <label class="block">
+          <span class="text-xs text-stone-600">T-42e · Volumen mensual <strong id="calcLblVol">5.000</strong> kg</span>
+          <input type="range" id="calcVol" min="500" max="100000" step="500" value="5000" class="w-full">
+        </label>
+        <label class="block">
+          <span class="text-xs text-stone-600">T-42f · Retención IVA Farex <strong id="calcLblIva">0%</strong></span>
+          <input type="range" id="calcIva" min="0" max="19" step="1" value="0" class="w-full">
+        </label>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div class="bg-white border border-stone-300 rounded-lg p-3">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">P.Max</div>
+          <div class="text-2xl font-bold text-stone-800 mt-1" id="calcPmax">—</div>
+          <div class="text-xs text-stone-500">máx pagable</div>
+        </div>
+        <div class="bg-white border border-stone-300 rounded-lg p-3">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">P.Lista</div>
+          <div class="text-2xl font-bold text-emerald-700 mt-1" id="calcPlista">—</div>
+          <div class="text-xs text-stone-500">precio oficial</div>
+        </div>
+        <div class="bg-white border border-stone-300 rounded-lg p-3">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">P.Ejec</div>
+          <div class="text-2xl font-bold text-sky-700 mt-1" id="calcPejec">—</div>
+          <div class="text-xs text-stone-500">negociable</div>
+        </div>
+        <div class="bg-white border border-stone-300 rounded-lg p-3">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">IVA Farex</div>
+          <div class="text-2xl font-bold text-stone-700 mt-1" id="calcIvaAmt">—</div>
+          <div class="text-xs text-stone-500">retención/kg</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+        <div class="bg-white border border-stone-300 rounded-lg p-3">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">Contribución mensual</div>
+          <div class="text-2xl font-bold text-stone-800 mt-1" id="calcContrib">—</div>
+          <div class="text-xs text-stone-500">vol × (P.Lista − P.Compra − Flete)</div>
+        </div>
+        <div class="bg-white border rounded-lg p-3" id="calcSemaforoBox">
+          <div class="text-xs text-stone-500 uppercase tracking-wider">Semáforo MG</div>
+          <div class="text-lg font-bold mt-1" id="calcSemaforo">—</div>
+          <div class="text-xs text-stone-500" id="calcSemaforoDetalle">conectar categoría</div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-stone-300 rounded-lg p-3 mb-4">
+        <div class="text-xs text-stone-500 uppercase tracking-wider mb-2">Líneas de corte P&amp;L (sobre P.Lista)</div>
+        <div class="flex flex-wrap gap-3 text-sm">
+          <span>P.Lista: <strong id="calcCorte100">—</strong></span>
+          <span class="text-amber-700">−20%: <strong id="calcCorte80">—</strong></span>
+          <span class="text-rose-700">−40%: <strong id="calcCorte60">—</strong></span>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <button id="calcPublicar" type="button"
+                class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+          📤 Publicar como propuesta
+        </button>
+        <span class="text-xs text-stone-500" id="calcPublicarMsg"></span>
+      </div>
 
     </section>
 
@@ -6917,6 +7043,7 @@ function setupTabs() {
       if (tabId === 'analisis_micro') window.initAnalisisMicro && window.initAnalisisMicro();
       if (tabId === 'indicadores_adel') window.initIndicadoresAdel && window.initIndicadoresAdel();
       if (tabId === 'modo_precios') window.initModoPrecios && window.initModoPrecios();
+      if (tabId === 'calculadora_precios') window.initCalculadoraPrecios && window.initCalculadoraPrecios();
       if (tabId === 'ops_diarias')   initOpsDiarias();
       if (tabId === 'dieguito')  initDieguito();
       if (tabId === 'comercial')  initTabComercial();
@@ -15155,6 +15282,280 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.modoCargar       = modoCargar;
   window.initModoPrecios  = initModoPrecios;
+})();
+</script>
+
+<!-- ============================================================
+     Tab Calculadora Precios (T-42 · PC2 Pablo 2026-06-22 · DeepSeek corregido)
+     Fórmulas canónicas SPEC-T42 · publica a staging.precios_propuestos
+============================================================ -->
+<script>
+(function () {
+  let calcCargado = false;
+
+  function calcFmtClp(n) {
+    if (n == null || isNaN(n)) return '—';
+    return '$' + Math.round(n).toLocaleString('es-CL');
+  }
+  function calcFmtNum(n) {
+    if (n == null || isNaN(n)) return '—';
+    return Math.round(n).toLocaleString('es-CL');
+  }
+  function calcGetVal(id) {
+    const el = document.getElementById(id);
+    return el ? Number(el.value) : 0;
+  }
+  function calcSet(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function calcRecompute() {
+    const p   = calcGetVal('calcP');
+    const mgP = calcGetVal('calcMg');
+    const fl  = calcGetVal('calcFl');
+    const bP  = calcGetVal('calcB');
+    const vol = calcGetVal('calcVol');
+    const ivaP = calcGetVal('calcIva');
+
+    const mg  = mgP / 100;
+    const b   = bP / 100;
+    const iva = ivaP / 100;
+
+    calcSet('calcLblP',   calcFmtClp(p));
+    calcSet('calcLblMg',  mgP + '%');
+    calcSet('calcLblFl',  calcFmtClp(fl));
+    calcSet('calcLblB',   bP + '%');
+    calcSet('calcLblVol', calcFmtNum(vol));
+    calcSet('calcLblIva', ivaP + '%');
+
+    // iva ya normalizado 0..1 (ivaP / 100 arriba) — multiplicación directa, sin /100 adicional
+    const pmax   = Math.round(p * (1 - mg) - fl);
+    const plista = Math.round(pmax * (1 + b));
+    const pejec  = Math.round((plista + pmax) / 2);
+    const ivaAmt = Math.round(plista * iva);
+    const contrib = Math.round(vol * (plista - p - fl));
+
+    calcSet('calcPmax',   calcFmtClp(pmax));
+    calcSet('calcPlista', calcFmtClp(plista));
+    calcSet('calcPejec',  calcFmtClp(pejec));
+    calcSet('calcIvaAmt', calcFmtClp(ivaAmt));
+    calcSet('calcContrib', calcFmtClp(contrib));
+
+    calcSet('calcCorte100', calcFmtClp(plista));
+    calcSet('calcCorte80',  calcFmtClp(plista * 0.8));
+    calcSet('calcCorte60',  calcFmtClp(plista * 0.6));
+
+    calcUpdateSemaforo(mgP);
+  }
+
+  let calcMetasCache = null;
+
+  function calcUpdateSemaforo(mgPct) {
+    const sel = document.getElementById('calcCategoria');
+    const cat = sel ? sel.value : '';
+    const box = document.getElementById('calcSemaforoBox');
+    const lbl = document.getElementById('calcSemaforo');
+    const det = document.getElementById('calcSemaforoDetalle');
+    if (!box || !lbl || !det) return;
+
+    box.classList.remove('border-emerald-400','border-amber-400','border-rose-400','border-stone-300','bg-emerald-50','bg-amber-50','bg-rose-50');
+    lbl.classList.remove('text-emerald-700','text-amber-700','text-rose-700','text-stone-500');
+
+    if (!cat || !calcMetasCache) {
+      lbl.textContent = '—';
+      lbl.classList.add('text-stone-500');
+      box.classList.add('border-stone-300');
+      det.textContent = 'Seleccioná categoría';
+      return;
+    }
+    const meta = calcMetasCache.find(m => m.categoria === cat);
+    // R-AUD-024: si no hay metadata real, semáforo GRIS sin inventar piso/meta
+    if (!meta || meta.mg_minimo_pct == null || meta.mg_meta_pct == null) {
+      lbl.textContent = 'SIN REFERENCIA';
+      lbl.classList.add('text-stone-500');
+      box.classList.add('border-stone-300');
+      det.textContent = 'Sin referencia de margen para esta categoría';
+      return;
+    }
+    const piso    = Number(meta.mg_minimo_pct);
+    const metaPct = Number(meta.mg_meta_pct);
+
+    if (mgPct >= metaPct) {
+      lbl.textContent = 'VERDE — supera meta';
+      lbl.classList.add('text-emerald-700');
+      box.classList.add('border-emerald-400','bg-emerald-50');
+    } else if (mgPct >= piso) {
+      lbl.textContent = 'AMARILLO — entre piso y meta';
+      lbl.classList.add('text-amber-700');
+      box.classList.add('border-amber-400','bg-amber-50');
+    } else {
+      lbl.textContent = 'ROJO — bajo el piso';
+      lbl.classList.add('text-rose-700');
+      box.classList.add('border-rose-400','bg-rose-50');
+    }
+    det.textContent = 'piso ' + piso + '% · meta ' + metaPct + '% · actual ' + mgPct + '%';
+  }
+
+  async function calcLoadCategorias() {
+    if (typeof sb === 'undefined' || !sb) return;
+    try {
+      const { data, error } = await sb.schema('curated')
+        .from('margen_metas')
+        .select('categoria, mg_minimo_pct, mg_meta_pct')
+        .order('categoria');
+      if (error) throw error;
+      calcMetasCache = data || [];
+      const sel = document.getElementById('calcCategoria');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">(sin categoría)</option>' +
+        calcMetasCache.map(c =>
+          '<option value="' + c.categoria + '">' + c.categoria + ' (piso ' + c.mg_minimo_pct + '%)</option>'
+        ).join('');
+    } catch (e) {
+      console.warn('[Calc] categorias:', e);
+    }
+  }
+
+  async function calcLoadMateriales() {
+    if (typeof sb === 'undefined' || !sb) return;
+    try {
+      const { data, error } = await sb.schema('curated')
+        .from('materiales')
+        .select('material_id, nombre_display')
+        .order('nombre_display')
+        .limit(500);
+      if (error) throw error;
+      const sel = document.getElementById('calcMaterial');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">(seleccionar)</option>' +
+        (data || []).map(m =>
+          '<option value="' + m.material_id + '">' + (m.nombre_display || m.material_id) + '</option>'
+        ).join('');
+    } catch (e) {
+      console.warn('[Calc] materiales:', e);
+    }
+  }
+
+  async function calcLoadSucursales() {
+    if (typeof sb === 'undefined' || !sb) return;
+    try {
+      const { data, error } = await sb.schema('curated')
+        .from('sucursales')
+        .select('sucursal_id, nombre')
+        .order('nombre')
+        .limit(50);
+      if (error) throw error;
+      const sel = document.getElementById('calcSucursal');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">Todas</option>' +
+        (data || []).map(s =>
+          '<option value="' + s.sucursal_id + '">' + (s.nombre || s.sucursal_id) + '</option>'
+        ).join('');
+    } catch (e) {
+      console.warn('[Calc] sucursales:', e);
+    }
+  }
+
+  async function calcPublicar() {
+    const btn = document.getElementById('calcPublicar');
+    const msg = document.getElementById('calcPublicarMsg');
+    if (!btn || !msg) return;
+    if (typeof sb === 'undefined' || !sb) {
+      msg.textContent = 'Supabase no disponible';
+      msg.className = 'text-xs text-rose-600';
+      return;
+    }
+    const materialId = document.getElementById('calcMaterial')?.value || '';
+    const sucursalId = document.getElementById('calcSucursal')?.value || null;
+    const categoria  = document.getElementById('calcCategoria')?.value || null;
+    if (!materialId) {
+      msg.textContent = 'Seleccioná material primero';
+      msg.className = 'text-xs text-rose-600';
+      return;
+    }
+    const p   = calcGetVal('calcP');
+    const mgP = calcGetVal('calcMg');
+    const fl  = calcGetVal('calcFl');
+    const bP  = calcGetVal('calcB');
+    const vol = calcGetVal('calcVol');
+    const ivaP = calcGetVal('calcIva');
+    const pmax   = Math.round(p * (1 - mgP/100) - fl);
+    const plista = Math.round(pmax * (1 + bP/100));
+    const pejec  = Math.round((plista + pmax) / 2);
+
+    let userEmail = null;
+    try {
+      const s = await sb.auth.getSession();
+      userEmail = s?.data?.session?.user?.email || null;
+    } catch (e) {}
+
+    // R-AUD-024: trazabilidad obligatoria · sin sesión no se inserta huérfano
+    if (!userEmail) {
+      alert('Tu sesión expiró. Recargá la página y volvé a intentar.');
+      msg.textContent = '⚠️ Sesión expirada — recargar página';
+      msg.className = 'text-xs text-amber-700';
+      return;
+    }
+
+    btn.disabled = true;
+    msg.textContent = 'Publicando…';
+    msg.className = 'text-xs text-stone-600';
+
+    try {
+      const { error } = await sb.schema('staging')
+        .from('precios_propuestos')
+        .insert({
+          material_id: materialId,
+          sucursal_id: sucursalId || null,
+          precio_clp_kg: plista,
+          ruta: 'manual_calc',
+          confidence_score: 1.0,
+          creado_por: userEmail,
+          metadata: {
+            pmax: pmax,
+            plista: plista,
+            pejec: pejec,
+            mg_pct: mgP,
+            flete: fl,
+            volumen_kg: vol,
+            spread_pct: bP,
+            iva_pct: ivaP,
+            categoria: categoria
+          }
+        });
+      if (error) throw error;
+      msg.textContent = '✅ Propuesta publicada · P.Lista ' + calcFmtClp(plista);
+      msg.className = 'text-xs text-emerald-700';
+    } catch (e) {
+      msg.textContent = '❌ Error: ' + (e.message || String(e)).slice(0, 100);
+      msg.className = 'text-xs text-rose-600';
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function calcBindSliders() {
+    ['calcP','calcMg','calcFl','calcB','calcVol','calcIva'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', calcRecompute);
+    });
+    const catSel = document.getElementById('calcCategoria');
+    if (catSel) catSel.addEventListener('change', calcRecompute);
+    const btn = document.getElementById('calcPublicar');
+    if (btn) btn.addEventListener('click', calcPublicar);
+  }
+
+  async function initCalculadoraPrecios() {
+    if (calcCargado) { calcRecompute(); return; }
+    calcCargado = true;
+    calcBindSliders();
+    await Promise.all([calcLoadCategorias(), calcLoadMateriales(), calcLoadSucursales()]);
+    calcRecompute();
+  }
+
+  window.calcRecompute          = calcRecompute;
+  window.initCalculadoraPrecios = initCalculadoraPrecios;
 })();
 </script>
 
