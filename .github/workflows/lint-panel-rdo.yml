@@ -5,14 +5,13 @@ name: Lint Panel RDO (R-AUD-064 + D-LINTER-001)
 # 4 jobs: parse JS inline · html tags balanceados · deno fmt · ts type check
 
 on:
+  # FIX C2.a (17-jun-2026): paths filter removido del trigger pull_request
+  # para destrabar deadlock estructural en PRs de meta-CI (workflows/yml).
+  # El job parse-js-inline corre ahora en todo PR a main · costo ~20s ·
+  # destraba required check "Parse JS inline en HTMLs (R-AUD-064)" sin
+  # admin merge bypass. Push sigue con paths filter (no es required check).
   pull_request:
     branches: [main, prod]
-    paths:
-      - 'public/*.html'
-      - 'public/**/*.js'
-      - 'supabase/functions/**/*.ts'
-      - 'supabase/functions/**/*.mjs'
-      - '.github/workflows/lint-panel-rdo.yml'
   push:
     branches: [main]
 

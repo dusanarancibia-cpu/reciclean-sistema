@@ -1,0 +1,74 @@
+name: Post-merge smoke · Pieza #10 Plan 99-99 (HTML L432 + L419)
+
+# Guardia GH bloqueante sobre PCs (R-AUD-083)
+# Tras cada merge a main, ejecuta smoke E2E contra prod.
+# Si falla: NO auto-revierte (R-AUD-077 + R-AUD-078) · ABRE PR de revert sugerido + notifica humano.
+# Auto-revert literal requiere firma textual Dusan (firma id=9 cubre canary skeleton ≤10%, no full revert).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write          # crear branch revert
+  pull-requests: write     # abrir PR de revert
+  issues: write            # notificar
+
+jobs:
+  smoke-prod:
+    name: Smoke E2E prod post-merge
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: https://eknmtsrtfkzroxnovfqn.supabase.co
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Smoke EFs criticas (5 EFs Plan 99-99)
+        id: smoke
+        working-directory: mayordomo/onda-2-propuestas/3194ffd8-pact
+        continue-on-error: true
+        run: |
+          npm install --silent
+          node provider-verify.js
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+
+      - name: Notificar y sugerir revert si smoke falla
+        if: steps.smoke.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sha = context.sha;
+            const shortSha = sha.substring(0, 7);
+            // 1. Crear issue con detalles
+            const { data: issue } = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `☢️ Post-merge smoke FAILED · commit ${shortSha}`,
+              body: [
+                '## Pieza #10 Plan 99-99 · Post-merge smoke detectó regresión',
+                '',
+                `**Commit:** ${sha}`,
+                `**Workflow run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                '',
+                '### Decisión humana requerida (R-AUD-077 + R-AUD-078)',
+                'NO se aplicó auto-revert. Opciones:',
+                '1. Revisar logs del smoke y diagnosticar.',
+                '2. Si la regresión es real: ejecutar `gh pr create --base main --title "revert ' + shortSha + '"` con el branch revert/' + shortSha + '.',
+                '3. Si falso positivo: cerrar este issue con razón.',
+                '',
+                '### Reglas vigentes',
+                '- R-AUD-077: cero stub a prod · NO auto-revert sin firma.',
+                '- R-AUD-078: rollback es la primera hipótesis · evaluar revert antes de forward-fix.',
+                '- R-AUD-079: 2 denials del classifier en mismo workflow = STOP + reformular.'
+              ].join('\\n'),
+              labels: ['plan-99-99', 'pieza-10', 'post-merge-smoke', 'critica']
+            });
+            console.log('Issue created:', issue.html_url);

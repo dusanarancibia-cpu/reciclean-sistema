@@ -1,0 +1,90 @@
+name: k6 Performance · Pieza #4 Plan 99-99 (HTML L432 + L414)
+
+# Guardia GH bloqueante sobre Claude (R-AUD-083)
+# HTML #2 L432 + L414 literal: "k6 + análisis por Claude"
+# Bloquea PR si performance se degrada (p95 panel >3s, p99 Diego >20s)
+
+on:
+  # FIX C2.a-style (17-jun-2026): paths filter removido del trigger
+  # pull_request para evitar deadlock estructural con k6 SMOKE como required
+  # check. Sin esto, todo PR meta-CI que no toque tests/k6/** o public/** o
+  # supabase/functions/** queda BLOQUEADO indefinidamente con check en estado
+  # "Expected · Waiting for status". Mismo patrón aplicado a lint-panel-rdo.yml
+  # en PR #319 (verificado runtime con 6 merges no-admin posteriores).
+  # Costo: k6 SMOKE corre ~22s en cada PR a main (overhead aceptable).
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'tests/k6/**'
+  schedule:
+    - cron: '0 10 * * 1'  # Lunes 07:00 CLT carga sostenida semanal
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  smoke:
+    name: k6 SMOKE (cada PR)
+    runs-on: ubuntu-latest
+    # FIX 16-jun: secrets.* no accesible en if: step-level (GH security restriction).
+    # Pasamos a env job-level y luego usamos env.* en if: step-level.
+    env:
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Run panel-rdo smoke
+        run: k6 run tests/k6/panel-rdo.smoke.js
+
+      - name: Run diego-chat smoke
+        if: env.SUPABASE_ANON_KEY != ''
+        run: k6 run tests/k6/diego-chat.smoke.js
+
+      - name: Run estatus-ceo smoke
+        run: k6 run tests/k6/estatus-ceo.smoke.js
+
+      - name: Run login smoke
+        if: env.SUPABASE_ANON_KEY != ''
+        run: k6 run tests/k6/login.smoke.js
+
+      - name: Comment PR on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '☢️ Pieza #4 Plan 99-99 · k6 detectó degradación de performance. Ver Actions log para p50/p95/p99.'
+            })
+
+  load-weekly:
+    name: k6 LOAD sostenida semanal
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Run load test
+        run: k6 run tests/k6/panel-rdo.load.js
