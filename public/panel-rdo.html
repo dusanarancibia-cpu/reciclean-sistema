@@ -1919,18 +1919,18 @@
       <!-- Tabla -->
       <div class="bg-white rounded shadow-sm overflow-x-auto">
         <table class="w-full text-sm">
-          <thead class="bg-stone-50 text-stone-600 text-left">
+          <thead class="bg-stone-50 text-stone-600 text-left select-none">
             <tr>
-              <th class="px-3 py-2">Cliente</th>
-              <th class="px-3 py-2">Material</th>
-              <th class="px-3 py-2">Sucursal</th>
-              <th class="px-3 py-2 text-right">Propuesto</th>
-              <th class="px-3 py-2 text-right">Vigente</th>
-              <th class="px-3 py-2 text-right">Δ%</th>
-              <th class="px-3 py-2 text-right">Conf.</th>
-              <th class="px-3 py-2">Ruta</th>
-              <th class="px-3 py-2">Estado</th>
-              <th class="px-3 py-2 text-right">Edad</th>
+              <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="cliente_nombre" onclick="bpSortar('cliente_nombre')">Cliente <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
+              <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="material_nombre" onclick="bpSortar('material_nombre')">Material <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
+              <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="sucursal_nombre" onclick="bpSortar('sucursal_nombre')">Sucursal <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
+              <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="precio_clp_kg" onclick="bpSortar('precio_clp_kg')">Propuesto <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
+              <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="precio_vigente" onclick="bpSortar('precio_vigente')">Vigente <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
+              <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="desviacion_pct" onclick="bpSortar('desviacion_pct')">Δ% <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
+              <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="confidence_score" onclick="bpSortar('confidence_score')">Conf. <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
+              <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="ruta" onclick="bpSortar('ruta')">Ruta <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
+              <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="estado" onclick="bpSortar('estado')">Estado <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
+              <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="created_at" onclick="bpSortar('created_at')">Fecha <span class="bp-arrow text-stone-400 text-xs">↓</span></th>
             </tr>
           </thead>
           <tbody id="bpTbody">
@@ -14800,27 +14800,77 @@ document.addEventListener('DOMContentLoaded', () => {
       loadKpis();
       return;
     }
-    tbody.innerHTML = rows.map(r => {
-      const lockActive = r.lock_until && new Date(r.lock_until).getTime() > Date.now();
-      const lockTag = lockActive ? `<span class="ml-1 text-[10px] text-amber-700">🔒 Editando: ${esc(r.revisando_por ?? '?')}</span>` : '';
-      const deltaCls = r.desviacion_pct == null ? 'text-stone-400'
-                    : Math.abs(Number(r.desviacion_pct)) > 30 ? 'text-red-700'
-                    : Math.abs(Number(r.desviacion_pct)) > 15 ? 'text-amber-700'
-                    : 'text-stone-600';
-      return `<tr class="border-t hover:bg-stone-50 cursor-pointer" onclick="bpAbrirDrawer(${r.id})">
-        <td class="px-3 py-2">${esc(r.cliente_nombre ?? '—')}${lockTag}</td>
-        <td class="px-3 py-2">${esc(r.material_nombre ?? '—')}</td>
-        <td class="px-3 py-2">${esc(r.sucursal_nombre ?? '—')}</td>
-        <td class="px-3 py-2 text-right font-medium">${fmtCLP(r.precio_clp_kg)}</td>
-        <td class="px-3 py-2 text-right text-stone-500">${fmtCLP(r.precio_vigente)}</td>
-        <td class="px-3 py-2 text-right ${deltaCls}">${fmtPct(r.desviacion_pct)}</td>
-        <td class="px-3 py-2 text-right">${r.confidence_score != null ? Number(r.confidence_score).toFixed(2) : '—'}</td>
-        <td class="px-3 py-2">${rutaBadge(r.ruta)}</td>
-        <td class="px-3 py-2">${estadoBadge(r.estado)}</td>
-        <td class="px-3 py-2 text-right text-xs text-stone-500">${fmtEdad(r.created_at)}</td>
-      </tr>`;
-    }).join('');
+    bpRows = rows;
+    bpRenderizarFilas();
     loadKpis();
+  }
+
+  let bpRows = [];
+  let bpSortCol = 'created_at';
+  let bpSortDir = 'desc';
+
+  function bpRowHtml(r) {
+    const lockActive = r.lock_until && new Date(r.lock_until).getTime() > Date.now();
+    const lockTag = lockActive ? `<span class="ml-1 text-[10px] text-amber-700">🔒 Editando: ${esc(r.revisando_por ?? '?')}</span>` : '';
+    const deltaCls = r.desviacion_pct == null ? 'text-stone-400'
+                  : Math.abs(Number(r.desviacion_pct)) > 30 ? 'text-red-700'
+                  : Math.abs(Number(r.desviacion_pct)) > 15 ? 'text-amber-700'
+                  : 'text-stone-600';
+    return `<tr class="border-t hover:bg-stone-50 cursor-pointer" onclick="bpAbrirDrawer(${r.id})">
+      <td class="px-3 py-2">${esc(r.cliente_nombre ?? '—')}${lockTag}</td>
+      <td class="px-3 py-2">${esc(r.material_nombre ?? '—')}</td>
+      <td class="px-3 py-2">${esc(r.sucursal_nombre ?? '—')}</td>
+      <td class="px-3 py-2 text-right font-medium">${fmtCLP(r.precio_clp_kg)}</td>
+      <td class="px-3 py-2 text-right text-stone-500">${fmtCLP(r.precio_vigente)}</td>
+      <td class="px-3 py-2 text-right ${deltaCls}">${fmtPct(r.desviacion_pct)}</td>
+      <td class="px-3 py-2 text-right">${r.confidence_score != null ? Number(r.confidence_score).toFixed(2) : '—'}</td>
+      <td class="px-3 py-2">${rutaBadge(r.ruta)}</td>
+      <td class="px-3 py-2">${estadoBadge(r.estado)}</td>
+      <td class="px-3 py-2 text-right text-xs text-stone-500">${fmtEdad(r.created_at)}</td>
+    </tr>`;
+  }
+
+  function bpRenderizarFilas() {
+    const tbody = document.getElementById('bpTbody');
+    if (!tbody) return;
+    const sorted = [...bpRows].sort((a, b) => {
+      let va = a[bpSortCol] ?? '';
+      let vb = b[bpSortCol] ?? '';
+      if (typeof va === 'string') va = va.toLowerCase();
+      if (typeof vb === 'string') vb = vb.toLowerCase();
+      if (va < vb) return bpSortDir === 'asc' ? -1 : 1;
+      if (va > vb) return bpSortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+    tbody.innerHTML = sorted.map(bpRowHtml).join('');
+  }
+
+  function bpSortar(col) {
+    if (bpSortCol === col) {
+      bpSortDir = bpSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      bpSortCol = col;
+      bpSortDir = 'asc';
+    }
+    bpActualizarFlechas();
+    bpRenderizarFilas();
+  }
+
+  function bpActualizarFlechas() {
+    document.querySelectorAll('th[data-bpcol]').forEach(th => {
+      const col = th.getAttribute('data-bpcol');
+      const span = th.querySelector('.bp-arrow');
+      if (!span) return;
+      if (col === bpSortCol) {
+        span.textContent = bpSortDir === 'asc' ? '↑' : '↓';
+        span.classList.remove('text-stone-400');
+        span.classList.add('text-green-700');
+      } else {
+        span.textContent = '↕';
+        span.classList.remove('text-green-700');
+        span.classList.add('text-stone-400');
+      }
+    });
   }
 
   async function bpAbrirDrawer(id) {
