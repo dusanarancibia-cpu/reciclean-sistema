@@ -11579,6 +11579,8 @@ function oppRenderCard(o) {
     <div onclick="oppAbrirDrawer('${escapeHtml(o.oportunidad_id)}')"
          role="button" tabindex="0"
          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"
+         ontouchstart="this._tX=event.touches[0].clientX;this._tY=event.touches[0].clientY"
+         ontouchend="if(Math.abs(event.changedTouches[0].clientX-(this._tX||0))<10&&Math.abs(event.changedTouches[0].clientY-(this._tY||0))<10){event.preventDefault();oppAbrirDrawer('${escapeHtml(o.oportunidad_id)}');}"
          draggable="true"
          ondragstart="oppDragStart(event,'${escapeHtml(o.oportunidad_id)}','${escapeHtml(o.origen || '')}')"
          data-entity-type="oportunidad" data-entity-id="${escapeHtml(o.oportunidad_id)}" data-entity-nombre="${escapeHtml(o.titulo || '')}"
