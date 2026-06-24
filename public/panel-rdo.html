@@ -1352,6 +1352,7 @@
               </div>
               <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Última carga</div>
               <div id="v4-kpi-frescura-valor" class="text-3xl font-bold text-slate-800 mt-1">—</div>
+              <div class="text-xs text-slate-400 mt-0.5">desde último pesaje</div>
               <div class="mt-3 h-10 w-full"><svg viewBox="0 0 160 40" width="100%" height="100%" preserveAspectRatio="none"><defs><linearGradient id="v4gc3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d97706" stop-opacity=".22"/><stop offset="100%" stop-color="#d97706" stop-opacity="0"/></linearGradient></defs><path d="M3,10 L29,8 L54,14 L80,12 L106,9 L131,15 L157,11 L157,40 L3,40 Z" fill="url(#v4gc3)"/><path d="M3,10 L29,8 L54,14 L80,12 L106,9 L131,15 L157,11" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="157" cy="11" r="2.8" fill="#d97706"/></svg></div>
             </div>
             <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI Alertas activas">
@@ -13927,6 +13928,24 @@ document.addEventListener('DOMContentLoaded', () => {
     <textarea id="diegoChatInput" placeholder="Escribí o adjuntá algo…" maxlength="2000" aria-label="Mensaje a Diego" rows="1"></textarea>
     <button type="submit" class="send" id="diegoChatSend">Enviar</button>
   </form>
+  <!-- P6 23-jun-2026 · link reportar bug Diego -->
+  <div style="text-align:center;padding:4px 0 6px;font-size:11px;color:#94a3b8;">
+    <button type="button" onclick="abrirReporteBugDiego()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:11px;text-decoration:underline;padding:0;">🐛 Reportar error de Diego</button>
+  </div>
+</div>
+
+<!-- P6 23-jun-2026 · Modal reporte de bug Diego -->
+<div id="diegoBugModal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:24px;width:360px;max-width:calc(100vw - 32px);box-shadow:0 16px 48px -12px rgba(0,0,0,.3);">
+    <h3 style="font-size:15px;font-weight:700;margin:0 0 8px;color:#1e293b;">🐛 Reportar error de Diego</h3>
+    <p style="font-size:12px;color:#64748b;margin:0 0 12px;">Describí qué pasó. Pablo lo verá y te confirmará cuando lo resuelva.</p>
+    <textarea id="diegoBugDescripcion" rows="4" maxlength="1000" placeholder="Ej: Diego olvidó el contexto después de mi primer mensaje…" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:13px;resize:vertical;outline:none;"></textarea>
+    <div id="diegoBugMsg" style="font-size:12px;margin:6px 0 0;min-height:16px;"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;">
+      <button type="button" onclick="cerrarReporteBugDiego()" style="background:#f1f5f9;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;color:#475569;">Cancelar</button>
+      <button type="button" onclick="enviarReporteBugDiego()" style="background:#059669;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;color:#fff;font-weight:600;">Enviar reporte</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -14116,10 +14135,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!email) return { error: 'No hay sesión. ¿Iniciaste sesión en el panel?' };
     if (!token) return { error: 'No tengo token de sesión válido.' };
 
+    // P2 23-jun-2026 · pasar historial reciente para que Diego no pierda contexto intra-sesión
+    const conversacionPrevia = history
+      .filter(h => h.role === 'user' || h.role === 'diego')
+      .slice(-11, -1) // últimos 10 turnos sin el mensaje actual (ya fue pusheado)
+      .map(h => ({ role: h.role === 'diego' ? 'assistant' : 'user', content: h.mensaje }));
     const body = {
       user_email: email,
       mensaje: mensaje || '',
       request_id: crypto.randomUUID(),
+      ...(conversacionPrevia.length > 0 ? { conversacion_previa: conversacionPrevia } : {}),
       ...(attach ? { file_url: attach.file_url, file_mime: attach.file_mime, file_name: attach.file_name } : {}),
     };
     try {
@@ -19005,18 +19030,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // -- Interceptar click FAB Diego para abrir modal en vez de chat directo --
-  function attachFabInterceptor() {
-    var fab = document.getElementById('diegoFab');
-    if (!fab) { setTimeout(attachFabInterceptor, 500); return; }
-    fab.addEventListener('click', function (e) {
-      if (window.__diegoCarteroBypass) return; // chatLink: dejá pasar al handler original
-      e.stopImmediatePropagation();
-      e.preventDefault();
-      open();
-    }, true); // capture=true: corre ANTES del handler chat existente
-  }
-  attachFabInterceptor();
+  // P1 23-jun-2026 · FAB ya no abre el modal de categorías — abre el chat directamente.
+  // El modal Cartero queda disponible para acceso futuro desde panel (P6).
+
+  // P6 23-jun-2026 · Reporte de bugs Diego → public.preguntas_pendientes
+  window.abrirReporteBugDiego = function () {
+    const modal = document.getElementById('diegoBugModal');
+    modal.style.display = 'flex';
+    document.getElementById('diegoBugDescripcion').value = '';
+    document.getElementById('diegoBugMsg').textContent = '';
+  };
+  window.cerrarReporteBugDiego = function () {
+    document.getElementById('diegoBugModal').style.display = 'none';
+  };
+  window.enviarReporteBugDiego = async function () {
+    const desc = (document.getElementById('diegoBugDescripcion').value || '').trim();
+    const msgEl = document.getElementById('diegoBugMsg');
+    if (!desc) { msgEl.style.color = '#ef4444'; msgEl.textContent = 'Describí el error antes de enviar.'; return; }
+    msgEl.style.color = '#64748b'; msgEl.textContent = 'Enviando…';
+    try {
+      const { error } = await sb.from('preguntas_pendientes').insert({
+        tema: 'Bug Diego: ' + desc.slice(0, 80),
+        contexto: desc,
+        solicitante: currentUser || 'desconocido',
+        destinatario: 'pablo.arancibia@gmail.com',
+        tipo: 'bug_diego',
+        status: 'pendiente',
+      });
+      if (error) throw error;
+      msgEl.style.color = '#059669'; msgEl.textContent = '✓ Reporte enviado. Pablo lo verá en su bandeja.';
+      setTimeout(window.cerrarReporteBugDiego, 2200);
+    } catch (e) {
+      msgEl.style.color = '#ef4444'; msgEl.textContent = 'Error al enviar: ' + (e.message || 'intenta de nuevo');
+    }
+  };
+  // Cerrar modal al hacer click fuera del cuadro
+  document.getElementById('diegoBugModal').addEventListener('click', function (e) {
+    if (e.target === this) window.cerrarReporteBugDiego();
+  });
 
   // -- Realtime: notificación naranja para Dusan/Pablo cuando entra feedback --
   function notifShow(titulo, preview) {
