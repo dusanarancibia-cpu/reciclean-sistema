@@ -7395,7 +7395,20 @@ const TAB_SECTION_MAP = {
   andrea_comex: 'tabAndreaComex',
   decisor_venta: 'tabDecisorVenta',
   andrea_cobranza: 'tabAndreaCobranza',
-  andrea_actas: 'tabAndreaActas'
+  andrea_actas: 'tabAndreaActas',
+  // PC2 25-jun · 11 tabs Fase A PRECIOS-VIVOS-2026 (todos con `_` que rompen auto-CamelCase)
+  // Bug reportado: clickear desde sidebar v4 muestra pantalla blanco · section_id calculado mal
+  precios_vivos: 'tabPreciosVivos',
+  kpi_precios: 'tabKpiPrecios',
+  tablero_precios: 'tabTableroPrecios',
+  analisis_micro: 'tabAnalisisMicro',
+  indicadores_adel: 'tabIndicadoresAdel',
+  modo_precios: 'tabModoPrecios',
+  calculadora_precios: 'tabCalculadoraPrecios',
+  boveda_historica: 'tabBovedaHistorica',
+  flujo_operativo: 'tabFlujoOperativo',
+  errores_bucles: 'tabErroresBucles',
+  cronograma_24h: 'tabCronograma24h'
 };
 function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -7411,6 +7424,13 @@ function setupTabs() {
       });
       btn.classList.add('active');
       btn.setAttribute('aria-selected', 'true');
+      // PC2 25-jun · resetear scroll al cambiar de tab
+      // (bug reportado: al seleccionar tab desde abajo del sidebar, mainContent quedaba scrolleado)
+      try {
+        const main = document.getElementById('mainContent');
+        if (main) main.scrollTop = 0;
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      } catch (_) { /* fallback silencioso */ }
       if (typeof window.pageLog === 'function') window.pageLog('tab_change', tabId);
       if (tabId === 'comunicados') loadAudios();
       if (tabId === 'portada') { loadPortadaAudio(); loadAlertasPortada(); if (typeof window.initV4Hero === 'function') window.initV4Hero(); if (typeof window.setupDiegoAgenda === 'function') { window.setupDiegoAgenda(); window.loadDiegoAgenda(); } }
