@@ -16043,15 +16043,20 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const { data, error } = await sb.schema('curated')
         .from('margen_metas')
-        .select('categoria, mg_minimo_pct, mg_meta_pct')
-        .order('categoria');
+        .select('categoria_id, descripcion, margen_minimo_pct, margen_meta_pct')
+        .order('categoria_id');
       if (error) throw error;
-      calcMetasCache = data || [];
+      calcMetasCache = (data || []).map(c => ({
+        categoria: c.categoria_id,
+        mg_minimo_pct: c.margen_minimo_pct,
+        mg_meta_pct: c.margen_meta_pct,
+        descripcion: c.descripcion
+      }));
       const sel = document.getElementById('calcCategoria');
       if (!sel) return;
       sel.innerHTML = '<option value="">(sin categoría)</option>' +
         calcMetasCache.map(c =>
-          '<option value="' + c.categoria + '">' + c.categoria + ' (piso ' + c.mg_minimo_pct + '%)</option>'
+          '<option value="' + c.categoria + '">' + (c.descripcion || c.categoria) + ' (piso ' + c.mg_minimo_pct + '%)</option>'
         ).join('');
     } catch (e) {
       console.warn('[Calc] categorias:', e);
@@ -16063,15 +16068,16 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const { data, error } = await sb.schema('curated')
         .from('materiales')
-        .select('material_id, nombre_display')
-        .order('nombre_display')
+        .select('material_id, nombre, categoria')
+        .eq('activo', true)
+        .order('nombre')
         .limit(500);
       if (error) throw error;
       const sel = document.getElementById('calcMaterial');
       if (!sel) return;
       sel.innerHTML = '<option value="">(seleccionar)</option>' +
         (data || []).map(m =>
-          '<option value="' + m.material_id + '">' + (m.nombre_display || m.material_id) + '</option>'
+          '<option value="' + m.material_id + '" data-categoria="' + (m.categoria || '') + '">' + (m.nombre || m.material_id) + '</option>'
         ).join('');
     } catch (e) {
       console.warn('[Calc] materiales:', e);
@@ -16084,6 +16090,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data, error } = await sb.schema('curated')
         .from('sucursales')
         .select('sucursal_id, nombre')
+        .eq('activa', true)
         .order('nombre')
         .limit(50);
       if (error) throw error;
