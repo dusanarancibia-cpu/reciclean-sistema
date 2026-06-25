@@ -138,6 +138,14 @@
         setTimeout(() => removeToast(t), duration);
         return t;
       };
+      // Helper: error de carga datos visible al usuario (no solo console.warn silencioso)
+      window.panelToastErr = function (tag, err) {
+        try {
+          var msg = (err && err.message) ? err.message : String(err || '');
+          console.warn('[' + tag + ']', err);
+          if (window.showToast) window.showToast('[' + tag + '] ' + msg.slice(0, 120), 'error', 6000);
+        } catch (_) {}
+      };
       function removeToast(t) {
         if (!t || !t.parentNode) return;
         t.classList.remove('show');
@@ -11389,7 +11397,7 @@ async function _v4LoadOppResumen() {
     if (error || !data) return;
     const crmTotal = data?.crm?.oportunidades_total ?? 0;
     const crmMatch = data?.crm?.matcheadas_rdo ?? 0;
-    const fuzzyRes = await sb.from('v_crm_match_sugerido').select('*', { count:'exact', head:true });
+    const fuzzyRes = await sb.schema('staging').from('v_crm_match_sugerido').select('*', { count:'exact', head:true });
     const fuzzyTot = fuzzyRes?.count ?? 0;
     const oppAbiertasRes = await sb.schema('curated').from('oportunidades').select('*', { count:'exact', head:true }).neq('estado', 'cerrada_perdida').neq('estado', 'cerrada_ganada');
     const oppAbiertas = oppAbiertasRes?.count ?? 0;
@@ -13126,7 +13134,7 @@ window.initV4Hero = function initV4Hero() {
           try {
             const [healthRes, fuzzyRes, anomRes] = await Promise.all([
               sb.rpc('f_panel_health'),
-              sb.from('v_crm_match_sugerido').select('*', { count:'exact', head:true }),
+              sb.schema('staging').from('v_crm_match_sugerido').select('*', { count:'exact', head:true }),
               sb.from('v_panel_pesajes_anomalias').select('id', { count:'exact', head:true })
             ]);
             const health = healthRes?.data || {};
@@ -14801,7 +14809,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('bpAprobarTodos');
     if (btn) btn.disabled = true;
     try {
-      const { data, error } = await sb.rpc('f_aprobar_todos_pendientes', {
+      const { data, error } = await sb.schema('panel').rpc('f_aprobar_todos_pendientes', {
         p_decision_by: email,
         p_decision: 'aprobado'
       });
@@ -15118,7 +15126,7 @@ document.addEventListener('DOMContentLoaded', () => {
       pvPopularCategoriasFiltro();
       pvFiltrar();
     } catch (e) {
-      console.warn('[PreciosVivos] error:', e);
+      if (window.panelToastErr) panelToastErr('PreciosVivos', e); else console.warn('[PreciosVivos] error:', e);
       if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-4 text-center text-red-400">Error al cargar: ' + String(e).slice(0, 80) + '</td></tr>';
     }
   }
@@ -15341,7 +15349,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const el = document.getElementById('ebLastUpdate');
       if (el) el.textContent = new Date().toLocaleString('es-CL');
     } catch (e) {
-      console.warn('[ErroresBucles] error:', e);
+      if (window.panelToastErr) panelToastErr('Errores/Bucles', e); else console.warn('[ErroresBucles] error:', e);
       if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-rose-500">Error al cargar: ' + String(e).slice(0, 120) + '</td></tr>';
     }
   }
@@ -15734,7 +15742,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       indSet('indLastUpdate', new Date().toLocaleString('es-CL'));
     } catch (e) {
-      console.warn('[Indicadores] error:', e);
+      if (window.panelToastErr) panelToastErr('Indicadores', e); else console.warn('[Indicadores] error:', e);
       indSet('indResumen', 'Error: ' + (e.message || String(e)).slice(0, 120));
     }
   }
@@ -15855,7 +15863,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
       return data || null;
     } catch (e) {
-      console.warn('[Modo] get:', e);
+      if (window.panelToastErr) panelToastErr('Modo Precios', e); else console.warn('[Modo] get:', e);
       return null;
     }
   }
@@ -15901,7 +15909,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modoRenderAcciones(row.acciones || []);
     } catch (e) {
       alert('Error activando modo: ' + (e.message || String(e)));
-      console.warn('[Modo] set:', e);
+      if (window.panelToastErr) panelToastErr('Modo Precios SET', e); else console.warn('[Modo] set:', e);
     } finally {
       modoAplicarPermisos();
     }
@@ -16059,7 +16067,7 @@ document.addEventListener('DOMContentLoaded', () => {
           '<option value="' + c.categoria + '">' + (c.descripcion || c.categoria) + ' (piso ' + c.mg_minimo_pct + '%)</option>'
         ).join('');
     } catch (e) {
-      console.warn('[Calc] categorias:', e);
+      if (window.panelToastErr) panelToastErr('Calculadora categorías', e); else console.warn('[Calc] categorias:', e);
     }
   }
 
@@ -16080,7 +16088,7 @@ document.addEventListener('DOMContentLoaded', () => {
           '<option value="' + m.material_id + '" data-categoria="' + (m.categoria || '') + '">' + (m.nombre || m.material_id) + '</option>'
         ).join('');
     } catch (e) {
-      console.warn('[Calc] materiales:', e);
+      if (window.panelToastErr) panelToastErr('Calculadora materiales', e); else console.warn('[Calc] materiales:', e);
     }
   }
 
@@ -16101,7 +16109,7 @@ document.addEventListener('DOMContentLoaded', () => {
           '<option value="' + s.sucursal_id + '">' + (s.nombre || s.sucursal_id) + '</option>'
         ).join('');
     } catch (e) {
-      console.warn('[Calc] sucursales:', e);
+      if (window.panelToastErr) panelToastErr('Calculadora sucursales', e); else console.warn('[Calc] sucursales:', e);
     }
   }
 
@@ -16246,7 +16254,7 @@ document.addEventListener('DOMContentLoaded', () => {
           '<option value="' + m.material_id + '">' + (m.nombre || m.material_id) + '</option>'
         ).join('');
     } catch (e) {
-      console.warn('[Boveda] materiales:', e);
+      if (window.panelToastErr) panelToastErr('Bóveda materiales', e); else console.warn('[Boveda] materiales:', e);
     }
   }
 
@@ -16267,7 +16275,7 @@ document.addEventListener('DOMContentLoaded', () => {
           '<option value="' + s.sucursal_id + '">' + (s.nombre || s.sucursal_id) + '</option>'
         ).join('');
     } catch (e) {
-      console.warn('[Boveda] sucursales:', e);
+      if (window.panelToastErr) panelToastErr('Bóveda sucursales', e); else console.warn('[Boveda] sucursales:', e);
     }
   }
 
@@ -16386,7 +16394,7 @@ document.addEventListener('DOMContentLoaded', () => {
         detEl.textContent = ult.alerta || '—';
       }
     } catch (e) {
-      console.warn('[Boveda] error:', e);
+      if (window.panelToastErr) panelToastErr('Bóveda RPC', e); else console.warn('[Boveda] error:', e);
       bovSetHtml('bovContent', '<p class="text-sm text-rose-600">Error: ' + (e.message || String(e)).slice(0, 120) + '</p>');
       bovClearStats();
     }
@@ -16608,7 +16616,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     } catch (e) {
-      console.warn('[Tablero] v_margen_vs_costos:', e);
+      if (window.panelToastErr) panelToastErr('Tablero margen', e); else console.warn('[Tablero] v_margen_vs_costos:', e);
     }
 
     tapSet('tapP1Total', p1.total.toLocaleString('es-CL'));
@@ -16669,7 +16677,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .filter(r => r.desviacion_pct != null && Math.abs(Number(r.desviacion_pct)) > 30)
         .slice(0, 5);
     } catch (e) {
-      console.warn('[Tablero] bandeja:', e);
+      if (window.panelToastErr) panelToastErr('Tablero bandeja', e); else console.warn('[Tablero] bandeja:', e);
     }
     tapSet('tapP2Count', p2Total.toLocaleString('es-CL'));
 
@@ -16706,7 +16714,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tapSet('tapP3Mg', sumClp > 0 ? tapFmtClp(sumClp / 1000) + 'K' : '—');
       tapSet('tapP3Kg', sumKg > 0 ? Math.round(sumKg).toLocaleString('es-CL') + ' kg' : '— kg');
     } catch (e) {
-      console.warn('[Tablero] vales mes:', e);
+      if (window.panelToastErr) panelToastErr('Tablero vales mes', e); else console.warn('[Tablero] vales mes:', e);
       tapSet('tapP3Mg', 'sin datos');
       tapSet('tapP3Kg', 'sin datos');
     }
@@ -16755,7 +16763,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const v = count || 0;
       checks.push({ nombre: 'Precios vencidos (vigencia_hasta < hoy)', valor: v, estado: ce(v, 0, 5) });
     } catch (e) {
-      console.warn('[Tablero] vencidos:', e);
+      if (window.panelToastErr) panelToastErr('Tablero vencidos', e); else console.warn('[Tablero] vencidos:', e);
       checks.push({ nombre: 'Precios vencidos', valor: 'error', estado: 'gris' });
     }
 
@@ -16770,7 +16778,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const v = count || 0;
       checks.push({ nombre: 'Propuestas obsoletas (>30d)', valor: v, estado: ce(v, 0, 50) });
     } catch (e) {
-      console.warn('[Tablero] obsoletas:', e);
+      if (window.panelToastErr) panelToastErr('Tablero obsoletas', e); else console.warn('[Tablero] obsoletas:', e);
       checks.push({ nombre: 'Propuestas obsoletas', valor: 'error', estado: 'gris' });
     }
 
@@ -16797,7 +16805,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const el = document.getElementById('tapLastUpdate');
       if (el) el.textContent = new Date().toLocaleString('es-CL');
     } catch (e) {
-      console.warn('[Tablero] error global:', e);
+      if (window.panelToastErr) panelToastErr('Tablero', e); else console.warn('[Tablero] error global:', e);
     }
   }
 
@@ -18257,7 +18265,7 @@ document.addEventListener('DOMContentLoaded', () => {
       : prompt('Tu comentario:');
     if (!texto || !texto.trim()) return;
     try {
-      const { error } = await sb.rpc('comentar_mi_tarea', { p_id: id, p_comentario: texto.trim() });
+      const { error } = await sb.schema('panel').rpc('comentar_mi_tarea', { p_id: id, p_comentario: texto.trim() });
       if (error) throw error;
       if (window.showToast) window.showToast('Comentario agregado', 'success');
       refrescar();
@@ -20845,7 +20853,7 @@ document.addEventListener('DOMContentLoaded', () => {
         var ok = 0;
         for (var i = 0; i < destinos.length; i++) {
           try {
-            await sb.from('diego_inbox').insert({
+            await sb.schema('panel').from('diego_inbox').insert({
               destinatario_email: destinos[i].email,
               categoria: 'escalado_permisologia',
               titulo: 'Escalado Permisología · obligación #' + _currentEditId,
@@ -22857,7 +22865,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const sb = window.supabase;
 
       // 1. Cargar frescura datos (semáforos)
-      const { data: frescura, error: e1 } = await sb.from('v_frescura_datos').select('*');
+      const { data: frescura, error: e1 } = await sb.schema('panel').from('v_frescura_datos').select('*');
       if (e1) throw e1;
 
       // 2. Cargar logs recientes (últimas 24h)
