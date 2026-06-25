@@ -7368,55 +7368,13 @@ window.logout = async function() {
 // Mapeo explícito data-tab → id de sección. Necesario para data-tabs con `_`
 // (auditoría 22-may: `bandeja_dieg`→`tabBandejaDiego` y `ops_diarias`→`tabOpsDiarias`
 // fallaban porque el cálculo automático no convierte snake_case a CamelCase).
+// TAB_SECTION_MAP · solo overrides donde el algoritmo auto-CamelCase NO acierta.
+// Algoritmo (line 7428): tabId.split(/[_-]/).map(camelize).join('') con prefijo 'tab'.
+// Cubre todos los snake_case y dígitos (precios_vivos→tabPreciosVivos · plan_2026→tabPlan2026).
+// Red de seguridad: si renombran un section_id que no sigue el patrón, agregar override acá.
+// Cleanup T-PANEL-01 (25-jun DeepSeek round 7) · 42 entradas redundantes removidas.
 const TAB_SECTION_MAP = {
-  bandeja_dieg: 'tabBandejaDiego',
-  bandeja_precios: 'tabBandejaPrecios',
-  mi_memoria: 'tabMiMemoria',
-  mi_bandeja: 'tabMiBandeja',
-  mis_reportes: 'tabMisReportes',
-  mis_envios_diego: 'tabMisEnviosDiego',
-  material_nuevo: 'tabMaterialNuevo',
-  despacho_coord: 'tabDespachoCoord',
-  incidentes_op: 'tabIncidentesOp',
-  firmas_pend: 'tabFirmasPend',
-  firmas_reglas: 'tabFirmasReglas',
-  mesa_control_99_99: 'tabMesaControl9999',
-  tarifas_ext: 'tabTarifasExt',
-  cumplimiento: 'tabCumplimiento',
-  herramientas_ext: 'tabHerramientasExt',
-  facturacion_grupo: 'tabFacturacionGrupo',
-  vales_portal: 'tabValesPortal',
-  piloto_pwa: 'tabPilotoPwa',
-  mis_archivos: 'tabMisArchivos',
-  diego_coord: 'tabDiegoCoord',
-  bucle_vivo: 'tabBucleVivo',
-  dod_dashboard: 'tabDodDashboard',
-  ops_diarias: 'tabOpsDiarias',
-  // PC1 fix 31-may PM: tabs con `_` o dígito que rompen el auto-CamelCase
-  // (pcs_vivo→tabPcs_vivo ❌ real=tabPcsVivo · plan_2026→tabPlan_2026 ❌ real=tabPlan2026)
-  pcs_vivo: 'tabPcsVivo',
-  plan_2026: 'tabPlan2026',
-  // PC2 11-jun · Trio bandejas CU Andrea + Comex
-  andrea_dup_clientes: 'tabAndreaDupClientes',
-  andrea_drift_libre: 'tabAndreaDriftLibre',
-  andrea_ruts_invalidos: 'tabAndreaRutsInvalidos',
-  andrea_comex: 'tabAndreaComex',
-  decisor_venta: 'tabDecisorVenta',
-  andrea_cobranza: 'tabAndreaCobranza',
-  andrea_actas: 'tabAndreaActas',
-  // PC2 25-jun · 11 tabs Fase A PRECIOS-VIVOS-2026 (todos con `_` que rompen auto-CamelCase)
-  // Bug reportado: clickear desde sidebar v4 muestra pantalla blanco · section_id calculado mal
-  precios_vivos: 'tabPreciosVivos',
-  kpi_precios: 'tabKpiPrecios',
-  tablero_precios: 'tabTableroPrecios',
-  analisis_micro: 'tabAnalisisMicro',
-  indicadores_adel: 'tabIndicadoresAdel',
-  modo_precios: 'tabModoPrecios',
-  calculadora_precios: 'tabCalculadoraPrecios',
-  boveda_historica: 'tabBovedaHistorica',
-  flujo_operativo: 'tabFlujoOperativo',
-  errores_bucles: 'tabErroresBucles',
-  cronograma_24h: 'tabCronograma24h'
+  bandeja_dieg: 'tabBandejaDiego'   // único override real: "dieg" no expande a "Diego" automáticamente
 };
 function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
