@@ -7415,7 +7415,10 @@ function setupTabs() {
     btn.addEventListener('click', () => {
       const tabId = btn.getAttribute('data-tab');
       document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-      const sectionId = TAB_SECTION_MAP[tabId] || ('tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+      // PC2 25-jun · auto-CamelCase antifrágil: convierte snake_case → camelCase
+      // (precios_vivos→tabPreciosVivos · plan_2026→tabPlan2026 · ya no requiere mapeo manual)
+      const sectionId = TAB_SECTION_MAP[tabId] || ('tab' +
+        tabId.split(/[_-]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(''));
       const target = document.getElementById(sectionId);
       if (target) target.classList.remove('hidden');
       document.querySelectorAll('.tab-btn').forEach(b => {
