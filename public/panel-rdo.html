@@ -5032,6 +5032,55 @@
 
     <!-- Mesa de Control Plan 99-99 (D-PLAN-99-99-001 Fase 3 · PC2 Pablo 15-jun) · dusan+admin -->
     <section id="tabMesaControl9999" class="tab-content hidden">
+
+      <!-- Mesa V3 · Pulso del Negocio · PC5_dusan 26-jun-2026 ===================== -->
+      <div class="bg-slate-900 rounded-xl p-4 mb-5 text-white shadow-lg">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wide">🟢 Mesa V3 · Pulso del Negocio</span>
+            <span id="v3Seed" class="hidden text-[10px] bg-amber-400 text-black px-1.5 py-0.5 rounded font-medium">caja: proyección</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="v3UpdatedAt" class="text-[10px] text-slate-400">—</span>
+            <button id="v3Refresh" class="text-[10px] px-2 py-0.5 bg-slate-700 hover:bg-slate-600 rounded text-slate-200">↻</button>
+          </div>
+        </div>
+        <!-- 5 KPIs -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
+          <div class="bg-slate-800 rounded-lg p-2.5">
+            <div class="text-[10px] text-slate-400 uppercase">Ton hoy</div>
+            <div id="v3TonHoy" class="text-2xl font-bold mt-0.5">—</div>
+            <div id="v3TonSem" class="text-[10px] mt-0.5 text-slate-400">—</div>
+          </div>
+          <div class="bg-slate-800 rounded-lg p-2.5">
+            <div class="text-[10px] text-slate-400 uppercase">Caja</div>
+            <div id="v3Caja" class="text-2xl font-bold mt-0.5">—</div>
+            <div id="v3CajaDias" class="text-[10px] mt-0.5 text-slate-400">—</div>
+          </div>
+          <div class="bg-slate-800 rounded-lg p-2.5">
+            <div class="text-[10px] text-slate-400 uppercase">USD/CLP</div>
+            <div id="v3Usd" class="text-2xl font-bold mt-0.5">—</div>
+            <div id="v3Lme" class="text-[10px] mt-0.5 text-slate-400">—</div>
+          </div>
+          <div class="bg-slate-800 rounded-lg p-2.5">
+            <div class="text-[10px] text-slate-400 uppercase">Cobros venc.</div>
+            <div id="v3Cobros" class="text-2xl font-bold mt-0.5">—</div>
+            <div id="v3CobrosMax" class="text-[10px] mt-0.5 text-slate-400">—</div>
+          </div>
+          <div class="bg-slate-800 rounded-lg p-2.5">
+            <div class="text-[10px] text-slate-400 uppercase">Desviaciones</div>
+            <div id="v3Desv" class="text-2xl font-bold mt-0.5">—</div>
+            <div class="text-[10px] mt-0.5 text-slate-400">abiertas</div>
+          </div>
+        </div>
+        <!-- Chart ton 14d -->
+        <div>
+          <div class="text-[10px] text-slate-400 mb-1">Toneladas · últimos 14 días</div>
+          <canvas id="v3ChartTon" height="55" style="max-height:55px"></canvas>
+        </div>
+      </div>
+      <!-- /Mesa V3 ============================================================== -->
+
       <div class="bg-gradient-to-r from-emerald-50 to-stone-50 border border-emerald-200 rounded-lg p-3 mb-4">
         <div class="flex items-start justify-between flex-wrap gap-2">
           <div>
@@ -19652,6 +19701,89 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ============================================================
+  // Mesa V3 — Pulso del Negocio (PC5_dusan · 26-jun-2026)
+  // EF mesa-control-v3-api · verify_jwt=false · auto-refresh 5min
+  // ============================================================
+  var _v3Chart = null;
+  async function loadMesaV3Pulso() {
+    var EF = 'https://eknmtsrtfkzroxnovfqn.functions.supabase.co/mesa-control-v3-api';
+    var set = function(id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
+    try {
+      var r = await fetch(EF);
+      if (!r.ok) throw new Error('EF ' + r.status);
+      var d = await r.json();
+      var p = d.pulso || {};
+
+      // Ton hoy
+      var tonHoy = parseFloat(p.ton_hoy) || 0;
+      set('v3TonHoy', tonHoy.toFixed(1) + ' t');
+      var semTon = p.ton_semaforo || 'rojo';
+      var semColor = semTon === 'verde' ? 'text-emerald-400' : semTon === 'amarillo' ? 'text-amber-400' : 'text-red-400';
+      var elSem = document.getElementById('v3TonSem');
+      if (elSem) { elSem.textContent = (p.ton_pct_meta || 0) + '% meta · ' + semTon; elSem.className = 'text-[10px] mt-0.5 ' + semColor; }
+
+      // Caja
+      var cajaClp = p.caja_clp;
+      set('v3Caja', cajaClp != null ? '$' + (cajaClp / 1000000).toFixed(1) + 'M' : '—');
+      var cajaSem = p.caja_semaforo || '';
+      var cajaColor = cajaSem === 'verde' ? 'text-emerald-400' : cajaSem === 'amarillo' ? 'text-amber-400' : 'text-red-400';
+      var elCajaDias = document.getElementById('v3CajaDias');
+      if (elCajaDias) { elCajaDias.textContent = (p.caja_dias || 0) + ' días cobertura'; elCajaDias.className = 'text-[10px] mt-0.5 ' + cajaColor; }
+
+      // Seed badge
+      var seedEl = document.getElementById('v3Seed');
+      if (seedEl) { if (d.caja_es_seed) seedEl.classList.remove('hidden'); else seedEl.classList.add('hidden'); }
+
+      // USD/CLP + LME
+      set('v3Usd', p.usd_clp != null ? '$' + Math.round(p.usd_clp) : '—');
+      set('v3Lme', p.lme_cobre_usd_lb != null ? 'Cu ' + parseFloat(p.lme_cobre_usd_lb).toFixed(2) + ' USD/lb' : '—');
+
+      // Cobros vencidos
+      var cobros = p.cobros_vencidos_clp;
+      set('v3Cobros', cobros != null ? '$' + (cobros / 1000000).toFixed(1) + 'M' : '—');
+      set('v3CobrosMax', (p.cobros_max_dias || 0) + ' días · ' + (p.clientes_morosos || 0) + ' clientes');
+
+      // Desviaciones
+      set('v3Desv', p.desv_abiertas != null ? String(p.desv_abiertas) : '—');
+
+      // Hora actualización
+      if (d.last_updated_at) {
+        var dt = new Date(d.last_updated_at);
+        set('v3UpdatedAt', 'datos: ' + dt.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }));
+      }
+
+      // Chart ton 14d
+      var hist = d.ton_historico || [];
+      if (hist.length >= 2 && typeof Chart !== 'undefined') {
+        var canvas = document.getElementById('v3ChartTon');
+        if (canvas) {
+          var labels = hist.map(function(h) { return (h.fecha || '').slice(5); });
+          var values = hist.map(function(h) { return parseFloat(h.ton_total) || 0; });
+          if (_v3Chart) { _v3Chart.destroy(); _v3Chart = null; }
+          _v3Chart = new Chart(canvas, {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [{ data: values, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', borderWidth: 1.5, pointRadius: 2, fill: true, tension: 0.3 }]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: '#334155' } },
+                y: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: '#334155' }, min: 0 }
+              }
+            }
+          });
+        }
+      }
+    } catch (err) {
+      var el = document.getElementById('v3TonHoy');
+      if (el) el.textContent = 'Error';
+    }
+  }
+
+  // ============================================================
   // Mesa de Control Plan 99-99 (D-PLAN-99-99-001 Fase 3 · PC2 Pablo 15-jun)
   // Consume RPCs panel.estatus_plan_99_99 + public.mesa_control_99_99_kpis
   // + public.v_pc_score_individual (widget H)
@@ -19798,6 +19930,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupMesaControl9999AutoRefresh() {
     var btn = document.getElementById('mesaControl9999Refresh');
     if (btn) btn.addEventListener('click', loadMesaControl9999);
+    // Mesa V3 refresh button
+    var v3Btn = document.getElementById('v3Refresh');
+    if (v3Btn) v3Btn.addEventListener('click', loadMesaV3Pulso);
     document.querySelectorAll('[data-mc-drill]').forEach(function(card) {
       card.addEventListener('click', function() {
         var dest = card.getAttribute('data-mc-drill');
@@ -19807,10 +19942,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     setInterval(function() {
       var sec = document.getElementById('tabMesaControl9999');
-      if (sec && !sec.classList.contains('hidden')) loadMesaControl9999();
+      if (sec && !sec.classList.contains('hidden')) { loadMesaControl9999(); loadMesaV3Pulso(); }
     }, 60000);
+    // Mesa V3 auto-refresh cada 5 min independiente
+    setInterval(function() {
+      var sec = document.getElementById('tabMesaControl9999');
+      if (sec && !sec.classList.contains('hidden')) loadMesaV3Pulso();
+    }, 300000);
     var perfil = (typeof currentProfile !== 'undefined') ? currentProfile : null;
-    if (perfil === 'dusan' || perfil === 'admin') setTimeout(loadMesaControl9999, 2000);
+    if (perfil === 'dusan' || perfil === 'admin') {
+      setTimeout(loadMesaControl9999, 2000);
+      setTimeout(loadMesaV3Pulso, 1500); // V3 carga un poco antes (no requiere auth)
+    }
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupMesaControl9999AutoRefresh);
