@@ -695,10 +695,7 @@
             <span class="v4-emoji" aria-hidden="true">🎯</span>
             Oportunidades
           </a>
-          <a href="#" data-v4-tab="mis_visitas" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">📅</span>
-            Mis Visitas
-          </a>
+          <!-- R-AUD-034 26-jun · borrada tab fantasma mis_visitas (sin section ni init · 11+ días huérfana) -->
           <!-- PC2 11-jun · Trio bandejas Cliente Único Andrea + Comex -->
           <a href="#" data-v4-tab="andrea_dup_clientes" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
             <span class="v4-emoji" aria-hidden="true">🔀</span>
@@ -946,10 +943,7 @@
             <span class="v4-emoji" aria-hidden="true">📊</span>
             Gantt Viva
           </a>
-          <a href="#" data-v4-tab="borradores_diego" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
-            <span class="v4-emoji" aria-hidden="true">📝</span>
-            Borradores Diego
-          </a>
+          <!-- R-AUD-034 26-jun · borrada tab fantasma borradores_diego (sin section ni init · gateada dusan/admin pero sin contenido) -->
           <!-- PC2 11-jun PM · entrada 'bandeja_duplicados' (admin-only) eliminada · reemplazada por 'andrea_dup_clientes' (visible a comercial) para que Andrea pueda decidir duplicados desde su silo. Backend sigue activo por si se reactiva. -->
         </div>
       </details>
@@ -14648,9 +14642,8 @@ document.addEventListener('DOMContentLoaded', () => {
       bell.appendChild(dot);
     }
     bell.addEventListener('click', () => {
-      const tabBtn = document.querySelector('[data-v4-tab="notificaciones"]')
-                  || document.querySelector('[data-tab="notificaciones"]')
-                  || document.querySelector('[data-v4-tab="bandeja_dieg"]')
+      // R-AUD-034 26-jun · tab notificaciones nunca tuvo entrada de sidebar · fallback a bandeja_dieg que sí existe en navbar legacy
+      const tabBtn = document.querySelector('[data-v4-tab="bandeja_dieg"]')
                   || document.querySelector('[data-tab="bandeja_dieg"]');
       if (tabBtn) tabBtn.click();
     });
