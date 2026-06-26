@@ -5081,6 +5081,106 @@
       </div>
       <!-- /Mesa V3 ============================================================== -->
 
+      <!-- CALIBRADOR DE MARGEN · Mesa Control 99-99 · PC5_dusan 26-jun-2026 ===== -->
+      <style>
+        #cal-bloque .cal-chip{padding:4px 12px;border-radius:14px;border:1px solid #e2e8f0;cursor:pointer;font-size:11px;background:#fff;white-space:nowrap;transition:all .1s}
+        #cal-bloque .cal-chip:hover{background:#f8fafc}
+        #cal-bloque .cal-chip.cal-chip-on{background:#0f172a;color:#fff;border-color:#0f172a}
+        #cal-bloque .cal-chip.cal-chip-on[data-cal-chip="rojo"]{background:#dc2626;border-color:#dc2626}
+        #cal-bloque .cal-chip.cal-chip-on[data-cal-chip="amarillo"]{background:#d97706;border-color:#d97706}
+        #cal-bloque .cal-chip.cal-chip-on[data-cal-chip="verde"]{background:#16a34a;border-color:#16a34a}
+        #cal-bloque .cal-suc-btn{padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;border-radius:7px;background:#fff;border:1px solid #e2e8f0;color:#64748b;transition:all .15s;min-height:44px}
+        #cal-bloque .cal-suc-btn.on{color:#2563eb;border-color:#2563eb;background:#eff6ff}
+        #cal-bloque .cal-sem-v{background:#dcfce7;color:#166534;padding:2px 7px;border-radius:8px;font-weight:700;font-size:10px;white-space:nowrap}
+        #cal-bloque .cal-sem-a{background:#fef3c7;color:#d97706;padding:2px 7px;border-radius:8px;font-weight:700;font-size:10px;white-space:nowrap}
+        #cal-bloque .cal-sem-r{background:#fee2e2;color:#dc2626;padding:2px 7px;border-radius:8px;font-weight:700;font-size:10px;white-space:nowrap}
+        #cal-bloque .cal-btn-ap{min-height:44px;min-width:80px;padding:6px 12px;border-radius:7px;border:1px solid #86efac;background:#f0fdf4;color:#166534;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap}
+        #cal-bloque .cal-btn-ap:hover{background:#dcfce7}
+        #cal-bloque .cal-btn-ap.ok{background:#dcfce7;border-color:#4ade80;opacity:.7;cursor:default}
+        #cal-bloque .cal-toast-w{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:5px;align-items:flex-end;pointer-events:none}
+        #cal-bloque .cal-toast{background:#1e293b;color:#fff;padding:9px 14px;border-radius:8px;font-size:11px;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,.2);display:flex;align-items:center;gap:10px;max-width:300px;pointer-events:auto;animation:calTi .18s ease}
+        #cal-bloque .cal-toast.cal-tv{background:#166534}
+        #cal-bloque .cal-toast.cal-ta{background:#92400e}
+        #cal-bloque .cal-tundo{background:rgba(255,255,255,.2);border:none;color:#fff;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:10px;white-space:nowrap;min-height:32px}
+        @keyframes calTi{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
+        @media(max-width:640px){#cal-bloque #cal-tabla td,#cal-bloque #cal-tabla th{padding:6px 8px;font-size:11px}}
+      </style>
+      <div id="cal-bloque" class="mb-5">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <h3 class="text-sm font-semibold text-stone-700">🎛 Calibrador de Margen</h3>
+            <span id="cal-badge" class="text-[10px] bg-stone-200 text-stone-600 px-1.5 py-0.5 rounded font-medium">—</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="cal-ts-dot" class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span id="cal-ts" class="text-[10px] text-stone-400">—</span>
+            <button onclick="calRefresh()" class="text-[10px] px-2 py-0.5 bg-stone-200 hover:bg-stone-300 rounded text-stone-700 min-h-[36px]">↻</button>
+          </div>
+        </div>
+        <!-- CEO banner -->
+        <div id="cal-ceo-banner" class="hidden mb-2 p-2 rounded-lg flex items-center gap-2 text-sm font-medium" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff">
+          <span>🎯</span>
+          <span id="cal-ceo-txt">Modo CEO · sucursal detectada</span>
+          <div class="flex-1"></div>
+          <button id="cal-ceo-btn" onclick="calAprobarRojosSuc()" style="background:#16a34a;color:#fff;border:none;padding:5px 14px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;min-height:44px;min-width:80px"></button>
+          <button onclick="calCerrarCeo()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 10px;border-radius:7px;font-size:10px;cursor:pointer;min-height:44px">Ver todo</button>
+        </div>
+        <!-- KPIs -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
+          <div class="bg-white border border-stone-200 rounded-lg p-2.5">
+            <div class="text-[10px] text-stone-400 uppercase">Total</div>
+            <div class="text-xl font-bold mt-0.5 text-stone-800" id="cal-k-tot">—</div>
+            <div class="text-[10px] text-stone-400" id="cal-k-suc">4 sucursales</div>
+          </div>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5">
+            <div class="text-[10px] text-emerald-700 uppercase">🟢 Sobre meta</div>
+            <div class="text-xl font-bold mt-0.5 text-emerald-700" id="cal-k-v">—</div>
+          </div>
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5">
+            <div class="text-[10px] text-amber-700 uppercase">🟡 En alerta</div>
+            <div class="text-xl font-bold mt-0.5 text-amber-700" id="cal-k-a">—</div>
+          </div>
+          <div class="bg-red-50 border border-red-200 rounded-lg p-2.5">
+            <div class="text-[10px] text-red-700 uppercase">🔴 Bajo mínimo</div>
+            <div class="text-xl font-bold mt-0.5 text-red-700" id="cal-k-r">—</div>
+          </div>
+        </div>
+        <!-- Sucursal tabs -->
+        <div id="cal-suc-bar" class="flex gap-1 mb-2 flex-wrap"></div>
+        <!-- Chip filters -->
+        <div class="flex gap-1 mb-2 flex-wrap items-center">
+          <button class="cal-chip cal-chip-on" data-cal-chip="todos" onclick="calChip(this,'todos')">Todos</button>
+          <button class="cal-chip" data-cal-chip="rojo" onclick="calChip(this,'rojo')">🔴 Bajo mínimo</button>
+          <button class="cal-chip" data-cal-chip="amarillo" onclick="calChip(this,'amarillo')">🟡 En alerta</button>
+          <button class="cal-chip" data-cal-chip="verde" onclick="calChip(this,'verde')">🟢 Sobre meta</button>
+        </div>
+        <!-- Tabla -->
+        <div class="overflow-x-auto rounded-lg border border-stone-200 bg-white" style="-webkit-overflow-scrolling:touch">
+          <div id="cal-cargando" class="text-center text-stone-400 text-sm py-8">Carga al abrir tab…</div>
+          <table id="cal-tabla" class="w-full text-xs hidden" style="min-width:700px;border-collapse:collapse">
+            <thead class="bg-stone-50">
+              <tr>
+                <th class="px-3 py-2 text-left text-stone-500 font-semibold">Material</th>
+                <th class="px-3 py-2 text-left text-stone-500 font-semibold">Sucursal</th>
+                <th class="px-3 py-2 text-right text-stone-500 font-semibold">P.Compra</th>
+                <th class="px-3 py-2 text-right text-stone-500 font-semibold">P.Venta</th>
+                <th class="px-3 py-2 text-right text-stone-500 font-semibold">Margen %</th>
+                <th class="px-3 py-2 text-right text-stone-500 font-semibold">Meta %</th>
+                <th class="px-3 py-2 text-right text-stone-500 font-semibold">Brecha</th>
+                <th class="px-3 py-2 text-center text-stone-500 font-semibold">Estado</th>
+                <th class="px-3 py-2 text-center text-stone-500 font-semibold">Vigencia</th>
+                <th class="px-3 py-2 text-center text-stone-500 font-semibold" style="min-width:100px">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="cal-tbody"></tbody>
+          </table>
+        </div>
+        <!-- Toast wrapper -->
+        <div id="cal-toasts" class="cal-toast-w"></div>
+      </div>
+      <!-- /CALIBRADOR DE MARGEN ===================================================== -->
+
       <div class="bg-gradient-to-r from-emerald-50 to-stone-50 border border-emerald-200 rounded-lg p-3 mb-4">
         <div class="flex items-start justify-between flex-wrap gap-2">
           <div>
@@ -19784,6 +19884,142 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ============================================================
+  // CALIBRADOR DE MARGEN · datos reales curated.v_margen_vs_costos
+  // PC5_dusan · 26-jun-2026 · integrado Mesa Control 99-99
+  // ============================================================
+  var calDatos = [], calFSuc = 'todas', calFChip = 'todos', calAprobados = {};
+  function calSemNorm(s) { var v = (s||'').toLowerCase(); return v.includes('rojo')?'rojo':v.includes('amarillo')?'amarillo':'verde'; }
+  function calFiltrado() {
+    return calDatos.filter(function(d){
+      return (calFSuc==='todas'||d.sucursal_nombre===calFSuc) && (calFChip==='todos'||calSemNorm(d.semaforo)===calFChip);
+    }).sort(function(a,b){
+      var o={rojo:0,amarillo:1,verde:2};
+      var sa=calSemNorm(a.semaforo),sb=calSemNorm(b.semaforo);
+      if(sa!==sb) return (o[sa]||0)-(o[sb]||0);
+      return (parseFloat(a.mg_vs_meta)||0)-(parseFloat(b.mg_vs_meta)||0);
+    });
+  }
+  function calIniciarSucursales() {
+    var sucs=['todas'], seen={};
+    calDatos.forEach(function(d){ if(!seen[d.sucursal_nombre]){sucs.push(d.sucursal_nombre);seen[d.sucursal_nombre]=1;} });
+    var bar=document.getElementById('cal-suc-bar'); if(!bar) return;
+    bar.innerHTML=sucs.map(function(s){
+      var filtS=s==='todas'?calDatos:calDatos.filter(function(d){return d.sucursal_nombre===s;});
+      var nr=filtS.filter(function(d){return calSemNorm(d.semaforo)==='rojo';}).length;
+      var bdg=nr>0?' <span style="background:#fee2e2;color:#dc2626;border-radius:8px;padding:1px 5px;font-size:9px;font-weight:700">'+nr+'🔴</span>':'';
+      return '<button class="cal-suc-btn'+(calFSuc===s?' on':'')+'" onclick="calSelSuc(this,\''+s.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">'+(s==='todas'?'Todas · '+calDatos.length:s)+bdg+'</button>';
+    }).join('');
+  }
+  function calSelSuc(el,s){calFSuc=s;document.querySelectorAll('#cal-bloque .cal-suc-btn').forEach(function(b){b.classList.remove('on');});el.classList.add('on');calRender();calUpdCeoBanner();}
+  function calChip(el,v){calFChip=v;document.querySelectorAll('#cal-bloque .cal-chip').forEach(function(b){b.classList.remove('cal-chip-on');});el.classList.add('cal-chip-on');calRender();}
+  function calRender() {
+    var datos=calFiltrado();
+    var elC=document.getElementById('cal-cargando'); if(elC) elC.classList.add('hidden');
+    var tbl=document.getElementById('cal-tabla'); if(tbl) tbl.classList.remove('hidden');
+    var tbody=document.getElementById('cal-tbody'); if(!tbody) return;
+    var filtAll=calFSuc==='todas'?calDatos:calDatos.filter(function(d){return d.sucursal_nombre===calFSuc;});
+    var nV=filtAll.filter(function(d){return calSemNorm(d.semaforo)==='verde';}).length;
+    var nA=filtAll.filter(function(d){return calSemNorm(d.semaforo)==='amarillo';}).length;
+    var nR=filtAll.filter(function(d){return calSemNorm(d.semaforo)==='rojo';}).length;
+    var el=document.getElementById('cal-k-tot'); if(el) el.textContent=filtAll.length;
+    el=document.getElementById('cal-k-suc'); if(el) el.textContent=calFSuc==='todas'?'4 sucursales':calFSuc;
+    el=document.getElementById('cal-k-v'); if(el) el.textContent=nV;
+    el=document.getElementById('cal-k-a'); if(el) el.textContent=nA;
+    el=document.getElementById('cal-k-r'); if(el) el.textContent=nR;
+    el=document.getElementById('cal-badge'); if(el) el.textContent=datos.length+' materiales';
+    if(!datos.length){tbody.innerHTML='<tr><td colspan="10" class="text-center text-stone-400 py-6 text-xs">Sin materiales para este filtro</td></tr>';return;}
+    tbody.innerHTML=datos.map(function(d){
+      var key=d.material_id+'_'+d.sucursal_id;
+      var sem=calSemNorm(d.semaforo);
+      var semBdg=sem==='verde'?'<span class="cal-sem-v">🟢 verde</span>':sem==='amarillo'?'<span class="cal-sem-a">🟡 alerta</span>':'<span class="cal-sem-r">🔴 bajo mín</span>';
+      var mg=parseFloat(d.mg_real_pct)||0, meta=parseFloat(d.mg_meta_pct)||0, br=parseFloat(d.mg_vs_meta)||0;
+      var brCol=br>=0?'color:#166534':'color:#dc2626';
+      var vig=d.vigencia_desde||'—';
+      var ap=!!calAprobados[key];
+      var btnAp=ap?'<span class="text-[10px] text-emerald-700 font-semibold">✓ Aprobado</span>':'<button onclick="calAprobar(\''+key.replace(/'/g,"\\'")+'\',this)" class="cal-btn-ap">Aprobar</button>';
+      var trBg=sem==='rojo'?'background:#fff5f5':sem==='amarillo'?'background:#fffbeb':'';
+      return '<tr style="border-bottom:1px solid #f1f5f9;'+trBg+'">'
+        +'<td class="px-3 py-2 font-semibold text-stone-800" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+d.nombre.replace(/"/g,'&quot;')+'">'+d.nombre+'</td>'
+        +'<td class="px-3 py-2 text-stone-500 text-[11px]">'+d.sucursal_nombre+'</td>'
+        +'<td class="px-3 py-2 text-right font-bold">'+(d.precio_compra_clp?'$'+Math.round(parseFloat(d.precio_compra_clp)).toLocaleString('es-CL'):'—')+'</td>'
+        +'<td class="px-3 py-2 text-right font-bold text-emerald-700">'+(d.precio_venta_clp?'$'+Math.round(parseFloat(d.precio_venta_clp)).toLocaleString('es-CL'):'—')+'</td>'
+        +'<td class="px-3 py-2 text-right font-bold">'+mg.toFixed(1)+'%</td>'
+        +'<td class="px-3 py-2 text-right text-stone-500">'+meta.toFixed(1)+'%</td>'
+        +'<td class="px-3 py-2 text-right font-bold" style="'+brCol+'">'+(br>=0?'+':'')+br.toFixed(1)+'%</td>'
+        +'<td class="px-3 py-2 text-center">'+semBdg+'</td>'
+        +'<td class="px-3 py-2 text-center text-[10px] text-stone-400">'+vig+'</td>'
+        +'<td class="px-3 py-2 text-center">'+btnAp+'</td>'
+        +'</tr>';
+    }).join('');
+  }
+  function calAprobar(key) {
+    var prev=!!calAprobados[key];
+    calToastUndo('✅ Precio aprobado','cal-tv',
+      function(){calAprobados[key]=true;calRender();},
+      function(){delete calAprobados[key];calRender();calToast('↩ Deshecho','cal-ta');}
+    );
+  }
+  function calAprobarRojosSuc() {
+    if(!calFSuc||calFSuc==='todas') return;
+    var rojos=calDatos.filter(function(d){return d.sucursal_nombre===calFSuc&&calSemNorm(d.semaforo)==='rojo';});
+    var prev={};rojos.forEach(function(d){var k=d.material_id+'_'+d.sucursal_id;prev[k]=!!calAprobados[k];});
+    calToastUndo('✅ '+rojos.length+' rojos de '+calFSuc+' aprobados','cal-tv',
+      function(){rojos.forEach(function(d){calAprobados[d.material_id+'_'+d.sucursal_id]=true;});calRender();calUpdCeoBanner();},
+      function(){rojos.forEach(function(d){var k=d.material_id+'_'+d.sucursal_id;if(!prev[k])delete calAprobados[k];});calRender();calUpdCeoBanner();calToast('↩ Deshecho','cal-ta');}
+    );
+  }
+  function calUpdCeoBanner() {
+    var btn=document.getElementById('cal-ceo-btn'); if(!btn) return;
+    var rojos=calFSuc!=='todas'?calDatos.filter(function(d){return d.sucursal_nombre===calFSuc&&calSemNorm(d.semaforo)==='rojo'&&!calAprobados[d.material_id+'_'+d.sucursal_id];}).length:0;
+    btn.textContent=rojos>0?'✅ Aprobar '+rojos+' rojos de '+calFSuc:'✓ Todo OK';
+    btn.disabled=rojos===0; btn.style.opacity=rojos===0?'0.6':'1';
+  }
+  function calCerrarCeo() {
+    var b=document.getElementById('cal-ceo-banner'); if(b) b.classList.add('hidden');
+    calFChip='todos';
+    document.querySelectorAll('#cal-bloque .cal-chip').forEach(function(c){c.classList.remove('cal-chip-on');if(c.dataset.calChip==='todos')c.classList.add('cal-chip-on');});
+    calRender();
+  }
+  function calRefresh() { if(calDatos.length>0){calIniciarSucursales();calRender();} }
+  function calUpdTS(vig) {
+    var dot=document.getElementById('cal-ts-dot'), txt=document.getElementById('cal-ts'); if(!txt) return;
+    if(vig){ var d=new Date(vig), df=Math.round((new Date()-d)/86400000);
+      if(dot) dot.style.background=df<=3?'#22c55e':'#f59e0b';
+      txt.textContent='Vigente desde '+vig+(df>3?' · ⚠ hace '+df+'d':'');
+    } else { txt.textContent='Sin fecha vigencia'; }
+  }
+  function calToastUndo(msg,cls,doFn,undoFn) {
+    doFn();
+    var ct=document.getElementById('cal-toasts'); if(!ct) return;
+    var t=document.createElement('div'); t.className='cal-toast '+(cls||'');
+    t.innerHTML='<span>'+msg+'</span><button class="cal-tundo" onclick="calUndoT(this)">↩ Deshacer</button>';
+    t._undo=undoFn; ct.appendChild(t);
+    t._tm=setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},5000);
+  }
+  function calUndoT(btn){var t=btn.parentNode;if(t&&t._undo){clearTimeout(t._tm);t._undo();if(t.parentNode)t.parentNode.removeChild(t);}}
+  function calToast(msg,cls) {
+    var ct=document.getElementById('cal-toasts'); if(!ct) return;
+    var t=document.createElement('div'); t.className='cal-toast '+(cls||''); t.textContent=msg;
+    ct.appendChild(t); setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},3000);
+  }
+  async function loadCalibradorMargen(token,SUPA,apikey) {
+    var el=document.getElementById('cal-cargando'); if(!el) return;
+    el.textContent='Cargando datos reales…';
+    try {
+      var h={'apikey':apikey,'Authorization':'Bearer '+token,'Accept-Profile':'curated'};
+      var r=await fetch(SUPA+'/rest/v1/v_margen_vs_costos?select=*&order=semaforo.asc,mg_vs_meta.asc&limit=500',{headers:h});
+      if(!r.ok){el.textContent='Error '+r.status+' al cargar materiales';return;}
+      var datos=await r.json();
+      if(!Array.isArray(datos)||!datos.length){el.textContent='Sin datos en curated.v_margen_vs_costos';return;}
+      calDatos=datos;
+      calIniciarSucursales();
+      calRender();
+      var firstVig=datos.find(function(d){return d.vigencia_desde;});
+      calUpdTS(firstVig?firstVig.vigencia_desde:null);
+    } catch(e){if(el)el.textContent='Error: '+(e.message||e);}
+  }
+
+  // ============================================================
   // Mesa de Control Plan 99-99 (D-PLAN-99-99-001 Fase 3 · PC2 Pablo 15-jun)
   // Consume RPCs panel.estatus_plan_99_99 + public.mesa_control_99_99_kpis
   // + public.v_pc_score_individual (widget H)
@@ -19923,6 +20159,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       var sync = document.getElementById('mesaControl9999Sync');
       if (sync) sync.textContent = 'Sync: ' + new Date().toLocaleTimeString('es-CL');
+      // Calibrador de Margen — datos reales curated.v_margen_vs_costos
+      try { await loadCalibradorMargen(token, SUPA, apikey); } catch(eC) { console.warn('calibrador', eC); }
     } catch (e) {
       setHTML('mcFasesTbody', '<tr><td colspan="4" class="text-center text-red-600 py-4">Error: ' + (e?.message || e) + '</td></tr>');
     }
