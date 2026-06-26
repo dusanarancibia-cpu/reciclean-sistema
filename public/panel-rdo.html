@@ -138,6 +138,14 @@
         setTimeout(() => removeToast(t), duration);
         return t;
       };
+      // Helper: error de carga datos visible al usuario (no solo console.warn silencioso)
+      window.panelToastErr = function (tag, err) {
+        try {
+          var msg = (err && err.message) ? err.message : String(err || '');
+          console.warn('[' + tag + ']', err);
+          if (window.showToast) window.showToast('[' + tag + '] ' + msg.slice(0, 120), 'error', 6000);
+        } catch (_) {}
+      };
       function removeToast(t) {
         if (!t || !t.parentNode) return;
         t.classList.remove('show');
@@ -1352,6 +1360,7 @@
               </div>
               <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Última carga</div>
               <div id="v4-kpi-frescura-valor" class="text-3xl font-bold text-slate-800 mt-1">—</div>
+              <div class="text-xs text-slate-400 mt-0.5">desde último pesaje</div>
               <div class="mt-3 h-10 w-full"><svg viewBox="0 0 160 40" width="100%" height="100%" preserveAspectRatio="none"><defs><linearGradient id="v4gc3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d97706" stop-opacity=".22"/><stop offset="100%" stop-color="#d97706" stop-opacity="0"/></linearGradient></defs><path d="M3,10 L29,8 L54,14 L80,12 L106,9 L131,15 L157,11 L157,40 L3,40 Z" fill="url(#v4gc3)"/><path d="M3,10 L29,8 L54,14 L80,12 L106,9 L131,15 L157,11" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="157" cy="11" r="2.8" fill="#d97706"/></svg></div>
             </div>
             <div class="card-hover bg-white border border-slate-200 rounded-2xl p-4" role="article" aria-label="KPI Alertas activas">
@@ -4485,7 +4494,13 @@
     </section>
 
     <section id="tabCotizador" class="tab-content hidden">
-      <h2 class="text-xl font-bold mb-4 text-stone-800">📋 Cotizador</h2>
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-stone-800">📋 Cotizador</h2>
+        <button onclick="document.querySelector('button[data-tab=negocios]').click()"
+                class="text-sm px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-lg flex items-center gap-1.5">
+          🔍 Ver cotizaciones existentes →
+        </button>
+      </div>
 
       <!-- SPEC V1.1 H13 · Pizarra inteligente: pega texto cliente, Diego extrae -->
       <div class="bg-sky-50 border border-sky-200 rounded-lg p-3 mb-4">
@@ -5017,6 +5032,155 @@
 
     <!-- Mesa de Control Plan 99-99 (D-PLAN-99-99-001 Fase 3 · PC2 Pablo 15-jun) · dusan+admin -->
     <section id="tabMesaControl9999" class="tab-content hidden">
+
+      <!-- Mesa V3 · Pulso del Negocio · PC5_dusan 26-jun-2026 ===================== -->
+      <div class="bg-slate-900 rounded-xl p-4 mb-5 text-white shadow-lg">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wide">🟢 Mesa V3 · Pulso del Negocio</span>
+            <span id="v3Seed" class="hidden text-[10px] bg-amber-400 text-black px-1.5 py-0.5 rounded font-medium">caja: proyección</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="v3UpdatedAt" class="text-[10px] text-slate-400">—</span>
+            <button id="v3Refresh" class="text-[10px] px-2 py-0.5 bg-slate-700 hover:bg-slate-600 rounded text-slate-200">↻</button>
+          </div>
+        </div>
+        <!-- 5 KPIs -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
+          <div class="bg-slate-800 rounded-lg p-2.5">
+            <div class="text-[10px] text-slate-400 uppercase">Ton hoy</div>
+            <div id="v3TonHoy" class="text-2xl font-bold mt-0.5">—</div>
+            <div id="v3TonSem" class="text-[10px] mt-0.5 text-slate-400">—</div>
+          </div>
+          <div class="bg-slate-800 rounded-lg p-2.5">
+            <div class="text-[10px] text-slate-400 uppercase">Caja</div>
+            <div id="v3Caja" class="text-2xl font-bold mt-0.5">—</div>
+            <div id="v3CajaDias" class="text-[10px] mt-0.5 text-slate-400">—</div>
+          </div>
+          <div class="bg-slate-800 rounded-lg p-2.5">
+            <div class="text-[10px] text-slate-400 uppercase">USD/CLP</div>
+            <div id="v3Usd" class="text-2xl font-bold mt-0.5">—</div>
+            <div id="v3Lme" class="text-[10px] mt-0.5 text-slate-400">—</div>
+          </div>
+          <div class="bg-slate-800 rounded-lg p-2.5">
+            <div class="text-[10px] text-slate-400 uppercase">Cobros venc.</div>
+            <div id="v3Cobros" class="text-2xl font-bold mt-0.5">—</div>
+            <div id="v3CobrosMax" class="text-[10px] mt-0.5 text-slate-400">—</div>
+          </div>
+          <div class="bg-slate-800 rounded-lg p-2.5">
+            <div class="text-[10px] text-slate-400 uppercase">Desviaciones</div>
+            <div id="v3Desv" class="text-2xl font-bold mt-0.5">—</div>
+            <div class="text-[10px] mt-0.5 text-slate-400">abiertas</div>
+          </div>
+        </div>
+        <!-- Chart ton 14d -->
+        <div>
+          <div class="text-[10px] text-slate-400 mb-1">Toneladas · últimos 14 días</div>
+          <canvas id="v3ChartTon" height="55" style="max-height:55px"></canvas>
+        </div>
+      </div>
+      <!-- /Mesa V3 ============================================================== -->
+
+      <!-- CALIBRADOR DE MARGEN · Mesa Control 99-99 · PC5_dusan 26-jun-2026 ===== -->
+      <style>
+        #cal-bloque .cal-chip{padding:4px 12px;border-radius:14px;border:1px solid #e2e8f0;cursor:pointer;font-size:11px;background:#fff;white-space:nowrap;transition:all .1s}
+        #cal-bloque .cal-chip:hover{background:#f8fafc}
+        #cal-bloque .cal-chip.cal-chip-on{background:#0f172a;color:#fff;border-color:#0f172a}
+        #cal-bloque .cal-chip.cal-chip-on[data-cal-chip="rojo"]{background:#dc2626;border-color:#dc2626}
+        #cal-bloque .cal-chip.cal-chip-on[data-cal-chip="amarillo"]{background:#d97706;border-color:#d97706}
+        #cal-bloque .cal-chip.cal-chip-on[data-cal-chip="verde"]{background:#16a34a;border-color:#16a34a}
+        #cal-bloque .cal-suc-btn{padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;border-radius:7px;background:#fff;border:1px solid #e2e8f0;color:#64748b;transition:all .15s;min-height:44px}
+        #cal-bloque .cal-suc-btn.on{color:#2563eb;border-color:#2563eb;background:#eff6ff}
+        #cal-bloque .cal-sem-v{background:#dcfce7;color:#166534;padding:2px 7px;border-radius:8px;font-weight:700;font-size:10px;white-space:nowrap}
+        #cal-bloque .cal-sem-a{background:#fef3c7;color:#d97706;padding:2px 7px;border-radius:8px;font-weight:700;font-size:10px;white-space:nowrap}
+        #cal-bloque .cal-sem-r{background:#fee2e2;color:#dc2626;padding:2px 7px;border-radius:8px;font-weight:700;font-size:10px;white-space:nowrap}
+        #cal-bloque .cal-btn-ap{min-height:44px;min-width:80px;padding:6px 12px;border-radius:7px;border:1px solid #86efac;background:#f0fdf4;color:#166534;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap}
+        #cal-bloque .cal-btn-ap:hover{background:#dcfce7}
+        #cal-bloque .cal-btn-ap.ok{background:#dcfce7;border-color:#4ade80;opacity:.7;cursor:default}
+        #cal-bloque .cal-toast-w{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:5px;align-items:flex-end;pointer-events:none}
+        #cal-bloque .cal-toast{background:#1e293b;color:#fff;padding:9px 14px;border-radius:8px;font-size:11px;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,.2);display:flex;align-items:center;gap:10px;max-width:300px;pointer-events:auto;animation:calTi .18s ease}
+        #cal-bloque .cal-toast.cal-tv{background:#166534}
+        #cal-bloque .cal-toast.cal-ta{background:#92400e}
+        #cal-bloque .cal-tundo{background:rgba(255,255,255,.2);border:none;color:#fff;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:10px;white-space:nowrap;min-height:32px}
+        @keyframes calTi{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
+        @media(max-width:640px){#cal-bloque #cal-tabla td,#cal-bloque #cal-tabla th{padding:6px 8px;font-size:11px}}
+      </style>
+      <div id="cal-bloque" class="mb-5">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <h3 class="text-sm font-semibold text-stone-700">🎛 Calibrador de Margen</h3>
+            <span id="cal-badge" class="text-[10px] bg-stone-200 text-stone-600 px-1.5 py-0.5 rounded font-medium">—</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="cal-ts-dot" class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span id="cal-ts" class="text-[10px] text-stone-400">—</span>
+            <button onclick="calRefresh()" class="text-[10px] px-2 py-0.5 bg-stone-200 hover:bg-stone-300 rounded text-stone-700 min-h-[36px]">↻</button>
+          </div>
+        </div>
+        <!-- CEO banner -->
+        <div id="cal-ceo-banner" class="hidden mb-2 p-2 rounded-lg flex items-center gap-2 text-sm font-medium" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff">
+          <span>🎯</span>
+          <span id="cal-ceo-txt">Modo CEO · sucursal detectada</span>
+          <div class="flex-1"></div>
+          <button id="cal-ceo-btn" onclick="calAprobarRojosSuc()" style="background:#16a34a;color:#fff;border:none;padding:5px 14px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;min-height:44px;min-width:80px"></button>
+          <button onclick="calCerrarCeo()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 10px;border-radius:7px;font-size:10px;cursor:pointer;min-height:44px">Ver todo</button>
+        </div>
+        <!-- KPIs -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
+          <div class="bg-white border border-stone-200 rounded-lg p-2.5">
+            <div class="text-[10px] text-stone-400 uppercase">Total</div>
+            <div class="text-xl font-bold mt-0.5 text-stone-800" id="cal-k-tot">—</div>
+            <div class="text-[10px] text-stone-400" id="cal-k-suc">4 sucursales</div>
+          </div>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5">
+            <div class="text-[10px] text-emerald-700 uppercase">🟢 Sobre meta</div>
+            <div class="text-xl font-bold mt-0.5 text-emerald-700" id="cal-k-v">—</div>
+          </div>
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5">
+            <div class="text-[10px] text-amber-700 uppercase">🟡 En alerta</div>
+            <div class="text-xl font-bold mt-0.5 text-amber-700" id="cal-k-a">—</div>
+          </div>
+          <div class="bg-red-50 border border-red-200 rounded-lg p-2.5">
+            <div class="text-[10px] text-red-700 uppercase">🔴 Bajo mínimo</div>
+            <div class="text-xl font-bold mt-0.5 text-red-700" id="cal-k-r">—</div>
+          </div>
+        </div>
+        <!-- Sucursal tabs -->
+        <div id="cal-suc-bar" class="flex gap-1 mb-2 flex-wrap"></div>
+        <!-- Chip filters -->
+        <div class="flex gap-1 mb-2 flex-wrap items-center">
+          <button class="cal-chip cal-chip-on" data-cal-chip="todos" onclick="calChip(this,'todos')">Todos</button>
+          <button class="cal-chip" data-cal-chip="rojo" onclick="calChip(this,'rojo')">🔴 Bajo mínimo</button>
+          <button class="cal-chip" data-cal-chip="amarillo" onclick="calChip(this,'amarillo')">🟡 En alerta</button>
+          <button class="cal-chip" data-cal-chip="verde" onclick="calChip(this,'verde')">🟢 Sobre meta</button>
+        </div>
+        <!-- Tabla -->
+        <div class="overflow-x-auto rounded-lg border border-stone-200 bg-white" style="-webkit-overflow-scrolling:touch">
+          <div id="cal-cargando" class="text-center text-stone-400 text-sm py-8">Carga al abrir tab…</div>
+          <table id="cal-tabla" class="w-full text-xs hidden" style="min-width:700px;border-collapse:collapse">
+            <thead class="bg-stone-50">
+              <tr>
+                <th class="px-3 py-2 text-left text-stone-500 font-semibold">Material</th>
+                <th class="px-3 py-2 text-left text-stone-500 font-semibold">Sucursal</th>
+                <th class="px-3 py-2 text-right text-stone-500 font-semibold">P.Compra</th>
+                <th class="px-3 py-2 text-right text-stone-500 font-semibold">P.Venta</th>
+                <th class="px-3 py-2 text-right text-stone-500 font-semibold">Margen %</th>
+                <th class="px-3 py-2 text-right text-stone-500 font-semibold">Meta %</th>
+                <th class="px-3 py-2 text-right text-stone-500 font-semibold">Brecha</th>
+                <th class="px-3 py-2 text-center text-stone-500 font-semibold">Estado</th>
+                <th class="px-3 py-2 text-center text-stone-500 font-semibold">Vigencia</th>
+                <th class="px-3 py-2 text-center text-stone-500 font-semibold" style="min-width:100px">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="cal-tbody"></tbody>
+          </table>
+        </div>
+        <!-- Toast wrapper -->
+        <div id="cal-toasts" class="cal-toast-w"></div>
+      </div>
+      <!-- /CALIBRADOR DE MARGEN ===================================================== -->
+
       <div class="bg-gradient-to-r from-emerald-50 to-stone-50 border border-emerald-200 rounded-lg p-3 mb-4">
         <div class="flex items-start justify-between flex-wrap gap-2">
           <div>
@@ -7353,49 +7517,23 @@ window.logout = async function() {
 // Mapeo explícito data-tab → id de sección. Necesario para data-tabs con `_`
 // (auditoría 22-may: `bandeja_dieg`→`tabBandejaDiego` y `ops_diarias`→`tabOpsDiarias`
 // fallaban porque el cálculo automático no convierte snake_case a CamelCase).
+// TAB_SECTION_MAP · solo overrides donde el algoritmo auto-CamelCase NO acierta.
+// Algoritmo (line 7428): tabId.split(/[_-]/).map(camelize).join('') con prefijo 'tab'.
+// Cubre todos los snake_case y dígitos (precios_vivos→tabPreciosVivos · plan_2026→tabPlan2026).
+// Red de seguridad: si renombran un section_id que no sigue el patrón, agregar override acá.
+// Cleanup T-PANEL-01 (25-jun DeepSeek round 7) · 42 entradas redundantes removidas.
 const TAB_SECTION_MAP = {
-  bandeja_dieg: 'tabBandejaDiego',
-  bandeja_precios: 'tabBandejaPrecios',
-  mi_memoria: 'tabMiMemoria',
-  mi_bandeja: 'tabMiBandeja',
-  mis_reportes: 'tabMisReportes',
-  mis_envios_diego: 'tabMisEnviosDiego',
-  material_nuevo: 'tabMaterialNuevo',
-  despacho_coord: 'tabDespachoCoord',
-  incidentes_op: 'tabIncidentesOp',
-  firmas_pend: 'tabFirmasPend',
-  firmas_reglas: 'tabFirmasReglas',
-  mesa_control_99_99: 'tabMesaControl9999',
-  tarifas_ext: 'tabTarifasExt',
-  cumplimiento: 'tabCumplimiento',
-  herramientas_ext: 'tabHerramientasExt',
-  facturacion_grupo: 'tabFacturacionGrupo',
-  vales_portal: 'tabValesPortal',
-  piloto_pwa: 'tabPilotoPwa',
-  mis_archivos: 'tabMisArchivos',
-  diego_coord: 'tabDiegoCoord',
-  bucle_vivo: 'tabBucleVivo',
-  dod_dashboard: 'tabDodDashboard',
-  ops_diarias: 'tabOpsDiarias',
-  // PC1 fix 31-may PM: tabs con `_` o dígito que rompen el auto-CamelCase
-  // (pcs_vivo→tabPcs_vivo ❌ real=tabPcsVivo · plan_2026→tabPlan_2026 ❌ real=tabPlan2026)
-  pcs_vivo: 'tabPcsVivo',
-  plan_2026: 'tabPlan2026',
-  // PC2 11-jun · Trio bandejas CU Andrea + Comex
-  andrea_dup_clientes: 'tabAndreaDupClientes',
-  andrea_drift_libre: 'tabAndreaDriftLibre',
-  andrea_ruts_invalidos: 'tabAndreaRutsInvalidos',
-  andrea_comex: 'tabAndreaComex',
-  decisor_venta: 'tabDecisorVenta',
-  andrea_cobranza: 'tabAndreaCobranza',
-  andrea_actas: 'tabAndreaActas'
+  bandeja_dieg: 'tabBandejaDiego'   // único override real: "dieg" no expande a "Diego" automáticamente
 };
 function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const tabId = btn.getAttribute('data-tab');
       document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-      const sectionId = TAB_SECTION_MAP[tabId] || ('tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+      // PC2 25-jun · auto-CamelCase antifrágil: convierte snake_case → camelCase
+      // (precios_vivos→tabPreciosVivos · plan_2026→tabPlan2026 · ya no requiere mapeo manual)
+      const sectionId = TAB_SECTION_MAP[tabId] || ('tab' +
+        tabId.split(/[_-]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(''));
       const target = document.getElementById(sectionId);
       if (target) target.classList.remove('hidden');
       document.querySelectorAll('.tab-btn').forEach(b => {
@@ -7404,6 +7542,13 @@ function setupTabs() {
       });
       btn.classList.add('active');
       btn.setAttribute('aria-selected', 'true');
+      // PC2 25-jun · resetear scroll al cambiar de tab
+      // (bug reportado: al seleccionar tab desde abajo del sidebar, mainContent quedaba scrolleado)
+      try {
+        const main = document.getElementById('mainContent');
+        if (main) main.scrollTop = 0;
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      } catch (_) { /* fallback silencioso */ }
       if (typeof window.pageLog === 'function') window.pageLog('tab_change', tabId);
       if (tabId === 'comunicados') loadAudios();
       if (tabId === 'portada') { loadPortadaAudio(); loadAlertasPortada(); if (typeof window.initV4Hero === 'function') window.initV4Hero(); if (typeof window.setupDiegoAgenda === 'function') { window.setupDiegoAgenda(); window.loadDiegoAgenda(); } }
@@ -11359,7 +11504,7 @@ async function _v4LoadOppResumen() {
     if (error || !data) return;
     const crmTotal = data?.crm?.oportunidades_total ?? 0;
     const crmMatch = data?.crm?.matcheadas_rdo ?? 0;
-    const fuzzyRes = await sb.from('v_crm_match_sugerido').select('*', { count:'exact', head:true });
+    const fuzzyRes = await sb.schema('staging').from('v_crm_match_sugerido').select('*', { count:'exact', head:true });
     const fuzzyTot = fuzzyRes?.count ?? 0;
     const oppAbiertasRes = await sb.schema('curated').from('oportunidades').select('*', { count:'exact', head:true }).neq('estado', 'cerrada_perdida').neq('estado', 'cerrada_ganada');
     const oppAbiertas = oppAbiertasRes?.count ?? 0;
@@ -11578,6 +11723,8 @@ function oppRenderCard(o) {
     <div onclick="oppAbrirDrawer('${escapeHtml(o.oportunidad_id)}')"
          role="button" tabindex="0"
          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"
+         ontouchstart="this._tX=event.touches[0].clientX;this._tY=event.touches[0].clientY"
+         ontouchend="if(Math.abs(event.changedTouches[0].clientX-(this._tX||0))<10&&Math.abs(event.changedTouches[0].clientY-(this._tY||0))<10){event.preventDefault();oppAbrirDrawer('${escapeHtml(o.oportunidad_id)}');}"
          draggable="true"
          ondragstart="oppDragStart(event,'${escapeHtml(o.oportunidad_id)}','${escapeHtml(o.origen || '')}')"
          data-entity-type="oportunidad" data-entity-id="${escapeHtml(o.oportunidad_id)}" data-entity-nombre="${escapeHtml(o.titulo || '')}"
@@ -13094,7 +13241,7 @@ window.initV4Hero = function initV4Hero() {
           try {
             const [healthRes, fuzzyRes, anomRes] = await Promise.all([
               sb.rpc('f_panel_health'),
-              sb.from('v_crm_match_sugerido').select('*', { count:'exact', head:true }),
+              sb.schema('staging').from('v_crm_match_sugerido').select('*', { count:'exact', head:true }),
               sb.from('v_panel_pesajes_anomalias').select('id', { count:'exact', head:true })
             ]);
             const health = healthRes?.data || {};
@@ -13927,6 +14074,24 @@ document.addEventListener('DOMContentLoaded', () => {
     <textarea id="diegoChatInput" placeholder="Escribí o adjuntá algo…" maxlength="2000" aria-label="Mensaje a Diego" rows="1"></textarea>
     <button type="submit" class="send" id="diegoChatSend">Enviar</button>
   </form>
+  <!-- P6 23-jun-2026 · link reportar bug Diego -->
+  <div style="text-align:center;padding:4px 0 6px;font-size:11px;color:#94a3b8;">
+    <button type="button" onclick="abrirReporteBugDiego()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:11px;text-decoration:underline;padding:0;">🐛 Reportar error de Diego</button>
+  </div>
+</div>
+
+<!-- P6 23-jun-2026 · Modal reporte de bug Diego -->
+<div id="diegoBugModal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:24px;width:360px;max-width:calc(100vw - 32px);box-shadow:0 16px 48px -12px rgba(0,0,0,.3);">
+    <h3 style="font-size:15px;font-weight:700;margin:0 0 8px;color:#1e293b;">🐛 Reportar error de Diego</h3>
+    <p style="font-size:12px;color:#64748b;margin:0 0 12px;">Describí qué pasó. Pablo lo verá y te confirmará cuando lo resuelva.</p>
+    <textarea id="diegoBugDescripcion" rows="4" maxlength="1000" placeholder="Ej: Diego olvidó el contexto después de mi primer mensaje…" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:13px;resize:vertical;outline:none;"></textarea>
+    <div id="diegoBugMsg" style="font-size:12px;margin:6px 0 0;min-height:16px;"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;">
+      <button type="button" onclick="cerrarReporteBugDiego()" style="background:#f1f5f9;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;color:#475569;">Cancelar</button>
+      <button type="button" onclick="enviarReporteBugDiego()" style="background:#059669;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;color:#fff;font-weight:600;">Enviar reporte</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -14116,10 +14281,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!email) return { error: 'No hay sesión. ¿Iniciaste sesión en el panel?' };
     if (!token) return { error: 'No tengo token de sesión válido.' };
 
+    // P2 23-jun-2026 · pasar historial reciente para que Diego no pierda contexto intra-sesión
+    const conversacionPrevia = history
+      .filter(h => h.role === 'user' || h.role === 'diego')
+      .slice(-11, -1) // últimos 10 turnos sin el mensaje actual (ya fue pusheado)
+      .map(h => ({ role: h.role === 'diego' ? 'assistant' : 'user', content: h.mensaje }));
     const body = {
       user_email: email,
       mensaje: mensaje || '',
       request_id: crypto.randomUUID(),
+      ...(conversacionPrevia.length > 0 ? { conversacion_previa: conversacionPrevia } : {}),
       ...(attach ? { file_url: attach.file_url, file_mime: attach.file_mime, file_name: attach.file_name } : {}),
     };
     try {
@@ -14745,7 +14916,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('bpAprobarTodos');
     if (btn) btn.disabled = true;
     try {
-      const { data, error } = await sb.rpc('f_aprobar_todos_pendientes', {
+      const { data, error } = await sb.schema('panel').rpc('f_aprobar_todos_pendientes', {
         p_decision_by: email,
         p_decision: 'aprobado'
       });
@@ -15062,7 +15233,7 @@ document.addEventListener('DOMContentLoaded', () => {
       pvPopularCategoriasFiltro();
       pvFiltrar();
     } catch (e) {
-      console.warn('[PreciosVivos] error:', e);
+      if (window.panelToastErr) panelToastErr('PreciosVivos', e); else console.warn('[PreciosVivos] error:', e);
       if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-4 text-center text-red-400">Error al cargar: ' + String(e).slice(0, 80) + '</td></tr>';
     }
   }
@@ -15285,7 +15456,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const el = document.getElementById('ebLastUpdate');
       if (el) el.textContent = new Date().toLocaleString('es-CL');
     } catch (e) {
-      console.warn('[ErroresBucles] error:', e);
+      if (window.panelToastErr) panelToastErr('Errores/Bucles', e); else console.warn('[ErroresBucles] error:', e);
       if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-rose-500">Error al cargar: ' + String(e).slice(0, 120) + '</td></tr>';
     }
   }
@@ -15678,7 +15849,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       indSet('indLastUpdate', new Date().toLocaleString('es-CL'));
     } catch (e) {
-      console.warn('[Indicadores] error:', e);
+      if (window.panelToastErr) panelToastErr('Indicadores', e); else console.warn('[Indicadores] error:', e);
       indSet('indResumen', 'Error: ' + (e.message || String(e)).slice(0, 120));
     }
   }
@@ -15799,7 +15970,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
       return data || null;
     } catch (e) {
-      console.warn('[Modo] get:', e);
+      if (window.panelToastErr) panelToastErr('Modo Precios', e); else console.warn('[Modo] get:', e);
       return null;
     }
   }
@@ -15845,7 +16016,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modoRenderAcciones(row.acciones || []);
     } catch (e) {
       alert('Error activando modo: ' + (e.message || String(e)));
-      console.warn('[Modo] set:', e);
+      if (window.panelToastErr) panelToastErr('Modo Precios SET', e); else console.warn('[Modo] set:', e);
     } finally {
       modoAplicarPermisos();
     }
@@ -15987,18 +16158,23 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const { data, error } = await sb.schema('curated')
         .from('margen_metas')
-        .select('categoria, mg_minimo_pct, mg_meta_pct')
-        .order('categoria');
+        .select('categoria_id, descripcion, margen_minimo_pct, margen_meta_pct')
+        .order('categoria_id');
       if (error) throw error;
-      calcMetasCache = data || [];
+      calcMetasCache = (data || []).map(c => ({
+        categoria: c.categoria_id,
+        mg_minimo_pct: c.margen_minimo_pct,
+        mg_meta_pct: c.margen_meta_pct,
+        descripcion: c.descripcion
+      }));
       const sel = document.getElementById('calcCategoria');
       if (!sel) return;
       sel.innerHTML = '<option value="">(sin categoría)</option>' +
         calcMetasCache.map(c =>
-          '<option value="' + c.categoria + '">' + c.categoria + ' (piso ' + c.mg_minimo_pct + '%)</option>'
+          '<option value="' + c.categoria + '">' + (c.descripcion || c.categoria) + ' (piso ' + c.mg_minimo_pct + '%)</option>'
         ).join('');
     } catch (e) {
-      console.warn('[Calc] categorias:', e);
+      if (window.panelToastErr) panelToastErr('Calculadora categorías', e); else console.warn('[Calc] categorias:', e);
     }
   }
 
@@ -16007,18 +16183,19 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const { data, error } = await sb.schema('curated')
         .from('materiales')
-        .select('material_id, nombre_display')
-        .order('nombre_display')
+        .select('material_id, nombre, categoria')
+        .eq('activo', true)
+        .order('nombre')
         .limit(500);
       if (error) throw error;
       const sel = document.getElementById('calcMaterial');
       if (!sel) return;
       sel.innerHTML = '<option value="">(seleccionar)</option>' +
         (data || []).map(m =>
-          '<option value="' + m.material_id + '">' + (m.nombre_display || m.material_id) + '</option>'
+          '<option value="' + m.material_id + '" data-categoria="' + (m.categoria || '') + '">' + (m.nombre || m.material_id) + '</option>'
         ).join('');
     } catch (e) {
-      console.warn('[Calc] materiales:', e);
+      if (window.panelToastErr) panelToastErr('Calculadora materiales', e); else console.warn('[Calc] materiales:', e);
     }
   }
 
@@ -16028,6 +16205,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data, error } = await sb.schema('curated')
         .from('sucursales')
         .select('sucursal_id, nombre')
+        .eq('activa', true)
         .order('nombre')
         .limit(50);
       if (error) throw error;
@@ -16038,7 +16216,7 @@ document.addEventListener('DOMContentLoaded', () => {
           '<option value="' + s.sucursal_id + '">' + (s.nombre || s.sucursal_id) + '</option>'
         ).join('');
     } catch (e) {
-      console.warn('[Calc] sucursales:', e);
+      if (window.panelToastErr) panelToastErr('Calculadora sucursales', e); else console.warn('[Calc] sucursales:', e);
     }
   }
 
@@ -16171,18 +16349,19 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const { data, error } = await sb.schema('curated')
         .from('materiales')
-        .select('material_id, nombre_display')
-        .order('nombre_display')
+        .select('material_id, nombre, categoria')
+        .eq('activo', true)
+        .order('nombre')
         .limit(500);
       if (error) throw error;
       const sel = document.getElementById('bovMaterial');
       if (!sel) return;
       sel.innerHTML = '<option value="">(seleccionar)</option>' +
         (data || []).map(m =>
-          '<option value="' + m.material_id + '">' + (m.nombre_display || m.material_id) + '</option>'
+          '<option value="' + m.material_id + '">' + (m.nombre || m.material_id) + '</option>'
         ).join('');
     } catch (e) {
-      console.warn('[Boveda] materiales:', e);
+      if (window.panelToastErr) panelToastErr('Bóveda materiales', e); else console.warn('[Boveda] materiales:', e);
     }
   }
 
@@ -16192,6 +16371,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data, error } = await sb.schema('curated')
         .from('sucursales')
         .select('sucursal_id, nombre')
+        .eq('activa', true)
         .order('nombre')
         .limit(50);
       if (error) throw error;
@@ -16202,7 +16382,7 @@ document.addEventListener('DOMContentLoaded', () => {
           '<option value="' + s.sucursal_id + '">' + (s.nombre || s.sucursal_id) + '</option>'
         ).join('');
     } catch (e) {
-      console.warn('[Boveda] sucursales:', e);
+      if (window.panelToastErr) panelToastErr('Bóveda sucursales', e); else console.warn('[Boveda] sucursales:', e);
     }
   }
 
@@ -16321,7 +16501,7 @@ document.addEventListener('DOMContentLoaded', () => {
         detEl.textContent = ult.alerta || '—';
       }
     } catch (e) {
-      console.warn('[Boveda] error:', e);
+      if (window.panelToastErr) panelToastErr('Bóveda RPC', e); else console.warn('[Boveda] error:', e);
       bovSetHtml('bovContent', '<p class="text-sm text-rose-600">Error: ' + (e.message || String(e)).slice(0, 120) + '</p>');
       bovClearStats();
     }
@@ -16543,7 +16723,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     } catch (e) {
-      console.warn('[Tablero] v_margen_vs_costos:', e);
+      if (window.panelToastErr) panelToastErr('Tablero margen', e); else console.warn('[Tablero] v_margen_vs_costos:', e);
     }
 
     tapSet('tapP1Total', p1.total.toLocaleString('es-CL'));
@@ -16604,7 +16784,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .filter(r => r.desviacion_pct != null && Math.abs(Number(r.desviacion_pct)) > 30)
         .slice(0, 5);
     } catch (e) {
-      console.warn('[Tablero] bandeja:', e);
+      if (window.panelToastErr) panelToastErr('Tablero bandeja', e); else console.warn('[Tablero] bandeja:', e);
     }
     tapSet('tapP2Count', p2Total.toLocaleString('es-CL'));
 
@@ -16626,14 +16806,14 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const desde = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
       const { data: vales, error: ve } = await sb.schema('curated').from('vales_portal_externo')
-        .select('peso_kg, total_clp')
-        .gte('fecha_recepcion', desde)
+        .select('peso_final, total_vale')
+        .gte('fecha_firma_recepcion', desde)
         .limit(20000);
       if (ve) throw ve;
       let sumKg = 0, sumClp = 0;
       (vales || []).forEach(v => {
-        sumKg += Number(v.peso_kg || 0);
-        sumClp += Number(v.total_clp || 0);
+        sumKg += Number(v.peso_final || 0);
+        sumClp += Number(v.total_vale || 0);
       });
       p3KgTotal = sumKg;
       // Aproximación: % margen real requiere costos por kg, no disponible aquí
@@ -16641,7 +16821,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tapSet('tapP3Mg', sumClp > 0 ? tapFmtClp(sumClp / 1000) + 'K' : '—');
       tapSet('tapP3Kg', sumKg > 0 ? Math.round(sumKg).toLocaleString('es-CL') + ' kg' : '— kg');
     } catch (e) {
-      console.warn('[Tablero] vales mes:', e);
+      if (window.panelToastErr) panelToastErr('Tablero vales mes', e); else console.warn('[Tablero] vales mes:', e);
       tapSet('tapP3Mg', 'sin datos');
       tapSet('tapP3Kg', 'sin datos');
     }
@@ -16690,7 +16870,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const v = count || 0;
       checks.push({ nombre: 'Precios vencidos (vigencia_hasta < hoy)', valor: v, estado: ce(v, 0, 5) });
     } catch (e) {
-      console.warn('[Tablero] vencidos:', e);
+      if (window.panelToastErr) panelToastErr('Tablero vencidos', e); else console.warn('[Tablero] vencidos:', e);
       checks.push({ nombre: 'Precios vencidos', valor: 'error', estado: 'gris' });
     }
 
@@ -16705,7 +16885,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const v = count || 0;
       checks.push({ nombre: 'Propuestas obsoletas (>30d)', valor: v, estado: ce(v, 0, 50) });
     } catch (e) {
-      console.warn('[Tablero] obsoletas:', e);
+      if (window.panelToastErr) panelToastErr('Tablero obsoletas', e); else console.warn('[Tablero] obsoletas:', e);
       checks.push({ nombre: 'Propuestas obsoletas', valor: 'error', estado: 'gris' });
     }
 
@@ -16732,7 +16912,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const el = document.getElementById('tapLastUpdate');
       if (el) el.textContent = new Date().toLocaleString('es-CL');
     } catch (e) {
-      console.warn('[Tablero] error global:', e);
+      if (window.panelToastErr) panelToastErr('Tablero', e); else console.warn('[Tablero] error global:', e);
     }
   }
 
@@ -18192,7 +18372,7 @@ document.addEventListener('DOMContentLoaded', () => {
       : prompt('Tu comentario:');
     if (!texto || !texto.trim()) return;
     try {
-      const { error } = await sb.rpc('comentar_mi_tarea', { p_id: id, p_comentario: texto.trim() });
+      const { error } = await sb.schema('panel').rpc('comentar_mi_tarea', { p_id: id, p_comentario: texto.trim() });
       if (error) throw error;
       if (window.showToast) window.showToast('Comentario agregado', 'success');
       refrescar();
@@ -19005,18 +19185,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // -- Interceptar click FAB Diego para abrir modal en vez de chat directo --
-  function attachFabInterceptor() {
-    var fab = document.getElementById('diegoFab');
-    if (!fab) { setTimeout(attachFabInterceptor, 500); return; }
-    fab.addEventListener('click', function (e) {
-      if (window.__diegoCarteroBypass) return; // chatLink: dejá pasar al handler original
-      e.stopImmediatePropagation();
-      e.preventDefault();
-      open();
-    }, true); // capture=true: corre ANTES del handler chat existente
-  }
-  attachFabInterceptor();
+  // P1 23-jun-2026 · FAB ya no abre el modal de categorías — abre el chat directamente.
+  // El modal Cartero queda disponible para acceso futuro desde panel (P6).
+
+  // P6 23-jun-2026 · Reporte de bugs Diego → public.preguntas_pendientes
+  window.abrirReporteBugDiego = function () {
+    const modal = document.getElementById('diegoBugModal');
+    modal.style.display = 'flex';
+    document.getElementById('diegoBugDescripcion').value = '';
+    document.getElementById('diegoBugMsg').textContent = '';
+  };
+  window.cerrarReporteBugDiego = function () {
+    document.getElementById('diegoBugModal').style.display = 'none';
+  };
+  window.enviarReporteBugDiego = async function () {
+    const desc = (document.getElementById('diegoBugDescripcion').value || '').trim();
+    const msgEl = document.getElementById('diegoBugMsg');
+    if (!desc) { msgEl.style.color = '#ef4444'; msgEl.textContent = 'Describí el error antes de enviar.'; return; }
+    msgEl.style.color = '#64748b'; msgEl.textContent = 'Enviando…';
+    try {
+      const { error } = await sb.from('preguntas_pendientes').insert({
+        tema: 'Bug Diego: ' + desc.slice(0, 80),
+        contexto: desc,
+        solicitante: currentUser || 'desconocido',
+        destinatario: 'pablo.arancibia@gmail.com',
+        tipo: 'bug_diego',
+        status: 'pendiente',
+      });
+      if (error) throw error;
+      msgEl.style.color = '#059669'; msgEl.textContent = '✓ Reporte enviado. Pablo lo verá en su bandeja.';
+      setTimeout(window.cerrarReporteBugDiego, 2200);
+    } catch (e) {
+      msgEl.style.color = '#ef4444'; msgEl.textContent = 'Error al enviar: ' + (e.message || 'intenta de nuevo');
+    }
+  };
+  // Cerrar modal al hacer click fuera del cuadro
+  document.getElementById('diegoBugModal').addEventListener('click', function (e) {
+    if (e.target === this) window.cerrarReporteBugDiego();
+  });
 
   // -- Realtime: notificación naranja para Dusan/Pablo cuando entra feedback --
   function notifShow(titulo, preview) {
@@ -19595,6 +19801,225 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ============================================================
+  // Mesa V3 — Pulso del Negocio (PC5_dusan · 26-jun-2026)
+  // EF mesa-control-v3-api · verify_jwt=false · auto-refresh 5min
+  // ============================================================
+  var _v3Chart = null;
+  async function loadMesaV3Pulso() {
+    var EF = 'https://eknmtsrtfkzroxnovfqn.functions.supabase.co/mesa-control-v3-api';
+    var set = function(id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
+    try {
+      var r = await fetch(EF);
+      if (!r.ok) throw new Error('EF ' + r.status);
+      var d = await r.json();
+      var p = d.pulso || {};
+
+      // Ton hoy
+      var tonHoy = parseFloat(p.ton_hoy) || 0;
+      set('v3TonHoy', tonHoy.toFixed(1) + ' t');
+      var semTon = p.ton_semaforo || 'rojo';
+      var semColor = semTon === 'verde' ? 'text-emerald-400' : semTon === 'amarillo' ? 'text-amber-400' : 'text-red-400';
+      var elSem = document.getElementById('v3TonSem');
+      if (elSem) { elSem.textContent = (p.ton_pct_meta || 0) + '% meta · ' + semTon; elSem.className = 'text-[10px] mt-0.5 ' + semColor; }
+
+      // Caja
+      var cajaClp = p.caja_clp;
+      set('v3Caja', cajaClp != null ? '$' + (cajaClp / 1000000).toFixed(1) + 'M' : '—');
+      var cajaSem = p.caja_semaforo || '';
+      var cajaColor = cajaSem === 'verde' ? 'text-emerald-400' : cajaSem === 'amarillo' ? 'text-amber-400' : 'text-red-400';
+      var elCajaDias = document.getElementById('v3CajaDias');
+      if (elCajaDias) { elCajaDias.textContent = (p.caja_dias || 0) + ' días cobertura'; elCajaDias.className = 'text-[10px] mt-0.5 ' + cajaColor; }
+
+      // Seed badge
+      var seedEl = document.getElementById('v3Seed');
+      if (seedEl) { if (d.caja_es_seed) seedEl.classList.remove('hidden'); else seedEl.classList.add('hidden'); }
+
+      // USD/CLP + LME
+      set('v3Usd', p.usd_clp != null ? '$' + Math.round(p.usd_clp) : '—');
+      set('v3Lme', p.lme_cobre_usd_lb != null ? 'Cu ' + parseFloat(p.lme_cobre_usd_lb).toFixed(2) + ' USD/lb' : '—');
+
+      // Cobros vencidos
+      var cobros = p.cobros_vencidos_clp;
+      set('v3Cobros', cobros != null ? '$' + (cobros / 1000000).toFixed(1) + 'M' : '—');
+      set('v3CobrosMax', (p.cobros_max_dias || 0) + ' días · ' + (p.clientes_morosos || 0) + ' clientes');
+
+      // Desviaciones
+      set('v3Desv', p.desv_abiertas != null ? String(p.desv_abiertas) : '—');
+
+      // Hora actualización
+      if (d.last_updated_at) {
+        var dt = new Date(d.last_updated_at);
+        set('v3UpdatedAt', 'datos: ' + dt.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }));
+      }
+
+      // Chart ton 14d
+      var hist = d.ton_historico || [];
+      if (hist.length >= 2 && typeof Chart !== 'undefined') {
+        var canvas = document.getElementById('v3ChartTon');
+        if (canvas) {
+          var labels = hist.map(function(h) { return (h.fecha || '').slice(5); });
+          var values = hist.map(function(h) { return parseFloat(h.ton_total) || 0; });
+          if (_v3Chart) { _v3Chart.destroy(); _v3Chart = null; }
+          _v3Chart = new Chart(canvas, {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [{ data: values, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', borderWidth: 1.5, pointRadius: 2, fill: true, tension: 0.3 }]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: '#334155' } },
+                y: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: '#334155' }, min: 0 }
+              }
+            }
+          });
+        }
+      }
+    } catch (err) {
+      var el = document.getElementById('v3TonHoy');
+      if (el) el.textContent = 'Error';
+    }
+  }
+
+  // ============================================================
+  // CALIBRADOR DE MARGEN · datos reales curated.v_margen_vs_costos
+  // PC5_dusan · 26-jun-2026 · integrado Mesa Control 99-99
+  // ============================================================
+  var calDatos = [], calFSuc = 'todas', calFChip = 'todos', calAprobados = {};
+  function calSemNorm(s) { var v = (s||'').toLowerCase(); return v.includes('rojo')?'rojo':v.includes('amarillo')?'amarillo':'verde'; }
+  function calFiltrado() {
+    return calDatos.filter(function(d){
+      return (calFSuc==='todas'||d.sucursal_nombre===calFSuc) && (calFChip==='todos'||calSemNorm(d.semaforo)===calFChip);
+    }).sort(function(a,b){
+      var o={rojo:0,amarillo:1,verde:2};
+      var sa=calSemNorm(a.semaforo),sb=calSemNorm(b.semaforo);
+      if(sa!==sb) return (o[sa]||0)-(o[sb]||0);
+      return (parseFloat(a.mg_vs_meta)||0)-(parseFloat(b.mg_vs_meta)||0);
+    });
+  }
+  function calIniciarSucursales() {
+    var sucs=['todas'], seen={};
+    calDatos.forEach(function(d){ if(!seen[d.sucursal_nombre]){sucs.push(d.sucursal_nombre);seen[d.sucursal_nombre]=1;} });
+    var bar=document.getElementById('cal-suc-bar'); if(!bar) return;
+    bar.innerHTML=sucs.map(function(s){
+      var filtS=s==='todas'?calDatos:calDatos.filter(function(d){return d.sucursal_nombre===s;});
+      var nr=filtS.filter(function(d){return calSemNorm(d.semaforo)==='rojo';}).length;
+      var bdg=nr>0?' <span style="background:#fee2e2;color:#dc2626;border-radius:8px;padding:1px 5px;font-size:9px;font-weight:700">'+nr+'🔴</span>':'';
+      return '<button class="cal-suc-btn'+(calFSuc===s?' on':'')+'" onclick="calSelSuc(this,\''+s.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">'+(s==='todas'?'Todas · '+calDatos.length:s)+bdg+'</button>';
+    }).join('');
+  }
+  function calSelSuc(el,s){calFSuc=s;document.querySelectorAll('#cal-bloque .cal-suc-btn').forEach(function(b){b.classList.remove('on');});el.classList.add('on');calRender();calUpdCeoBanner();}
+  function calChip(el,v){calFChip=v;document.querySelectorAll('#cal-bloque .cal-chip').forEach(function(b){b.classList.remove('cal-chip-on');});el.classList.add('cal-chip-on');calRender();}
+  function calRender() {
+    var datos=calFiltrado();
+    var elC=document.getElementById('cal-cargando'); if(elC) elC.classList.add('hidden');
+    var tbl=document.getElementById('cal-tabla'); if(tbl) tbl.classList.remove('hidden');
+    var tbody=document.getElementById('cal-tbody'); if(!tbody) return;
+    var filtAll=calFSuc==='todas'?calDatos:calDatos.filter(function(d){return d.sucursal_nombre===calFSuc;});
+    var nV=filtAll.filter(function(d){return calSemNorm(d.semaforo)==='verde';}).length;
+    var nA=filtAll.filter(function(d){return calSemNorm(d.semaforo)==='amarillo';}).length;
+    var nR=filtAll.filter(function(d){return calSemNorm(d.semaforo)==='rojo';}).length;
+    var el=document.getElementById('cal-k-tot'); if(el) el.textContent=filtAll.length;
+    el=document.getElementById('cal-k-suc'); if(el) el.textContent=calFSuc==='todas'?'4 sucursales':calFSuc;
+    el=document.getElementById('cal-k-v'); if(el) el.textContent=nV;
+    el=document.getElementById('cal-k-a'); if(el) el.textContent=nA;
+    el=document.getElementById('cal-k-r'); if(el) el.textContent=nR;
+    el=document.getElementById('cal-badge'); if(el) el.textContent=datos.length+' materiales';
+    if(!datos.length){tbody.innerHTML='<tr><td colspan="10" class="text-center text-stone-400 py-6 text-xs">Sin materiales para este filtro</td></tr>';return;}
+    tbody.innerHTML=datos.map(function(d){
+      var key=d.material_id+'_'+d.sucursal_id;
+      var sem=calSemNorm(d.semaforo);
+      var semBdg=sem==='verde'?'<span class="cal-sem-v">🟢 verde</span>':sem==='amarillo'?'<span class="cal-sem-a">🟡 alerta</span>':'<span class="cal-sem-r">🔴 bajo mín</span>';
+      var mg=parseFloat(d.mg_real_pct)||0, meta=parseFloat(d.mg_meta_pct)||0, br=parseFloat(d.mg_vs_meta)||0;
+      var brCol=br>=0?'color:#166534':'color:#dc2626';
+      var vig=d.vigencia_desde||'—';
+      var ap=!!calAprobados[key];
+      var btnAp=ap?'<span class="text-[10px] text-emerald-700 font-semibold">✓ Aprobado</span>':'<button onclick="calAprobar(\''+key.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\',this)" class="cal-btn-ap">Aprobar</button>';
+      var trBg=sem==='rojo'?'background:#fff5f5':sem==='amarillo'?'background:#fffbeb':'';
+      return '<tr style="border-bottom:1px solid #f1f5f9;'+trBg+'">'
+        +'<td class="px-3 py-2 font-semibold text-stone-800" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+d.nombre.replace(/"/g,'&quot;')+'">'+d.nombre+'</td>'
+        +'<td class="px-3 py-2 text-stone-500 text-[11px]">'+d.sucursal_nombre+'</td>'
+        +'<td class="px-3 py-2 text-right font-bold">'+(d.precio_compra_clp?'$'+Math.round(parseFloat(d.precio_compra_clp)).toLocaleString('es-CL'):'—')+'</td>'
+        +'<td class="px-3 py-2 text-right font-bold text-emerald-700">'+(d.precio_venta_clp?'$'+Math.round(parseFloat(d.precio_venta_clp)).toLocaleString('es-CL'):'—')+'</td>'
+        +'<td class="px-3 py-2 text-right font-bold">'+mg.toFixed(1)+'%</td>'
+        +'<td class="px-3 py-2 text-right text-stone-500">'+meta.toFixed(1)+'%</td>'
+        +'<td class="px-3 py-2 text-right font-bold" style="'+brCol+'">'+(br>=0?'+':'')+br.toFixed(1)+'%</td>'
+        +'<td class="px-3 py-2 text-center">'+semBdg+'</td>'
+        +'<td class="px-3 py-2 text-center text-[10px] text-stone-400">'+vig+'</td>'
+        +'<td class="px-3 py-2 text-center">'+btnAp+'</td>'
+        +'</tr>';
+    }).join('');
+  }
+  function calAprobar(key) {
+    var prev=!!calAprobados[key];
+    calToastUndo('✅ Precio aprobado','cal-tv',
+      function(){calAprobados[key]=true;calRender();},
+      function(){delete calAprobados[key];calRender();calToast('↩ Deshecho','cal-ta');}
+    );
+  }
+  function calAprobarRojosSuc() {
+    if(!calFSuc||calFSuc==='todas') return;
+    var rojos=calDatos.filter(function(d){return d.sucursal_nombre===calFSuc&&calSemNorm(d.semaforo)==='rojo';});
+    var prev={};rojos.forEach(function(d){var k=d.material_id+'_'+d.sucursal_id;prev[k]=!!calAprobados[k];});
+    calToastUndo('✅ '+rojos.length+' rojos de '+calFSuc+' aprobados','cal-tv',
+      function(){rojos.forEach(function(d){calAprobados[d.material_id+'_'+d.sucursal_id]=true;});calRender();calUpdCeoBanner();},
+      function(){rojos.forEach(function(d){var k=d.material_id+'_'+d.sucursal_id;if(!prev[k])delete calAprobados[k];});calRender();calUpdCeoBanner();calToast('↩ Deshecho','cal-ta');}
+    );
+  }
+  function calUpdCeoBanner() {
+    var btn=document.getElementById('cal-ceo-btn'); if(!btn) return;
+    var rojos=calFSuc!=='todas'?calDatos.filter(function(d){return d.sucursal_nombre===calFSuc&&calSemNorm(d.semaforo)==='rojo'&&!calAprobados[d.material_id+'_'+d.sucursal_id];}).length:0;
+    btn.textContent=rojos>0?'✅ Aprobar '+rojos+' rojos de '+calFSuc:'✓ Todo OK';
+    btn.disabled=rojos===0; btn.style.opacity=rojos===0?'0.6':'1';
+  }
+  function calCerrarCeo() {
+    var b=document.getElementById('cal-ceo-banner'); if(b) b.classList.add('hidden');
+    calFChip='todos';
+    document.querySelectorAll('#cal-bloque .cal-chip').forEach(function(c){c.classList.remove('cal-chip-on');if(c.dataset.calChip==='todos')c.classList.add('cal-chip-on');});
+    calRender();
+  }
+  function calRefresh() { if(calDatos.length>0){calIniciarSucursales();calRender();} }
+  function calUpdTS(vig) {
+    var dot=document.getElementById('cal-ts-dot'), txt=document.getElementById('cal-ts'); if(!txt) return;
+    if(vig){ var d=new Date(vig), df=Math.round((new Date()-d)/86400000);
+      if(dot) dot.style.background=df<=3?'#22c55e':'#f59e0b';
+      txt.textContent='Vigente desde '+vig+(df>3?' · ⚠ hace '+df+'d':'');
+    } else { txt.textContent='Sin fecha vigencia'; }
+  }
+  function calToastUndo(msg,cls,doFn,undoFn) {
+    doFn();
+    var ct=document.getElementById('cal-toasts'); if(!ct) return;
+    var t=document.createElement('div'); t.className='cal-toast '+(cls||'');
+    t.innerHTML='<span>'+msg+'</span><button class="cal-tundo" onclick="calUndoT(this)">↩ Deshacer</button>';
+    t._undo=undoFn; ct.appendChild(t);
+    t._tm=setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},5000);
+  }
+  function calUndoT(btn){var t=btn.parentNode;if(t&&t._undo){clearTimeout(t._tm);t._undo();if(t.parentNode)t.parentNode.removeChild(t);}}
+  function calToast(msg,cls) {
+    var ct=document.getElementById('cal-toasts'); if(!ct) return;
+    var t=document.createElement('div'); t.className='cal-toast '+(cls||''); t.textContent=msg;
+    ct.appendChild(t); setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},3000);
+  }
+  async function loadCalibradorMargen(token,SUPA,apikey) {
+    var el=document.getElementById('cal-cargando'); if(!el) return;
+    el.textContent='Cargando datos reales…';
+    try {
+      var h={'apikey':apikey,'Authorization':'Bearer '+token,'Accept-Profile':'curated'};
+      var r=await fetch(SUPA+'/rest/v1/v_margen_vs_costos?select=*&order=semaforo.asc,mg_vs_meta.asc&limit=500',{headers:h});
+      if(!r.ok){el.textContent='Error '+r.status+' al cargar materiales';return;}
+      var datos=await r.json();
+      if(!Array.isArray(datos)||!datos.length){el.textContent='Sin datos en curated.v_margen_vs_costos';return;}
+      calDatos=datos;
+      calIniciarSucursales();
+      calRender();
+      var firstVig=datos.find(function(d){return d.vigencia_desde;});
+      calUpdTS(firstVig?firstVig.vigencia_desde:null);
+    } catch(e){if(el)el.textContent='Error: '+(e.message||e);}
+  }
+
+  // ============================================================
   // Mesa de Control Plan 99-99 (D-PLAN-99-99-001 Fase 3 · PC2 Pablo 15-jun)
   // Consume RPCs panel.estatus_plan_99_99 + public.mesa_control_99_99_kpis
   // + public.v_pc_score_individual (widget H)
@@ -19734,6 +20159,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       var sync = document.getElementById('mesaControl9999Sync');
       if (sync) sync.textContent = 'Sync: ' + new Date().toLocaleTimeString('es-CL');
+      // Calibrador de Margen — datos reales curated.v_margen_vs_costos
+      try { await loadCalibradorMargen(token, SUPA, apikey); } catch(eC) { console.warn('calibrador', eC); }
     } catch (e) {
       setHTML('mcFasesTbody', '<tr><td colspan="4" class="text-center text-red-600 py-4">Error: ' + (e?.message || e) + '</td></tr>');
     }
@@ -19741,6 +20168,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupMesaControl9999AutoRefresh() {
     var btn = document.getElementById('mesaControl9999Refresh');
     if (btn) btn.addEventListener('click', loadMesaControl9999);
+    // Mesa V3 refresh button
+    var v3Btn = document.getElementById('v3Refresh');
+    if (v3Btn) v3Btn.addEventListener('click', loadMesaV3Pulso);
     document.querySelectorAll('[data-mc-drill]').forEach(function(card) {
       card.addEventListener('click', function() {
         var dest = card.getAttribute('data-mc-drill');
@@ -19750,10 +20180,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     setInterval(function() {
       var sec = document.getElementById('tabMesaControl9999');
-      if (sec && !sec.classList.contains('hidden')) loadMesaControl9999();
+      if (sec && !sec.classList.contains('hidden')) { loadMesaControl9999(); loadMesaV3Pulso(); }
     }, 60000);
+    // Mesa V3 auto-refresh cada 5 min independiente
+    setInterval(function() {
+      var sec = document.getElementById('tabMesaControl9999');
+      if (sec && !sec.classList.contains('hidden')) loadMesaV3Pulso();
+    }, 300000);
     var perfil = (typeof currentProfile !== 'undefined') ? currentProfile : null;
-    if (perfil === 'dusan' || perfil === 'admin') setTimeout(loadMesaControl9999, 2000);
+    if (perfil === 'dusan' || perfil === 'admin') {
+      setTimeout(loadMesaControl9999, 2000);
+      setTimeout(loadMesaV3Pulso, 1500); // V3 carga un poco antes (no requiere auth)
+    }
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupMesaControl9999AutoRefresh);
@@ -20075,6 +20513,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bind('firmas_pend', loadFirmas);
     bind('firmas_reglas', loadFirmasReglas);
     bind('mesa_control_99_99', loadMesaControl9999);
+    bind('mesa_control_99_99', loadMesaV3Pulso);
     bind('tarifas_ext', loadTarifas);
 
     // Form Firma
@@ -20754,7 +21193,7 @@ document.addEventListener('DOMContentLoaded', () => {
         var ok = 0;
         for (var i = 0; i < destinos.length; i++) {
           try {
-            await sb.from('diego_inbox').insert({
+            await sb.schema('panel').from('diego_inbox').insert({
               destinatario_email: destinos[i].email,
               categoria: 'escalado_permisologia',
               titulo: 'Escalado Permisología · obligación #' + _currentEditId,
@@ -22766,7 +23205,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const sb = window.supabase;
 
       // 1. Cargar frescura datos (semáforos)
-      const { data: frescura, error: e1 } = await sb.from('v_frescura_datos').select('*');
+      const { data: frescura, error: e1 } = await sb.schema('panel').from('v_frescura_datos').select('*');
       if (e1) throw e1;
 
       // 2. Cargar logs recientes (últimas 24h)
