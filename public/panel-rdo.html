@@ -6760,6 +6760,20 @@ let sb;
 let currentUser = null;
 let currentProfile = null;
 let mediaRecorder;
+
+// F1D · Helper canónico para resolver email del usuario en cualquier punto del panel.
+// Cubre los 4 caminos de sesión que conviven (currentUser string/object + rf_session
+// en sessionStorage/localStorage). Único punto de verdad · próximos PRs migran
+// llamadas dispersas a este helper sin tocar el polimorfismo de currentUser todavía.
+window.getCurrentEmail = function () {
+  try {
+    if (typeof currentUser === 'string' && currentUser.indexOf('@') >= 0) return currentUser.toLowerCase();
+    if (currentUser && typeof currentUser === 'object' && currentUser.email) return String(currentUser.email).toLowerCase();
+    var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s && s.email) return String(s.email).toLowerCase();
+    var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls && ls.email) return String(ls.email).toLowerCase();
+  } catch (_) {}
+  return '';
+};
 let audioChunks = [];
 let recordedBlob = null;
 let recordedUrl = null;
