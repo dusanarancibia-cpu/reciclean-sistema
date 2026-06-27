@@ -300,6 +300,7 @@
     .dieg-chip { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:999px; font-size:0.78rem; font-weight:500; cursor:pointer; border:2px solid transparent; transition:all .15s; user-select:none; }
     .dieg-chip.selected { border-color: currentColor; box-shadow: 0 0 0 2px rgba(0,0,0,.08); }
     .dieg-chip.ai-suggested::after { content:'✦'; font-size:.65rem; opacity:.8; }
+    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
     @keyframes pulse-rec { 0%,100%{opacity:1} 50%{opacity:.4} }
     .recording-pulse { animation: pulse-rec 1.2s ease-in-out infinite; }
     /* D-OP-08 #3 — focus visible global (a11y keyboard nav).
@@ -695,10 +696,7 @@
             <span class="v4-emoji" aria-hidden="true">🎯</span>
             Oportunidades
           </a>
-          <a href="#" data-v4-tab="mis_visitas" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">📅</span>
-            Mis Visitas
-          </a>
+          <!-- R-AUD-034 26-jun · borrada tab fantasma mis_visitas (sin section ni init · 11+ días huérfana) -->
           <!-- PC2 11-jun · Trio bandejas Cliente Único Andrea + Comex -->
           <a href="#" data-v4-tab="andrea_dup_clientes" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
             <span class="v4-emoji" aria-hidden="true">🔀</span>
@@ -946,10 +944,7 @@
             <span class="v4-emoji" aria-hidden="true">📊</span>
             Gantt Viva
           </a>
-          <a href="#" data-v4-tab="borradores_diego" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
-            <span class="v4-emoji" aria-hidden="true">📝</span>
-            Borradores Diego
-          </a>
+          <!-- R-AUD-034 26-jun · borrada tab fantasma borradores_diego (sin section ni init · gateada dusan/admin pero sin contenido) -->
           <!-- PC2 11-jun PM · entrada 'bandeja_duplicados' (admin-only) eliminada · reemplazada por 'andrea_dup_clientes' (visible a comercial) para que Andrea pueda decidir duplicados desde su silo. Backend sigue activo por si se reactiva. -->
         </div>
       </details>
@@ -1074,6 +1069,10 @@
       <a href="https://web.whatsapp.com" target="_blank" rel="noopener" class="hidden md:inline-flex p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition" title="WhatsApp" aria-label="Abrir WhatsApp">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
       </a>
+      <!-- Actualizar panel: fuerza SW update + limpia caché + recarga -->
+      <button type="button" id="v4-btnActualizar" onclick="panelForzarActualizacion()" class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-emerald-600 transition" title="Actualizar panel (nueva versión)" aria-label="Forzar actualización del panel">
+        <svg class="w-4 h-4" id="v4-btnActualizarIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      </button>
       <!-- Bell notificaciones (conectado a panel.diego_bandeja count) -->
       <button type="button" id="v4-bellNotificaciones" class="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition" title="Notificaciones" aria-label="Ver notificaciones">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2 2 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
@@ -5045,6 +5044,8 @@
             <button id="v3Refresh" class="text-[10px] px-2 py-0.5 bg-slate-700 hover:bg-slate-600 rounded text-slate-200">↻</button>
           </div>
         </div>
+        <!-- Alerta operativa (Hoy: ...) -->
+        <div id="v3Alerta" class="hidden text-xs px-2.5 py-1.5 bg-slate-700 rounded-lg mb-3 text-slate-100 leading-tight"></div>
         <!-- 5 KPIs -->
         <div class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
           <div class="bg-slate-800 rounded-lg p-2.5">
@@ -5058,9 +5059,9 @@
             <div id="v3CajaDias" class="text-[10px] mt-0.5 text-slate-400">—</div>
           </div>
           <div class="bg-slate-800 rounded-lg p-2.5">
-            <div class="text-[10px] text-slate-400 uppercase">USD/CLP</div>
-            <div id="v3Usd" class="text-2xl font-bold mt-0.5">—</div>
-            <div id="v3Lme" class="text-[10px] mt-0.5 text-slate-400">—</div>
+            <div class="text-[10px] text-slate-400 uppercase">Sucursales</div>
+            <div id="v3SucCard" class="text-2xl font-bold mt-0.5">—</div>
+            <div id="v3SucSub" class="text-[10px] mt-0.5 text-slate-400">—</div>
           </div>
           <div class="bg-slate-800 rounded-lg p-2.5">
             <div class="text-[10px] text-slate-400 uppercase">Cobros venc.</div>
@@ -5073,6 +5074,8 @@
             <div class="text-[10px] mt-0.5 text-slate-400">abiertas</div>
           </div>
         </div>
+        <!-- Chips sucursales -->
+        <div id="v3SucRow" class="flex flex-wrap gap-1.5 mb-3"></div>
         <!-- Chart ton 14d -->
         <div>
           <div class="text-[10px] text-slate-400 mb-1">Toneladas · últimos 14 días</div>
@@ -7509,6 +7512,27 @@ window.restaurarMiVista = function() {
 };
 
 document.getElementById('vistaSimSelector')?.addEventListener('change', e => cambiarVistaSimulada(e.target.value));
+
+window.panelForzarActualizacion = async function() {
+  var btn = document.getElementById('v4-btnActualizar');
+  var icon = document.getElementById('v4-btnActualizarIcon');
+  if (btn) btn.disabled = true;
+  if (icon) icon.style.animation = 'spin 1s linear infinite';
+  try {
+    // 1. Actualizar / desregistrar Service Workers
+    if ('serviceWorker' in navigator) {
+      var regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+    // 2. Limpiar todas las cachés del navegador
+    if ('caches' in window) {
+      var keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  } catch(e) { console.warn('[Panel] actualizar caché:', e); }
+  // 3. Recargar forzado (sin caché)
+  window.location.reload(true);
+};
 
 window.logout = async function() {
   try { await sb.auth.signOut(); } catch(e) { console.warn('[Panel RDO] signOut error:', e); }
@@ -14662,9 +14686,8 @@ document.addEventListener('DOMContentLoaded', () => {
       bell.appendChild(dot);
     }
     bell.addEventListener('click', () => {
-      const tabBtn = document.querySelector('[data-v4-tab="notificaciones"]')
-                  || document.querySelector('[data-tab="notificaciones"]')
-                  || document.querySelector('[data-v4-tab="bandeja_dieg"]')
+      // R-AUD-034 26-jun · tab notificaciones nunca tuvo entrada de sidebar · fallback a bandeja_dieg que sí existe en navbar legacy
+      const tabBtn = document.querySelector('[data-v4-tab="bandeja_dieg"]')
                   || document.querySelector('[data-tab="bandeja_dieg"]');
       if (tabBtn) tabBtn.click();
     });
@@ -19848,9 +19871,42 @@ document.addEventListener('DOMContentLoaded', () => {
       var seedEl = document.getElementById('v3Seed');
       if (seedEl) { if (d.caja_es_seed) seedEl.classList.remove('hidden'); else seedEl.classList.add('hidden'); }
 
-      // USD/CLP + LME
-      set('v3Usd', p.usd_clp != null ? '$' + Math.round(p.usd_clp) : '—');
-      set('v3Lme', p.lme_cobre_usd_lb != null ? 'Cu ' + parseFloat(p.lme_cobre_usd_lb).toFixed(2) + ' USD/lb' : '—');
+      // Sucursales card (reemplaza USD/CLP)
+      var sucList = d.sucursales || [];
+      var sucActHoy = parseInt(p.sucursales_activas) || 0;
+      var totalSuc = sucList.length || 5;
+      set('v3SucCard', sucActHoy + '/' + totalSuc);
+      var elSucSub = document.getElementById('v3SucSub');
+      if (elSucSub) {
+        var enRojo = sucList.filter(function(s){ return (s.dias_con_actividad||0)/30 < 0.4; }).length;
+        elSucSub.textContent = enRojo > 0 ? enRojo + ' bajo rendimiento' : 'todas activas';
+        elSucSub.className = 'text-[10px] mt-0.5 ' + (enRojo > 0 ? 'text-amber-400' : 'text-emerald-400');
+      }
+
+      // Chips sucursales (30d)
+      var rowEl = document.getElementById('v3SucRow');
+      if (rowEl) {
+        rowEl.innerHTML = sucList.map(function(s) {
+          var pct = (s.dias_con_actividad||0) / 30;
+          var color = pct >= 0.7 ? '#10b981' : pct >= 0.4 ? '#f59e0b' : '#ef4444';
+          var dot = pct >= 0.7 ? '🟢' : pct >= 0.4 ? '🟡' : '🔴';
+          var nom = (s.sucursal||'').replace(/reciclean\s*/i,'').replace(/farex\s*/i,'').replace(/\s+/g,' ').trim().split(' ')[0];
+          var ton = (parseFloat(s.ton_prom_dia)||0).toFixed(1);
+          return '<span style="background:#1e293b;border:1px solid ' + color + ';color:#e2e8f0;font-size:10px;padding:2px 8px;border-radius:10px;white-space:nowrap">' + dot + ' ' + nom + ' ' + ton + 't/d</span>';
+        }).join('');
+      }
+
+      // Línea alerta (Hoy: ...)
+      var alertEl = document.getElementById('v3Alerta');
+      if (alertEl) {
+        var alertas = [];
+        var bajasRend = sucList.filter(function(s){ return (s.dias_con_actividad||0)/30 < 0.4; });
+        if (bajasRend.length > 0) alertas.push('📍 ' + bajasRend.map(function(s){ return (s.sucursal||'').split(' ')[0]; }).join(', ') + ' bajo rendimiento');
+        if ((p.clientes_morosos||0) > 0) alertas.push('💸 ' + p.clientes_morosos + ' cobros urgentes');
+        if ((p.desv_abiertas||0) > 0) alertas.push('⚡ ' + p.desv_abiertas + ' desvíos abiertos');
+        alertEl.textContent = alertas.length > 0 ? 'Hoy: ' + alertas.join(' · ') : '✅ Todo en orden';
+        alertEl.classList.remove('hidden');
+      }
 
       // Cobros vencidos
       var cobros = p.cobros_vencidos_clp;
