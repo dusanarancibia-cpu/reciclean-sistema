@@ -300,6 +300,7 @@
     .dieg-chip { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:999px; font-size:0.78rem; font-weight:500; cursor:pointer; border:2px solid transparent; transition:all .15s; user-select:none; }
     .dieg-chip.selected { border-color: currentColor; box-shadow: 0 0 0 2px rgba(0,0,0,.08); }
     .dieg-chip.ai-suggested::after { content:'✦'; font-size:.65rem; opacity:.8; }
+    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
     @keyframes pulse-rec { 0%,100%{opacity:1} 50%{opacity:.4} }
     .recording-pulse { animation: pulse-rec 1.2s ease-in-out infinite; }
     /* D-OP-08 #3 — focus visible global (a11y keyboard nav).
@@ -1074,6 +1075,10 @@
       <a href="https://web.whatsapp.com" target="_blank" rel="noopener" class="hidden md:inline-flex p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition" title="WhatsApp" aria-label="Abrir WhatsApp">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
       </a>
+      <!-- Actualizar panel: fuerza SW update + limpia caché + recarga -->
+      <button type="button" id="v4-btnActualizar" onclick="panelForzarActualizacion()" class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-emerald-600 transition" title="Actualizar panel (nueva versión)" aria-label="Forzar actualización del panel">
+        <svg class="w-4 h-4" id="v4-btnActualizarIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      </button>
       <!-- Bell notificaciones (conectado a panel.diego_bandeja count) -->
       <button type="button" id="v4-bellNotificaciones" class="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition" title="Notificaciones" aria-label="Ver notificaciones">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2 2 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
@@ -7499,6 +7504,27 @@ window.restaurarMiVista = function() {
 };
 
 document.getElementById('vistaSimSelector')?.addEventListener('change', e => cambiarVistaSimulada(e.target.value));
+
+window.panelForzarActualizacion = async function() {
+  var btn = document.getElementById('v4-btnActualizar');
+  var icon = document.getElementById('v4-btnActualizarIcon');
+  if (btn) btn.disabled = true;
+  if (icon) icon.style.animation = 'spin 1s linear infinite';
+  try {
+    // 1. Actualizar / desregistrar Service Workers
+    if ('serviceWorker' in navigator) {
+      var regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+    // 2. Limpiar todas las cachés del navegador
+    if ('caches' in window) {
+      var keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  } catch(e) { console.warn('[Panel] actualizar caché:', e); }
+  // 3. Recargar forzado (sin caché)
+  window.location.reload(true);
+};
 
 window.logout = async function() {
   try { await sb.auth.signOut(); } catch(e) { console.warn('[Panel RDO] signOut error:', e); }
