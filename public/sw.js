@@ -1,4 +1,8 @@
-const CACHE_NAME = 'reciclean-v4';
+// CACHE_NAME se inyecta en build via vite.config.js plugin inject-build-sha-sw.
+// El placeholder __BUILD_SHA__ se reemplaza por el SHA git corto del commit deployado.
+// En dev queda como 'reciclean-__BUILD_SHA__' literal (sin reemplazo) hasta hard refresh.
+// Va DeepSeek Q4 26-jun: git SHA preferido a timestamp (determinista · trazable).
+const CACHE_NAME = 'reciclean-__BUILD_SHA__';
 const ASSETS_TO_CACHE = [
   '/asistente.html',
   '/index.html'
