@@ -138,6 +138,14 @@
         setTimeout(() => removeToast(t), duration);
         return t;
       };
+      // Helper: error de carga datos visible al usuario (no solo console.warn silencioso)
+      window.panelToastErr = function (tag, err) {
+        try {
+          var msg = (err && err.message) ? err.message : String(err || '');
+          console.warn('[' + tag + ']', err);
+          if (window.showToast) window.showToast('[' + tag + '] ' + msg.slice(0, 120), 'error', 6000);
+        } catch (_) {}
+      };
       function removeToast(t) {
         if (!t || !t.parentNode) return;
         t.classList.remove('show');
@@ -292,6 +300,7 @@
     .dieg-chip { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:999px; font-size:0.78rem; font-weight:500; cursor:pointer; border:2px solid transparent; transition:all .15s; user-select:none; }
     .dieg-chip.selected { border-color: currentColor; box-shadow: 0 0 0 2px rgba(0,0,0,.08); }
     .dieg-chip.ai-suggested::after { content:'✦'; font-size:.65rem; opacity:.8; }
+    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
     @keyframes pulse-rec { 0%,100%{opacity:1} 50%{opacity:.4} }
     .recording-pulse { animation: pulse-rec 1.2s ease-in-out infinite; }
     /* D-OP-08 #3 — focus visible global (a11y keyboard nav).
@@ -687,10 +696,7 @@
             <span class="v4-emoji" aria-hidden="true">🎯</span>
             Oportunidades
           </a>
-          <a href="#" data-v4-tab="mis_visitas" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">📅</span>
-            Mis Visitas
-          </a>
+          <!-- R-AUD-034 26-jun · borrada tab fantasma mis_visitas (sin section ni init · 11+ días huérfana) -->
           <!-- PC2 11-jun · Trio bandejas Cliente Único Andrea + Comex -->
           <a href="#" data-v4-tab="andrea_dup_clientes" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
             <span class="v4-emoji" aria-hidden="true">🔀</span>
@@ -938,10 +944,7 @@
             <span class="v4-emoji" aria-hidden="true">📊</span>
             Gantt Viva
           </a>
-          <a href="#" data-v4-tab="borradores_diego" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
-            <span class="v4-emoji" aria-hidden="true">📝</span>
-            Borradores Diego
-          </a>
+          <!-- R-AUD-034 26-jun · borrada tab fantasma borradores_diego (sin section ni init · gateada dusan/admin pero sin contenido) -->
           <!-- PC2 11-jun PM · entrada 'bandeja_duplicados' (admin-only) eliminada · reemplazada por 'andrea_dup_clientes' (visible a comercial) para que Andrea pueda decidir duplicados desde su silo. Backend sigue activo por si se reactiva. -->
         </div>
       </details>
@@ -1066,6 +1069,10 @@
       <a href="https://web.whatsapp.com" target="_blank" rel="noopener" class="hidden md:inline-flex p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition" title="WhatsApp" aria-label="Abrir WhatsApp">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
       </a>
+      <!-- Actualizar panel: fuerza SW update + limpia caché + recarga -->
+      <button type="button" id="v4-btnActualizar" onclick="panelForzarActualizacion()" class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-emerald-600 transition" title="Actualizar panel (nueva versión)" aria-label="Forzar actualización del panel">
+        <svg class="w-4 h-4" id="v4-btnActualizarIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      </button>
       <!-- Bell notificaciones (conectado a panel.diego_bandeja count) -->
       <button type="button" id="v4-bellNotificaciones" class="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition" title="Notificaciones" aria-label="Ver notificaciones">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2 2 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
@@ -5024,6 +5031,159 @@
 
     <!-- Mesa de Control Plan 99-99 (D-PLAN-99-99-001 Fase 3 · PC2 Pablo 15-jun) · dusan+admin -->
     <section id="tabMesaControl9999" class="tab-content hidden">
+
+      <!-- Mesa V3 · Pulso del Negocio · PC5_dusan 26-jun-2026 ===================== -->
+      <div class="bg-slate-900 rounded-xl p-4 mb-5 text-white shadow-lg">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wide">🟢 Mesa V3 · Pulso del Negocio</span>
+            <span id="v3Seed" class="hidden text-[10px] bg-amber-400 text-black px-1.5 py-0.5 rounded font-medium">caja: proyección</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="v3UpdatedAt" class="text-[10px] text-slate-400">—</span>
+            <button id="v3Refresh" class="text-[10px] px-2 py-0.5 bg-slate-700 hover:bg-slate-600 rounded text-slate-200">↻</button>
+          </div>
+        </div>
+        <!-- Alerta operativa (Hoy: ...) -->
+        <div id="v3Alerta" class="hidden text-xs px-2.5 py-1.5 bg-slate-700 rounded-lg mb-3 text-slate-100 leading-tight"></div>
+        <!-- 5 KPIs -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
+          <div class="bg-slate-800 rounded-lg p-2.5">
+            <div class="text-[10px] text-slate-400 uppercase">Ton hoy</div>
+            <div id="v3TonHoy" class="text-2xl font-bold mt-0.5">—</div>
+            <div id="v3TonSem" class="text-[10px] mt-0.5 text-slate-400">—</div>
+          </div>
+          <div class="bg-slate-800 rounded-lg p-2.5">
+            <div class="text-[10px] text-slate-400 uppercase">Caja</div>
+            <div id="v3Caja" class="text-2xl font-bold mt-0.5">—</div>
+            <div id="v3CajaDias" class="text-[10px] mt-0.5 text-slate-400">—</div>
+          </div>
+          <div class="bg-slate-800 rounded-lg p-2.5">
+            <div class="text-[10px] text-slate-400 uppercase">Sucursales</div>
+            <div id="v3SucCard" class="text-2xl font-bold mt-0.5">—</div>
+            <div id="v3SucSub" class="text-[10px] mt-0.5 text-slate-400">—</div>
+          </div>
+          <div class="bg-slate-800 rounded-lg p-2.5">
+            <div class="text-[10px] text-slate-400 uppercase">Cobros venc.</div>
+            <div id="v3Cobros" class="text-2xl font-bold mt-0.5">—</div>
+            <div id="v3CobrosMax" class="text-[10px] mt-0.5 text-slate-400">—</div>
+          </div>
+          <div class="bg-slate-800 rounded-lg p-2.5">
+            <div class="text-[10px] text-slate-400 uppercase">Desviaciones</div>
+            <div id="v3Desv" class="text-2xl font-bold mt-0.5">—</div>
+            <div class="text-[10px] mt-0.5 text-slate-400">abiertas</div>
+          </div>
+        </div>
+        <!-- Chips sucursales -->
+        <div id="v3SucRow" class="flex flex-wrap gap-1.5 mb-3"></div>
+        <!-- Chart ton 14d -->
+        <div>
+          <div class="text-[10px] text-slate-400 mb-1">Toneladas · últimos 14 días</div>
+          <canvas id="v3ChartTon" height="55" style="max-height:55px"></canvas>
+        </div>
+      </div>
+      <!-- /Mesa V3 ============================================================== -->
+
+      <!-- CALIBRADOR DE MARGEN · Mesa Control 99-99 · PC5_dusan 26-jun-2026 ===== -->
+      <style>
+        #cal-bloque .cal-chip{padding:4px 12px;border-radius:14px;border:1px solid #e2e8f0;cursor:pointer;font-size:11px;background:#fff;white-space:nowrap;transition:all .1s}
+        #cal-bloque .cal-chip:hover{background:#f8fafc}
+        #cal-bloque .cal-chip.cal-chip-on{background:#0f172a;color:#fff;border-color:#0f172a}
+        #cal-bloque .cal-chip.cal-chip-on[data-cal-chip="rojo"]{background:#dc2626;border-color:#dc2626}
+        #cal-bloque .cal-chip.cal-chip-on[data-cal-chip="amarillo"]{background:#d97706;border-color:#d97706}
+        #cal-bloque .cal-chip.cal-chip-on[data-cal-chip="verde"]{background:#16a34a;border-color:#16a34a}
+        #cal-bloque .cal-suc-btn{padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;border-radius:7px;background:#fff;border:1px solid #e2e8f0;color:#64748b;transition:all .15s;min-height:44px}
+        #cal-bloque .cal-suc-btn.on{color:#2563eb;border-color:#2563eb;background:#eff6ff}
+        #cal-bloque .cal-sem-v{background:#dcfce7;color:#166534;padding:2px 7px;border-radius:8px;font-weight:700;font-size:10px;white-space:nowrap}
+        #cal-bloque .cal-sem-a{background:#fef3c7;color:#d97706;padding:2px 7px;border-radius:8px;font-weight:700;font-size:10px;white-space:nowrap}
+        #cal-bloque .cal-sem-r{background:#fee2e2;color:#dc2626;padding:2px 7px;border-radius:8px;font-weight:700;font-size:10px;white-space:nowrap}
+        #cal-bloque .cal-btn-ap{min-height:44px;min-width:80px;padding:6px 12px;border-radius:7px;border:1px solid #86efac;background:#f0fdf4;color:#166534;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap}
+        #cal-bloque .cal-btn-ap:hover{background:#dcfce7}
+        #cal-bloque .cal-btn-ap.ok{background:#dcfce7;border-color:#4ade80;opacity:.7;cursor:default}
+        #cal-bloque .cal-toast-w{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:5px;align-items:flex-end;pointer-events:none}
+        #cal-bloque .cal-toast{background:#1e293b;color:#fff;padding:9px 14px;border-radius:8px;font-size:11px;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,.2);display:flex;align-items:center;gap:10px;max-width:300px;pointer-events:auto;animation:calTi .18s ease}
+        #cal-bloque .cal-toast.cal-tv{background:#166534}
+        #cal-bloque .cal-toast.cal-ta{background:#92400e}
+        #cal-bloque .cal-tundo{background:rgba(255,255,255,.2);border:none;color:#fff;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:10px;white-space:nowrap;min-height:32px}
+        @keyframes calTi{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
+        @media(max-width:640px){#cal-bloque #cal-tabla td,#cal-bloque #cal-tabla th{padding:6px 8px;font-size:11px}}
+      </style>
+      <div id="cal-bloque" class="mb-5">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <h3 class="text-sm font-semibold text-stone-700">🎛 Calibrador de Margen</h3>
+            <span id="cal-badge" class="text-[10px] bg-stone-200 text-stone-600 px-1.5 py-0.5 rounded font-medium">—</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="cal-ts-dot" class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span id="cal-ts" class="text-[10px] text-stone-400">—</span>
+            <button onclick="calRefresh()" class="text-[10px] px-2 py-0.5 bg-stone-200 hover:bg-stone-300 rounded text-stone-700 min-h-[36px]">↻</button>
+          </div>
+        </div>
+        <!-- CEO banner -->
+        <div id="cal-ceo-banner" class="hidden mb-2 p-2 rounded-lg flex items-center gap-2 text-sm font-medium" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff">
+          <span>🎯</span>
+          <span id="cal-ceo-txt">Modo CEO · sucursal detectada</span>
+          <div class="flex-1"></div>
+          <button id="cal-ceo-btn" onclick="calAprobarRojosSuc()" style="background:#16a34a;color:#fff;border:none;padding:5px 14px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;min-height:44px;min-width:80px"></button>
+          <button onclick="calCerrarCeo()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 10px;border-radius:7px;font-size:10px;cursor:pointer;min-height:44px">Ver todo</button>
+        </div>
+        <!-- KPIs -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
+          <div class="bg-white border border-stone-200 rounded-lg p-2.5">
+            <div class="text-[10px] text-stone-400 uppercase">Total</div>
+            <div class="text-xl font-bold mt-0.5 text-stone-800" id="cal-k-tot">—</div>
+            <div class="text-[10px] text-stone-400" id="cal-k-suc">4 sucursales</div>
+          </div>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5">
+            <div class="text-[10px] text-emerald-700 uppercase">🟢 Sobre meta</div>
+            <div class="text-xl font-bold mt-0.5 text-emerald-700" id="cal-k-v">—</div>
+          </div>
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5">
+            <div class="text-[10px] text-amber-700 uppercase">🟡 En alerta</div>
+            <div class="text-xl font-bold mt-0.5 text-amber-700" id="cal-k-a">—</div>
+          </div>
+          <div class="bg-red-50 border border-red-200 rounded-lg p-2.5">
+            <div class="text-[10px] text-red-700 uppercase">🔴 Bajo mínimo</div>
+            <div class="text-xl font-bold mt-0.5 text-red-700" id="cal-k-r">—</div>
+          </div>
+        </div>
+        <!-- Sucursal tabs -->
+        <div id="cal-suc-bar" class="flex gap-1 mb-2 flex-wrap"></div>
+        <!-- Chip filters -->
+        <div class="flex gap-1 mb-2 flex-wrap items-center">
+          <button class="cal-chip cal-chip-on" data-cal-chip="todos" onclick="calChip(this,'todos')">Todos</button>
+          <button class="cal-chip" data-cal-chip="rojo" onclick="calChip(this,'rojo')">🔴 Bajo mínimo</button>
+          <button class="cal-chip" data-cal-chip="amarillo" onclick="calChip(this,'amarillo')">🟡 En alerta</button>
+          <button class="cal-chip" data-cal-chip="verde" onclick="calChip(this,'verde')">🟢 Sobre meta</button>
+        </div>
+        <!-- Tabla -->
+        <div class="overflow-x-auto rounded-lg border border-stone-200 bg-white" style="-webkit-overflow-scrolling:touch">
+          <div id="cal-cargando" class="text-center text-stone-400 text-sm py-8">Carga al abrir tab…</div>
+          <table id="cal-tabla" class="w-full text-xs hidden" style="min-width:700px;border-collapse:collapse">
+            <thead class="bg-stone-50">
+              <tr>
+                <th class="px-3 py-2 text-left text-stone-500 font-semibold">Material</th>
+                <th class="px-3 py-2 text-left text-stone-500 font-semibold">Sucursal</th>
+                <th class="px-3 py-2 text-right text-stone-500 font-semibold">P.Compra</th>
+                <th class="px-3 py-2 text-right text-stone-500 font-semibold">P.Venta</th>
+                <th class="px-3 py-2 text-right text-stone-500 font-semibold">Margen %</th>
+                <th class="px-3 py-2 text-right text-stone-500 font-semibold">Meta %</th>
+                <th class="px-3 py-2 text-right text-stone-500 font-semibold">Brecha</th>
+                <th class="px-3 py-2 text-center text-stone-500 font-semibold">Estado</th>
+                <th class="px-3 py-2 text-center text-stone-500 font-semibold">Vigencia</th>
+                <th class="px-3 py-2 text-center text-stone-500 font-semibold" style="min-width:100px">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="cal-tbody"></tbody>
+          </table>
+        </div>
+        <!-- Toast wrapper -->
+        <div id="cal-toasts" class="cal-toast-w"></div>
+      </div>
+      <!-- /CALIBRADOR DE MARGEN ===================================================== -->
+
       <div class="bg-gradient-to-r from-emerald-50 to-stone-50 border border-emerald-200 rounded-lg p-3 mb-4">
         <div class="flex items-start justify-between flex-wrap gap-2">
           <div>
@@ -6603,6 +6763,20 @@ let sb;
 let currentUser = null;
 let currentProfile = null;
 let mediaRecorder;
+
+// F1D · Helper canónico para resolver email del usuario en cualquier punto del panel.
+// Cubre los 4 caminos de sesión que conviven (currentUser string/object + rf_session
+// en sessionStorage/localStorage). Único punto de verdad · próximos PRs migran
+// llamadas dispersas a este helper sin tocar el polimorfismo de currentUser todavía.
+window.getCurrentEmail = function () {
+  try {
+    if (typeof currentUser === 'string' && currentUser.indexOf('@') >= 0) return currentUser.toLowerCase();
+    if (currentUser && typeof currentUser === 'object' && currentUser.email) return String(currentUser.email).toLowerCase();
+    var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s && s.email) return String(s.email).toLowerCase();
+    var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls && ls.email) return String(ls.email).toLowerCase();
+  } catch (_) {}
+  return '';
+};
 let audioChunks = [];
 let recordedBlob = null;
 let recordedUrl = null;
@@ -7339,6 +7513,27 @@ window.restaurarMiVista = function() {
 
 document.getElementById('vistaSimSelector')?.addEventListener('change', e => cambiarVistaSimulada(e.target.value));
 
+window.panelForzarActualizacion = async function() {
+  var btn = document.getElementById('v4-btnActualizar');
+  var icon = document.getElementById('v4-btnActualizarIcon');
+  if (btn) btn.disabled = true;
+  if (icon) icon.style.animation = 'spin 1s linear infinite';
+  try {
+    // 1. Actualizar / desregistrar Service Workers
+    if ('serviceWorker' in navigator) {
+      var regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+    // 2. Limpiar todas las cachés del navegador
+    if ('caches' in window) {
+      var keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  } catch(e) { console.warn('[Panel] actualizar caché:', e); }
+  // 3. Recargar forzado (sin caché)
+  window.location.reload(true);
+};
+
 window.logout = async function() {
   try { await sb.auth.signOut(); } catch(e) { console.warn('[Panel RDO] signOut error:', e); }
   currentUser = null; currentProfile = null;
@@ -7360,49 +7555,23 @@ window.logout = async function() {
 // Mapeo explícito data-tab → id de sección. Necesario para data-tabs con `_`
 // (auditoría 22-may: `bandeja_dieg`→`tabBandejaDiego` y `ops_diarias`→`tabOpsDiarias`
 // fallaban porque el cálculo automático no convierte snake_case a CamelCase).
+// TAB_SECTION_MAP · solo overrides donde el algoritmo auto-CamelCase NO acierta.
+// Algoritmo (line 7428): tabId.split(/[_-]/).map(camelize).join('') con prefijo 'tab'.
+// Cubre todos los snake_case y dígitos (precios_vivos→tabPreciosVivos · plan_2026→tabPlan2026).
+// Red de seguridad: si renombran un section_id que no sigue el patrón, agregar override acá.
+// Cleanup T-PANEL-01 (25-jun DeepSeek round 7) · 42 entradas redundantes removidas.
 const TAB_SECTION_MAP = {
-  bandeja_dieg: 'tabBandejaDiego',
-  bandeja_precios: 'tabBandejaPrecios',
-  mi_memoria: 'tabMiMemoria',
-  mi_bandeja: 'tabMiBandeja',
-  mis_reportes: 'tabMisReportes',
-  mis_envios_diego: 'tabMisEnviosDiego',
-  material_nuevo: 'tabMaterialNuevo',
-  despacho_coord: 'tabDespachoCoord',
-  incidentes_op: 'tabIncidentesOp',
-  firmas_pend: 'tabFirmasPend',
-  firmas_reglas: 'tabFirmasReglas',
-  mesa_control_99_99: 'tabMesaControl9999',
-  tarifas_ext: 'tabTarifasExt',
-  cumplimiento: 'tabCumplimiento',
-  herramientas_ext: 'tabHerramientasExt',
-  facturacion_grupo: 'tabFacturacionGrupo',
-  vales_portal: 'tabValesPortal',
-  piloto_pwa: 'tabPilotoPwa',
-  mis_archivos: 'tabMisArchivos',
-  diego_coord: 'tabDiegoCoord',
-  bucle_vivo: 'tabBucleVivo',
-  dod_dashboard: 'tabDodDashboard',
-  ops_diarias: 'tabOpsDiarias',
-  // PC1 fix 31-may PM: tabs con `_` o dígito que rompen el auto-CamelCase
-  // (pcs_vivo→tabPcs_vivo ❌ real=tabPcsVivo · plan_2026→tabPlan_2026 ❌ real=tabPlan2026)
-  pcs_vivo: 'tabPcsVivo',
-  plan_2026: 'tabPlan2026',
-  // PC2 11-jun · Trio bandejas CU Andrea + Comex
-  andrea_dup_clientes: 'tabAndreaDupClientes',
-  andrea_drift_libre: 'tabAndreaDriftLibre',
-  andrea_ruts_invalidos: 'tabAndreaRutsInvalidos',
-  andrea_comex: 'tabAndreaComex',
-  decisor_venta: 'tabDecisorVenta',
-  andrea_cobranza: 'tabAndreaCobranza',
-  andrea_actas: 'tabAndreaActas'
+  bandeja_dieg: 'tabBandejaDiego'   // único override real: "dieg" no expande a "Diego" automáticamente
 };
 function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const tabId = btn.getAttribute('data-tab');
       document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-      const sectionId = TAB_SECTION_MAP[tabId] || ('tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+      // PC2 25-jun · auto-CamelCase antifrágil: convierte snake_case → camelCase
+      // (precios_vivos→tabPreciosVivos · plan_2026→tabPlan2026 · ya no requiere mapeo manual)
+      const sectionId = TAB_SECTION_MAP[tabId] || ('tab' +
+        tabId.split(/[_-]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(''));
       const target = document.getElementById(sectionId);
       if (target) target.classList.remove('hidden');
       document.querySelectorAll('.tab-btn').forEach(b => {
@@ -7411,6 +7580,13 @@ function setupTabs() {
       });
       btn.classList.add('active');
       btn.setAttribute('aria-selected', 'true');
+      // PC2 25-jun · resetear scroll al cambiar de tab
+      // (bug reportado: al seleccionar tab desde abajo del sidebar, mainContent quedaba scrolleado)
+      try {
+        const main = document.getElementById('mainContent');
+        if (main) main.scrollTop = 0;
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      } catch (_) { /* fallback silencioso */ }
       if (typeof window.pageLog === 'function') window.pageLog('tab_change', tabId);
       if (tabId === 'comunicados') loadAudios();
       if (tabId === 'portada') { loadPortadaAudio(); loadAlertasPortada(); if (typeof window.initV4Hero === 'function') window.initV4Hero(); if (typeof window.setupDiegoAgenda === 'function') { window.setupDiegoAgenda(); window.loadDiegoAgenda(); } }
@@ -11366,7 +11542,7 @@ async function _v4LoadOppResumen() {
     if (error || !data) return;
     const crmTotal = data?.crm?.oportunidades_total ?? 0;
     const crmMatch = data?.crm?.matcheadas_rdo ?? 0;
-    const fuzzyRes = await sb.from('v_crm_match_sugerido').select('*', { count:'exact', head:true });
+    const fuzzyRes = await sb.schema('staging').from('v_crm_match_sugerido').select('*', { count:'exact', head:true });
     const fuzzyTot = fuzzyRes?.count ?? 0;
     const oppAbiertasRes = await sb.schema('curated').from('oportunidades').select('*', { count:'exact', head:true }).neq('estado', 'cerrada_perdida').neq('estado', 'cerrada_ganada');
     const oppAbiertas = oppAbiertasRes?.count ?? 0;
@@ -13103,7 +13279,7 @@ window.initV4Hero = function initV4Hero() {
           try {
             const [healthRes, fuzzyRes, anomRes] = await Promise.all([
               sb.rpc('f_panel_health'),
-              sb.from('v_crm_match_sugerido').select('*', { count:'exact', head:true }),
+              sb.schema('staging').from('v_crm_match_sugerido').select('*', { count:'exact', head:true }),
               sb.from('v_panel_pesajes_anomalias').select('id', { count:'exact', head:true })
             ]);
             const health = healthRes?.data || {};
@@ -13805,18 +13981,21 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-fab-label{position:absolute;right:70px;top:50%;transform:translateY(-50%);background:#0f172a;color:#fff;padding:6px 12px;border-radius:8px;font-size:13px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s ease}
   .diego-fab:hover .diego-fab-label{opacity:1}
   /* Cirugía spacing 23-may-2026: width 380, max-height 60vh, padding burbujas 10px, hora derecha compacta */
-  .diego-chat{position:fixed;right:24px;bottom:96px;width:380px;max-width:calc(100vw - 16px);max-height:60vh;background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 16px 48px -12px rgba(15,23,42,.25);z-index:60;display:none;flex-direction:column;overflow:hidden}
+  /* Cirugía estética FAB Diego · 12-jun-2026 · 9 specs Dusan */
+  .diego-chat{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;width:calc(100% - 32px);max-width:420px;max-height:70vh;background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 16px 48px -12px rgba(15,23,42,.25);z-index:60;display:none;flex-direction:column;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px}
   .diego-chat.open{display:flex}
-  .diego-chat-h{background:linear-gradient(135deg,#059669,#047857);color:#fff;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;flex-shrink:0}
+  .diego-chat-h{background:#059669;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;flex-shrink:0}
   .diego-chat-h .h-title{display:flex;align-items:center;gap:8px}
-  .diego-chat-h .h-version{background:rgba(255,255,255,.2);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
+  .diego-chat-h .h-status-dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 0 rgba(52,211,153,.7);animation:diegoStatusPulse 2s infinite}
+  @keyframes diegoStatusPulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.7)}70%{box-shadow:0 0 0 8px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+  .diego-chat-h .h-version{background:rgba(255,255,255,.2);padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600}
   .diego-chat-h button{background:none;border:0;color:#fff;cursor:pointer;font-size:16px;line-height:1;padding:4px 8px}
-  .diego-chat-body{background:#f8fafc;padding:10px;flex:1;min-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;position:relative}
-  .diego-msg{font-size:13px;padding:8px 10px;border-radius:12px;max-width:85%;line-height:1.35;word-wrap:break-word;white-space:normal}
+  .diego-chat-body{background:#f8fafc;padding:14px;flex:1;min-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;position:relative}
+  .diego-msg{font-size:14px;padding:10px 14px;border-radius:14px;max-width:80%;line-height:1.45;word-wrap:break-word;white-space:normal}
   .diego-msg > div:first-child{white-space:pre-wrap}
-  .diego-msg.mine{align-self:flex-end;background:#ecfdf5;color:#064e3b;border-bottom-right-radius:4px}
-  .diego-msg.theirs{align-self:flex-start;background:#fff;border:1px solid #e2e8f0;color:#0f172a;border-bottom-left-radius:4px}
-  .diego-msg.diego{align-self:flex-start;background:#fff;border:1px solid #059669;color:#0f172a;border-bottom-left-radius:4px}
+  .diego-msg.mine{align-self:flex-end;background:#059669;color:#fff;border-bottom-right-radius:4px}
+  .diego-msg.theirs{align-self:flex-start;background:#f1f5f9;border:1px solid #e2e8f0;color:#0f172a;border-bottom-left-radius:4px}
+  .diego-msg.diego{align-self:flex-start;background:#f1f5f9;border:1px solid #e2e8f0;color:#0f172a;border-bottom-left-radius:4px}
   .diego-msg.thinking{align-self:flex-start;background:#fff;border:1px dashed #94a3b8;color:#64748b;font-style:italic;display:inline-flex;align-items:center;gap:6px}
   /* D-DIEGO-MEJORA-CONTINUA-001 CL-013 · indicador typing animado */
   .diego-typing-dots{display:inline-flex;gap:3px}
@@ -13837,12 +14016,12 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-suggestions button{font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:500}
   .diego-suggestions button:hover{background:#059669;color:#fff;border-color:#059669}
   .diego-empty{color:#94a3b8;font-size:12px;text-align:center;padding:24px 8px}
-  .diego-chat-form{display:flex;gap:6px;padding:8px;border-top:1px solid #e2e8f0;background:#fff;align-items:flex-end;flex-shrink:0}
-  .diego-chat-form .attach-btn{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;color:#475569}
+  .diego-chat-form{display:flex;gap:8px;padding:10px;border-top:1px solid #e2e8f0;background:#fff;align-items:center;flex-shrink:0}
+  .diego-chat-form .attach-btn{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:24px;padding:10px 14px;font-size:14px;cursor:pointer;color:#475569}
   .diego-chat-form .attach-btn:hover{background:#059669;color:#fff;border-color:#059669}
-  .diego-chat-form textarea{flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;resize:none;min-height:36px;max-height:120px}
+  .diego-chat-form textarea{flex:1;border:1px solid #e2e8f0;border-radius:24px;padding:10px 16px;font-size:14px;outline:none;font-family:inherit;resize:none;min-height:40px;max-height:120px}
   .diego-chat-form textarea:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.15)}
-  .diego-chat-form button.send{background:#059669;color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer}
+  .diego-chat-form button.send{background:#059669;color:#fff;border:0;border-radius:24px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
   .diego-chat-form button.send:disabled{opacity:.5;cursor:not-allowed}
   .diego-attach-preview{padding:6px 10px;background:#eff6ff;border-top:1px solid #dbeafe;font-size:11px;color:#1e40af;display:flex;justify-content:space-between;align-items:center}
   .diego-attach-preview button{background:none;border:0;color:#1e40af;cursor:pointer;font-size:14px}
@@ -13866,11 +14045,11 @@ document.addEventListener('DOMContentLoaded', () => {
   /* M5 — Punto rojo binario en bell topbar */
   #v4-bellNotificaciones .bell-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:#ef4444;display:none}
   #v4-bellNotificaciones.has-alerts .bell-dot{display:block}
-  /* Responsive mobile: chat ocupa casi todo el ancho */
+  /* Responsive mobile · 9 specs Dusan: 100% ancho, 80vh, pegado abajo */
   @media (max-width: 480px) {
-    .diego-chat{right:8px;left:8px;bottom:84px;width:auto;max-width:none;max-height:70vh}
+    .diego-chat{left:0;right:0;bottom:0;width:100%;max-width:100%;transform:none;max-height:80vh;border-radius:16px 16px 0 0}
     .diego-fab{right:16px;bottom:16px;width:54px;height:54px}
-    .diego-msg{max-width:90%;font-size:13.5px}
+    .diego-msg{max-width:88%;font-size:14px}
   }
   /* D-DIEGO-LEGAL-IA-001 · Modal banner consentimiento IA */
   .ia-consent-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.85); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 16px; }
@@ -13911,7 +14090,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <div class="diego-chat" id="diegoChat" role="dialog" aria-label="Chat con Diego">
   <div class="diego-chat-h">
-    <span class="h-title">🤖 Diego <span class="h-version">v6</span></span>
+    <span class="h-title"><span class="h-status-dot" aria-hidden="true"></span>🤖 Diego <span class="h-version">v6</span></span>
     <div style="display:flex;gap:4px;align-items:center;">
       <button type="button" id="diegoChatLimpiar" aria-label="Limpiar pantalla" title="Limpiar pantalla — Diego sigue recordando todo">↻</button>
       <button type="button" id="diegoChatMinimize" aria-label="Minimizar chat" title="Minimizar (mantiene conversación)">−</button>
@@ -14510,9 +14689,8 @@ document.addEventListener('DOMContentLoaded', () => {
       bell.appendChild(dot);
     }
     bell.addEventListener('click', () => {
-      const tabBtn = document.querySelector('[data-v4-tab="notificaciones"]')
-                  || document.querySelector('[data-tab="notificaciones"]')
-                  || document.querySelector('[data-v4-tab="bandeja_dieg"]')
+      // R-AUD-034 26-jun · tab notificaciones nunca tuvo entrada de sidebar · fallback a bandeja_dieg que sí existe en navbar legacy
+      const tabBtn = document.querySelector('[data-v4-tab="bandeja_dieg"]')
                   || document.querySelector('[data-tab="bandeja_dieg"]');
       if (tabBtn) tabBtn.click();
     });
@@ -14778,7 +14956,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('bpAprobarTodos');
     if (btn) btn.disabled = true;
     try {
-      const { data, error } = await sb.rpc('f_aprobar_todos_pendientes', {
+      const { data, error } = await sb.schema('panel').rpc('f_aprobar_todos_pendientes', {
         p_decision_by: email,
         p_decision: 'aprobado'
       });
@@ -15095,7 +15273,7 @@ document.addEventListener('DOMContentLoaded', () => {
       pvPopularCategoriasFiltro();
       pvFiltrar();
     } catch (e) {
-      console.warn('[PreciosVivos] error:', e);
+      if (window.panelToastErr) panelToastErr('PreciosVivos', e); else console.warn('[PreciosVivos] error:', e);
       if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-4 text-center text-red-400">Error al cargar: ' + String(e).slice(0, 80) + '</td></tr>';
     }
   }
@@ -15318,7 +15496,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const el = document.getElementById('ebLastUpdate');
       if (el) el.textContent = new Date().toLocaleString('es-CL');
     } catch (e) {
-      console.warn('[ErroresBucles] error:', e);
+      if (window.panelToastErr) panelToastErr('Errores/Bucles', e); else console.warn('[ErroresBucles] error:', e);
       if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-rose-500">Error al cargar: ' + String(e).slice(0, 120) + '</td></tr>';
     }
   }
@@ -15711,7 +15889,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       indSet('indLastUpdate', new Date().toLocaleString('es-CL'));
     } catch (e) {
-      console.warn('[Indicadores] error:', e);
+      if (window.panelToastErr) panelToastErr('Indicadores', e); else console.warn('[Indicadores] error:', e);
       indSet('indResumen', 'Error: ' + (e.message || String(e)).slice(0, 120));
     }
   }
@@ -15832,7 +16010,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
       return data || null;
     } catch (e) {
-      console.warn('[Modo] get:', e);
+      if (window.panelToastErr) panelToastErr('Modo Precios', e); else console.warn('[Modo] get:', e);
       return null;
     }
   }
@@ -15878,7 +16056,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modoRenderAcciones(row.acciones || []);
     } catch (e) {
       alert('Error activando modo: ' + (e.message || String(e)));
-      console.warn('[Modo] set:', e);
+      if (window.panelToastErr) panelToastErr('Modo Precios SET', e); else console.warn('[Modo] set:', e);
     } finally {
       modoAplicarPermisos();
     }
@@ -16020,18 +16198,23 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const { data, error } = await sb.schema('curated')
         .from('margen_metas')
-        .select('categoria, mg_minimo_pct, mg_meta_pct')
-        .order('categoria');
+        .select('categoria_id, descripcion, margen_minimo_pct, margen_meta_pct')
+        .order('categoria_id');
       if (error) throw error;
-      calcMetasCache = data || [];
+      calcMetasCache = (data || []).map(c => ({
+        categoria: c.categoria_id,
+        mg_minimo_pct: c.margen_minimo_pct,
+        mg_meta_pct: c.margen_meta_pct,
+        descripcion: c.descripcion
+      }));
       const sel = document.getElementById('calcCategoria');
       if (!sel) return;
       sel.innerHTML = '<option value="">(sin categoría)</option>' +
         calcMetasCache.map(c =>
-          '<option value="' + c.categoria + '">' + c.categoria + ' (piso ' + c.mg_minimo_pct + '%)</option>'
+          '<option value="' + c.categoria + '">' + (c.descripcion || c.categoria) + ' (piso ' + c.mg_minimo_pct + '%)</option>'
         ).join('');
     } catch (e) {
-      console.warn('[Calc] categorias:', e);
+      if (window.panelToastErr) panelToastErr('Calculadora categorías', e); else console.warn('[Calc] categorias:', e);
     }
   }
 
@@ -16040,18 +16223,19 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const { data, error } = await sb.schema('curated')
         .from('materiales')
-        .select('material_id, nombre_display')
-        .order('nombre_display')
+        .select('material_id, nombre, categoria')
+        .eq('activo', true)
+        .order('nombre')
         .limit(500);
       if (error) throw error;
       const sel = document.getElementById('calcMaterial');
       if (!sel) return;
       sel.innerHTML = '<option value="">(seleccionar)</option>' +
         (data || []).map(m =>
-          '<option value="' + m.material_id + '">' + (m.nombre_display || m.material_id) + '</option>'
+          '<option value="' + m.material_id + '" data-categoria="' + (m.categoria || '') + '">' + (m.nombre || m.material_id) + '</option>'
         ).join('');
     } catch (e) {
-      console.warn('[Calc] materiales:', e);
+      if (window.panelToastErr) panelToastErr('Calculadora materiales', e); else console.warn('[Calc] materiales:', e);
     }
   }
 
@@ -16061,6 +16245,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data, error } = await sb.schema('curated')
         .from('sucursales')
         .select('sucursal_id, nombre')
+        .eq('activa', true)
         .order('nombre')
         .limit(50);
       if (error) throw error;
@@ -16071,7 +16256,7 @@ document.addEventListener('DOMContentLoaded', () => {
           '<option value="' + s.sucursal_id + '">' + (s.nombre || s.sucursal_id) + '</option>'
         ).join('');
     } catch (e) {
-      console.warn('[Calc] sucursales:', e);
+      if (window.panelToastErr) panelToastErr('Calculadora sucursales', e); else console.warn('[Calc] sucursales:', e);
     }
   }
 
@@ -16204,18 +16389,19 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const { data, error } = await sb.schema('curated')
         .from('materiales')
-        .select('material_id, nombre_display')
-        .order('nombre_display')
+        .select('material_id, nombre, categoria')
+        .eq('activo', true)
+        .order('nombre')
         .limit(500);
       if (error) throw error;
       const sel = document.getElementById('bovMaterial');
       if (!sel) return;
       sel.innerHTML = '<option value="">(seleccionar)</option>' +
         (data || []).map(m =>
-          '<option value="' + m.material_id + '">' + (m.nombre_display || m.material_id) + '</option>'
+          '<option value="' + m.material_id + '">' + (m.nombre || m.material_id) + '</option>'
         ).join('');
     } catch (e) {
-      console.warn('[Boveda] materiales:', e);
+      if (window.panelToastErr) panelToastErr('Bóveda materiales', e); else console.warn('[Boveda] materiales:', e);
     }
   }
 
@@ -16225,6 +16411,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data, error } = await sb.schema('curated')
         .from('sucursales')
         .select('sucursal_id, nombre')
+        .eq('activa', true)
         .order('nombre')
         .limit(50);
       if (error) throw error;
@@ -16235,7 +16422,7 @@ document.addEventListener('DOMContentLoaded', () => {
           '<option value="' + s.sucursal_id + '">' + (s.nombre || s.sucursal_id) + '</option>'
         ).join('');
     } catch (e) {
-      console.warn('[Boveda] sucursales:', e);
+      if (window.panelToastErr) panelToastErr('Bóveda sucursales', e); else console.warn('[Boveda] sucursales:', e);
     }
   }
 
@@ -16354,7 +16541,7 @@ document.addEventListener('DOMContentLoaded', () => {
         detEl.textContent = ult.alerta || '—';
       }
     } catch (e) {
-      console.warn('[Boveda] error:', e);
+      if (window.panelToastErr) panelToastErr('Bóveda RPC', e); else console.warn('[Boveda] error:', e);
       bovSetHtml('bovContent', '<p class="text-sm text-rose-600">Error: ' + (e.message || String(e)).slice(0, 120) + '</p>');
       bovClearStats();
     }
@@ -16576,7 +16763,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     } catch (e) {
-      console.warn('[Tablero] v_margen_vs_costos:', e);
+      if (window.panelToastErr) panelToastErr('Tablero margen', e); else console.warn('[Tablero] v_margen_vs_costos:', e);
     }
 
     tapSet('tapP1Total', p1.total.toLocaleString('es-CL'));
@@ -16637,7 +16824,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .filter(r => r.desviacion_pct != null && Math.abs(Number(r.desviacion_pct)) > 30)
         .slice(0, 5);
     } catch (e) {
-      console.warn('[Tablero] bandeja:', e);
+      if (window.panelToastErr) panelToastErr('Tablero bandeja', e); else console.warn('[Tablero] bandeja:', e);
     }
     tapSet('tapP2Count', p2Total.toLocaleString('es-CL'));
 
@@ -16659,14 +16846,14 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const desde = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
       const { data: vales, error: ve } = await sb.schema('curated').from('vales_portal_externo')
-        .select('peso_kg, total_clp')
-        .gte('fecha_recepcion', desde)
+        .select('peso_final, total_vale')
+        .gte('fecha_firma_recepcion', desde)
         .limit(20000);
       if (ve) throw ve;
       let sumKg = 0, sumClp = 0;
       (vales || []).forEach(v => {
-        sumKg += Number(v.peso_kg || 0);
-        sumClp += Number(v.total_clp || 0);
+        sumKg += Number(v.peso_final || 0);
+        sumClp += Number(v.total_vale || 0);
       });
       p3KgTotal = sumKg;
       // Aproximación: % margen real requiere costos por kg, no disponible aquí
@@ -16674,7 +16861,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tapSet('tapP3Mg', sumClp > 0 ? tapFmtClp(sumClp / 1000) + 'K' : '—');
       tapSet('tapP3Kg', sumKg > 0 ? Math.round(sumKg).toLocaleString('es-CL') + ' kg' : '— kg');
     } catch (e) {
-      console.warn('[Tablero] vales mes:', e);
+      if (window.panelToastErr) panelToastErr('Tablero vales mes', e); else console.warn('[Tablero] vales mes:', e);
       tapSet('tapP3Mg', 'sin datos');
       tapSet('tapP3Kg', 'sin datos');
     }
@@ -16723,7 +16910,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const v = count || 0;
       checks.push({ nombre: 'Precios vencidos (vigencia_hasta < hoy)', valor: v, estado: ce(v, 0, 5) });
     } catch (e) {
-      console.warn('[Tablero] vencidos:', e);
+      if (window.panelToastErr) panelToastErr('Tablero vencidos', e); else console.warn('[Tablero] vencidos:', e);
       checks.push({ nombre: 'Precios vencidos', valor: 'error', estado: 'gris' });
     }
 
@@ -16738,7 +16925,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const v = count || 0;
       checks.push({ nombre: 'Propuestas obsoletas (>30d)', valor: v, estado: ce(v, 0, 50) });
     } catch (e) {
-      console.warn('[Tablero] obsoletas:', e);
+      if (window.panelToastErr) panelToastErr('Tablero obsoletas', e); else console.warn('[Tablero] obsoletas:', e);
       checks.push({ nombre: 'Propuestas obsoletas', valor: 'error', estado: 'gris' });
     }
 
@@ -16765,7 +16952,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const el = document.getElementById('tapLastUpdate');
       if (el) el.textContent = new Date().toLocaleString('es-CL');
     } catch (e) {
-      console.warn('[Tablero] error global:', e);
+      if (window.panelToastErr) panelToastErr('Tablero', e); else console.warn('[Tablero] error global:', e);
     }
   }
 
@@ -18225,7 +18412,7 @@ document.addEventListener('DOMContentLoaded', () => {
       : prompt('Tu comentario:');
     if (!texto || !texto.trim()) return;
     try {
-      const { error } = await sb.rpc('comentar_mi_tarea', { p_id: id, p_comentario: texto.trim() });
+      const { error } = await sb.schema('panel').rpc('comentar_mi_tarea', { p_id: id, p_comentario: texto.trim() });
       if (error) throw error;
       if (window.showToast) window.showToast('Comentario agregado', 'success');
       refrescar();
@@ -19401,6 +19588,258 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ============================================================
+  // Mesa V3 — Pulso del Negocio (PC5_dusan · 26-jun-2026)
+  // EF mesa-control-v3-api · verify_jwt=false · auto-refresh 5min
+  // ============================================================
+  var _v3Chart = null;
+  async function loadMesaV3Pulso() {
+    var EF = 'https://eknmtsrtfkzroxnovfqn.functions.supabase.co/mesa-control-v3-api';
+    var set = function(id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
+    try {
+      var r = await fetch(EF);
+      if (!r.ok) throw new Error('EF ' + r.status);
+      var d = await r.json();
+      var p = d.pulso || {};
+
+      // Ton hoy
+      var tonHoy = parseFloat(p.ton_hoy) || 0;
+      set('v3TonHoy', tonHoy.toFixed(1) + ' t');
+      var semTon = p.ton_semaforo || 'rojo';
+      var semColor = semTon === 'verde' ? 'text-emerald-400' : semTon === 'amarillo' ? 'text-amber-400' : 'text-red-400';
+      var elSem = document.getElementById('v3TonSem');
+      if (elSem) { elSem.textContent = (p.ton_pct_meta || 0) + '% meta · ' + semTon; elSem.className = 'text-[10px] mt-0.5 ' + semColor; }
+
+      // Caja
+      var cajaClp = p.caja_clp;
+      set('v3Caja', cajaClp != null ? '$' + (cajaClp / 1000000).toFixed(1) + 'M' : '—');
+      var cajaSem = p.caja_semaforo || '';
+      var cajaColor = cajaSem === 'verde' ? 'text-emerald-400' : cajaSem === 'amarillo' ? 'text-amber-400' : 'text-red-400';
+      var elCajaDias = document.getElementById('v3CajaDias');
+      if (elCajaDias) { elCajaDias.textContent = (p.caja_dias || 0) + ' días cobertura'; elCajaDias.className = 'text-[10px] mt-0.5 ' + cajaColor; }
+
+      // Seed badge
+      var seedEl = document.getElementById('v3Seed');
+      if (seedEl) { if (d.caja_es_seed) seedEl.classList.remove('hidden'); else seedEl.classList.add('hidden'); }
+
+      // Sucursales card (reemplaza USD/CLP)
+      var sucList = d.sucursales || [];
+      var sucActHoy = parseInt(p.sucursales_activas) || 0;
+      var totalSuc = sucList.length || 5;
+      set('v3SucCard', sucActHoy + '/' + totalSuc);
+      var elSucSub = document.getElementById('v3SucSub');
+      if (elSucSub) {
+        var enRojo = sucList.filter(function(s){ return (s.dias_con_actividad||0)/30 < 0.4; }).length;
+        elSucSub.textContent = enRojo > 0 ? enRojo + ' bajo rendimiento' : 'todas activas';
+        elSucSub.className = 'text-[10px] mt-0.5 ' + (enRojo > 0 ? 'text-amber-400' : 'text-emerald-400');
+      }
+
+      // Chips sucursales (30d)
+      var rowEl = document.getElementById('v3SucRow');
+      if (rowEl) {
+        rowEl.innerHTML = sucList.map(function(s) {
+          var pct = (s.dias_con_actividad||0) / 30;
+          var color = pct >= 0.7 ? '#10b981' : pct >= 0.4 ? '#f59e0b' : '#ef4444';
+          var dot = pct >= 0.7 ? '🟢' : pct >= 0.4 ? '🟡' : '🔴';
+          var nom = (s.sucursal||'').replace(/reciclean\s*/i,'').replace(/farex\s*/i,'').replace(/\s+/g,' ').trim().split(' ')[0];
+          var ton = (parseFloat(s.ton_prom_dia)||0).toFixed(1);
+          return '<span style="background:#1e293b;border:1px solid ' + color + ';color:#e2e8f0;font-size:10px;padding:2px 8px;border-radius:10px;white-space:nowrap">' + dot + ' ' + nom + ' ' + ton + 't/d</span>';
+        }).join('');
+      }
+
+      // Línea alerta (Hoy: ...)
+      var alertEl = document.getElementById('v3Alerta');
+      if (alertEl) {
+        var alertas = [];
+        var bajasRend = sucList.filter(function(s){ return (s.dias_con_actividad||0)/30 < 0.4; });
+        if (bajasRend.length > 0) alertas.push('📍 ' + bajasRend.map(function(s){ return (s.sucursal||'').split(' ')[0]; }).join(', ') + ' bajo rendimiento');
+        if ((p.clientes_morosos||0) > 0) alertas.push('💸 ' + p.clientes_morosos + ' cobros urgentes');
+        if ((p.desv_abiertas||0) > 0) alertas.push('⚡ ' + p.desv_abiertas + ' desvíos abiertos');
+        alertEl.textContent = alertas.length > 0 ? 'Hoy: ' + alertas.join(' · ') : '✅ Todo en orden';
+        alertEl.classList.remove('hidden');
+      }
+
+      // Cobros vencidos
+      var cobros = p.cobros_vencidos_clp;
+      set('v3Cobros', cobros != null ? '$' + (cobros / 1000000).toFixed(1) + 'M' : '—');
+      set('v3CobrosMax', (p.cobros_max_dias || 0) + ' días · ' + (p.clientes_morosos || 0) + ' clientes');
+
+      // Desviaciones
+      set('v3Desv', p.desv_abiertas != null ? String(p.desv_abiertas) : '—');
+
+      // Hora actualización
+      if (d.last_updated_at) {
+        var dt = new Date(d.last_updated_at);
+        set('v3UpdatedAt', 'datos: ' + dt.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }));
+      }
+
+      // Chart ton 14d
+      var hist = d.ton_historico || [];
+      if (hist.length >= 2 && typeof Chart !== 'undefined') {
+        var canvas = document.getElementById('v3ChartTon');
+        if (canvas) {
+          var labels = hist.map(function(h) { return (h.fecha || '').slice(5); });
+          var values = hist.map(function(h) { return parseFloat(h.ton_total) || 0; });
+          if (_v3Chart) { _v3Chart.destroy(); _v3Chart = null; }
+          _v3Chart = new Chart(canvas, {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [{ data: values, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', borderWidth: 1.5, pointRadius: 2, fill: true, tension: 0.3 }]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: '#334155' } },
+                y: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: '#334155' }, min: 0 }
+              }
+            }
+          });
+        }
+      }
+    } catch (err) {
+      var el = document.getElementById('v3TonHoy');
+      if (el) el.textContent = 'Error';
+    }
+  }
+
+  // ============================================================
+  // CALIBRADOR DE MARGEN · datos reales curated.v_margen_vs_costos
+  // PC5_dusan · 26-jun-2026 · integrado Mesa Control 99-99
+  // ============================================================
+  var calDatos = [], calFSuc = 'todas', calFChip = 'todos', calAprobados = {};
+  function calSemNorm(s) { var v = (s||'').toLowerCase(); return v.includes('rojo')?'rojo':v.includes('amarillo')?'amarillo':'verde'; }
+  function calFiltrado() {
+    return calDatos.filter(function(d){
+      return (calFSuc==='todas'||d.sucursal_nombre===calFSuc) && (calFChip==='todos'||calSemNorm(d.semaforo)===calFChip);
+    }).sort(function(a,b){
+      var o={rojo:0,amarillo:1,verde:2};
+      var sa=calSemNorm(a.semaforo),sb=calSemNorm(b.semaforo);
+      if(sa!==sb) return (o[sa]||0)-(o[sb]||0);
+      return (parseFloat(a.mg_vs_meta)||0)-(parseFloat(b.mg_vs_meta)||0);
+    });
+  }
+  function calIniciarSucursales() {
+    var sucs=['todas'], seen={};
+    calDatos.forEach(function(d){ if(!seen[d.sucursal_nombre]){sucs.push(d.sucursal_nombre);seen[d.sucursal_nombre]=1;} });
+    var bar=document.getElementById('cal-suc-bar'); if(!bar) return;
+    bar.innerHTML=sucs.map(function(s){
+      var filtS=s==='todas'?calDatos:calDatos.filter(function(d){return d.sucursal_nombre===s;});
+      var nr=filtS.filter(function(d){return calSemNorm(d.semaforo)==='rojo';}).length;
+      var bdg=nr>0?' <span style="background:#fee2e2;color:#dc2626;border-radius:8px;padding:1px 5px;font-size:9px;font-weight:700">'+nr+'🔴</span>':'';
+      return '<button class="cal-suc-btn'+(calFSuc===s?' on':'')+'" onclick="calSelSuc(this,\''+s.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">'+(s==='todas'?'Todas · '+calDatos.length:s)+bdg+'</button>';
+    }).join('');
+  }
+  function calSelSuc(el,s){calFSuc=s;document.querySelectorAll('#cal-bloque .cal-suc-btn').forEach(function(b){b.classList.remove('on');});el.classList.add('on');calRender();calUpdCeoBanner();}
+  function calChip(el,v){calFChip=v;document.querySelectorAll('#cal-bloque .cal-chip').forEach(function(b){b.classList.remove('cal-chip-on');});el.classList.add('cal-chip-on');calRender();}
+  function calRender() {
+    var datos=calFiltrado();
+    var elC=document.getElementById('cal-cargando'); if(elC) elC.classList.add('hidden');
+    var tbl=document.getElementById('cal-tabla'); if(tbl) tbl.classList.remove('hidden');
+    var tbody=document.getElementById('cal-tbody'); if(!tbody) return;
+    var filtAll=calFSuc==='todas'?calDatos:calDatos.filter(function(d){return d.sucursal_nombre===calFSuc;});
+    var nV=filtAll.filter(function(d){return calSemNorm(d.semaforo)==='verde';}).length;
+    var nA=filtAll.filter(function(d){return calSemNorm(d.semaforo)==='amarillo';}).length;
+    var nR=filtAll.filter(function(d){return calSemNorm(d.semaforo)==='rojo';}).length;
+    var el=document.getElementById('cal-k-tot'); if(el) el.textContent=filtAll.length;
+    el=document.getElementById('cal-k-suc'); if(el) el.textContent=calFSuc==='todas'?'4 sucursales':calFSuc;
+    el=document.getElementById('cal-k-v'); if(el) el.textContent=nV;
+    el=document.getElementById('cal-k-a'); if(el) el.textContent=nA;
+    el=document.getElementById('cal-k-r'); if(el) el.textContent=nR;
+    el=document.getElementById('cal-badge'); if(el) el.textContent=datos.length+' materiales';
+    if(!datos.length){tbody.innerHTML='<tr><td colspan="10" class="text-center text-stone-400 py-6 text-xs">Sin materiales para este filtro</td></tr>';return;}
+    tbody.innerHTML=datos.map(function(d){
+      var key=d.material_id+'_'+d.sucursal_id;
+      var sem=calSemNorm(d.semaforo);
+      var semBdg=sem==='verde'?'<span class="cal-sem-v">🟢 verde</span>':sem==='amarillo'?'<span class="cal-sem-a">🟡 alerta</span>':'<span class="cal-sem-r">🔴 bajo mín</span>';
+      var mg=parseFloat(d.mg_real_pct)||0, meta=parseFloat(d.mg_meta_pct)||0, br=parseFloat(d.mg_vs_meta)||0;
+      var brCol=br>=0?'color:#166534':'color:#dc2626';
+      var vig=d.vigencia_desde||'—';
+      var ap=!!calAprobados[key];
+      var btnAp=ap?'<span class="text-[10px] text-emerald-700 font-semibold">✓ Aprobado</span>':'<button onclick="calAprobar(\''+key.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\',this)" class="cal-btn-ap">Aprobar</button>';
+      var trBg=sem==='rojo'?'background:#fff5f5':sem==='amarillo'?'background:#fffbeb':'';
+      return '<tr style="border-bottom:1px solid #f1f5f9;'+trBg+'">'
+        +'<td class="px-3 py-2 font-semibold text-stone-800" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+d.nombre.replace(/"/g,'&quot;')+'">'+d.nombre+'</td>'
+        +'<td class="px-3 py-2 text-stone-500 text-[11px]">'+d.sucursal_nombre+'</td>'
+        +'<td class="px-3 py-2 text-right font-bold">'+(d.precio_compra_clp?'$'+Math.round(parseFloat(d.precio_compra_clp)).toLocaleString('es-CL'):'—')+'</td>'
+        +'<td class="px-3 py-2 text-right font-bold text-emerald-700">'+(d.precio_venta_clp?'$'+Math.round(parseFloat(d.precio_venta_clp)).toLocaleString('es-CL'):'—')+'</td>'
+        +'<td class="px-3 py-2 text-right font-bold">'+mg.toFixed(1)+'%</td>'
+        +'<td class="px-3 py-2 text-right text-stone-500">'+meta.toFixed(1)+'%</td>'
+        +'<td class="px-3 py-2 text-right font-bold" style="'+brCol+'">'+(br>=0?'+':'')+br.toFixed(1)+'%</td>'
+        +'<td class="px-3 py-2 text-center">'+semBdg+'</td>'
+        +'<td class="px-3 py-2 text-center text-[10px] text-stone-400">'+vig+'</td>'
+        +'<td class="px-3 py-2 text-center">'+btnAp+'</td>'
+        +'</tr>';
+    }).join('');
+  }
+  function calAprobar(key) {
+    var prev=!!calAprobados[key];
+    calToastUndo('✅ Precio aprobado','cal-tv',
+      function(){calAprobados[key]=true;calRender();},
+      function(){delete calAprobados[key];calRender();calToast('↩ Deshecho','cal-ta');}
+    );
+  }
+  function calAprobarRojosSuc() {
+    if(!calFSuc||calFSuc==='todas') return;
+    var rojos=calDatos.filter(function(d){return d.sucursal_nombre===calFSuc&&calSemNorm(d.semaforo)==='rojo';});
+    var prev={};rojos.forEach(function(d){var k=d.material_id+'_'+d.sucursal_id;prev[k]=!!calAprobados[k];});
+    calToastUndo('✅ '+rojos.length+' rojos de '+calFSuc+' aprobados','cal-tv',
+      function(){rojos.forEach(function(d){calAprobados[d.material_id+'_'+d.sucursal_id]=true;});calRender();calUpdCeoBanner();},
+      function(){rojos.forEach(function(d){var k=d.material_id+'_'+d.sucursal_id;if(!prev[k])delete calAprobados[k];});calRender();calUpdCeoBanner();calToast('↩ Deshecho','cal-ta');}
+    );
+  }
+  function calUpdCeoBanner() {
+    var btn=document.getElementById('cal-ceo-btn'); if(!btn) return;
+    var rojos=calFSuc!=='todas'?calDatos.filter(function(d){return d.sucursal_nombre===calFSuc&&calSemNorm(d.semaforo)==='rojo'&&!calAprobados[d.material_id+'_'+d.sucursal_id];}).length:0;
+    btn.textContent=rojos>0?'✅ Aprobar '+rojos+' rojos de '+calFSuc:'✓ Todo OK';
+    btn.disabled=rojos===0; btn.style.opacity=rojos===0?'0.6':'1';
+  }
+  function calCerrarCeo() {
+    var b=document.getElementById('cal-ceo-banner'); if(b) b.classList.add('hidden');
+    calFChip='todos';
+    document.querySelectorAll('#cal-bloque .cal-chip').forEach(function(c){c.classList.remove('cal-chip-on');if(c.dataset.calChip==='todos')c.classList.add('cal-chip-on');});
+    calRender();
+  }
+  function calRefresh() { if(calDatos.length>0){calIniciarSucursales();calRender();} }
+  function calUpdTS(vig) {
+    var dot=document.getElementById('cal-ts-dot'), txt=document.getElementById('cal-ts'); if(!txt) return;
+    if(vig){ var d=new Date(vig), df=Math.round((new Date()-d)/86400000);
+      if(dot) dot.style.background=df<=3?'#22c55e':'#f59e0b';
+      txt.textContent='Vigente desde '+vig+(df>3?' · ⚠ hace '+df+'d':'');
+    } else { txt.textContent='Sin fecha vigencia'; }
+  }
+  function calToastUndo(msg,cls,doFn,undoFn) {
+    doFn();
+    var ct=document.getElementById('cal-toasts'); if(!ct) return;
+    var t=document.createElement('div'); t.className='cal-toast '+(cls||'');
+    t.innerHTML='<span>'+msg+'</span><button class="cal-tundo" onclick="calUndoT(this)">↩ Deshacer</button>';
+    t._undo=undoFn; ct.appendChild(t);
+    t._tm=setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},5000);
+  }
+  function calUndoT(btn){var t=btn.parentNode;if(t&&t._undo){clearTimeout(t._tm);t._undo();if(t.parentNode)t.parentNode.removeChild(t);}}
+  function calToast(msg,cls) {
+    var ct=document.getElementById('cal-toasts'); if(!ct) return;
+    var t=document.createElement('div'); t.className='cal-toast '+(cls||''); t.textContent=msg;
+    ct.appendChild(t); setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},3000);
+  }
+  async function loadCalibradorMargen(token,SUPA,apikey) {
+    var el=document.getElementById('cal-cargando'); if(!el) return;
+    el.textContent='Cargando datos reales…';
+    try {
+      var h={'apikey':apikey,'Authorization':'Bearer '+token,'Accept-Profile':'curated'};
+      var r=await fetch(SUPA+'/rest/v1/v_margen_vs_costos?select=*&order=semaforo.asc,mg_vs_meta.asc&limit=500',{headers:h});
+      if(!r.ok){el.textContent='Error '+r.status+' al cargar materiales';return;}
+      var datos=await r.json();
+      if(!Array.isArray(datos)||!datos.length){el.textContent='Sin datos en curated.v_margen_vs_costos';return;}
+      calDatos=datos;
+      calIniciarSucursales();
+      calRender();
+      var firstVig=datos.find(function(d){return d.vigencia_desde;});
+      calUpdTS(firstVig?firstVig.vigencia_desde:null);
+    } catch(e){if(el)el.textContent='Error: '+(e.message||e);}
+  }
+
+  // ============================================================
   // Mesa de Control Plan 99-99 (D-PLAN-99-99-001 Fase 3 · PC2 Pablo 15-jun)
   // Consume RPCs panel.estatus_plan_99_99 + public.mesa_control_99_99_kpis
   // + public.v_pc_score_individual (widget H)
@@ -19540,6 +19979,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       var sync = document.getElementById('mesaControl9999Sync');
       if (sync) sync.textContent = 'Sync: ' + new Date().toLocaleTimeString('es-CL');
+      // Calibrador de Margen — datos reales curated.v_margen_vs_costos
+      try { await loadCalibradorMargen(token, SUPA, apikey); } catch(eC) { console.warn('calibrador', eC); }
     } catch (e) {
       setHTML('mcFasesTbody', '<tr><td colspan="4" class="text-center text-red-600 py-4">Error: ' + (e?.message || e) + '</td></tr>');
     }
@@ -19547,6 +19988,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupMesaControl9999AutoRefresh() {
     var btn = document.getElementById('mesaControl9999Refresh');
     if (btn) btn.addEventListener('click', loadMesaControl9999);
+    // Mesa V3 refresh button
+    var v3Btn = document.getElementById('v3Refresh');
+    if (v3Btn) v3Btn.addEventListener('click', loadMesaV3Pulso);
     document.querySelectorAll('[data-mc-drill]').forEach(function(card) {
       card.addEventListener('click', function() {
         var dest = card.getAttribute('data-mc-drill');
@@ -19556,10 +20000,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     setInterval(function() {
       var sec = document.getElementById('tabMesaControl9999');
-      if (sec && !sec.classList.contains('hidden')) loadMesaControl9999();
+      if (sec && !sec.classList.contains('hidden')) { loadMesaControl9999(); loadMesaV3Pulso(); }
     }, 60000);
+    // Mesa V3 auto-refresh cada 5 min independiente
+    setInterval(function() {
+      var sec = document.getElementById('tabMesaControl9999');
+      if (sec && !sec.classList.contains('hidden')) loadMesaV3Pulso();
+    }, 300000);
     var perfil = (typeof currentProfile !== 'undefined') ? currentProfile : null;
-    if (perfil === 'dusan' || perfil === 'admin') setTimeout(loadMesaControl9999, 2000);
+    if (perfil === 'dusan' || perfil === 'admin') {
+      setTimeout(loadMesaControl9999, 2000);
+      setTimeout(loadMesaV3Pulso, 1500); // V3 carga un poco antes (no requiere auth)
+    }
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupMesaControl9999AutoRefresh);
@@ -19881,6 +20333,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bind('firmas_pend', loadFirmas);
     bind('firmas_reglas', loadFirmasReglas);
     bind('mesa_control_99_99', loadMesaControl9999);
+    bind('mesa_control_99_99', loadMesaV3Pulso);
     bind('tarifas_ext', loadTarifas);
 
     // Form Firma
@@ -20560,7 +21013,7 @@ document.addEventListener('DOMContentLoaded', () => {
         var ok = 0;
         for (var i = 0; i < destinos.length; i++) {
           try {
-            await sb.from('diego_inbox').insert({
+            await sb.schema('panel').from('diego_inbox').insert({
               destinatario_email: destinos[i].email,
               categoria: 'escalado_permisologia',
               titulo: 'Escalado Permisología · obligación #' + _currentEditId,
@@ -22572,7 +23025,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const sb = window.supabase;
 
       // 1. Cargar frescura datos (semáforos)
-      const { data: frescura, error: e1 } = await sb.from('v_frescura_datos').select('*');
+      const { data: frescura, error: e1 } = await sb.schema('panel').from('v_frescura_datos').select('*');
       if (e1) throw e1;
 
       // 2. Cargar logs recientes (últimas 24h)
