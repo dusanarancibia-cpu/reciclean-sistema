@@ -1,0 +1,49 @@
+name: gitleaks · Pieza #2 Plan 99-99 (HTML L432 + L411)
+
+# Guardia GH bloqueante sobre PCs (R-AUD-083)
+# Detecta secretos hardcoded en commits/PRs antes de merge a main.
+# Modo inicial: detección bloqueante en PRs + scan full history schedule semanal.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 11 * * 1'  # Lunes 08:00 CLT scan full history
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+jobs:
+  gitleaks:
+    name: gitleaks scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history para schedule semanal
+
+      - name: Run gitleaks
+        id: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: 'true'
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'true'
+          GITLEAKS_ENABLE_SUMMARY: 'true'
+
+      - name: Comment PR on detection
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '☢️ Pieza #2 Plan 99-99 · gitleaks detectó secrets hardcoded. PR BLOQUEADO. Ver Actions log + remediar antes de merge.'
+            })

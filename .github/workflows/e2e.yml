@@ -14,6 +14,8 @@ jobs:
     name: E2E chromium contra prod
     timeout-minutes: 15
     runs-on: ubuntu-latest
+    env:
+      HAS_SECRETS: ${{ (secrets.SUPABASE_URL != '' && secrets.SUPABASE_SERVICE_ROLE != '') }}
 
     steps:
       - name: Checkout
@@ -49,7 +51,7 @@ jobs:
           retention-days: 30
 
       - name: Notify detector bucle si falla (detector #9)
-        if: failure() && secrets.SUPABASE_URL != '' && secrets.SUPABASE_SERVICE_ROLE != ''
+        if: failure() && env.HAS_SECRETS == 'true'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
