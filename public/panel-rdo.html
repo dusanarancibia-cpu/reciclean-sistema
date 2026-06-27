@@ -1903,11 +1903,11 @@
         <div>
           <label for="bpFiltroRuta" class="block text-xs text-stone-500 mb-1">Ruta</label>
           <select id="bpFiltroRuta" onchange="loadBandejaPrecios()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
-            <option value="dusan" selected>dusan</option>
+            <option value="" selected>Todas las rutas</option>
+            <option value="dusan">dusan</option>
             <option value="andrea">andrea</option>
             <option value="auto">auto</option>
             <option value="competencia">competencia</option>
-            <option value="">Todas</option>
           </select>
         </div>
         <div>
@@ -15003,8 +15003,8 @@ document.addEventListener('DOMContentLoaded', () => {
         || (r.notas ?? '').toLowerCase().includes(q2)
       );
     }
-    // Badge counter: solo pendientes ruta=dusan
-    const totalPendientes = (data || []).filter(r => r.estado === 'pendiente' && r.ruta === 'dusan').length;
+    // Badge counter: todos los pendientes (dusan + competencia + otras rutas manuales)
+    const totalPendientes = (data || []).filter(r => r.estado === 'pendiente').length;
     bpActualizarBadge(totalPendientes);
     if (rows.length === 0) {
       tbody.innerHTML = '<tr><td colspan="10" class="px-3 py-4 text-center text-stone-400">Sin propuestas para este filtro.</td></tr>';
