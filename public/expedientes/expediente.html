@@ -126,6 +126,7 @@ body{font-family:'Inter',sans-serif;margin:0;background:#f3f4f6;color:var(--text
     </div>
     <div>
       <button class="secondary" onclick="window.location.href='/panel-rdo.html'">← Panel</button>
+      <button id="btn-ingestar" onclick="abrirIngesta()" style="display:none;background:#7c3aed">📎 Ingestar doc</button>
       <button onclick="window.print()">🖨️ Imprimir</button>
     </div>
   </div>
@@ -172,6 +173,37 @@ body{font-family:'Inter',sans-serif;margin:0;background:#f3f4f6;color:var(--text
   </div>
 </div>
 
+<!-- Modal ingestar documento a Diego · T-72 EF v90 -->
+<div class="modal-bg" id="ingestaModal">
+  <div class="modal" style="max-width:560px">
+    <h3>📎 Ingestar documento a Diego</h3>
+    <div id="ingesta-step-1">
+      <label>Archivo (PDF · imagen · Excel · CSV)</label>
+      <input type="file" id="ingesta-file" accept="image/*,application/pdf,.xlsx,.xls,.csv">
+      <div class="file-info" id="ingesta-file-info"></div>
+      <label>Contexto para Diego (opcional)</label>
+      <textarea id="ingesta-ctx" placeholder="Ej: Esta es la resolución sanitaria INFSA 261045237 de Puerto Montt…" style="min-height:60px"></textarea>
+      <div class="actions">
+        <button class="cancel" onclick="cerrarIngesta()">Cancelar</button>
+        <button class="ok" id="ingesta-enviar" onclick="enviarADiego()">Analizar con Diego ▶</button>
+      </div>
+    </div>
+    <div id="ingesta-step-2" style="display:none">
+      <div id="ingesta-diego-respuesta" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px;font-size:13px;line-height:1.65;margin-bottom:14px;white-space:pre-wrap"></div>
+      <div class="actions">
+        <button class="cancel" onclick="cerrarIngesta()">Cancelar</button>
+        <button class="ok" id="ingesta-confirmar" onclick="confirmarIngesta()" style="display:none;background:#059669">✅ CONFIRMAR inserción</button>
+      </div>
+    </div>
+    <div id="ingesta-step-3" style="display:none;text-align:center;padding:20px">
+      <div style="font-size:36px">✅</div>
+      <div style="font-size:15px;font-weight:700;color:#059669;margin-top:8px">Documento ingestado</div>
+      <div id="ingesta-ok-txt" style="font-size:12px;color:#6b7280;margin-top:6px"></div>
+      <button class="ok" onclick="cerrarIngesta()" style="margin-top:16px">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://eknmtsrtfkzroxnovfqn.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbm10c3J0Zmt6cm94bm92ZnFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDY2ODgsImV4cCI6MjA5MDk4MjY4OH0.8Y4N0lw3DFN3Y8-R6ID7t_LAfgHWDM5N-oa4Ji9bncg';
@@ -187,6 +219,10 @@ async function checkAuth(){
     const s = await sb.auth.getSession();
     _isAuth = !!(s && s.data && s.data.session && s.data.session.user);
   } catch(_) { _isAuth = false; }
+  if (_isAuth) {
+    const b = document.getElementById('btn-ingestar');
+    if (b) b.style.display = '';
+  }
   return _isAuth;
 }
 
@@ -437,6 +473,78 @@ async function guardarGestion(){
   }
 }
 window.guardarGestion = guardarGestion;
+
+// ── INGESTA DIEGO · T-72 EF v90 ──────────────────────────────
+const DIEGO_EF = 'https://eknmtsrtfkzroxnovfqn.functions.supabase.co/diego-chat-process';
+let _ingestaPendiente = null;
+
+function abrirIngesta(){
+  document.getElementById('ingestaModal').classList.add('open');
+  document.getElementById('ingesta-step-1').style.display = '';
+  document.getElementById('ingesta-step-2').style.display = 'none';
+  document.getElementById('ingesta-step-3').style.display = 'none';
+  _ingestaPendiente = null;
+}
+function cerrarIngesta(){ document.getElementById('ingestaModal').classList.remove('open'); }
+
+async function enviarADiego(){
+  const file = document.getElementById('ingesta-file').files[0];
+  if (!file){ alert('Seleccioná un archivo.'); return; }
+  const ctx = document.getElementById('ingesta-ctx').value.trim();
+  const btn = document.getElementById('ingesta-enviar');
+  btn.disabled = true; btn.textContent = 'Subiendo archivo…';
+  try {
+    const path = 'expedientes/'+codigo+'/'+Date.now()+'_'+file.name.replace(/[^\w.\-]/g,'_');
+    const up = await sb.storage.from('impulsa-documentos').upload(path, file, {upsert:false});
+    if (up.error) throw new Error('Storage: '+up.error.message);
+    const {data:urlData} = sb.storage.from('impulsa-documentos').getPublicUrl(path);
+    const file_url = urlData.publicUrl;
+    const s = await sb.auth.getSession();
+    const user_email = s?.data?.session?.user?.email;
+    if (!user_email) throw new Error('Sesión no activa — iniciá sesión en /panel-rdo.html');
+    btn.textContent = 'Analizando con Diego…';
+    const resp = await fetch(DIEGO_EF, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
+      body: JSON.stringify({ user_email, mensaje: ctx || ('Analiza este documento del expediente '+codigo), file_url, file_mime: file.type, file_name: file.name })
+    });
+    const res = await resp.json();
+    if (!resp.ok) throw new Error(res.error || 'Error diego-chat-process');
+    _ingestaPendiente = { user_email, request_id: res.request_id };
+    document.getElementById('ingesta-step-1').style.display = 'none';
+    document.getElementById('ingesta-step-2').style.display = '';
+    document.getElementById('ingesta-diego-respuesta').textContent = res.reply || '(sin respuesta)';
+    const hayClasif = res.reply && (res.reply.includes('CONFIRMAR') || res.reply.includes('confianza'));
+    document.getElementById('ingesta-confirmar').style.display = hayClasif ? '' : 'none';
+  }catch(e){ alert('Error: '+(e.message||e)); }
+  finally{ btn.disabled = false; btn.textContent = 'Analizar con Diego ▶'; }
+}
+
+async function confirmarIngesta(){
+  if (!_ingestaPendiente) return;
+  const btn = document.getElementById('ingesta-confirmar');
+  btn.disabled = true; btn.textContent = 'Confirmando…';
+  try {
+    const resp = await fetch(DIEGO_EF, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON},
+      body: JSON.stringify({ user_email: _ingestaPendiente.user_email, mensaje: 'CONFIRMAR' })
+    });
+    const res = await resp.json();
+    if (!resp.ok) throw new Error(res.error || 'Error confirmando');
+    document.getElementById('ingesta-step-2').style.display = 'none';
+    document.getElementById('ingesta-step-3').style.display = '';
+    document.getElementById('ingesta-ok-txt').textContent = res.reply || '✅ Documento ingestado.';
+    await cargar();
+  }catch(e){ alert('Error: '+(e.message||e)); }
+  finally{ btn.disabled = false; btn.textContent = '✅ CONFIRMAR inserción'; }
+}
+
+window.abrirIngesta = abrirIngesta;
+window.cerrarIngesta = cerrarIngesta;
+window.enviarADiego = enviarADiego;
+window.confirmarIngesta = confirmarIngesta;
+// ── FIN INGESTA ───────────────────────────────────────────────
 
 checkAuth().then(cargar).then(()=>setTimeout(cargarPreviewsImagenes, 200));
 </script>
