@@ -970,6 +970,8 @@
       }
       .v4-cat:not([open]) > summary::after { transform: rotate(-90deg); }
       .v4-cat[open] > summary { color: #475569; }
+      /* Forzar ocultamiento del contenido en grupos cerrados (anula cualquier CSS externo) */
+      .v4-cat:not([open]) > div { display: none !important; }
       .v4-emoji { font-size: 15px; line-height: 1; width: 18px; text-align: center; flex-shrink: 0; }
       /* Hover suave en items con emoji */
       .nav-item:hover .v4-emoji { transform: scale(1.1); transition: transform 0.15s ease; }
@@ -7540,8 +7542,9 @@ window.panelForzarActualizacion = async function() {
       await Promise.all(keys.map(k => caches.delete(k)));
     }
   } catch(e) { console.warn('[Panel] actualizar caché:', e); }
-  // 3. Recargar forzado (sin caché)
-  window.location.reload(true);
+  // 3. Redirect con bust de caché (reload(true) es ignorado en Chrome moderno)
+  var base = window.location.origin + window.location.pathname;
+  window.location.href = base + '?_v=' + Date.now();
 };
 
 window.logout = async function() {
