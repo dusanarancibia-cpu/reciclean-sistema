@@ -1999,6 +1999,19 @@
             <div id="bpDw_notas" class="text-sm text-stone-700 whitespace-pre-line">—</div>
           </div>
 
+          <!-- Ajuste de precio antes de aprobar -->
+          <div class="bg-amber-50 border border-amber-200 rounded p-3 mb-3">
+            <div class="text-xs text-amber-800 font-medium mb-1.5">✏️ Ajustar precio antes de aprobar (opcional)</div>
+            <div class="flex gap-2 items-center">
+              <input id="bpPrecioAjustado" type="number" step="1" min="1"
+                     placeholder="Ej: 8500"
+                     class="flex-1 px-2 py-1 border border-amber-300 rounded text-sm focus:outline-none focus:border-amber-500"
+                     oninput="bpActualizarMargenAjuste(this.value)">
+              <span class="text-xs text-stone-500">CLP/kg</span>
+            </div>
+            <div id="bpMargenAjuste" class="text-xs text-stone-500 mt-1 hidden"></div>
+          </div>
+
           <div class="flex flex-wrap gap-2 mb-3">
             <button id="bpBtnAprobar" onclick="bpAprobar()"
                     title="Aplica el precio propuesto · abre nueva vigencia atómica + dispara notificación a Andrea"
@@ -14824,6 +14837,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const REFRESH_MS  = 60000;
   let bpRefreshTimer = null;
   let bpCurrentId = null;
+  let bpCurrentHualPrice = null;
   let bpSearchDebounce = null;
 
   function esc(s) {
@@ -15168,6 +15182,19 @@ document.addEventListener('DOMContentLoaded', () => {
     btnAprobar.classList.toggle('opacity-50', yaCerrada);
     btnRechazar.classList.toggle('opacity-50', yaCerrada);
 
+    // Reset campo ajuste precio + cargar precio HUAL para preview margen
+    const inputAjuste = document.getElementById('bpPrecioAjustado');
+    if (inputAjuste) inputAjuste.value = '';
+    document.getElementById('bpMargenAjuste').classList.add('hidden');
+    bpCurrentHualPrice = null;
+    if (r.material_id && typeof sb !== 'undefined' && sb) {
+      try {
+        const { data: hp } = await sb.schema('curated').from('comprador_precio_actual')
+          .select('precio_clp_kg').eq('comprador_id', 'PV07').eq('material_id', r.material_id).maybeSingle();
+        if (hp?.precio_clp_kg) bpCurrentHualPrice = Number(hp.precio_clp_kg);
+      } catch (_) { /* no bloquea */ }
+    }
+
     document.getElementById('bpDrawerMsg').classList.add('hidden');
     document.getElementById('bpDrawer').classList.remove('hidden');
   }
@@ -15191,11 +15218,40 @@ document.addEventListener('DOMContentLoaded', () => {
     el.className = 'text-xs p-2 rounded ' + (ok ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
   }
 
+  function bpActualizarMargenAjuste(valor) {
+    const el = document.getElementById('bpMargenAjuste');
+    const v = parseFloat(valor);
+    if (!v || v <= 0) { el.classList.add('hidden'); return; }
+    el.classList.remove('hidden');
+    if (bpCurrentHualPrice && bpCurrentHualPrice > 0) {
+      const margen = (bpCurrentHualPrice - v) / bpCurrentHualPrice * 100;
+      const color = margen >= 40 ? 'text-green-600' : margen >= 25 ? 'text-yellow-600' : 'text-red-600';
+      const sem = margen >= 40 ? '🟢' : margen >= 25 ? '🟡' : '🔴';
+      el.innerHTML = `${sem} Margen vs HUAL: <span class="${color} font-medium">${margen.toFixed(1)}%</span> · HUAL paga ${fmtCLP(bpCurrentHualPrice)}/kg`;
+    } else {
+      el.textContent = 'Sin precio HUAL para calcular margen';
+    }
+  }
+
   async function bpAprobar() {
     if (!bpCurrentId) return;
     if (!currentUser || !currentUser.includes('@')) { bpMsg('Falta email del usuario actual.', false); return; }
     const btn = document.getElementById('bpBtnAprobar');
     btn.disabled = true;
+
+    // Si hay precio ajustado, actualizar la propuesta antes de aplicar
+    const precioAjustado = parseFloat(document.getElementById('bpPrecioAjustado')?.value ?? '');
+    if (precioAjustado && precioAjustado > 0 && typeof sb !== 'undefined' && sb) {
+      const { error: updErr } = await sb.schema('staging').from('precios_propuestos')
+        .update({ precio_clp_kg: precioAjustado, updated_at: new Date().toISOString() })
+        .eq('id', bpCurrentId);
+      if (updErr) {
+        bpMsg(`No pude ajustar el precio: ${updErr.message}`, false);
+        btn.disabled = false;
+        return;
+      }
+    }
+
     try {
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/precio-aplicar`, {
         method: 'POST',
