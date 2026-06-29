@@ -1910,7 +1910,7 @@
       <div class="bg-white p-3 rounded shadow-sm mb-4 flex flex-wrap gap-3 items-end">
         <div>
           <label for="bpFiltroEstado" class="block text-xs text-stone-500 mb-1">Estado</label>
-          <select id="bpFiltroEstado" onchange="loadBandejaPrecios()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+          <select id="bpFiltroEstado" onchange="loadBandejaPrecios()" autocomplete="off" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
             <option value="pendiente" selected>Pendiente</option>
             <option value="aplicado">Aplicado</option>
             <option value="rechazado">Rechazado</option>
@@ -1919,9 +1919,9 @@
         </div>
         <div>
           <label for="bpFiltroRuta" class="block text-xs text-stone-500 mb-1">Ruta</label>
-          <select id="bpFiltroRuta" onchange="loadBandejaPrecios()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+          <select id="bpFiltroRuta" onchange="loadBandejaPrecios()" autocomplete="off" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
             <option value="" selected>Todas las rutas</option>
-            <option value="dusan">dusan</option>
+            <option value="dusan">Dusan</option>
             <option value="andrea">andrea</option>
             <option value="auto">auto</option>
             <option value="competencia">competencia</option>
@@ -15340,7 +15340,8 @@ document.addEventListener('DOMContentLoaded', () => {
   window.bpCerrarDrawer     = bpCerrarDrawer;
   window.bpAprobar          = bpAprobar;
   window.bpRechazar         = bpRechazar;
-  window.bpDebouncedSearch  = bpDebouncedSearch;
+  window.bpDebouncedSearch          = bpDebouncedSearch;
+  window.bpActualizarMargenAjuste   = bpActualizarMargenAjuste;
 })();
 </script>
 
