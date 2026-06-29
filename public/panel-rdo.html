@@ -710,6 +710,10 @@
             <span class="v4-emoji" aria-hidden="true">💰</span>
             Decisor venta
           </a>
+          <a href="#" data-v4-tab="hual_compra" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">🎯</span>
+            HUAL vs Compra
+          </a>
           <a href="#" data-v4-tab="andrea_comex" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
             <span class="v4-emoji" aria-hidden="true">🚢</span>
             Comex
@@ -1182,6 +1186,7 @@
         <button data-tab="cierres"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCierres">📅 Cierres</button>
         <button data-tab="precios"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabPrecios">💲 Precios</button>
         <button data-tab="bandeja_precios" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabBandejaPrecios">📨 Bandeja Precios <span id="bpBadgeNavbar" class="bp-badge-counter hidden text-xs font-bold px-1.5 py-0.5 rounded-full ml-1">0</span></button>
+        <button data-tab="hual_compra" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabHualCompra">🎯 HUAL vs Compra</button>
         <button data-tab="precios_vivos" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabPreciosVivos">💰 Precios Vivos</button>
         <button data-tab="errores_bucles" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabErroresBucles">🚦 Errores y Bucles</button>
         <button data-tab="cronograma_24h" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCronograma24h">⏰ Cronograma 24h</button>
@@ -5988,6 +5993,25 @@
           <button id="acomex_f_cancelar" class="px-3 py-1 bg-stone-300 text-stone-700 rounded text-xs hover:bg-stone-400">Cancelar</button>
         </div>
       </div>
+    </section>
+
+    <!-- ============================================================
+         PC5 29-jun · HUAL vs Compra — margen por material/sucursal
+         ============================================================ -->
+    <section id="tabHualCompra" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">🎯 HUAL vs Precio de Compra</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Lo que HUAL paga vs lo que pagás al proveedor. Verde ≥40% · Amarillo ≥25% · Rojo &lt;25%.</p>
+        </div>
+        <div class="flex gap-2 flex-wrap items-center">
+          <select id="hualFiltroSuc" onchange="loadHualCompra()" class="text-xs border border-stone-300 rounded px-2 py-1">
+            <option value="">Todas las sucursales</option>
+          </select>
+          <button onclick="loadHualCompra()" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
+      </div>
+      <div id="hualCompraTabla" class="overflow-x-auto"></div>
     </section>
 
     <!-- ============================================================
@@ -21721,6 +21745,88 @@ document.addEventListener('DOMContentLoaded', () => {
       if (sel) sel.innerHTML = '<option value="">Elegí sucursal…</option>' + _decSucCache.map(s => `<option value="${esc(s.sucursal_id)}">${esc(s.nombre)}</option>`).join('');
     }
   }
+  // ── HUAL vs Compra ──────────────────────────────────────────────
+  let _hualSucLoaded = false;
+  async function loadHualCompra() {
+    const div = $$('hualCompraTabla'); if (!div) return;
+    div.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Cargando…</div>';
+    try {
+      // 1. Precios HUAL (PV07)
+      const { data: hualRows, error: e1 } = await sb.schema('curated').from('comprador_precio_actual')
+        .select('material_id, precio_clp_kg, vigente_desde')
+        .eq('comprador_id', 'PV07').is('vigente_hasta', null);
+      if (e1) throw e1;
+
+      // 2. Nombres de materiales
+      const { data: mats } = await sb.schema('curated').from('materiales').select('material_id, nombre');
+      const matMap = Object.fromEntries((mats || []).map(m => [m.material_id, m.nombre]));
+
+      // 3. Precios de compra por sucursal
+      const sucFiltro = $$('hualFiltroSuc')?.value || '';
+      let q = sb.schema('curated').from('materiales_sucursal_precios')
+        .select('material_id, sucursal_id, precio_compra_clp').is('vigencia_hasta', null);
+      if (sucFiltro) q = q.eq('sucursal_id', sucFiltro);
+      const { data: compraRows } = await q;
+
+      // 4. Llenar filtro sucursales (1 vez)
+      if (!_hualSucLoaded) {
+        const { data: sucs } = await sb.schema('curated').from('sucursales').select('sucursal_id, nombre').order('nombre');
+        const sel = $$('hualFiltroSuc');
+        if (sel && sucs) {
+          sel.innerHTML = '<option value="">Todas las sucursales</option>' + sucs.map(s => `<option value="${esc(s.sucursal_id)}">${esc(s.nombre)}</option>`).join('');
+        }
+        _hualSucLoaded = true;
+      }
+
+      // 5. Build map: material_id → avg precio_compra
+      const compraMap = {};
+      for (const r of (compraRows || [])) {
+        if (!compraMap[r.material_id]) compraMap[r.material_id] = [];
+        compraMap[r.material_id].push(Number(r.precio_compra_clp || 0));
+      }
+      const compraAvg = {};
+      for (const [mid, vals] of Object.entries(compraMap)) {
+        compraAvg[mid] = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+      }
+
+      // 6. Render
+      if (!hualRows || hualRows.length === 0) {
+        div.innerHTML = '<div class="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">No hay precios HUAL cargados para PV07. Usá la función actualizar_precio_comprador desde SQL Editor.</div>';
+        return;
+      }
+      const filas = hualRows.map(r => {
+        const hual = Number(r.precio_clp_kg || 0);
+        const compra = compraAvg[r.material_id] ?? null;
+        const margen = (hual > 0 && compra !== null) ? Math.round(((hual - compra) / hual) * 100) : null;
+        const sem = margen === null ? '⚪' : margen >= 40 ? '🟢' : margen >= 25 ? '🟡' : '🔴';
+        const dia = r.vigente_desde ? r.vigente_desde.slice(0, 10) : '—';
+        return { material: matMap[r.material_id] || r.material_id, hual, compra, margen, sem, dia };
+      }).sort((a, b) => (a.margen ?? 999) - (b.margen ?? 999));
+
+      div.innerHTML = `<table class="w-full text-xs border-collapse">
+        <thead><tr class="bg-stone-100 text-stone-700">
+          <th class="text-left px-2 py-2">Material</th>
+          <th class="text-right px-2 py-2">HUAL paga</th>
+          <th class="text-right px-2 py-2">Tú pagas</th>
+          <th class="text-right px-2 py-2">Margen</th>
+          <th class="text-center px-2 py-2">Estado</th>
+          <th class="text-right px-2 py-2 text-stone-400">Precio desde</th>
+        </tr></thead>
+        <tbody>${filas.map(f => `<tr class="border-b border-stone-100 hover:bg-stone-50">
+          <td class="px-2 py-1.5 font-medium">${esc(f.material)}</td>
+          <td class="px-2 py-1.5 text-right text-emerald-700 font-semibold">$${f.hual.toLocaleString('es-CL')}</td>
+          <td class="px-2 py-1.5 text-right">${f.compra !== null ? '$' + f.compra.toLocaleString('es-CL') : '<span class="text-stone-400">—</span>'}</td>
+          <td class="px-2 py-1.5 text-right font-bold ${f.margen === null ? 'text-stone-400' : f.margen >= 40 ? 'text-emerald-700' : f.margen >= 25 ? 'text-amber-600' : 'text-red-600'}">${f.margen !== null ? f.margen + '%' : '—'}</td>
+          <td class="px-2 py-1.5 text-center text-base">${f.sem}</td>
+          <td class="px-2 py-1.5 text-right text-stone-400">${esc(f.dia)}</td>
+        </tr>`).join('')}</tbody>
+      </table>`;
+    } catch (err) {
+      div.innerHTML = `<div class="text-red-600 text-sm p-3">${esc(err.message || String(err))}</div>`;
+    }
+  }
+  // ────────────────────────────────────────────────────────────────
+
   async function loadDecisor() {
     const lista = $$('dec_lista'); if (!lista) return;
     await decBootstrap();
@@ -21929,7 +22035,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ------------------ Wiring ------------------
   function init() {
     // Loaders al click del tab (ambos navbars)
-    [['andrea_dup_clientes', loadDup], ['andrea_drift_libre', loadDrift], ['andrea_ruts_invalidos', loadRuts], ['andrea_comex', loadComex], ['decisor_venta', decBootstrap], ['andrea_cobranza', loadCobranza], ['andrea_actas', loadActas]].forEach(([code, fn]) => {
+    [['andrea_dup_clientes', loadDup], ['andrea_drift_libre', loadDrift], ['andrea_ruts_invalidos', loadRuts], ['andrea_comex', loadComex], ['decisor_venta', decBootstrap], ['andrea_cobranza', loadCobranza], ['andrea_actas', loadActas], ['hual_compra', loadHualCompra]].forEach(([code, fn]) => {
       document.querySelector('button[data-tab="' + code + '"]')?.addEventListener('click', () => setTimeout(fn, 100));
       document.querySelector('a[data-v4-tab="' + code + '"]')?.addEventListener('click', () => setTimeout(fn, 100));
     });
