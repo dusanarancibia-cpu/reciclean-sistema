@@ -14975,8 +14975,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) { console.warn('bp kpis:', error.message); return; }
       const rows = data ?? [];
       const pend  = rows.filter(r => r.estado === 'pendiente').length;
-      const auto  = rows.filter(r => r.ruta === 'auto').length;
-      const dusan = rows.filter(r => r.ruta === 'dusan').length;
+      const auto  = rows.filter(r => r.ruta === 'auto' && r.estado === 'pendiente').length;
+      const dusan = rows.filter(r => r.ruta === 'dusan' && r.estado === 'pendiente').length;
       const hoy   = rows.filter(r => r.estado === 'aplicado' && r.aplicado_at && r.aplicado_at.slice(0, 10) === today).length;
       document.getElementById('bpKpiPend').textContent  = pend;
       document.getElementById('bpKpiHoy').textContent   = hoy;
