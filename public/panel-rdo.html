@@ -1965,6 +1965,54 @@
                    class="w-20 border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
           </div>
         </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Vigente $/kg</label>
+          <div class="flex items-center gap-1">
+            <input id="bpFiltroVigenteMin" type="number" placeholder="Mín" min="0" step="1"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="w-20 border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <span class="text-stone-400 text-xs">–</span>
+            <input id="bpFiltroVigenteMax" type="number" placeholder="Máx" min="0" step="1"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="w-20 border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Δ% (desviación)</label>
+          <div class="flex items-center gap-1">
+            <input id="bpFiltroDeltaMin" type="number" placeholder="Mín" step="0.1"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="w-20 border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <span class="text-stone-400 text-xs">–</span>
+            <input id="bpFiltroDeltaMax" type="number" placeholder="Máx" step="0.1"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="w-20 border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Conf. (0–1)</label>
+          <div class="flex items-center gap-1">
+            <input id="bpFiltroConfMin" type="number" placeholder="0" min="0" max="1" step="0.01"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="w-16 border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <span class="text-stone-400 text-xs">–</span>
+            <input id="bpFiltroConfMax" type="number" placeholder="1" min="0" max="1" step="0.01"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="w-16 border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Fecha (desde–hasta)</label>
+          <div class="flex items-center gap-1">
+            <input id="bpFiltroFechaDesde" type="date"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <span class="text-stone-400 text-xs">–</span>
+            <input id="bpFiltroFechaHasta" type="date"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+          </div>
+        </div>
         <div class="flex-1 min-w-[12rem]">
           <label for="bpFiltroBuscar" class="block text-xs text-stone-500 mb-1">Buscar (cliente, material, notas)</label>
           <input id="bpFiltroBuscar" type="text" placeholder="Ej. cartón blanco SOREPA"
@@ -15371,16 +15419,34 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function bpAplicarFiltrosClienteSide() {
-    const cliente   = (document.getElementById('bpFiltroCliente')   || {}).value || '';
-    const material  = (document.getElementById('bpFiltroMaterial')  || {}).value || '';
-    const precioMin = parseFloat((document.getElementById('bpFiltroPrecioMin') || {}).value) || null;
-    const precioMax = parseFloat((document.getElementById('bpFiltroPrecioMax') || {}).value) || null;
-    const buscar = ((document.getElementById('bpFiltroBuscar') || {}).value || '').trim().toLowerCase();
+    const gv = id => (document.getElementById(id) || {}).value || '';
+    const gn = id => { const v = parseFloat(gv(id)); return isNaN(v) ? null : v; };
+    const cliente     = gv('bpFiltroCliente');
+    const material    = gv('bpFiltroMaterial');
+    const precioMin   = gn('bpFiltroPrecioMin');
+    const precioMax   = gn('bpFiltroPrecioMax');
+    const vigenteMin  = gn('bpFiltroVigenteMin');
+    const vigenteMax  = gn('bpFiltroVigenteMax');
+    const deltaMin    = gn('bpFiltroDeltaMin');
+    const deltaMax    = gn('bpFiltroDeltaMax');
+    const confMin     = gn('bpFiltroConfMin');
+    const confMax     = gn('bpFiltroConfMax');
+    const fechaDesde  = gv('bpFiltroFechaDesde');
+    const fechaHasta  = gv('bpFiltroFechaHasta');
+    const buscar      = gv('bpFiltroBuscar').trim().toLowerCase();
     bpVisibleRows = bpRows.filter(r => {
       if (cliente  && r.cliente_id  !== cliente)  return false;
       if (material && r.material_id !== material)  return false;
-      if (precioMin !== null && (r.precio_clp_kg ?? 0) < precioMin) return false;
-      if (precioMax !== null && (r.precio_clp_kg ?? 0) > precioMax) return false;
+      if (precioMin  !== null && (r.precio_clp_kg    ?? 0) < precioMin)  return false;
+      if (precioMax  !== null && (r.precio_clp_kg    ?? 0) > precioMax)  return false;
+      if (vigenteMin !== null && (r.precio_vigente   ?? 0) < vigenteMin) return false;
+      if (vigenteMax !== null && (r.precio_vigente   ?? 0) > vigenteMax) return false;
+      if (deltaMin   !== null && (r.desviacion_pct   ?? 0) < deltaMin)   return false;
+      if (deltaMax   !== null && (r.desviacion_pct   ?? 0) > deltaMax)   return false;
+      if (confMin    !== null && (r.confidence_score ?? 0) < confMin)    return false;
+      if (confMax    !== null && (r.confidence_score ?? 0) > confMax)    return false;
+      if (fechaDesde && r.created_at && r.created_at.slice(0, 10) < fechaDesde) return false;
+      if (fechaHasta && r.created_at && r.created_at.slice(0, 10) > fechaHasta) return false;
       if (buscar && !(
         (r.cliente_nombre  ?? '').toLowerCase().includes(buscar) ||
         (r.material_nombre ?? '').toLowerCase().includes(buscar) ||
