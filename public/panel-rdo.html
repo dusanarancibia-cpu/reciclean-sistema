@@ -629,31 +629,115 @@
       <input id="v4-search" type="search" placeholder="🔍 Buscar..." class="w-full text-sm rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent" autocomplete="off">
     </div>
 
-    <!-- Navegación reorganizada en 6 categorías con acordeón -->
-    <nav class="flex-1 overflow-y-auto px-2 py-2 space-y-2" aria-label="Atajos de pestañas">
+    <!-- Navegación 7 grupos · acordeón · aprobado Dusan 27-jun-2026 · PC5 sidebar-acordeon-7-grupos -->
+    <!-- Portada: acceso directo sin categoría -->
+    <div class="px-2 pt-1 pb-0.5">
+      <a href="#" data-v4-tab="portada" class="nav-item active flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+        <span class="v4-emoji" aria-hidden="true">🏡</span>
+        Portada
+      </a>
+    </div>
+    <nav class="flex-1 overflow-y-auto px-2 py-1 space-y-1" aria-label="Atajos de pestañas">
 
-      <!-- ⭐ FAVORITOS (placeholder; v2 leer de localStorage 'v4-favoritos') -->
+      <!-- 🏠 MI DÍA (abierto) -->
       <details class="v4-cat" open>
-        <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">⭐ Favoritos</summary>
-        <div class="mt-1 space-y-0.5" id="v4-favoritos-list">
-          <p class="px-3 py-2 text-xs text-slate-400 italic">Sin favoritos aún. (Próximamente: click derecho en cualquier pestaña para marcarla.)</p>
-        </div>
-      </details>
-
-      <!-- 🏠 NAVEGACIÓN PRINCIPAL -->
-      <details class="v4-cat" open>
-        <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">🏠 Navegación principal</summary>
+        <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">🏠 Mi Día</summary>
         <div class="mt-1 space-y-0.5">
-          <a href="#" data-v4-tab="portada" class="nav-item active flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">🏡</span>
-            Portada
+          <a href="#" data-v4-tab="mi_bandeja" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📥</span>
+            <span>Mi Bandeja</span>
+            <span id="v4-mi-bandeja-badge" class="ml-auto text-[10px] font-bold bg-emerald-100 text-emerald-700 rounded-full px-2 py-0.5 hidden"></span>
+          </a>
+          <a href="#" data-v4-tab="mi_dia" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📅</span>
+            Mi Día
+            <span id="miDiaBadge" class="ml-auto bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full hidden">0</span>
+          </a>
+          <a href="#" data-v4-tab="firmas_pend" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">✍️</span>
+            <span>Firmas pendientes</span>
+          </a>
+          <a href="#" data-v4-tab="firmas_reglas" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">🔏</span>
+            <span>Firmas reglas (ALT3)</span>
+            <span id="firmasReglasBadge" class="ml-auto text-[10px] bg-amber-500 text-white px-1.5 rounded hidden">0</span>
+          </a>
+          <a href="#" data-v4-tab="mesa_control_99_99" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">🎛️</span>
+            Mesa Control 99-99
+            <span id="mesaControl9999Score" class="ml-auto text-[10px] bg-stone-200 text-stone-700 px-1.5 rounded hidden">—</span>
+          </a>
+          <a href="#" data-v4-tab="pcs_vivo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">🟢</span>
+            Estado 4 PCs
           </a>
         </div>
       </details>
 
-      <!-- 📋 OPERACIONES -->
-      <details class="v4-cat" open>
-        <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">📋 Operaciones</summary>
+      <!-- 💼 COMERCIAL (cerrado) -->
+      <details class="v4-cat">
+        <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">💼 Comercial</summary>
+        <div class="mt-1 space-y-0.5">
+          <a href="#" data-v4-tab="cartera" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">💳</span>
+            Cartera
+          </a>
+          <a href="#" data-v4-tab="oportunidades" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🎯</span>
+            Oportunidades
+          </a>
+          <a href="#" data-v4-tab="negocios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">💼</span>
+            Negocios
+          </a>
+          <a href="#" data-v4-tab="cotizador" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">💱</span>
+            Cotizador
+          </a>
+          <a href="#" data-v4-tab="comercial" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🏢</span>
+            CRM Impulsa
+          </a>
+          <a href="#" data-v4-tab="andrea_cobranza" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
+            <span class="v4-emoji" aria-hidden="true">💸</span>
+            Cobranza
+          </a>
+          <a href="#" data-v4-tab="andrea_actas" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
+            <span class="v4-emoji" aria-hidden="true">📝</span>
+            Actas
+          </a>
+          <a href="#" data-v4-tab="decisor_venta" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
+            <span class="v4-emoji" aria-hidden="true">💰</span>
+            Decisor venta
+          </a>
+          <a href="#" data-v4-tab="hual_compra" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">🎯</span>
+            HUAL vs Compra
+          </a>
+          <a href="#" data-v4-tab="andrea_comex" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
+            <span class="v4-emoji" aria-hidden="true">🚢</span>
+            Comex
+          </a>
+          <!-- R-AUD-034 26-jun · borrada tab fantasma mis_visitas -->
+          <!-- PC2 11-jun · Trio bandejas Cliente Único Andrea + Comex -->
+          <a href="#" data-v4-tab="andrea_dup_clientes" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
+            <span class="v4-emoji" aria-hidden="true">🔀</span>
+            Duplicados clientes
+          </a>
+          <a href="#" data-v4-tab="andrea_drift_libre" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
+            <span class="v4-emoji" aria-hidden="true">📝</span>
+            Nombres oportunidades
+          </a>
+          <a href="#" data-v4-tab="andrea_ruts_invalidos" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
+            <span class="v4-emoji" aria-hidden="true">🆔</span>
+            RUTs a verificar
+          </a>
+        </div>
+      </details>
+
+      <!-- 📦 OPERACIONES (cerrado) -->
+      <details class="v4-cat">
+        <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">📦 Operaciones</summary>
         <div class="mt-1 space-y-0.5">
           <a href="#" data-v4-tab="pesaje" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">⚖️</span>
@@ -675,72 +759,29 @@
             <span class="v4-emoji" aria-hidden="true">📑</span>
             Operativos
           </a>
+          <a href="#" data-v4-tab="material_nuevo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🆕</span>
+            <span>Material nuevo</span>
+          </a>
+          <a href="#" data-v4-tab="despacho_coord" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🚚</span>
+            <span>Coord. despacho</span>
+          </a>
+          <a href="#" data-v4-tab="tarifas_ext" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">💰</span>
+            <span>Tarifas externas</span>
+          </a>
+          <a href="#" data-v4-tab="incidentes_op" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🛠️</span>
+            <span>Incidentes</span>
+          </a>
         </div>
       </details>
 
-      <!-- 👥 GESTIÓN (comercial + financiera) -->
-      <details class="v4-cat" open>
-        <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">👥 Gestión</summary>
+      <!-- 💲 PRECIOS (cerrado) -->
+      <details class="v4-cat">
+        <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">💲 Precios</summary>
         <div class="mt-1 space-y-0.5">
-          <!-- Capa 2 · Mi Día (bandeja personal del usuario logueado) -->
-          <a href="#" data-v4-tab="mi_dia" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">📅</span>
-            Mi Día
-            <span id="miDiaBadge" class="ml-auto bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full hidden">0</span>
-          </a>
-          <a href="#" data-v4-tab="cartera" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">💳</span>
-            Cartera
-          </a>
-          <a href="#" data-v4-tab="oportunidades" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">🎯</span>
-            Oportunidades
-          </a>
-          <a href="#" data-v4-tab="mis_visitas" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">📅</span>
-            Mis Visitas
-          </a>
-          <!-- PC2 11-jun · Trio bandejas Cliente Único Andrea + Comex -->
-          <a href="#" data-v4-tab="andrea_dup_clientes" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
-            <span class="v4-emoji" aria-hidden="true">🔀</span>
-            Duplicados clientes
-          </a>
-          <a href="#" data-v4-tab="andrea_drift_libre" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
-            <span class="v4-emoji" aria-hidden="true">📝</span>
-            Nombres oportunidades
-          </a>
-          <a href="#" data-v4-tab="andrea_ruts_invalidos" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
-            <span class="v4-emoji" aria-hidden="true">🆔</span>
-            RUTs a verificar
-          </a>
-          <a href="#" data-v4-tab="andrea_comex" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
-            <span class="v4-emoji" aria-hidden="true">🚢</span>
-            Comex
-          </a>
-          <a href="#" data-v4-tab="decisor_venta" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
-            <span class="v4-emoji" aria-hidden="true">💰</span>
-            Decisor venta
-          </a>
-          <a href="#" data-v4-tab="andrea_cobranza" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
-            <span class="v4-emoji" aria-hidden="true">💸</span>
-            Cobranza
-          </a>
-          <a href="#" data-v4-tab="andrea_actas" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
-            <span class="v4-emoji" aria-hidden="true">📝</span>
-            Actas
-          </a>
-          <a href="#" data-v4-tab="comercial" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">💼</span>
-            Comercial (CRM Impulsa)
-          </a>
-          <a href="#" data-v4-tab="negocios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">💼</span>
-            Negocios
-          </a>
-          <a href="#" data-v4-tab="cotizador" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">💱</span>
-            Cotizador
-          </a>
           <a href="#" data-v4-tab="precios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">💲</span>
             Precios
@@ -751,16 +792,8 @@
             <span id="bpBadgeSidebar" class="bp-badge-counter hidden ml-auto text-xs font-bold px-1.5 py-0.5 rounded-full">0</span>
           </a>
           <a href="#" data-v4-tab="precios_vivos" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">💰</span>
+            <span class="v4-emoji" aria-hidden="true">📈</span>
             Precios Vivos
-          </a>
-          <a href="#" data-v4-tab="errores_bucles" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">🚦</span>
-            Errores y Bucles
-          </a>
-          <a href="#" data-v4-tab="cronograma_24h" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">⏰</span>
-            Cronograma 24h
           </a>
           <a href="#" data-v4-tab="kpi_precios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🎯</span>
@@ -775,7 +808,7 @@
             Anticipación Tendencias
           </a>
           <a href="#" data-v4-tab="modo_precios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">⚙️</span>
+            <span class="v4-emoji" aria-hidden="true">🚦</span>
             Acelerador/Freno
           </a>
           <a href="#" data-v4-tab="calculadora_precios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
@@ -783,7 +816,7 @@
             Calculadora Precios
           </a>
           <a href="#" data-v4-tab="boveda_historica" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">📦</span>
+            <span class="v4-emoji" aria-hidden="true">🏛️</span>
             Bóveda Histórica
           </a>
           <a href="#" data-v4-tab="flujo_operativo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
@@ -791,8 +824,31 @@
             Flujo Operativo
           </a>
           <a href="#" data-v4-tab="tablero_precios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">🏠</span>
+            <span class="v4-emoji" aria-hidden="true">📋</span>
             Tablero Precios
+          </a>
+          <a href="#" data-v4-tab="errores_bucles" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🔍</span>
+            Errores y Bucles
+          </a>
+          <a href="#" data-v4-tab="cronograma_24h" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">⏰</span>
+            Cronograma 24h
+          </a>
+        </div>
+      </details>
+
+      <!-- 📊 REPORTERÍA (cerrado) -->
+      <details class="v4-cat">
+        <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">📊 Reportería</summary>
+        <div class="mt-1 space-y-0.5">
+          <a href="#" data-v4-tab="rdo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📊</span>
+            RDO
+          </a>
+          <a href="#" data-v4-tab="evolucion" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📈</span>
+            Evolución
           </a>
           <a href="#" data-v4-tab="entregables" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📤</span>
@@ -806,125 +862,75 @@
             <span class="v4-emoji" aria-hidden="true">🔗</span>
             Reconciliación
           </a>
-          <a href="#" data-v4-tab="evolucion" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">📈</span>
-            Evolución
+          <a href="#" data-v4-tab="cumplimiento" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">⚖️</span>
+            Cumplimiento
           </a>
-          <a href="#" data-v4-tab="rdo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">📊</span>
-            RDO
+          <a href="#" data-v4-tab="facturacion_grupo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🧾</span>
+            Facturación grupo
+          </a>
+          <a href="#" data-v4-tab="herramientas_ext" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🌐</span>
+            Herramientas ext.
           </a>
         </div>
       </details>
 
-      <!-- 🔧 HERRAMIENTAS PERSONALES -->
-      <details class="v4-cat" open>
-        <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">🔧 Herramientas personales</summary>
+      <!-- 🤖 DIEGO (cerrado) -->
+      <details class="v4-cat">
+        <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">🤖 Diego</summary>
         <div class="mt-1 space-y-0.5">
           <a href="#" data-v4-tab="dieguito" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📎</span>
             Dieguito
           </a>
           <a href="#" data-v4-tab="bandeja_dieg" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">📥</span>
+            <span class="v4-emoji" aria-hidden="true">📬</span>
             Bandeja Diego
           </a>
           <a href="#" data-v4-tab="mis_reportes" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">📬</span>
+            <span class="v4-emoji" aria-hidden="true">📊</span>
             <span>Mis reportes Diego</span>
           </a>
           <a href="#" data-v4-tab="mis_envios_diego" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📤</span>
             <span>Mis envíos a Diego</span>
           </a>
-          <a href="#" data-v4-tab="material_nuevo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">🆕</span>
-            <span>Material nuevo</span>
+          <a href="#" data-v4-tab="comunicados" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🎧</span>
+            Comunicados
           </a>
-          <a href="#" data-v4-tab="despacho_coord" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">🚚</span>
-            <span>Coord. despacho</span>
+          <a href="#" data-v4-tab="diego_coord" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
+            <span class="v4-emoji" aria-hidden="true">🎭</span>
+            Diego Coordinador
           </a>
-          <a href="#" data-v4-tab="incidentes_op" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">🛠️</span>
-            <span>Incidentes</span>
-          </a>
-          <a href="#" data-v4-tab="firmas_pend" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">📝</span>
-            <span>Firmas pendientes</span>
-          </a>
-          <a href="#" data-v4-tab="firmas_reglas" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
-            <span class="v4-emoji" aria-hidden="true">🔏</span>
-            <span>Firmas reglas (ALT3)</span>
-            <span id="firmasReglasBadge" class="ml-auto text-[10px] bg-amber-500 text-white px-1.5 rounded hidden">0</span>
-          </a>
-          <a href="#" data-v4-tab="tarifas_ext" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">💰</span>
-            <span>Tarifas externas</span>
-          </a>
-          <a href="#" data-v4-tab="piloto_pwa" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">📲</span>
-            <span>Piloto PWA</span>
-          </a>
-          <a href="#" data-v4-tab="mi_bandeja" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">📥</span>
-            <span>Mi Bandeja</span>
-            <span id="v4-mi-bandeja-badge" class="ml-auto text-[10px] font-bold bg-emerald-100 text-emerald-700 rounded-full px-2 py-0.5 hidden"></span>
-          </a>
+        </div>
+      </details>
+
+      <!-- ⚙️ SISTEMA (cerrado) -->
+      <details class="v4-cat">
+        <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">⚙️ Sistema</summary>
+        <div class="mt-1 space-y-0.5">
           <a href="#" data-v4-tab="mis_archivos" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">📦</span>
+            <span class="v4-emoji" aria-hidden="true">📁</span>
             <span>Mis archivos</span>
           </a>
           <a href="#" data-v4-tab="mi_memoria" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🧠</span>
             Mi memoria
           </a>
-        </div>
-      </details>
-
-      <!-- 📚 SOPORTE -->
-      <details class="v4-cat" open>
-        <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">📚 Soporte</summary>
-        <div class="mt-1 space-y-0.5">
           <a href="#" data-v4-tab="manual" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📖</span>
             Manual
           </a>
-          <a href="#" data-v4-tab="comunicados" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">🎧</span>
-            Comunicados
+          <a href="#" data-v4-tab="piloto_pwa" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">📲</span>
+            <span>Piloto PWA</span>
           </a>
-          <a href="#" data-v4-tab="cumplimiento" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">⚖️</span>
-            Cumplimiento
-          </a>
-          <a href="#" data-v4-tab="herramientas_ext" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">🌐</span>
-            Herramientas ext.
-          </a>
-          <a href="#" data-v4-tab="facturacion_grupo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">💰</span>
-            Facturación grupo
-          </a>
-        </div>
-      </details>
-
-      <!-- ⚙️ ADMINISTRACIÓN (solo dusan/admin) -->
-      <details class="v4-cat" open data-v4-group-perfil="dusan,admin">
-        <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">⚙️ Administración</summary>
-        <div class="mt-1 space-y-0.5">
           <a href="#" data-v4-tab="admin" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
             <span class="v4-emoji" aria-hidden="true">⚙️</span>
             Admin
-          </a>
-          <a href="#" data-v4-tab="pcs_vivo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
-            <span class="v4-emoji" aria-hidden="true">🟢</span>
-            Estado vivo 4 PCs
-          </a>
-          <a href="#" data-v4-tab="mesa_control_99_99" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
-            <span class="v4-emoji" aria-hidden="true">🎛️</span>
-            Mesa de Control 99-99
-            <span id="mesaControl9999Score" class="ml-auto text-[10px] bg-stone-200 text-stone-700 px-1.5 rounded hidden">—</span>
           </a>
           <a href="#" data-v4-tab="bucle_vivo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
             <span class="v4-emoji" aria-hidden="true">🔁</span>
@@ -935,26 +941,28 @@
             <span class="v4-emoji" aria-hidden="true">✅</span>
             DoD dashboard
           </a>
-          <a href="#" data-v4-tab="diego_coord" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
-            <span class="v4-emoji" aria-hidden="true">🎭</span>
-            Diego Coordinador
-          </a>
           <a href="#" data-v4-tab="plan_2026" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
             <span class="v4-emoji" aria-hidden="true">🗳️</span>
             Plan 2026
           </a>
           <a href="#" data-v4-tab="gantt" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
-            <span class="v4-emoji" aria-hidden="true">📊</span>
+            <span class="v4-emoji" aria-hidden="true">📅</span>
             Gantt Viva
           </a>
-          <a href="#" data-v4-tab="borradores_diego" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
-            <span class="v4-emoji" aria-hidden="true">📝</span>
-            Borradores Diego
-          </a>
-          <!-- PC2 11-jun PM · entrada 'bandeja_duplicados' (admin-only) eliminada · reemplazada por 'andrea_dup_clientes' (visible a comercial) para que Andrea pueda decidir duplicados desde su silo. Backend sigue activo por si se reactiva. -->
+          <!-- PC2 11-jun PM · bandeja_duplicados admin-only eliminada · reemplazada por andrea_dup_clientes -->
+          <!-- R-AUD-034 26-jun · borrada tab fantasma borradores_diego -->
         </div>
       </details>
+
     </nav>
+
+    <!-- Actualizar panel · acceso rápido sidebar fondo -->
+    <div class="px-3 py-2 border-t border-slate-100">
+      <button type="button" onclick="panelForzarActualizacion()" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-slate-500 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200 hover:border-emerald-300 transition" title="Forzar actualización del panel (limpia caché SW)">
+        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        ↺ Actualizar panel
+      </button>
+    </div>
 
     <!-- [PC1-AUDIT REDISEÑO] estilos + JS específicos del sidebar nuevo -->
     <style>
@@ -966,6 +974,8 @@
       }
       .v4-cat:not([open]) > summary::after { transform: rotate(-90deg); }
       .v4-cat[open] > summary { color: #475569; }
+      /* Forzar ocultamiento del contenido en grupos cerrados (anula cualquier CSS externo) */
+      .v4-cat:not([open]) > div { display: none !important; }
       .v4-emoji { font-size: 15px; line-height: 1; width: 18px; text-align: center; flex-shrink: 0; }
       /* Hover suave en items con emoji */
       .nav-item:hover .v4-emoji { transform: scale(1.1); transition: transform 0.15s ease; }
@@ -1176,6 +1186,7 @@
         <button data-tab="cierres"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCierres">📅 Cierres</button>
         <button data-tab="precios"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabPrecios">💲 Precios</button>
         <button data-tab="bandeja_precios" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabBandejaPrecios">📨 Bandeja Precios <span id="bpBadgeNavbar" class="bp-badge-counter hidden text-xs font-bold px-1.5 py-0.5 rounded-full ml-1">0</span></button>
+        <button data-tab="hual_compra" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabHualCompra">🎯 HUAL vs Compra</button>
         <button data-tab="precios_vivos" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabPreciosVivos">💰 Precios Vivos</button>
         <button data-tab="errores_bucles" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabErroresBucles">🚦 Errores y Bucles</button>
         <button data-tab="cronograma_24h" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCronograma24h">⏰ Cronograma 24h</button>
@@ -1899,7 +1910,7 @@
       <div class="bg-white p-3 rounded shadow-sm mb-4 flex flex-wrap gap-3 items-end">
         <div>
           <label for="bpFiltroEstado" class="block text-xs text-stone-500 mb-1">Estado</label>
-          <select id="bpFiltroEstado" onchange="loadBandejaPrecios()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+          <select id="bpFiltroEstado" onchange="loadBandejaPrecios()" autocomplete="off" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
             <option value="pendiente" selected>Pendiente</option>
             <option value="aplicado">Aplicado</option>
             <option value="rechazado">Rechazado</option>
@@ -1908,12 +1919,12 @@
         </div>
         <div>
           <label for="bpFiltroRuta" class="block text-xs text-stone-500 mb-1">Ruta</label>
-          <select id="bpFiltroRuta" onchange="loadBandejaPrecios()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
-            <option value="dusan" selected>dusan</option>
+          <select id="bpFiltroRuta" onchange="loadBandejaPrecios()" autocomplete="off" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="" selected>Todas las rutas</option>
+            <option value="dusan">Dusan</option>
             <option value="andrea">andrea</option>
             <option value="auto">auto</option>
             <option value="competencia">competencia</option>
-            <option value="">Todas</option>
           </select>
         </div>
         <div>
@@ -1986,6 +1997,19 @@
           <div class="bg-stone-50 p-3 rounded mb-3">
             <div class="text-xs text-stone-500 mb-1">Notas / fuente</div>
             <div id="bpDw_notas" class="text-sm text-stone-700 whitespace-pre-line">—</div>
+          </div>
+
+          <!-- Ajuste de precio antes de aprobar -->
+          <div class="bg-amber-50 border border-amber-200 rounded p-3 mb-3">
+            <div class="text-xs text-amber-800 font-medium mb-1.5">✏️ Ajustar precio antes de aprobar (opcional)</div>
+            <div class="flex gap-2 items-center">
+              <input id="bpPrecioAjustado" type="number" step="1" min="1"
+                     placeholder="Ej: 8500"
+                     class="flex-1 px-2 py-1 border border-amber-300 rounded text-sm focus:outline-none focus:border-amber-500"
+                     oninput="bpActualizarMargenAjuste(this.value)">
+              <span class="text-xs text-stone-500">CLP/kg</span>
+            </div>
+            <div id="bpMargenAjuste" class="text-xs text-stone-500 mt-1 hidden"></div>
           </div>
 
           <div class="flex flex-wrap gap-2 mb-3">
@@ -5985,6 +6009,25 @@
     </section>
 
     <!-- ============================================================
+         PC5 29-jun · HUAL vs Compra — margen por material/sucursal
+         ============================================================ -->
+    <section id="tabHualCompra" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">🎯 HUAL vs Precio de Compra</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Lo que HUAL paga vs lo que pagás al proveedor. Verde ≥40% · Amarillo ≥25% · Rojo &lt;25%.</p>
+        </div>
+        <div class="flex gap-2 flex-wrap items-center">
+          <select id="hualFiltroSuc" onchange="loadHualCompra()" class="text-xs border border-stone-300 rounded px-2 py-1">
+            <option value="">Todas las sucursales</option>
+          </select>
+          <button onclick="loadHualCompra()" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
+      </div>
+      <div id="hualCompraTabla" class="overflow-x-auto"></div>
+    </section>
+
+    <!-- ============================================================
          PC2 11-jun · Decisor Venta UI (mig 276+277 + 296 backend ya existía)
          ============================================================ -->
     <section id="tabDecisorVenta" class="tab-content hidden">
@@ -6769,6 +6812,20 @@ let sb;
 let currentUser = null;
 let currentProfile = null;
 let mediaRecorder;
+
+// F1D · Helper canónico para resolver email del usuario en cualquier punto del panel.
+// Cubre los 4 caminos de sesión que conviven (currentUser string/object + rf_session
+// en sessionStorage/localStorage). Único punto de verdad · próximos PRs migran
+// llamadas dispersas a este helper sin tocar el polimorfismo de currentUser todavía.
+window.getCurrentEmail = function () {
+  try {
+    if (typeof currentUser === 'string' && currentUser.indexOf('@') >= 0) return currentUser.toLowerCase();
+    if (currentUser && typeof currentUser === 'object' && currentUser.email) return String(currentUser.email).toLowerCase();
+    var s = JSON.parse(sessionStorage.getItem('rf_session') || 'null'); if (s && s.email) return String(s.email).toLowerCase();
+    var ls = JSON.parse(localStorage.getItem('rf_session') || 'null'); if (ls && ls.email) return String(ls.email).toLowerCase();
+  } catch (_) {}
+  return '';
+};
 let audioChunks = [];
 let recordedBlob = null;
 let recordedUrl = null;
@@ -7522,8 +7579,9 @@ window.panelForzarActualizacion = async function() {
       await Promise.all(keys.map(k => caches.delete(k)));
     }
   } catch(e) { console.warn('[Panel] actualizar caché:', e); }
-  // 3. Recargar forzado (sin caché)
-  window.location.reload(true);
+  // 3. Redirect con bust de caché (reload(true) es ignorado en Chrome moderno)
+  var base = window.location.origin + window.location.pathname;
+  window.location.href = base + '?_v=' + Date.now();
 };
 
 window.logout = async function() {
@@ -13973,18 +14031,21 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-fab-label{position:absolute;right:70px;top:50%;transform:translateY(-50%);background:#0f172a;color:#fff;padding:6px 12px;border-radius:8px;font-size:13px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s ease}
   .diego-fab:hover .diego-fab-label{opacity:1}
   /* Cirugía spacing 23-may-2026: width 380, max-height 60vh, padding burbujas 10px, hora derecha compacta */
-  .diego-chat{position:fixed;right:24px;bottom:96px;width:380px;max-width:calc(100vw - 16px);max-height:60vh;background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 16px 48px -12px rgba(15,23,42,.25);z-index:60;display:none;flex-direction:column;overflow:hidden}
+  /* Cirugía estética FAB Diego · 12-jun-2026 · 9 specs Dusan */
+  .diego-chat{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;width:calc(100% - 32px);max-width:420px;max-height:70vh;background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 16px 48px -12px rgba(15,23,42,.25);z-index:60;display:none;flex-direction:column;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px}
   .diego-chat.open{display:flex}
-  .diego-chat-h{background:linear-gradient(135deg,#059669,#047857);color:#fff;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;flex-shrink:0}
+  .diego-chat-h{background:#059669;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;flex-shrink:0}
   .diego-chat-h .h-title{display:flex;align-items:center;gap:8px}
-  .diego-chat-h .h-version{background:rgba(255,255,255,.2);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
+  .diego-chat-h .h-status-dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 0 rgba(52,211,153,.7);animation:diegoStatusPulse 2s infinite}
+  @keyframes diegoStatusPulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.7)}70%{box-shadow:0 0 0 8px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+  .diego-chat-h .h-version{background:rgba(255,255,255,.2);padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600}
   .diego-chat-h button{background:none;border:0;color:#fff;cursor:pointer;font-size:16px;line-height:1;padding:4px 8px}
-  .diego-chat-body{background:#f8fafc;padding:10px;flex:1;min-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;position:relative}
-  .diego-msg{font-size:13px;padding:8px 10px;border-radius:12px;max-width:85%;line-height:1.35;word-wrap:break-word;white-space:normal}
+  .diego-chat-body{background:#f8fafc;padding:14px;flex:1;min-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;position:relative}
+  .diego-msg{font-size:14px;padding:10px 14px;border-radius:14px;max-width:80%;line-height:1.45;word-wrap:break-word;white-space:normal}
   .diego-msg > div:first-child{white-space:pre-wrap}
-  .diego-msg.mine{align-self:flex-end;background:#ecfdf5;color:#064e3b;border-bottom-right-radius:4px}
-  .diego-msg.theirs{align-self:flex-start;background:#fff;border:1px solid #e2e8f0;color:#0f172a;border-bottom-left-radius:4px}
-  .diego-msg.diego{align-self:flex-start;background:#fff;border:1px solid #059669;color:#0f172a;border-bottom-left-radius:4px}
+  .diego-msg.mine{align-self:flex-end;background:#059669;color:#fff;border-bottom-right-radius:4px}
+  .diego-msg.theirs{align-self:flex-start;background:#f1f5f9;border:1px solid #e2e8f0;color:#0f172a;border-bottom-left-radius:4px}
+  .diego-msg.diego{align-self:flex-start;background:#f1f5f9;border:1px solid #e2e8f0;color:#0f172a;border-bottom-left-radius:4px}
   .diego-msg.thinking{align-self:flex-start;background:#fff;border:1px dashed #94a3b8;color:#64748b;font-style:italic;display:inline-flex;align-items:center;gap:6px}
   /* D-DIEGO-MEJORA-CONTINUA-001 CL-013 · indicador typing animado */
   .diego-typing-dots{display:inline-flex;gap:3px}
@@ -14005,12 +14066,12 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-suggestions button{font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:500}
   .diego-suggestions button:hover{background:#059669;color:#fff;border-color:#059669}
   .diego-empty{color:#94a3b8;font-size:12px;text-align:center;padding:24px 8px}
-  .diego-chat-form{display:flex;gap:6px;padding:8px;border-top:1px solid #e2e8f0;background:#fff;align-items:flex-end;flex-shrink:0}
-  .diego-chat-form .attach-btn{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;color:#475569}
+  .diego-chat-form{display:flex;gap:8px;padding:10px;border-top:1px solid #e2e8f0;background:#fff;align-items:center;flex-shrink:0}
+  .diego-chat-form .attach-btn{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:24px;padding:10px 14px;font-size:14px;cursor:pointer;color:#475569}
   .diego-chat-form .attach-btn:hover{background:#059669;color:#fff;border-color:#059669}
-  .diego-chat-form textarea{flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;resize:none;min-height:36px;max-height:120px}
+  .diego-chat-form textarea{flex:1;border:1px solid #e2e8f0;border-radius:24px;padding:10px 16px;font-size:14px;outline:none;font-family:inherit;resize:none;min-height:40px;max-height:120px}
   .diego-chat-form textarea:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.15)}
-  .diego-chat-form button.send{background:#059669;color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer}
+  .diego-chat-form button.send{background:#059669;color:#fff;border:0;border-radius:24px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
   .diego-chat-form button.send:disabled{opacity:.5;cursor:not-allowed}
   .diego-attach-preview{padding:6px 10px;background:#eff6ff;border-top:1px solid #dbeafe;font-size:11px;color:#1e40af;display:flex;justify-content:space-between;align-items:center}
   .diego-attach-preview button{background:none;border:0;color:#1e40af;cursor:pointer;font-size:14px}
@@ -14034,11 +14095,11 @@ document.addEventListener('DOMContentLoaded', () => {
   /* M5 — Punto rojo binario en bell topbar */
   #v4-bellNotificaciones .bell-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:#ef4444;display:none}
   #v4-bellNotificaciones.has-alerts .bell-dot{display:block}
-  /* Responsive mobile: chat ocupa casi todo el ancho */
+  /* Responsive mobile · 9 specs Dusan: 100% ancho, 80vh, pegado abajo */
   @media (max-width: 480px) {
-    .diego-chat{right:8px;left:8px;bottom:84px;width:auto;max-width:none;max-height:70vh}
+    .diego-chat{left:0;right:0;bottom:0;width:100%;max-width:100%;transform:none;max-height:80vh;border-radius:16px 16px 0 0}
     .diego-fab{right:16px;bottom:16px;width:54px;height:54px}
-    .diego-msg{max-width:90%;font-size:13.5px}
+    .diego-msg{max-width:88%;font-size:14px}
   }
   /* D-DIEGO-LEGAL-IA-001 · Modal banner consentimiento IA */
   .ia-consent-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.85); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 16px; }
@@ -14079,7 +14140,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <div class="diego-chat" id="diegoChat" role="dialog" aria-label="Chat con Diego">
   <div class="diego-chat-h">
-    <span class="h-title">🤖 Diego <span class="h-version">v6</span></span>
+    <span class="h-title"><span class="h-status-dot" aria-hidden="true"></span>🤖 Diego <span class="h-version">v6</span></span>
     <div style="display:flex;gap:4px;align-items:center;">
       <button type="button" id="diegoChatLimpiar" aria-label="Limpiar pantalla" title="Limpiar pantalla — Diego sigue recordando todo">↻</button>
       <button type="button" id="diegoChatMinimize" aria-label="Minimizar chat" title="Minimizar (mantiene conversación)">−</button>
@@ -14678,9 +14739,8 @@ document.addEventListener('DOMContentLoaded', () => {
       bell.appendChild(dot);
     }
     bell.addEventListener('click', () => {
-      const tabBtn = document.querySelector('[data-v4-tab="notificaciones"]')
-                  || document.querySelector('[data-tab="notificaciones"]')
-                  || document.querySelector('[data-v4-tab="bandeja_dieg"]')
+      // R-AUD-034 26-jun · tab notificaciones nunca tuvo entrada de sidebar · fallback a bandeja_dieg que sí existe en navbar legacy
+      const tabBtn = document.querySelector('[data-v4-tab="bandeja_dieg"]')
                   || document.querySelector('[data-tab="bandeja_dieg"]');
       if (tabBtn) tabBtn.click();
     });
@@ -14777,6 +14837,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const REFRESH_MS  = 60000;
   let bpRefreshTimer = null;
   let bpCurrentId = null;
+  let bpCurrentHualPrice = null;
   let bpSearchDebounce = null;
 
   function esc(s) {
@@ -14993,8 +15054,8 @@ document.addEventListener('DOMContentLoaded', () => {
         || (r.notas ?? '').toLowerCase().includes(q2)
       );
     }
-    // Badge counter: solo pendientes ruta=dusan
-    const totalPendientes = (data || []).filter(r => r.estado === 'pendiente' && r.ruta === 'dusan').length;
+    // Badge counter: todos los pendientes (dusan + competencia + otras rutas manuales)
+    const totalPendientes = (data || []).filter(r => r.estado === 'pendiente').length;
     bpActualizarBadge(totalPendientes);
     if (rows.length === 0) {
       tbody.innerHTML = '<tr><td colspan="10" class="px-3 py-4 text-center text-stone-400">Sin propuestas para este filtro.</td></tr>';
@@ -15121,6 +15182,19 @@ document.addEventListener('DOMContentLoaded', () => {
     btnAprobar.classList.toggle('opacity-50', yaCerrada);
     btnRechazar.classList.toggle('opacity-50', yaCerrada);
 
+    // Reset campo ajuste precio + cargar precio HUAL para preview margen
+    const inputAjuste = document.getElementById('bpPrecioAjustado');
+    if (inputAjuste) inputAjuste.value = '';
+    document.getElementById('bpMargenAjuste').classList.add('hidden');
+    bpCurrentHualPrice = null;
+    if (r.material_id && typeof sb !== 'undefined' && sb) {
+      try {
+        const { data: hp } = await sb.schema('curated').from('comprador_precio_actual')
+          .select('precio_clp_kg').eq('comprador_id', 'PV07').eq('material_id', r.material_id).maybeSingle();
+        if (hp?.precio_clp_kg) bpCurrentHualPrice = Number(hp.precio_clp_kg);
+      } catch (_) { /* no bloquea */ }
+    }
+
     document.getElementById('bpDrawerMsg').classList.add('hidden');
     document.getElementById('bpDrawer').classList.remove('hidden');
   }
@@ -15144,11 +15218,40 @@ document.addEventListener('DOMContentLoaded', () => {
     el.className = 'text-xs p-2 rounded ' + (ok ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
   }
 
+  function bpActualizarMargenAjuste(valor) {
+    const el = document.getElementById('bpMargenAjuste');
+    const v = parseFloat(valor);
+    if (!v || v <= 0) { el.classList.add('hidden'); return; }
+    el.classList.remove('hidden');
+    if (bpCurrentHualPrice && bpCurrentHualPrice > 0) {
+      const margen = (bpCurrentHualPrice - v) / bpCurrentHualPrice * 100;
+      const color = margen >= 40 ? 'text-green-600' : margen >= 25 ? 'text-yellow-600' : 'text-red-600';
+      const sem = margen >= 40 ? '🟢' : margen >= 25 ? '🟡' : '🔴';
+      el.innerHTML = `${sem} Margen vs HUAL: <span class="${color} font-medium">${margen.toFixed(1)}%</span> · HUAL paga ${fmtCLP(bpCurrentHualPrice)}/kg`;
+    } else {
+      el.textContent = 'Sin precio HUAL para calcular margen';
+    }
+  }
+
   async function bpAprobar() {
     if (!bpCurrentId) return;
     if (!currentUser || !currentUser.includes('@')) { bpMsg('Falta email del usuario actual.', false); return; }
     const btn = document.getElementById('bpBtnAprobar');
     btn.disabled = true;
+
+    // Si hay precio ajustado, actualizar la propuesta antes de aplicar
+    const precioAjustado = parseFloat(document.getElementById('bpPrecioAjustado')?.value ?? '');
+    if (precioAjustado && precioAjustado > 0 && typeof sb !== 'undefined' && sb) {
+      const { error: updErr } = await sb.schema('staging').from('precios_propuestos')
+        .update({ precio_clp_kg: precioAjustado, updated_at: new Date().toISOString() })
+        .eq('id', bpCurrentId);
+      if (updErr) {
+        bpMsg(`No pude ajustar el precio: ${updErr.message}`, false);
+        btn.disabled = false;
+        return;
+      }
+    }
+
     try {
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/precio-aplicar`, {
         method: 'POST',
@@ -15237,7 +15340,8 @@ document.addEventListener('DOMContentLoaded', () => {
   window.bpCerrarDrawer     = bpCerrarDrawer;
   window.bpAprobar          = bpAprobar;
   window.bpRechazar         = bpRechazar;
-  window.bpDebouncedSearch  = bpDebouncedSearch;
+  window.bpDebouncedSearch          = bpDebouncedSearch;
+  window.bpActualizarMargenAjuste   = bpActualizarMargenAjuste;
 })();
 </script>
 
@@ -18934,77 +19038,13 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-<!-- ============================================================================
-     D-DIEGO-CARTERO-001 (firma Dusan 2026-06-01 16:32 CLT "si, me parece")
-     Modal 4 categorías intercepta click FAB Diego. Cartero captura feedback +
-     INSERT panel.diego_inbox + sin LLM en runtime.
-     Realtime: notificación naranja en panel Dusan/Pablo cuando entra feedback.
-     Implementado por PC Pablo autónomo 2026-06-01 ~12:00 CLT.
-============================================================================ -->
+<!-- D-DIEGO-CARTERO-001 · Notificación realtime para Dusan/Pablo (modal 4 categorías removido 2026-06-25 · P1 23-jun ya desconectó el FAB del modal) -->
 <style>
-  #diegoCarteroModal { display:none; position:fixed; inset:0; background:rgba(15,23,42,.6); z-index:60; align-items:center; justify-content:center; padding:1rem; }
-  #diegoCarteroModal.open { display:flex; }
-  #diegoCarteroModal .dcm-box { background:#fff; border-radius:.75rem; padding:1.25rem 1.5rem; max-width:480px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,.25); max-height:90vh; overflow-y:auto; }
-  #diegoCarteroModal .dcm-title { font-family:'Inter',sans-serif; font-weight:700; font-size:1.15rem; color:#0f172a; margin:0 0 .25rem; }
-  #diegoCarteroModal .dcm-sub { color:#64748b; font-size:.85rem; margin:0 0 1rem; }
-  #diegoCarteroModal .dcm-cats { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-bottom:1rem; }
-  #diegoCarteroModal .dcm-cat-btn { padding:.875rem; border:2px solid #e2e8f0; background:#fff; border-radius:.5rem; cursor:pointer; font-size:.875rem; text-align:left; transition:all .15s; font-family:inherit; }
-  #diegoCarteroModal .dcm-cat-btn:hover { border-color:#059669; background:#f0fdf4; }
-  #diegoCarteroModal .dcm-cat-btn.selected { border-color:#059669; background:#dcfce7; }
-  #diegoCarteroModal .dcm-cat-emoji { display:block; font-size:1.25rem; margin-bottom:.125rem; }
-  #diegoCarteroModal textarea { width:100%; min-height:90px; padding:.625rem .75rem; border:1px solid #cbd5e1; border-radius:.375rem; font-family:'Inter',sans-serif; font-size:.875rem; resize:vertical; box-sizing:border-box; }
-  #diegoCarteroModal textarea:focus { outline:none; border-color:#059669; box-shadow:0 0 0 3px rgba(5,150,105,.1); }
-  #diegoCarteroModal .dcm-counter { text-align:right; font-size:.75rem; color:#94a3b8; margin-top:.125rem; }
-  #diegoCarteroModal .dcm-actions { display:flex; gap:.5rem; margin-top:1rem; align-items:center; }
-  #diegoCarteroModal .dcm-chat-link { font-size:.75rem; color:#0284c7; text-decoration:underline; cursor:pointer; flex:1; }
-  #diegoCarteroModal .dcm-cancel { padding:.5rem 1rem; background:#fff; border:1px solid #cbd5e1; border-radius:.375rem; cursor:pointer; font-size:.875rem; font-family:inherit; color:#475569; }
-  #diegoCarteroModal .dcm-submit { padding:.5rem 1.25rem; background:#059669; color:#fff; border:none; border-radius:.375rem; cursor:pointer; font-size:.875rem; font-weight:600; font-family:inherit; }
-  #diegoCarteroModal .dcm-submit:disabled { background:#94a3b8; cursor:not-allowed; }
-  #diegoCarteroResp { display:none; padding:.75rem; background:#dcfce7; border:1px solid #16a34a; border-radius:.375rem; color:#14532d; font-size:.875rem; margin-top:1rem; }
   #diegoCarteroNotif { display:none; position:fixed; top:1rem; right:1rem; z-index:70; background:#fef3c7; border:2px solid #f59e0b; border-radius:.5rem; padding:.75rem 1rem; box-shadow:0 10px 25px -5px rgba(0,0,0,.2); max-width:380px; font-family:'Inter',sans-serif; }
   #diegoCarteroNotif .dcn-title { font-weight:600; color:#92400e; font-size:.875rem; margin-bottom:.125rem; }
   #diegoCarteroNotif .dcn-preview { font-size:.8rem; color:#78350f; }
   #diegoCarteroNotif .dcn-close { position:absolute; top:.25rem; right:.5rem; cursor:pointer; color:#92400e; background:none; border:none; font-size:1.25rem; }
 </style>
-
-<div id="diegoCarteroModal" role="dialog" aria-labelledby="dcmTitle" aria-modal="true">
-  <div class="dcm-box">
-    <h3 id="dcmTitle" class="dcm-title">📬 Mandale algo a Diego</h3>
-    <p class="dcm-sub">Diego lo entrega a la persona indicada. Recibís respuesta apenas alguien lo vea.</p>
-    <div class="dcm-cats" role="radiogroup" aria-label="Categoría del mensaje">
-      <button type="button" class="dcm-cat-btn" data-cat="algo_no_funciona" role="radio" aria-checked="false">
-        <span class="dcm-cat-emoji">🔴</span><strong>Algo no funciona</strong>
-      </button>
-      <button type="button" class="dcm-cat-btn" data-cat="idea" role="radio" aria-checked="false">
-        <span class="dcm-cat-emoji">💡</span><strong>Tengo una idea</strong>
-      </button>
-      <button type="button" class="dcm-cat-btn" data-cat="no_se_como" role="radio" aria-checked="false">
-        <span class="dcm-cat-emoji">❓</span><strong>No sé cómo se hace</strong>
-      </button>
-      <button type="button" class="dcm-cat-btn" data-cat="urgente" role="radio" aria-checked="false">
-        <span class="dcm-cat-emoji">🚨</span><strong>Es urgente</strong>
-      </button>
-    </div>
-    <!-- Campos contexto obligatorios cuando categoria=urgente (R-AUD-NO-CARGA-DUSAN 02-jun) -->
-    <div id="dcmUrgenteFields" style="display:none;background:#fef3c7;border:1px solid #f59e0b;border-radius:.375rem;padding:.625rem .75rem;margin-bottom:.75rem;">
-      <div style="font-size:.75rem;color:#92400e;font-weight:600;margin-bottom:.375rem;">🚨 Para resolver rápido necesitamos 2 cosas:</div>
-      <label for="dcmUrgCliente" style="font-size:.7rem;color:#78350f;display:block;margin-bottom:.125rem;">Cliente o asunto</label>
-      <input type="text" id="dcmUrgCliente" maxlength="200" placeholder="Ej: Megapol · cotización Talca · firma Abastible" aria-label="Cliente o asunto" style="width:100%;padding:.4rem .55rem;border:1px solid #cbd5e1;border-radius:.25rem;font-family:'Inter',sans-serif;font-size:.85rem;box-sizing:border-box;margin-bottom:.5rem;">
-      <label for="dcmUrgRazon" style="font-size:.7rem;color:#78350f;display:block;margin-bottom:.125rem;">¿Qué pasa si no se resuelve hoy?</label>
-      <input type="text" id="dcmUrgRazon" maxlength="200" placeholder="Ej: cliente se pierde · pierdo el camión · queda parada la planta" aria-label="Que pasa si no se resuelve hoy" style="width:100%;padding:.4rem .55rem;border:1px solid #cbd5e1;border-radius:.25rem;font-family:'Inter',sans-serif;font-size:.85rem;box-sizing:border-box;">
-    </div>
-
-    <label for="dcmTextarea" style="font-size:.8rem;color:#475569;display:block;margin-bottom:.25rem;">Contale a Diego</label>
-    <textarea id="dcmTextarea" maxlength="5000" placeholder="Describí lo que querés contar (máx 5000)…" aria-label="Mensaje" rows="6"></textarea>
-    <div class="dcm-counter"><span id="dcmCount">0</span>/5000</div>
-    <div id="diegoCarteroResp" role="status"></div>
-    <div class="dcm-actions">
-      <a class="dcm-chat-link" id="dcmChatLink">o hablar con Diego (chat IA)</a>
-      <button type="button" class="dcm-cancel" id="dcmCancel">Cancelar</button>
-      <button type="button" class="dcm-submit" id="dcmSubmit" disabled>Enviar</button>
-    </div>
-  </div>
-</div>
 
 <div id="diegoCarteroNotif" role="alert" aria-live="polite">
   <button class="dcn-close" id="dcnClose" aria-label="Cerrar notificación">×</button>
@@ -19014,7 +19054,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <script>
 (function () {
-  // === D-DIEGO-CARTERO-001 frontend cartero ===
+  // D-DIEGO-CARTERO-001 · Solo notificación realtime (modal 4 categorías removido 2026-06-25)
   function ready() { return typeof sb !== 'undefined' && sb && sb.schema; }
   function resolveEmail() {
     if (typeof currentUser !== 'undefined' && currentUser?.email) return String(currentUser.email).toLowerCase();
@@ -19029,194 +19069,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {}
     return null;
   }
-  function resolveSucursalTab() {
-    var tabEl = document.querySelector('.tab-content:not(.hidden)');
-    var tab = tabEl ? tabEl.id : null;
-    var suc = (typeof currentSilo !== 'undefined') ? currentSilo : null;
-    return { sucursal: suc, tab_actual: tab };
-  }
-
-  var modal = document.getElementById('diegoCarteroModal');
-  var modalBox = modal.querySelector('.dcm-box');
-  var catBtns = modal.querySelectorAll('.dcm-cat-btn');
-  var textarea = document.getElementById('dcmTextarea');
-  var counter = document.getElementById('dcmCount');
-  var resp = document.getElementById('diegoCarteroResp');
-  var submitBtn = document.getElementById('dcmSubmit');
-  var cancelBtn = document.getElementById('dcmCancel');
-  var chatLink = document.getElementById('dcmChatLink');
-  var selectedCat = null;
-
-  function open() {
-    selectedCat = null;
-    catBtns.forEach(function (b) { b.classList.remove('selected'); b.setAttribute('aria-checked', 'false'); });
-    textarea.value = '';
-    counter.textContent = '0';
-    resp.style.display = 'none';
-    resp.textContent = '';
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Enviar';
-    var uf = document.getElementById('dcmUrgenteFields');
-    if (uf) uf.style.display = 'none';
-    var uc = document.getElementById('dcmUrgCliente');
-    var ur = document.getElementById('dcmUrgRazon');
-    if (uc) uc.value = '';
-    if (ur) ur.value = '';
-    modal.classList.add('open');
-    setTimeout(function () { textarea.focus(); }, 80);
-  }
-  function close() {
-    modal.classList.remove('open');
-  }
-
-  // R-AUD-NO-CARGA-DUSAN · campos contexto solo para urgente
-  var urgFields = document.getElementById('dcmUrgenteFields');
-  var urgClienteIn = document.getElementById('dcmUrgCliente');
-  var urgRazonIn = document.getElementById('dcmUrgRazon');
-
-  function urgenteCamposOk() {
-    if (selectedCat !== 'urgente') return true;
-    var c = (urgClienteIn && urgClienteIn.value || '').trim();
-    var r = (urgRazonIn && urgRazonIn.value || '').trim();
-    return c.length >= 3 && r.length >= 3;
-  }
-
-  function updateSubmitState() {
-    submitBtn.disabled = !(selectedCat && textarea.value.trim().length > 0 && urgenteCamposOk());
-  }
-
-  function refreshUrgenteFields() {
-    if (!urgFields) return;
-    if (selectedCat === 'urgente') {
-      urgFields.style.display = 'block';
-    } else {
-      urgFields.style.display = 'none';
-      if (urgClienteIn) urgClienteIn.value = '';
-      if (urgRazonIn) urgRazonIn.value = '';
-    }
-  }
-
-  catBtns.forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      catBtns.forEach(function (b) { b.classList.remove('selected'); b.setAttribute('aria-checked', 'false'); });
-      btn.classList.add('selected');
-      btn.setAttribute('aria-checked', 'true');
-      selectedCat = btn.getAttribute('data-cat');
-      refreshUrgenteFields();
-      updateSubmitState();
-    });
-  });
-
-  textarea.addEventListener('input', function () {
-    counter.textContent = String(textarea.value.length);
-    updateSubmitState();
-  });
-  if (urgClienteIn) urgClienteIn.addEventListener('input', updateSubmitState);
-  if (urgRazonIn) urgRazonIn.addEventListener('input', updateSubmitState);
-
-  cancelBtn.addEventListener('click', close);
-
-  modal.addEventListener('click', function (e) {
-    if (e.target === modal) close();
-  });
-
-  chatLink.addEventListener('click', function () {
-    close();
-    var origFab = document.getElementById('diegoFab');
-    if (origFab) {
-      window.__diegoCarteroBypass = true;
-      origFab.click();
-      setTimeout(function () { window.__diegoCarteroBypass = false; }, 200);
-    }
-  });
-
-  submitBtn.addEventListener('click', async function () {
-    if (!selectedCat || !textarea.value.trim()) return;
-    if (selectedCat === 'urgente' && !urgenteCamposOk()) {
-      resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
-      resp.textContent = 'Para urgente necesitamos cliente/asunto y que pasa si no se resuelve hoy.';
-      resp.style.display = 'block';
-      return;
-    }
-    var email = resolveEmail();
-    if (!email) {
-      resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
-      resp.textContent = 'No detecto tu sesión. Recargá la página y volvé a iniciar sesión.';
-      resp.style.display = 'block';
-      return;
-    }
-    var ctx = resolveSucursalTab();
-    // R-AUD-NO-CARGA-DUSAN · si urgente, prepend contexto al mensaje para que PC/Dusan
-    // tengan info accionable sin tener que re-preguntar al operativo.
-    var mensajeFinal = textarea.value.trim();
-    if (selectedCat === 'urgente') {
-      var uc = (urgClienteIn && urgClienteIn.value || '').trim();
-      var ur = (urgRazonIn && urgRazonIn.value || '').trim();
-      mensajeFinal = '[CLIENTE/ASUNTO]: ' + uc + '\n[SI NO SE RESUELVE HOY]: ' + ur + '\n---\n' + mensajeFinal;
-    }
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Enviando…';
-    try {
-      var SUPA = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : 'https://eknmtsrtfkzroxnovfqn.supabase.co';
-      var ANON = (typeof SUPABASE_ANON_KEY !== 'undefined') ? SUPABASE_ANON_KEY : '';
-      var r = await fetch(SUPA + '/functions/v1/diego-chat-process', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ANON },
-        body: JSON.stringify({
-          mode: 'feedback_cartero',
-          user_email: email,
-          categoria: selectedCat,
-          mensaje: mensajeFinal,
-          sucursal: ctx.sucursal,
-          tab_actual: ctx.tab_actual,
-        }),
-      });
-      var data = await r.json().catch(function () { return null; });
-      if (!r.ok || !data || !data.ok) {
-        resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
-        // 831b0c40 · mensaje especifico por status
-        var msgErr;
-        if (r.status === 401) msgErr = 'Tu sesion caduco. Cerra y abri el panel de nuevo.';
-        else if (r.status === 403) msgErr = 'No tenes permiso para mandar esto. Avisame por WhatsApp.';
-        else if (r.status === 413) msgErr = 'El mensaje es muy largo (>20 MB). Mandalo en partes.';
-        else if (r.status >= 500) msgErr = 'Diego esta caido. Probate en 5 min.';
-        else msgErr = (data && data.error) ? data.error : ('No pude enviar (HTTP ' + r.status + '). Reintenta en 1 min.');
-        resp.textContent = msgErr;
-        resp.style.display = 'block';
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Enviar';
-        return;
-      }
-      resp.style.background = '#dcfce7'; resp.style.color = '#14532d'; resp.style.borderColor = '#16a34a';
-      // Bug [7] fix · feedback Cartero 12:10 comercial@: "Como voy a saber a donde me responde los urgentes".
-      // Incluir link clickeable a tab "📬 Mis reportes Diego" para discoverability.
-      resp.innerHTML = '<div>' + (data.mensaje_respuesta || 'Recibido. Te avisamos.') + '</div>' +
-        '<div style="margin-top:.5rem;font-size:.75rem;">Para ver respuestas y estado: ' +
-        '<a id="dcmGoMisReportes" href="#" style="color:#0284c7;text-decoration:underline;cursor:pointer;">abrir tab 📬 Mis reportes Diego</a></div>';
-      resp.style.display = 'block';
-      submitBtn.textContent = '✓ Enviado';
-      // Click handler para llevar al usuario directo al tab Mis reportes
-      setTimeout(function () {
-        var goLink = document.getElementById('dcmGoMisReportes');
-        if (goLink) goLink.addEventListener('click', function (ev) {
-          ev.preventDefault();
-          close();
-          var tabBtn = document.querySelector('button[data-tab="mis_reportes"]') || document.querySelector('a[data-v4-tab="mis_reportes"]');
-          if (tabBtn) tabBtn.click();
-        });
-      }, 50);
-      setTimeout(close, 3500); // un poco más de tiempo para que vea el link
-    } catch (e) {
-      resp.style.background = '#fee2e2'; resp.style.color = '#7f1d1d'; resp.style.borderColor = '#b91c1c';
-      resp.textContent = 'Error de red. Verificá conexión y probá de nuevo.';
-      resp.style.display = 'block';
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Enviar';
-    }
-  });
-
-  // P1 23-jun-2026 · FAB ya no abre el modal de categorías — abre el chat directamente.
-  // El modal Cartero queda disponible para acceso futuro desde panel (P6).
 
   // P6 23-jun-2026 · Reporte de bugs Diego → public.preguntas_pendientes
   window.abrirReporteBugDiego = function () {
@@ -19249,15 +19101,14 @@ document.addEventListener('DOMContentLoaded', () => {
       msgEl.style.color = '#ef4444'; msgEl.textContent = 'Error al enviar: ' + (e.message || 'intenta de nuevo');
     }
   };
-  // Cerrar modal al hacer click fuera del cuadro
   document.getElementById('diegoBugModal').addEventListener('click', function (e) {
     if (e.target === this) window.cerrarReporteBugDiego();
   });
 
-  // -- Realtime: notificación naranja para Dusan/Pablo cuando entra feedback --
+  // Notificación naranja realtime para Dusan/Pablo
   function notifShow(titulo, preview) {
     var notif = document.getElementById('diegoCarteroNotif');
-    document.getElementById('dcnTitle').textContent = titulo || '📬 Nuevo feedback Diego';
+    document.getElementById('dcnTitle').textContent = titulo || '📬 Nuevo mensaje Diego';
     document.getElementById('dcnPreview').textContent = preview || '';
     notif.style.display = 'block';
     setTimeout(function () { notif.style.display = 'none'; }, 12000);
@@ -19271,7 +19122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     var email = resolveEmail();
     if (!email) { setTimeout(subscribeRealtime, 2000); return; }
     var ADMINS = ['dusan.arancibia@gmail.com', 'gerencia@gestionrepchile.cl', 'sistemas@gestionrepchile.cl', 'recepcion01@gestionrepchile.cl'];
-    if (!ADMINS.includes(email)) return; // solo admins reciben notificación
+    if (!ADMINS.includes(email)) return;
     try {
       sb.channel('diego_inbox_cartero_' + email)
         .on('postgres_changes', { event: 'INSERT', schema: 'panel', table: 'diego_inbox' }, function (payload) {
@@ -19864,11 +19715,6 @@ document.addEventListener('DOMContentLoaded', () => {
       var seedEl = document.getElementById('v3Seed');
       if (seedEl) { if (d.caja_es_seed) seedEl.classList.remove('hidden'); else seedEl.classList.add('hidden'); }
 
-<<<<<<< HEAD
-      // USD/CLP + LME
-      set('v3Usd', p.usd_clp != null ? '$' + Math.round(p.usd_clp) : '—');
-      set('v3Lme', p.lme_cobre_usd_lb != null ? 'Cu ' + parseFloat(p.lme_cobre_usd_lb).toFixed(2) + ' USD/lb' : '—');
-=======
       // Sucursales card (reemplaza USD/CLP)
       var sucList = d.sucursales || [];
       var sucActHoy = parseInt(p.sucursales_activas) || 0;
@@ -19905,7 +19751,6 @@ document.addEventListener('DOMContentLoaded', () => {
         alertEl.textContent = alertas.length > 0 ? 'Hoy: ' + alertas.join(' · ') : '✅ Todo en orden';
         alertEl.classList.remove('hidden');
       }
->>>>>>> origin/main
 
       // Cobros vencidos
       var cobros = p.cobros_vencidos_clp;
@@ -21957,6 +21802,88 @@ document.addEventListener('DOMContentLoaded', () => {
       if (sel) sel.innerHTML = '<option value="">Elegí sucursal…</option>' + _decSucCache.map(s => `<option value="${esc(s.sucursal_id)}">${esc(s.nombre)}</option>`).join('');
     }
   }
+  // ── HUAL vs Compra ──────────────────────────────────────────────
+  let _hualSucLoaded = false;
+  async function loadHualCompra() {
+    const div = $$('hualCompraTabla'); if (!div) return;
+    div.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Cargando…</div>';
+    try {
+      // 1. Precios HUAL (PV07)
+      const { data: hualRows, error: e1 } = await sb.schema('curated').from('comprador_precio_actual')
+        .select('material_id, precio_clp_kg, vigente_desde')
+        .eq('comprador_id', 'PV07').is('vigente_hasta', null);
+      if (e1) throw e1;
+
+      // 2. Nombres de materiales
+      const { data: mats } = await sb.schema('curated').from('materiales').select('material_id, nombre');
+      const matMap = Object.fromEntries((mats || []).map(m => [m.material_id, m.nombre]));
+
+      // 3. Precios de compra por sucursal
+      const sucFiltro = $$('hualFiltroSuc')?.value || '';
+      let q = sb.schema('curated').from('materiales_sucursal_precios')
+        .select('material_id, sucursal_id, precio_compra_clp').is('vigencia_hasta', null);
+      if (sucFiltro) q = q.eq('sucursal_id', sucFiltro);
+      const { data: compraRows } = await q;
+
+      // 4. Llenar filtro sucursales (1 vez)
+      if (!_hualSucLoaded) {
+        const { data: sucs } = await sb.schema('curated').from('sucursales').select('sucursal_id, nombre').order('nombre');
+        const sel = $$('hualFiltroSuc');
+        if (sel && sucs) {
+          sel.innerHTML = '<option value="">Todas las sucursales</option>' + sucs.map(s => `<option value="${esc(s.sucursal_id)}">${esc(s.nombre)}</option>`).join('');
+        }
+        _hualSucLoaded = true;
+      }
+
+      // 5. Build map: material_id → avg precio_compra
+      const compraMap = {};
+      for (const r of (compraRows || [])) {
+        if (!compraMap[r.material_id]) compraMap[r.material_id] = [];
+        compraMap[r.material_id].push(Number(r.precio_compra_clp || 0));
+      }
+      const compraAvg = {};
+      for (const [mid, vals] of Object.entries(compraMap)) {
+        compraAvg[mid] = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+      }
+
+      // 6. Render
+      if (!hualRows || hualRows.length === 0) {
+        div.innerHTML = '<div class="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">No hay precios HUAL cargados para PV07. Usá la función actualizar_precio_comprador desde SQL Editor.</div>';
+        return;
+      }
+      const filas = hualRows.map(r => {
+        const hual = Number(r.precio_clp_kg || 0);
+        const compra = compraAvg[r.material_id] ?? null;
+        const margen = (hual > 0 && compra !== null) ? Math.round(((hual - compra) / hual) * 100) : null;
+        const sem = margen === null ? '⚪' : margen >= 40 ? '🟢' : margen >= 25 ? '🟡' : '🔴';
+        const dia = r.vigente_desde ? r.vigente_desde.slice(0, 10) : '—';
+        return { material: matMap[r.material_id] || r.material_id, hual, compra, margen, sem, dia };
+      }).sort((a, b) => (a.margen ?? 999) - (b.margen ?? 999));
+
+      div.innerHTML = `<table class="w-full text-xs border-collapse">
+        <thead><tr class="bg-stone-100 text-stone-700">
+          <th class="text-left px-2 py-2">Material</th>
+          <th class="text-right px-2 py-2">HUAL paga</th>
+          <th class="text-right px-2 py-2">Tú pagas</th>
+          <th class="text-right px-2 py-2">Margen</th>
+          <th class="text-center px-2 py-2">Estado</th>
+          <th class="text-right px-2 py-2 text-stone-400">Precio desde</th>
+        </tr></thead>
+        <tbody>${filas.map(f => `<tr class="border-b border-stone-100 hover:bg-stone-50">
+          <td class="px-2 py-1.5 font-medium">${esc(f.material)}</td>
+          <td class="px-2 py-1.5 text-right text-emerald-700 font-semibold">$${f.hual.toLocaleString('es-CL')}</td>
+          <td class="px-2 py-1.5 text-right">${f.compra !== null ? '$' + f.compra.toLocaleString('es-CL') : '<span class="text-stone-400">—</span>'}</td>
+          <td class="px-2 py-1.5 text-right font-bold ${f.margen === null ? 'text-stone-400' : f.margen >= 40 ? 'text-emerald-700' : f.margen >= 25 ? 'text-amber-600' : 'text-red-600'}">${f.margen !== null ? f.margen + '%' : '—'}</td>
+          <td class="px-2 py-1.5 text-center text-base">${f.sem}</td>
+          <td class="px-2 py-1.5 text-right text-stone-400">${esc(f.dia)}</td>
+        </tr>`).join('')}</tbody>
+      </table>`;
+    } catch (err) {
+      div.innerHTML = `<div class="text-red-600 text-sm p-3">${esc(err.message || String(err))}</div>`;
+    }
+  }
+  // ────────────────────────────────────────────────────────────────
+
   async function loadDecisor() {
     const lista = $$('dec_lista'); if (!lista) return;
     await decBootstrap();
@@ -22165,7 +22092,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ------------------ Wiring ------------------
   function init() {
     // Loaders al click del tab (ambos navbars)
-    [['andrea_dup_clientes', loadDup], ['andrea_drift_libre', loadDrift], ['andrea_ruts_invalidos', loadRuts], ['andrea_comex', loadComex], ['decisor_venta', decBootstrap], ['andrea_cobranza', loadCobranza], ['andrea_actas', loadActas]].forEach(([code, fn]) => {
+    [['andrea_dup_clientes', loadDup], ['andrea_drift_libre', loadDrift], ['andrea_ruts_invalidos', loadRuts], ['andrea_comex', loadComex], ['decisor_venta', decBootstrap], ['andrea_cobranza', loadCobranza], ['andrea_actas', loadActas], ['hual_compra', loadHualCompra]].forEach(([code, fn]) => {
       document.querySelector('button[data-tab="' + code + '"]')?.addEventListener('click', () => setTimeout(fn, 100));
       document.querySelector('a[data-v4-tab="' + code + '"]')?.addEventListener('click', () => setTimeout(fn, 100));
     });
