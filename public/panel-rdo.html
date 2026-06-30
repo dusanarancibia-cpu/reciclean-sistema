@@ -1877,7 +1877,15 @@
       <!-- D-VISUAL-ORO fix tarea 61941445 (3 gaps): Inter aplicado via body, verde Reciclean #059669, rounded-md -->
       <div class="flex justify-between items-center mb-4 gap-2 flex-wrap">
         <h2 class="text-xl font-bold text-stone-800">📨 Bandeja Precios — propuestas para aprobación</h2>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <button id="bpRechazarFiltrados" type="button" onclick="bpBulkRechazar()"
+                  class="hidden bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1.5 rounded font-medium">
+            ✗ Rechazar (<span id="bpBulkRechazarCnt">0</span>)
+          </button>
+          <button id="bpAprobarFiltrados" type="button" onclick="bpBulkAprobar()"
+                  class="hidden bg-emerald-700 hover:bg-emerald-800 text-white text-sm px-3 py-1.5 rounded font-medium">
+            ✅ Aprobar (<span id="bpBulkAprobarCnt">0</span>)
+          </button>
           <button id="bpAprobarTodos" type="button" onclick="bpAprobarTodos()"
                   class="hidden bg-emerald-700 hover:bg-emerald-800 text-white text-sm px-3 py-1.5 rounded font-medium">
             ✅ Aprobar todos (<span id="bpAprobarTodosCnt">0</span>)
@@ -1933,10 +1941,82 @@
             <option value="">Todas las sucursales</option>
           </select>
         </div>
+        <div>
+          <label for="bpFiltroCliente" class="block text-xs text-stone-500 mb-1">Cliente</label>
+          <select id="bpFiltroCliente" onchange="bpAplicarFiltrosClienteSide()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todos los clientes</option>
+          </select>
+        </div>
+        <div>
+          <label for="bpFiltroMaterial" class="block text-xs text-stone-500 mb-1">Material</label>
+          <select id="bpFiltroMaterial" onchange="bpAplicarFiltrosClienteSide()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todos los materiales</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Propuesto $/kg</label>
+          <div class="flex items-center gap-1">
+            <input id="bpFiltroPrecioMin" type="number" placeholder="Mín" min="0" step="1"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="w-20 border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <span class="text-stone-400 text-xs">–</span>
+            <input id="bpFiltroPrecioMax" type="number" placeholder="Máx" min="0" step="1"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="w-20 border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Vigente $/kg</label>
+          <div class="flex items-center gap-1">
+            <input id="bpFiltroVigenteMin" type="number" placeholder="Mín" min="0" step="1"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="w-20 border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <span class="text-stone-400 text-xs">–</span>
+            <input id="bpFiltroVigenteMax" type="number" placeholder="Máx" min="0" step="1"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="w-20 border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Δ% (desviación)</label>
+          <div class="flex items-center gap-1">
+            <input id="bpFiltroDeltaMin" type="number" placeholder="Mín" step="0.1"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="w-20 border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <span class="text-stone-400 text-xs">–</span>
+            <input id="bpFiltroDeltaMax" type="number" placeholder="Máx" step="0.1"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="w-20 border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Conf. (0–1)</label>
+          <div class="flex items-center gap-1">
+            <input id="bpFiltroConfMin" type="number" placeholder="0" min="0" max="1" step="0.01"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="w-16 border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <span class="text-stone-400 text-xs">–</span>
+            <input id="bpFiltroConfMax" type="number" placeholder="1" min="0" max="1" step="0.01"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="w-16 border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Fecha (desde–hasta)</label>
+          <div class="flex items-center gap-1">
+            <input id="bpFiltroFechaDesde" type="date"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <span class="text-stone-400 text-xs">–</span>
+            <input id="bpFiltroFechaHasta" type="date"
+                   oninput="bpAplicarFiltrosClienteSide()"
+                   class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+          </div>
+        </div>
         <div class="flex-1 min-w-[12rem]">
           <label for="bpFiltroBuscar" class="block text-xs text-stone-500 mb-1">Buscar (cliente, material, notas)</label>
           <input id="bpFiltroBuscar" type="text" placeholder="Ej. cartón blanco SOREPA"
-                 oninput="bpDebouncedSearch()" aria-label="Buscar"
+                 oninput="bpDebouncedFiltro()" aria-label="Buscar"
                  class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
         </div>
       </div>
@@ -15030,7 +15110,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const estado   = document.getElementById('bpFiltroEstado').value;
     const ruta     = document.getElementById('bpFiltroRuta').value;
     const sucursal = (document.getElementById('bpFiltroSucursal') || {}).value || '';
-    const buscar   = (document.getElementById('bpFiltroBuscar').value || '').trim();
 
     let q = sb.schema('staging').from('v_bandeja_precios')
       .select('id, cliente_id, cliente_nombre, material_id, material_nombre, sucursal_id, sucursal_nombre, precio_clp_kg, precio_vigente, desviacion_pct, confidence_score, ruta, estado, fecha_vigencia, created_at, revisando_por, lock_until, notas')
@@ -15044,30 +15123,20 @@ document.addEventListener('DOMContentLoaded', () => {
       tbody.innerHTML = `<tr><td colspan="10" class="px-3 py-4 text-center text-red-600">Error: ${esc(error.message)}</td></tr>`;
       return;
     }
-    let rows = data ?? [];
+    const rows = data ?? [];
     bpPopularSucursalFiltro(rows);
-    if (buscar) {
-      const q2 = buscar.toLowerCase();
-      rows = rows.filter(r =>
-        (r.cliente_nombre ?? '').toLowerCase().includes(q2)
-        || (r.material_nombre ?? '').toLowerCase().includes(q2)
-        || (r.notas ?? '').toLowerCase().includes(q2)
-      );
-    }
+    bpPopularClienteFiltro(rows);
+    bpPopularMaterialFiltro(rows);
     // Badge counter: todos los pendientes (dusan + competencia + otras rutas manuales)
-    const totalPendientes = (data || []).filter(r => r.estado === 'pendiente').length;
+    const totalPendientes = rows.filter(r => r.estado === 'pendiente').length;
     bpActualizarBadge(totalPendientes);
-    if (rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="10" class="px-3 py-4 text-center text-stone-400">Sin propuestas para este filtro.</td></tr>';
-      loadKpis();
-      return;
-    }
     bpRows = rows;
-    bpRenderizarFilas();
+    bpAplicarFiltrosClienteSide();
     loadKpis();
   }
 
   let bpRows = [];
+  let bpVisibleRows = [];
   let bpSortCol = 'created_at';
   let bpSortDir = 'desc';
 
@@ -15095,7 +15164,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function bpRenderizarFilas() {
     const tbody = document.getElementById('bpTbody');
     if (!tbody) return;
-    const sorted = [...bpRows].sort((a, b) => {
+    const sorted = [...bpVisibleRows].sort((a, b) => {
       let va = a[bpSortCol] ?? '';
       let vb = b[bpSortCol] ?? '';
       if (typeof va === 'string') va = va.toLowerCase();
@@ -15319,6 +15388,154 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function bpPopularClienteFiltro(rows) {
+    const sel = document.getElementById('bpFiltroCliente');
+    if (!sel) return;
+    const prev = sel.value;
+    const clientes = [...new Map((rows || [])
+      .filter(r => r.cliente_id)
+      .map(r => [r.cliente_id, r.cliente_nombre || r.cliente_id]))
+      .entries()]
+      .map(([id, nombre]) => ({ id, nombre }))
+      .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+    sel.innerHTML = '<option value="">Todos los clientes</option>' +
+      clientes.map(c => `<option value="${esc(c.id)}">${esc(c.nombre)}</option>`).join('');
+    if (prev && Array.from(sel.options).some(o => o.value === prev)) sel.value = prev;
+  }
+
+  function bpPopularMaterialFiltro(rows) {
+    const sel = document.getElementById('bpFiltroMaterial');
+    if (!sel) return;
+    const prev = sel.value;
+    const mats = [...new Map((rows || [])
+      .filter(r => r.material_id)
+      .map(r => [r.material_id, r.material_nombre || r.material_id]))
+      .entries()]
+      .map(([id, nombre]) => ({ id, nombre }))
+      .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+    sel.innerHTML = '<option value="">Todos los materiales</option>' +
+      mats.map(m => `<option value="${esc(m.id)}">${esc(m.nombre)}</option>`).join('');
+    if (prev && Array.from(sel.options).some(o => o.value === prev)) sel.value = prev;
+  }
+
+  function bpAplicarFiltrosClienteSide() {
+    const gv = id => (document.getElementById(id) || {}).value || '';
+    const gn = id => { const v = parseFloat(gv(id)); return isNaN(v) ? null : v; };
+    const cliente     = gv('bpFiltroCliente');
+    const material    = gv('bpFiltroMaterial');
+    const precioMin   = gn('bpFiltroPrecioMin');
+    const precioMax   = gn('bpFiltroPrecioMax');
+    const vigenteMin  = gn('bpFiltroVigenteMin');
+    const vigenteMax  = gn('bpFiltroVigenteMax');
+    const deltaMin    = gn('bpFiltroDeltaMin');
+    const deltaMax    = gn('bpFiltroDeltaMax');
+    const confMin     = gn('bpFiltroConfMin');
+    const confMax     = gn('bpFiltroConfMax');
+    const fechaDesde  = gv('bpFiltroFechaDesde');
+    const fechaHasta  = gv('bpFiltroFechaHasta');
+    const buscar      = gv('bpFiltroBuscar').trim().toLowerCase();
+    bpVisibleRows = bpRows.filter(r => {
+      if (cliente  && r.cliente_id  !== cliente)  return false;
+      if (material && r.material_id !== material)  return false;
+      if (precioMin  !== null && (r.precio_clp_kg    ?? 0) < precioMin)  return false;
+      if (precioMax  !== null && (r.precio_clp_kg    ?? 0) > precioMax)  return false;
+      if (vigenteMin !== null && (r.precio_vigente   ?? 0) < vigenteMin) return false;
+      if (vigenteMax !== null && (r.precio_vigente   ?? 0) > vigenteMax) return false;
+      if (deltaMin   !== null && (r.desviacion_pct   ?? 0) < deltaMin)   return false;
+      if (deltaMax   !== null && (r.desviacion_pct   ?? 0) > deltaMax)   return false;
+      if (confMin    !== null && (r.confidence_score ?? 0) < confMin)    return false;
+      if (confMax    !== null && (r.confidence_score ?? 0) > confMax)    return false;
+      if (fechaDesde && r.created_at && r.created_at.slice(0, 10) < fechaDesde) return false;
+      if (fechaHasta && r.created_at && r.created_at.slice(0, 10) > fechaHasta) return false;
+      if (buscar && !(
+        (r.cliente_nombre  ?? '').toLowerCase().includes(buscar) ||
+        (r.material_nombre ?? '').toLowerCase().includes(buscar) ||
+        (r.notas           ?? '').toLowerCase().includes(buscar)
+      )) return false;
+      return true;
+    });
+    const tbody = document.getElementById('bpTbody');
+    if (tbody && bpVisibleRows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="10" class="px-3 py-4 text-center text-stone-400">Sin propuestas para este filtro.</td></tr>';
+    }
+    bpActualizarBotonesFilto();
+    bpRenderizarFilas();
+  }
+
+  function bpActualizarBotonesFilto() {
+    const n = bpVisibleRows.length;
+    const puede = bpEstadoPermiso() === 'ceo';
+    const btnR = document.getElementById('bpRechazarFiltrados');
+    const btnA = document.getElementById('bpAprobarFiltrados');
+    const cntR = document.getElementById('bpBulkRechazarCnt');
+    const cntA = document.getElementById('bpBulkAprobarCnt');
+    if (cntR) cntR.textContent = n;
+    if (cntA) cntA.textContent = n;
+    if (btnR) btnR.classList.toggle('hidden', !puede || n === 0);
+    if (btnA) btnA.classList.toggle('hidden', !puede || n === 0);
+  }
+
+  async function bpBulkRechazar() {
+    if (bpEstadoPermiso() !== 'ceo') return;
+    const ids = bpVisibleRows.map(r => r.id);
+    if (!ids.length) return;
+    if (!confirm('¿Rechazar ' + ids.length + ' propuestas visibles?')) return;
+    const btn = document.getElementById('bpRechazarFiltrados');
+    if (btn) btn.disabled = true;
+    try {
+      const { error } = await sb.schema('staging').from('precios_propuestos')
+        .update({
+          estado: 'rechazado',
+          aprobado_por: currentUser ?? null,
+          aprobado_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .in('id', ids);
+      if (error) throw error;
+      if (window.showToast) window.showToast('✗ ' + ids.length + ' propuestas rechazadas', 'info');
+      else alert('✗ ' + ids.length + ' propuestas rechazadas');
+      loadBandejaPrecios();
+    } catch (e) {
+      alert('Error: ' + (e.message || String(e)).slice(0, 120));
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function bpBulkAprobar() {
+    if (bpEstadoPermiso() !== 'ceo') return;
+    const email = bpObtenerEmailUsuario();
+    if (!email) { alert('Sesión expirada. Recargá la página.'); return; }
+    const ids = bpVisibleRows.map(r => r.id);
+    if (!ids.length) return;
+    if (!confirm('¿Aprobar ' + ids.length + ' propuestas visibles?')) return;
+    const btn = document.getElementById('bpAprobarFiltrados');
+    if (btn) btn.disabled = true;
+    try {
+      const { error } = await sb.schema('staging').from('precios_propuestos')
+        .update({
+          estado: 'aprobado',
+          aprobado_por: email,
+          aprobado_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .in('id', ids);
+      if (error) throw error;
+      if (window.showToast) window.showToast('✅ ' + ids.length + ' propuestas aprobadas', 'success');
+      else alert('✅ ' + ids.length + ' propuestas aprobadas');
+      loadBandejaPrecios();
+    } catch (e) {
+      alert('Error: ' + (e.message || String(e)).slice(0, 120));
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  function bpDebouncedFiltro() {
+    if (bpSearchDebounce) clearTimeout(bpSearchDebounce);
+    bpSearchDebounce = setTimeout(bpAplicarFiltrosClienteSide, 250);
+  }
+
   function bpDebouncedSearch() {
     if (bpSearchDebounce) clearTimeout(bpSearchDebounce);
     bpSearchDebounce = setTimeout(loadBandejaPrecios, 250);
@@ -15341,6 +15558,10 @@ document.addEventListener('DOMContentLoaded', () => {
   window.bpAprobar          = bpAprobar;
   window.bpRechazar         = bpRechazar;
   window.bpDebouncedSearch          = bpDebouncedSearch;
+  window.bpDebouncedFiltro          = bpDebouncedFiltro;
+  window.bpAplicarFiltrosClienteSide = bpAplicarFiltrosClienteSide;
+  window.bpBulkRechazar             = bpBulkRechazar;
+  window.bpBulkAprobar              = bpBulkAprobar;
   window.bpActualizarMargenAjuste   = bpActualizarMargenAjuste;
 })();
 </script>
