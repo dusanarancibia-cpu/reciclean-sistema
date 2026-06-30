@@ -15048,16 +15048,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Guard cliente-side · sin hardcode de email · 3 estados cargando/ceo/no_ceo
   function bpEstadoPermiso() {
+    // Perfiles con acceso CEO · consistente con línea 10536 del panel
+    const CEO_PERFILES = ['gerencia_ceo', 'dusan', 'admin'];
     try {
       if (typeof window.currentProfile === 'string' && window.currentProfile) {
-        return window.currentProfile === 'gerencia_ceo' ? 'ceo' : 'no_ceo';
+        return CEO_PERFILES.includes(window.currentProfile) ? 'ceo' : 'no_ceo';
       }
       if (typeof window.userPerfil === 'string' && window.userPerfil) {
-        return window.userPerfil === 'gerencia_ceo' ? 'ceo' : 'no_ceo';
+        return CEO_PERFILES.includes(window.userPerfil) ? 'ceo' : 'no_ceo';
       }
       const u = (window.currentUser || {});
       if (typeof u === 'object' && u.perfil) {
-        return u.perfil === 'gerencia_ceo' ? 'ceo' : 'no_ceo';
+        return CEO_PERFILES.includes(u.perfil) ? 'ceo' : 'no_ceo';
       }
       return 'cargando';
     } catch (e) { return 'cargando'; }
@@ -16280,13 +16282,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // cargado todavía, devolvemos 'cargando' y mostramos botones deshabilitados con
   // tooltip honesto en lugar de esconderlos.
   function modoEstadoPermiso() {
+    const CEO_PERFILES = ['gerencia_ceo', 'dusan', 'admin'];
     try {
+      if (typeof window.currentProfile === 'string' && window.currentProfile) {
+        return CEO_PERFILES.includes(window.currentProfile) ? 'ceo' : 'no_ceo';
+      }
       if (typeof window.userPerfil === 'string' && window.userPerfil) {
-        return window.userPerfil === 'gerencia_ceo' ? 'ceo' : 'no_ceo';
+        return CEO_PERFILES.includes(window.userPerfil) ? 'ceo' : 'no_ceo';
       }
       const u = (window.currentUser || {});
       if (u.perfil) {
-        return u.perfil === 'gerencia_ceo' ? 'ceo' : 'no_ceo';
+        return CEO_PERFILES.includes(u.perfil) ? 'ceo' : 'no_ceo';
       }
       return 'cargando';
     } catch (e) { return 'cargando'; }
