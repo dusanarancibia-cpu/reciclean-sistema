@@ -582,7 +582,7 @@
   <div class="flex min-h-screen">
 
   <!-- ============== v4 SIDEBAR LATERAL ============== -->
-  <aside id="v4-sidebar" class="v4-sidebar w-60 bg-white flex flex-col border-r border-slate-200 flex-shrink-0" aria-label="Navegación lateral">
+  <aside id="v4-sidebar" class="v4-sidebar w-60 bg-white flex flex-col border-r border-slate-200 flex-shrink-0 sticky top-0 h-screen" aria-label="Navegación lateral">
     <!-- Logo -->
     <div class="flex items-center gap-2.5 px-4 h-14 border-b border-slate-100">
       <div class="h-8 w-8 bg-gradient-to-br from-green-600 to-green-700 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">R</div>
@@ -710,10 +710,6 @@
             <span class="v4-emoji" aria-hidden="true">💰</span>
             Decisor venta
           </a>
-          <a href="#" data-v4-tab="hual_compra" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin">
-            <span class="v4-emoji" aria-hidden="true">🎯</span>
-            HUAL vs Compra
-          </a>
           <a href="#" data-v4-tab="andrea_comex" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm" data-v4-tab-perfil="dusan,admin,comercial">
             <span class="v4-emoji" aria-hidden="true">🚢</span>
             Comex
@@ -790,6 +786,10 @@
             <span class="v4-emoji" aria-hidden="true">📨</span>
             Bandeja Precios
             <span id="bpBadgeSidebar" class="bp-badge-counter hidden ml-auto text-xs font-bold px-1.5 py-0.5 rounded-full">0</span>
+          </a>
+          <a href="#" data-v4-tab="hual_compra" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🎯</span>
+            HUAL vs Compra
           </a>
           <a href="#" data-v4-tab="precios_vivos" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📈</span>
@@ -6916,7 +6916,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas', 'firmas_reglas', 'mesa_control_99_99'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'hual_compra', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas', 'firmas_reglas', 'mesa_control_99_99'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -15048,7 +15048,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Guard cliente-side · sin hardcode de email · 3 estados cargando/ceo/no_ceo
   function bpEstadoPermiso() {
-    // Perfiles con acceso CEO · consistente con línea 10536 del panel
     const CEO_PERFILES = ['gerencia_ceo', 'dusan', 'admin'];
     try {
       if (typeof window.currentProfile === 'string' && window.currentProfile) {
@@ -15499,6 +15498,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
       if (window.showToast) window.showToast('✗ ' + ids.length + ' propuestas rechazadas', 'info');
       else alert('✗ ' + ids.length + ' propuestas rechazadas');
+      const bpEstEl = document.getElementById('bpFiltroEstado');
+      if (bpEstEl) bpEstEl.value = 'pendiente';
       loadBandejaPrecios();
     } catch (e) {
       alert('Error: ' + (e.message || String(e)).slice(0, 120));
@@ -15528,6 +15529,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
       if (window.showToast) window.showToast('✅ ' + ids.length + ' propuestas aprobadas', 'success');
       else alert('✅ ' + ids.length + ' propuestas aprobadas');
+      const bpEstEl2 = document.getElementById('bpFiltroEstado');
+      if (bpEstEl2) bpEstEl2.value = 'pendiente';
       loadBandejaPrecios();
     } catch (e) {
       alert('Error: ' + (e.message || String(e)).slice(0, 120));
@@ -16282,17 +16285,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // cargado todavía, devolvemos 'cargando' y mostramos botones deshabilitados con
   // tooltip honesto en lugar de esconderlos.
   function modoEstadoPermiso() {
-    const CEO_PERFILES = ['gerencia_ceo', 'dusan', 'admin'];
     try {
-      if (typeof window.currentProfile === 'string' && window.currentProfile) {
-        return CEO_PERFILES.includes(window.currentProfile) ? 'ceo' : 'no_ceo';
-      }
       if (typeof window.userPerfil === 'string' && window.userPerfil) {
-        return CEO_PERFILES.includes(window.userPerfil) ? 'ceo' : 'no_ceo';
+        return window.userPerfil === 'gerencia_ceo' ? 'ceo' : 'no_ceo';
       }
       const u = (window.currentUser || {});
       if (u.perfil) {
-        return CEO_PERFILES.includes(u.perfil) ? 'ceo' : 'no_ceo';
+        return u.perfil === 'gerencia_ceo' ? 'ceo' : 'no_ceo';
       }
       return 'cargando';
     } catch (e) { return 'cargando'; }
