@@ -15498,6 +15498,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
       if (window.showToast) window.showToast('✗ ' + ids.length + ' propuestas rechazadas', 'info');
       else alert('✗ ' + ids.length + ' propuestas rechazadas');
+      const bpEstEl = document.getElementById('bpFiltroEstado');
+      if (bpEstEl) bpEstEl.value = 'pendiente';
       loadBandejaPrecios();
     } catch (e) {
       alert('Error: ' + (e.message || String(e)).slice(0, 120));
@@ -15527,6 +15529,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
       if (window.showToast) window.showToast('✅ ' + ids.length + ' propuestas aprobadas', 'success');
       else alert('✅ ' + ids.length + ' propuestas aprobadas');
+      const bpEstEl2 = document.getElementById('bpFiltroEstado');
+      if (bpEstEl2) bpEstEl2.value = 'pendiente';
       loadBandejaPrecios();
     } catch (e) {
       alert('Error: ' + (e.message || String(e)).slice(0, 120));
