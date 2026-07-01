@@ -16677,7 +16677,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       // Fuente 0: staging.precios_propuestos aprobados (precio venta de Bandeja)
       let q0 = sb.schema('staging').from('precios_propuestos')
-        .select('precio_clp_kg').eq('material_id', matId).eq('estado', 'aprobado')
+        .select('precio_clp_kg').eq('material_id', matId).in('estado', ['aprobado', 'aplicado'])
         .order('updated_at', { ascending: false }).limit(1);
       if (sucId) q0 = q0.eq('sucursal_id', sucId);
       const { data: d0 } = await q0;
