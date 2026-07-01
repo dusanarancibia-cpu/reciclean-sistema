@@ -2991,7 +2991,7 @@
 
       <div class="grid md:grid-cols-2 gap-x-6 gap-y-3 bg-white border border-stone-300 rounded-lg p-4 mb-4">
         <label class="block">
-          <span class="text-xs text-stone-600">T-42a · Precio compra <strong id="calcLblP">$6.000</strong>/kg</span>
+          <span class="text-xs text-stone-600">T-42a · Precio venta <strong id="calcLblP">$6.000</strong>/kg</span>
           <input type="range" id="calcP" min="50" max="12000" step="50" value="6000" class="w-full">
         </label>
         <label class="block">
@@ -16416,6 +16416,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
 (function () {
   let calcCargado = false;
+  let calcRefPrecioVenta = 0; // precio venta aprobado de bandeja para el material activo
 
   function calcFmtClp(n) {
     if (n == null || isNaN(n)) return '—';
@@ -16446,6 +16447,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const b   = bP / 100;
     const iva = ivaP / 100;
 
+    const sliderP = document.getElementById('calcP');
+    if (sliderP) sliderP.style.accentColor = (calcRefPrecioVenta > 0 && p > calcRefPrecioVenta) ? '#ef4444' : '';
     calcSet('calcLblP',   calcFmtClp(p));
     calcSet('calcLblMg',  mgP + '%');
     calcSet('calcLblFl',  calcFmtClp(fl));
@@ -16670,9 +16673,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const matId = document.getElementById('calcMaterial')?.value;
     const sucId = document.getElementById('calcSucursal')?.value || '';
     if (!matId || typeof sb === 'undefined') { calcRecompute(); return; }
+    calcRefPrecioVenta = 0;
     try {
-      let vals = [];
+      // Fuente 0: staging.precios_propuestos aprobados (precio venta de Bandeja)
+      let q0 = sb.schema('staging').from('precios_propuestos')
+        .select('precio_clp_kg').eq('material_id', matId).eq('estado', 'aprobado')
+        .order('updated_at', { ascending: false }).limit(1);
+      if (sucId) q0 = q0.eq('sucursal_id', sucId);
+      const { data: d0 } = await q0;
+      const precioAprobado = d0 && d0.length ? Number(d0[0].precio_clp_kg || 0) : 0;
+      if (precioAprobado > 0) {
+        calcRefPrecioVenta = precioAprobado;
+        const slider = document.getElementById('calcP');
+        if (slider) {
+          if (precioAprobado > Number(slider.max)) slider.max = precioAprobado + 2000;
+          slider.value = precioAprobado;
+        }
+        calcRecompute();
+        return;
+      }
       // Fuente 1: vw_calibracion_triple (materiales HUAL con real_30d o catálogo)
+      let vals = [];
       let q1 = sb.schema('curated').from('vw_calibracion_triple')
         .select('precio_compra_efectivo_clp').eq('material_id', matId);
       if (sucId) q1 = q1.eq('sucursal_id', sucId);
