@@ -16671,12 +16671,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const sucId = document.getElementById('calcSucursal')?.value || '';
     if (!matId || typeof sb === 'undefined') { calcRecompute(); return; }
     try {
-      let q = sb.schema('curated').from('vw_calibracion_triple')
-        .select('precio_compra_efectivo_clp')
-        .eq('material_id', matId);
-      if (sucId) q = q.eq('sucursal_id', sucId);
-      const { data } = await q;
-      const vals = (data || []).map(r => Number(r.precio_compra_efectivo_clp || 0)).filter(v => v > 0);
+      let vals = [];
+      // Fuente 1: vw_calibracion_triple (materiales HUAL con real_30d o catálogo)
+      let q1 = sb.schema('curated').from('vw_calibracion_triple')
+        .select('precio_compra_efectivo_clp').eq('material_id', matId);
+      if (sucId) q1 = q1.eq('sucursal_id', sucId);
+      const { data: d1 } = await q1;
+      vals = (d1 || []).map(r => Number(r.precio_compra_efectivo_clp || 0)).filter(v => v > 0);
+      // Fuente 2: catálogo vigente (fallback para todos los materiales)
+      if (!vals.length) {
+        let q2 = sb.schema('curated').from('materiales_sucursal_precios')
+          .select('precio_compra_clp').eq('material_id', matId).is('vigencia_hasta', null);
+        if (sucId) q2 = q2.eq('sucursal_id', sucId);
+        const { data: d2 } = await q2;
+        vals = (d2 || []).map(r => Number(r.precio_compra_clp || 0)).filter(v => v > 0);
+      }
       if (vals.length) {
         const avg = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length / 50) * 50;
         const slider = document.getElementById('calcP');
