@@ -16454,8 +16454,8 @@ document.addEventListener('DOMContentLoaded', () => {
     calcSet('calcLblIva', ivaP + '%');
 
     // iva ya normalizado 0..1 (ivaP / 100 arriba) — multiplicación directa, sin /100 adicional
-    const pmax   = Math.round(p * (1 - mg) - fl);
-    const plista = Math.round(pmax * (1 + b));
+    const plista = Math.round(p * (1 - mg) - fl);
+    const pmax   = Math.round(plista * (1 + b));
     const pejec  = Math.round((plista + pmax) / 2);
     const ivaAmt = Math.round(plista * iva);
     const contrib = Math.round(vol * (plista - p - fl));
@@ -16611,8 +16611,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const bP  = calcGetVal('calcB');
     const vol = calcGetVal('calcVol');
     const ivaP = calcGetVal('calcIva');
-    const pmax   = Math.round(p * (1 - mgP/100) - fl);
-    const plista = Math.round(pmax * (1 + bP/100));
+    const plista = Math.round(p * (1 - mgP/100) - fl);
+    const pmax   = Math.round(plista * (1 + bP/100));
     const pejec  = Math.round((plista + pmax) / 2);
 
     let userEmail = null;
