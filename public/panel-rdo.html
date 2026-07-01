@@ -8376,7 +8376,8 @@ window.diegMandar = async function() {
 
 async function loadRdoResumen() {
   const div = document.getElementById('rdoResumen');
-  const { data, error } = await sb.from('v_rdo_resumen_mes').select('*').single();
+  // FIX bug #5 runtime cazado 2026-06-30: single() sobre vista vacía = 406. Cambio a maybeSingle().
+  const { data, error } = await sb.from('v_rdo_resumen_mes').select('*').maybeSingle();
   if (error || !data) {
     div.innerHTML = '<p class="text-xs text-stone-400">Sin datos de pesajes este mes.</p>';
     return;
@@ -12913,11 +12914,15 @@ document.getElementById('resetPassword2').addEventListener('keypress', e => {
   window.actualizarFooterFuente = async function actualizarFooterFuente(tabCodigo) {
     if (!tabCodigo || !window.sb) return;
     try {
-      const { data, error } = await window.sb.schema('panel')
+      // FIX bug #6 runtime cazado 2026-06-30: panel.v_frescura_datos NO tiene columna codigo_tab
+      // (cols reales: fuente, ultima_actualizacion, tiempo_transcurrido, estado_semaforo, registros_ultimas_24h).
+      // Traemos la fila por fuente más cercana al tabCodigo · fallback a primera fila si no matchea.
+      const { data: rows, error } = await window.sb.schema('panel')
         .from('v_frescura_datos')
-        .select('*')
-        .eq('codigo_tab', tabCodigo)
-        .maybeSingle();
+        .select('*');
+      const data = Array.isArray(rows)
+        ? (rows.find(r => r.fuente && tabCodigo && r.fuente.toLowerCase().includes(String(tabCodigo).toLowerCase().split('_')[0])) || rows[0] || null)
+        : null;
       const footer = document.getElementById('dataSourceFooter');
       if (error || !data) { if (footer) footer.classList.add('hidden'); return; }
       const ult = data.ultima_actualizacion ? new Date(data.ultima_actualizacion) : null;
@@ -17419,8 +17424,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function pvCargarScore() {
     try {
-      const data = await sbSelect('v_metricas_ejecutivo_precios?select=score_salud_100,caja_dias_cobertura,auditoria_alertas_activas&limit=1');
-      const row = Array.isArray(data) ? data[0] : null;
+      // FIX bug #3 runtime cazado 2026-06-30: vista vive en panel.* · sbSelect default public = 404. Uso sb.schema('panel').
+      const { data: rows, error: err } = await sb.schema('panel').from('v_metricas_ejecutivo_precios')
+        .select('score_salud_100,caja_dias_cobertura,auditoria_alertas_activas').limit(1);
+      if (err) { console.warn('pvCargarScore', err); return; }
+      const row = Array.isArray(rows) ? rows[0] : null;
       if (!row) return;
       const scoreEl = document.getElementById('pvScoreNum');
       const score = parseFloat(row.score_salud_100 || 0).toFixed(1);
@@ -17445,8 +17453,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbody = document.getElementById('pvBandejaTbody');
     if (!tbody) return;
     try {
-      const data = await sbSelect('v_bandeja_resumen?estado=eq.pendiente&select=id,material_nombre,sucursal_nombre,precio_vigente,precio_propuesto,margen_propuesto,tipo_display&order=categoria,material_id');
-      const rows = Array.isArray(data) ? data : [];
+      // FIX bug #2 runtime cazado 2026-06-30: vista vive en panel.* · sbSelect default public = 404. Uso sb.schema('panel').
+      const { data: bandeja, error: err } = await sb.schema('panel').from('v_bandeja_resumen')
+        .select('id,material_nombre,sucursal_nombre,precio_vigente,precio_propuesto,margen_propuesto,tipo_display')
+        .eq('estado','pendiente').order('categoria').order('material_id');
+      if (err) { console.warn('pvCargarBandeja', err); return; }
+      const rows = Array.isArray(bandeja) ? bandeja : [];
       const cnt = rows.length;
       ['pvBandejaCnt','pvBandejaCnt2'].forEach(id => {
         const el = document.getElementById(id);
@@ -22047,10 +22059,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data: mats } = await sb.schema('curated').from('materiales').select('material_id, nombre');
       const matMap = Object.fromEntries((mats || []).map(m => [m.material_id, m.nombre]));
 
-      // 3. Precios de compra por sucursal
+      // 3. Precios de compra efectivos (real_30d si hay vales, si no catálogo)
       const sucFiltro = $$('hualFiltroSuc')?.value || '';
-      let q = sb.schema('curated').from('materiales_sucursal_precios')
-        .select('material_id, sucursal_id, precio_compra_clp').is('vigencia_hasta', null);
+      let q = sb.schema('curated').from('vw_calibracion_triple')
+        .select('material_id, sucursal_id, precio_compra_efectivo_clp');
       if (sucFiltro) q = q.eq('sucursal_id', sucFiltro);
       const { data: compraRows } = await q;
 
@@ -22068,7 +22080,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const compraMap = {};
       for (const r of (compraRows || [])) {
         if (!compraMap[r.material_id]) compraMap[r.material_id] = [];
-        compraMap[r.material_id].push(Number(r.precio_compra_clp || 0));
+        compraMap[r.material_id].push(Number(r.precio_compra_efectivo_clp || 0));
       }
       const compraAvg = {};
       for (const [mid, vals] of Object.entries(compraMap)) {
