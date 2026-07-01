@@ -14906,17 +14906,68 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-<!-- Service Worker registration (v2: skipWaiting + clients.claim + navigate)
+<!-- Service Worker registration (v3: skipWaiting + clients.claim + detección update + banner)
      Sin esto el archivo /sw.js queda muerto: existe en el servidor pero
-     ningun cliente lo carga ni recibe auto-updates. -->
+     ningun cliente lo carga ni recibe auto-updates.
+     v3 adds: detección de nuevo SW disponible + banner topbar con botón "Actualizar"
+     que fuerza reload aplicando la versión nueva sin esperar cerrar tabs. -->
 <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(err => {
-        console.warn('SW register failed:', err);
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+
+  function crearBanner() {
+    if (document.getElementById('appUpdateBanner')) return document.getElementById('appUpdateBanner');
+    const banner = document.createElement('div');
+    banner.id = 'appUpdateBanner';
+    banner.className = 'fixed top-2 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 px-4 py-2 rounded-lg bg-emerald-600 text-white shadow-lg text-sm font-medium';
+    banner.setAttribute('role', 'status');
+    banner.setAttribute('aria-live', 'polite');
+    banner.innerHTML = [
+      '<span>🎉 Nueva versión disponible</span>',
+      '<button type="button" id="appUpdateBannerBtn" class="px-3 py-1 rounded bg-white text-emerald-700 hover:bg-emerald-50 transition text-xs font-semibold">Actualizar</button>',
+      '<button type="button" id="appUpdateBannerClose" class="text-white/70 hover:text-white text-xs" aria-label="Cerrar">×</button>'
+    ].join('');
+    document.body.appendChild(banner);
+    return banner;
+  }
+
+  function mostrarBanner(reg) {
+    const banner = crearBanner();
+    document.getElementById('appUpdateBannerBtn').onclick = () => {
+      const w = reg?.waiting || reg?.installing;
+      if (w) { try { w.postMessage({ type: 'SKIP_WAITING' }); } catch (_) {} }
+      const base = window.location.origin + window.location.pathname;
+      window.location.href = base + '?_v=' + Date.now();
+    };
+    document.getElementById('appUpdateBannerClose').onclick = () => banner.remove();
+  }
+
+  function bindUpdateFlow(reg) {
+    if (reg.waiting && navigator.serviceWorker.controller) {
+      mostrarBanner(reg);
+      return;
+    }
+    reg.addEventListener('updatefound', () => {
+      const installing = reg.installing;
+      if (!installing) return;
+      installing.addEventListener('statechange', () => {
+        if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+          mostrarBanner(reg);
+        }
       });
     });
   }
+
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then(reg => {
+      bindUpdateFlow(reg);
+      // Chequeo periódico cada 15 min · Vercel refresh natural sin recargar la tab
+      setInterval(() => { try { reg.update(); } catch (_) {} }, 15 * 60 * 1000);
+    }).catch(err => {
+      console.warn('SW register failed:', err);
+    });
+  });
+})();
 </script>
 
 <!-- ============================================================

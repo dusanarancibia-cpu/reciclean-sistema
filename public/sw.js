@@ -15,6 +15,15 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
+// Listener por robustez futura · el cliente puede pedir skip waiting explícito
+// cuando muestre banner "Nueva versión disponible" y el user clickee "Actualizar".
+// Redundante mientras install() ya llama skipWaiting, pero anti-frágil si se saca.
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('activate', event => {
   event.waitUntil(
     Promise.all([
