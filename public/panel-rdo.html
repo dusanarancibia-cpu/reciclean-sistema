@@ -22059,10 +22059,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data: mats } = await sb.schema('curated').from('materiales').select('material_id, nombre');
       const matMap = Object.fromEntries((mats || []).map(m => [m.material_id, m.nombre]));
 
-      // 3. Precios de compra por sucursal
+      // 3. Precios de compra efectivos (real_30d si hay vales, si no catálogo)
       const sucFiltro = $$('hualFiltroSuc')?.value || '';
-      let q = sb.schema('curated').from('materiales_sucursal_precios')
-        .select('material_id, sucursal_id, precio_compra_clp').is('vigencia_hasta', null);
+      let q = sb.schema('curated').from('vw_calibracion_triple')
+        .select('material_id, sucursal_id, precio_compra_efectivo_clp');
       if (sucFiltro) q = q.eq('sucursal_id', sucFiltro);
       const { data: compraRows } = await q;
 
@@ -22080,7 +22080,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const compraMap = {};
       for (const r of (compraRows || [])) {
         if (!compraMap[r.material_id]) compraMap[r.material_id] = [];
-        compraMap[r.material_id].push(Number(r.precio_compra_clp || 0));
+        compraMap[r.material_id].push(Number(r.precio_compra_efectivo_clp || 0));
       }
       const compraAvg = {};
       for (const [mid, vals] of Object.entries(compraMap)) {
