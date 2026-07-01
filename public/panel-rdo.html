@@ -16666,6 +16666,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  async function calcAutoFillPrecioCompra() {
+    const matId = document.getElementById('calcMaterial')?.value;
+    const sucId = document.getElementById('calcSucursal')?.value || '';
+    if (!matId || typeof sb === 'undefined') { calcRecompute(); return; }
+    try {
+      let q = sb.schema('curated').from('vw_calibracion_triple')
+        .select('precio_compra_efectivo_clp')
+        .eq('material_id', matId);
+      if (sucId) q = q.eq('sucursal_id', sucId);
+      const { data } = await q;
+      const vals = (data || []).map(r => Number(r.precio_compra_efectivo_clp || 0)).filter(v => v > 0);
+      if (vals.length) {
+        const avg = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length / 50) * 50;
+        const slider = document.getElementById('calcP');
+        if (slider) {
+          if (avg > Number(slider.max)) slider.max = avg + 2000;
+          slider.value = avg;
+        }
+      }
+    } catch (e) { console.warn('[Calc] autoFill:', e); }
+    calcRecompute();
+  }
+
   function calcBindSliders() {
     ['calcP','calcMg','calcFl','calcB','calcVol','calcIva'].forEach(id => {
       const el = document.getElementById(id);
@@ -16673,6 +16696,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     const catSel = document.getElementById('calcCategoria');
     if (catSel) catSel.addEventListener('change', calcRecompute);
+    const matSel = document.getElementById('calcMaterial');
+    if (matSel) matSel.addEventListener('change', calcAutoFillPrecioCompra);
+    const sucSel = document.getElementById('calcSucursal');
+    if (sucSel) sucSel.addEventListener('change', calcAutoFillPrecioCompra);
     const btn = document.getElementById('calcPublicar');
     if (btn) btn.addEventListener('click', calcPublicar);
   }
