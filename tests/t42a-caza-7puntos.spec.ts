@@ -121,6 +121,9 @@ test.describe.serial('CAZA T-42a · 7 puntos Calculadora Precios (Acero Inox 304
 
   test('PUNTO 7 — Publicar propuesta inserta en staging.precios_propuestos', async ({ page }) => {
     test.skip(!EMAIL || !PASSWORD, 'Requiere QA_EMAIL + QA_PASSWORD');
+    // Escritura real a producción (el trigger la auto-aplica en ~22ms) — opt-in explícito.
+    // Correr con CAZA_INCLUIR_PUBLICAR=1 solo con autorización de Dusan.
+    test.skip(process.env.CAZA_INCLUIR_PUBLICAR !== '1', 'Escritura real a prod — requiere CAZA_INCLUIR_PUBLICAR=1 autorizado por Dusan');
     await login(page);
     await abrirCalculadora(page);
     await seleccionarAceroInox304(page);
