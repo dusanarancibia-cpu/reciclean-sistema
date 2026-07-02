@@ -4482,7 +4482,11 @@
     ═══════════════════════════════════════════════════════════ -->
     <section id="tabOpsDiarias" class="tab-content hidden">
       <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
-        <h2 class="text-xl font-bold text-stone-800">🌅 Operaciones del día</h2>
+        <h2 class="text-xl font-bold text-stone-800 flex items-center gap-2">
+          🌅 Operaciones del día
+          <!-- PR#3 · fix problema #6 · badge dinámico cuando fecha filtro != hoy -->
+          <span id="opsFechaBadge" class="hidden text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full font-medium"></span>
+        </h2>
         <div class="flex items-center gap-2">
           <label for="opsFecha" class="text-xs text-stone-500">Fecha:</label>
           <input id="opsFecha" type="date" onchange="loadOpsDiarias()"
@@ -4491,6 +4495,11 @@
           <button onclick="opsFechaAyer()" class="text-xs text-green-700 hover:underline">Ayer</button>
           <button onclick="opsFechaHoy()" class="text-xs text-green-700 hover:underline">Hoy</button>
         </div>
+      </div>
+
+      <!-- PR#3 · fix problema #5 · nota selector Área no filtra este tab -->
+      <div id="opsAreaNota" class="hidden mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+        ℹ️ El selector <strong>Área</strong> del topbar no filtra este tab. Los datos incluyen pesajes de <strong>todas las sucursales activas</strong> (Talca, Maipú, Cerrillos y otras).
       </div>
 
       <!-- KPI bar -->
@@ -12759,6 +12768,35 @@ window.opsFechaHoy = function() {
 async function loadOpsDiarias() {
   const fecha = document.getElementById('opsFecha').value;
   if (!fecha) return;
+
+  // PR#3 · fix problema #6 · badge dinámico "fecha != hoy" para evitar confusión temporal.
+  // Sin esto, el header topbar dice "jue 2 de jul" mientras el usuario mira datos del 23-jun.
+  const hoyIso = new Date().toISOString().slice(0, 10);
+  const badge = document.getElementById('opsFechaBadge');
+  if (badge) {
+    if (fecha !== hoyIso) {
+      const hoyD = new Date(hoyIso + 'T00:00:00');
+      const filD = new Date(fecha + 'T00:00:00');
+      const dias = Math.round((hoyD - filD) / 86400000);
+      const fechaEs = filD.toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' });
+      let suffix;
+      if (dias === 0)      suffix = 'hoy';
+      else if (dias === 1) suffix = '1 día atrás';
+      else if (dias > 0)   suffix = `hace ${dias} días`;
+      else if (dias === -1) suffix = 'mañana';
+      else                 suffix = `dentro de ${Math.abs(dias)} días`;
+      badge.textContent = `📅 Mirando ${fechaEs} (${suffix})`;
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  }
+
+  // PR#3 · fix problema #5 · nota informativa "Área no filtra este tab".
+  // Se muestra siempre que el tab está activo (el selector Área existe en el topbar global).
+  const nota = document.getElementById('opsAreaNota');
+  if (nota) nota.classList.remove('hidden');
+
   ['opsKpiTickets','opsKpiTon','opsKpiMonto','opsKpiAlertas','opsKpiTicketsDelta','opsKpiTonDelta'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '…'; });
   document.getElementById('opsPesajesPorSuc').textContent = 'Cargando…';
   document.getElementById('opsCierres').textContent = 'Cargando…';
