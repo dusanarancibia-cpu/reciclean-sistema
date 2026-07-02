@@ -751,6 +751,14 @@
             <span class="v4-emoji" aria-hidden="true">🌅</span>
             Operaciones Día
           </a>
+          <a href="#" data-v4-tab="panorama_sucursales" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🏭</span>
+            Panorama Sucursales
+          </a>
+          <a href="#" data-v4-tab="flota_grupo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🚛</span>
+            Flota Grupo
+          </a>
           <a href="#" data-v4-tab="operativos" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📑</span>
             Operativos
@@ -1213,6 +1221,8 @@
         <button data-tab="plan_2026"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPlan2026">🗳️ Plan 2026</button>
         <button data-tab="bandeja_dieg"   class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabBandejaDiego">📥 Bandeja Diego</button>
         <button data-tab="ops_diarias"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabOpsDiarias">🌅 Operaciones Día</button>
+        <button data-tab="panorama_sucursales" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabPanoramaSucursales">🏭 Panorama Sucursales</button>
+        <button data-tab="flota_grupo"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabFlotaGrupo">🚛 Flota Grupo</button>
         <button data-tab="comercial"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabComercial">💼 Comercial</button>
         <button data-tab="pcs_vivo"       class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPcsVivo">🟢 Estado vivo 4 PCs</button>
         <button data-tab="diego_coord"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabDiegoCoord">🎭 Diego Coordinador</button>
@@ -4545,6 +4555,126 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA PANORAMA SUCURSALES · D-PANORAMA-JUAN
+         4 sub-tabs (Cerrillos · Maipú · Talca · Puerto Montt) + selector mensual
+         Fuente: public.f_panorama_sucursal(sucursal, year, month)
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabPanoramaSucursales" class="tab-content hidden">
+      <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🏭 Panorama Sucursales</h2>
+        <div class="flex items-center gap-2 text-sm">
+          <button onclick="pnrMesPrev()" class="text-stone-500 hover:text-stone-800 px-2">◀</button>
+          <span id="pnrMesLabel" class="font-semibold text-stone-700 min-w-[110px] text-center">—</span>
+          <button onclick="pnrMesNext()" class="text-stone-500 hover:text-stone-800 px-2">▶</button>
+        </div>
+      </div>
+
+      <!-- Sub-tabs 4 sucursales -->
+      <div class="flex flex-wrap gap-2 mb-4 border-b border-stone-200 pb-1">
+        <button onclick="pnrCambiarSuc('cerrillos')" data-pnr-suc="cerrillos"
+                class="pnr-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🏢 Cerrillos</button>
+        <button onclick="pnrCambiarSuc('maipu')" data-pnr-suc="maipu"
+                class="pnr-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🏢 Maipú</button>
+        <button onclick="pnrCambiarSuc('talca')" data-pnr-suc="talca"
+                class="pnr-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🏢 Talca</button>
+        <button onclick="pnrCambiarSuc('puerto_montt')" data-pnr-suc="puerto_montt"
+                class="pnr-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-500 hover:text-green-700">🏢 Puerto Montt</button>
+      </div>
+
+      <!-- Placeholder si sucursal sin operación -->
+      <div id="pnrPlaceholder" class="hidden mb-4 p-4 bg-amber-50 border border-amber-200 rounded text-sm text-amber-900"></div>
+
+      <!-- Header · supervisor firmante + ranking -->
+      <div id="pnrHeader" class="bg-white p-3 rounded shadow-sm mb-4 text-sm text-stone-600">—</div>
+
+      <!-- 5 KPI cards -->
+      <div id="pnrKpiWrapper" class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">🛒 Compras</div>
+          <div id="pnrKpiCompras" class="text-base font-bold text-stone-800">—</div>
+          <div id="pnrKpiComprasDelta" class="text-xs text-stone-500">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">💰 Ventas</div>
+          <div id="pnrKpiVentas" class="text-base font-bold text-stone-800">—</div>
+          <div id="pnrKpiVentasDelta" class="text-xs text-stone-500">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">❤️ Donaciones</div>
+          <div id="pnrKpiDon" class="text-base font-bold text-blue-700">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm" title="Balance del mes · negativo indica: vendió más de lo comprado registrado. NO es stock físico negativo real. Sucursales activas suelen tener balance negativo si el inventario físico se acumuló antes del arranque del sistema (nov 2025).">
+          <div class="text-xs text-stone-500">⚖️ Balance mes <span class="text-stone-400">(hover ⓘ)</span></div>
+          <div id="pnrKpiBalance" class="text-base font-bold text-stone-800">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">🚨 Alertas mes</div>
+          <div id="pnrKpiAlertas" class="text-base font-bold text-red-700">—</div>
+        </div>
+      </div>
+
+      <!-- Tabla materiales -->
+      <div class="bg-white p-4 rounded shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-2">📦 Materiales del mes</h3>
+        <div id="pnrMateriales" class="text-sm text-stone-600 overflow-x-auto">—</div>
+      </div>
+
+      <!-- Bugs cazados -->
+      <div class="bg-white p-4 rounded shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-2">🐛 Bugs cazados del mes (sin maquillaje)</h3>
+        <div id="pnrBugs" class="text-sm text-stone-600">—</div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA FLOTA GRUPO · D-PANORAMA-JUAN
+         2 sub-tabs (Vehículos · Máquinas) · 4 sucursales
+         Fuente: public.f_flota_grupo()
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabFlotaGrupo" class="tab-content hidden">
+      <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🚛 Flota Grupo</h2>
+      </div>
+
+      <div class="flex flex-wrap gap-2 mb-4 border-b border-stone-200 pb-1">
+        <button onclick="fltCambiar('vehiculos')" data-flt-tipo="vehiculos"
+                class="flt-tipo-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🚚 Vehículos</button>
+        <button onclick="fltCambiar('maquinas')" data-flt-tipo="maquinas"
+                class="flt-tipo-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🏭 Máquinas</button>
+      </div>
+
+      <div id="fltContenido" class="text-sm text-stone-600">Cargando…</div>
+    </section>
+
+    <!-- Modal carga trámite -->
+    <div id="tramiteModal" class="hidden fixed inset-0 bg-black/50 z-50 items-center justify-center">
+      <div class="bg-white p-5 rounded-lg shadow-lg max-w-md w-full">
+        <h3 class="text-lg font-bold mb-3">Cargar trámite</h3>
+        <div class="text-xs text-stone-500 mb-3">Activo: <span id="tramiteActivoId" class="font-mono"></span></div>
+        <label class="block text-sm mb-2">Tipo de trámite
+          <select id="tramiteTipo" class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1">
+            <option value="revision_tecnica">Revisión técnica</option>
+            <option value="permiso_circulacion">Permiso de circulación</option>
+            <option value="seguro_obligatorio">Seguro obligatorio</option>
+          </select>
+        </label>
+        <label class="block text-sm mb-2">Fecha de vencimiento
+          <input type="date" id="tramiteFecha" class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1">
+        </label>
+        <label class="block text-sm mb-2">URL evidencia (opcional)
+          <input type="url" id="tramiteEvidencia" placeholder="https://..." class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1">
+        </label>
+        <label class="block text-sm mb-3">Notas (opcional)
+          <textarea id="tramiteNotas" rows="2" class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1"></textarea>
+        </label>
+        <div class="flex gap-2 justify-end">
+          <button onclick="cerrarTramiteModal()" class="text-sm px-3 py-1.5 rounded border border-stone-300 hover:bg-stone-50">Cancelar</button>
+          <button onclick="guardarTramite()" class="text-sm px-3 py-1.5 rounded bg-green-700 hover:bg-green-800 text-white">Guardar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
          PESTAÑA COTIZADOR (Quick wins UX 2026-05-28: H02 toggle cliente trae material · H04 autogen título · H08/H09 labels claros)
     ═══════════════════════════════════════════════════════════ -->
     <!-- ═══════════════════════════════════════════════════════════
@@ -6932,7 +7062,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'hual_compra', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas', 'firmas_reglas', 'mesa_control_99_99'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'hual_compra', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'panorama_sucursales', 'flota_grupo', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas', 'firmas_reglas', 'mesa_control_99_99'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -7763,6 +7893,8 @@ function setupTabs() {
       if (tabId === 'flujo_operativo') window.initFlujoOperativo && window.initFlujoOperativo();
       if (tabId === 'tablero_precios') window.initTableroPrecios && window.initTableroPrecios();
       if (tabId === 'ops_diarias')   initOpsDiarias();
+      if (tabId === 'panorama_sucursales') initPanorama();
+      if (tabId === 'flota_grupo')   initFlota();
       if (tabId === 'dieguito')  initDieguito();
       if (tabId === 'comercial')  initTabComercial();
       if (tabId === 'manual')      initManual();
@@ -12910,6 +13042,288 @@ async function loadOpsDiarias() {
       · persistente global, no del día · resolver en tab Andrea → Duplicados
     </div>`;
 }
+
+// ============================================================
+// PANORAMA SUCURSALES · D-PANORAMA-JUAN 2026-07-02
+// Fuente: public.f_panorama_sucursal(sucursal, year, month, version)
+// Firma anti-maquillaje: balance negativo se muestra tal cual con ⚠️ + tooltip.
+// ============================================================
+let pnrEstado = { sucursal: 'maipu', year: new Date().getFullYear(), month: new Date().getMonth() + 1 };
+const PNR_MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+function initPanorama() {
+  pnrCambiarSuc(pnrEstado.sucursal);
+}
+
+window.pnrCambiarSuc = function(suc) {
+  pnrEstado.sucursal = suc;
+  document.querySelectorAll('.pnr-suc-btn').forEach(b => {
+    if (b.dataset.pnrSuc === suc) {
+      b.classList.add('border-green-700','text-green-700','font-semibold');
+    } else {
+      b.classList.remove('border-green-700','text-green-700','font-semibold');
+    }
+  });
+  loadPanorama();
+};
+
+window.pnrMesPrev = function() {
+  pnrEstado.month--;
+  if (pnrEstado.month < 1) { pnrEstado.month = 12; pnrEstado.year--; }
+  loadPanorama();
+};
+window.pnrMesNext = function() {
+  pnrEstado.month++;
+  if (pnrEstado.month > 12) { pnrEstado.month = 1; pnrEstado.year++; }
+  loadPanorama();
+};
+
+async function loadPanorama() {
+  document.getElementById('pnrMesLabel').textContent =
+    `${PNR_MESES[pnrEstado.month - 1]} ${pnrEstado.year}`;
+
+  ['pnrKpiCompras','pnrKpiVentas','pnrKpiDon','pnrKpiBalance','pnrKpiAlertas',
+   'pnrKpiComprasDelta','pnrKpiVentasDelta'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = '…';
+  });
+  document.getElementById('pnrHeader').textContent = 'Cargando…';
+  document.getElementById('pnrMateriales').textContent = 'Cargando…';
+  document.getElementById('pnrBugs').textContent = 'Cargando…';
+  document.getElementById('pnrPlaceholder').classList.add('hidden');
+
+  const { data, error } = await sb.rpc('f_panorama_sucursal', {
+    p_sucursal: pnrEstado.sucursal, p_year: pnrEstado.year, p_month: pnrEstado.month, p_version: 'v1'
+  });
+
+  if (error) {
+    document.getElementById('pnrMateriales').innerHTML =
+      `<span class="text-red-600">Error: ${escapeHtml(error.message)}</span>`;
+    return;
+  }
+
+  // Estado de datos (punto 3 review DeepSeek)
+  const est = data?._estado_datos;
+  const ph = document.getElementById('pnrPlaceholder');
+  if (est === 'sucursal_sin_operacion' || est === 'operativo_sin_registros_mes') {
+    ph.textContent = data._placeholder_mensaje || 'Sin datos para este mes.';
+    ph.classList.remove('hidden');
+    if (est === 'sucursal_sin_operacion') {
+      // Ocultar KPI wrappers en sucursal sin operación
+      document.getElementById('pnrKpiWrapper').classList.add('opacity-40');
+    }
+  } else {
+    document.getElementById('pnrKpiWrapper').classList.remove('opacity-40');
+  }
+
+  const fmtCLP = n => '$' + Math.round(Number(n || 0)).toLocaleString('es-CL');
+  const fmtT = n => Number(n || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 }) + ' t';
+
+  const kpi = data?.kpi || {};
+  const compras = kpi.compras || { tickets:0, toneladas:0, monto:0 };
+  const ventas = kpi.ventas || { tickets:0, toneladas:0, monto:0 };
+  const donaciones = kpi.donaciones || { tickets:0, toneladas:0 };
+  const balance = Number(kpi.balance_kg || 0);
+  const alertas = Number(kpi.alertas_del_mes || 0);
+
+  document.getElementById('pnrKpiCompras').innerHTML =
+    `<span class="text-lg">${compras.tickets}</span> tickets<br><span class="text-xs">${fmtT(compras.toneladas)} · ${fmtCLP(compras.monto)}</span>`;
+  document.getElementById('pnrKpiVentas').innerHTML =
+    `<span class="text-lg">${ventas.tickets}</span> tickets<br><span class="text-xs">${fmtT(ventas.toneladas)} · ${fmtCLP(ventas.monto)}</span>`;
+  document.getElementById('pnrKpiDon').innerHTML =
+    `<span class="text-lg">${donaciones.tickets}</span> tickets<br><span class="text-xs">${fmtT(donaciones.toneladas)}</span>`;
+
+  // Balance con anti-maquillaje (contrapropuesta punto 7 DeepSeek)
+  const balanceT = (balance / 1000).toLocaleString('es-CL', { maximumFractionDigits: 2 });
+  if (balance < 0) {
+    document.getElementById('pnrKpiBalance').innerHTML =
+      `<span class="text-red-700">⚠️ ${balanceT} t</span>`;
+  } else {
+    document.getElementById('pnrKpiBalance').innerHTML =
+      `<span class="text-stone-800">+${balanceT} t</span>`;
+  }
+
+  document.getElementById('pnrKpiAlertas').textContent = alertas;
+
+  // Supervisor firmante header
+  const sup = data?.supervisor || {};
+  const pct = sup.tickets_totales > 0 ? Math.round((sup.tickets_firmados / sup.tickets_totales) * 100) : 0;
+  const supColor = pct >= 70 ? 'text-green-700' : pct >= 30 ? 'text-amber-700' : 'text-red-700';
+  document.getElementById('pnrHeader').innerHTML =
+    `<strong>${escapeHtml(data?.sucursal_nombre || '—')} · ${PNR_MESES[pnrEstado.month-1]} ${pnrEstado.year}</strong><br>` +
+    `Supervisor firmante: <strong>${escapeHtml(sup.nombre_firmante || '—')}</strong> · ` +
+    `<span class="${supColor}">${sup.tickets_firmados}/${sup.tickets_totales} tickets (${pct}%) ${pct >= 70 ? '🟢' : pct >= 30 ? '🟡' : '🔴'}</span>`;
+
+  // Tabla materiales
+  const mats = Array.isArray(data?.materiales) ? data.materiales : [];
+  if (mats.length === 0) {
+    document.getElementById('pnrMateriales').innerHTML = '<span class="text-stone-400 italic">Sin materiales en este mes.</span>';
+  } else {
+    document.getElementById('pnrMateriales').innerHTML = `
+      <table class="w-full text-sm"><thead class="text-xs text-stone-500"><tr>
+        <th class="text-left py-1">Material</th>
+        <th class="text-right py-1">kg Compra</th>
+        <th class="text-right py-1">kg Venta</th>
+        <th class="text-right py-1">Balance</th>
+        <th class="text-right py-1">$/kg</th>
+        <th class="text-right py-1">Estado</th>
+      </tr></thead><tbody>${mats.map(m => {
+        const estadoTag = m.estado === 'descuadre' ? '<span class="text-red-700">🔴 descuadre</span>' :
+                          m.estado === 'acumulando' ? '<span class="text-amber-700">🟡 acumulando</span>' :
+                          '<span class="text-green-700">🟢 normal</span>';
+        return `<tr class="border-t border-stone-100">
+          <td class="py-1"><strong>${escapeHtml(m.descripcion || m.material_codigo)}</strong> <span class="text-xs text-stone-400">${escapeHtml(m.material_codigo)}</span></td>
+          <td class="text-right py-1">${Number(m.kg_compra).toLocaleString('es-CL')}</td>
+          <td class="text-right py-1">${Number(m.kg_venta).toLocaleString('es-CL')}</td>
+          <td class="text-right py-1 ${Number(m.balance_kg) < 0 ? 'text-red-700' : ''}">${Number(m.balance_kg).toLocaleString('es-CL')}</td>
+          <td class="text-right py-1">${m.precio_prom !== null ? '$' + Number(m.precio_prom).toLocaleString('es-CL') : '—'}</td>
+          <td class="text-right py-1">${estadoTag}</td>
+        </tr>`;
+      }).join('')}</tbody></table>`;
+  }
+
+  // Bugs cazados
+  const bugs = data?.bugs || {};
+  const huerf = Array.isArray(bugs.detalle_huerfanos_mes) ? bugs.detalle_huerfanos_mes : [];
+  document.getElementById('pnrBugs').innerHTML = `
+    <div class="mb-2">
+      <span class="${bugs.tickets_sin_sucursal > 0 ? 'text-amber-700 font-semibold' : 'text-stone-600'}">
+        ⚠️ ${bugs.tickets_sin_sucursal || 0} tickets sin sucursal asignada</span>
+      ${huerf.length > 0 ? `<details class="mt-1 text-xs"><summary class="cursor-pointer text-stone-500">Detalle huérfanos rescatados</summary>
+        <ul class="mt-1 ml-4 list-disc">${huerf.map(h => `<li>Folio ${h.folio} · ${h.fecha} · ${escapeHtml(h.chofer || '—')} · patente ${escapeHtml(h.patente || '—')} → <strong>${escapeHtml(h.inferido_hacia)}</strong> <span class="text-stone-400">(${h.backfill_metodo})</span></li>`).join('')}</ul></details>` : ''}
+    </div>
+    <div class="mb-1"><span class="${bugs.materiales_sin_precio > 0 ? 'text-amber-700' : 'text-stone-600'}">⚠️ ${bugs.materiales_sin_precio || 0} materiales sin precio vigente</span></div>
+    <div><span class="${bugs.tickets_con_kg_cero > 0 ? 'text-amber-700' : 'text-stone-600'}">⚠️ ${bugs.tickets_con_kg_cero || 0} tickets con kg=0 (fletes/servicios/anulaciones)</span></div>`;
+}
+
+// ============================================================
+// FLOTA GRUPO · D-PANORAMA-JUAN
+// Fuente: public.f_flota_grupo() usando auth.jwt() del backend
+// ============================================================
+let fltEstado = { tipo: 'vehiculos', data: null };
+
+function initFlota() {
+  fltCambiar(fltEstado.tipo);
+  cargarFlota();
+}
+
+window.fltCambiar = function(tipo) {
+  fltEstado.tipo = tipo;
+  document.querySelectorAll('.flt-tipo-btn').forEach(b => {
+    if (b.dataset.fltTipo === tipo) {
+      b.classList.add('border-green-700','text-green-700','font-semibold');
+    } else {
+      b.classList.remove('border-green-700','text-green-700','font-semibold');
+    }
+  });
+  renderFlota();
+};
+
+async function cargarFlota() {
+  document.getElementById('fltContenido').textContent = 'Cargando…';
+  const { data, error } = await sb.rpc('f_flota_grupo', { p_email: null, p_version: 'v1' });
+  if (error) {
+    document.getElementById('fltContenido').innerHTML =
+      `<span class="text-red-600">Error: ${escapeHtml(error.message)}</span>`;
+    return;
+  }
+  fltEstado.data = data;
+  renderFlota();
+}
+
+function renderFlota() {
+  if (!fltEstado.data) return;
+  const sucs = fltEstado.data.sucursales || {};
+  const sucOrder = ['cerrillos','maipu','talca','puerto_montt'];
+  const html = sucOrder.map(sid => {
+    const s = sucs[sid]; if (!s) return '';
+    const activos = fltEstado.tipo === 'vehiculos' ? (s.vehiculos || []) : (s.maquinas || []);
+    return `<div class="bg-white p-4 rounded shadow-sm mb-4">
+      <h3 class="font-semibold text-stone-700 mb-2">🏢 ${escapeHtml(s.nombre)} <span class="text-xs text-stone-400">(${activos.length})</span></h3>
+      ${activos.length === 0 ? '<div class="text-xs text-stone-400 italic">Sin ' + fltEstado.tipo + ' catalogados.</div>' :
+        `<table class="w-full text-sm"><thead class="text-xs text-stone-500"><tr>
+          ${fltEstado.tipo === 'vehiculos' ? '<th class="text-left py-1">Patente</th>' : '<th class="text-left py-1">ID</th>'}
+          <th class="text-left py-1">Tipo</th>
+          <th class="text-left py-1">Responsable</th>
+          <th class="text-left py-1">Estado</th>
+          <th class="text-left py-1">Notas</th>
+          <th class="text-right py-1">Acción</th>
+        </tr></thead><tbody>${activos.map(a => {
+          const estColor = a.estado_operativo === 'operativo' ? 'text-green-700' :
+                           a.estado_operativo === 'dudoso' ? 'text-amber-700' :
+                           a.estado_operativo === 'reparacion_pendiente' ? 'text-red-700' :
+                           a.estado_operativo === 'pana_profunda' ? 'text-red-700' : 'text-stone-600';
+          const estIcon = a.estado_operativo === 'operativo' ? '🟢' :
+                          a.estado_operativo === 'dudoso' ? '🟡' :
+                          a.estado_operativo === 'reparacion_pendiente' || a.estado_operativo === 'pana_profunda' ? '🔴' : '⚪';
+          const idOrPat = fltEstado.tipo === 'vehiculos' ? (a.patente || '—') : a.vehiculo_id;
+          const tramites = Array.isArray(a.tramites) ? a.tramites : [];
+          const tramLine = tramites.length === 0 ? '<span class="text-stone-400 italic text-xs">Sin trámites cargados</span>' :
+            tramites.map(t => {
+              const dias = t.fecha_vencimiento ? Math.ceil((new Date(t.fecha_vencimiento) - new Date()) / 86400000) : null;
+              const semaforo = dias === null ? '⚪' : dias < 15 ? '🔴' : dias < 60 ? '🟡' : '🟢';
+              return `<span class="text-xs mr-2">${semaforo} ${escapeHtml(t.tramite)} ${t.fecha_vencimiento || 'sin fecha'}</span>`;
+            }).join('');
+          return `<tr class="border-t border-stone-100">
+            <td class="py-1 font-mono text-xs">${escapeHtml(idOrPat)}</td>
+            <td class="py-1">${escapeHtml(a.tipo || '—')}</td>
+            <td class="py-1 text-xs">${escapeHtml(a.responsable || '—')}</td>
+            <td class="py-1 text-xs"><span class="${estColor}">${estIcon} ${escapeHtml(a.estado_operativo || '—')}</span></td>
+            <td class="py-1 text-xs text-stone-500">${escapeHtml(a.notas || '')}</td>
+            <td class="py-1 text-right">
+              <button onclick="abrirTramiteModal('${escapeHtml(a.vehiculo_id)}')" class="text-xs bg-green-700 hover:bg-green-800 text-white px-2 py-0.5 rounded">+ Trámite</button>
+            </td>
+          </tr>
+          <tr class="border-t border-stone-100 border-t-0"><td colspan="6" class="pb-2 pl-2">${tramLine}</td></tr>`;
+        }).join('')}</tbody></table>`}
+    </div>`;
+  }).join('');
+  document.getElementById('fltContenido').innerHTML = html;
+}
+
+window.abrirTramiteModal = function(activoId) {
+  document.getElementById('tramiteActivoId').textContent = activoId;
+  document.getElementById('tramiteFecha').value = '';
+  document.getElementById('tramiteEvidencia').value = '';
+  document.getElementById('tramiteNotas').value = '';
+  const m = document.getElementById('tramiteModal');
+  m.classList.remove('hidden');
+  m.classList.add('flex');
+};
+
+window.cerrarTramiteModal = function() {
+  const m = document.getElementById('tramiteModal');
+  m.classList.add('hidden');
+  m.classList.remove('flex');
+};
+
+window.guardarTramite = async function() {
+  const activo = document.getElementById('tramiteActivoId').textContent;
+  const tramite = document.getElementById('tramiteTipo').value;
+  const fecha = document.getElementById('tramiteFecha').value;
+  const evidencia = document.getElementById('tramiteEvidencia').value.trim() || null;
+  const notas = document.getElementById('tramiteNotas').value.trim() || null;
+
+  if (!fecha) { alert('Fecha de vencimiento requerida'); return; }
+
+  const sucBase = (fltEstado.data?.sucursales && Object.entries(fltEstado.data.sucursales).find(([sid,s]) =>
+    [...(s.vehiculos||[]), ...(s.maquinas||[])].some(a => a.vehiculo_id === activo))) || [];
+  const sucursalCode = sucBase[0] || null;
+
+  const { error } = await sb.schema('panel').from('tramites_sucursal').insert({
+    sucursal_codigo: sucursalCode,
+    activo_id: activo,
+    tramite: tramite,
+    estado: 'vigente',
+    fecha_vencimiento: fecha,
+    evidencia_url: evidencia,
+    notas: notas,
+    created_by: (typeof window.currentUser === 'object' && window.currentUser?.email) || 'panel'
+  });
+
+  if (error) { alert('Error: ' + error.message); return; }
+  cerrarTramiteModal();
+  await cargarFlota();
+};
 
 // ---------- INIT ---------- (SPEC-PERF-MOBILE-REFACTOR-V1 PASO A+B · defer-safe)
 // Wrap en async IIFE para esperar window.__supabaseReady (bootstrap promise en líneas 26-44)
