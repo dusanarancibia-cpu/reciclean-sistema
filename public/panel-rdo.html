@@ -13309,11 +13309,17 @@ window.guardarTramite = async function() {
     [...(s.vehiculos||[]), ...(s.maquinas||[])].some(a => a.vehiculo_id === activo))) || [];
   const sucursalCode = sucBase[0] || null;
 
+  // Estado semántico: si la fecha_vencimiento está en el futuro → 'aprobado' (doc al día)
+  // Si ya venció (fecha < hoy) → 'vencido' (dato honesto).
+  // CHECK constraint acepta: pendiente, en_proceso, aprobado, rechazado, vencido, renovado.
+  const hoyIso = new Date().toISOString().slice(0, 10);
+  const estadoInferido = fecha < hoyIso ? 'vencido' : 'aprobado';
+
   const { error } = await sb.schema('panel').from('tramites_sucursal').insert({
     sucursal_codigo: sucursalCode,
     activo_id: activo,
     tramite: tramite,
-    estado: 'vigente',
+    estado: estadoInferido,
     fecha_vencimiento: fecha,
     evidencia_url: evidencia,
     notas: notas,
