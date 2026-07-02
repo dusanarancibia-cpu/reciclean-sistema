@@ -12802,7 +12802,11 @@ async function loadOpsDiarias() {
   document.getElementById('opsCierres').textContent = 'Cargando…';
   document.getElementById('opsAlertas').textContent = 'Cargando…';
 
-  const { data, error } = await sb.rpc('f_operaciones_dia', { p_fecha: fecha });
+  // PR#1/PR#2 · switch a v2 canary de f_operaciones_dia (fix 7 anomalías 2026-07-02).
+  // v2 devuelve: alertas.del_dia vs catalogo_persistente, por_sucursal con (sin asignar)
+  // + sin_kg, comparativa.promedio_7d_previos (generate_series honesto) +
+  // mismo_dia_semana_4wk_avg. Backwards compat: si algún campo v2 falta, cae al viejo.
+  const { data, error } = await sb.rpc('f_operaciones_dia', { p_fecha: fecha, p_version: 'v2' });
   if (error) {
     document.getElementById('opsPesajesPorSuc').innerHTML = `<span class="text-red-600">Error: ${escapeHtml(error.message)}</span>`;
     return;
@@ -12820,27 +12824,58 @@ async function loadOpsDiarias() {
     return (dx >= 0 ? '↑ ' : '↓ ') + Math.abs(pct).toFixed(0) + '%';
   };
 
-  document.getElementById('opsKpiTickets').textContent = (p.tickets_total || 0).toLocaleString('es-CL');
-  document.getElementById('opsKpiTicketsDelta').textContent = 'vs ayer: ' + delta(p.tickets_total, cmp.tickets_dia_anterior);
-  document.getElementById('opsKpiTon').textContent = (Number(p.toneladas || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 })) + ' t';
-  document.getElementById('opsKpiTonDelta').textContent = 'vs ayer: ' + delta(p.toneladas, cmp.toneladas_dia_anterior);
-  document.getElementById('opsKpiMonto').textContent = fmtCLP(p.monto_total);
-  document.getElementById('opsKpiAlertas').textContent = (Number(al.precio_tarifa_rojo || 0) + Number(al.contraparte || 0)).toLocaleString('es-CL');
+  // Fix problema #2 · comparativa honesta (prom 7d con días vacíos + 4wk avg mismo día semana).
+  // Fallback: si v1 (sin promedio_7d) usa cmp.tickets_dia_anterior.
+  const basePromTickets = cmp?.promedio_7d_previos?.tickets_promedio ?? cmp.tickets_dia_anterior;
+  const basePromTon     = cmp?.promedio_7d_previos?.toneladas_promedio ?? cmp.toneladas_dia_anterior;
+  const labelComp = cmp?.promedio_7d_previos ? 'vs prom 7d' : 'vs ayer';
 
-  // Pesajes por sucursal
+  document.getElementById('opsKpiTickets').textContent = (p.tickets_total || 0).toLocaleString('es-CL');
+  document.getElementById('opsKpiTicketsDelta').textContent = labelComp + ': ' + delta(p.tickets_total, basePromTickets);
+  document.getElementById('opsKpiTicketsDelta').title =
+    `vs ayer: ${cmp.tickets_dia_anterior ?? '—'} · ` +
+    `prom 7d: ${cmp?.promedio_7d_previos?.tickets_promedio ?? '—'} · ` +
+    `mismo día 4wk avg: ${cmp?.mismo_dia_semana_4wk_avg?.tickets_promedio ?? '—'}`;
+  document.getElementById('opsKpiTon').textContent = (Number(p.toneladas || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 })) + ' t';
+  document.getElementById('opsKpiTonDelta').textContent = labelComp + ': ' + delta(p.toneladas, basePromTon);
+  document.getElementById('opsKpiTonDelta').title =
+    `vs ayer: ${cmp.toneladas_dia_anterior ?? '—'} t · ` +
+    `prom 7d: ${cmp?.promedio_7d_previos?.toneladas_promedio ?? '—'} t · ` +
+    `mismo día 4wk avg: ${cmp?.mismo_dia_semana_4wk_avg?.toneladas_promedio ?? '—'} t`;
+  document.getElementById('opsKpiMonto').textContent = fmtCLP(p.monto_total);
+
+  // Fix problema #1 · KPI grande SOLO alertas del día · deuda catálogo se muestra abajo.
+  const alDelDia = al?.del_dia?.precio_tarifa_rojo ?? Number(al.precio_tarifa_rojo || 0);
+  document.getElementById('opsKpiAlertas').textContent = alDelDia.toLocaleString('es-CL');
+
+  // Pesajes por sucursal · v2 incluye (sin asignar) + sin_kg + pct_sin_kg
   const sucs = Array.isArray(p.por_sucursal) ? p.por_sucursal : [];
+  const totalSinKg = p.tickets_sin_kg ?? sucs.reduce((acc, s) => acc + (Number(s.sin_kg) || 0), 0);
   if (sucs.length === 0) {
     document.getElementById('opsPesajesPorSuc').innerHTML = '<span class="text-stone-400 italic">Sin pesajes ese día.</span>';
   } else {
     document.getElementById('opsPesajesPorSuc').innerHTML = `
       <div class="table-responsive">
       <table class="w-full text-sm"><thead class="text-xs text-stone-500"><tr>
-        <th class="text-left py-1">Sucursal</th><th class="text-right py-1">Tickets</th><th class="text-right py-1">Toneladas</th>
-      </tr></thead><tbody>${sucs.map(s => `
-        <tr class="border-t border-stone-100"><td class="py-1">${escapeHtml(s.sucursal)}</td>
+        <th class="text-left py-1">Sucursal</th>
+        <th class="text-right py-1">Tickets</th>
+        <th class="text-right py-1">Toneladas</th>
+        <th class="text-right py-1" title="Tickets con kg cero o nulo (fletes/servicios/anulaciones)">Sin kg</th>
+      </tr></thead><tbody>${sucs.map(s => {
+        const pct = Number(s.pct_sin_kg ?? 0);
+        const pctColor = pct > 75 ? 'text-red-700' : pct > 50 ? 'text-amber-700' : 'text-stone-500';
+        const rowClass = String(s.sucursal || '').includes('(sin asignar)')
+          ? 'border-t border-amber-100 bg-amber-50' : 'border-t border-stone-100';
+        return `<tr class="${rowClass}">
+          <td class="py-1">${escapeHtml(String(s.sucursal || '—'))}</td>
           <td class="text-right py-1">${s.n}</td>
-          <td class="text-right py-1">${Number(s.t || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 })} t</td></tr>`).join('')}
-      </tbody></table>
+          <td class="text-right py-1">${Number(s.t || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 })} t</td>
+          <td class="text-right py-1 ${pctColor}">${s.sin_kg ?? 0}${s.pct_sin_kg != null ? ` (${s.pct_sin_kg}%)` : ''}</td>
+        </tr>`;
+      }).join('')}
+      </tbody>
+      ${totalSinKg > 0 ? `<tfoot><tr class="border-t-2 border-stone-200 text-xs text-stone-500"><td colspan="4" class="py-1 italic">Total ${totalSinKg} de ${p.tickets_total} tickets con kg cero/nulo (fletes, servicios, anulaciones)</td></tr></tfoot>` : ''}
+      </table>
       </div>`;
   }
 
@@ -12860,10 +12895,20 @@ async function loadOpsDiarias() {
       </div>`).join('');
   }
 
-  // Alertas
+  // Alertas · fix problema #1 separación visual del día vs catálogo persistente
+  const alDia = al?.del_dia?.precio_tarifa_rojo ?? Number(al.precio_tarifa_rojo || 0);
+  const alCat = al?.catalogo_persistente?.contraparte_discrepancia ?? Number(al.contraparte || 0);
   document.getElementById('opsAlertas').innerHTML = `
-    <span class="${Number(al.precio_tarifa_rojo) > 0 ? 'text-red-700 font-semibold' : 'text-stone-600'}">${al.precio_tarifa_rojo || 0} alertas precio_tarifa rojo</span> ·
-    <span class="${Number(al.contraparte) > 0 ? 'text-amber-700' : 'text-stone-600'}">${al.contraparte || 0} contrapartes con discrepancia</span>`;
+    <div class="mb-2">
+      <span class="${alDia > 0 ? 'text-red-700 font-semibold' : 'text-stone-600'}">
+        🔴 ${alDia} alerta${alDia === 1 ? '' : 's'} de precios del día
+      </span>
+      ${alDia > 0 ? '<span class="text-xs text-stone-500">· revisar por qué se pactó fuera de tarifa</span>' : ''}
+    </div>
+    <div class="text-xs text-stone-500 italic">
+      <span class="${alCat > 0 ? 'text-amber-700' : ''}">📚 ${alCat} misclasificación${alCat === 1 ? '' : 'es'} en catálogo contrapartes</span>
+      · persistente global, no del día · resolver en tab Andrea → Duplicados
+    </div>`;
 }
 
 // ---------- INIT ---------- (SPEC-PERF-MOBILE-REFACTOR-V1 PASO A+B · defer-safe)
