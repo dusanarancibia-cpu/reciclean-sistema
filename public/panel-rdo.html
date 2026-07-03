@@ -17424,11 +17424,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Restaura mg/flete/spread/volumen/iva/categoría desde la última propuesta publicada
+  // para este material (metadata JSONB guardada por calcPublicar). Sin esto, esos 5
+  // sliders siempre vuelven a los valores por defecto del HTML al cambiar de material.
+  async function calcRestoreSlidersDesdeMetadata(matId, sucId) {
+    try {
+      let q = sb.schema('staging').from('precios_propuestos')
+        .select('metadata').eq('material_id', matId).not('metadata', 'is', null)
+        .order('updated_at', { ascending: false }).limit(1);
+      if (sucId) q = q.eq('sucursal_id', sucId);
+      const { data } = await q;
+      const meta = data && data.length ? data[0].metadata : null;
+      if (!meta) return;
+      const setIf = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+      setIf('calcMg', meta.mg_pct);
+      setIf('calcFl', meta.flete);
+      setIf('calcB', meta.spread_pct);
+      setIf('calcVol', meta.volumen_kg);
+      setIf('calcIva', meta.iva_pct);
+      const catSel = document.getElementById('calcCategoria');
+      if (catSel && meta.categoria) catSel.value = meta.categoria;
+    } catch (e) { console.warn('[Calc] restoreSliders:', e); }
+  }
+
   async function calcAutoFillPrecioCompra() {
     const matId = document.getElementById('calcMaterial')?.value;
     const sucId = document.getElementById('calcSucursal')?.value || '';
     if (!matId || typeof sb === 'undefined') { calcRecompute(); return; }
     calcRefPrecioVenta = 0;
+    await calcRestoreSlidersDesdeMetadata(matId, sucId);
     try {
       // Fuente -1: precio contractual vigente (curated.comprador_precio_actual).
       // Si el material tiene contrato con un comprador (ej. HUAL), mig-326 archiva
