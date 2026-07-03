@@ -4675,6 +4675,104 @@
           <div id="pnrStockVivoMovs" class="text-xs text-stone-600 max-h-56 overflow-y-auto">—</div>
         </div>
       </div>
+
+      <!-- ═════════ CAMINO 2 · Movimientos manuales (Fase 1 · post-arranque) ═════════ -->
+      <div id="invMovsWrap" class="hidden bg-white p-4 rounded shadow-sm mb-4 border-l-4 border-amber-500">
+        <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
+          <h3 class="font-semibold text-amber-700">🔄 Movimientos manuales · <span id="invMovsSuc">—</span></h3>
+          <div class="text-xs text-stone-500">Perfiles: operaciones/admin/ceo</div>
+        </div>
+        <div class="text-xs text-stone-500 mb-3">
+          Usá estos botones para registrar movimientos que <strong>no pasan por el portal externo</strong>
+          (traslados internos, muestras, devoluciones, bajas y mermas).
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <button onclick="invAbrirModal('traslado_out')"
+                  class="inv-btn bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded p-3 text-sm text-blue-900 font-medium text-left">
+            🔄 <strong>Traslado</strong><br><span class="text-xs text-blue-700">a otra sucursal</span>
+          </button>
+          <button onclick="invAbrirModal('muestra_lab')"
+                  class="inv-btn bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded p-3 text-sm text-purple-900 font-medium text-left">
+            🧪 <strong>Muestra</strong><br><span class="text-xs text-purple-700">a laboratorio</span>
+          </button>
+          <button onclick="invAbrirModal('devolucion_prov')"
+                  class="inv-btn bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded p-3 text-sm text-sky-900 font-medium text-left">
+            ↩ <strong>Devolución</strong><br><span class="text-xs text-sky-700">al proveedor</span>
+          </button>
+          <button onclick="invAbrirModal('baja_dano')"
+                  class="inv-btn bg-red-50 hover:bg-red-100 border border-red-200 rounded p-3 text-sm text-red-900 font-medium text-left">
+            💥 <strong>Baja</strong><br><span class="text-xs text-red-700">daño / robo (📸 obligatorio)</span>
+          </button>
+          <button onclick="invAbrirModal('merma_proceso')"
+                  class="inv-btn bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded p-3 text-sm text-stone-900 font-medium text-left col-span-2 md:col-span-1">
+            ⚙ <strong>Merma proceso</strong><br><span class="text-xs text-stone-600">cierre de turno</span>
+          </button>
+        </div>
+        <div class="mt-3 border-t border-stone-100 pt-2">
+          <div class="text-xs text-stone-500 font-semibold mb-1">Últimos manuales del mes</div>
+          <div id="invMovsManuales" class="text-xs text-stone-600 max-h-40 overflow-y-auto">—</div>
+        </div>
+      </div>
+
+      <!-- Modal común para las 5 RPCs de movimientos manuales -->
+      <div id="invModalWrap" class="hidden fixed inset-0 bg-black/50 z-50 items-center justify-center">
+        <div class="bg-white p-5 rounded-lg shadow-lg max-w-md w-full mx-4">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-lg font-bold" id="invModalTitulo">Registrar movimiento</h3>
+            <button onclick="invCerrarModal()" class="text-stone-400 hover:text-stone-700 text-2xl leading-none">×</button>
+          </div>
+          <div id="invModalInstruccion" class="text-xs text-stone-500 mb-3"></div>
+
+          <input type="hidden" id="invModalTipo" />
+
+          <label class="block text-sm mb-2">Sucursal (origen)
+            <select id="invModalSucursal" class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1"></select>
+          </label>
+
+          <label id="invModalDestinoLabel" class="block text-sm mb-2 hidden">Sucursal destino
+            <select id="invModalDestino" class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1">
+              <option value="cerrillos">Cerrillos</option>
+              <option value="maipu">Maipú</option>
+              <option value="talca">Talca</option>
+              <option value="puerto_montt">Puerto Montt</option>
+            </select>
+          </label>
+
+          <label class="block text-sm mb-2">Material
+            <select id="invModalMaterial" class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1">
+              <option value="">Cargando materiales…</option>
+            </select>
+          </label>
+
+          <label class="block text-sm mb-2">Kilos
+            <input id="invModalKg" type="number" min="0" step="1" placeholder="500"
+                   class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1" />
+          </label>
+
+          <label id="invModalContraparteLabel" class="block text-sm mb-2 hidden">
+            <span id="invModalContraparteText">Contraparte</span>
+            <input id="invModalContraparte" type="text" placeholder=""
+                   class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1" />
+          </label>
+
+          <label class="block text-sm mb-2">Foto de evidencia (URL) <span id="invModalFotoReq" class="hidden text-red-600">obligatoria</span>
+            <input id="invModalFoto" type="url" placeholder="https://..."
+                   class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1" />
+          </label>
+
+          <label class="block text-sm mb-3">Notas
+            <textarea id="invModalNotas" rows="2" placeholder="Detalle opcional"
+                      class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1"></textarea>
+          </label>
+
+          <div id="invModalMsg" class="hidden mb-2 p-2 rounded text-sm"></div>
+
+          <div class="flex justify-end gap-2">
+            <button onclick="invCerrarModal()" class="px-3 py-1.5 border border-stone-300 rounded text-sm hover:bg-stone-100">Cancelar</button>
+            <button id="invModalGuardar" onclick="invGuardarMovimiento()" class="px-3 py-1.5 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700">Registrar</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -13262,19 +13360,23 @@ let invEstado = { sucursal: 'maipu' };
 // ya están hidden por default y solo se muestran si el flag pasó. Cubre caso borde de
 // que alguien fuerce click via dev tools o el DOM se modifique externamente.
 async function initInventario() {
-  const noAuth = document.getElementById('invNoAutorizado');
-  const wrap   = document.getElementById('pnrStockVivoWrap');
+  const noAuth   = document.getElementById('invNoAutorizado');
+  const wrap     = document.getElementById('pnrStockVivoWrap');
+  const movsWrap = document.getElementById('invMovsWrap');
   try {
     const { data: flag, error } = await sb.rpc('f_stock_vivo_visible');
     if (error || !flag || flag.visible !== true) {
       noAuth?.classList.remove('hidden');
       wrap?.classList.add('hidden');
+      movsWrap?.classList.add('hidden');
       return;
     }
     noAuth?.classList.add('hidden');
+    movsWrap?.classList.remove('hidden');
   } catch(e) {
     noAuth?.classList.remove('hidden');
     wrap?.classList.add('hidden');
+    movsWrap?.classList.add('hidden');
     return;
   }
   invCambiarSuc(invEstado.sucursal);
@@ -13289,8 +13391,198 @@ window.invCambiarSuc = function(suc) {
       b.classList.remove('border-green-700','text-green-700','font-semibold');
     }
   });
+  document.getElementById('invMovsSuc').textContent = suc;
   renderStockVivo(suc).catch(err => console.warn('stock_vivo:', err));
+  invCargarManualesRecientes(suc).catch(err => console.warn('manuales:', err));
 };
+
+// ============================================================
+// CAMINO 2 · Modal + RPCs de movimientos manuales
+// Backend: crear_traslado / crear_movimiento_salida (muestra_lab / devolucion_prov / baja_dano / merma_proceso)
+// ============================================================
+const INV_TIPOS = {
+  traslado_out: {
+    titulo: '🔄 Traslado a otra sucursal',
+    instruccion: 'Registrá el material que sale de esta sucursal hacia otra del grupo.',
+    rpc: 'crear_traslado',
+    destino: true,
+    contraparte_label: 'Patente / conductor (opcional)',
+    foto_obligatoria: false
+  },
+  muestra_lab: {
+    titulo: '🧪 Muestra a laboratorio',
+    instruccion: 'Material que sale como muestra para análisis del cliente.',
+    rpc: 'crear_movimiento_salida',
+    contraparte_label: 'Laboratorio / cliente destinatario',
+    foto_obligatoria: false
+  },
+  devolucion_prov: {
+    titulo: '↩ Devolución al proveedor',
+    instruccion: 'Material que vino mal y se devuelve al proveedor.',
+    rpc: 'crear_movimiento_salida',
+    contraparte_label: 'Proveedor destinatario',
+    foto_obligatoria: false
+  },
+  baja_dano: {
+    titulo: '💥 Baja por daño / robo / humedad',
+    instruccion: 'Material que perdimos y sale del patio. FOTO OBLIGATORIA.',
+    rpc: 'crear_movimiento_salida',
+    contraparte_label: 'Motivo (humedad, robo, daño)',
+    foto_obligatoria: true
+  },
+  merma_proceso: {
+    titulo: '⚙ Merma de proceso',
+    instruccion: 'Merma post-prensa al cierre de turno (humedad, impurezas eliminadas).',
+    rpc: 'crear_movimiento_salida',
+    contraparte_label: 'Detalle proceso',
+    foto_obligatoria: false
+  }
+};
+
+window.invAbrirModal = async function(tipo) {
+  const cfg = INV_TIPOS[tipo];
+  if (!cfg) return;
+  document.getElementById('invModalTipo').value = tipo;
+  document.getElementById('invModalTitulo').textContent = cfg.titulo;
+  document.getElementById('invModalInstruccion').textContent = cfg.instruccion;
+  document.getElementById('invModalContraparteText').textContent = cfg.contraparte_label;
+  document.getElementById('invModalContraparteLabel').classList.remove('hidden');
+  document.getElementById('invModalDestinoLabel').classList.toggle('hidden', !cfg.destino);
+  document.getElementById('invModalFotoReq').classList.toggle('hidden', !cfg.foto_obligatoria);
+
+  // Sucursales del selector origen (según usuario logueado · Andrea Santiago / Ingrid Talca / Juan todas)
+  const sucOrigen = document.getElementById('invModalSucursal');
+  sucOrigen.innerHTML = ['cerrillos','maipu','talca','puerto_montt']
+    .map(s => `<option value="${s}"${s===invEstado.sucursal?' selected':''}>${s}</option>`).join('');
+
+  // Materiales · cargar del catálogo activo
+  try {
+    const { data: mats, error } = await sb.rpc('f_stock_vivo_visible'); // dummy; usar rpc real
+  } catch(e){}
+  const selMat = document.getElementById('invModalMaterial');
+  selMat.innerHTML = '<option value="">Cargando…</option>';
+  try {
+    const { data: mats, error } = await sb.rpc('f_materiales_activos');
+    if (error) throw error;
+    if (Array.isArray(mats) && mats.length > 0) {
+      selMat.innerHTML = mats.map(m => `<option value="${m.material_id}">${escapeHtml(m.nombre)}</option>`).join('');
+    } else {
+      selMat.innerHTML = '<option value="">No hay materiales cargados</option>';
+    }
+  } catch(e) {
+    selMat.innerHTML = '<option value="">Error cargando materiales</option>';
+  }
+
+  // Reset campos
+  document.getElementById('invModalKg').value = '';
+  document.getElementById('invModalContraparte').value = '';
+  document.getElementById('invModalFoto').value = '';
+  document.getElementById('invModalNotas').value = '';
+  document.getElementById('invModalMsg').classList.add('hidden');
+
+  const modal = document.getElementById('invModalWrap');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+};
+
+window.invCerrarModal = function() {
+  const modal = document.getElementById('invModalWrap');
+  modal.classList.remove('flex');
+  modal.classList.add('hidden');
+};
+
+window.invGuardarMovimiento = async function() {
+  const tipo = document.getElementById('invModalTipo').value;
+  const cfg = INV_TIPOS[tipo];
+  if (!cfg) return;
+
+  const suc = document.getElementById('invModalSucursal').value;
+  const destino = document.getElementById('invModalDestino').value;
+  const mat = document.getElementById('invModalMaterial').value;
+  const kg = Number(document.getElementById('invModalKg').value);
+  const contraparte = document.getElementById('invModalContraparte').value.trim() || null;
+  const foto = document.getElementById('invModalFoto').value.trim() || null;
+  const notas = document.getElementById('invModalNotas').value.trim() || null;
+
+  const msg = document.getElementById('invModalMsg');
+  const btn = document.getElementById('invModalGuardar');
+
+  // Validaciones cliente (backend re-valida)
+  if (!mat)   return invMostrarMsg(msg, 'error', 'Elegí material');
+  if (!kg || kg <= 0) return invMostrarMsg(msg, 'error', 'Kilos debe ser mayor a 0');
+  if (cfg.foto_obligatoria && !foto) return invMostrarMsg(msg, 'error', 'Foto obligatoria para baja por daño');
+  if (cfg.destino && suc === destino) return invMostrarMsg(msg, 'error', 'Origen y destino iguales');
+
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  try {
+    let res;
+    if (cfg.rpc === 'crear_traslado') {
+      res = await sb.rpc('crear_traslado', {
+        p_origen: suc, p_destino: destino, p_material_id: mat, p_kg: kg,
+        p_patente: null, p_conductor: contraparte, p_foto_url: foto, p_notas: notas
+      });
+    } else {
+      res = await sb.rpc('crear_movimiento_salida', {
+        p_sucursal_id: suc, p_material_id: mat, p_kg: kg, p_tipo_evento: tipo,
+        p_contraparte: contraparte, p_foto_url: foto, p_notas: notas
+      });
+    }
+    if (res.error) throw new Error(res.error.message);
+    invMostrarMsg(msg, 'ok', '✅ Registrado. Refrescando…');
+    setTimeout(() => {
+      invCerrarModal();
+      invCambiarSuc(invEstado.sucursal);
+    }, 900);
+  } catch(e) {
+    invMostrarMsg(msg, 'error', 'Error: ' + (e?.message || e));
+  } finally {
+    btn.disabled = false; btn.textContent = 'Registrar';
+  }
+};
+
+function invMostrarMsg(el, tipo, txt) {
+  el.className = 'mb-2 p-2 rounded text-sm ' +
+    (tipo === 'ok' ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-800');
+  el.textContent = txt;
+  el.classList.remove('hidden');
+}
+
+async function invCargarManualesRecientes(sucursal) {
+  const wrap = document.getElementById('invMovsManuales');
+  if (!wrap) return;
+  wrap.textContent = 'Cargando…';
+  try {
+    const { data, error } = await sb.rpc('f_movimientos_manuales_recientes',
+      { p_sucursal_id: sucursal, p_limit: 10 });
+    if (error) throw error;
+    const rows = Array.isArray(data) ? data : [];
+    if (rows.length === 0) {
+      wrap.innerHTML = '<span class="text-stone-400 italic">Sin movimientos manuales aún.</span>';
+      return;
+    }
+    const label = t => ({
+      traslado_out: '🔄 Traslado salida', traslado_in: '← Traslado entrada',
+      muestra_lab: '🧪 Muestra', devolucion_prov: '↩ Devolución',
+      baja_dano: '💥 Baja', merma_proceso: '⚙ Merma',
+      venta_expresa: '💰 Venta expresa', ajuste_correccion: '🔧 Corrección',
+      ajuste_fisico: '📋 Cierre físico', ajuste_apertura: '🎬 Apertura'
+    })[t] || t;
+    const fmtCLPSm = n => n === null || n === undefined ? ''
+      : '· <span class="text-emerald-700 font-semibold">$' + Math.round(Number(n)).toLocaleString('es-CL') + '</span>';
+    wrap.innerHTML = rows.map(m => `
+      <div class="border-b border-stone-100 py-1">
+        <span class="text-stone-500">${new Date(m.hora).toLocaleString('es-CL',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>
+        · <strong>${label(m.tipo_evento)}</strong>
+        · ${escapeHtml(m.material_id||'')}
+        · <span class="${Number(m.kg_delta)<0?'text-red-700':'text-green-700'}">${Number(m.kg_delta).toLocaleString('es-CL')} kg</span>
+        ${m.contraparte ? '· ' + escapeHtml(m.contraparte) : ''}
+        ${m.responsable ? '<span class="text-stone-400"> · ' + escapeHtml(String(m.responsable).split('@')[0]) + '</span>' : ''}
+        ${fmtCLPSm(m.monto_clp)}
+      </div>`).join('');
+  } catch(e) {
+    wrap.innerHTML = '<span class="text-red-600">Error: ' + escapeHtml(e.message||'') + '</span>';
+  }
+}
 
 // Feature flag: verifica perfil y muestra/oculta entrada del sidebar + tab horizontal
 async function aplicarFeatureFlagInventario() {
