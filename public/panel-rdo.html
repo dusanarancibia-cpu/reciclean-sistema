@@ -3060,7 +3060,7 @@
         <div class="bg-white border border-stone-300 rounded-lg p-3">
           <div class="text-xs text-stone-500 uppercase tracking-wider">Contribución mensual</div>
           <div class="text-2xl font-bold text-stone-800 mt-1" id="calcContrib">—</div>
-          <div class="text-xs text-stone-500">vol × (P.Lista − P.Compra − Flete)</div>
+          <div class="text-xs text-stone-500">vol × (P.Venta − P.Compra − Flete)</div>
         </div>
         <div class="bg-white border rounded-lg p-3" id="calcSemaforoBox">
           <div class="text-xs text-stone-500 uppercase tracking-wider">Semáforo MG</div>
@@ -17084,7 +17084,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const pmax   = Math.round(plista * (1 + b));
     const pejec  = Math.round((plista + pmax) / 2);
     const ivaAmt = Math.round(plista * iva);
-    const contrib = Math.round(vol * (plista - p - fl));
+    // contrib = vol × (P.Venta − P.Compra − Flete). P.Compra (plista) ya trae el flete
+    // descontado una vez (línea de arriba) — el signo antes estaba invertido y daba negativo.
+    const contrib = Math.round(vol * (p - plista - fl));
 
     calcSet('calcPmax',   calcFmtClp(pmax));
     calcSet('calcPlista', calcFmtClp(plista));
@@ -17298,6 +17300,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!matId || typeof sb === 'undefined') { calcRecompute(); return; }
     calcRefPrecioVenta = 0;
     try {
+      // Fuente -1: precio contractual vigente (curated.comprador_precio_actual).
+      // Si el material tiene contrato con un comprador (ej. HUAL), mig-326 archiva
+      // automático cualquier propuesta manual en staging.precios_propuestos ("material
+      // tiene precio contractual") — Fuente 0 nunca la encuentra. Sin esto,
+      // calcRefPrecioVenta queda en 0 y el slider nunca avisa que se está pagando más
+      // de lo que el comprador contractual paga. CAZA Dusan 2026-07-02.
+      let qC = sb.schema('curated').from('comprador_precio_actual')
+        .select('precio_clp_kg, vigente_hasta').eq('material_id', matId)
+        .or('vigente_hasta.is.null,vigente_hasta.gt.' + new Date().toISOString())
+        .order('updated_at', { ascending: false }).limit(1);
+      const { data: dC } = await qC;
+      const precioContractual = dC && dC.length ? Number(dC[0].precio_clp_kg || 0) : 0;
+      if (precioContractual > 0) {
+        calcRefPrecioVenta = precioContractual;
+        const slider = document.getElementById('calcP');
+        if (slider) {
+          if (precioContractual > Number(slider.max)) slider.max = precioContractual + 2000;
+          slider.value = precioContractual;
+        }
+        calcRecompute();
+        return;
+      }
       // Fuente 0: staging.precios_propuestos aprobados (precio venta de Bandeja)
       let q0 = sb.schema('staging').from('precios_propuestos')
         .select('precio_clp_kg').eq('material_id', matId).in('estado', ['aprobado', 'aplicado'])
