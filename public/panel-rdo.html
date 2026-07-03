@@ -13257,7 +13257,26 @@ async function loadPanorama() {
 // ============================================================
 let invEstado = { sucursal: 'maipu' };
 
-function initInventario() {
+// Defensa en profundidad (DeepSeek Va condicional PR #602 punto 1):
+// initInventario re-verifica el feature flag antes de renderizar, aunque el sidebar+tab
+// ya están hidden por default y solo se muestran si el flag pasó. Cubre caso borde de
+// que alguien fuerce click via dev tools o el DOM se modifique externamente.
+async function initInventario() {
+  const noAuth = document.getElementById('invNoAutorizado');
+  const wrap   = document.getElementById('pnrStockVivoWrap');
+  try {
+    const { data: flag, error } = await sb.rpc('f_stock_vivo_visible');
+    if (error || !flag || flag.visible !== true) {
+      noAuth?.classList.remove('hidden');
+      wrap?.classList.add('hidden');
+      return;
+    }
+    noAuth?.classList.add('hidden');
+  } catch(e) {
+    noAuth?.classList.remove('hidden');
+    wrap?.classList.add('hidden');
+    return;
+  }
   invCambiarSuc(invEstado.sucursal);
 }
 
