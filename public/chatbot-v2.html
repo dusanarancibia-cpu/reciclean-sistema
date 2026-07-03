@@ -316,10 +316,121 @@ const RF_CONFIG = {
 let rfState = {};
 let rfCatalogoPrecios = null;   // Cargado desde Supabase
 let rfCatalogoFecha = null;
+let rfCatalogoOrigen = null;    // 'hoy' | 'cache' | null — de dónde vino el precio mostrado
 const rfChat = document.getElementById('rf-bot-chat');
 const rfWindow = document.getElementById('rf-bot-window');
 const rfToggle = document.getElementById('rf-bot-toggle');
 const rfToggleIcon = document.getElementById('rf-bot-toggle-icon');
+
+// ═══════════════════════════════════════════════════════════════
+// FASE 1 · Identidad del visitante + empresa + mapeo sucursal
+// ═══════════════════════════════════════════════════════════════
+
+// Empresa: este archivo vive embebido en un <iframe>, así que
+// window.location.hostname es SIEMPRE el dominio de este widget
+// (reciclean-sistema.vercel.app), nunca el del sitio que lo embebe.
+// Para saber si el visitante está en reciclean.cl o farex.cl hay que
+// mirar document.referrer (la URL de la página que cargó el iframe).
+const rfEmpresa = (document.referrer && document.referrer.indexOf('farex.cl') !== -1) ? 'farex' : 'reciclean';
+
+// session_id persistente (sobrevive recargas, salvo que localStorage
+// esté bloqueado — ej. algunos navegadores restringen storage dentro
+// de iframes de terceros; en ese caso cae a un id de memoria que no
+// persiste entre recargas, pero no rompe el flujo. Ver pre-mortem T5,
+// PROPUESTA-FINAL-CHATBOT-WEB-V2.2.md — pendiente probar en Safari real).
+const RF_SESSION_KEY = 'rf_chatbot_session_id';
+const rfSessionId = (function () {
+  try {
+    let s = localStorage.getItem(RF_SESSION_KEY);
+    if (s) return s;
+    s = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : 'rf_' + Date.now().toString(36) + Math.random().toString(36).slice(2);
+    localStorage.setItem(RF_SESSION_KEY, s);
+    return s;
+  } catch (e) {
+    return 'rf_mem_' + Date.now().toString(36);
+  }
+})();
+
+// Mapeo sucursal → sucursal_id, mismos valores sembrados en
+// curated.mapeo_comuna_sucursal (verificado en vivo 03-jul contra
+// curated.sucursales: cerrillos/maipu/talca/puerto_montt). Se hardcodea
+// acá (en vez de consultar la tabla por REST) porque el rol anon NO
+// tiene GRANT SELECT sobre curated.mapeo_comuna_sucursal — pedirlo por
+// red solo agregaría una dependencia y un permiso más a gestionar por
+// 4 valores fijos que casi no cambian.
+const RF_SUCURSAL_ID = {
+  'Cerrillos': 'cerrillos',
+  'Maipú': 'maipu',
+  'Talca': 'talca',
+  'Puerto Montt': 'puerto_montt'
+};
+
+// Registra un evento en curated.eventos_bot. Fire-and-forget: nunca
+// bloquea al visitante si la red falla o si el permiso no está bien
+// configurado. GRANT INSERT ya confirmado para anon (DDL_tablas.sql).
+function rfTrack(evento, metadata) {
+  try {
+    fetch(RF_CONFIG.SUPABASE_URL + '/rest/v1/eventos_bot', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': RF_CONFIG.SUPABASE_KEY,
+        'Authorization': 'Bearer ' + RF_CONFIG.SUPABASE_KEY,
+        'Accept-Profile': 'curated',
+        'Content-Profile': 'curated',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ session_id: rfSessionId, evento: evento, metadata: metadata || {} })
+    }).catch(function (e) { console.warn('[RF Chatbot] rfTrack falló (no bloqueante):', e); });
+  } catch (e) { console.warn('[RF Chatbot] rfTrack falló (no bloqueante):', e); }
+}
+
+// Crea la oportunidad en curated.oportunidades al cerrar el flujo.
+// Fire-and-forget: no bloquea la generación del enlace de WhatsApp, que
+// el visitante debe poder abrir aunque este INSERT falle.
+//
+// ⚠️ BLOQUEANTE DE DESPLIEGUE — no aplicado todavía en producción:
+// requiere GRANT INSERT ON curated.oportunidades TO anon + una política
+// RLS que acote qué puede insertar el rol anónimo (no debería poder
+// escribir en `responsable` ni fijar `estado` distinto de 'prospeccion').
+// Sin ese GRANT, este fetch falla en silencio — mismo patrón defensivo
+// que ya usa rfTrack, no rompe el widget si el permiso todavía no existe.
+function rfCrearOportunidad() {
+  try {
+    const sucursalId = RF_SUCURSAL_ID[rfState.sucursal] || null;
+    const materialLabel = rfState.material || 'Consulta general';
+    const tituloEmpresa = rfState.empresa === 'farex' ? 'Farex' : 'Reciclean';
+
+    fetch(RF_CONFIG.SUPABASE_URL + '/rest/v1/oportunidades', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': RF_CONFIG.SUPABASE_KEY,
+        'Authorization': 'Bearer ' + RF_CONFIG.SUPABASE_KEY,
+        'Accept-Profile': 'curated',
+        'Content-Profile': 'curated',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        titulo: 'Venta ' + materialLabel + ' — Widget web (' + tituloEmpresa + ')',
+        tipo: 'venta_material',
+        estado: 'prospeccion',
+        origen: 'widget_web',
+        empresa: rfEmpresa,
+        sucursal_id: sucursalId,
+        session_id_origen: rfSessionId,
+        solicita_ejecutivo: false, // no existe todavía el botón "hablar con ejecutivo" (Fase 2)
+        responsable: null
+        // cantidad_estimada: NO se envía con valor inventado — el flujo
+        // actual del widget no pregunta cantidad en el chat (eso es
+        // Fase 2, sección 7 de la propuesta V2.2); queda NULL a
+        // propósito. La columna se agrega en este mismo PR (ver DDL).
+      })
+    }).catch(function (e) { console.warn('[RF Chatbot] rfCrearOportunidad falló (no bloqueante):', e); });
+  } catch (e) { console.warn('[RF Chatbot] rfCrearOportunidad falló (no bloqueante):', e); }
+}
 
 // ═══════════════════════════════════════════════════════════════
 // TOGGLE WIDGET
@@ -330,6 +441,7 @@ function rfBotToggle() {
   rfToggleIcon.textContent = isOpen ? '✕' : '💬';
   if (isOpen && rfChat.children.length === 0) {
     rfAddDate();
+    rfTrack('widget_open', { empresa: rfEmpresa });
     setTimeout(rfNodo1, 400);
   }
   // Comunicar al parent window (para embed iframe cross-origin)
@@ -436,18 +548,56 @@ async function rfBotSequence(messages, thenFn, instant=false) {
 // SUPABASE · Cargar catálogo de precios en vivo
 // ═══════════════════════════════════════════════════════════════
 async function rfFetchPrecios() {
+  // Intento 1: fuente principal (asistente_snapshot), igual que antes.
   try {
     const r = await fetch(RF_CONFIG.SUPABASE_URL + '/rest/v1/asistente_snapshot?id=eq.1&select=datos,version_label,actualizado_en', {
       headers: { 'apikey': RF_CONFIG.SUPABASE_KEY, 'Authorization': 'Bearer ' + RF_CONFIG.SUPABASE_KEY }
     });
     const rows = await r.json();
     const row = rows && rows[0];
-    if (row && row.datos) {
+    if (row && row.datos && Object.keys(row.datos).length > 0) {
       rfCatalogoPrecios = row.datos;
       rfCatalogoFecha = row.actualizado_en;
+      rfCatalogoOrigen = 'hoy';
       return true;
     }
-  } catch(e) { console.warn('[RF Chatbot] No pudo cargar catálogo:', e); }
+    console.warn('[RF Chatbot] Fuente principal vacía, probando cache de respaldo…');
+  } catch(e) { console.warn('[RF Chatbot] Fuente principal falló, probando cache de respaldo:', e); }
+
+  // Intento 2: cache de último precio válido, vía la vista pública
+  // public.v_precio_cache (GRANT SELECT a anon ya aplicado en producción).
+  try {
+    const r2 = await fetch(RF_CONFIG.SUPABASE_URL + '/rest/v1/v_precio_cache?select=material,sucursal,empresa,precio_lista_clp,actualizado_en', {
+      headers: { 'apikey': RF_CONFIG.SUPABASE_KEY, 'Authorization': 'Bearer ' + RF_CONFIG.SUPABASE_KEY }
+    });
+    const filas = await r2.json();
+    if (Array.isArray(filas) && filas.length > 0) {
+      // Reconstruye la forma { sucursal: [ {material, farex, reciclean, precioLista, categoria} ] }
+      // que ya esperan rfGetPrecio()/rfTopMateriales(), para no tocar esas funciones.
+      const catalogo = {};
+      let fechaMasVieja = null;
+      filas.forEach(f => {
+        if (!catalogo[f.sucursal]) catalogo[f.sucursal] = [];
+        catalogo[f.sucursal].push({
+          material: f.material,
+          farex: f.empresa === 'farex',
+          reciclean: f.empresa === 'reciclean',
+          precioLista: f.precio_lista_clp,
+          categoria: null
+        });
+        if (!fechaMasVieja || f.actualizado_en < fechaMasVieja) fechaMasVieja = f.actualizado_en;
+      });
+      rfCatalogoPrecios = catalogo;
+      rfCatalogoFecha = fechaMasVieja;
+      rfCatalogoOrigen = 'cache';
+      return true;
+    }
+  } catch (e2) { console.warn('[RF Chatbot] Cache de respaldo también falló:', e2); }
+
+  // Ambas fuentes vacías/fallidas.
+  rfCatalogoPrecios = null;
+  rfCatalogoOrigen = null;
+  rfTrack('precio_no_disponible', {});
   return false;
 }
 
@@ -476,7 +626,13 @@ function rfTopMateriales(empresa, sucursal, topN) {
 }
 
 function rfFmtPrecio(v) {
-  return v ? '$' + Math.round(v).toLocaleString('es-CL') + '/kg' : 'consultar';
+  if (!v) return 'consultar';
+  const base = '$' + Math.round(v).toLocaleString('es-CL') + '/kg';
+  // Sufijo compacto (*) cuando el precio viene del cache de respaldo,
+  // no de la fuente del día — el detalle completo ("dato de respaldo,
+  // actualizado el...") se muestra 1 sola vez arriba de la lista de
+  // materiales (rfNodo3a), no repetido en cada línea de precio.
+  return rfCatalogoOrigen === 'cache' ? base + ' *' : base;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -569,7 +725,10 @@ function rfNodo3a() {
     { label:'Lata Chatarra',         canonico:'Lata Chatarra',      empresa:'farex',   esMetal:true }
   ];
 
-  rfBotSequence(['¿Qué tipo de material quieres vender?']);
+  const introMsg = rfCatalogoOrigen === 'cache'
+    ? '¿Qué tipo de material quieres vender?\n\n<i>* precio de respaldo, actualizado el ' + (rfCatalogoFecha ? new Date(rfCatalogoFecha).toLocaleDateString('es-CL') : '—') + '</i>'
+    : '¿Qué tipo de material quieres vender?';
+  rfBotSequence([introMsg]);
 
   setTimeout(() => {
     const opts = materialesRec.map(m => ({
@@ -671,6 +830,8 @@ function rfNodo4() {
   seqs.push('💳 Pago al contado con transferencia bancaria. ' + romana + donacion);
   seqs.push('📍 <b>Dirección:</b>\n' + (direcciones[sucursal] || direcciones['Cerrillos']));
   seqs.push('🕐 <b>Horarios:</b>\nLunes a Jueves: 8:30 — 18:00 hrs\nViernes: 8:30 — 17:00 hrs');
+
+  rfTrack('cotizacion_completa', { material: rfState.material, sucursal: sucursal, empresa: rfState.empresa });
 
   rfBotSequence(seqs, () => {
     if (esMetal) {
@@ -858,6 +1019,11 @@ function rfGenerarMensajeWhatsApp() {
 }
 
 function rfNodo7() {
+  // Crear la oportunidad en curated.oportunidades (no bloqueante — ver
+  // rfCrearOportunidad, requiere GRANT INSERT aplicado en producción
+  // antes de que esto realmente escriba algo).
+  rfCrearOportunidad();
+
   // Generar WhatsApp deeplink
   const mensaje = rfGenerarMensajeWhatsApp();
   const waLink = 'https://wa.me/' + RF_CONFIG.WHATSAPP + '?text=' + encodeURIComponent(mensaje);
