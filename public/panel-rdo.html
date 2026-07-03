@@ -3060,7 +3060,7 @@
         <div class="bg-white border border-stone-300 rounded-lg p-3">
           <div class="text-xs text-stone-500 uppercase tracking-wider">Contribución mensual</div>
           <div class="text-2xl font-bold text-stone-800 mt-1" id="calcContrib">—</div>
-          <div class="text-xs text-stone-500">vol × (P.Lista − P.Compra − Flete)</div>
+          <div class="text-xs text-stone-500">vol × (P.Venta − P.Compra − Flete)</div>
         </div>
         <div class="bg-white border rounded-lg p-3" id="calcSemaforoBox">
           <div class="text-xs text-stone-500 uppercase tracking-wider">Semáforo MG</div>
@@ -17078,7 +17078,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const pmax   = Math.round(plista * (1 + b));
     const pejec  = Math.round((plista + pmax) / 2);
     const ivaAmt = Math.round(plista * iva);
-    const contrib = Math.round(vol * (plista - p - fl));
+    // contrib = vol × (P.Venta − P.Compra − Flete). P.Compra (plista) ya trae el flete
+    // descontado una vez (línea de arriba) — el signo antes estaba invertido y daba negativo.
+    const contrib = Math.round(vol * (p - plista - fl));
 
     calcSet('calcPmax',   calcFmtClp(pmax));
     calcSet('calcPlista', calcFmtClp(plista));
