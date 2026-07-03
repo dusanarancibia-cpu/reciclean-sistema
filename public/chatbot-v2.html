@@ -415,14 +415,23 @@ function rfCrearOportunidad() {
       },
       body: JSON.stringify({
         titulo: 'Venta ' + materialLabel + ' — Widget web (' + tituloEmpresa + ')',
-        tipo: 'venta_material',
+        // CORREGIDO 03-jul (prueba real en producción): 'venta_material' no
+        // es un valor válido de la CHECK constraint de `tipo` — los valores
+        // reales en uso son 'necesidad' / 'cotizacion' / 'idea'. Este flujo
+        // termina en una solicitud de cotización, no en una venta cerrada.
+        tipo: 'cotizacion',
         estado: 'prospeccion',
         origen: 'widget_web',
         empresa: rfEmpresa,
         sucursal_id: sucursalId,
         session_id_origen: rfSessionId,
         solicita_ejecutivo: false, // no existe todavía el botón "hablar con ejecutivo" (Fase 2)
-        responsable: null
+        responsable: null,
+        // CORREGIDO 03-jul: la CHECK constraint `chk_op_cliente` exige que
+        // cliente_id o cliente_nombre_libre tengan un valor — el visitante
+        // del widget es anónimo hasta que responde por WhatsApp, así que
+        // se manda un texto honesto de placeholder, no un nombre inventado.
+        cliente_nombre_libre: 'Visitante web anónimo'
         // cantidad_estimada: NO se envía con valor inventado — el flujo
         // actual del widget no pregunta cantidad en el chat (eso es
         // Fase 2, sección 7 de la propuesta V2.2); queda NULL a
