@@ -13227,16 +13227,10 @@ async function renderStockVivo(sucursalId) {
   const wrap = document.getElementById('pnrStockVivoWrap');
   if (!wrap) return;
 
-  // Feature flag · leer perfil del usuario desde panel.usuarios_perfiles
-  const email = (window.currentUser && window.currentUser.email) ||
-                (JSON.parse(localStorage.getItem('rf_session') || 'null') || {}).email ||
-                (await sb.auth.getSession()).data?.session?.user?.email;
-  if (!email) { wrap.classList.add('hidden'); return; }
-
-  const { data: perfilRow } = await sb
-    .from('usuarios_perfiles').select('perfil_base_id').eq('email', email).maybeSingle();
-  const perfilesAutorizados = ['ceo','gerente'];
-  if (!perfilRow || !perfilesAutorizados.includes(perfilRow.perfil_base_id)) {
+  // Feature flag · RPC dedicada (panel.usuarios_perfiles no está expuesta al REST · PGRST205)
+  // Fix del bug del PR #599: .from('usuarios_perfiles') resolvía a public.usuarios_perfiles (inexistente)
+  const { data: flag, error: flagErr } = await sb.rpc('f_stock_vivo_visible');
+  if (flagErr || !flag || flag.visible !== true) {
     wrap.classList.add('hidden');
     return;
   }
