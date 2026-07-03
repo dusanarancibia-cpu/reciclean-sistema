@@ -751,6 +751,10 @@
             <span class="v4-emoji" aria-hidden="true">🌅</span>
             Operaciones Día
           </a>
+          <a href="#" data-v4-tab="inventario" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm hidden" id="navInventario">
+            <span class="v4-emoji" aria-hidden="true">📦</span>
+            Inventario
+          </a>
           <a href="#" data-v4-tab="panorama_sucursales" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">🏭</span>
             Panorama Sucursales
@@ -1221,6 +1225,7 @@
         <button data-tab="plan_2026"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPlan2026">🗳️ Plan 2026</button>
         <button data-tab="bandeja_dieg"   class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabBandejaDiego">📥 Bandeja Diego</button>
         <button data-tab="ops_diarias"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabOpsDiarias">🌅 Operaciones Día</button>
+        <button data-tab="inventario"     class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabInventario" id="btnTabInventario">📦 Inventario</button>
         <button data-tab="panorama_sucursales" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabPanoramaSucursales">🏭 Panorama Sucursales</button>
         <button data-tab="flota_grupo"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabFlotaGrupo">🚛 Flota Grupo</button>
         <button data-tab="comercial"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabComercial">💼 Comercial</button>
@@ -4619,11 +4624,43 @@
         <div id="pnrMateriales" class="text-sm text-stone-600 overflow-x-auto">—</div>
       </div>
 
-      <!-- ═════════ FASE 1 · Módulo Inventario · Stock Vivo (feature flag ceo/gerente) ═════════
-           Fuente: public.f_stock_sucursal(sucursal_id) · Regla oro plata: monto_clp solo perfil ceo
-           Marcha blanca: visible solo ceo/gerente hasta 2026-07-08. Después de esa fecha,
-           el pase a operaciones/comercial se autoriza cambiando panel.config_ui.ledger_stock_frontend_perfiles.
-      -->
+      <!-- Bugs cazados -->
+      <div class="bg-white p-4 rounded shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-2">🐛 Bugs cazados del mes (sin maquillaje)</h3>
+        <div id="pnrBugs" class="text-sm text-stone-600">—</div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA INVENTARIO · Fase 1 Módulo Inventario · marcha blanca ceo/gerente
+         Fuente: public.f_stock_sucursal(sucursal_id) + f_stock_vivo_visible()
+         Regla oro plata: monto_clp solo perfil ceo (backend enforced)
+         Arranque real: 2026-07-08 (Opción C · saldo cero desde esa fecha)
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabInventario" class="tab-content hidden">
+      <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+        <h2 class="text-xl font-bold text-stone-800">📦 Inventario</h2>
+        <div class="text-xs text-stone-500">Marcha blanca · visible solo ceo/gerente</div>
+      </div>
+
+      <!-- Sub-tabs 4 sucursales -->
+      <div class="flex flex-wrap gap-2 mb-4 border-b border-stone-200 pb-1">
+        <button onclick="invCambiarSuc('cerrillos')" data-inv-suc="cerrillos"
+                class="inv-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🏢 Cerrillos</button>
+        <button onclick="invCambiarSuc('maipu')" data-inv-suc="maipu"
+                class="inv-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🏢 Maipú</button>
+        <button onclick="invCambiarSuc('talca')" data-inv-suc="talca"
+                class="inv-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🏢 Talca</button>
+        <button onclick="invCambiarSuc('puerto_montt')" data-inv-suc="puerto_montt"
+                class="inv-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-500 hover:text-green-700">🏢 Puerto Montt</button>
+      </div>
+
+      <!-- Placeholder si no autorizado (fail-closed visible) -->
+      <div id="invNoAutorizado" class="hidden mb-4 p-4 bg-amber-50 border border-amber-200 rounded text-sm text-amber-900">
+        Módulo Inventario en marcha blanca · solo visible para perfiles ceo/gerente hasta el 2026-07-08.
+      </div>
+
+      <!-- Tarjeta Stock Vivo -->
       <div id="pnrStockVivoWrap" class="hidden bg-white p-4 rounded shadow-sm mb-4 border-l-4 border-emerald-500">
         <div class="flex flex-wrap justify-between items-center mb-2 gap-2">
           <h3 class="font-semibold text-emerald-700">📦 Stock Vivo · <span id="pnrStockVivoSuc">—</span></h3>
@@ -4637,12 +4674,6 @@
           <div class="text-xs text-stone-500 font-semibold mb-1">Últimos movimientos</div>
           <div id="pnrStockVivoMovs" class="text-xs text-stone-600 max-h-56 overflow-y-auto">—</div>
         </div>
-      </div>
-
-      <!-- Bugs cazados -->
-      <div class="bg-white p-4 rounded shadow-sm mb-4">
-        <h3 class="font-semibold text-stone-700 mb-2">🐛 Bugs cazados del mes (sin maquillaje)</h3>
-        <div id="pnrBugs" class="text-sm text-stone-600">—</div>
       </div>
     </section>
 
@@ -7300,6 +7331,9 @@ async function hydrateSessionAndEnter(authUser) {
   const _fabDiegoShow = document.getElementById('diegoFab');
   if (_fabDiegoShow) _fabDiegoShow.style.display = '';
 
+  // Fase 1 · Feature flag módulo Inventario (marcha blanca ceo/gerente hasta 2026-07-08)
+  if (typeof aplicarFeatureFlagInventario === 'function') aplicarFeatureFlagInventario();
+
   // D-DIEGO-LEGAL-IA-001 · gate de consentimiento IA al primer login.
   // Si aviso_ia_consentimiento es NULL → mostrar banner.
   // Si false → ocultar FAB Diego de inmediato.
@@ -7913,6 +7947,7 @@ function setupTabs() {
       if (tabId === 'flujo_operativo') window.initFlujoOperativo && window.initFlujoOperativo();
       if (tabId === 'tablero_precios') window.initTableroPrecios && window.initTableroPrecios();
       if (tabId === 'ops_diarias')   initOpsDiarias();
+      if (tabId === 'inventario')    initInventario();
       if (tabId === 'panorama_sucursales') initPanorama();
       if (tabId === 'flota_grupo')   initFlota();
       if (tabId === 'dieguito')  initDieguito();
@@ -13214,29 +13249,73 @@ async function loadPanorama() {
     <div class="mb-1"><span class="${bugs.materiales_sin_precio > 0 ? 'text-amber-700' : 'text-stone-600'}">⚠️ ${bugs.materiales_sin_precio || 0} materiales sin precio vigente</span></div>
     <div><span class="${bugs.tickets_con_kg_cero > 0 ? 'text-amber-700' : 'text-stone-600'}">⚠️ ${bugs.tickets_con_kg_cero || 0} tickets con kg=0 (fletes/servicios/anulaciones)</span></div>`;
 
-  // Fase 1 · Módulo Inventario · Stock Vivo (feature flag ceo/gerente)
-  renderStockVivo(pnrEstado.sucursal).catch(err => console.warn('stock_vivo:', err));
 }
 
 // ============================================================
-// FASE 1 · MÓDULO INVENTARIO · Stock Vivo (marcha blanca ceo/gerente)
-// Fuente: public.f_stock_sucursal(sucursal_id)
+// FASE 1 · MÓDULO INVENTARIO · sección propia en sidebar bajo Operaciones Día
+// Feature flag: sidebar+tab horizontal ocultos si perfil no es ceo/gerente
+// ============================================================
+let invEstado = { sucursal: 'maipu' };
+
+// Defensa en profundidad (DeepSeek Va condicional PR #602 punto 1):
+// initInventario re-verifica el feature flag antes de renderizar, aunque el sidebar+tab
+// ya están hidden por default y solo se muestran si el flag pasó. Cubre caso borde de
+// que alguien fuerce click via dev tools o el DOM se modifique externamente.
+async function initInventario() {
+  const noAuth = document.getElementById('invNoAutorizado');
+  const wrap   = document.getElementById('pnrStockVivoWrap');
+  try {
+    const { data: flag, error } = await sb.rpc('f_stock_vivo_visible');
+    if (error || !flag || flag.visible !== true) {
+      noAuth?.classList.remove('hidden');
+      wrap?.classList.add('hidden');
+      return;
+    }
+    noAuth?.classList.add('hidden');
+  } catch(e) {
+    noAuth?.classList.remove('hidden');
+    wrap?.classList.add('hidden');
+    return;
+  }
+  invCambiarSuc(invEstado.sucursal);
+}
+
+window.invCambiarSuc = function(suc) {
+  invEstado.sucursal = suc;
+  document.querySelectorAll('.inv-suc-btn').forEach(b => {
+    if (b.dataset.invSuc === suc) {
+      b.classList.add('border-green-700','text-green-700','font-semibold');
+    } else {
+      b.classList.remove('border-green-700','text-green-700','font-semibold');
+    }
+  });
+  renderStockVivo(suc).catch(err => console.warn('stock_vivo:', err));
+};
+
+// Feature flag: verifica perfil y muestra/oculta entrada del sidebar + tab horizontal
+async function aplicarFeatureFlagInventario() {
+  try {
+    const { data: flag, error } = await sb.rpc('f_stock_vivo_visible');
+    const navSidebar = document.getElementById('navInventario');
+    const btnTab = document.getElementById('btnTabInventario');
+    const visible = !error && flag && flag.visible === true;
+    if (navSidebar) navSidebar.classList.toggle('hidden', !visible);
+    if (btnTab)     btnTab.classList.toggle('hidden', !visible);
+  } catch(e) { console.warn('feature_flag_inventario:', e); }
+}
+
+// ============================================================
+// FASE 1 · Stock Vivo · función que consume public.f_stock_sucursal(sucursal_id)
 // Regla oro plata: monto_clp solo si perfil = ceo (backend enforced)
 // ============================================================
 async function renderStockVivo(sucursalId) {
   const wrap = document.getElementById('pnrStockVivoWrap');
   if (!wrap) return;
 
-  // Feature flag · leer perfil del usuario desde panel.usuarios_perfiles
-  const email = (window.currentUser && window.currentUser.email) ||
-                (JSON.parse(localStorage.getItem('rf_session') || 'null') || {}).email ||
-                (await sb.auth.getSession()).data?.session?.user?.email;
-  if (!email) { wrap.classList.add('hidden'); return; }
-
-  const { data: perfilRow } = await sb
-    .from('usuarios_perfiles').select('perfil_base_id').eq('email', email).maybeSingle();
-  const perfilesAutorizados = ['ceo','gerente'];
-  if (!perfilRow || !perfilesAutorizados.includes(perfilRow.perfil_base_id)) {
+  // Feature flag · RPC dedicada (panel.usuarios_perfiles no está expuesta al REST · PGRST205)
+  // Fix del bug del PR #599: .from('usuarios_perfiles') resolvía a public.usuarios_perfiles (inexistente)
+  const { data: flag, error: flagErr } = await sb.rpc('f_stock_vivo_visible');
+  if (flagErr || !flag || flag.visible !== true) {
     wrap.classList.add('hidden');
     return;
   }
