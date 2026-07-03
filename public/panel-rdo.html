@@ -3060,7 +3060,7 @@
         <div class="bg-white border border-stone-300 rounded-lg p-3">
           <div class="text-xs text-stone-500 uppercase tracking-wider">Contribución mensual</div>
           <div class="text-2xl font-bold text-stone-800 mt-1" id="calcContrib">—</div>
-          <div class="text-xs text-stone-500">vol × (P.Lista − P.Compra − Flete)</div>
+          <div class="text-xs text-stone-500">vol × (P.Venta − P.Compra − Flete)</div>
         </div>
         <div class="bg-white border rounded-lg p-3" id="calcSemaforoBox">
           <div class="text-xs text-stone-500 uppercase tracking-wider">Semáforo MG</div>
@@ -4617,6 +4617,26 @@
       <div class="bg-white p-4 rounded shadow-sm mb-4">
         <h3 class="font-semibold text-stone-700 mb-2">📦 Materiales del mes</h3>
         <div id="pnrMateriales" class="text-sm text-stone-600 overflow-x-auto">—</div>
+      </div>
+
+      <!-- ═════════ FASE 1 · Módulo Inventario · Stock Vivo (feature flag ceo/gerente) ═════════
+           Fuente: public.f_stock_sucursal(sucursal_id) · Regla oro plata: monto_clp solo perfil ceo
+           Marcha blanca: visible solo ceo/gerente hasta 2026-07-08. Después de esa fecha,
+           el pase a operaciones/comercial se autoriza cambiando panel.config_ui.ledger_stock_frontend_perfiles.
+      -->
+      <div id="pnrStockVivoWrap" class="hidden bg-white p-4 rounded shadow-sm mb-4 border-l-4 border-emerald-500">
+        <div class="flex flex-wrap justify-between items-center mb-2 gap-2">
+          <h3 class="font-semibold text-emerald-700">📦 Stock Vivo · <span id="pnrStockVivoSuc">—</span></h3>
+          <div class="text-xs text-stone-500">
+            <span id="pnrStockVivoRefresh">—</span> · marcha blanca (ceo/gerente)
+          </div>
+        </div>
+        <div id="pnrStockVivoNota" class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2 mb-2 hidden"></div>
+        <div id="pnrStockVivoMats" class="text-sm text-stone-600 overflow-x-auto">—</div>
+        <div class="mt-3 border-t border-stone-100 pt-2">
+          <div class="text-xs text-stone-500 font-semibold mb-1">Últimos movimientos</div>
+          <div id="pnrStockVivoMovs" class="text-xs text-stone-600 max-h-56 overflow-y-auto">—</div>
+        </div>
       </div>
 
       <!-- Bugs cazados -->
@@ -13193,6 +13213,116 @@ async function loadPanorama() {
     </div>
     <div class="mb-1"><span class="${bugs.materiales_sin_precio > 0 ? 'text-amber-700' : 'text-stone-600'}">⚠️ ${bugs.materiales_sin_precio || 0} materiales sin precio vigente</span></div>
     <div><span class="${bugs.tickets_con_kg_cero > 0 ? 'text-amber-700' : 'text-stone-600'}">⚠️ ${bugs.tickets_con_kg_cero || 0} tickets con kg=0 (fletes/servicios/anulaciones)</span></div>`;
+
+  // Fase 1 · Módulo Inventario · Stock Vivo (feature flag ceo/gerente)
+  renderStockVivo(pnrEstado.sucursal).catch(err => console.warn('stock_vivo:', err));
+}
+
+// ============================================================
+// FASE 1 · MÓDULO INVENTARIO · Stock Vivo (marcha blanca ceo/gerente)
+// Fuente: public.f_stock_sucursal(sucursal_id)
+// Regla oro plata: monto_clp solo si perfil = ceo (backend enforced)
+// ============================================================
+async function renderStockVivo(sucursalId) {
+  const wrap = document.getElementById('pnrStockVivoWrap');
+  if (!wrap) return;
+
+  // Feature flag · leer perfil del usuario desde panel.usuarios_perfiles
+  const email = (window.currentUser && window.currentUser.email) ||
+                (JSON.parse(localStorage.getItem('rf_session') || 'null') || {}).email ||
+                (await sb.auth.getSession()).data?.session?.user?.email;
+  if (!email) { wrap.classList.add('hidden'); return; }
+
+  const { data: perfilRow } = await sb
+    .from('usuarios_perfiles').select('perfil_base_id').eq('email', email).maybeSingle();
+  const perfilesAutorizados = ['ceo','gerente'];
+  if (!perfilRow || !perfilesAutorizados.includes(perfilRow.perfil_base_id)) {
+    wrap.classList.add('hidden');
+    return;
+  }
+  wrap.classList.remove('hidden');
+  document.getElementById('pnrStockVivoSuc').textContent = sucursalId;
+  document.getElementById('pnrStockVivoMats').textContent = 'Cargando…';
+  document.getElementById('pnrStockVivoMovs').textContent = 'Cargando…';
+
+  const { data, error } = await sb.rpc('f_stock_sucursal', { p_sucursal_id: sucursalId });
+  if (error) {
+    document.getElementById('pnrStockVivoMats').innerHTML =
+      `<span class="text-red-600">Error: ${escapeHtml(error.message)}</span>`;
+    return;
+  }
+
+  const activo = data?.activo_desde;
+  const nota = document.getElementById('pnrStockVivoNota');
+  if (data?.placeholder) {
+    nota.textContent = data.placeholder;
+    nota.classList.remove('hidden');
+  } else {
+    nota.textContent = data?.nota_arranque || '';
+    nota.classList.remove('hidden');
+  }
+
+  const lastRefresh = data?.ultimo_refresh
+    ? new Date(data.ultimo_refresh).toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'})
+    : '—';
+  document.getElementById('pnrStockVivoRefresh').textContent = `refresh ${lastRefresh}`;
+
+  const fmtKg = n => Number(n || 0).toLocaleString('es-CL', {maximumFractionDigits: 0}) + ' kg';
+  const fmtCLPStock = n => (n === null || n === undefined) ? '<span class="text-stone-300">—</span>'
+                        : '$' + Math.round(Number(n)).toLocaleString('es-CL');
+
+  const mats = Array.isArray(data?.materiales) ? data.materiales : [];
+  if (mats.length === 0) {
+    document.getElementById('pnrStockVivoMats').innerHTML =
+      '<span class="text-stone-400 italic">Sin saldo acumulado todavía (Opción C arranque en cero).</span>';
+  } else {
+    const trend = t => t === 'up' ? '↑' : t === 'down' ? '↓' : t === 'flat' ? '→' : '·';
+    const trendClass = t => t === 'up' ? 'text-green-700'
+                          : t === 'down' ? 'text-red-700'
+                          : t === 'flat' ? 'text-stone-500' : 'text-stone-400';
+    document.getElementById('pnrStockVivoMats').innerHTML = `
+      <table class="w-full text-sm"><thead class="text-xs text-stone-500"><tr>
+        <th class="text-left py-1">Material</th>
+        <th class="text-right py-1">Saldo</th>
+        <th class="text-right py-1">Flujo mes</th>
+        <th class="text-right py-1">Tendencia</th>
+        <th class="text-right py-1">Últ. mov.</th>
+      </tr></thead><tbody>${mats.map(m => `
+        <tr class="border-t border-stone-100">
+          <td class="py-1"><strong>${escapeHtml(m.nombre || m.material_id)}</strong>
+            <span class="text-xs text-stone-400">${escapeHtml(m.material_id)}</span></td>
+          <td class="text-right py-1 ${Number(m.kg_saldo) < 0 ? 'text-red-700' : 'text-stone-800'}">${fmtKg(m.kg_saldo)}</td>
+          <td class="text-right py-1 text-xs">${fmtKg(m.kg_flujo_mes)}</td>
+          <td class="text-right py-1 ${trendClass(m.tendencia)}">${trend(m.tendencia)} <span class="text-xs">${m.tendencia || ''}</span></td>
+          <td class="text-right py-1 text-xs text-stone-500">${m.ultimo_movimiento || '—'}</td>
+        </tr>`).join('')}</tbody></table>`;
+  }
+
+  const movs = Array.isArray(data?.ultimos_movimientos) ? data.ultimos_movimientos : [];
+  const cePlata = data?.ceo_ve_plata === true;
+  if (movs.length === 0) {
+    document.getElementById('pnrStockVivoMovs').innerHTML =
+      '<span class="text-stone-400 italic">Sin movimientos aún.</span>';
+  } else {
+    const tipoLabel = t => ({
+      compra: '↓ Compra', venta: '↑ Venta', servicio_talca: '↔ Servicio Talca',
+      venta_expresa: '↑ Venta expresa', traslado_out: '→ Traslado salida',
+      traslado_in: '← Traslado entrada', muestra_lab: '📦 Muestra lab',
+      devolucion_prov: '↩ Devolución', baja_dano: '💥 Baja daño',
+      merma_proceso: '⚙ Merma proceso', ajuste_fisico: '📋 Ajuste físico',
+      ajuste_apertura: '🎬 Apertura', ajuste_correccion: '🔧 Corrección'
+    })[t] || t;
+    document.getElementById('pnrStockVivoMovs').innerHTML = movs.map(m => `
+      <div class="border-b border-stone-100 py-1">
+        <span class="text-stone-500">${m.hora ? new Date(m.hora).toLocaleString('es-CL', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : m.fecha}</span>
+        · <strong>${tipoLabel(m.tipo_evento)}</strong>
+        · ${escapeHtml(m.material_id || '')}
+        · <span class="${Number(m.kg_delta) < 0 ? 'text-red-700' : 'text-green-700'}">${fmtKg(m.kg_delta)}</span>
+        ${m.contraparte ? '· ' + escapeHtml(m.contraparte) : ''}
+        ${cePlata && m.monto_clp !== null ? '· <span class="text-emerald-700 font-semibold">'+fmtCLPStock(m.monto_clp)+'</span>' : ''}
+        ${m.foto ? '· 📷' : ''}
+      </div>`).join('');
+  }
 }
 
 // ============================================================
@@ -13309,11 +13439,17 @@ window.guardarTramite = async function() {
     [...(s.vehiculos||[]), ...(s.maquinas||[])].some(a => a.vehiculo_id === activo))) || [];
   const sucursalCode = sucBase[0] || null;
 
+  // Estado semántico: si la fecha_vencimiento está en el futuro → 'aprobado' (doc al día)
+  // Si ya venció (fecha < hoy) → 'vencido' (dato honesto).
+  // CHECK constraint acepta: pendiente, en_proceso, aprobado, rechazado, vencido, renovado.
+  const hoyIso = new Date().toISOString().slice(0, 10);
+  const estadoInferido = fecha < hoyIso ? 'vencido' : 'aprobado';
+
   const { error } = await sb.schema('panel').from('tramites_sucursal').insert({
     sucursal_codigo: sucursalCode,
     activo_id: activo,
     tramite: tramite,
-    estado: 'vigente',
+    estado: estadoInferido,
     fecha_vencimiento: fecha,
     evidencia_url: evidencia,
     notas: notas,
@@ -17078,7 +17214,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const pmax   = Math.round(plista * (1 + b));
     const pejec  = Math.round((plista + pmax) / 2);
     const ivaAmt = Math.round(plista * iva);
-    const contrib = Math.round(vol * (plista - p - fl));
+    // contrib = vol × (P.Venta − P.Compra − Flete). P.Compra (plista) ya trae el flete
+    // descontado una vez (línea de arriba) — el signo antes estaba invertido y daba negativo.
+    const contrib = Math.round(vol * (p - plista - fl));
 
     calcSet('calcPmax',   calcFmtClp(pmax));
     calcSet('calcPlista', calcFmtClp(plista));
