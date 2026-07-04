@@ -17546,9 +17546,15 @@ document.addEventListener('DOMContentLoaded', () => {
 (function () {
   let calcCargado = false;
   let calcRefPrecioVenta = 0; // precio venta aprobado de bandeja para el material activo
-  // T-42b (Dusan 2026-07-04): margen de la última propuesta publicada para el
-  // material activo — null = sin historial (material nunca publicado desde acá).
+  // T-42b/c/d/e/f (Dusan 2026-07-04): valor de la última propuesta publicada para
+  // el material activo, uno por slider — null = sin historial (material nunca
+  // publicado desde acá). Mismo mecanismo para los 5: gris sin referencia,
+  // verde si el valor actual <= histórico, rojo si lo supera.
   let calcRefMgPct = null;
+  let calcRefFlete = null;
+  let calcRefSpreadPct = null;
+  let calcRefVolumenKg = null;
+  let calcRefIvaPct = null;
   // Último cálculo de calcRecompute — calcPublicar lo reutiliza en vez de recalcular
   // por su cuenta, para que el precio guardado en BD sea siempre el mismo que se
   // ve en pantalla (antes divergían: pantalla mostraba con IVA restado, BD guardaba
@@ -17576,6 +17582,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
   }
+  // T-42b/c/d/e/f (Dusan 2026-07-04): color de cada slider según el valor de
+  // la última propuesta publicada para el material activo. Verde si el valor
+  // actual <= histórico · rojo si lo supera · sinRefColor si no hay historial
+  // (default gris — T-42a ya tenía verde confirmado como su "sin referencia"
+  // desde antes, así que pasa su propio color para no cambiarle el comportamiento ya aprobado).
+  function calcColorPorHistorial(elId, valorActual, referencia, sinRefColor) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.style.accentColor = (referencia == null)
+      ? (sinRefColor || '#a8a29e')
+      : (valorActual > referencia ? '#ef4444' : '#059669');
+  }
 
   function calcRecompute() {
     const p   = calcGetVal('calcP');
@@ -17589,22 +17607,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const b   = bP / 100;
     const iva = ivaP / 100;
 
-    const sliderP = document.getElementById('calcP');
-    // T-42a (Dusan 2026-07-04): verde cuando está OK, rojo cuando supera la
-    // referencia — antes quedaba en el azul default del navegador cuando no
-    // había alerta (accentColor = '').
-    if (sliderP) sliderP.style.accentColor = (calcRefPrecioVenta > 0 && p > calcRefPrecioVenta) ? '#ef4444' : '#059669';
+    // Nota: calcRefPrecioVenta usa 0 como sentinel de "sin referencia" (histórico
+    // del resto de los slider-ref usa null) — se traduce acá para reusar el mismo
+    // helper, pasando verde explícito como color "sin dato" (comportamiento ya
+    // aprobado para T-42a antes de este cambio, no se toca).
+    calcColorPorHistorial('calcP',  p,    calcRefPrecioVenta > 0 ? calcRefPrecioVenta : null, '#059669');
+    calcColorPorHistorial('calcMg', mgP,  calcRefMgPct);
+    calcColorPorHistorial('calcFl', fl,   calcRefFlete);
+    calcColorPorHistorial('calcB',  bP,   calcRefSpreadPct);
+    calcColorPorHistorial('calcVol', vol, calcRefVolumenKg);
+    calcColorPorHistorial('calcIva', ivaP, calcRefIvaPct);
 
-    // T-42b (Dusan 2026-07-04): verde hasta el margen de la última propuesta
-    // publicada para este material (calcRefMgPct) · rojo por encima de ese
-    // valor · gris si el material nunca tuvo una propuesta publicada (sin
-    // referencia para comparar).
-    const sliderMg = document.getElementById('calcMg');
-    if (sliderMg) {
-      sliderMg.style.accentColor = (calcRefMgPct == null)
-        ? '#a8a29e'
-        : (mgP > calcRefMgPct ? '#ef4444' : '#059669');
-    }
     calcSet('calcLblP',   calcFmtClp(p));
     calcSet('calcLblMg',  mgP + '%');
     calcSet('calcLblFl',  calcFmtClp(fl));
@@ -17898,9 +17911,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const meta = data && data.length ? data[0].metadata : null;
       if (!meta) return false;
       const setIf = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
-      // T-42b: guarda el margen de la última propuesta publicada como referencia
-      // verde/rojo del slider — no solo el valor inicial del slider.
-      calcRefMgPct = meta.mg_pct != null ? Number(meta.mg_pct) : null;
+      // T-42b/c/d/e/f: guarda cada valor de la última propuesta publicada como
+      // referencia verde/rojo del slider — no solo el valor inicial del slider.
+      calcRefMgPct     = meta.mg_pct      != null ? Number(meta.mg_pct)      : null;
+      calcRefFlete     = meta.flete       != null ? Number(meta.flete)       : null;
+      calcRefSpreadPct = meta.spread_pct  != null ? Number(meta.spread_pct)  : null;
+      calcRefVolumenKg = meta.volumen_kg  != null ? Number(meta.volumen_kg)  : null;
+      calcRefIvaPct    = meta.iva_pct     != null ? Number(meta.iva_pct)     : null;
       setIf('calcMg', meta.mg_pct);
       setIf('calcFl', meta.flete);
       setIf('calcB', meta.spread_pct);
@@ -17944,6 +17961,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!matId || typeof sb === 'undefined') { calcRecompute(); return; }
     calcRefPrecioVenta = 0;
     calcRefMgPct = null;
+    calcRefFlete = null;
+    calcRefSpreadPct = null;
+    calcRefVolumenKg = null;
+    calcRefIvaPct = null;
     const huboMetadataPrevia = await calcRestoreSlidersDesdeMetadata(matId, sucId);
     if (!huboMetadataPrevia) calcAplicarMargenMetaCategoria(matId);
     try {
