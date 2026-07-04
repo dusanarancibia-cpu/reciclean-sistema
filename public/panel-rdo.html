@@ -16455,14 +16455,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
+      // v2 (Dusan 2026-07-04, caza de seguridad): mandar el token real de la sesión,
+      // no la clave pública fija — precio-aplicar v2 valida identidad de verdad con
+      // ese token y descarta cualquier "aprobado_por" que se pase por body.
+      const { data: sessionData } = await sb.auth.getSession();
+      const accessToken = sessionData?.session?.access_token || SUPABASE_ANON_KEY;
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/precio-aplicar`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          Authorization: `Bearer ${accessToken}`,
           apikey: SUPABASE_ANON_KEY,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ propuesta_id: bpCurrentId, aprobado_por: currentUser }),
+        body: JSON.stringify({ propuesta_id: bpCurrentId }),
       });
       const j = await resp.json();
       if (resp.ok && j.ok) {
