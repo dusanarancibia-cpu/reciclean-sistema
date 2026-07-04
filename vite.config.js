@@ -9,7 +9,14 @@ function resolveBuildSha() {
   try { return execSync('git rev-parse --short HEAD').toString().trim(); } catch (_) { return 'dev'; }
 }
 
+function resolveBranch() {
+  if (process.env.VERCEL_GIT_COMMIT_REF) return process.env.VERCEL_GIT_COMMIT_REF;
+  try { return execSync('git rev-parse --abbrev-ref HEAD').toString().trim(); } catch (_) { return 'unknown'; }
+}
+
 const BUILD_SHA = resolveBuildSha();
+const BUILD_BRANCH = resolveBranch();
+const BUILD_TIME = new Date().toISOString();
 
 export default defineConfig({
   build: {
@@ -31,6 +38,21 @@ export default defineConfig({
       const content = readFileSync(swPath, 'utf8').replace(/__BUILD_SHA__/g, BUILD_SHA);
       writeFileSync(swPath, content);
       console.log('[vite plugin] sw.js CACHE_NAME inyectado con SHA: ' + BUILD_SHA);
+    }
+  }, {
+    // Escribe /dist/_version.json en build para health check + footer visible
+    // Fuente única de verdad de qué versión está sirviendo Vercel.
+    name: 'emit-version-json',
+    apply: 'build',
+    closeBundle() {
+      const versionInfo = {
+        sha: BUILD_SHA,
+        branch: BUILD_BRANCH,
+        buildTime: BUILD_TIME,
+        env: process.env.VERCEL_ENV || 'local'
+      };
+      writeFileSync('dist/_version.json', JSON.stringify(versionInfo, null, 2));
+      console.log('[vite plugin] _version.json emitido: ' + BUILD_SHA + ' · ' + BUILD_BRANCH);
     }
   }]
 });

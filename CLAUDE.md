@@ -7,12 +7,13 @@
 
 ## ⚠️ Reglas operativas — TODOS los agentes IA leer primero
 
-1. **NUNCA pushear directo a `main` ni a `prod`** desde un agente IA. La rama `prod` está protegida y conectada a Vercel productivo; `main` es integración.
-2. **Toda sesión Replit** trabaja en su rama propia (`replit/<descripcion>`). Si no existe, crearla: `git checkout -b replit/<sprint>`. Vercel auto-genera preview deploy por rama.
+1. **NUNCA pushear directo a `main`** desde un agente IA. `main` **ES production** desde 2026-07-01: cada merge a main auto-deploya al panel productivo (Vercel Production Branch = main). La rama `prod` fue deprecada (ver `D-DEPLOY-ANTIFRAGIL-001` en `reciclean-rdo/mayordomo/DECISIONES.md`). Cero PRs main→prod manuales.
+2. **Toda sesión Replit** trabaja en su rama propia (`replit/<descripcion>`). Si no existe, crearla: `git checkout -b replit/<sprint>`. Vercel auto-genera preview deploy por rama feature.
 3. **Cambios a `public/panel-rdo.html`** requieren PR con checklist: bypass 4 lugares (`config_kv` + RLS + `v_panel_silos_visibles` + fallback HTML)? GRANTs `cesar_readonly` aplicados a tablas nuevas en `curated.*`? Mobile responsive verificado en preview?
 4. **El espejo a `reciclean-rdo` está MUERTO** desde 14-may-2026. NO copies `panel-rdo.html` a otro lugar. Fuente de verdad única: `public/panel-rdo.html`.
 5. **No tocar `package.json`, `vercel.json`, `vite.config.js`** sin aviso explícito a Pablo (sistemas@gestionrepchile.cl).
 6. **Bitácora diaria obligatoria** al cerrar el día: `reciclean-manifiesto-diego/docs/BITACORA-PARALELO-MAYO-2026.md`.
+7. **Observabilidad deploy (activa desde 2026-07-01)**: cada page tiene chip `v: <sha7>` en sidebar bottom · fetch `/_version.json` para diagnóstico · `window.appVersion()` global · banner "Nueva versión disponible" auto-detecta SW updates. Ver PR #581 sistema para implementación.
 
 ## ⭐ DOCUMENTO MAESTRO — leer antes que nada
 

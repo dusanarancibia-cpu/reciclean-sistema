@@ -751,6 +751,18 @@
             <span class="v4-emoji" aria-hidden="true">🌅</span>
             Operaciones Día
           </a>
+          <a href="#" data-v4-tab="inventario" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm hidden" id="navInventario">
+            <span class="v4-emoji" aria-hidden="true">📦</span>
+            Inventario
+          </a>
+          <a href="#" data-v4-tab="panorama_sucursales" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🏭</span>
+            Panorama Sucursales
+          </a>
+          <a href="#" data-v4-tab="flota_grupo" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🚛</span>
+            Flota Grupo
+          </a>
           <a href="#" data-v4-tab="operativos" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📑</span>
             Operativos
@@ -774,8 +786,8 @@
         </div>
       </details>
 
-      <!-- 💲 PRECIOS (cerrado) -->
-      <details class="v4-cat">
+      <!-- 💲 PRECIOS (abierto por default 2026-07-04 · Bandeja Precios a 1 clic sin pasar por Calculadora, mismo trato que Mi Día) -->
+      <details class="v4-cat" open>
         <summary class="v4-cat-h px-3 py-1.5 cursor-pointer text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-600 rounded-md">💲 Precios</summary>
         <div class="mt-1 space-y-0.5">
           <a href="#" data-v4-tab="precios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
@@ -957,10 +969,17 @@
     </nav>
 
     <!-- Actualizar panel · acceso rápido sidebar fondo -->
-    <div class="px-3 py-2 border-t border-slate-100">
+    <div class="px-3 py-2 border-t border-slate-100 space-y-2">
       <button type="button" onclick="panelForzarActualizacion()" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-slate-500 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200 hover:border-emerald-300 transition" title="Forzar actualización del panel (limpia caché SW)">
         <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
         ↺ Actualizar panel
+      </button>
+      <!-- Chip de versión visible · click abre tooltip con detalle -->
+      <button type="button" id="appVersionChip" onclick="mostrarVersionInfo()"
+        class="w-full flex items-center justify-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 transition"
+        title="Versión de la app · click para diagnóstico">
+        <span class="opacity-70">v:</span>
+        <span id="appVersionSha">cargando…</span>
       </button>
     </div>
 
@@ -1206,6 +1225,9 @@
         <button data-tab="plan_2026"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPlan2026">🗳️ Plan 2026</button>
         <button data-tab="bandeja_dieg"   class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabBandejaDiego">📥 Bandeja Diego</button>
         <button data-tab="ops_diarias"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabOpsDiarias">🌅 Operaciones Día</button>
+        <button data-tab="inventario"     class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabInventario" id="btnTabInventario">📦 Inventario</button>
+        <button data-tab="panorama_sucursales" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabPanoramaSucursales">🏭 Panorama Sucursales</button>
+        <button data-tab="flota_grupo"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabFlotaGrupo">🚛 Flota Grupo</button>
         <button data-tab="comercial"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabComercial">💼 Comercial</button>
         <button data-tab="pcs_vivo"       class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPcsVivo">🟢 Estado vivo 4 PCs</button>
         <button data-tab="diego_coord"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabDiegoCoord">🎭 Diego Coordinador</button>
@@ -2989,6 +3011,8 @@
         </div>
       </div>
 
+      <div class="text-xs text-stone-500 mb-3" id="calcHistorialInfo">Seleccioná un material para ver su historial.</div>
+
       <div class="grid md:grid-cols-2 gap-x-6 gap-y-3 bg-white border border-stone-300 rounded-lg p-4 mb-4">
         <label class="block">
           <span class="text-xs text-stone-600">T-42a · Precio venta <strong id="calcLblP">$6.000</strong>/kg</span>
@@ -2996,7 +3020,7 @@
         </label>
         <label class="block">
           <span class="text-xs text-stone-600">T-42b · Margen objetivo <strong id="calcLblMg">30%</strong></span>
-          <input type="range" id="calcMg" min="5" max="60" step="1" value="30" class="w-full">
+          <input type="range" id="calcMg" min="20" max="60" step="1" value="30" class="w-full">
         </label>
         <label class="block">
           <span class="text-xs text-stone-600">T-42c · Flete <strong id="calcLblFl">$150</strong>/kg</span>
@@ -3014,6 +3038,15 @@
           <span class="text-xs text-stone-600">T-42f · Retención IVA Farex <strong id="calcLblIva">0%</strong></span>
           <input type="range" id="calcIva" min="0" max="19" step="1" value="0" class="w-full">
         </label>
+      </div>
+
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-xs text-stone-500">Redondeo (P.Max/P.Lista/P.Ejec):</span>
+        <div class="inline-flex rounded-lg border border-stone-300 overflow-hidden" id="calcRedondeoToggle">
+          <button type="button" data-modo="0" class="calcRedondeoBtn px-3 py-1 text-xs font-medium">Terminado en 0</button>
+          <button type="button" data-modo="5" class="calcRedondeoBtn px-3 py-1 text-xs font-medium border-l border-stone-300">Terminado en 5</button>
+          <button type="button" data-modo="exacto" class="calcRedondeoBtn px-3 py-1 text-xs font-medium border-l border-stone-300">Exacto</button>
+        </div>
       </div>
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
@@ -3043,7 +3076,7 @@
         <div class="bg-white border border-stone-300 rounded-lg p-3">
           <div class="text-xs text-stone-500 uppercase tracking-wider">Contribución mensual</div>
           <div class="text-2xl font-bold text-stone-800 mt-1" id="calcContrib">—</div>
-          <div class="text-xs text-stone-500">vol × (P.Lista − P.Compra − Flete)</div>
+          <div class="text-xs text-stone-500">vol × (P.Venta − P.Compra − Flete)</div>
         </div>
         <div class="bg-white border rounded-lg p-3" id="calcSemaforoBox">
           <div class="text-xs text-stone-500 uppercase tracking-wider">Semáforo MG</div>
@@ -3065,6 +3098,10 @@
         <button id="calcPublicar" type="button"
                 class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
           📤 Publicar como propuesta
+        </button>
+        <button type="button" onclick="document.querySelector('button[data-tab=&quot;bandeja_precios&quot;]')?.click()"
+                class="text-xs text-sky-700 underline">
+          📥 Ver Bandeja Precios
         </button>
         <span class="text-xs text-stone-500" id="calcPublicarMsg"></span>
       </div>
@@ -4475,7 +4512,11 @@
     ═══════════════════════════════════════════════════════════ -->
     <section id="tabOpsDiarias" class="tab-content hidden">
       <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
-        <h2 class="text-xl font-bold text-stone-800">🌅 Operaciones del día</h2>
+        <h2 class="text-xl font-bold text-stone-800 flex items-center gap-2">
+          🌅 Operaciones del día
+          <!-- PR#3 · fix problema #6 · badge dinámico cuando fecha filtro != hoy -->
+          <span id="opsFechaBadge" class="hidden text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full font-medium"></span>
+        </h2>
         <div class="flex items-center gap-2">
           <label for="opsFecha" class="text-xs text-stone-500">Fecha:</label>
           <input id="opsFecha" type="date" onchange="loadOpsDiarias()"
@@ -4484,6 +4525,11 @@
           <button onclick="opsFechaAyer()" class="text-xs text-green-700 hover:underline">Ayer</button>
           <button onclick="opsFechaHoy()" class="text-xs text-green-700 hover:underline">Hoy</button>
         </div>
+      </div>
+
+      <!-- PR#3 · fix problema #5 · nota selector Área no filtra este tab -->
+      <div id="opsAreaNota" class="hidden mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+        ℹ️ El selector <strong>Área</strong> del topbar no filtra este tab. Los datos incluyen pesajes de <strong>todas las sucursales activas</strong> (Talca, Maipú, Cerrillos y otras).
       </div>
 
       <!-- KPI bar -->
@@ -4527,6 +4573,270 @@
         <button onclick="document.querySelector('button[data-tab=portada]').click()" class="text-xs text-green-700 hover:underline mt-2">Ver detalle en Portada →</button>
       </div>
     </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA PANORAMA SUCURSALES · D-PANORAMA-JUAN
+         4 sub-tabs (Cerrillos · Maipú · Talca · Puerto Montt) + selector mensual
+         Fuente: public.f_panorama_sucursal(sucursal, year, month)
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabPanoramaSucursales" class="tab-content hidden">
+      <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🏭 Panorama Sucursales</h2>
+        <div class="flex items-center gap-2 text-sm">
+          <button onclick="pnrMesPrev()" class="text-stone-500 hover:text-stone-800 px-2">◀</button>
+          <span id="pnrMesLabel" class="font-semibold text-stone-700 min-w-[110px] text-center">—</span>
+          <button onclick="pnrMesNext()" class="text-stone-500 hover:text-stone-800 px-2">▶</button>
+        </div>
+      </div>
+
+      <!-- Sub-tabs 4 sucursales -->
+      <div class="flex flex-wrap gap-2 mb-4 border-b border-stone-200 pb-1">
+        <button onclick="pnrCambiarSuc('cerrillos')" data-pnr-suc="cerrillos"
+                class="pnr-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🏢 Cerrillos</button>
+        <button onclick="pnrCambiarSuc('maipu')" data-pnr-suc="maipu"
+                class="pnr-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🏢 Maipú</button>
+        <button onclick="pnrCambiarSuc('talca')" data-pnr-suc="talca"
+                class="pnr-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🏢 Talca</button>
+        <button onclick="pnrCambiarSuc('puerto_montt')" data-pnr-suc="puerto_montt"
+                class="pnr-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-500 hover:text-green-700">🏢 Puerto Montt</button>
+      </div>
+
+      <!-- Placeholder si sucursal sin operación -->
+      <div id="pnrPlaceholder" class="hidden mb-4 p-4 bg-amber-50 border border-amber-200 rounded text-sm text-amber-900"></div>
+
+      <!-- Header · supervisor firmante + ranking -->
+      <div id="pnrHeader" class="bg-white p-3 rounded shadow-sm mb-4 text-sm text-stone-600">—</div>
+
+      <!-- 5 KPI cards -->
+      <div id="pnrKpiWrapper" class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">🛒 Compras</div>
+          <div id="pnrKpiCompras" class="text-base font-bold text-stone-800">—</div>
+          <div id="pnrKpiComprasDelta" class="text-xs text-stone-500">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">💰 Ventas</div>
+          <div id="pnrKpiVentas" class="text-base font-bold text-stone-800">—</div>
+          <div id="pnrKpiVentasDelta" class="text-xs text-stone-500">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">❤️ Donaciones</div>
+          <div id="pnrKpiDon" class="text-base font-bold text-blue-700">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm" title="Balance del mes · negativo indica: vendió más de lo comprado registrado. NO es stock físico negativo real. Sucursales activas suelen tener balance negativo si el inventario físico se acumuló antes del arranque del sistema (nov 2025).">
+          <div class="text-xs text-stone-500">⚖️ Balance mes <span class="text-stone-400">(hover ⓘ)</span></div>
+          <div id="pnrKpiBalance" class="text-base font-bold text-stone-800">—</div>
+        </div>
+        <div class="bg-white p-3 rounded shadow-sm">
+          <div class="text-xs text-stone-500">🚨 Alertas mes</div>
+          <div id="pnrKpiAlertas" class="text-base font-bold text-red-700">—</div>
+        </div>
+      </div>
+
+      <!-- Tabla materiales -->
+      <div class="bg-white p-4 rounded shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-2">📦 Materiales del mes</h3>
+        <div id="pnrMateriales" class="text-sm text-stone-600 overflow-x-auto">—</div>
+      </div>
+
+      <!-- Bugs cazados -->
+      <div class="bg-white p-4 rounded shadow-sm mb-4">
+        <h3 class="font-semibold text-stone-700 mb-2">🐛 Bugs cazados del mes (sin maquillaje)</h3>
+        <div id="pnrBugs" class="text-sm text-stone-600">—</div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA INVENTARIO · Fase 1 Módulo Inventario · marcha blanca ceo/gerente
+         Fuente: public.f_stock_sucursal(sucursal_id) + f_stock_vivo_visible()
+         Regla oro plata: monto_clp solo perfil ceo (backend enforced)
+         Arranque real: 2026-07-08 (Opción C · saldo cero desde esa fecha)
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabInventario" class="tab-content hidden">
+      <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+        <h2 class="text-xl font-bold text-stone-800">📦 Inventario</h2>
+        <div class="text-xs text-stone-500">Marcha blanca · visible solo ceo/gerente</div>
+      </div>
+
+      <!-- Sub-tabs 4 sucursales -->
+      <div class="flex flex-wrap gap-2 mb-4 border-b border-stone-200 pb-1">
+        <button onclick="invCambiarSuc('cerrillos')" data-inv-suc="cerrillos"
+                class="inv-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🏢 Cerrillos</button>
+        <button onclick="invCambiarSuc('maipu')" data-inv-suc="maipu"
+                class="inv-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🏢 Maipú</button>
+        <button onclick="invCambiarSuc('talca')" data-inv-suc="talca"
+                class="inv-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🏢 Talca</button>
+        <button onclick="invCambiarSuc('puerto_montt')" data-inv-suc="puerto_montt"
+                class="inv-suc-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-500 hover:text-green-700">🏢 Puerto Montt</button>
+      </div>
+
+      <!-- Placeholder si no autorizado (fail-closed visible) -->
+      <div id="invNoAutorizado" class="hidden mb-4 p-4 bg-amber-50 border border-amber-200 rounded text-sm text-amber-900">
+        Módulo Inventario en marcha blanca · solo visible para perfiles ceo/gerente hasta el 2026-07-08.
+      </div>
+
+      <!-- Tarjeta Stock Vivo -->
+      <div id="pnrStockVivoWrap" class="hidden bg-white p-4 rounded shadow-sm mb-4 border-l-4 border-emerald-500">
+        <div class="flex flex-wrap justify-between items-center mb-2 gap-2">
+          <h3 class="font-semibold text-emerald-700">📦 Stock Vivo · <span id="pnrStockVivoSuc">—</span></h3>
+          <div class="text-xs text-stone-500">
+            <span id="pnrStockVivoRefresh">—</span> · marcha blanca (ceo/gerente)
+          </div>
+        </div>
+        <div id="pnrStockVivoNota" class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2 mb-2 hidden"></div>
+        <div id="pnrStockVivoMats" class="text-sm text-stone-600 overflow-x-auto">—</div>
+        <div class="mt-3 border-t border-stone-100 pt-2">
+          <div class="text-xs text-stone-500 font-semibold mb-1">Últimos movimientos</div>
+          <div id="pnrStockVivoMovs" class="text-xs text-stone-600 max-h-56 overflow-y-auto">—</div>
+        </div>
+      </div>
+
+      <!-- ═════════ CAMINO 2 · Movimientos manuales (Fase 1 · post-arranque) ═════════ -->
+      <div id="invMovsWrap" class="hidden bg-white p-4 rounded shadow-sm mb-4 border-l-4 border-amber-500">
+        <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
+          <h3 class="font-semibold text-amber-700">🔄 Movimientos manuales · <span id="invMovsSuc">—</span></h3>
+          <div class="text-xs text-stone-500">Perfiles: operaciones/admin/ceo</div>
+        </div>
+        <div class="text-xs text-stone-500 mb-3">
+          Usá estos botones para registrar movimientos que <strong>no pasan por el portal externo</strong>
+          (traslados internos, muestras, devoluciones, bajas y mermas).
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <button onclick="invAbrirModal('traslado_out')"
+                  class="inv-btn bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded p-3 text-sm text-blue-900 font-medium text-left">
+            🔄 <strong>Traslado</strong><br><span class="text-xs text-blue-700">a otra sucursal</span>
+          </button>
+          <button onclick="invAbrirModal('muestra_lab')"
+                  class="inv-btn bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded p-3 text-sm text-purple-900 font-medium text-left">
+            🧪 <strong>Muestra</strong><br><span class="text-xs text-purple-700">a laboratorio</span>
+          </button>
+          <button onclick="invAbrirModal('devolucion_prov')"
+                  class="inv-btn bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded p-3 text-sm text-sky-900 font-medium text-left">
+            ↩ <strong>Devolución</strong><br><span class="text-xs text-sky-700">al proveedor</span>
+          </button>
+          <button onclick="invAbrirModal('baja_dano')"
+                  class="inv-btn bg-red-50 hover:bg-red-100 border border-red-200 rounded p-3 text-sm text-red-900 font-medium text-left">
+            💥 <strong>Baja</strong><br><span class="text-xs text-red-700">daño / robo (📸 obligatorio)</span>
+          </button>
+          <button onclick="invAbrirModal('merma_proceso')"
+                  class="inv-btn bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded p-3 text-sm text-stone-900 font-medium text-left col-span-2 md:col-span-1">
+            ⚙ <strong>Merma proceso</strong><br><span class="text-xs text-stone-600">cierre de turno</span>
+          </button>
+        </div>
+        <div class="mt-3 border-t border-stone-100 pt-2">
+          <div class="text-xs text-stone-500 font-semibold mb-1">Últimos manuales del mes</div>
+          <div id="invMovsManuales" class="text-xs text-stone-600 max-h-40 overflow-y-auto">—</div>
+        </div>
+      </div>
+
+      <!-- Modal común para las 5 RPCs de movimientos manuales -->
+      <div id="invModalWrap" class="hidden fixed inset-0 bg-black/50 z-50 items-center justify-center">
+        <div class="bg-white p-5 rounded-lg shadow-lg max-w-md w-full mx-4">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-lg font-bold" id="invModalTitulo">Registrar movimiento</h3>
+            <button onclick="invCerrarModal()" class="text-stone-400 hover:text-stone-700 text-2xl leading-none">×</button>
+          </div>
+          <div id="invModalInstruccion" class="text-xs text-stone-500 mb-3"></div>
+
+          <input type="hidden" id="invModalTipo" />
+
+          <label class="block text-sm mb-2">Sucursal (origen)
+            <select id="invModalSucursal" class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1"></select>
+          </label>
+
+          <label id="invModalDestinoLabel" class="block text-sm mb-2 hidden">Sucursal destino
+            <select id="invModalDestino" class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1">
+              <option value="cerrillos">Cerrillos</option>
+              <option value="maipu">Maipú</option>
+              <option value="talca">Talca</option>
+              <option value="puerto_montt">Puerto Montt</option>
+            </select>
+          </label>
+
+          <label class="block text-sm mb-2">Material
+            <select id="invModalMaterial" class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1">
+              <option value="">Cargando materiales…</option>
+            </select>
+          </label>
+
+          <label class="block text-sm mb-2">Kilos
+            <input id="invModalKg" type="number" min="0" step="1" placeholder="500"
+                   class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1" />
+          </label>
+
+          <label id="invModalContraparteLabel" class="block text-sm mb-2 hidden">
+            <span id="invModalContraparteText">Contraparte</span>
+            <input id="invModalContraparte" type="text" placeholder=""
+                   class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1" />
+          </label>
+
+          <label class="block text-sm mb-2">Foto de evidencia (URL) <span id="invModalFotoReq" class="hidden text-red-600">obligatoria</span>
+            <input id="invModalFoto" type="url" placeholder="https://..."
+                   class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1" />
+          </label>
+
+          <label class="block text-sm mb-3">Notas
+            <textarea id="invModalNotas" rows="2" placeholder="Detalle opcional"
+                      class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1"></textarea>
+          </label>
+
+          <div id="invModalMsg" class="hidden mb-2 p-2 rounded text-sm"></div>
+
+          <div class="flex justify-end gap-2">
+            <button onclick="invCerrarModal()" class="px-3 py-1.5 border border-stone-300 rounded text-sm hover:bg-stone-100">Cancelar</button>
+            <button id="invModalGuardar" onclick="invGuardarMovimiento()" class="px-3 py-1.5 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700">Registrar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PESTAÑA FLOTA GRUPO · D-PANORAMA-JUAN
+         2 sub-tabs (Vehículos · Máquinas) · 4 sucursales
+         Fuente: public.f_flota_grupo()
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabFlotaGrupo" class="tab-content hidden">
+      <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+        <h2 class="text-xl font-bold text-stone-800">🚛 Flota Grupo</h2>
+      </div>
+
+      <div class="flex flex-wrap gap-2 mb-4 border-b border-stone-200 pb-1">
+        <button onclick="fltCambiar('vehiculos')" data-flt-tipo="vehiculos"
+                class="flt-tipo-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🚚 Vehículos</button>
+        <button onclick="fltCambiar('maquinas')" data-flt-tipo="maquinas"
+                class="flt-tipo-btn px-3 py-1.5 text-sm rounded-t border-b-2 border-transparent text-stone-600 hover:text-green-700">🏭 Máquinas</button>
+      </div>
+
+      <div id="fltContenido" class="text-sm text-stone-600">Cargando…</div>
+    </section>
+
+    <!-- Modal carga trámite -->
+    <div id="tramiteModal" class="hidden fixed inset-0 bg-black/50 z-50 items-center justify-center">
+      <div class="bg-white p-5 rounded-lg shadow-lg max-w-md w-full">
+        <h3 class="text-lg font-bold mb-3">Cargar trámite</h3>
+        <div class="text-xs text-stone-500 mb-3">Activo: <span id="tramiteActivoId" class="font-mono"></span></div>
+        <label class="block text-sm mb-2">Tipo de trámite
+          <select id="tramiteTipo" class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1">
+            <option value="revision_tecnica">Revisión técnica</option>
+            <option value="permiso_circulacion">Permiso de circulación</option>
+            <option value="seguro_obligatorio">Seguro obligatorio</option>
+          </select>
+        </label>
+        <label class="block text-sm mb-2">Fecha de vencimiento
+          <input type="date" id="tramiteFecha" class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1">
+        </label>
+        <label class="block text-sm mb-2">URL evidencia (opcional)
+          <input type="url" id="tramiteEvidencia" placeholder="https://..." class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1">
+        </label>
+        <label class="block text-sm mb-3">Notas (opcional)
+          <textarea id="tramiteNotas" rows="2" class="w-full border border-stone-300 rounded px-2 py-1 text-sm mt-1"></textarea>
+        </label>
+        <div class="flex gap-2 justify-end">
+          <button onclick="cerrarTramiteModal()" class="text-sm px-3 py-1.5 rounded border border-stone-300 hover:bg-stone-50">Cancelar</button>
+          <button onclick="guardarTramite()" class="text-sm px-3 py-1.5 rounded bg-green-700 hover:bg-green-800 text-white">Guardar</button>
+        </div>
+      </div>
+    </div>
 
     <!-- ═══════════════════════════════════════════════════════════
          PESTAÑA COTIZADOR (Quick wins UX 2026-05-28: H02 toggle cliente trae material · H04 autogen título · H08/H09 labels claros)
@@ -6916,7 +7226,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'hual_compra', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas', 'firmas_reglas', 'mesa_control_99_99'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'hual_compra', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'panorama_sucursales', 'flota_grupo', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas', 'firmas_reglas', 'mesa_control_99_99'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 const FALLBACK_BYPASS_EMAILS = [
   'gerencia@gestionrepchile.cl',
@@ -7133,6 +7443,9 @@ async function hydrateSessionAndEnter(authUser) {
   // [PC1-AUDIT F18+F19] FAB Diego visible solo post-login. Antes del login estaba expuesto.
   const _fabDiegoShow = document.getElementById('diegoFab');
   if (_fabDiegoShow) _fabDiegoShow.style.display = '';
+
+  // Fase 1 · Feature flag módulo Inventario (marcha blanca ceo/gerente hasta 2026-07-08)
+  if (typeof aplicarFeatureFlagInventario === 'function') aplicarFeatureFlagInventario();
 
   // D-DIEGO-LEGAL-IA-001 · gate de consentimiento IA al primer login.
   // Si aviso_ia_consentimiento es NULL → mostrar banner.
@@ -7747,6 +8060,9 @@ function setupTabs() {
       if (tabId === 'flujo_operativo') window.initFlujoOperativo && window.initFlujoOperativo();
       if (tabId === 'tablero_precios') window.initTableroPrecios && window.initTableroPrecios();
       if (tabId === 'ops_diarias')   initOpsDiarias();
+      if (tabId === 'inventario')    initInventario();
+      if (tabId === 'panorama_sucursales') initPanorama();
+      if (tabId === 'flota_grupo')   initFlota();
       if (tabId === 'dieguito')  initDieguito();
       if (tabId === 'comercial')  initTabComercial();
       if (tabId === 'manual')      initManual();
@@ -12752,12 +13068,45 @@ window.opsFechaHoy = function() {
 async function loadOpsDiarias() {
   const fecha = document.getElementById('opsFecha').value;
   if (!fecha) return;
+
+  // PR#3 · fix problema #6 · badge dinámico "fecha != hoy" para evitar confusión temporal.
+  // Sin esto, el header topbar dice "jue 2 de jul" mientras el usuario mira datos del 23-jun.
+  const hoyIso = new Date().toISOString().slice(0, 10);
+  const badge = document.getElementById('opsFechaBadge');
+  if (badge) {
+    if (fecha !== hoyIso) {
+      const hoyD = new Date(hoyIso + 'T00:00:00');
+      const filD = new Date(fecha + 'T00:00:00');
+      const dias = Math.round((hoyD - filD) / 86400000);
+      const fechaEs = filD.toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' });
+      let suffix;
+      if (dias === 0)      suffix = 'hoy';
+      else if (dias === 1) suffix = '1 día atrás';
+      else if (dias > 0)   suffix = `hace ${dias} días`;
+      else if (dias === -1) suffix = 'mañana';
+      else                 suffix = `dentro de ${Math.abs(dias)} días`;
+      badge.textContent = `📅 Mirando ${fechaEs} (${suffix})`;
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  }
+
+  // PR#3 · fix problema #5 · nota informativa "Área no filtra este tab".
+  // Se muestra siempre que el tab está activo (el selector Área existe en el topbar global).
+  const nota = document.getElementById('opsAreaNota');
+  if (nota) nota.classList.remove('hidden');
+
   ['opsKpiTickets','opsKpiTon','opsKpiMonto','opsKpiAlertas','opsKpiTicketsDelta','opsKpiTonDelta'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '…'; });
   document.getElementById('opsPesajesPorSuc').textContent = 'Cargando…';
   document.getElementById('opsCierres').textContent = 'Cargando…';
   document.getElementById('opsAlertas').textContent = 'Cargando…';
 
-  const { data, error } = await sb.rpc('f_operaciones_dia', { p_fecha: fecha });
+  // PR#1/PR#2 · switch a v2 canary de f_operaciones_dia (fix 7 anomalías 2026-07-02).
+  // v2 devuelve: alertas.del_dia vs catalogo_persistente, por_sucursal con (sin asignar)
+  // + sin_kg, comparativa.promedio_7d_previos (generate_series honesto) +
+  // mismo_dia_semana_4wk_avg. Backwards compat: si algún campo v2 falta, cae al viejo.
+  const { data, error } = await sb.rpc('f_operaciones_dia', { p_fecha: fecha, p_version: 'v2' });
   if (error) {
     document.getElementById('opsPesajesPorSuc').innerHTML = `<span class="text-red-600">Error: ${escapeHtml(error.message)}</span>`;
     return;
@@ -12775,27 +13124,58 @@ async function loadOpsDiarias() {
     return (dx >= 0 ? '↑ ' : '↓ ') + Math.abs(pct).toFixed(0) + '%';
   };
 
-  document.getElementById('opsKpiTickets').textContent = (p.tickets_total || 0).toLocaleString('es-CL');
-  document.getElementById('opsKpiTicketsDelta').textContent = 'vs ayer: ' + delta(p.tickets_total, cmp.tickets_dia_anterior);
-  document.getElementById('opsKpiTon').textContent = (Number(p.toneladas || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 })) + ' t';
-  document.getElementById('opsKpiTonDelta').textContent = 'vs ayer: ' + delta(p.toneladas, cmp.toneladas_dia_anterior);
-  document.getElementById('opsKpiMonto').textContent = fmtCLP(p.monto_total);
-  document.getElementById('opsKpiAlertas').textContent = (Number(al.precio_tarifa_rojo || 0) + Number(al.contraparte || 0)).toLocaleString('es-CL');
+  // Fix problema #2 · comparativa honesta (prom 7d con días vacíos + 4wk avg mismo día semana).
+  // Fallback: si v1 (sin promedio_7d) usa cmp.tickets_dia_anterior.
+  const basePromTickets = cmp?.promedio_7d_previos?.tickets_promedio ?? cmp.tickets_dia_anterior;
+  const basePromTon     = cmp?.promedio_7d_previos?.toneladas_promedio ?? cmp.toneladas_dia_anterior;
+  const labelComp = cmp?.promedio_7d_previos ? 'vs prom 7d' : 'vs ayer';
 
-  // Pesajes por sucursal
+  document.getElementById('opsKpiTickets').textContent = (p.tickets_total || 0).toLocaleString('es-CL');
+  document.getElementById('opsKpiTicketsDelta').textContent = labelComp + ': ' + delta(p.tickets_total, basePromTickets);
+  document.getElementById('opsKpiTicketsDelta').title =
+    `vs ayer: ${cmp.tickets_dia_anterior ?? '—'} · ` +
+    `prom 7d: ${cmp?.promedio_7d_previos?.tickets_promedio ?? '—'} · ` +
+    `mismo día 4wk avg: ${cmp?.mismo_dia_semana_4wk_avg?.tickets_promedio ?? '—'}`;
+  document.getElementById('opsKpiTon').textContent = (Number(p.toneladas || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 })) + ' t';
+  document.getElementById('opsKpiTonDelta').textContent = labelComp + ': ' + delta(p.toneladas, basePromTon);
+  document.getElementById('opsKpiTonDelta').title =
+    `vs ayer: ${cmp.toneladas_dia_anterior ?? '—'} t · ` +
+    `prom 7d: ${cmp?.promedio_7d_previos?.toneladas_promedio ?? '—'} t · ` +
+    `mismo día 4wk avg: ${cmp?.mismo_dia_semana_4wk_avg?.toneladas_promedio ?? '—'} t`;
+  document.getElementById('opsKpiMonto').textContent = fmtCLP(p.monto_total);
+
+  // Fix problema #1 · KPI grande SOLO alertas del día · deuda catálogo se muestra abajo.
+  const alDelDia = al?.del_dia?.precio_tarifa_rojo ?? Number(al.precio_tarifa_rojo || 0);
+  document.getElementById('opsKpiAlertas').textContent = alDelDia.toLocaleString('es-CL');
+
+  // Pesajes por sucursal · v2 incluye (sin asignar) + sin_kg + pct_sin_kg
   const sucs = Array.isArray(p.por_sucursal) ? p.por_sucursal : [];
+  const totalSinKg = p.tickets_sin_kg ?? sucs.reduce((acc, s) => acc + (Number(s.sin_kg) || 0), 0);
   if (sucs.length === 0) {
     document.getElementById('opsPesajesPorSuc').innerHTML = '<span class="text-stone-400 italic">Sin pesajes ese día.</span>';
   } else {
     document.getElementById('opsPesajesPorSuc').innerHTML = `
       <div class="table-responsive">
       <table class="w-full text-sm"><thead class="text-xs text-stone-500"><tr>
-        <th class="text-left py-1">Sucursal</th><th class="text-right py-1">Tickets</th><th class="text-right py-1">Toneladas</th>
-      </tr></thead><tbody>${sucs.map(s => `
-        <tr class="border-t border-stone-100"><td class="py-1">${escapeHtml(s.sucursal)}</td>
+        <th class="text-left py-1">Sucursal</th>
+        <th class="text-right py-1">Tickets</th>
+        <th class="text-right py-1">Toneladas</th>
+        <th class="text-right py-1" title="Tickets con kg cero o nulo (fletes/servicios/anulaciones)">Sin kg</th>
+      </tr></thead><tbody>${sucs.map(s => {
+        const pct = Number(s.pct_sin_kg ?? 0);
+        const pctColor = pct > 75 ? 'text-red-700' : pct > 50 ? 'text-amber-700' : 'text-stone-500';
+        const rowClass = String(s.sucursal || '').includes('(sin asignar)')
+          ? 'border-t border-amber-100 bg-amber-50' : 'border-t border-stone-100';
+        return `<tr class="${rowClass}">
+          <td class="py-1">${escapeHtml(String(s.sucursal || '—'))}</td>
           <td class="text-right py-1">${s.n}</td>
-          <td class="text-right py-1">${Number(s.t || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 })} t</td></tr>`).join('')}
-      </tbody></table>
+          <td class="text-right py-1">${Number(s.t || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 })} t</td>
+          <td class="text-right py-1 ${pctColor}">${s.sin_kg ?? 0}${s.pct_sin_kg != null ? ` (${s.pct_sin_kg}%)` : ''}</td>
+        </tr>`;
+      }).join('')}
+      </tbody>
+      ${totalSinKg > 0 ? `<tfoot><tr class="border-t-2 border-stone-200 text-xs text-stone-500"><td colspan="4" class="py-1 italic">Total ${totalSinKg} de ${p.tickets_total} tickets con kg cero/nulo (fletes, servicios, anulaciones)</td></tr></tfoot>` : ''}
+      </table>
       </div>`;
   }
 
@@ -12815,11 +13195,657 @@ async function loadOpsDiarias() {
       </div>`).join('');
   }
 
-  // Alertas
+  // Alertas · fix problema #1 separación visual del día vs catálogo persistente
+  const alDia = al?.del_dia?.precio_tarifa_rojo ?? Number(al.precio_tarifa_rojo || 0);
+  const alCat = al?.catalogo_persistente?.contraparte_discrepancia ?? Number(al.contraparte || 0);
   document.getElementById('opsAlertas').innerHTML = `
-    <span class="${Number(al.precio_tarifa_rojo) > 0 ? 'text-red-700 font-semibold' : 'text-stone-600'}">${al.precio_tarifa_rojo || 0} alertas precio_tarifa rojo</span> ·
-    <span class="${Number(al.contraparte) > 0 ? 'text-amber-700' : 'text-stone-600'}">${al.contraparte || 0} contrapartes con discrepancia</span>`;
+    <div class="mb-2">
+      <span class="${alDia > 0 ? 'text-red-700 font-semibold' : 'text-stone-600'}">
+        🔴 ${alDia} alerta${alDia === 1 ? '' : 's'} de precios del día
+      </span>
+      ${alDia > 0 ? '<span class="text-xs text-stone-500">· revisar por qué se pactó fuera de tarifa</span>' : ''}
+    </div>
+    <div class="text-xs text-stone-500 italic">
+      <span class="${alCat > 0 ? 'text-amber-700' : ''}">📚 ${alCat} misclasificación${alCat === 1 ? '' : 'es'} en catálogo contrapartes</span>
+      · persistente global, no del día · resolver en tab Andrea → Duplicados
+    </div>`;
 }
+
+// ============================================================
+// PANORAMA SUCURSALES · D-PANORAMA-JUAN 2026-07-02
+// Fuente: public.f_panorama_sucursal(sucursal, year, month, version)
+// Firma anti-maquillaje: balance negativo se muestra tal cual con ⚠️ + tooltip.
+// ============================================================
+let pnrEstado = { sucursal: 'maipu', year: new Date().getFullYear(), month: new Date().getMonth() + 1 };
+const PNR_MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+function initPanorama() {
+  pnrCambiarSuc(pnrEstado.sucursal);
+}
+
+window.pnrCambiarSuc = function(suc) {
+  pnrEstado.sucursal = suc;
+  document.querySelectorAll('.pnr-suc-btn').forEach(b => {
+    if (b.dataset.pnrSuc === suc) {
+      b.classList.add('border-green-700','text-green-700','font-semibold');
+    } else {
+      b.classList.remove('border-green-700','text-green-700','font-semibold');
+    }
+  });
+  loadPanorama();
+};
+
+window.pnrMesPrev = function() {
+  pnrEstado.month--;
+  if (pnrEstado.month < 1) { pnrEstado.month = 12; pnrEstado.year--; }
+  loadPanorama();
+};
+window.pnrMesNext = function() {
+  pnrEstado.month++;
+  if (pnrEstado.month > 12) { pnrEstado.month = 1; pnrEstado.year++; }
+  loadPanorama();
+};
+
+async function loadPanorama() {
+  document.getElementById('pnrMesLabel').textContent =
+    `${PNR_MESES[pnrEstado.month - 1]} ${pnrEstado.year}`;
+
+  ['pnrKpiCompras','pnrKpiVentas','pnrKpiDon','pnrKpiBalance','pnrKpiAlertas',
+   'pnrKpiComprasDelta','pnrKpiVentasDelta'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = '…';
+  });
+  document.getElementById('pnrHeader').textContent = 'Cargando…';
+  document.getElementById('pnrMateriales').textContent = 'Cargando…';
+  document.getElementById('pnrBugs').textContent = 'Cargando…';
+  document.getElementById('pnrPlaceholder').classList.add('hidden');
+
+  const { data, error } = await sb.rpc('f_panorama_sucursal', {
+    p_sucursal: pnrEstado.sucursal, p_year: pnrEstado.year, p_month: pnrEstado.month, p_version: 'v1'
+  });
+
+  if (error) {
+    document.getElementById('pnrMateriales').innerHTML =
+      `<span class="text-red-600">Error: ${escapeHtml(error.message)}</span>`;
+    return;
+  }
+
+  // Estado de datos (punto 3 review DeepSeek)
+  const est = data?._estado_datos;
+  const ph = document.getElementById('pnrPlaceholder');
+  if (est === 'sucursal_sin_operacion' || est === 'operativo_sin_registros_mes') {
+    ph.textContent = data._placeholder_mensaje || 'Sin datos para este mes.';
+    ph.classList.remove('hidden');
+    if (est === 'sucursal_sin_operacion') {
+      // Ocultar KPI wrappers en sucursal sin operación
+      document.getElementById('pnrKpiWrapper').classList.add('opacity-40');
+    }
+  } else {
+    document.getElementById('pnrKpiWrapper').classList.remove('opacity-40');
+  }
+
+  const fmtCLP = n => '$' + Math.round(Number(n || 0)).toLocaleString('es-CL');
+  const fmtT = n => Number(n || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 }) + ' t';
+
+  const kpi = data?.kpi || {};
+  const compras = kpi.compras || { tickets:0, toneladas:0, monto:0 };
+  const ventas = kpi.ventas || { tickets:0, toneladas:0, monto:0 };
+  const donaciones = kpi.donaciones || { tickets:0, toneladas:0 };
+  const balance = Number(kpi.balance_kg || 0);
+  const alertas = Number(kpi.alertas_del_mes || 0);
+
+  document.getElementById('pnrKpiCompras').innerHTML =
+    `<span class="text-lg">${compras.tickets}</span> tickets<br><span class="text-xs">${fmtT(compras.toneladas)} · ${fmtCLP(compras.monto)}</span>`;
+  document.getElementById('pnrKpiVentas').innerHTML =
+    `<span class="text-lg">${ventas.tickets}</span> tickets<br><span class="text-xs">${fmtT(ventas.toneladas)} · ${fmtCLP(ventas.monto)}</span>`;
+  document.getElementById('pnrKpiDon').innerHTML =
+    `<span class="text-lg">${donaciones.tickets}</span> tickets<br><span class="text-xs">${fmtT(donaciones.toneladas)}</span>`;
+
+  // Balance con anti-maquillaje (contrapropuesta punto 7 DeepSeek)
+  const balanceT = (balance / 1000).toLocaleString('es-CL', { maximumFractionDigits: 2 });
+  if (balance < 0) {
+    document.getElementById('pnrKpiBalance').innerHTML =
+      `<span class="text-red-700">⚠️ ${balanceT} t</span>`;
+  } else {
+    document.getElementById('pnrKpiBalance').innerHTML =
+      `<span class="text-stone-800">+${balanceT} t</span>`;
+  }
+
+  document.getElementById('pnrKpiAlertas').textContent = alertas;
+
+  // Supervisor firmante header
+  const sup = data?.supervisor || {};
+  const pct = sup.tickets_totales > 0 ? Math.round((sup.tickets_firmados / sup.tickets_totales) * 100) : 0;
+  const supColor = pct >= 70 ? 'text-green-700' : pct >= 30 ? 'text-amber-700' : 'text-red-700';
+  document.getElementById('pnrHeader').innerHTML =
+    `<strong>${escapeHtml(data?.sucursal_nombre || '—')} · ${PNR_MESES[pnrEstado.month-1]} ${pnrEstado.year}</strong><br>` +
+    `Supervisor firmante: <strong>${escapeHtml(sup.nombre_firmante || '—')}</strong> · ` +
+    `<span class="${supColor}">${sup.tickets_firmados}/${sup.tickets_totales} tickets (${pct}%) ${pct >= 70 ? '🟢' : pct >= 30 ? '🟡' : '🔴'}</span>`;
+
+  // Tabla materiales
+  const mats = Array.isArray(data?.materiales) ? data.materiales : [];
+  if (mats.length === 0) {
+    document.getElementById('pnrMateriales').innerHTML = '<span class="text-stone-400 italic">Sin materiales en este mes.</span>';
+  } else {
+    document.getElementById('pnrMateriales').innerHTML = `
+      <table class="w-full text-sm"><thead class="text-xs text-stone-500"><tr>
+        <th class="text-left py-1">Material</th>
+        <th class="text-right py-1">kg Compra</th>
+        <th class="text-right py-1">kg Venta</th>
+        <th class="text-right py-1">Balance</th>
+        <th class="text-right py-1">$/kg</th>
+        <th class="text-right py-1">Estado</th>
+      </tr></thead><tbody>${mats.map(m => {
+        const estadoTag = m.estado === 'descuadre' ? '<span class="text-red-700">🔴 descuadre</span>' :
+                          m.estado === 'acumulando' ? '<span class="text-amber-700">🟡 acumulando</span>' :
+                          '<span class="text-green-700">🟢 normal</span>';
+        return `<tr class="border-t border-stone-100">
+          <td class="py-1"><strong>${escapeHtml(m.descripcion || m.material_codigo)}</strong> <span class="text-xs text-stone-400">${escapeHtml(m.material_codigo)}</span></td>
+          <td class="text-right py-1">${Number(m.kg_compra).toLocaleString('es-CL')}</td>
+          <td class="text-right py-1">${Number(m.kg_venta).toLocaleString('es-CL')}</td>
+          <td class="text-right py-1 ${Number(m.balance_kg) < 0 ? 'text-red-700' : ''}">${Number(m.balance_kg).toLocaleString('es-CL')}</td>
+          <td class="text-right py-1">${m.precio_prom !== null ? '$' + Number(m.precio_prom).toLocaleString('es-CL') : '—'}</td>
+          <td class="text-right py-1">${estadoTag}</td>
+        </tr>`;
+      }).join('')}</tbody></table>`;
+  }
+
+  // Bugs cazados
+  const bugs = data?.bugs || {};
+  const huerf = Array.isArray(bugs.detalle_huerfanos_mes) ? bugs.detalle_huerfanos_mes : [];
+  document.getElementById('pnrBugs').innerHTML = `
+    <div class="mb-2">
+      <span class="${bugs.tickets_sin_sucursal > 0 ? 'text-amber-700 font-semibold' : 'text-stone-600'}">
+        ⚠️ ${bugs.tickets_sin_sucursal || 0} tickets sin sucursal asignada</span>
+      ${huerf.length > 0 ? `<details class="mt-1 text-xs"><summary class="cursor-pointer text-stone-500">Detalle huérfanos rescatados</summary>
+        <ul class="mt-1 ml-4 list-disc">${huerf.map(h => `<li>Folio ${h.folio} · ${h.fecha} · ${escapeHtml(h.chofer || '—')} · patente ${escapeHtml(h.patente || '—')} → <strong>${escapeHtml(h.inferido_hacia)}</strong> <span class="text-stone-400">(${h.backfill_metodo})</span></li>`).join('')}</ul></details>` : ''}
+    </div>
+    <div class="mb-1"><span class="${bugs.materiales_sin_precio > 0 ? 'text-amber-700' : 'text-stone-600'}">⚠️ ${bugs.materiales_sin_precio || 0} materiales sin precio vigente</span></div>
+    <div><span class="${bugs.tickets_con_kg_cero > 0 ? 'text-amber-700' : 'text-stone-600'}">⚠️ ${bugs.tickets_con_kg_cero || 0} tickets con kg=0 (fletes/servicios/anulaciones)</span></div>`;
+
+}
+
+// ============================================================
+// FASE 1 · MÓDULO INVENTARIO · sección propia en sidebar bajo Operaciones Día
+// Feature flag: sidebar+tab horizontal ocultos si perfil no es ceo/gerente
+// ============================================================
+let invEstado = { sucursal: 'maipu' };
+
+// Defensa en profundidad (DeepSeek Va condicional PR #602 punto 1):
+// initInventario re-verifica el feature flag antes de renderizar, aunque el sidebar+tab
+// ya están hidden por default y solo se muestran si el flag pasó. Cubre caso borde de
+// que alguien fuerce click via dev tools o el DOM se modifique externamente.
+async function initInventario() {
+  const noAuth   = document.getElementById('invNoAutorizado');
+  const wrap     = document.getElementById('pnrStockVivoWrap');
+  const movsWrap = document.getElementById('invMovsWrap');
+  try {
+    const { data: flag, error } = await sb.rpc('f_stock_vivo_visible');
+    if (error || !flag || flag.visible !== true) {
+      noAuth?.classList.remove('hidden');
+      wrap?.classList.add('hidden');
+      movsWrap?.classList.add('hidden');
+      return;
+    }
+    noAuth?.classList.add('hidden');
+    movsWrap?.classList.remove('hidden');
+  } catch(e) {
+    noAuth?.classList.remove('hidden');
+    wrap?.classList.add('hidden');
+    movsWrap?.classList.add('hidden');
+    return;
+  }
+  invCambiarSuc(invEstado.sucursal);
+}
+
+window.invCambiarSuc = function(suc) {
+  invEstado.sucursal = suc;
+  document.querySelectorAll('.inv-suc-btn').forEach(b => {
+    if (b.dataset.invSuc === suc) {
+      b.classList.add('border-green-700','text-green-700','font-semibold');
+    } else {
+      b.classList.remove('border-green-700','text-green-700','font-semibold');
+    }
+  });
+  document.getElementById('invMovsSuc').textContent = suc;
+  renderStockVivo(suc).catch(err => console.warn('stock_vivo:', err));
+  invCargarManualesRecientes(suc).catch(err => console.warn('manuales:', err));
+};
+
+// ============================================================
+// CAMINO 2 · Modal + RPCs de movimientos manuales
+// Backend: crear_traslado / crear_movimiento_salida (muestra_lab / devolucion_prov / baja_dano / merma_proceso)
+// ============================================================
+const INV_TIPOS = {
+  traslado_out: {
+    titulo: '🔄 Traslado a otra sucursal',
+    instruccion: 'Registrá el material que sale de esta sucursal hacia otra del grupo.',
+    rpc: 'crear_traslado',
+    destino: true,
+    contraparte_label: 'Patente / conductor (opcional)',
+    foto_obligatoria: false
+  },
+  muestra_lab: {
+    titulo: '🧪 Muestra a laboratorio',
+    instruccion: 'Material que sale como muestra para análisis del cliente.',
+    rpc: 'crear_movimiento_salida',
+    contraparte_label: 'Laboratorio / cliente destinatario',
+    foto_obligatoria: false
+  },
+  devolucion_prov: {
+    titulo: '↩ Devolución al proveedor',
+    instruccion: 'Material que vino mal y se devuelve al proveedor.',
+    rpc: 'crear_movimiento_salida',
+    contraparte_label: 'Proveedor destinatario',
+    foto_obligatoria: false
+  },
+  baja_dano: {
+    titulo: '💥 Baja por daño / robo / humedad',
+    instruccion: 'Material que perdimos y sale del patio. FOTO OBLIGATORIA.',
+    rpc: 'crear_movimiento_salida',
+    contraparte_label: 'Motivo (humedad, robo, daño)',
+    foto_obligatoria: true
+  },
+  merma_proceso: {
+    titulo: '⚙ Merma de proceso',
+    instruccion: 'Merma post-prensa al cierre de turno (humedad, impurezas eliminadas).',
+    rpc: 'crear_movimiento_salida',
+    contraparte_label: 'Detalle proceso',
+    foto_obligatoria: false
+  }
+};
+
+window.invAbrirModal = async function(tipo) {
+  const cfg = INV_TIPOS[tipo];
+  if (!cfg) return;
+  document.getElementById('invModalTipo').value = tipo;
+  document.getElementById('invModalTitulo').textContent = cfg.titulo;
+  document.getElementById('invModalInstruccion').textContent = cfg.instruccion;
+  document.getElementById('invModalContraparteText').textContent = cfg.contraparte_label;
+  document.getElementById('invModalContraparteLabel').classList.remove('hidden');
+  document.getElementById('invModalDestinoLabel').classList.toggle('hidden', !cfg.destino);
+  document.getElementById('invModalFotoReq').classList.toggle('hidden', !cfg.foto_obligatoria);
+
+  // Sucursales del selector origen (según usuario logueado · Andrea Santiago / Ingrid Talca / Juan todas)
+  const sucOrigen = document.getElementById('invModalSucursal');
+  sucOrigen.innerHTML = ['cerrillos','maipu','talca','puerto_montt']
+    .map(s => `<option value="${s}"${s===invEstado.sucursal?' selected':''}>${s}</option>`).join('');
+
+  // Materiales · cargar del catálogo activo
+  try {
+    const { data: mats, error } = await sb.rpc('f_stock_vivo_visible'); // dummy; usar rpc real
+  } catch(e){}
+  const selMat = document.getElementById('invModalMaterial');
+  selMat.innerHTML = '<option value="">Cargando…</option>';
+  try {
+    const { data: mats, error } = await sb.rpc('f_materiales_activos');
+    if (error) throw error;
+    if (Array.isArray(mats) && mats.length > 0) {
+      selMat.innerHTML = mats.map(m => `<option value="${m.material_id}">${escapeHtml(m.nombre)}</option>`).join('');
+    } else {
+      selMat.innerHTML = '<option value="">No hay materiales cargados</option>';
+    }
+  } catch(e) {
+    selMat.innerHTML = '<option value="">Error cargando materiales</option>';
+  }
+
+  // Reset campos
+  document.getElementById('invModalKg').value = '';
+  document.getElementById('invModalContraparte').value = '';
+  document.getElementById('invModalFoto').value = '';
+  document.getElementById('invModalNotas').value = '';
+  document.getElementById('invModalMsg').classList.add('hidden');
+
+  const modal = document.getElementById('invModalWrap');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+};
+
+window.invCerrarModal = function() {
+  const modal = document.getElementById('invModalWrap');
+  modal.classList.remove('flex');
+  modal.classList.add('hidden');
+};
+
+window.invGuardarMovimiento = async function() {
+  const tipo = document.getElementById('invModalTipo').value;
+  const cfg = INV_TIPOS[tipo];
+  if (!cfg) return;
+
+  const suc = document.getElementById('invModalSucursal').value;
+  const destino = document.getElementById('invModalDestino').value;
+  const mat = document.getElementById('invModalMaterial').value;
+  const kg = Number(document.getElementById('invModalKg').value);
+  const contraparte = document.getElementById('invModalContraparte').value.trim() || null;
+  const foto = document.getElementById('invModalFoto').value.trim() || null;
+  const notas = document.getElementById('invModalNotas').value.trim() || null;
+
+  const msg = document.getElementById('invModalMsg');
+  const btn = document.getElementById('invModalGuardar');
+
+  // Validaciones cliente (backend re-valida)
+  if (!mat)   return invMostrarMsg(msg, 'error', 'Elegí material');
+  if (!kg || kg <= 0) return invMostrarMsg(msg, 'error', 'Kilos debe ser mayor a 0');
+  if (cfg.foto_obligatoria && !foto) return invMostrarMsg(msg, 'error', 'Foto obligatoria para baja por daño');
+  if (cfg.destino && suc === destino) return invMostrarMsg(msg, 'error', 'Origen y destino iguales');
+
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  try {
+    let res;
+    if (cfg.rpc === 'crear_traslado') {
+      res = await sb.rpc('crear_traslado', {
+        p_origen: suc, p_destino: destino, p_material_id: mat, p_kg: kg,
+        p_patente: null, p_conductor: contraparte, p_foto_url: foto, p_notas: notas
+      });
+    } else {
+      res = await sb.rpc('crear_movimiento_salida', {
+        p_sucursal_id: suc, p_material_id: mat, p_kg: kg, p_tipo_evento: tipo,
+        p_contraparte: contraparte, p_foto_url: foto, p_notas: notas
+      });
+    }
+    if (res.error) throw new Error(res.error.message);
+    invMostrarMsg(msg, 'ok', '✅ Registrado. Refrescando…');
+    setTimeout(() => {
+      invCerrarModal();
+      invCambiarSuc(invEstado.sucursal);
+    }, 900);
+  } catch(e) {
+    invMostrarMsg(msg, 'error', 'Error: ' + (e?.message || e));
+  } finally {
+    btn.disabled = false; btn.textContent = 'Registrar';
+  }
+};
+
+function invMostrarMsg(el, tipo, txt) {
+  el.className = 'mb-2 p-2 rounded text-sm ' +
+    (tipo === 'ok' ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-800');
+  el.textContent = txt;
+  el.classList.remove('hidden');
+}
+
+async function invCargarManualesRecientes(sucursal) {
+  const wrap = document.getElementById('invMovsManuales');
+  if (!wrap) return;
+  wrap.textContent = 'Cargando…';
+  try {
+    const { data, error } = await sb.rpc('f_movimientos_manuales_recientes',
+      { p_sucursal_id: sucursal, p_limit: 10 });
+    if (error) throw error;
+    const rows = Array.isArray(data) ? data : [];
+    if (rows.length === 0) {
+      wrap.innerHTML = '<span class="text-stone-400 italic">Sin movimientos manuales aún.</span>';
+      return;
+    }
+    const label = t => ({
+      traslado_out: '🔄 Traslado salida', traslado_in: '← Traslado entrada',
+      muestra_lab: '🧪 Muestra', devolucion_prov: '↩ Devolución',
+      baja_dano: '💥 Baja', merma_proceso: '⚙ Merma',
+      venta_expresa: '💰 Venta expresa', ajuste_correccion: '🔧 Corrección',
+      ajuste_fisico: '📋 Cierre físico', ajuste_apertura: '🎬 Apertura'
+    })[t] || t;
+    const fmtCLPSm = n => n === null || n === undefined ? ''
+      : '· <span class="text-emerald-700 font-semibold">$' + Math.round(Number(n)).toLocaleString('es-CL') + '</span>';
+    wrap.innerHTML = rows.map(m => `
+      <div class="border-b border-stone-100 py-1">
+        <span class="text-stone-500">${new Date(m.hora).toLocaleString('es-CL',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>
+        · <strong>${label(m.tipo_evento)}</strong>
+        · ${escapeHtml(m.material_id||'')}
+        · <span class="${Number(m.kg_delta)<0?'text-red-700':'text-green-700'}">${Number(m.kg_delta).toLocaleString('es-CL')} kg</span>
+        ${m.contraparte ? '· ' + escapeHtml(m.contraparte) : ''}
+        ${m.responsable ? '<span class="text-stone-400"> · ' + escapeHtml(String(m.responsable).split('@')[0]) + '</span>' : ''}
+        ${fmtCLPSm(m.monto_clp)}
+      </div>`).join('');
+  } catch(e) {
+    wrap.innerHTML = '<span class="text-red-600">Error: ' + escapeHtml(e.message||'') + '</span>';
+  }
+}
+
+// Feature flag: verifica perfil y muestra/oculta entrada del sidebar + tab horizontal
+async function aplicarFeatureFlagInventario() {
+  try {
+    const { data: flag, error } = await sb.rpc('f_stock_vivo_visible');
+    const navSidebar = document.getElementById('navInventario');
+    const btnTab = document.getElementById('btnTabInventario');
+    const visible = !error && flag && flag.visible === true;
+    if (navSidebar) navSidebar.classList.toggle('hidden', !visible);
+    if (btnTab)     btnTab.classList.toggle('hidden', !visible);
+  } catch(e) { console.warn('feature_flag_inventario:', e); }
+}
+
+// ============================================================
+// FASE 1 · Stock Vivo · función que consume public.f_stock_sucursal(sucursal_id)
+// Regla oro plata: monto_clp solo si perfil = ceo (backend enforced)
+// ============================================================
+async function renderStockVivo(sucursalId) {
+  const wrap = document.getElementById('pnrStockVivoWrap');
+  if (!wrap) return;
+
+  // Feature flag · RPC dedicada (panel.usuarios_perfiles no está expuesta al REST · PGRST205)
+  // Fix del bug del PR #599: .from('usuarios_perfiles') resolvía a public.usuarios_perfiles (inexistente)
+  const { data: flag, error: flagErr } = await sb.rpc('f_stock_vivo_visible');
+  if (flagErr || !flag || flag.visible !== true) {
+    wrap.classList.add('hidden');
+    return;
+  }
+  wrap.classList.remove('hidden');
+  document.getElementById('pnrStockVivoSuc').textContent = sucursalId;
+  document.getElementById('pnrStockVivoMats').textContent = 'Cargando…';
+  document.getElementById('pnrStockVivoMovs').textContent = 'Cargando…';
+
+  const { data, error } = await sb.rpc('f_stock_sucursal', { p_sucursal_id: sucursalId });
+  if (error) {
+    document.getElementById('pnrStockVivoMats').innerHTML =
+      `<span class="text-red-600">Error: ${escapeHtml(error.message)}</span>`;
+    return;
+  }
+
+  const activo = data?.activo_desde;
+  const nota = document.getElementById('pnrStockVivoNota');
+  if (data?.placeholder) {
+    nota.textContent = data.placeholder;
+    nota.classList.remove('hidden');
+  } else {
+    nota.textContent = data?.nota_arranque || '';
+    nota.classList.remove('hidden');
+  }
+
+  const lastRefresh = data?.ultimo_refresh
+    ? new Date(data.ultimo_refresh).toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'})
+    : '—';
+  document.getElementById('pnrStockVivoRefresh').textContent = `refresh ${lastRefresh}`;
+
+  const fmtKg = n => Number(n || 0).toLocaleString('es-CL', {maximumFractionDigits: 0}) + ' kg';
+  const fmtCLPStock = n => (n === null || n === undefined) ? '<span class="text-stone-300">—</span>'
+                        : '$' + Math.round(Number(n)).toLocaleString('es-CL');
+
+  const mats = Array.isArray(data?.materiales) ? data.materiales : [];
+  if (mats.length === 0) {
+    document.getElementById('pnrStockVivoMats').innerHTML =
+      '<span class="text-stone-400 italic">Sin saldo acumulado todavía (Opción C arranque en cero).</span>';
+  } else {
+    const trend = t => t === 'up' ? '↑' : t === 'down' ? '↓' : t === 'flat' ? '→' : '·';
+    const trendClass = t => t === 'up' ? 'text-green-700'
+                          : t === 'down' ? 'text-red-700'
+                          : t === 'flat' ? 'text-stone-500' : 'text-stone-400';
+    document.getElementById('pnrStockVivoMats').innerHTML = `
+      <table class="w-full text-sm"><thead class="text-xs text-stone-500"><tr>
+        <th class="text-left py-1">Material</th>
+        <th class="text-right py-1">Saldo</th>
+        <th class="text-right py-1">Flujo mes</th>
+        <th class="text-right py-1">Tendencia</th>
+        <th class="text-right py-1">Últ. mov.</th>
+      </tr></thead><tbody>${mats.map(m => `
+        <tr class="border-t border-stone-100">
+          <td class="py-1"><strong>${escapeHtml(m.nombre || m.material_id)}</strong>
+            <span class="text-xs text-stone-400">${escapeHtml(m.material_id)}</span></td>
+          <td class="text-right py-1 ${Number(m.kg_saldo) < 0 ? 'text-red-700' : 'text-stone-800'}">${fmtKg(m.kg_saldo)}</td>
+          <td class="text-right py-1 text-xs">${fmtKg(m.kg_flujo_mes)}</td>
+          <td class="text-right py-1 ${trendClass(m.tendencia)}">${trend(m.tendencia)} <span class="text-xs">${m.tendencia || ''}</span></td>
+          <td class="text-right py-1 text-xs text-stone-500">${m.ultimo_movimiento || '—'}</td>
+        </tr>`).join('')}</tbody></table>`;
+  }
+
+  const movs = Array.isArray(data?.ultimos_movimientos) ? data.ultimos_movimientos : [];
+  const cePlata = data?.ceo_ve_plata === true;
+  if (movs.length === 0) {
+    document.getElementById('pnrStockVivoMovs').innerHTML =
+      '<span class="text-stone-400 italic">Sin movimientos aún.</span>';
+  } else {
+    const tipoLabel = t => ({
+      compra: '↓ Compra', venta: '↑ Venta', servicio_talca: '↔ Servicio Talca',
+      venta_expresa: '↑ Venta expresa', traslado_out: '→ Traslado salida',
+      traslado_in: '← Traslado entrada', muestra_lab: '📦 Muestra lab',
+      devolucion_prov: '↩ Devolución', baja_dano: '💥 Baja daño',
+      merma_proceso: '⚙ Merma proceso', ajuste_fisico: '📋 Ajuste físico',
+      ajuste_apertura: '🎬 Apertura', ajuste_correccion: '🔧 Corrección'
+    })[t] || t;
+    document.getElementById('pnrStockVivoMovs').innerHTML = movs.map(m => `
+      <div class="border-b border-stone-100 py-1">
+        <span class="text-stone-500">${m.hora ? new Date(m.hora).toLocaleString('es-CL', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : m.fecha}</span>
+        · <strong>${tipoLabel(m.tipo_evento)}</strong>
+        · ${escapeHtml(m.material_id || '')}
+        · <span class="${Number(m.kg_delta) < 0 ? 'text-red-700' : 'text-green-700'}">${fmtKg(m.kg_delta)}</span>
+        ${m.contraparte ? '· ' + escapeHtml(m.contraparte) : ''}
+        ${cePlata && m.monto_clp !== null ? '· <span class="text-emerald-700 font-semibold">'+fmtCLPStock(m.monto_clp)+'</span>' : ''}
+        ${m.foto ? '· 📷' : ''}
+      </div>`).join('');
+  }
+}
+
+// ============================================================
+// FLOTA GRUPO · D-PANORAMA-JUAN
+// Fuente: public.f_flota_grupo() usando auth.jwt() del backend
+// ============================================================
+let fltEstado = { tipo: 'vehiculos', data: null };
+
+function initFlota() {
+  fltCambiar(fltEstado.tipo);
+  cargarFlota();
+}
+
+window.fltCambiar = function(tipo) {
+  fltEstado.tipo = tipo;
+  document.querySelectorAll('.flt-tipo-btn').forEach(b => {
+    if (b.dataset.fltTipo === tipo) {
+      b.classList.add('border-green-700','text-green-700','font-semibold');
+    } else {
+      b.classList.remove('border-green-700','text-green-700','font-semibold');
+    }
+  });
+  renderFlota();
+};
+
+async function cargarFlota() {
+  document.getElementById('fltContenido').textContent = 'Cargando…';
+  const { data, error } = await sb.rpc('f_flota_grupo', { p_email: null, p_version: 'v1' });
+  if (error) {
+    document.getElementById('fltContenido').innerHTML =
+      `<span class="text-red-600">Error: ${escapeHtml(error.message)}</span>`;
+    return;
+  }
+  fltEstado.data = data;
+  renderFlota();
+}
+
+function renderFlota() {
+  if (!fltEstado.data) return;
+  const sucs = fltEstado.data.sucursales || {};
+  const sucOrder = ['cerrillos','maipu','talca','puerto_montt'];
+  const html = sucOrder.map(sid => {
+    const s = sucs[sid]; if (!s) return '';
+    const activos = fltEstado.tipo === 'vehiculos' ? (s.vehiculos || []) : (s.maquinas || []);
+    return `<div class="bg-white p-4 rounded shadow-sm mb-4">
+      <h3 class="font-semibold text-stone-700 mb-2">🏢 ${escapeHtml(s.nombre)} <span class="text-xs text-stone-400">(${activos.length})</span></h3>
+      ${activos.length === 0 ? '<div class="text-xs text-stone-400 italic">Sin ' + fltEstado.tipo + ' catalogados.</div>' :
+        `<table class="w-full text-sm"><thead class="text-xs text-stone-500"><tr>
+          ${fltEstado.tipo === 'vehiculos' ? '<th class="text-left py-1">Patente</th>' : '<th class="text-left py-1">ID</th>'}
+          <th class="text-left py-1">Tipo</th>
+          <th class="text-left py-1">Responsable</th>
+          <th class="text-left py-1">Estado</th>
+          <th class="text-left py-1">Notas</th>
+          <th class="text-right py-1">Acción</th>
+        </tr></thead><tbody>${activos.map(a => {
+          const estColor = a.estado_operativo === 'operativo' ? 'text-green-700' :
+                           a.estado_operativo === 'dudoso' ? 'text-amber-700' :
+                           a.estado_operativo === 'reparacion_pendiente' ? 'text-red-700' :
+                           a.estado_operativo === 'pana_profunda' ? 'text-red-700' : 'text-stone-600';
+          const estIcon = a.estado_operativo === 'operativo' ? '🟢' :
+                          a.estado_operativo === 'dudoso' ? '🟡' :
+                          a.estado_operativo === 'reparacion_pendiente' || a.estado_operativo === 'pana_profunda' ? '🔴' : '⚪';
+          const idOrPat = fltEstado.tipo === 'vehiculos' ? (a.patente || '—') : a.vehiculo_id;
+          const tramites = Array.isArray(a.tramites) ? a.tramites : [];
+          const tramLine = tramites.length === 0 ? '<span class="text-stone-400 italic text-xs">Sin trámites cargados</span>' :
+            tramites.map(t => {
+              const dias = t.fecha_vencimiento ? Math.ceil((new Date(t.fecha_vencimiento) - new Date()) / 86400000) : null;
+              const semaforo = dias === null ? '⚪' : dias < 15 ? '🔴' : dias < 60 ? '🟡' : '🟢';
+              return `<span class="text-xs mr-2">${semaforo} ${escapeHtml(t.tramite)} ${t.fecha_vencimiento || 'sin fecha'}</span>`;
+            }).join('');
+          return `<tr class="border-t border-stone-100">
+            <td class="py-1 font-mono text-xs">${escapeHtml(idOrPat)}</td>
+            <td class="py-1">${escapeHtml(a.tipo || '—')}</td>
+            <td class="py-1 text-xs">${escapeHtml(a.responsable || '—')}</td>
+            <td class="py-1 text-xs"><span class="${estColor}">${estIcon} ${escapeHtml(a.estado_operativo || '—')}</span></td>
+            <td class="py-1 text-xs text-stone-500">${escapeHtml(a.notas || '')}</td>
+            <td class="py-1 text-right">
+              <button onclick="abrirTramiteModal('${escapeHtml(a.vehiculo_id)}')" class="text-xs bg-green-700 hover:bg-green-800 text-white px-2 py-0.5 rounded">+ Trámite</button>
+            </td>
+          </tr>
+          <tr class="border-t border-stone-100 border-t-0"><td colspan="6" class="pb-2 pl-2">${tramLine}</td></tr>`;
+        }).join('')}</tbody></table>`}
+    </div>`;
+  }).join('');
+  document.getElementById('fltContenido').innerHTML = html;
+}
+
+window.abrirTramiteModal = function(activoId) {
+  document.getElementById('tramiteActivoId').textContent = activoId;
+  document.getElementById('tramiteFecha').value = '';
+  document.getElementById('tramiteEvidencia').value = '';
+  document.getElementById('tramiteNotas').value = '';
+  const m = document.getElementById('tramiteModal');
+  m.classList.remove('hidden');
+  m.classList.add('flex');
+};
+
+window.cerrarTramiteModal = function() {
+  const m = document.getElementById('tramiteModal');
+  m.classList.add('hidden');
+  m.classList.remove('flex');
+};
+
+window.guardarTramite = async function() {
+  const activo = document.getElementById('tramiteActivoId').textContent;
+  const tramite = document.getElementById('tramiteTipo').value;
+  const fecha = document.getElementById('tramiteFecha').value;
+  const evidencia = document.getElementById('tramiteEvidencia').value.trim() || null;
+  const notas = document.getElementById('tramiteNotas').value.trim() || null;
+
+  if (!fecha) { alert('Fecha de vencimiento requerida'); return; }
+
+  const sucBase = (fltEstado.data?.sucursales && Object.entries(fltEstado.data.sucursales).find(([sid,s]) =>
+    [...(s.vehiculos||[]), ...(s.maquinas||[])].some(a => a.vehiculo_id === activo))) || [];
+  const sucursalCode = sucBase[0] || null;
+
+  // Estado semántico: si la fecha_vencimiento está en el futuro → 'aprobado' (doc al día)
+  // Si ya venció (fecha < hoy) → 'vencido' (dato honesto).
+  // CHECK constraint acepta: pendiente, en_proceso, aprobado, rechazado, vencido, renovado.
+  const hoyIso = new Date().toISOString().slice(0, 10);
+  const estadoInferido = fecha < hoyIso ? 'vencido' : 'aprobado';
+
+  const { error } = await sb.schema('panel').from('tramites_sucursal').insert({
+    sucursal_codigo: sucursalCode,
+    activo_id: activo,
+    tramite: tramite,
+    estado: estadoInferido,
+    fecha_vencimiento: fecha,
+    evidencia_url: evidencia,
+    notas: notas,
+    created_by: (typeof window.currentUser === 'object' && window.currentUser?.email) || 'panel'
+  });
+
+  if (error) { alert('Error: ' + error.message); return; }
+  cerrarTramiteModal();
+  await cargarFlota();
+};
 
 // ---------- INIT ---------- (SPEC-PERF-MOBILE-REFACTOR-V1 PASO A+B · defer-safe)
 // Wrap en async IIFE para esperar window.__supabaseReady (bootstrap promise en líneas 26-44)
@@ -14899,17 +15925,130 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-<!-- Service Worker registration (v2: skipWaiting + clients.claim + navigate)
+<!-- Service Worker registration (v3: skipWaiting + clients.claim + detección update + banner)
      Sin esto el archivo /sw.js queda muerto: existe en el servidor pero
-     ningun cliente lo carga ni recibe auto-updates. -->
+     ningun cliente lo carga ni recibe auto-updates.
+     v3 adds: detección de nuevo SW disponible + banner topbar con botón "Actualizar"
+     que fuerza reload aplicando la versión nueva sin esperar cerrar tabs. -->
 <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(err => {
-        console.warn('SW register failed:', err);
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+
+  function crearBanner() {
+    if (document.getElementById('appUpdateBanner')) return document.getElementById('appUpdateBanner');
+    const banner = document.createElement('div');
+    banner.id = 'appUpdateBanner';
+    banner.className = 'fixed top-2 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 px-4 py-2 rounded-lg bg-emerald-600 text-white shadow-lg text-sm font-medium';
+    banner.setAttribute('role', 'status');
+    banner.setAttribute('aria-live', 'polite');
+    banner.innerHTML = [
+      '<span>🎉 Nueva versión disponible</span>',
+      '<button type="button" id="appUpdateBannerBtn" class="px-3 py-1 rounded bg-white text-emerald-700 hover:bg-emerald-50 transition text-xs font-semibold">Actualizar</button>',
+      '<button type="button" id="appUpdateBannerClose" class="text-white/70 hover:text-white text-xs" aria-label="Cerrar">×</button>'
+    ].join('');
+    document.body.appendChild(banner);
+    return banner;
+  }
+
+  function mostrarBanner(reg) {
+    const banner = crearBanner();
+    document.getElementById('appUpdateBannerBtn').onclick = () => {
+      const w = reg?.waiting || reg?.installing;
+      if (w) { try { w.postMessage({ type: 'SKIP_WAITING' }); } catch (_) {} }
+      const base = window.location.origin + window.location.pathname;
+      window.location.href = base + '?_v=' + Date.now();
+    };
+    document.getElementById('appUpdateBannerClose').onclick = () => banner.remove();
+  }
+
+  function bindUpdateFlow(reg) {
+    if (reg.waiting && navigator.serviceWorker.controller) {
+      mostrarBanner(reg);
+      return;
+    }
+    reg.addEventListener('updatefound', () => {
+      const installing = reg.installing;
+      if (!installing) return;
+      installing.addEventListener('statechange', () => {
+        if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+          mostrarBanner(reg);
+        }
       });
     });
   }
+
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then(reg => {
+      bindUpdateFlow(reg);
+      // Chequeo periódico cada 15 min · Vercel refresh natural sin recargar la tab
+      setInterval(() => { try { reg.update(); } catch (_) {} }, 15 * 60 * 1000);
+    }).catch(err => {
+      console.warn('SW register failed:', err);
+    });
+  });
+})();
+</script>
+
+<!-- ============================================================
+     Versión observable · fetch /_version.json emitido por Vite plugin
+     · Chip en sidebar muestra SHA corto (7 char)
+     · window.appVersion() devuelve objeto completo (para diagnóstico)
+     · mostrarVersionInfo() abre modal con detalle + comando debug
+     Fuente única de verdad: /public/dist/_version.json generado en build.
+============================================================ -->
+<script>
+(function () {
+  let _appVersionCache = null;
+
+  async function fetchVersion() {
+    if (_appVersionCache) return _appVersionCache;
+    try {
+      const r = await fetch('/_version.json', { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      _appVersionCache = await r.json();
+      return _appVersionCache;
+    } catch (e) {
+      return { sha: 'unknown', branch: 'unknown', buildTime: null, env: 'unknown', error: String(e) };
+    }
+  }
+
+  async function renderChip() {
+    const el = document.getElementById('appVersionSha');
+    if (!el) return;
+    const v = await fetchVersion();
+    el.textContent = v.sha || 'unknown';
+    if (v.env && v.env !== 'production') {
+      el.textContent += ' · ' + v.env;
+    }
+  }
+
+  window.appVersion = fetchVersion;
+
+  window.mostrarVersionInfo = async function () {
+    const v = await fetchVersion();
+    const swReg = 'serviceWorker' in navigator ? await navigator.serviceWorker.getRegistration() : null;
+    const swActive = swReg?.active?.scriptURL || 'sin SW';
+    const buildDate = v.buildTime ? new Date(v.buildTime).toLocaleString('es-CL') : '—';
+    const msg = [
+      'Versión: ' + (v.sha || 'unknown'),
+      'Branch: ' + (v.branch || 'unknown'),
+      'Entorno: ' + (v.env || 'unknown'),
+      'Build: ' + buildDate,
+      'Service Worker: ' + swActive,
+      '',
+      '¿Forzar actualización ahora?'
+    ].join('\n');
+    if (window.confirm(msg)) {
+      window.panelForzarActualizacion?.();
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderChip);
+  } else {
+    renderChip();
+  }
+})();
 </script>
 
 <!-- ============================================================
@@ -15331,14 +16470,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
+      // v2 (Dusan 2026-07-04, caza de seguridad): mandar el token real de la sesión,
+      // no la clave pública fija — precio-aplicar v2 valida identidad de verdad con
+      // ese token y descarta cualquier "aprobado_por" que se pase por body.
+      const { data: sessionData } = await sb.auth.getSession();
+      const accessToken = sessionData?.session?.access_token || SUPABASE_ANON_KEY;
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/precio-aplicar`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          Authorization: `Bearer ${accessToken}`,
           apikey: SUPABASE_ANON_KEY,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ propuesta_id: bpCurrentId, aprobado_por: currentUser }),
+        body: JSON.stringify({ propuesta_id: bpCurrentId }),
       });
       const j = await resp.json();
       if (resp.ok && j.ok) {
@@ -16417,10 +17561,44 @@ document.addEventListener('DOMContentLoaded', () => {
 (function () {
   let calcCargado = false;
   let calcRefPrecioVenta = 0; // precio venta aprobado de bandeja para el material activo
+  // T-42b/c/d/e/f (Dusan 2026-07-04): valor de la última propuesta publicada para
+  // el material activo, uno por slider — null = sin historial (material nunca
+  // publicado desde acá). Mismo mecanismo para los 5: gris sin referencia,
+  // verde si el valor actual <= histórico, rojo si lo supera.
+  let calcRefMgPct = null;
+  let calcRefFlete = null;
+  let calcRefSpreadPct = null;
+  let calcRefVolumenKg = null;
+  let calcRefIvaPct = null;
+  // Fecha/hora de la última propuesta publicada para el material activo — una
+  // sola, compartida por los 6 sliders (todos salen de la misma fila/propuesta).
+  let calcRefFecha = null;
+  // Último cálculo de calcRecompute — calcPublicar lo reutiliza en vez de recalcular
+  // por su cuenta, para que el precio guardado en BD sea siempre el mismo que se
+  // ve en pantalla (antes divergían: pantalla mostraba con IVA restado, BD guardaba
+  // sin restar). CAZA Dusan 2026-07-03.
+  let calcUltimoCalculo = null;
+  // Modo de redondeo de P.Max/P.Lista/P.Ejec (Dusan 2026-07-04): '0' termina en
+  // 0 (piso a la decena) · '5' termina en 0 o 5 (piso al múltiplo de 5) ·
+  // 'exacto' no redondea (muestra el entero calculado tal cual). Se recuerda
+  // entre sesiones vía localStorage.
+  let calcModoRedondeo = localStorage.getItem('calcModoRedondeo') || '0';
 
   function calcFmtClp(n) {
     if (n == null || isNaN(n)) return '—';
     return '$' + Math.round(n).toLocaleString('es-CL');
+  }
+  function calcFloorMultiplo(n, m) {
+    return Math.floor(n / m) * m;
+  }
+  // T-42 (Dusan 2026-07-04): aplica el modo de redondeo elegido por el usuario
+  // a P.Max/P.Lista/P.Ejec. Siempre hacia abajo, nunca hacia arriba (571 -> 570
+  // en modo '0', no 580) — 'exacto' deja el entero calculado sin forzar el
+  // último dígito. IVA Farex no usa esto.
+  function calcAplicarModoRedondeo(n) {
+    if (calcModoRedondeo === '5') return calcFloorMultiplo(n, 5);
+    if (calcModoRedondeo === 'exacto') return Math.round(n);
+    return calcFloorMultiplo(n, 10);
   }
   function calcFmtNum(n) {
     if (n == null || isNaN(n)) return '—';
@@ -16433,6 +17611,16 @@ document.addEventListener('DOMContentLoaded', () => {
   function calcSet(id, val) {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
+  }
+  // T-42a/b/c/d/e/f (Dusan 2026-07-04): color de cada slider según el valor de
+  // la última propuesta publicada para el material activo. Gris sin historial ·
+  // verde si el valor actual <= histórico · rojo si lo supera.
+  function calcColorPorHistorial(elId, valorActual, referencia) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.style.accentColor = (referencia == null)
+      ? '#a8a29e'
+      : (valorActual > referencia ? '#ef4444' : '#059669');
   }
 
   function calcRecompute() {
@@ -16447,8 +17635,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const b   = bP / 100;
     const iva = ivaP / 100;
 
-    const sliderP = document.getElementById('calcP');
-    if (sliderP) sliderP.style.accentColor = (calcRefPrecioVenta > 0 && p > calcRefPrecioVenta) ? '#ef4444' : '';
+    // Nota: calcRefPrecioVenta usa 0 como sentinel de "sin referencia" (el resto
+    // de los slider-ref usa null) — se traduce acá para reusar el mismo helper.
+    calcColorPorHistorial('calcP',  p,    calcRefPrecioVenta > 0 ? calcRefPrecioVenta : null);
+    calcColorPorHistorial('calcMg', mgP,  calcRefMgPct);
+    calcColorPorHistorial('calcFl', fl,   calcRefFlete);
+    calcColorPorHistorial('calcB',  bP,   calcRefSpreadPct);
+    calcColorPorHistorial('calcVol', vol, calcRefVolumenKg);
+    calcColorPorHistorial('calcIva', ivaP, calcRefIvaPct);
+
     calcSet('calcLblP',   calcFmtClp(p));
     calcSet('calcLblMg',  mgP + '%');
     calcSet('calcLblFl',  calcFmtClp(fl));
@@ -16457,11 +17652,28 @@ document.addEventListener('DOMContentLoaded', () => {
     calcSet('calcLblIva', ivaP + '%');
 
     // iva ya normalizado 0..1 (ivaP / 100 arriba) — multiplicación directa, sin /100 adicional
-    const plista = Math.round(p * (1 - mg) - fl);
-    const pmax   = Math.round(plista * (1 + b));
-    const pejec  = Math.round((plista + pmax) / 2);
-    const ivaAmt = Math.round(plista * iva);
-    const contrib = Math.round(vol * (plista - p - fl));
+    // Precios brutos (sin IVA) — base de cálculo, igual que siempre.
+    const plistaBruto = Math.round(p * (1 - mg) - fl);
+    const pmaxBruto    = Math.round(plistaBruto * (1 + b));
+    const pejecBruto   = Math.round((plistaBruto + pmaxBruto) / 2);
+
+    // T-42f (Dusan 2026-07-03): IVA Farex ahora es una retención real — resta de
+    // los 3 precios que recibe el cliente. Se calcula sobre el P.Lista bruto
+    // (no sobre P.Max/P.Ejec) para no aplicar el % dos veces sobre el spread.
+    const ivaAmt = Math.round(plistaBruto * iva);
+    // Redondeo sobre el valor final (con IVA ya restado si corresponde) — no
+    // sobre el bruto, no en pasos intermedios. Modo elegido por el usuario
+    // (0 / 5 / exacto), recordado entre sesiones.
+    const plista = calcAplicarModoRedondeo(plistaBruto - ivaAmt);
+    const pmax   = calcAplicarModoRedondeo(pmaxBruto - ivaAmt);
+    const pejec  = calcAplicarModoRedondeo(pejecBruto - ivaAmt);
+
+    // contrib = vol × (P.Venta − P.Compra − Flete). Usa el P.Lista BRUTO (sin IVA):
+    // el IVA es una retención de terceros, no una pérdida de margen del negocio,
+    // no debe inflar ni desinflar la contribución estratégica del material.
+    // P.Compra (plistaBruto) ya trae el flete descontado una vez (línea de arriba)
+    // — el signo antes estaba invertido y daba negativo.
+    const contrib = Math.round(vol * (p - plistaBruto - fl));
 
     calcSet('calcPmax',   calcFmtClp(pmax));
     calcSet('calcPlista', calcFmtClp(plista));
@@ -16474,6 +17686,12 @@ document.addEventListener('DOMContentLoaded', () => {
     calcSet('calcCorte60',  calcFmtClp(plista * 0.6));
 
     calcUpdateSemaforo(mgP);
+
+    calcUltimoCalculo = {
+      plistaBruto, pmaxBruto, pejecBruto,
+      plista, pmax, pejec,
+      ivaAmt, ivaPct: ivaP
+    };
   }
 
   let calcMetasCache = null;
@@ -16608,15 +17826,25 @@ document.addEventListener('DOMContentLoaded', () => {
       msg.className = 'text-xs text-rose-600';
       return;
     }
-    const p   = calcGetVal('calcP');
     const mgP = calcGetVal('calcMg');
     const fl  = calcGetVal('calcFl');
     const bP  = calcGetVal('calcB');
     const vol = calcGetVal('calcVol');
     const ivaP = calcGetVal('calcIva');
-    const plista = Math.round(p * (1 - mgP/100) - fl);
-    const pmax   = Math.round(plista * (1 + bP/100));
-    const pejec  = Math.round((plista + pmax) / 2);
+
+    // Reutiliza el cálculo de calcRecompute (fuente única) en vez de recalcular acá
+    // — antes esta función tenía su propia fórmula duplicada y podía guardar en BD
+    // un precio distinto al que se veía en pantalla. CAZA Dusan 2026-07-03.
+    calcRecompute();
+    const c = calcUltimoCalculo;
+    if (!c) {
+      msg.textContent = 'No se pudo calcular el precio — revisá los sliders';
+      msg.className = 'text-xs text-rose-600';
+      return;
+    }
+    // precio_clp_kg = el precio final que de verdad recibe el cliente (con IVA
+    // Farex ya restado, si corresponde) — es el valor que aplica staging.f_aplicar_propuesta.
+    const plista = c.plista;
 
     let userEmail = null;
     try {
@@ -16647,26 +17875,124 @@ document.addEventListener('DOMContentLoaded', () => {
           confidence_score: 1.0,
           creado_por: userEmail,
           metadata: {
-            pmax: pmax,
-            plista: plista,
-            pejec: pejec,
+            pmax: c.pmax,
+            plista: c.plista,
+            pejec: c.pejec,
             mg_pct: mgP,
             flete: fl,
             volumen_kg: vol,
             spread_pct: bP,
             iva_pct: ivaP,
-            categoria: categoria
+            categoria: categoria,
+            // T-42f (Dusan 2026-07-03): trazabilidad bruto (sin IVA) vs final (con IVA restado)
+            plista_bruto: c.plistaBruto,
+            plista_con_iva: c.plista,
+            pmax_bruto: c.pmaxBruto,
+            pmax_con_iva: c.pmax,
+            pejec_bruto: c.pejecBruto,
+            pejec_con_iva: c.pejec,
+            iva_amt: c.ivaAmt
           }
         });
       if (error) throw error;
-      msg.textContent = '✅ Propuesta publicada · P.Lista ' + calcFmtClp(plista);
+      msg.textContent = '✅ Propuesta publicada · P.Lista ' + calcFmtClp(plista) + (c.ivaAmt > 0 ? ' (IVA Farex −' + calcFmtClp(c.ivaAmt) + ' ya restado)' : '');
       msg.className = 'text-xs text-emerald-700';
+      // Enlace adicional a Bandeja Precios (Dusan 2026-07-03) — se agrega al lado
+      // del mensaje existente, no lo reemplaza ni toca el botón "Publicar como
+      // propuesta". Reusa el mismo patrón data-tab + .click() que ya usa el resto
+      // del panel para cambiar de pestaña (ver cotizador línea ~9704) — un href con
+      // hash (#tabBandejaPrecios) no dispara el switch de tabs real de esta app.
+      let linkBandeja = document.getElementById('calcVerBandejaLink');
+      if (!linkBandeja) {
+        linkBandeja = document.createElement('a');
+        linkBandeja.id = 'calcVerBandejaLink';
+        linkBandeja.href = '#';
+        linkBandeja.className = 'text-xs text-sky-700 underline ml-2';
+        linkBandeja.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          document.querySelector('button[data-tab="bandeja_precios"]')?.click();
+        });
+        msg.insertAdjacentElement('afterend', linkBandeja);
+      }
+      linkBandeja.textContent = '📍 Ver en Bandeja Precios';
+      linkBandeja.classList.remove('hidden');
     } catch (e) {
       msg.textContent = '❌ Error: ' + (e.message || String(e)).slice(0, 100);
       msg.className = 'text-xs text-rose-600';
+      document.getElementById('calcVerBandejaLink')?.classList.add('hidden');
     } finally {
       btn.disabled = false;
     }
+  }
+
+  // Restaura mg/flete/spread/volumen/iva/categoría desde la última propuesta publicada
+  // para este material (metadata JSONB guardada por calcPublicar). Sin esto, esos 5
+  // sliders siempre vuelven a los valores por defecto del HTML al cambiar de material.
+  async function calcRestoreSlidersDesdeMetadata(matId, sucId) {
+    const infoEl = document.getElementById('calcHistorialInfo');
+    try {
+      let q = sb.schema('staging').from('precios_propuestos')
+        .select('metadata, updated_at').eq('material_id', matId).not('metadata', 'is', null)
+        .order('updated_at', { ascending: false }).limit(1);
+      if (sucId) q = q.eq('sucursal_id', sucId);
+      const { data } = await q;
+      const meta = data && data.length ? data[0].metadata : null;
+      if (!meta) {
+        calcRefFecha = null;
+        if (infoEl) infoEl.textContent = 'Sin historial — este material nunca fue publicado desde acá.';
+        return false;
+      }
+      // Fecha/hora de esta propuesta — una sola, compartida por los 6 sliders
+      // (todos salen de la misma fila).
+      calcRefFecha = data[0].updated_at || null;
+      if (infoEl) {
+        infoEl.textContent = calcRefFecha
+          ? 'Última propuesta publicada: ' + new Date(calcRefFecha).toLocaleString('es-CL')
+          : 'Sin historial — este material nunca fue publicado desde acá.';
+      }
+      const setIf = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+      // T-42b/c/d/e/f: guarda cada valor de la última propuesta publicada como
+      // referencia verde/rojo del slider — no solo el valor inicial del slider.
+      calcRefMgPct     = meta.mg_pct      != null ? Number(meta.mg_pct)      : null;
+      calcRefFlete     = meta.flete       != null ? Number(meta.flete)       : null;
+      calcRefSpreadPct = meta.spread_pct  != null ? Number(meta.spread_pct)  : null;
+      calcRefVolumenKg = meta.volumen_kg  != null ? Number(meta.volumen_kg)  : null;
+      calcRefIvaPct    = meta.iva_pct     != null ? Number(meta.iva_pct)     : null;
+      setIf('calcMg', meta.mg_pct);
+      setIf('calcFl', meta.flete);
+      setIf('calcB', meta.spread_pct);
+      setIf('calcVol', meta.volumen_kg);
+      setIf('calcIva', meta.iva_pct);
+      const catSel = document.getElementById('calcCategoria');
+      if (catSel && meta.categoria) catSel.value = meta.categoria;
+      return true;
+    } catch (e) { console.warn('[Calc] restoreSliders:', e); return false; }
+  }
+
+  // Margen inicial T-42b: si no hay metadata previa para este material (nunca
+  // se publicó una propuesta desde acá), usar el margen META de su categoría
+  // (curated.margen_metas, ya cacheada en calcMetasCache) en vez de un valor
+  // fijo del HTML. Pedido Dusan 2026-07-03. Fallback 20% (piso nuevo del slider,
+  // antes 30%) si el material no tiene categoría con match en margen_metas
+  // (8/93 materiales activos: categorías "Plásticos" con mayúscula y "Reciclados"
+  // no cruzan hoy — gap de datos real, no de código, verificado en vivo antes
+  // de este cambio).
+  function calcAplicarMargenMetaCategoria(matId) {
+    const matSel = document.getElementById('calcMaterial');
+    const opt = matSel?.selectedOptions?.[0];
+    const categoria = opt?.dataset?.categoria || '';
+    const catSel = document.getElementById('calcCategoria');
+    if (catSel && categoria) catSel.value = categoria;
+
+    const FALLBACK_MG = 20;
+    const meta = categoria && calcMetasCache
+      ? calcMetasCache.find(m => m.categoria === categoria)
+      : null;
+    const mgEl = document.getElementById('calcMg');
+    // Math.max(20, ...) explícito: hay categorías (ej. metal_acero_inox, meta 10%)
+    // cuya meta real cae bajo el piso nuevo del slider (20%) — el margen inicial
+    // nunca puede quedar por debajo del piso, aunque la meta de la categoría sea menor.
+    if (mgEl) mgEl.value = Math.max(20, (meta && meta.mg_meta_pct != null) ? meta.mg_meta_pct : FALLBACK_MG);
   }
 
   async function calcAutoFillPrecioCompra() {
@@ -16674,7 +18000,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const sucId = document.getElementById('calcSucursal')?.value || '';
     if (!matId || typeof sb === 'undefined') { calcRecompute(); return; }
     calcRefPrecioVenta = 0;
+    calcRefMgPct = null;
+    calcRefFlete = null;
+    calcRefSpreadPct = null;
+    calcRefVolumenKg = null;
+    calcRefIvaPct = null;
+    calcRefFecha = null;
+    const huboMetadataPrevia = await calcRestoreSlidersDesdeMetadata(matId, sucId);
+    if (!huboMetadataPrevia) calcAplicarMargenMetaCategoria(matId);
     try {
+      // Fuente -1: precio contractual vigente (curated.comprador_precio_actual).
+      // Si el material tiene contrato con un comprador (ej. HUAL), mig-326 archiva
+      // automático cualquier propuesta manual en staging.precios_propuestos ("material
+      // tiene precio contractual") — Fuente 0 nunca la encuentra. Sin esto,
+      // calcRefPrecioVenta queda en 0 y el slider nunca avisa que se está pagando más
+      // de lo que el comprador contractual paga. CAZA Dusan 2026-07-02.
+      let qC = sb.schema('curated').from('comprador_precio_actual')
+        .select('precio_clp_kg, vigente_hasta').eq('material_id', matId)
+        .or('vigente_hasta.is.null,vigente_hasta.gt.' + new Date().toISOString())
+        .order('updated_at', { ascending: false }).limit(1);
+      const { data: dC } = await qC;
+      const precioContractual = dC && dC.length ? Number(dC[0].precio_clp_kg || 0) : 0;
+      if (precioContractual > 0) {
+        calcRefPrecioVenta = precioContractual;
+        const slider = document.getElementById('calcP');
+        if (slider) {
+          if (precioContractual > Number(slider.max)) slider.max = precioContractual + 2000;
+          slider.value = precioContractual;
+        }
+        calcRecompute();
+        return;
+      }
       // Fuente 0: staging.precios_propuestos aprobados (precio venta de Bandeja)
       let q0 = sb.schema('staging').from('precios_propuestos')
         .select('precio_clp_kg').eq('material_id', matId).in('estado', ['aprobado', 'aplicado'])
@@ -16719,6 +18075,18 @@ document.addEventListener('DOMContentLoaded', () => {
     calcRecompute();
   }
 
+  // T-42 (Dusan 2026-07-04): refleja calcModoRedondeo en el estilo de los 3
+  // botones del selector de redondeo.
+  function calcActualizarBotonesRedondeo() {
+    document.querySelectorAll('.calcRedondeoBtn').forEach(b => {
+      const activo = b.dataset.modo === calcModoRedondeo;
+      b.classList.toggle('bg-emerald-600', activo);
+      b.classList.toggle('text-white', activo);
+      b.classList.toggle('bg-white', !activo);
+      b.classList.toggle('text-stone-600', !activo);
+    });
+  }
+
   function calcBindSliders() {
     ['calcP','calcMg','calcFl','calcB','calcVol','calcIva'].forEach(id => {
       const el = document.getElementById(id);
@@ -16732,6 +18100,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sucSel) sucSel.addEventListener('change', calcAutoFillPrecioCompra);
     const btn = document.getElementById('calcPublicar');
     if (btn) btn.addEventListener('click', calcPublicar);
+    document.querySelectorAll('.calcRedondeoBtn').forEach(b => {
+      b.addEventListener('click', () => {
+        calcModoRedondeo = b.dataset.modo;
+        localStorage.setItem('calcModoRedondeo', calcModoRedondeo);
+        calcActualizarBotonesRedondeo();
+        calcRecompute();
+      });
+    });
+    calcActualizarBotonesRedondeo();
   }
 
   async function initCalculadoraPrecios() {

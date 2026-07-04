@@ -31,8 +31,22 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Guard · pact-verify path existe en este repo
+        id: guard
+        run: |
+          if [ -d "mayordomo/onda-2-propuestas/3194ffd8-pact" ]; then
+            echo "pact_dir_exists=true" >> $GITHUB_OUTPUT
+            echo "✅ pact directory encontrado · smoke procede"
+          else
+            echo "pact_dir_exists=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ pact directory NO existe en este repo (mayordomo/onda-2-propuestas/3194ffd8-pact vive en reciclean-rdo)."
+            echo "ℹ️ Smoke skip · no es regresión · issue NO se abre."
+            echo "ℹ️ Si querés smoke E2E real para reciclean-sistema, implementar Playwright headless contra prod (fuera de este workflow)."
+          fi
+
       - name: Smoke EFs criticas (5 EFs Plan 99-99)
         id: smoke
+        if: steps.guard.outputs.pact_dir_exists == 'true'
         working-directory: mayordomo/onda-2-propuestas/3194ffd8-pact
         continue-on-error: true
         run: |
@@ -41,7 +55,7 @@ jobs:
           echo "exit_code=$?" >> $GITHUB_OUTPUT
 
       - name: Notificar y sugerir revert si smoke falla
-        if: steps.smoke.outcome == 'failure'
+        if: steps.guard.outputs.pact_dir_exists == 'true' && steps.smoke.outcome == 'failure'
         uses: actions/github-script@v7
         with:
           script: |
