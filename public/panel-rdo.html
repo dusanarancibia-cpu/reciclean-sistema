@@ -3011,6 +3011,8 @@
         </div>
       </div>
 
+      <div class="text-xs text-stone-500 mb-3" id="calcHistorialInfo">Seleccioná un material para ver su historial.</div>
+
       <div class="grid md:grid-cols-2 gap-x-6 gap-y-3 bg-white border border-stone-300 rounded-lg p-4 mb-4">
         <label class="block">
           <span class="text-xs text-stone-600">T-42a · Precio venta <strong id="calcLblP">$6.000</strong>/kg</span>
@@ -3036,6 +3038,15 @@
           <span class="text-xs text-stone-600">T-42f · Retención IVA Farex <strong id="calcLblIva">0%</strong></span>
           <input type="range" id="calcIva" min="0" max="19" step="1" value="0" class="w-full">
         </label>
+      </div>
+
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-xs text-stone-500">Redondeo (P.Max/P.Lista/P.Ejec):</span>
+        <div class="inline-flex rounded-lg border border-stone-300 overflow-hidden" id="calcRedondeoToggle">
+          <button type="button" data-modo="0" class="calcRedondeoBtn px-3 py-1 text-xs font-medium">Terminado en 0</button>
+          <button type="button" data-modo="5" class="calcRedondeoBtn px-3 py-1 text-xs font-medium border-l border-stone-300">Terminado en 5</button>
+          <button type="button" data-modo="exacto" class="calcRedondeoBtn px-3 py-1 text-xs font-medium border-l border-stone-300">Exacto</button>
+        </div>
       </div>
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
@@ -17555,20 +17566,35 @@ document.addEventListener('DOMContentLoaded', () => {
   let calcRefSpreadPct = null;
   let calcRefVolumenKg = null;
   let calcRefIvaPct = null;
+  // Fecha/hora de la última propuesta publicada para el material activo — una
+  // sola, compartida por los 6 sliders (todos salen de la misma fila/propuesta).
+  let calcRefFecha = null;
   // Último cálculo de calcRecompute — calcPublicar lo reutiliza en vez de recalcular
   // por su cuenta, para que el precio guardado en BD sea siempre el mismo que se
   // ve en pantalla (antes divergían: pantalla mostraba con IVA restado, BD guardaba
   // sin restar). CAZA Dusan 2026-07-03.
   let calcUltimoCalculo = null;
+  // Modo de redondeo de P.Max/P.Lista/P.Ejec (Dusan 2026-07-04): '0' termina en
+  // 0 (piso a la decena) · '5' termina en 0 o 5 (piso al múltiplo de 5) ·
+  // 'exacto' no redondea (muestra el entero calculado tal cual). Se recuerda
+  // entre sesiones vía localStorage.
+  let calcModoRedondeo = localStorage.getItem('calcModoRedondeo') || '0';
 
   function calcFmtClp(n) {
     if (n == null || isNaN(n)) return '—';
     return '$' + Math.round(n).toLocaleString('es-CL');
   }
-  // T-42 (Dusan 2026-07-04): P.Max/P.Lista/P.Ejec redondean hacia abajo a la
-  // decena — nunca hacia arriba. Ej: 571 -> 570, no 580. IVA Farex no usa esto.
-  function calcFloorDecena(n) {
-    return Math.floor(n / 10) * 10;
+  function calcFloorMultiplo(n, m) {
+    return Math.floor(n / m) * m;
+  }
+  // T-42 (Dusan 2026-07-04): aplica el modo de redondeo elegido por el usuario
+  // a P.Max/P.Lista/P.Ejec. Siempre hacia abajo, nunca hacia arriba (571 -> 570
+  // en modo '0', no 580) — 'exacto' deja el entero calculado sin forzar el
+  // último dígito. IVA Farex no usa esto.
+  function calcAplicarModoRedondeo(n) {
+    if (calcModoRedondeo === '5') return calcFloorMultiplo(n, 5);
+    if (calcModoRedondeo === 'exacto') return Math.round(n);
+    return calcFloorMultiplo(n, 10);
   }
   function calcFmtNum(n) {
     if (n == null || isNaN(n)) return '—';
@@ -17631,11 +17657,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // los 3 precios que recibe el cliente. Se calcula sobre el P.Lista bruto
     // (no sobre P.Max/P.Ejec) para no aplicar el % dos veces sobre el spread.
     const ivaAmt = Math.round(plistaBruto * iva);
-    // Redondeo hacia abajo a la decena sobre el valor final (con IVA ya restado
-    // si corresponde) — no sobre el bruto, no en pasos intermedios.
-    const plista = calcFloorDecena(plistaBruto - ivaAmt);
-    const pmax   = calcFloorDecena(pmaxBruto - ivaAmt);
-    const pejec  = calcFloorDecena(pejecBruto - ivaAmt);
+    // Redondeo sobre el valor final (con IVA ya restado si corresponde) — no
+    // sobre el bruto, no en pasos intermedios. Modo elegido por el usuario
+    // (0 / 5 / exacto), recordado entre sesiones.
+    const plista = calcAplicarModoRedondeo(plistaBruto - ivaAmt);
+    const pmax   = calcAplicarModoRedondeo(pmaxBruto - ivaAmt);
+    const pejec  = calcAplicarModoRedondeo(pejecBruto - ivaAmt);
 
     // contrib = vol × (P.Venta − P.Compra − Flete). Usa el P.Lista BRUTO (sin IVA):
     // el IVA es una retención de terceros, no una pérdida de margen del negocio,
@@ -17898,14 +17925,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // para este material (metadata JSONB guardada por calcPublicar). Sin esto, esos 5
   // sliders siempre vuelven a los valores por defecto del HTML al cambiar de material.
   async function calcRestoreSlidersDesdeMetadata(matId, sucId) {
+    const infoEl = document.getElementById('calcHistorialInfo');
     try {
       let q = sb.schema('staging').from('precios_propuestos')
-        .select('metadata').eq('material_id', matId).not('metadata', 'is', null)
+        .select('metadata, updated_at').eq('material_id', matId).not('metadata', 'is', null)
         .order('updated_at', { ascending: false }).limit(1);
       if (sucId) q = q.eq('sucursal_id', sucId);
       const { data } = await q;
       const meta = data && data.length ? data[0].metadata : null;
-      if (!meta) return false;
+      if (!meta) {
+        calcRefFecha = null;
+        if (infoEl) infoEl.textContent = 'Sin historial — este material nunca fue publicado desde acá.';
+        return false;
+      }
+      // Fecha/hora de esta propuesta — una sola, compartida por los 6 sliders
+      // (todos salen de la misma fila).
+      calcRefFecha = data[0].updated_at || null;
+      if (infoEl) {
+        infoEl.textContent = calcRefFecha
+          ? 'Última propuesta publicada: ' + new Date(calcRefFecha).toLocaleString('es-CL')
+          : 'Sin historial — este material nunca fue publicado desde acá.';
+      }
       const setIf = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
       // T-42b/c/d/e/f: guarda cada valor de la última propuesta publicada como
       // referencia verde/rojo del slider — no solo el valor inicial del slider.
@@ -17961,6 +18001,7 @@ document.addEventListener('DOMContentLoaded', () => {
     calcRefSpreadPct = null;
     calcRefVolumenKg = null;
     calcRefIvaPct = null;
+    calcRefFecha = null;
     const huboMetadataPrevia = await calcRestoreSlidersDesdeMetadata(matId, sucId);
     if (!huboMetadataPrevia) calcAplicarMargenMetaCategoria(matId);
     try {
@@ -18030,6 +18071,18 @@ document.addEventListener('DOMContentLoaded', () => {
     calcRecompute();
   }
 
+  // T-42 (Dusan 2026-07-04): refleja calcModoRedondeo en el estilo de los 3
+  // botones del selector de redondeo.
+  function calcActualizarBotonesRedondeo() {
+    document.querySelectorAll('.calcRedondeoBtn').forEach(b => {
+      const activo = b.dataset.modo === calcModoRedondeo;
+      b.classList.toggle('bg-emerald-600', activo);
+      b.classList.toggle('text-white', activo);
+      b.classList.toggle('bg-white', !activo);
+      b.classList.toggle('text-stone-600', !activo);
+    });
+  }
+
   function calcBindSliders() {
     ['calcP','calcMg','calcFl','calcB','calcVol','calcIva'].forEach(id => {
       const el = document.getElementById(id);
@@ -18043,6 +18096,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sucSel) sucSel.addEventListener('change', calcAutoFillPrecioCompra);
     const btn = document.getElementById('calcPublicar');
     if (btn) btn.addEventListener('click', calcPublicar);
+    document.querySelectorAll('.calcRedondeoBtn').forEach(b => {
+      b.addEventListener('click', () => {
+        calcModoRedondeo = b.dataset.modo;
+        localStorage.setItem('calcModoRedondeo', calcModoRedondeo);
+        calcActualizarBotonesRedondeo();
+        calcRecompute();
+      });
+    });
+    calcActualizarBotonesRedondeo();
   }
 
   async function initCalculadoraPrecios() {
