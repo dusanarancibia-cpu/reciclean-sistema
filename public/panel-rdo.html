@@ -17556,6 +17556,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (n == null || isNaN(n)) return '—';
     return '$' + Math.round(n).toLocaleString('es-CL');
   }
+  // T-42 (Dusan 2026-07-04): P.Max/P.Lista/P.Ejec redondean hacia abajo a la
+  // decena — nunca hacia arriba. Ej: 571 -> 570, no 580. IVA Farex no usa esto.
+  function calcFloorDecena(n) {
+    return Math.floor(n / 10) * 10;
+  }
   function calcFmtNum(n) {
     if (n == null || isNaN(n)) return '—';
     return Math.round(n).toLocaleString('es-CL');
@@ -17600,9 +17605,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // los 3 precios que recibe el cliente. Se calcula sobre el P.Lista bruto
     // (no sobre P.Max/P.Ejec) para no aplicar el % dos veces sobre el spread.
     const ivaAmt = Math.round(plistaBruto * iva);
-    const plista = plistaBruto - ivaAmt;
-    const pmax   = pmaxBruto - ivaAmt;
-    const pejec  = pejecBruto - ivaAmt;
+    // Redondeo hacia abajo a la decena sobre el valor final (con IVA ya restado
+    // si corresponde) — no sobre el bruto, no en pasos intermedios.
+    const plista = calcFloorDecena(plistaBruto - ivaAmt);
+    const pmax   = calcFloorDecena(pmaxBruto - ivaAmt);
+    const pejec  = calcFloorDecena(pejecBruto - ivaAmt);
 
     // contrib = vol × (P.Venta − P.Compra − Flete). Usa el P.Lista BRUTO (sin IVA):
     // el IVA es una retención de terceros, no una pérdida de margen del negocio,
