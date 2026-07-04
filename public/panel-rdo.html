@@ -17587,7 +17587,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const iva = ivaP / 100;
 
     const sliderP = document.getElementById('calcP');
-    if (sliderP) sliderP.style.accentColor = (calcRefPrecioVenta > 0 && p > calcRefPrecioVenta) ? '#ef4444' : '';
+    // T-42a (Dusan 2026-07-04): verde cuando está OK, rojo cuando supera la
+    // referencia — antes quedaba en el azul default del navegador cuando no
+    // había alerta (accentColor = '').
+    if (sliderP) sliderP.style.accentColor = (calcRefPrecioVenta > 0 && p > calcRefPrecioVenta) ? '#ef4444' : '#059669';
     calcSet('calcLblP',   calcFmtClp(p));
     calcSet('calcLblMg',  mgP + '%');
     calcSet('calcLblFl',  calcFmtClp(fl));
