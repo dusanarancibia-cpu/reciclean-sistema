@@ -17582,16 +17582,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
   }
-  // T-42b/c/d/e/f (Dusan 2026-07-04): color de cada slider según el valor de
-  // la última propuesta publicada para el material activo. Verde si el valor
-  // actual <= histórico · rojo si lo supera · sinRefColor si no hay historial
-  // (default gris — T-42a ya tenía verde confirmado como su "sin referencia"
-  // desde antes, así que pasa su propio color para no cambiarle el comportamiento ya aprobado).
-  function calcColorPorHistorial(elId, valorActual, referencia, sinRefColor) {
+  // T-42a/b/c/d/e/f (Dusan 2026-07-04): color de cada slider según el valor de
+  // la última propuesta publicada para el material activo. Gris sin historial ·
+  // verde si el valor actual <= histórico · rojo si lo supera.
+  function calcColorPorHistorial(elId, valorActual, referencia) {
     const el = document.getElementById(elId);
     if (!el) return;
     el.style.accentColor = (referencia == null)
-      ? (sinRefColor || '#a8a29e')
+      ? '#a8a29e'
       : (valorActual > referencia ? '#ef4444' : '#059669');
   }
 
@@ -17607,11 +17605,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const b   = bP / 100;
     const iva = ivaP / 100;
 
-    // Nota: calcRefPrecioVenta usa 0 como sentinel de "sin referencia" (histórico
-    // del resto de los slider-ref usa null) — se traduce acá para reusar el mismo
-    // helper, pasando verde explícito como color "sin dato" (comportamiento ya
-    // aprobado para T-42a antes de este cambio, no se toca).
-    calcColorPorHistorial('calcP',  p,    calcRefPrecioVenta > 0 ? calcRefPrecioVenta : null, '#059669');
+    // Nota: calcRefPrecioVenta usa 0 como sentinel de "sin referencia" (el resto
+    // de los slider-ref usa null) — se traduce acá para reusar el mismo helper.
+    calcColorPorHistorial('calcP',  p,    calcRefPrecioVenta > 0 ? calcRefPrecioVenta : null);
     calcColorPorHistorial('calcMg', mgP,  calcRefMgPct);
     calcColorPorHistorial('calcFl', fl,   calcRefFlete);
     calcColorPorHistorial('calcB',  bP,   calcRefSpreadPct);
