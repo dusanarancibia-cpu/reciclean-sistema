@@ -17828,9 +17828,29 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
       msg.textContent = '✅ Propuesta publicada · P.Lista ' + calcFmtClp(plista) + (c.ivaAmt > 0 ? ' (IVA Farex −' + calcFmtClp(c.ivaAmt) + ' ya restado)' : '');
       msg.className = 'text-xs text-emerald-700';
+      // Enlace adicional a Bandeja Precios (Dusan 2026-07-03) — se agrega al lado
+      // del mensaje existente, no lo reemplaza ni toca el botón "Publicar como
+      // propuesta". Reusa el mismo patrón data-tab + .click() que ya usa el resto
+      // del panel para cambiar de pestaña (ver cotizador línea ~9704) — un href con
+      // hash (#tabBandejaPrecios) no dispara el switch de tabs real de esta app.
+      let linkBandeja = document.getElementById('calcVerBandejaLink');
+      if (!linkBandeja) {
+        linkBandeja = document.createElement('a');
+        linkBandeja.id = 'calcVerBandejaLink';
+        linkBandeja.href = '#';
+        linkBandeja.className = 'text-xs text-sky-700 underline ml-2';
+        linkBandeja.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          document.querySelector('button[data-tab="bandeja_precios"]')?.click();
+        });
+        msg.insertAdjacentElement('afterend', linkBandeja);
+      }
+      linkBandeja.textContent = '📍 Ver en Bandeja Precios';
+      linkBandeja.classList.remove('hidden');
     } catch (e) {
       msg.textContent = '❌ Error: ' + (e.message || String(e)).slice(0, 100);
       msg.className = 'text-xs text-rose-600';
+      document.getElementById('calcVerBandejaLink')?.classList.add('hidden');
     } finally {
       btn.disabled = false;
     }
