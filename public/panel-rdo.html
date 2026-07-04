@@ -3018,7 +3018,7 @@
         </label>
         <label class="block">
           <span class="text-xs text-stone-600">T-42b · Margen objetivo <strong id="calcLblMg">30%</strong></span>
-          <input type="range" id="calcMg" min="5" max="60" step="1" value="30" class="w-full">
+          <input type="range" id="calcMg" min="20" max="60" step="1" value="30" class="w-full">
         </label>
         <label class="block">
           <span class="text-xs text-stone-600">T-42c · Flete <strong id="calcLblFl">$150</strong>/kg</span>
@@ -17541,6 +17541,11 @@ document.addEventListener('DOMContentLoaded', () => {
 (function () {
   let calcCargado = false;
   let calcRefPrecioVenta = 0; // precio venta aprobado de bandeja para el material activo
+  // Último cálculo de calcRecompute — calcPublicar lo reutiliza en vez de recalcular
+  // por su cuenta, para que el precio guardado en BD sea siempre el mismo que se
+  // ve en pantalla (antes divergían: pantalla mostraba con IVA restado, BD guardaba
+  // sin restar). CAZA Dusan 2026-07-03.
+  let calcUltimoCalculo = null;
 
   function calcFmtClp(n) {
     if (n == null || isNaN(n)) return '—';
@@ -17581,13 +17586,25 @@ document.addEventListener('DOMContentLoaded', () => {
     calcSet('calcLblIva', ivaP + '%');
 
     // iva ya normalizado 0..1 (ivaP / 100 arriba) — multiplicación directa, sin /100 adicional
-    const plista = Math.round(p * (1 - mg) - fl);
-    const pmax   = Math.round(plista * (1 + b));
-    const pejec  = Math.round((plista + pmax) / 2);
-    const ivaAmt = Math.round(plista * iva);
-    // contrib = vol × (P.Venta − P.Compra − Flete). P.Compra (plista) ya trae el flete
-    // descontado una vez (línea de arriba) — el signo antes estaba invertido y daba negativo.
-    const contrib = Math.round(vol * (p - plista - fl));
+    // Precios brutos (sin IVA) — base de cálculo, igual que siempre.
+    const plistaBruto = Math.round(p * (1 - mg) - fl);
+    const pmaxBruto    = Math.round(plistaBruto * (1 + b));
+    const pejecBruto   = Math.round((plistaBruto + pmaxBruto) / 2);
+
+    // T-42f (Dusan 2026-07-03): IVA Farex ahora es una retención real — resta de
+    // los 3 precios que recibe el cliente. Se calcula sobre el P.Lista bruto
+    // (no sobre P.Max/P.Ejec) para no aplicar el % dos veces sobre el spread.
+    const ivaAmt = Math.round(plistaBruto * iva);
+    const plista = plistaBruto - ivaAmt;
+    const pmax   = pmaxBruto - ivaAmt;
+    const pejec  = pejecBruto - ivaAmt;
+
+    // contrib = vol × (P.Venta − P.Compra − Flete). Usa el P.Lista BRUTO (sin IVA):
+    // el IVA es una retención de terceros, no una pérdida de margen del negocio,
+    // no debe inflar ni desinflar la contribución estratégica del material.
+    // P.Compra (plistaBruto) ya trae el flete descontado una vez (línea de arriba)
+    // — el signo antes estaba invertido y daba negativo.
+    const contrib = Math.round(vol * (p - plistaBruto - fl));
 
     calcSet('calcPmax',   calcFmtClp(pmax));
     calcSet('calcPlista', calcFmtClp(plista));
@@ -17600,6 +17617,12 @@ document.addEventListener('DOMContentLoaded', () => {
     calcSet('calcCorte60',  calcFmtClp(plista * 0.6));
 
     calcUpdateSemaforo(mgP);
+
+    calcUltimoCalculo = {
+      plistaBruto, pmaxBruto, pejecBruto,
+      plista, pmax, pejec,
+      ivaAmt, ivaPct: ivaP
+    };
   }
 
   let calcMetasCache = null;
@@ -17734,15 +17757,25 @@ document.addEventListener('DOMContentLoaded', () => {
       msg.className = 'text-xs text-rose-600';
       return;
     }
-    const p   = calcGetVal('calcP');
     const mgP = calcGetVal('calcMg');
     const fl  = calcGetVal('calcFl');
     const bP  = calcGetVal('calcB');
     const vol = calcGetVal('calcVol');
     const ivaP = calcGetVal('calcIva');
-    const plista = Math.round(p * (1 - mgP/100) - fl);
-    const pmax   = Math.round(plista * (1 + bP/100));
-    const pejec  = Math.round((plista + pmax) / 2);
+
+    // Reutiliza el cálculo de calcRecompute (fuente única) en vez de recalcular acá
+    // — antes esta función tenía su propia fórmula duplicada y podía guardar en BD
+    // un precio distinto al que se veía en pantalla. CAZA Dusan 2026-07-03.
+    calcRecompute();
+    const c = calcUltimoCalculo;
+    if (!c) {
+      msg.textContent = 'No se pudo calcular el precio — revisá los sliders';
+      msg.className = 'text-xs text-rose-600';
+      return;
+    }
+    // precio_clp_kg = el precio final que de verdad recibe el cliente (con IVA
+    // Farex ya restado, si corresponde) — es el valor que aplica staging.f_aplicar_propuesta.
+    const plista = c.plista;
 
     let userEmail = null;
     try {
@@ -17773,19 +17806,27 @@ document.addEventListener('DOMContentLoaded', () => {
           confidence_score: 1.0,
           creado_por: userEmail,
           metadata: {
-            pmax: pmax,
-            plista: plista,
-            pejec: pejec,
+            pmax: c.pmax,
+            plista: c.plista,
+            pejec: c.pejec,
             mg_pct: mgP,
             flete: fl,
             volumen_kg: vol,
             spread_pct: bP,
             iva_pct: ivaP,
-            categoria: categoria
+            categoria: categoria,
+            // T-42f (Dusan 2026-07-03): trazabilidad bruto (sin IVA) vs final (con IVA restado)
+            plista_bruto: c.plistaBruto,
+            plista_con_iva: c.plista,
+            pmax_bruto: c.pmaxBruto,
+            pmax_con_iva: c.pmax,
+            pejec_bruto: c.pejecBruto,
+            pejec_con_iva: c.pejec,
+            iva_amt: c.ivaAmt
           }
         });
       if (error) throw error;
-      msg.textContent = '✅ Propuesta publicada · P.Lista ' + calcFmtClp(plista);
+      msg.textContent = '✅ Propuesta publicada · P.Lista ' + calcFmtClp(plista) + (c.ivaAmt > 0 ? ' (IVA Farex −' + calcFmtClp(c.ivaAmt) + ' ya restado)' : '');
       msg.className = 'text-xs text-emerald-700';
     } catch (e) {
       msg.textContent = '❌ Error: ' + (e.message || String(e)).slice(0, 100);
@@ -17821,11 +17862,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Margen inicial T-42b: si no hay metadata previa para este material (nunca
   // se publicó una propuesta desde acá), usar el margen META de su categoría
-  // (curated.margen_metas, ya cacheada en calcMetasCache) en vez del 30%
-  // fijo del HTML. Pedido Dusan 2026-07-03. Fallback 30% si el material no
-  // tiene categoría con match en margen_metas (8/93 materiales activos:
-  // categorías "Plásticos" con mayúscula y "Reciclados" no cruzan hoy —
-  // gap de datos real, no de código, verificado en vivo antes de este cambio).
+  // (curated.margen_metas, ya cacheada en calcMetasCache) en vez de un valor
+  // fijo del HTML. Pedido Dusan 2026-07-03. Fallback 20% (piso nuevo del slider,
+  // antes 30%) si el material no tiene categoría con match en margen_metas
+  // (8/93 materiales activos: categorías "Plásticos" con mayúscula y "Reciclados"
+  // no cruzan hoy — gap de datos real, no de código, verificado en vivo antes
+  // de este cambio).
   function calcAplicarMargenMetaCategoria(matId) {
     const matSel = document.getElementById('calcMaterial');
     const opt = matSel?.selectedOptions?.[0];
@@ -17833,12 +17875,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const catSel = document.getElementById('calcCategoria');
     if (catSel && categoria) catSel.value = categoria;
 
-    const FALLBACK_MG = 30;
+    const FALLBACK_MG = 20;
     const meta = categoria && calcMetasCache
       ? calcMetasCache.find(m => m.categoria === categoria)
       : null;
     const mgEl = document.getElementById('calcMg');
-    if (mgEl) mgEl.value = (meta && meta.mg_meta_pct != null) ? meta.mg_meta_pct : FALLBACK_MG;
+    // Math.max(20, ...) explícito: hay categorías (ej. metal_acero_inox, meta 10%)
+    // cuya meta real cae bajo el piso nuevo del slider (20%) — el margen inicial
+    // nunca puede quedar por debajo del piso, aunque la meta de la categoría sea menor.
+    if (mgEl) mgEl.value = Math.max(20, (meta && meta.mg_meta_pct != null) ? meta.mg_meta_pct : FALLBACK_MG);
   }
 
   async function calcAutoFillPrecioCompra() {
