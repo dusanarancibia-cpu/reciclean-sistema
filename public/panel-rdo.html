@@ -17546,6 +17546,9 @@ document.addEventListener('DOMContentLoaded', () => {
 (function () {
   let calcCargado = false;
   let calcRefPrecioVenta = 0; // precio venta aprobado de bandeja para el material activo
+  // T-42b (Dusan 2026-07-04): margen de la última propuesta publicada para el
+  // material activo — null = sin historial (material nunca publicado desde acá).
+  let calcRefMgPct = null;
   // Último cálculo de calcRecompute — calcPublicar lo reutiliza en vez de recalcular
   // por su cuenta, para que el precio guardado en BD sea siempre el mismo que se
   // ve en pantalla (antes divergían: pantalla mostraba con IVA restado, BD guardaba
@@ -17591,6 +17594,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // referencia — antes quedaba en el azul default del navegador cuando no
     // había alerta (accentColor = '').
     if (sliderP) sliderP.style.accentColor = (calcRefPrecioVenta > 0 && p > calcRefPrecioVenta) ? '#ef4444' : '#059669';
+
+    // T-42b (Dusan 2026-07-04): verde hasta el margen de la última propuesta
+    // publicada para este material (calcRefMgPct) · rojo por encima de ese
+    // valor · gris si el material nunca tuvo una propuesta publicada (sin
+    // referencia para comparar).
+    const sliderMg = document.getElementById('calcMg');
+    if (sliderMg) {
+      sliderMg.style.accentColor = (calcRefMgPct == null)
+        ? '#a8a29e'
+        : (mgP > calcRefMgPct ? '#ef4444' : '#059669');
+    }
     calcSet('calcLblP',   calcFmtClp(p));
     calcSet('calcLblMg',  mgP + '%');
     calcSet('calcLblFl',  calcFmtClp(fl));
@@ -17884,6 +17898,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const meta = data && data.length ? data[0].metadata : null;
       if (!meta) return false;
       const setIf = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+      // T-42b: guarda el margen de la última propuesta publicada como referencia
+      // verde/rojo del slider — no solo el valor inicial del slider.
+      calcRefMgPct = meta.mg_pct != null ? Number(meta.mg_pct) : null;
       setIf('calcMg', meta.mg_pct);
       setIf('calcFl', meta.flete);
       setIf('calcB', meta.spread_pct);
@@ -17926,6 +17943,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sucId = document.getElementById('calcSucursal')?.value || '';
     if (!matId || typeof sb === 'undefined') { calcRecompute(); return; }
     calcRefPrecioVenta = 0;
+    calcRefMgPct = null;
     const huboMetadataPrevia = await calcRestoreSlidersDesdeMetadata(matId, sucId);
     if (!huboMetadataPrevia) calcAplicarMargenMetaCategoria(matId);
     try {
