@@ -41,6 +41,12 @@ async function abrirTab(page: Page, codigo: string, sectionId: string) {
 }
 
 test.describe('Smoke Bandejas CU Andrea + Comex', () => {
+  // CUARENTENA autorizada Dusan 2026-07-02 (chat, Opción 1): falla 100% (login
+  // timeout) en CI y con retries:2 consume los 15 min completos del job,
+  // bloqueando el resto de la suite (ver run 28627835771). No se investiga la
+  // causa raíz acá — fuera de scope de esta rama (T-42a). Pendiente Pablo/Dusan
+  // decidir arreglo o baja definitiva.
+  test.skip(true, 'CUARENTENA autorizada Dusan 2026-07-02: login timeout 100% — bloqueaba CI, ver comentario arriba');
   test.skip(!QA_PASSWORD, 'QA_PASSWORD no seteado');
   test.setTimeout(90_000);
 
