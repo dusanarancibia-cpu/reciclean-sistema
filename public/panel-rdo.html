@@ -7228,21 +7228,38 @@ let recordedUrl = null;
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
 const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'hual_compra', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'panorama_sucursales', 'flota_grupo', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas', 'firmas_reglas', 'mesa_control_99_99'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
-const FALLBACK_BYPASS_EMAILS = [
-  'gerencia@gestionrepchile.cl',
-  'Dusan.arancibia@gmail.com',
-  'recepcion01@gestionrepchile.cl',
-  'soporte@gestionrepchile.cl'
-];
+// Mig 402/403 · Fase 4 Reestructuración Permisos (2026-07-06):
+// FALLBACK_BYPASS_EMAILS ELIMINADO. La RPC public.get_effective_permissions()
+// es la fuente única de verdad para bypass_emails, silos y pestañas.
 
 // Variables que se llenan en loadConfigPanel():
 let CONFIG_PANEL = {};         // de panel.config_kv (key → valor jsonb)
 let PESTANAS_CATALOGO = [];    // de panel.pestanas (ordenado por orden)
-let MAPEO_SILOS = {};          // {silo_codigo: [pestana_codigo, ...]} computado de v_silo_pestanas_visibles
 
-let silosVisibles = [];   // silos que el usuario puede ver según RLS
+// Fase 4 · Fuente única de verdad para permisos
+window.PERMS = null;
+let silosVisibles = [];   // sombra derivada de PERMS.silos para código legacy
 let currentSilo = null;   // código del silo activo, o null = vista global
 const LS_KEY_SILO = 'rdo_silo_seleccionado';
+
+// Fase 4 · Helper dual-vocab para gates de perfil que aún comparan con literales
+// del vocabulario viejo. Cubre alias {dusan↔ceo, admin↔gerente, operaciones↔operador_planta}.
+function matchesProfile(needed, current) {
+  if (!needed || needed.length === 0) return true;
+  const alias = {
+    ceo: ['ceo','dusan'],
+    dusan: ['ceo','dusan'],
+    gerente: ['gerente','admin'],
+    admin: ['gerente','admin'],
+    operador_planta: ['operador_planta','operaciones'],
+    operaciones: ['operador_planta','operaciones']
+  };
+  const list = Array.isArray(needed) ? needed : [needed];
+  return list.some(n =>
+    n === current || (alias[n] && alias[n].includes(current))
+  );
+}
+window.matchesProfile = matchesProfile;
 
 // Cache global de sucursales (D-DAT-04 — editor inline en tab Negocios)
 let _sucursalesCache = null;
@@ -7454,16 +7471,19 @@ async function hydrateSessionAndEnter(authUser) {
     try { await window.checkConsentimientoIA(currentUser); } catch (e) { console.warn('consentimiento IA:', e); }
   }
 
-  if (currentProfile === 'dusan' || currentProfile === 'admin') {
+  await loadConfigPanel();     // carga "cajas" de configuración (refactor 08-may)
+  await loadPermissions();     // Fase 4 · RPC maestra get_effective_permissions
+  await loadSilos();           // Fase 4 · consume PERMS.silos + monta selector
+
+  // Fase 4 · gates admin/dusan → es_admin (canónico via RPC)
+  if (window.PERMS?.es_admin) {
     document.getElementById('adminTab').classList.remove('hidden');
     document.getElementById('grabadorSection').classList.remove('hidden');
   }
 
-  await loadConfigPanel();     // carga "cajas" de configuración (refactor 08-may)
-  await loadSilos();           // carga silos visibles + monta selector
-  applySiloTabs();             // filtra pestañas según silo + perfil
+  applySiloTabs();             // Fase 4 · consume PERMS.pestanas_por_silo
   if (typeof window.setupVistaSimulada === 'function') window.setupVistaSimulada();
-  loadAccesoRapido();          // tarjeta de acceso al ecosistema externo
+  loadAccesoRapido();          // Fase 4 · tarjeta según PERMS.es_admin
   loadAudios();
   loadPortadaAudio();
   checkNewAudioNotification();
@@ -7611,40 +7631,31 @@ function setupAuthListener() {
 // ---------- CONFIGURACIÓN data-driven (cargar las "cajas" desde BD) ----------
 async function loadConfigPanel() {
   try {
-    const [cfgRes, pstRes, vizRes] = await Promise.all([
+    // Fase 4 · v_silo_pestanas_visibles ya no se consulta desde el frontend.
+    // La RPC get_effective_permissions devuelve pestanas_por_silo pre-filtrado.
+    const [cfgRes, pstRes] = await Promise.all([
       sb.schema('panel').from('config_kv').select('key, valor'),
-      sb.schema('panel').from('pestanas').select('codigo, nombre, icono, orden, es_transversal, requiere_perfil, activa').eq('activa', true).order('orden'),
-      sb.schema('panel').from('v_silo_pestanas_visibles').select('silo_codigo, pestana_codigo, orden').order('orden')
+      sb.schema('panel').from('pestanas').select('codigo, nombre, icono, orden, es_transversal, requiere_perfil, activa').eq('activa', true).order('orden')
     ]);
 
     if (cfgRes.error) throw new Error('config_kv: ' + cfgRes.error.message);
     if (pstRes.error) throw new Error('pestanas: ' + pstRes.error.message);
-    if (vizRes.error) throw new Error('v_silo_pestanas_visibles: ' + vizRes.error.message);
 
     // Indexar config_kv como objeto plano: {key: valor}
     CONFIG_PANEL = (cfgRes.data || []).reduce((acc, r) => { acc[r.key] = r.valor; return acc; }, {});
 
-    // Catálogo ordenado de pestañas
+    // Catálogo ordenado de pestañas (usado solo para labels/iconos/orden global de admin)
     PESTANAS_CATALOGO = pstRes.data || [];
-
-    // Mapa silo → [pestañas]
-    MAPEO_SILOS = {};
-    (vizRes.data || []).forEach(r => {
-      if (!MAPEO_SILOS[r.silo_codigo]) MAPEO_SILOS[r.silo_codigo] = [];
-      MAPEO_SILOS[r.silo_codigo].push(r.pestana_codigo);
-    });
 
     console.log('[Panel RDO] Config cargada desde cajas:', {
       config_keys: Object.keys(CONFIG_PANEL),
-      pestanas: PESTANAS_CATALOGO.length,
-      silos_con_pestanas: Object.keys(MAPEO_SILOS).length
+      pestanas: PESTANAS_CATALOGO.length
     });
   } catch (err) {
     // FALLBACK: si las cajas fallan (red, RLS, tabla vacía), seguir con defaults
     // hardcoded para que el panel NO se rompa. DeepSeek aprobó este patrón.
     console.warn('[Panel RDO] loadConfigPanel falló, usando fallbacks:', err.message);
     CONFIG_PANEL = {
-      bypass_emails: FALLBACK_BYPASS_EMAILS,
       url_panel_admin: 'https://reciclean-sistema.vercel.app/login.html',
       url_asistente_comercial: 'https://reciclean-sistema.vercel.app/asistente.html',
       label_acceso_admin: { icono: '⚙️', titulo: 'Panel Admin', tooltip: 'Gestión' },
@@ -7653,42 +7664,73 @@ async function loadConfigPanel() {
     PESTANAS_CATALOGO = FALLBACK_TABS_GLOBALES.map((c, i) => ({
       codigo: c, nombre: c, icono: '', orden: (i + 1) * 10,
       es_transversal: FALLBACK_TABS_TRANSVERSALES.includes(c),
-      requiere_perfil: c === 'admin' ? ['dusan', 'admin'] : null,
+      requiere_perfil: null,
       activa: true
     }));
-    // Sin BD, MAPEO_SILOS queda vacío y applySiloTabs usa su rama "vista global"
-    MAPEO_SILOS = {};
   }
 }
 
-async function loadSilos() {
-  const { data, error } = await sb
-    .schema('panel')
-    .from('v_panel_silos_visibles')
-    .select('codigo, nombre, rol_silo, origen_acceso')
-    .eq('email_usuario', currentUser);
+// Fase 4 · Hidratación única de permisos vía RPC maestra get_effective_permissions.
+// Reemplaza el consumo directo de v_panel_silos_visibles + filtrado local por requiere_perfil.
+async function loadPermissions() {
+  try {
+    const { data, error } = await sb.rpc('get_effective_permissions', { p_email: currentUser });
+    if (error) throw error;
+    if (!data || !data.authorized) throw new Error('unauthorized');
+    window.PERMS = data;
+  } catch (e) {
+    console.error('[loadPermissions] fallo RPC, modo limitado:', e);
+    window.PERMS = {
+      authorized: false,
+      usuario: { email: currentUser, perfil_global: 'lector', es_admin: false },
+      es_admin: false,
+      silos: [],
+      pestanas_por_silo: {},
+      permisos_especiales: {}
+    };
+    if (typeof showToast === 'function') {
+      showToast('Modo limitado: no se pudieron cargar tus permisos.', 'error');
+    }
+  }
+  // Sombras para código legacy que aún lee estas variables sueltas:
+  silosVisibles  = (window.PERMS.silos || []).map(s => ({
+    codigo: s.silo_codigo,
+    nombre: s.nombre,
+    rol_silo: s.rol_silo,
+    origen_acceso: s.origen
+  }));
+  currentProfile = window.PERMS.usuario?.perfil_global || 'lector';
+  window.isAdmin = !!window.PERMS.es_admin;
+  console.log('[Panel RDO] PERMS cargado:', {
+    email: window.PERMS.usuario?.email,
+    perfil: currentProfile,
+    es_admin: window.isAdmin,
+    silos: silosVisibles.map(s => `${s.codigo}(${s.rol_silo})`)
+  });
+  return window.PERMS;
+}
+window.loadPermissions = loadPermissions;
 
+// Fase 4 · loadSilos ahora consume window.PERMS (poblado por loadPermissions).
+// La query directa a v_panel_silos_visibles fue eliminada — la RPC ya deduplicó
+// silos y aplicó bypass_emails + silo_acceso.
+async function loadSilos() {
   const selector = document.getElementById('siloSelector');
   const container = document.getElementById('siloSelectorContainer');
 
-  console.log('[Panel RDO] loadSilos query result:', { email: currentUser, count: data?.length, error });
-
-  if (error || !data) {
-    console.warn('[Panel RDO] No se pudieron cargar silos:', error?.message);
+  if (!window.PERMS || !window.PERMS.authorized) {
+    console.warn('[Panel RDO] PERMS no disponible/no autorizado — sin selector de silos');
     container.classList.add('hidden');
     return;
   }
 
-  // Deduplicar y ordenar por código
-  const visto = new Set();
-  silosVisibles = data
-    .filter(s => { if (visto.has(s.codigo)) return false; visto.add(s.codigo); return true; })
-    .sort((a, b) => a.codigo.localeCompare(b.codigo));
+  // silosVisibles ya fue seteado en loadPermissions con shape legacy {codigo, nombre, rol_silo, origen_acceso}
+  silosVisibles = (silosVisibles || []).sort((a, b) => a.codigo.localeCompare(b.codigo));
 
   console.log('[Panel RDO] silosVisibles:', silosVisibles.map(s => `${s.codigo} (${s.origen_acceso})`));
 
   if (silosVisibles.length === 0) {
-    console.warn('[Panel RDO] silosVisibles está vacío — el selector no se mostrará');
+    console.warn('[Panel RDO] silosVisibles vacío — el selector no se mostrará');
     container.classList.add('hidden');
     return;
   }
@@ -7696,8 +7738,8 @@ async function loadSilos() {
   container.classList.remove('hidden');
   selector.innerHTML = '';
 
-  // Dusan + Pablo: opción "Vista global" arriba
-  const esBypass = silosVisibles.some(s => s.origen_acceso === 'bypass_global');
+  // Fase 4 · "Vista global" solo si es_admin (reemplaza el chequeo por origen_acceso==='bypass_global')
+  const esBypass = !!window.PERMS.es_admin;
   if (esBypass) {
     const opt = document.createElement('option');
     opt.value = '__global__';
@@ -7761,95 +7803,53 @@ async function loadSilos() {
 }
 
 // ---------- ACCESO RÁPIDO al ecosistema externo ----------
-// D-PANEL-PERFILES-001 F7 · usa RPC auth_get_user_context (vista de permisos
-// efectivos en panel.v_usuario_permisos_efectivos) como fuente canónica.
-// Cae a CONFIG_PANEL.bypass_emails (panel.config_kv) si el RPC falla, y a
-// FALLBACK_BYPASS_EMAILS hardcoded como último recurso para no romper el panel.
-
-let _userContextCache = null;
-async function getUserContextCached(email) {
-  if (!email) return null;
-  if (_userContextCache && _userContextCache._email === email.toLowerCase()) {
-    return _userContextCache;
-  }
-  try {
-    const { data, error } = await sb.rpc('auth_get_user_context', { p_email: email });
-    if (error || !data) {
-      console.warn('[F7] auth_get_user_context falló:', error?.message);
-      return null;
-    }
-    data._email = email.toLowerCase();
-    _userContextCache = data;
-    return data;
-  } catch (e) {
-    console.warn('[F7] auth_get_user_context excepción:', e);
-    return null;
-  }
-}
-
+// Mig 403 · Fase 4 Reestructuración Permisos (2026-07-06):
+// El botón consume window.PERMS.es_admin (fuente única RPC get_effective_permissions).
 async function loadAccesoRapido() {
   const link = document.getElementById('accesoRapidoHeader');
-  const iconoEl = document.getElementById('accesoRapidoIcono');
-  const tituloEl = document.getElementById('accesoRapidoTitulo');
-  if (!link || !iconoEl || !tituloEl) return;
-
-  // 1) Fuente canónica: RPC auth_get_user_context — flag puede_gestionar_permisos
-  //    distingue staff/admin (panel admin) de asistente comercial.
-  let esBypass = null;
-  const ctx = await getUserContextCached(currentUser);
-  if (ctx && ctx.authorized === true) {
-    esBypass = ctx.permisos_efectivos?.puede_gestionar_permisos === true
-            || ctx.permisos_efectivos?.puede_promover_a_prod === true
-            || ctx.permisos_efectivos?.puede_editar_dotacion === true;
+  if (!link) return;
+  const esAdmin = !!(window.PERMS && window.PERMS.es_admin);
+  const cfg = CONFIG_PANEL || {};
+  if (esAdmin) {
+    const label = cfg.label_acceso_admin || { icono: '⚙️', titulo: 'Panel Admin', tooltip: 'Gestión' };
+    const url = cfg.url_panel_admin || 'https://reciclean-sistema.vercel.app/login.html';
+    link.href = url;
+    link.title = label.tooltip || '';
+    link.innerHTML = `${label.icono || ''} ${label.titulo || 'Panel Admin'}`.trim();
+    link.classList.remove('hidden');
+  } else {
+    const label = cfg.label_acceso_asistente || { icono: '💬', titulo: 'Asistente Comercial', tooltip: 'Consultar precios' };
+    const url = cfg.url_asistente_comercial || 'https://reciclean-sistema.vercel.app/asistente.html';
+    link.href = url;
+    link.title = label.tooltip || '';
+    link.innerHTML = `${label.icono || ''} ${label.titulo || 'Asistente Comercial'}`.trim();
+    link.classList.remove('hidden');
   }
-
-  // 2) Fallback en cadena si el RPC no resolvió: config_kv → hardcoded.
-  if (esBypass === null) {
-    const bypassEmails = CONFIG_PANEL.bypass_emails || FALLBACK_BYPASS_EMAILS;
-    esBypass = bypassEmails.includes(currentUser);
-  }
-
-  const labelCfg = esBypass
-    ? (CONFIG_PANEL.label_acceso_admin     || { icono: '⚙️', titulo: 'Panel Admin',         tooltip: 'Gestión' })
-    : (CONFIG_PANEL.label_acceso_asistente || { icono: '💬', titulo: 'Asistente Comercial', tooltip: 'Consultar precios' });
-
-  const url = esBypass
-    ? (CONFIG_PANEL.url_panel_admin        || 'https://reciclean-sistema.vercel.app/login.html')
-    : (CONFIG_PANEL.url_asistente_comercial|| 'https://reciclean-sistema.vercel.app/asistente.html');
-
-  link.href = url;
-  link.title = labelCfg.tooltip || '';
-  iconoEl.textContent = labelCfg.icono || '🔗';
-  tituloEl.textContent = labelCfg.titulo || 'Acceso';
-  link.classList.remove('hidden');
 }
 
 function applySiloTabs() {
-  // Versión data-driven: lee de PESTANAS_CATALOGO + MAPEO_SILOS (refactor 08-may)
+  // Fase 4 · consume PERMS.pestanas_por_silo directamente (la RPC ya filtró por perfil).
+  const perms = window.PERMS || { pestanas_por_silo: {}, silos: [] };
   let tabsHabilitadas;
   if (currentSilo === null) {
-    // Vista global (Dusan/Pablo) → todas las pestañas activas del catálogo
-    tabsHabilitadas = new Set(PESTANAS_CATALOGO.map(p => p.codigo));
+    // Vista global (es_admin) → unión de todas las pestañas de todos los silos visibles
+    const union = new Set();
+    Object.values(perms.pestanas_por_silo || {}).forEach(arr => (arr || []).forEach(c => union.add(c)));
+    // Además incluir todas las activas del catálogo si es_admin (por si hay pestañas globales no listadas por silo)
+    if (perms.es_admin) PESTANAS_CATALOGO.forEach(p => union.add(p.codigo));
+    tabsHabilitadas = union;
   } else {
-    // Pestañas que el silo tiene asignadas (ya incluye transversales por la vista UNION ALL)
-    tabsHabilitadas = new Set(MAPEO_SILOS[currentSilo] || []);
+    tabsHabilitadas = new Set(perms.pestanas_por_silo?.[currentSilo] || []);
   }
 
-  // Filtro adicional por perfil — usa requiere_perfil del catálogo
-  // Capa 2 fix 12-jun-PM: extiende filtrado a sidebar v4 (a[data-v4-tab])
-  // Antes solo filtraba .tab-btn (navbar viejo, oculto por CSS), dejando
-  // el sidebar v4 con 54 tabs visibles para todos los silos.
+  // La RPC ya aplicó requiere_perfil. Solo respetamos overrides HTML data-*-perfil
+  // (para gates decorativos de sidebar/navbar que no viven en panel.pestanas).
   const aplicarVisibilidad = (el, code) => {
     let visible = tabsHabilitadas.has(code);
-    const pestanaDef = PESTANAS_CATALOGO.find(p => p.codigo === code);
-    if (pestanaDef?.requiere_perfil && Array.isArray(pestanaDef.requiere_perfil)) {
-      if (!pestanaDef.requiere_perfil.includes(currentProfile)) visible = false;
-    }
-    // Override en el atributo HTML (caso "data-v4-tab-perfil")
     const perfilAttr = el.getAttribute('data-v4-tab-perfil') || el.getAttribute('data-tab-perfil');
     if (perfilAttr) {
       const lista = perfilAttr.split(',').map(s => s.trim()).filter(Boolean);
-      if (lista.length && !lista.includes(currentProfile)) visible = false;
+      if (lista.length && !matchesProfile(lista, currentProfile)) visible = false;
     }
     el.style.display = visible ? '' : 'none';
     return visible;
@@ -7894,7 +7894,8 @@ window.setupVistaSimulada = function() {
   window.currentSilo = currentSilo;
   const cont = document.getElementById('vistaSimContainer');
   if (!cont) return;
-  if (currentProfile === 'admin' || currentProfile === 'dusan') {
+  // Fase 4 · gate admin canónico via PERMS.es_admin (dual-vocab dusan/admin/ceo/gerente)
+  if (window.PERMS?.es_admin) {
     cont.classList.remove('hidden');
     cont.classList.add('flex');
   } else {
@@ -10850,9 +10851,10 @@ document.getElementById('cotKmRecalcular')?.addEventListener('click', () => { wi
 // D-OP-04-v2 Ola 1.4 — mapeo perfil del panel → nivel_autorizacion de mig 029.
 // La función f_validar_descuento espera: 'ceo' | 'jefe_comercial' | 'ejecutivo'.
 function nivelAutorizacionDePerfil(perfil) {
-  if (perfil === 'dusan' || perfil === 'admin') return 'ceo';
+  // Fase 4 · dual-vocab canónico {ceo,gerente}↔{dusan,admin}
+  if (matchesProfile(['dusan','ceo','gerente'], perfil)) return 'ceo';
   if (perfil === 'jefe_comercial') return 'jefe_comercial';
-  return 'ejecutivo';  // comercial, operaciones, externo, default → conservador
+  return 'ejecutivo';  // comercial, operaciones, operador_planta, externo, default → conservador
 }
 
 // Token incremental para descartar respuestas tardías de RPC f_validar_descuento.
@@ -21776,8 +21778,8 @@ document.addEventListener('DOMContentLoaded', () => {
       var sec = document.getElementById('tabMesaControl9999');
       if (sec && !sec.classList.contains('hidden')) loadMesaV3Pulso();
     }, 300000);
-    var perfil = (typeof currentProfile !== 'undefined') ? currentProfile : null;
-    if (perfil === 'dusan' || perfil === 'admin') {
+    // Fase 4 · gate admin via PERMS.es_admin (canónico)
+    if (window.PERMS?.es_admin) {
       setTimeout(loadMesaControl9999, 2000);
       setTimeout(loadMesaV3Pulso, 1500); // V3 carga un poco antes (no requiere auth)
     }
@@ -21891,9 +21893,8 @@ document.addEventListener('DOMContentLoaded', () => {
       var sec = document.getElementById('tabFirmasReglas');
       if (sec && !sec.classList.contains('hidden')) loadFirmasReglas();
     }, 30000);
-    // Badge load inicial (silencioso) si el usuario es dusan/admin
-    var perfil = (typeof currentProfile !== 'undefined') ? currentProfile : null;
-    if (perfil === 'dusan' || perfil === 'admin') {
+    // Badge load inicial (silencioso) si el usuario es admin (canónico via RPC)
+    if (window.PERMS?.es_admin) {
       setTimeout(loadFirmasReglas, 1500);
     }
   }
@@ -22246,12 +22247,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Vista CEO · 08-jun · si admin → ve todas las obligaciones del equipo (no solo las suyas).
   // Cubre el caso: Jair ve sus 40 obligaciones pero Dusan (gerencia@) veía vacío.
   function _esAdminCEO() {
-    try {
-      var rf = JSON.parse(localStorage.getItem('rf_session') || '{}');
-      var perfil = String(rf.perfil || rf.rol || '').toLowerCase();
-      if (perfil === 'admin' || perfil === 'ceo' || perfil === 'gerencia') return true;
-      if (String(rf.email || '').toLowerCase() === 'gerencia@gestionrepchile.cl') return true;
-    } catch (_) {}
+    // Fase 4 · fuente única PERMS.es_admin (canónico via RPC get_effective_permissions)
+    if (window.PERMS && window.PERMS.es_admin) return true;
+    // Fallback defensivo: si PERMS no cargó, mantener chequeo por email canónico Dusan.
     return String(_sessionEmail || '').toLowerCase() === 'gerencia@gestionrepchile.cl';
   }
   function _esMia(r) {
@@ -22631,13 +22629,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Default por rol al cargar el silo Permisología
     var _defaultSubv = 'expedientes';
     try {
-      var rf = JSON.parse(localStorage.getItem('rf_session') || '{}');
-      var perfil = String(rf.perfil || rf.rol || '').toLowerCase();
-      var email  = String(rf.email || _sessionEmail || '').toLowerCase();
-      if (perfil === 'admin' || perfil === 'ceo' || perfil === 'gerencia'
-          || email === 'gerencia@gestionrepchile.cl'
-          || email === 'soporte@gestionrepchile.cl'
-          || email === 'dpinto@sercotspa.cl') {
+      // Fase 4 · gate admin via PERMS.es_admin (canónico); fallback email para asistente@ (Jair)
+      var email = String(_sessionEmail || '').toLowerCase();
+      if (window.PERMS?.es_admin) {
         _defaultSubv = 'supervision';
       } else if (email === 'asistente@gestionrepchile.cl') {
         _defaultSubv = 'micola';
