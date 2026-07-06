@@ -7761,67 +7761,12 @@ async function loadSilos() {
 }
 
 // ---------- ACCESO RÁPIDO al ecosistema externo ----------
-// D-PANEL-PERFILES-001 F7 · usa RPC auth_get_user_context (vista de permisos
-// efectivos en panel.v_usuario_permisos_efectivos) como fuente canónica.
-// Cae a CONFIG_PANEL.bypass_emails (panel.config_kv) si el RPC falla, y a
-// FALLBACK_BYPASS_EMAILS hardcoded como último recurso para no romper el panel.
-
-let _userContextCache = null;
-async function getUserContextCached(email) {
-  if (!email) return null;
-  if (_userContextCache && _userContextCache._email === email.toLowerCase()) {
-    return _userContextCache;
-  }
-  try {
-    const { data, error } = await sb.rpc('auth_get_user_context', { p_email: email });
-    if (error || !data) {
-      console.warn('[F7] auth_get_user_context falló:', error?.message);
-      return null;
-    }
-    data._email = email.toLowerCase();
-    _userContextCache = data;
-    return data;
-  } catch (e) {
-    console.warn('[F7] auth_get_user_context excepción:', e);
-    return null;
-  }
-}
-
+// Mig 400 · Fase 0 Reestructuración Permisos (2026-07-06):
+// getUserContextCached() + RPC auth_get_user_context ELIMINADAS.
+// El botón queda oculto hasta la Fase 4 que lo reintroduce vía get_effective_permissions().
 async function loadAccesoRapido() {
   const link = document.getElementById('accesoRapidoHeader');
-  const iconoEl = document.getElementById('accesoRapidoIcono');
-  const tituloEl = document.getElementById('accesoRapidoTitulo');
-  if (!link || !iconoEl || !tituloEl) return;
-
-  // 1) Fuente canónica: RPC auth_get_user_context — flag puede_gestionar_permisos
-  //    distingue staff/admin (panel admin) de asistente comercial.
-  let esBypass = null;
-  const ctx = await getUserContextCached(currentUser);
-  if (ctx && ctx.authorized === true) {
-    esBypass = ctx.permisos_efectivos?.puede_gestionar_permisos === true
-            || ctx.permisos_efectivos?.puede_promover_a_prod === true
-            || ctx.permisos_efectivos?.puede_editar_dotacion === true;
-  }
-
-  // 2) Fallback en cadena si el RPC no resolvió: config_kv → hardcoded.
-  if (esBypass === null) {
-    const bypassEmails = CONFIG_PANEL.bypass_emails || FALLBACK_BYPASS_EMAILS;
-    esBypass = bypassEmails.includes(currentUser);
-  }
-
-  const labelCfg = esBypass
-    ? (CONFIG_PANEL.label_acceso_admin     || { icono: '⚙️', titulo: 'Panel Admin',         tooltip: 'Gestión' })
-    : (CONFIG_PANEL.label_acceso_asistente || { icono: '💬', titulo: 'Asistente Comercial', tooltip: 'Consultar precios' });
-
-  const url = esBypass
-    ? (CONFIG_PANEL.url_panel_admin        || 'https://reciclean-sistema.vercel.app/login.html')
-    : (CONFIG_PANEL.url_asistente_comercial|| 'https://reciclean-sistema.vercel.app/asistente.html');
-
-  link.href = url;
-  link.title = labelCfg.tooltip || '';
-  iconoEl.textContent = labelCfg.icono || '🔗';
-  tituloEl.textContent = labelCfg.titulo || 'Acceso';
-  link.classList.remove('hidden');
+  if (link) link.classList.add('hidden');
 }
 
 function applySiloTabs() {
