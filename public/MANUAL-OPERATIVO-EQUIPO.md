@@ -4,6 +4,16 @@
 > Vinculante para los 14 trabajadores (T01-T14), los 4 PCs del mayordomo y Diego v10.13+.
 > **Regla suprema:** "Todo debe calzar — un título con su tabla, un link con su destino, una secuencia con su lógica." (VISION-PANEL-RDO.md)
 
+> ⚠️ **Nota de actualización · 2026-07-07 (Fase 2 Paso 2.4)**
+> Las tablas `curated.facturas` y `curated.facturas_portal` fueron droppeadas. La arquitectura real de facturación evolucionó desde 24-jun-2026 (D-FACTURACION-ETAPA-1-001):
+> - **Facturas de compra** viven en `curated.facturacion_raw` (scraper `facturacion-cl-scraper`).
+> - **Facturas emitidas (ventas)** viven en `curated.facturacion_emitida_raw`.
+> - **Vista canónica unificada**: `curated.facturas_todas` (UNION con columna `origen='compra'|'venta'`).
+> - **Cobranza Andrea**: `panel.v_andrea_cobranza` sobre `facturas_todas WHERE origen='venta'`.
+> - Existe una vista shim `curated.facturas` que mapea `facturacion_emitida_raw` para preservar compatibilidad con 20 tools de Diego IA. Será eliminada tras refactor de esas tools.
+> - El tab "🧾 Facturación S5" fue reducido: preserva Cruce DTE y Top Clientes, se eliminó el upload manual CSV/JSON.
+> - Cualquier mención abajo a `curated.facturas` o `curated.facturas_portal` debe leerse como referencia histórica al diseño Dusan 24-may que quedó superado.
+
 ---
 
 ## ÍNDICE

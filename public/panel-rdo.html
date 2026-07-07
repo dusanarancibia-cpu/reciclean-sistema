@@ -6753,7 +6753,10 @@
         <span class="text-sm text-amber-800">💡 Puede forzar una ingesta ahora (recomendado solo para testing):</span>
         <div class="flex gap-2">
           <button id="audit_forzar_pesajes" class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700">Pesajes</button>
-          <button id="audit_forzar_facturas" class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700">Facturas</button>
+          <!-- Fase 2 Paso 2.4 (07-jul-2026): boton Facturas eliminado.
+               La EF ingesta-facturas-portal fue deprecada (endpoint fake).
+               La ingesta real de facturas de compra corre via cron sobre
+               facturacion-cl-scraper (Sistema C). -->
           <button id="audit_forzar_banco" class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700">Banco</button>
         </div>
       </div>
@@ -24962,7 +24965,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('button[data-tab="auditoria_ingesta"]')?.addEventListener('click', function () { setTimeout(loadAuditoriaIngesta, 100); });
     document.getElementById('audit_refresh')?.addEventListener('click', loadAuditoriaIngesta);
     document.getElementById('audit_forzar_pesajes')?.addEventListener('click', function () { forzarIngesta('pesajes'); });
-    document.getElementById('audit_forzar_facturas')?.addEventListener('click', function () { forzarIngesta('facturas'); });
+    // Fase 2 Paso 2.4: listener audit_forzar_facturas eliminado (EF ingesta-facturas-portal deprecada).
     document.getElementById('audit_forzar_banco')?.addEventListener('click', function () { forzarIngesta('banco'); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
