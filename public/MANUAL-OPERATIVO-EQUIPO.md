@@ -5,14 +5,15 @@
 > **Regla suprema:** "Todo debe calzar — un título con su tabla, un link con su destino, una secuencia con su lógica." (VISION-PANEL-RDO.md)
 
 > ⚠️ **Nota de actualización · 2026-07-07 (Fase 2 Paso 2.4)**
-> Las tablas `curated.facturas` y `curated.facturas_portal` fueron droppeadas. La arquitectura real de facturación evolucionó desde 24-jun-2026 (D-FACTURACION-ETAPA-1-001):
+> Las tablas legacy `curated.facturas` y `curated.facturas_portal` fueron droppeadas. La arquitectura real de facturación evolucionó desde 24-jun-2026 (D-FACTURACION-ETAPA-1-001):
 > - **Facturas de compra** viven en `curated.facturacion_raw` (scraper `facturacion-cl-scraper`).
 > - **Facturas emitidas (ventas)** viven en `curated.facturacion_emitida_raw`.
 > - **Vista canónica unificada**: `curated.facturas_todas` (UNION con columna `origen='compra'|'venta'`).
 > - **Cobranza Andrea**: `panel.v_andrea_cobranza` sobre `facturas_todas WHERE origen='venta'`.
-> - Existe una vista shim `curated.facturas` que mapea `facturacion_emitida_raw` para preservar compatibilidad con 20 tools de Diego IA. Será eliminada tras refactor de esas tools.
+> - Existe una vista shim `curated.facturas_todas` (WHERE origen='venta') que mapea `facturacion_emitida_raw` para preservar compatibilidad con 20 tools de Diego IA. Será eliminada tras refactor de esas tools.
 > - El tab "🧾 Facturación S5" fue reducido: preserva Cruce DTE y Top Clientes, se eliminó el upload manual CSV/JSON.
-> - Cualquier mención abajo a `curated.facturas` o `curated.facturas_portal` debe leerse como referencia histórica al diseño Dusan 24-may que quedó superado.
+> - Post-Fase 3 (07-jul-2026): las 20 tools de Diego IA ya apuntan al layer canónico `curated._facturas_venta_view` (facturas_todas WHERE origen='venta'). La vista shim `curated.facturas` fue eliminada (mig 353b).
+> - El trigger `curated.facturacion_emitida_raw_auto_privada` (mig 354) marca automáticamente privada=true en ventas a personas naturales (RUT<10M) para compliance Ley 21.719, espejo del trigger de compras.
 
 ---
 
@@ -176,10 +177,10 @@ flowchart LR
 |---|---|
 | **WHAT** | DTE recibido del generador/proveedor que vende material a Reciclean (chatarra, cartón, etc.). Farex es retenedor IVA 19%. |
 | **WHO** | **Dyana Pinto (T14)** SERCOT. Cony Maipú/Cerrillos completa registro físico. |
-| **WHERE** | SII → `staging.dte_clientes` → `curated.facturas`. Tab **Facturación S5** del panel (visible solo a comercial+admin+dusan). |
+| **WHERE** | SII → `staging.dte_clientes` → `curated.facturas_todas` (WHERE origen='venta'). Tab **Facturación S5** del panel (visible solo a comercial+admin+dusan). |
 | **WHEN** | Diario — Dyana descarga DTEs del día siguiente hábil. |
 | **WHY** | Cumplimiento SII (Art. 17 DTE electrónica obligatoria). Farex retiene IVA Art. 29. Base para PPM mensual F29. |
-| **HOW** | (1) Generador emite factura/guía vía SII. (2) DTE entra a `staging.dte_clientes` por sync diario SII (cron + EF). (3) Dyana valida y promueve a `curated.facturas`. (4) Si Farex retiene IVA, registra retención en F29. (5) Pago al proveedor se programa según condiciones (30/60/90 días). |
+| **HOW** | (1) Generador emite factura/guía vía SII. (2) DTE entra a `staging.dte_clientes` por sync diario SII (cron + EF). (3) Dyana valida y promueve a `curated.facturas_todas` (WHERE origen='venta'). (4) Si Farex retiene IVA, registra retención en F29. (5) Pago al proveedor se programa según condiciones (30/60/90 días). |
 
 ### 7. FACTURA DE VENTA (Reciclean → cliente final)
 
@@ -187,10 +188,10 @@ flowchart LR
 |---|---|
 | **WHAT** | DTE emitido por Reciclean/Farex al valorizador final (FPC, HUAL, etc.) por venta del material recuperado. |
 | **WHO** | **Dyana (T14)** emite. Andrea (T11) confirma datos del cliente + monto. |
-| **WHERE** | Sistema SII externo → DTE registrado en `curated.facturas`. Tab **Facturación S5**. |
+| **WHERE** | Sistema SII externo → DTE registrado en `curated.facturas_todas` (WHERE origen='venta'). Tab **Facturación S5**. |
 | **WHEN** | Por cada venta — máximo 24h después de despacho. |
 | **WHY** | Cumplimiento SII + cobranza programada. |
-| **HOW** | (1) Andrea confirma con cliente cantidad + precio. (2) Dyana emite DTE. (3) Folio se carga a `curated.facturas` con `tipo=venta`. (4) Cobranza queda en `panel.tesoreria_kpis.por_cobrar_clp`. |
+| **HOW** | (1) Andrea confirma con cliente cantidad + precio. (2) Dyana emite DTE. (3) Folio se carga a `curated.facturas_todas` (WHERE origen='venta') con `tipo=venta`. (4) Cobranza queda en `panel.tesoreria_kpis.por_cobrar_clp`. |
 
 ### 8. NOTA DE CRÉDITO
 
@@ -198,7 +199,7 @@ flowchart LR
 |---|---|
 | **WHAT** | DTE que anula o ajusta una factura previa (devolución, ajuste de peso, error). |
 | **WHO** | **Dyana (T14)** emite. **Dusan (T01) firma autorización** si el monto > 1 UF (R6 confirmación irreversibles). |
-| **WHERE** | SII → `curated.facturas` con `tipo='nota_credito'` y referencia al folio original. |
+| **WHERE** | SII → `curated.facturas_todas` (WHERE origen='venta') con `tipo='nota_credito'` y referencia al folio original. |
 | **WHEN** | Por evento — cuando hay reclamo del cliente o error detectado. |
 | **WHY** | Corregir un DTE emitido por error sin alterar el original (Art. 17 Código Tributario). |
 | **HOW** | (1) Andrea o el cliente detectan el error. (2) Andrea registra en `panel.diego_bandeja` con tipo=`solicitud_nc`. (3) Diego avisa a Dusan para firma (R-AUD-029 + R6). (4) Dusan aprueba → Dyana emite NC. (5) Folio NC se vincula al folio original. |
@@ -372,7 +373,7 @@ flowchart TD
 |---|---|
 | **WHAT** | Cliente final rechaza el material entregado (calidad fuera de spec, contaminación, peso menor). |
 | **WHO** | Cliente reporta → Andrea (T11) recibe → escala Dusan (T01) → Dyana (T14) emite NC. |
-| **WHERE** | `curated.viaje_expedicionario.estado='rechazado'` + `curated.facturas` tipo='nota_credito' + `panel.diego_bandeja` tarea Dusan. |
+| **WHERE** | `curated.viaje_expedicionario.estado='rechazado'` + `curated.facturas_todas` (WHERE origen='venta') tipo='nota_credito' + `panel.diego_bandeja` tarea Dusan. |
 | **WHEN** | Por evento (típicamente <48h después de despacho). |
 | **WHY** | Sin flujo de devolución, la facturación queda inflada + el material queda "perdido" en libros. |
 | **HOW** | (1) Cliente rechaza → Andrea recibe. (2) `panel.diego_bandeja` tipo='rechazo_destino_final' + foto evidencia. (3) Diego escala a Dusan firma. (4) Dyana emite NC reverso. (5) Si material vuelve: nuevo viaje `estado='retorno'`. (6) Tarea Dusan: revisar causa raíz planta origen. |
@@ -386,7 +387,7 @@ flowchart TD
 | **WHERE** | **Tabla nueva pendiente:** `curated.pagos_emitidos` (spec en `BANDEJA-PABLO-PREFACTURAS-PAGOS.md` mig 070). Hoy solo agregado en `panel.tesoreria_kpis.pagos_programados_clp`. |
 | **WHEN** | Semanal (martes Dyana prepara, miércoles Dusan firma, jueves transferencia). |
 | **WHY** | Mantener capital trabajo + cumplir compromisos proveedores + evitar intereses moratorios + auditoría SII. |
-| **HOW** | (1) Dyana arma planilla desde `curated.facturas` tipo='compra' + estado='pendiente_pago'. (2) Dusan firma. (3) Dyana ejecuta transferencias. (4) INSERT `curated.pagos_emitidos` por cada egreso. (5) UPDATE `curated.facturas` estado='pagado'. (6) Card "Egresos semana" en Portada Dusan. |
+| **HOW** | (1) Dyana arma planilla desde `curated.facturas_todas` (WHERE origen='venta') tipo='compra' + estado='pendiente_pago'. (2) Dusan firma. (3) Dyana ejecuta transferencias. (4) INSERT `curated.pagos_emitidos` por cada egreso. (5) UPDATE `curated.facturas_todas` (WHERE origen='venta') estado='pagado'. (6) Card "Egresos semana" en Portada Dusan. |
 
 ### 23. CIERRE VIAJE + RDO + RETC (V2)
 
