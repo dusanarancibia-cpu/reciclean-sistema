@@ -6704,7 +6704,11 @@
         <div id="audit_facturas_card" class="bg-white border border-stone-200 rounded p-3 hover:shadow-md transition">
           <div class="flex items-center justify-between mb-2">
             <span class="font-semibold text-stone-700">🧾 Facturas</span>
-            <span id="audit_facturas_semaforo" class="text-2xl">—</span>
+            <div class="flex items-center gap-1">
+              <span id="audit_facturas_semaforo" class="text-2xl">—</span>
+              <!-- Fase 2 Paso 2.5: badge +48h aparece si dentro_48h===false -->
+              <span id="audit_facturas_alerta_48h" class="text-xs"></span>
+            </div>
           </div>
           <div class="text-xs text-stone-500 space-y-1">
             <div>Última: <span id="audit_facturas_fecha" class="font-mono">—</span></div>
@@ -24913,6 +24917,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         countBtn.textContent = data.registros_ultimas_24h || 0;
         estBtn.textContent = estado.charAt(0).toUpperCase() + estado.slice(1);
+
+        // Fase 2 Paso 2.5: badge +48h si la fuente no tiene registros últimos 2 días
+        const alertaEl = document.getElementById(prefix + '_alerta_48h');
+        if (alertaEl) {
+          if (data.dentro_48h === false) {
+            alertaEl.textContent = '⚠️ +48h';
+            alertaEl.className = 'text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-800';
+            alertaEl.title = 'No hay registros en las últimas 48 horas · revisar ingesta';
+          } else {
+            alertaEl.textContent = '';
+            alertaEl.className = 'text-xs';
+            alertaEl.removeAttribute('title');
+          }
+        }
       };
 
       updateCard('pesajes', 'audit_pesajes');
