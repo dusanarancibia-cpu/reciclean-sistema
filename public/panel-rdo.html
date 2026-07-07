@@ -1560,17 +1560,8 @@
       <h2 class="text-xl font-bold mb-3 text-stone-800">🧾 Facturación S5</h2>
       <div id="facturacionCruceAlertas" class="mb-4"><p class="text-xs text-stone-400">Cargando cruce DTE-pesajes...</p></div>
       <div id="facturacionTopClientes" class="mb-4"></div>
-      <details class="bg-white rounded-lg shadow-sm">
-        <summary class="p-4 text-sm font-semibold text-stone-600 cursor-pointer">↑ Subir archivo CSV/JSON a staging</summary>
-        <div class="px-5 pb-5">
-          <p class="text-sm text-stone-500 mb-3">Se guarda en bruto en <code>staging.facturacion_s5</code>.</p>
-          <input type="file" id="facturacionFile" accept=".csv,.json"
-                 aria-label="Archivo CSV o JSON de facturación para subir a staging"
-                 class="mb-3 block">
-          <button onclick="uploadFacturacion()" class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded">Subir a staging</button>
-          <div id="facturacionResult" class="mt-4 text-sm"></div>
-        </div>
-      </details>
+      <!-- Fase 2 Paso 2.4 (06-jul-2026): bloque "Subir archivo CSV/JSON a staging.facturacion_s5"
+           eliminado junto con la tabla obsoleta. Sistema A upload manual sin uso. -->
     </section>
 
     <section id="tabDieguito" class="tab-content hidden">
@@ -6713,7 +6704,11 @@
         <div id="audit_facturas_card" class="bg-white border border-stone-200 rounded p-3 hover:shadow-md transition">
           <div class="flex items-center justify-between mb-2">
             <span class="font-semibold text-stone-700">🧾 Facturas</span>
-            <span id="audit_facturas_semaforo" class="text-2xl">—</span>
+            <div class="flex items-center gap-1">
+              <span id="audit_facturas_semaforo" class="text-2xl">—</span>
+              <!-- Fase 2 Paso 2.5: badge +48h aparece si dentro_48h===false -->
+              <span id="audit_facturas_alerta_48h" class="text-xs"></span>
+            </div>
           </div>
           <div class="text-xs text-stone-500 space-y-1">
             <div>Última: <span id="audit_facturas_fecha" class="font-mono">—</span></div>
@@ -6762,7 +6757,10 @@
         <span class="text-sm text-amber-800">💡 Puede forzar una ingesta ahora (recomendado solo para testing):</span>
         <div class="flex gap-2">
           <button id="audit_forzar_pesajes" class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700">Pesajes</button>
-          <button id="audit_forzar_facturas" class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700">Facturas</button>
+          <!-- Fase 2 Paso 2.4 (07-jul-2026): boton Facturas eliminado.
+               La EF ingesta-facturas-portal fue deprecada (endpoint fake).
+               La ingesta real de facturas de compra corre via cron sobre
+               facturacion-cl-scraper (Sistema C). -->
           <button id="audit_forzar_banco" class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700">Banco</button>
         </div>
       </div>
@@ -8293,19 +8291,8 @@ window.uploadPesaje = async function() {
   } catch (e) { showResult('pesajeResult', false, e.message); }
 };
 
-window.uploadFacturacion = async function() {
-  const file = document.getElementById('facturacionFile').files[0];
-  if (!file) { showResult('facturacionResult', false, 'Selecciona un archivo'); return; }
-  try {
-    const data = await parseFile(file);
-    const { error } = await sb.schema('staging').from('facturacion_s5').insert({
-      raw_json: data, subido_por: currentUser
-    });
-    if (error) { showResult('facturacionResult', false, error.message); return; }
-    showResult('facturacionResult', true, `Subido. ${Array.isArray(data) ? data.length + ' filas' : '1 objeto'} en staging.facturacion_s5`);
-    document.getElementById('facturacionFile').value = '';
-  } catch (e) { showResult('facturacionResult', false, e.message); }
-};
+// Fase 2 Paso 2.4: función uploadFacturacion eliminada.
+// Consumía staging.facturacion_s5 (droppeado). Sistema A abandonado.
 
 // ============================================================
 // DIEGUITO — módulo completo (Sprint 2)
@@ -24898,13 +24885,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data: frescura, error: e1 } = await sb.schema('panel').from('v_frescura_datos').select('*');
       if (e1) throw e1;
 
-      // 2. Cargar logs recientes (últimas 24h)
-      const { data: logs, error: e2 } = await sb
-        .from('facturas_portal_raw')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-      if (e2) throw e2;
+      // Fase 2 Paso 2.4: bloque "logs recientes" que leía facturas_portal_raw eliminado.
+      // La tabla fue droppeada. Se mantienen los semáforos vivos vía v_frescura_datos.
 
       // 3. Actualizar semáforos
       const frData = {};
@@ -24935,37 +24917,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         countBtn.textContent = data.registros_ultimas_24h || 0;
         estBtn.textContent = estado.charAt(0).toUpperCase() + estado.slice(1);
+
+        // Fase 2 Paso 2.5: badge +48h si la fuente no tiene registros últimos 2 días
+        const alertaEl = document.getElementById(prefix + '_alerta_48h');
+        if (alertaEl) {
+          if (data.dentro_48h === false) {
+            alertaEl.textContent = '⚠️ +48h';
+            alertaEl.className = 'text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-800';
+            alertaEl.title = 'No hay registros en las últimas 48 horas · revisar ingesta';
+          } else {
+            alertaEl.textContent = '';
+            alertaEl.className = 'text-xs';
+            alertaEl.removeAttribute('title');
+          }
+        }
       };
 
       updateCard('pesajes', 'audit_pesajes');
       updateCard('facturas', 'audit_facturas');
       updateCard('banco', 'audit_banco');
 
-      // 4. Actualizar tabla de logs
+      // Fase 2 Paso 2.4: render de tabla de logs eliminado.
+      // Consumía facturas_portal_raw (droppeada). Se preservan solo los semáforos arriba.
       const tbody = document.getElementById('audit_logs_body');
-      if (!logs || logs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-stone-400 py-4">Sin registros en las últimas 24h</td></tr>';
-      } else {
-        tbody.innerHTML = logs.map(log => {
-          const payload = log.payload || {};
-          const hora = new Date(log.created_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          const fuente = log.cron_job?.split('_').slice(1).join('_') || 'desconocida';
-          const inserts = payload.inserts || 0;
-          const updates = payload.updates || 0;
-          const skips = payload.skips || 0;
-          const errores = payload.errores || 0;
-          const estado = errores > 0 ? '❌ Error' : inserts > 0 || updates > 0 ? '✅ OK' : '⏭ Skip';
-
-          return `<tr class="border-t border-stone-100">
-            <td class="text-left px-3 py-2 font-mono text-stone-600">${hora}</td>
-            <td class="text-left px-3 py-2">${fuente}</td>
-            <td class="text-right px-3 py-2">${inserts}</td>
-            <td class="text-right px-3 py-2">${updates}</td>
-            <td class="text-right px-3 py-2">${skips}</td>
-            <td class="text-right px-3 py-2 ${errores > 0 ? 'text-red-600 font-bold' : ''}">${errores}</td>
-            <td class="text-center px-3 py-2 text-sm">${estado}</td>
-          </tr>`;
-        }).join('');
+      if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-stone-400 py-4 italic">Los logs recientes por corrida fueron discontinuados. Ver semáforos arriba para frescura por fuente.</td></tr>';
       }
 
       showToast('✅ Auditoría cargada', 'success', 2000);
@@ -25007,7 +24983,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('button[data-tab="auditoria_ingesta"]')?.addEventListener('click', function () { setTimeout(loadAuditoriaIngesta, 100); });
     document.getElementById('audit_refresh')?.addEventListener('click', loadAuditoriaIngesta);
     document.getElementById('audit_forzar_pesajes')?.addEventListener('click', function () { forzarIngesta('pesajes'); });
-    document.getElementById('audit_forzar_facturas')?.addEventListener('click', function () { forzarIngesta('facturas'); });
+    // Fase 2 Paso 2.4: listener audit_forzar_facturas eliminado (EF ingesta-facturas-portal deprecada).
     document.getElementById('audit_forzar_banco')?.addEventListener('click', function () { forzarIngesta('banco'); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();

@@ -3,6 +3,14 @@
 > Spec listo para que apliques cuando termines el deploy EF v10.13.
 > Soporta procesos 19 (prefactura) y 22 (pago proveedor) del MANUAL-OPERATIVO-EQUIPO.md V2.
 
+> ⚠️ **Nota de actualización · 2026-07-07 (Fase 2 Paso 2.4)**
+> Las referencias a `curated.facturas` en este spec son históricas. La tabla fue droppeada porque el diseño evolucionó desde 24-jun-2026:
+> - Facturas de compra: `curated.facturacion_raw` (scraper `facturacion-cl-scraper`)
+> - Facturas emitidas: `curated.facturacion_emitida_raw`
+> - Vista canónica unificada: `curated.facturas_todas` (con columna `origen`)
+> - Existe una vista shim `curated.facturas` que mapea `facturacion_emitida_raw` para preservar compatibilidad con 20 tools de Diego IA (será eliminada tras refactor).
+> Cuando este spec de prefacturas/pagos se implemente, debe apuntar a la nueva arquitectura, no a `curated.facturas`.
+
 ---
 
 ## Mig 070 — DDL completo
