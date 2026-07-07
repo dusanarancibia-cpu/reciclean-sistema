@@ -4269,6 +4269,12 @@
             <div><dt class="text-xs text-stone-500" title="Probabilidad de cierre estimada por el ejecutivo. Editable desde la ficha de oportunidad.">Probabilidad</dt><dd id="oppDrawerProb">—</dd></div>
             <div><dt class="text-xs text-stone-500">Tipo / Origen</dt><dd id="oppDrawerTipo">—</dd></div>
             <div><dt class="text-xs text-stone-500">Responsable</dt><dd id="oppDrawerResp">—</dd></div>
+            <div id="oppTomarCasoBox" class="hidden">
+              <button id="oppTomarCasoBtn" onclick="oppTomarCaso()"
+                      class="w-full text-sm px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-medium">
+                🙋 Tomar este caso
+              </button>
+            </div>
             <div><dt class="text-xs text-stone-500">Sucursal</dt><dd id="oppDrawerSucursal">—</dd></div>
             <div><dt class="text-xs text-stone-500">Fecha recepción</dt><dd id="oppDrawerFechaRec">—</dd></div>
             <div><dt class="text-xs text-stone-500">Fecha cierre</dt><dd id="oppDrawerFechaCierre">—</dd></div>
@@ -12318,6 +12324,23 @@ window.oppDrop = async function(event, estadoDestino) {
   await loadOportunidadesKanban();
 };
 
+// Autoasignación mínima — rompe el candado circular de mover_oportunidad
+// (exige owner/admin/responsable, pero responsable nace NULL en widget_web).
+window.oppTomarCaso = async function() {
+  if (!_oppDrawerId) return;
+  const btn = document.getElementById('oppTomarCasoBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Tomando…'; }
+  const { data, error } = await sb.rpc('tomar_oportunidad', { p_opp_id: _oppDrawerId });
+  if (error || (data && data.ok === false)) {
+    _oppToast('No se pudo tomar: ' + (error ? error.message : data.error), 'err');
+    if (btn) { btn.disabled = false; btn.textContent = '🙋 Tomar este caso'; }
+    return;
+  }
+  _oppToast('Caso tomado — ya sos responsable.', 'ok');
+  await oppAbrirDrawer(_oppDrawerId);
+  await loadOportunidadesKanban();
+};
+
 // ── Drawer ───────────────────────────────────────────────────
 window.oppAbrirDrawer = async function(oppId) {
   _oppDrawerId = oppId;
@@ -12364,6 +12387,8 @@ window.oppAbrirDrawer = async function(oppId) {
   document.getElementById('oppDrawerProb').textContent = o.probabilidad_pct != null ? o.probabilidad_pct + '%' : '—';
   document.getElementById('oppDrawerTipo').textContent = [o.tipo, o.origen].filter(Boolean).join(' / ') || '—';
   document.getElementById('oppDrawerResp').textContent = o.responsable || '—';
+  const tomarCasoBox = document.getElementById('oppTomarCasoBox');
+  if (tomarCasoBox) tomarCasoBox.classList.toggle('hidden', !!o.responsable || esCrm);
   document.getElementById('oppDrawerSucursal').textContent = o.sucursal_id ? (_oppSucursalesMap.get(o.sucursal_id) || o.sucursal_id) : '—';
   document.getElementById('oppDrawerFechaRec').textContent = o.fecha_recepcion ? new Date(o.fecha_recepcion).toLocaleDateString('es-CL') : '—';
   document.getElementById('oppDrawerFechaCierre').textContent = o.fecha_cierre ? new Date(o.fecha_cierre).toLocaleDateString('es-CL') : '—';
