@@ -8,8 +8,10 @@
 > - Facturas de compra: `curated.facturacion_raw` (scraper `facturacion-cl-scraper`)
 > - Facturas emitidas: `curated.facturacion_emitida_raw`
 > - Vista canónica unificada: `curated.facturas_todas` (con columna `origen`)
-> - Existe una vista shim `curated.facturas` que mapea `facturacion_emitida_raw` para preservar compatibilidad con 20 tools de Diego IA (será eliminada tras refactor).
-> Cuando este spec de prefacturas/pagos se implemente, debe apuntar a la nueva arquitectura, no a `curated.facturas`.
+> - Post-Fase 3 (07-jul-2026): la vista shim fue eliminada. Las 20 tools de Diego IA apuntan al layer canónico `curated._facturas_venta_view`.
+> Cuando este spec de prefacturas/pagos se implemente, debe apuntar a la nueva arquitectura:
+>   - **Compras**: `curated.facturacion_raw` (fuente scraper) o `curated.facturas_todas WHERE origen='compra'`
+>   - **Ventas**: `curated.facturacion_emitida_raw` (con trigger auto_privada Ley 21.719) o `curated.facturas_todas WHERE origen='venta'`
 
 ---
 
@@ -35,7 +37,7 @@ CREATE TABLE IF NOT EXISTS curated.prefacturas (
   validez_dias         INT DEFAULT 30,
   estado               TEXT NOT NULL DEFAULT 'borrador'
                        CHECK (estado IN ('borrador','enviada','aceptada','rechazada','facturada','vencida','anulada')),
-  factura_id           UUID,  -- referencia a curated.facturas cuando se promueve
+  factura_id           UUID,  -- referencia a curated.facturacion_raw (compras) o curated.facturacion_emitida_raw (ventas) cuando se promueve
   delta_pct_aceptado   NUMERIC DEFAULT 5.0,  -- delta % permitido antes de NC
   cantidad_real_kg     NUMERIC,
   monto_real_clp       NUMERIC,
@@ -71,7 +73,7 @@ COMMENT ON TABLE curated.prefacturas IS
 -- =====================================
 CREATE TABLE IF NOT EXISTS curated.pagos_emitidos (
   pago_id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  factura_id           UUID,  -- referencia a curated.facturas
+  factura_id           UUID,  -- referencia a curated.facturacion_raw / curated.facturacion_emitida_raw
   factura_folio        TEXT,  -- denormalizado para audit rápido
   proveedor_id         TEXT,
   proveedor_rut        TEXT,
@@ -110,7 +112,7 @@ DROP POLICY IF EXISTS pagos_service ON curated.pagos_emitidos;
 CREATE POLICY pagos_service ON curated.pagos_emitidos FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 COMMENT ON TABLE curated.pagos_emitidos IS
-  'Mig 070 P22. Egresos bancarios a proveedores. Dyana prepara, Dusan firma (>10 UF), Dyana ejecuta. Vincula 1:1 con curated.facturas tipo=compra.';
+  'Mig 070 P22. Egresos bancarios a proveedores. Dyana prepara, Dusan firma (>10 UF), Dyana ejecuta. Vincula 1:1 con curated.facturacion_raw (compras).';
 
 -- =====================================
 -- VISTA: dashboard pagos semana
@@ -197,4 +199,4 @@ Regla CLAUDE.md: *"Supabase: SELECT en todo. Para DML/DDL, pasarle al PC Pablo e
 
 ---
 
-**Firmado:** PC Dusan, 2026-05-24 madrugada. Spec validado contra schemas reales `curated.clientes`, `curated.oportunidades`, `curated.negocio_expedicionario`, `curated.facturas`, `panel.tesoreria_kpis`.
+**Firmado:** PC Dusan, 2026-05-24 madrugada. Spec validado contra schemas reales `curated.clientes`, `curated.oportunidades`, `curated.negocio_expedicionario`, `curated.facturas_todas` (post-Fase 3), `panel.tesoreria_kpis`.
