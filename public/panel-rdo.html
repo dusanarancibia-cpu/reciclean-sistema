@@ -2170,8 +2170,8 @@
         <button onclick="window.pvCargarScore && window.pvCargarScore()" class="text-xs text-stone-400 hover:text-stone-600 ml-auto">↺</button>
       </div>
 
-      <!-- KPIs -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+      <!-- KPIs (portada corta — T-XX 2026-07-09, pedido Dusan: "la tabla larga eterna no sirve como portada") -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
         <div class="bg-white p-3 rounded-md shadow-sm">
           <div class="text-xs text-stone-500">🟢 Verde (sobre meta)</div>
           <div id="pvVerde" class="text-2xl font-bold text-emerald-600">—</div>
@@ -2188,67 +2188,93 @@
           <div class="text-xs text-stone-500">MG promedio</div>
           <div id="pvMgProm" class="text-2xl font-bold text-stone-700">—</div>
         </div>
-      </div>
-
-      <!-- Filtros + Toggle Vista -->
-      <div class="flex flex-wrap gap-2 mb-3">
-        <div class="flex rounded border border-stone-300 overflow-hidden text-sm">
-          <button id="pvVistaBtn1" onclick="window.pvSetVista && window.pvSetVista('material')"
-            class="px-3 py-1 bg-stone-700 text-white font-medium">Material</button>
-          <button id="pvVistaBtn2" onclick="window.pvSetVista && window.pvSetVista('categoria')"
-            class="px-3 py-1 bg-white text-stone-600 hover:bg-stone-50">Categoría</button>
+        <div class="bg-white p-3 rounded-md shadow-sm border-l-4 border-stone-300" title="Precio vigente desde antes del cierre del piso de margen (2026-07-09) — no confiar en esta línea como prueba de que el piso se validó.">
+          <div class="text-xs text-stone-500">⏳ Pre-reparación</div>
+          <div id="pvPreReparacion" class="text-2xl font-bold text-stone-500">—</div>
         </div>
-        <select id="pvFiltroSucursal" onchange="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1">
-          <option value="">Todas las sucursales</option>
-          <option value="cerrillos">Cerrillos</option>
-          <option value="maipu">Maipú</option>
-          <option value="talca">Talca</option>
-          <option value="puerto_montt">Puerto Montt</option>
-        </select>
-        <select id="pvFiltroSemaforo" onchange="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1">
-          <option value="">Todos los semáforos</option>
-          <option value="rojo">🔴 Solo rojos</option>
-          <option value="amarillo">🟡 Solo amarillos</option>
-          <option value="verde">🟢 Solo verdes</option>
-        </select>
-        <select id="pvFiltroCategoria" onchange="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1">
-          <option value="">Todas las categorías</option>
-        </select>
-        <input type="text" id="pvBuscar" placeholder="Buscar material..." oninput="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1 flex-1 min-w-36">
+        <div class="bg-white p-3 rounded-md shadow-sm border-l-4 border-emerald-300" title="Precio vigente desde 2026-07-09 o después — sí pasó por el piso de margen validado (T-77/T-78).">
+          <div class="text-xs text-stone-500">✅ Post-reparación</div>
+          <div id="pvPostReparacion" class="text-2xl font-bold text-emerald-700">—</div>
+        </div>
       </div>
 
-      <!-- Leyenda umbrales semáforo (T-35 · SPEC L130) -->
-      <div class="flex flex-wrap gap-3 text-xs text-stone-500 mb-3 px-1">
-        <span><span class="text-base">🟢</span> MG real ≥ Meta</span>
-        <span><span class="text-base">🟡</span> Entre piso y meta</span>
-        <span><span class="text-base">🔴</span> MG real bajo el piso</span>
-        <span><span class="text-base">⚪</span> Sin datos suficientes</span>
-        <span class="text-stone-400">· Los umbrales exactos dependen de la categoría · ver márgenes meta en la Calculadora</span>
+      <!-- Qué revisar hoy (centro, misma fuente pvData — sin doble verdad) -->
+      <div class="bg-white rounded-md shadow-sm mb-4 border-l-4 border-red-400">
+        <div class="px-4 py-3 flex items-center justify-between border-b border-stone-100">
+          <h3 class="font-semibold text-stone-800">🎯 Qué revisar hoy</h3>
+          <span class="text-xs text-stone-400">rojos primero · click en una fila para ver el detalle</span>
+        </div>
+        <div id="pvQueRevisarList" class="divide-y divide-stone-100">
+          <div class="px-4 py-4 text-sm text-stone-400">Cargando...</div>
+        </div>
       </div>
 
-      <!-- Tabla -->
-      <div class="overflow-x-auto rounded-md shadow-sm">
-        <table class="min-w-full text-sm">
-          <thead class="bg-stone-100 text-stone-600 text-xs uppercase">
-            <tr>
-              <th class="px-3 py-2 text-left">Material</th>
-              <th class="px-3 py-2 text-left">Sucursal</th>
-              <th class="px-3 py-2 text-right">Compra</th>
-              <th class="px-3 py-2 text-right">Venta</th>
-              <th class="px-3 py-2 text-right">MG real</th>
-              <th class="px-3 py-2 text-right">Meta MG</th>
-              <th class="px-3 py-2 text-right">vs Meta</th>
-              <th class="px-3 py-2 text-center">Semáforo</th>
-              <th class="px-3 py-2 text-left">Desde</th>
-            </tr>
-          </thead>
-          <tbody id="pvTbody">
-            <tr><td colspan="9" class="px-3 py-6 text-center text-stone-400">Cargando datos...</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="text-xs text-stone-400 mt-2">Fuente: curated.v_margen_vs_costos · Actualiza Vigía 06:00 AM + Calibrador cada lunes</p>
-      <p class="text-xs text-stone-500 mt-1">Costo ref. = base de costo usada para margen. Precio vigente = valor publicado que debe ver equipo, widget y web. Esta vista no separa aún la referencia externa de venta.</p>
+      <!-- Tabla completa — secundaria, colapsada por default (ya no es portada) -->
+      <details class="bg-white rounded-md shadow-sm">
+        <summary class="px-4 py-3 cursor-pointer font-semibold text-stone-700 hover:bg-stone-50">
+          📋 Ver tabla completa (todos los materiales × sucursales)
+        </summary>
+        <div class="px-4 pb-4">
+          <!-- Filtros + Toggle Vista -->
+          <div class="flex flex-wrap gap-2 mb-3 mt-2">
+            <div class="flex rounded border border-stone-300 overflow-hidden text-sm">
+              <button id="pvVistaBtn1" onclick="window.pvSetVista && window.pvSetVista('material')"
+                class="px-3 py-1 bg-stone-700 text-white font-medium">Material</button>
+              <button id="pvVistaBtn2" onclick="window.pvSetVista && window.pvSetVista('categoria')"
+                class="px-3 py-1 bg-white text-stone-600 hover:bg-stone-50">Categoría</button>
+            </div>
+            <select id="pvFiltroSucursal" onchange="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1">
+              <option value="">Todas las sucursales</option>
+              <option value="cerrillos">Cerrillos</option>
+              <option value="maipu">Maipú</option>
+              <option value="talca">Talca</option>
+              <option value="puerto_montt">Puerto Montt</option>
+            </select>
+            <select id="pvFiltroSemaforo" onchange="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1">
+              <option value="">Todos los semáforos</option>
+              <option value="rojo">🔴 Solo rojos</option>
+              <option value="amarillo">🟡 Solo amarillos</option>
+              <option value="verde">🟢 Solo verdes</option>
+            </select>
+            <select id="pvFiltroCategoria" onchange="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1">
+              <option value="">Todas las categorías</option>
+            </select>
+            <input type="text" id="pvBuscar" placeholder="Buscar material..." oninput="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1 flex-1 min-w-36">
+          </div>
+
+          <!-- Leyenda umbrales semáforo (T-35 · SPEC L130) -->
+          <div class="flex flex-wrap gap-3 text-xs text-stone-500 mb-3 px-1">
+            <span><span class="text-base">🟢</span> MG real ≥ Meta</span>
+            <span><span class="text-base">🟡</span> Entre piso y meta</span>
+            <span><span class="text-base">🔴</span> MG real bajo el piso</span>
+            <span><span class="text-base">⚪</span> Sin datos suficientes</span>
+            <span class="text-stone-400">· Los umbrales exactos dependen de la categoría · ver márgenes meta en la Calculadora</span>
+          </div>
+
+          <div class="overflow-x-auto rounded-md shadow-sm">
+            <table class="min-w-full text-sm">
+              <thead class="bg-stone-100 text-stone-600 text-xs uppercase">
+                <tr>
+                  <th class="px-3 py-2 text-left">Material</th>
+                  <th class="px-3 py-2 text-left">Sucursal</th>
+                  <th class="px-3 py-2 text-right">Compra</th>
+                  <th class="px-3 py-2 text-right">Venta</th>
+                  <th class="px-3 py-2 text-right">MG real</th>
+                  <th class="px-3 py-2 text-right">Meta MG</th>
+                  <th class="px-3 py-2 text-right">vs Meta</th>
+                  <th class="px-3 py-2 text-center">Semáforo</th>
+                  <th class="px-3 py-2 text-left">Desde</th>
+                </tr>
+              </thead>
+              <tbody id="pvTbody">
+                <tr><td colspan="9" class="px-3 py-6 text-center text-stone-400">Cargando datos...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-xs text-stone-400 mt-2">Fuente: curated.v_margen_vs_costos · Actualiza Vigía 06:00 AM + Calibrador cada lunes</p>
+          <p class="text-xs text-stone-500 mt-1">Costo ref. = base de costo usada para margen. Precio vigente = valor publicado que debe ver equipo, widget y web. Esta vista no separa aún la referencia externa de venta.</p>
+        </div>
+      </details>
 
       <!-- Bandeja CEO (Etapa 4B · PC5 2026-06-11) -->
       <div id="pvBandejaWrap" class="mt-6 border border-amber-200 rounded-lg overflow-hidden">
@@ -17190,12 +17216,26 @@ document.addEventListener('DOMContentLoaded', () => {
       pvActualizarKPIs();
       pvPopularCategoriasFiltro();
       pvFiltrar();
+      pvRenderQueRevisar();
       pvCargarBandeja();
     } catch (e) {
       if (window.panelToastErr) panelToastErr('PreciosVivos', e); else console.warn('[PreciosVivos] error:', e);
       if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-4 text-center text-red-400">Error al cargar: ' + String(e).slice(0, 80) + '</td></tr>';
     }
   }
+
+  // Fecha de corte "reparación" del piso de margen — DECISIÓN DOCUMENTADA
+  // (pedido Dusan 2026-07-09, "no vale usar líneas viejas como prueba de que
+  // los precios están bien"): 2026-07-09 es cuando T-77 (mig 365) cerró el
+  // hueco real del piso — antes, una categoría sin fila en curated.margen_metas
+  // pasaba SIN freno; y T-78 (mig 366) cerró el bypass directo al RPC el mismo
+  // día. Un precio con vigencia_desde anterior a esa fecha pudo quedar vigente
+  // sin que el piso lo validara de verdad. No significa "estaba mal" — significa
+  // "no hay garantía de que pasó por el freno real". Es una fecha fija en
+  // frontend a falta de una columna real en BD (ej. un flag "validado_piso_at")
+  // — si esa fuente mejor aparece, reemplazar esta constante por ese dato.
+  const PV_FECHA_REPARACION = '2026-07-09';
+  const pvEsPostReparacion = (vigenciaDesde) => !!vigenciaDesde && vigenciaDesde >= PV_FECHA_REPARACION;
 
   function pvActualizarKPIs() {
     const verde   = pvData.filter(r => r.semaforo?.includes('verde')).length;
@@ -17204,11 +17244,70 @@ document.addEventListener('DOMContentLoaded', () => {
     const mgProm  = pvData.length
       ? (pvData.reduce((s, r) => s + Number(r.mg_real_pct || 0), 0) / pvData.length).toFixed(1)
       : null;
+    const post = pvData.filter(r => pvEsPostReparacion(r.vigencia_desde)).length;
+    const pre  = pvData.length - post;
     const el = (id) => document.getElementById(id);
     if (el('pvVerde'))   el('pvVerde').textContent   = verde;
     if (el('pvAmarillo')) el('pvAmarillo').textContent = amarillo;
     if (el('pvRojo'))    el('pvRojo').textContent    = rojo;
     if (el('pvMgProm'))  el('pvMgProm').textContent  = mgProm !== null ? mgProm + '%' : '—';
+    if (el('pvPreReparacion'))  el('pvPreReparacion').textContent  = pre;
+    if (el('pvPostReparacion')) el('pvPostReparacion').textContent = post;
+  }
+
+  // "Qué revisar hoy" — regla de resúmenes clicables (pedido Dusan 2026-07-09):
+  // misma fuente que la tabla completa (pvData, sin fetch aparte = sin doble
+  // verdad). Prioridad: rojos primero (peor vs meta primero), después amarillos,
+  // tope 15 filas (dentro del rango 10-20 pedido). Cada fila es clicable y abre
+  // su detalle inline expandiendo/colapsando — no navega a otra vista.
+  let pvQueRevisarRows = [];
+  function pvRenderQueRevisar() {
+    const cont = document.getElementById('pvQueRevisarList');
+    if (!cont) return;
+    const rojos = pvData.filter(r => (r.semaforo || '').includes('rojo'))
+      .sort((a, b) => Number(a.mg_vs_meta || 0) - Number(b.mg_vs_meta || 0));
+    const amarillos = pvData.filter(r => (r.semaforo || '').includes('amarillo'))
+      .sort((a, b) => Number(a.mg_vs_meta || 0) - Number(b.mg_vs_meta || 0));
+    pvQueRevisarRows = [...rojos, ...amarillos].slice(0, 15);
+
+    if (!pvQueRevisarRows.length) {
+      cont.innerHTML = '<div class="px-4 py-4 text-sm text-emerald-600">✅ Nada rojo ni amarillo pendiente de revisar.</div>';
+      return;
+    }
+    const fmtClp = (v) => v != null ? '$' + Number(v).toLocaleString('es-CL') + '/kg' : '—';
+    const fmtPct = (v) => v != null ? Number(v).toFixed(1) + '%' : '—';
+    cont.innerHTML = pvQueRevisarRows.map((r, i) => {
+      const post = pvEsPostReparacion(r.vigencia_desde);
+      return `
+      <div>
+        <button onclick="window.pvToggleQueRevisar && window.pvToggleQueRevisar(${i})"
+          class="w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-stone-50">
+          <span class="text-base">${r.semaforo || '—'}</span>
+          <span class="flex-1 font-medium text-stone-800">${r.nombre || r.material_id}</span>
+          <span class="text-xs text-stone-500">${r.sucursal_nombre || r.sucursal_id}</span>
+          <span class="text-sm font-semibold ${Number(r.mg_vs_meta) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${fmtPct(r.mg_vs_meta)} vs meta</span>
+          <span class="text-xs px-1.5 py-0.5 rounded ${post ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-100 text-stone-500'}">${post ? 'post-reparación' : 'pre-reparación'}</span>
+          <span id="pvQrArrow${i}" class="text-stone-400">▸</span>
+        </button>
+        <div id="pvQrDetalle${i}" class="hidden px-4 pb-3 pl-11 text-sm text-stone-600 bg-stone-50">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 pt-2">
+            <div>Costo ref.: <span class="font-mono">${fmtClp(r.precio_compra_clp)}</span></div>
+            <div>Precio vigente: <span class="font-mono">${fmtClp(r.precio_venta_clp)}</span></div>
+            <div>MG real: <span class="font-semibold">${fmtPct(r.mg_real_pct)}</span></div>
+            <div>Meta MG: ${fmtPct(r.mg_meta_pct)}</div>
+          </div>
+          <div class="mt-1 text-xs text-stone-500">Vigente desde ${r.vigencia_desde || '—'} · categoría ${(r.categoria || '—').replace(/_/g,' ')}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  function pvToggleQueRevisar(i) {
+    const det = document.getElementById('pvQrDetalle' + i);
+    const arrow = document.getElementById('pvQrArrow' + i);
+    if (!det) return;
+    const abierto = !det.classList.contains('hidden');
+    det.classList.toggle('hidden');
+    if (arrow) arrow.textContent = abierto ? '▸' : '▾';
   }
 
   let pvVista = 'material';
@@ -17339,6 +17438,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.pvCargar        = pvCargar;
   window.pvFiltrar       = pvFiltrar;
   window.pvSetVista      = pvSetVista;
+  window.pvToggleQueRevisar = pvToggleQueRevisar;
   window.initPreciosVivos = initPreciosVivos;
 })();
 </script>
@@ -18589,11 +18689,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!huboMetadataPrevia) calcAplicarMargenMetaCategoria(matId);
     try {
       if (sucId) {
+        // BUG FIX 2026-07-09 (caza Dusan, Fierro Corto/Cerrillos): el .is('vigencia_hasta', null)
+        // que estaba acá exigía vigencia_hasta EXACTAMENTE null — pero la vista
+        // curated.vw_materiales_sucursal_precios_vigente ya filtra sola
+        // "vigencia_hasta IS NULL OR vigencia_hasta >= CURRENT_DATE" (DISTINCT ON
+        // material_id,sucursal_id, máximo 1 fila). Un precio vigente con fecha de
+        // término futura real (ej. H1-ROUNDING-FIX, vigencia_hasta=2026-09-10) es
+        // igual de vigente hoy, pero ese filtro extra lo excluía — Calculadora
+        // decía "Sin vigente actual" mientras Precios Vivos (que lee la misma
+        // vista sin ese filtro de más) sí lo mostraba. Se saca el filtro redundante.
         const { data: vigenteRows } = await sb.schema('curated').from('vw_materiales_sucursal_precios_vigente')
           .select('precio_venta_clp, vigencia_desde')
           .eq('material_id', matId)
           .eq('sucursal_id', sucId)
-          .is('vigencia_hasta', null)
           .order('vigencia_desde', { ascending: false })
           .limit(1);
         const vigente = vigenteRows && vigenteRows.length ? vigenteRows[0] : null;
