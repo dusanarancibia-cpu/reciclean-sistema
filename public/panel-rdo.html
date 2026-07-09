@@ -2172,30 +2172,36 @@
 
       <!-- KPIs (portada corta — T-XX 2026-07-09, pedido Dusan: "la tabla larga eterna no sirve como portada") -->
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
-        <div class="bg-white p-3 rounded-md shadow-sm">
+        <button type="button" onclick="window.pvAplicarResumen && window.pvAplicarResumen('verde')" class="bg-white p-3 rounded-md shadow-sm text-left hover:ring-2 hover:ring-emerald-200">
           <div class="text-xs text-stone-500">🟢 Verde (sobre meta)</div>
           <div id="pvVerde" class="text-2xl font-bold text-emerald-600">—</div>
-        </div>
-        <div class="bg-white p-3 rounded-md shadow-sm">
+          <div class="text-[11px] text-stone-400 mt-1">Click: ver solo líneas sanas visibles</div>
+        </button>
+        <button type="button" onclick="window.pvAplicarResumen && window.pvAplicarResumen('amarillo')" class="bg-white p-3 rounded-md shadow-sm text-left hover:ring-2 hover:ring-amber-200">
           <div class="text-xs text-stone-500">🟡 Amarillo (sobre piso)</div>
           <div id="pvAmarillo" class="text-2xl font-bold text-amber-500">—</div>
-        </div>
-        <div class="bg-white p-3 rounded-md shadow-sm">
+          <div class="text-[11px] text-stone-400 mt-1">Click: ver alertas intermedias</div>
+        </button>
+        <button type="button" onclick="window.pvAplicarResumen && window.pvAplicarResumen('rojo')" class="bg-white p-3 rounded-md shadow-sm text-left hover:ring-2 hover:ring-rose-200">
           <div class="text-xs text-stone-500">🔴 Rojo (bajo piso)</div>
           <div id="pvRojo" class="text-2xl font-bold text-red-600">—</div>
-        </div>
-        <div class="bg-white p-3 rounded-md shadow-sm">
+          <div class="text-[11px] text-stone-400 mt-1">Click: ver urgencias reales</div>
+        </button>
+        <button type="button" onclick="window.pvAplicarResumen && window.pvAplicarResumen('todos_post')" class="bg-white p-3 rounded-md shadow-sm text-left hover:ring-2 hover:ring-stone-200">
           <div class="text-xs text-stone-500">MG promedio</div>
           <div id="pvMgProm" class="text-2xl font-bold text-stone-700">—</div>
-        </div>
-        <div class="bg-white p-3 rounded-md shadow-sm border-l-4 border-stone-300" title="Precio vigente desde antes del cierre del piso de margen (2026-07-09) — no confiar en esta línea como prueba de que el piso se validó.">
+          <div class="text-[11px] text-stone-400 mt-1">Click: volver a la vista operativa base</div>
+        </button>
+        <button type="button" onclick="window.pvAplicarResumen && window.pvAplicarResumen('pre')" class="bg-white p-3 rounded-md shadow-sm border-l-4 border-stone-300 text-left hover:ring-2 hover:ring-stone-200" title="Precio vigente desde antes del cierre del piso de margen (2026-07-09) — no confiar en esta línea como prueba de que el piso se validó.">
           <div class="text-xs text-stone-500">⏳ Pre-reparación</div>
           <div id="pvPreReparacion" class="text-2xl font-bold text-stone-500">—</div>
-        </div>
-        <div class="bg-white p-3 rounded-md shadow-sm border-l-4 border-emerald-300" title="Precio vigente desde 2026-07-09 o después — sí pasó por el piso de margen validado (T-77/T-78).">
+          <div class="text-[11px] text-stone-400 mt-1">Click: abrir heredados para auditoría</div>
+        </button>
+        <button type="button" onclick="window.pvAplicarResumen && window.pvAplicarResumen('post')" class="bg-white p-3 rounded-md shadow-sm border-l-4 border-emerald-300 text-left hover:ring-2 hover:ring-emerald-200" title="Precio vigente desde 2026-07-09 o después — sí pasó por el piso de margen validado (T-77/T-78).">
           <div class="text-xs text-stone-500">✅ Post-reparación</div>
           <div id="pvPostReparacion" class="text-2xl font-bold text-emerald-700">—</div>
-        </div>
+          <div class="text-[11px] text-stone-400 mt-1">Click: ver solo base operativa nueva</div>
+        </button>
       </div>
 
       <!-- Qué revisar hoy (centro, misma fuente pvData — sin doble verdad) -->
@@ -2236,11 +2242,17 @@
               <option value="amarillo">🟡 Solo amarillos</option>
               <option value="verde">🟢 Solo verdes</option>
             </select>
+            <select id="pvFiltroConfiabilidad" onchange="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1" title="Por defecto solo post-reparación. Pre-reparación/Todos es modo auditoría, no verdad operativa.">
+              <option value="post" selected>✅ Solo post-reparación (por defecto)</option>
+              <option value="todos">🔍 Todos (auditoría)</option>
+              <option value="pre">⏳ Solo pre-reparación (auditoría)</option>
+            </select>
             <select id="pvFiltroCategoria" onchange="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1">
               <option value="">Todas las categorías</option>
             </select>
             <input type="text" id="pvBuscar" placeholder="Buscar material..." oninput="window.pvFiltrar && window.pvFiltrar()" class="text-sm border rounded px-2 py-1 flex-1 min-w-36">
           </div>
+          <p id="pvFiltroAyuda" class="text-xs text-stone-500 mb-3">Por defecto esta portada oculta líneas heredadas/pre-reparación. Ábrelas solo para auditoría.</p>
 
           <!-- Leyenda umbrales semáforo (T-35 · SPEC L130) -->
           <div class="flex flex-wrap gap-3 text-xs text-stone-500 mb-3 px-1">
@@ -2263,11 +2275,12 @@
                   <th class="px-3 py-2 text-right">Meta MG</th>
                   <th class="px-3 py-2 text-right">vs Meta</th>
                   <th class="px-3 py-2 text-center">Semáforo</th>
+                  <th class="px-3 py-2 text-left">Confiabilidad</th>
                   <th class="px-3 py-2 text-left">Desde</th>
                 </tr>
               </thead>
               <tbody id="pvTbody">
-                <tr><td colspan="9" class="px-3 py-6 text-center text-stone-400">Cargando datos...</td></tr>
+                <tr><td colspan="10" class="px-3 py-6 text-center text-stone-400">Cargando datos...</td></tr>
               </tbody>
             </table>
           </div>
@@ -17201,6 +17214,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let pvData = [];
   let pvTimer = null;
   const REFRESH_MS = 5 * 60 * 1000; // 5 min
+  let pvConfiabilidadDefault = 'post';
   // Se deja también en window porque esta función se expone globalmente y en
   // algunos arranques locales terminaba evaluándose fuera del cierre del IIFE.
   window.PV_OCULTAR_BANDEJA_CEO_LOCAL = true;
@@ -17213,10 +17227,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data, error } = await sb.schema('curated').from('v_margen_vs_costos').select('*');
       if (error) throw error;
       pvData = data || [];
-      pvActualizarKPIs();
       pvPopularCategoriasFiltro();
-      pvFiltrar();
-      pvRenderQueRevisar();
+      pvFiltrar(); // ya llama pvActualizarKPIs() + pvRenderQueRevisar() internamente
       pvCargarBandeja();
     } catch (e) {
       if (window.panelToastErr) panelToastErr('PreciosVivos', e); else console.warn('[PreciosVivos] error:', e);
@@ -17236,13 +17248,41 @@ document.addEventListener('DOMContentLoaded', () => {
   // — si esa fuente mejor aparece, reemplazar esta constante por ese dato.
   const PV_FECHA_REPARACION = '2026-07-09';
   const pvEsPostReparacion = (vigenciaDesde) => !!vigenciaDesde && vigenciaDesde >= PV_FECHA_REPARACION;
+  function pvLineaConfiabilidad(r) {
+    return pvEsPostReparacion(r?.vigencia_desde) ? 'post' : 'pre';
+  }
+  function pvFilasVisiblesBase() {
+    const suc = (document.getElementById('pvFiltroSucursal') || {}).value || '';
+    const sem = (document.getElementById('pvFiltroSemaforo') || {}).value || '';
+    const cat = (document.getElementById('pvFiltroCategoria') || {}).value || '';
+    const conf = (document.getElementById('pvFiltroConfiabilidad') || {}).value || pvConfiabilidadDefault || 'post';
+    const bus = ((document.getElementById('pvBuscar') || {}).value || '').toLowerCase();
 
+    let rows = pvData.slice();
+    if (conf === 'post') rows = rows.filter(r => pvLineaConfiabilidad(r) === 'post');
+    else if (conf === 'pre') rows = rows.filter(r => pvLineaConfiabilidad(r) === 'pre');
+    if (suc) rows = rows.filter(r => r.sucursal_id === suc);
+    if (sem) rows = rows.filter(r => (r.semaforo || '').toLowerCase().includes(sem));
+    if (cat) rows = rows.filter(r => r.categoria === cat);
+    if (bus) rows = rows.filter(r => (r.nombre || r.material_id || '').toLowerCase().includes(bus));
+    return rows;
+  }
+
+  // KPIs verde/amarillo/rojo/MG promedio: leen de pvFilasVisiblesBase() (misma
+  // función que arma "Qué revisar hoy" y la tabla completa) — así el resumen de
+  // arriba SIEMPRE coincide con lo que las listas de abajo están mostrando, sin
+  // importar si el usuario está en modo operativo (post) o auditoría (pre/todos).
+  // Pre-reparación/Post-reparación son la única excepción a propósito: siempre
+  // muestran el total real de pvData completo, porque su función es revelar
+  // cuánto queda oculto y ofrecer el acceso a auditoría — no serían útiles si
+  // también quedaran filtrados por el propio filtro que activan.
   function pvActualizarKPIs() {
-    const verde   = pvData.filter(r => r.semaforo?.includes('verde')).length;
-    const amarillo = pvData.filter(r => r.semaforo?.includes('amarillo')).length;
-    const rojo    = pvData.filter(r => r.semaforo?.includes('rojo')).length;
-    const mgProm  = pvData.length
-      ? (pvData.reduce((s, r) => s + Number(r.mg_real_pct || 0), 0) / pvData.length).toFixed(1)
+    const visibles = pvFilasVisiblesBase();
+    const verde   = visibles.filter(r => r.semaforo?.includes('verde')).length;
+    const amarillo = visibles.filter(r => r.semaforo?.includes('amarillo')).length;
+    const rojo    = visibles.filter(r => r.semaforo?.includes('rojo')).length;
+    const mgProm  = visibles.length
+      ? (visibles.reduce((s, r) => s + Number(r.mg_real_pct || 0), 0) / visibles.length).toFixed(1)
       : null;
     const post = pvData.filter(r => pvEsPostReparacion(r.vigencia_desde)).length;
     const pre  = pvData.length - post;
@@ -17264,14 +17304,16 @@ document.addEventListener('DOMContentLoaded', () => {
   function pvRenderQueRevisar() {
     const cont = document.getElementById('pvQueRevisarList');
     if (!cont) return;
-    const rojos = pvData.filter(r => (r.semaforo || '').includes('rojo'))
+    const baseRows = pvFilasVisiblesBase();
+    const rojos = baseRows.filter(r => (r.semaforo || '').includes('rojo'))
       .sort((a, b) => Number(a.mg_vs_meta || 0) - Number(b.mg_vs_meta || 0));
-    const amarillos = pvData.filter(r => (r.semaforo || '').includes('amarillo'))
+    const amarillos = baseRows.filter(r => (r.semaforo || '').includes('amarillo'))
       .sort((a, b) => Number(a.mg_vs_meta || 0) - Number(b.mg_vs_meta || 0));
     pvQueRevisarRows = [...rojos, ...amarillos].slice(0, 15);
 
     if (!pvQueRevisarRows.length) {
-      cont.innerHTML = '<div class="px-4 py-4 text-sm text-emerald-600">✅ Nada rojo ni amarillo pendiente de revisar.</div>';
+      const conf = (document.getElementById('pvFiltroConfiabilidad') || {}).value || pvConfiabilidadDefault || 'post';
+      cont.innerHTML = '<div class="px-4 py-4 text-sm text-emerald-600">✅ Nada rojo ni amarillo pendiente de revisar en la vista ' + (conf === 'post' ? 'post-reparación' : conf === 'pre' ? 'pre-reparación' : 'actual') + '.</div>';
       return;
     }
     const fmtClp = (v) => v != null ? '$' + Number(v).toLocaleString('es-CL') + '/kg' : '—';
@@ -17342,22 +17384,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function pvAplicarResumen(tipo) {
+    const semSel = document.getElementById('pvFiltroSemaforo');
+    const confSel = document.getElementById('pvFiltroConfiabilidad');
+    if (semSel && ['rojo','amarillo','verde'].includes(tipo)) semSel.value = tipo;
+    if (semSel && ['post','pre','todos_post'].includes(tipo)) semSel.value = '';
+    if (confSel) {
+      if (tipo === 'pre') confSel.value = 'pre';
+      else if (tipo === 'post' || tipo === 'todos_post') confSel.value = 'post';
+      else if (!confSel.value) confSel.value = pvConfiabilidadDefault || 'post';
+    }
+    pvFiltrar();
+    const det = document.querySelector('#tabPreciosVivos details');
+    if (det) det.open = true;
+  }
+
   function pvFiltrar() {
     const tbody = document.getElementById('pvTbody');
     if (!tbody) return;
-    const suc = (document.getElementById('pvFiltroSucursal') || {}).value || '';
-    const sem = (document.getElementById('pvFiltroSemaforo') || {}).value || '';
-    const cat = (document.getElementById('pvFiltroCategoria') || {}).value || '';
-    const bus = ((document.getElementById('pvBuscar') || {}).value || '').toLowerCase();
-
-    let rows = pvData;
-    if (suc) rows = rows.filter(r => r.sucursal_id === suc);
-    if (sem) rows = rows.filter(r => (r.semaforo || '').toLowerCase().includes(sem));
-    if (cat) rows = rows.filter(r => r.categoria === cat);
-    if (bus) rows = rows.filter(r => (r.nombre || r.material_id || '').toLowerCase().includes(bus));
+    const help = document.getElementById('pvFiltroAyuda');
+    const conf = (document.getElementById('pvFiltroConfiabilidad') || {}).value || pvConfiabilidadDefault || 'post';
+    let rows = pvFilasVisiblesBase();
+    if (help) {
+      help.textContent = conf === 'post'
+        ? 'Por defecto esta portada oculta líneas heredadas/pre-reparación. Ábrelas solo para auditoría.'
+        : conf === 'pre'
+          ? 'Estás auditando líneas heredadas/pre-reparación. No las tomes como verdad operativa actual.'
+          : 'Estás viendo todo mezclado. Usa esta vista solo para auditoría, no para decidir a ciegas.';
+    }
+    pvRenderQueRevisar();
+    pvActualizarKPIs(); // mismo cambio de filtro → resumen de arriba y listas de abajo se actualizan juntos, nunca desincronizados
 
     if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-4 text-center text-stone-400">Sin resultados.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10" class="px-3 py-4 text-center text-stone-400">Sin resultados para la vista seleccionada.</td></tr>';
       return;
     }
 
@@ -17410,7 +17469,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }).join('');
     } else {
       const thead = document.querySelector('#pvTbody')?.closest('table')?.querySelector('thead');
-      if (thead) thead.innerHTML = '<tr class="bg-stone-100 text-stone-600 text-xs uppercase"><th class="px-3 py-2 text-left">Material</th><th class="px-3 py-2 text-left">Sucursal</th><th class="px-3 py-2 text-right">Costo ref.</th><th class="px-3 py-2 text-right">Precio vigente</th><th class="px-3 py-2 text-right">MG real</th><th class="px-3 py-2 text-right">Meta MG</th><th class="px-3 py-2 text-right">vs Meta</th><th class="px-3 py-2 text-center">Semáforo</th><th class="px-3 py-2 text-left">Desde</th></tr>';
+      if (thead) thead.innerHTML = '<tr class="bg-stone-100 text-stone-600 text-xs uppercase"><th class="px-3 py-2 text-left">Material</th><th class="px-3 py-2 text-left">Sucursal</th><th class="px-3 py-2 text-right">Costo ref.</th><th class="px-3 py-2 text-right">Precio vigente</th><th class="px-3 py-2 text-right">MG real</th><th class="px-3 py-2 text-right">Meta MG</th><th class="px-3 py-2 text-right">vs Meta</th><th class="px-3 py-2 text-center">Semáforo</th><th class="px-3 py-2 text-left">Confiabilidad</th><th class="px-3 py-2 text-left">Desde</th></tr>';
       tbody.innerHTML = rows.map(r => `
         <tr class="${rowBg(r.semaforo)} hover:bg-stone-50 border-b border-stone-100">
           <td class="px-3 py-2 font-medium text-stone-800">${r.nombre || r.material_id}</td>
@@ -17421,6 +17480,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <td class="px-3 py-2 text-right text-stone-500">${fmtPct(r.mg_meta_pct)}</td>
           <td class="px-3 py-2 text-right ${Number(r.mg_vs_meta) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${fmtDelta(r.mg_vs_meta)}</td>
           <td class="px-3 py-2 text-center text-base">${r.semaforo || '—'}</td>
+          <td class="px-3 py-2 text-xs">${pvEsPostReparacion(r.vigencia_desde) ? '<span class="inline-flex px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">post-reparación</span>' : '<span class="inline-flex px-2 py-0.5 rounded bg-stone-100 text-stone-600">pre-reparación</span>'}</td>
           <td class="px-3 py-2 text-stone-400 text-xs">${r.vigencia_desde || '—'}</td>
         </tr>`).join('');
     }
@@ -17439,6 +17499,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.pvFiltrar       = pvFiltrar;
   window.pvSetVista      = pvSetVista;
   window.pvToggleQueRevisar = pvToggleQueRevisar;
+  window.pvAplicarResumen = pvAplicarResumen;
   window.initPreciosVivos = initPreciosVivos;
 })();
 </script>
