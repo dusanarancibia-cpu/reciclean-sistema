@@ -17301,10 +17301,34 @@ document.addEventListener('DOMContentLoaded', () => {
   // tope 15 filas (dentro del rango 10-20 pedido). Cada fila es clicable y abre
   // su detalle inline expandiendo/colapsando — no navega a otra vista.
   let pvQueRevisarRows = [];
+  // Cuántas líneas del total quedan en auditoría pre-reparación (independiente
+  // del filtro actual) — usado por el mensaje de estado vacío de abajo.
+  function pvConteoPreReparacionTotal() {
+    return pvData.length - pvData.filter(r => pvEsPostReparacion(r.vigencia_desde)).length;
+  }
+
   function pvRenderQueRevisar() {
     const cont = document.getElementById('pvQueRevisarList');
     if (!cont) return;
     const baseRows = pvFilasVisiblesBase();
+    const conf = (document.getElementById('pvFiltroConfiabilidad') || {}).value || pvConfiabilidadDefault || 'post';
+
+    // Vista post-reparación con 0 líneas en TOTAL (no es que no haya rojos/
+    // amarillos — es que no hay ninguna línea post-reparación todavía). No es
+    // un error del sistema, es el estado esperado mientras no se aplique ningún
+    // precio con vigencia_desde >= PV_FECHA_REPARACION. Pedido Dusan 2026-07-09.
+    if (conf === 'post' && baseRows.length === 0) {
+      const totalPre = pvConteoPreReparacionTotal();
+      cont.innerHTML = '<div class="px-4 py-4 text-sm text-stone-600">'
+        + '📭 <strong>0 materiales post-reparación todavía.</strong> '
+        + totalPre + ' materiales quedaron en auditoría pre-reparación. '
+        + 'Esto no es un error del sistema — es el estado esperado mientras no se aplique ningún precio nuevo desde el ' + PV_FECHA_REPARACION + '. '
+        + '<button type="button" onclick="window.pvAplicarResumen && window.pvAplicarResumen(\'pre\')" class="underline text-stone-700 hover:text-stone-900">Ver auditoría pre-reparación →</button>'
+        + '</div>';
+      pvQueRevisarRows = [];
+      return;
+    }
+
     const rojos = baseRows.filter(r => (r.semaforo || '').includes('rojo'))
       .sort((a, b) => Number(a.mg_vs_meta || 0) - Number(b.mg_vs_meta || 0));
     const amarillos = baseRows.filter(r => (r.semaforo || '').includes('amarillo'))
@@ -17312,7 +17336,6 @@ document.addEventListener('DOMContentLoaded', () => {
     pvQueRevisarRows = [...rojos, ...amarillos].slice(0, 15);
 
     if (!pvQueRevisarRows.length) {
-      const conf = (document.getElementById('pvFiltroConfiabilidad') || {}).value || pvConfiabilidadDefault || 'post';
       cont.innerHTML = '<div class="px-4 py-4 text-sm text-emerald-600">✅ Nada rojo ni amarillo pendiente de revisar en la vista ' + (conf === 'post' ? 'post-reparación' : conf === 'pre' ? 'pre-reparación' : 'actual') + '.</div>';
       return;
     }
@@ -17405,9 +17428,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const help = document.getElementById('pvFiltroAyuda');
     const conf = (document.getElementById('pvFiltroConfiabilidad') || {}).value || pvConfiabilidadDefault || 'post';
     let rows = pvFilasVisiblesBase();
+    const totalPreParaAyuda = pvConteoPreReparacionTotal();
     if (help) {
       help.textContent = conf === 'post'
-        ? 'Por defecto esta portada oculta líneas heredadas/pre-reparación. Ábrelas solo para auditoría.'
+        ? (rows.length === 0
+            ? '📭 0 materiales post-reparación todavía · ' + totalPreParaAyuda + ' en auditoría pre-reparación. No es un error — cambia el filtro de arriba a "auditoría" para verlos.'
+            : 'Por defecto esta portada oculta líneas heredadas/pre-reparación. Ábrelas solo para auditoría.')
         : conf === 'pre'
           ? 'Estás auditando líneas heredadas/pre-reparación. No las tomes como verdad operativa actual.'
           : 'Estás viendo todo mezclado. Usa esta vista solo para auditoría, no para decidir a ciegas.';
@@ -17416,7 +17442,9 @@ document.addEventListener('DOMContentLoaded', () => {
     pvActualizarKPIs(); // mismo cambio de filtro → resumen de arriba y listas de abajo se actualizan juntos, nunca desincronizados
 
     if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="10" class="px-3 py-4 text-center text-stone-400">Sin resultados para la vista seleccionada.</td></tr>';
+      tbody.innerHTML = conf === 'post'
+        ? '<tr><td colspan="10" class="px-3 py-6 text-center text-stone-500">📭 0 materiales post-reparación todavía · ' + totalPreParaAyuda + ' en auditoría pre-reparación. No es un error del sistema.</td></tr>'
+        : '<tr><td colspan="10" class="px-3 py-4 text-center text-stone-400">Sin resultados para la vista seleccionada.</td></tr>';
       return;
     }
 
