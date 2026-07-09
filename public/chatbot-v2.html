@@ -311,6 +311,9 @@ const RF_CONFIG = {
   EMAIL: 'comercial@gestionrepchile.cl',
   VERSION: '1.0-mvp'
 };
+// Flag de migración: activado para enrutar el widget al intake canónico.
+// Si la EF falla, el wrapper conserva fallback al camino legacy.
+const RF_USE_INTAKE_V1 = true;
 
 // Estado global del flujo
 let rfState = {};
@@ -387,7 +390,7 @@ function rfTrack(evento, metadata) {
   } catch (e) { console.warn('[RF Chatbot] rfTrack falló (no bloqueante):', e); }
 }
 
-// Crea la oportunidad en curated.oportunidades al cerrar el flujo.
+// Camino legacy: crea la oportunidad en curated.oportunidades al cerrar el flujo.
 // Fire-and-forget: no bloquea la generación del enlace de WhatsApp, que
 // el visitante debe poder abrir aunque este INSERT falle.
 //
@@ -397,7 +400,7 @@ function rfTrack(evento, metadata) {
 // escribir en `responsable` ni fijar `estado` distinto de 'prospeccion').
 // Sin ese GRANT, este fetch falla en silencio — mismo patrón defensivo
 // que ya usa rfTrack, no rompe el widget si el permiso todavía no existe.
-function rfCrearOportunidad() {
+function rfCrearOportunidadLegacy() {
   try {
     const sucursalId = RF_SUCURSAL_ID[rfState.sucursal] || null;
     const materialLabel = rfState.material || 'Consulta general';
@@ -439,6 +442,83 @@ function rfCrearOportunidad() {
       })
     }).catch(function (e) { console.warn('[RF Chatbot] rfCrearOportunidad falló (no bloqueante):', e); });
   } catch (e) { console.warn('[RF Chatbot] rfCrearOportunidad falló (no bloqueante):', e); }
+}
+
+function rfBuildIntakePayload(materialLabel, tituloEmpresa) {
+  const intentLabels = {
+    vender_material: 'Quiero vender material',
+    cotizar_retiro: 'Cotizar retiro',
+    donar: 'Quiero donar material',
+    meditar: 'Me gustaría que me contacten luego',
+    materiales_varios: 'Consulta por materiales varios'
+  };
+  const mensajeWhatsapp = rfGenerarMensajeWhatsApp();
+  const waLink = 'https://wa.me/' + RF_CONFIG.WHATSAPP + '?text=' + encodeURIComponent(mensajeWhatsapp);
+
+  return {
+    material: materialLabel,
+    cliente_nombre_libre: 'Visitante web anónimo',
+    resumen: 'Solicitud comercial desde widget web guiado',
+    titulo_referencia: 'Venta ' + materialLabel + ' — Widget web (' + tituloEmpresa + ')',
+    ciudad: rfState.ciudad || null,
+    sucursal_label: rfState.sucursal || null,
+    intent: rfState.intent || null,
+    intent_label: intentLabels[rfState.intent] || 'Consulta comercial desde widget',
+    modo_entrega: rfState.modo_entrega || null,
+    precio_referencia: typeof rfState.precio === 'number' ? Math.round(rfState.precio) : null,
+    tipo_cliente: rfState.tipo_cliente || null,
+    requiere_cert_rep: !!rfState.requiere_cert_rep,
+    whatsapp_prefill_message: mensajeWhatsapp,
+    whatsapp_prefill_url: waLink
+  };
+}
+
+function rfCrearIntakeComercial() {
+  const sucursalId = RF_SUCURSAL_ID[rfState.sucursal] || null;
+  const materialLabel = rfState.material || 'Consulta general';
+  const tituloEmpresa = rfState.empresa === 'farex' ? 'Farex' : 'Reciclean';
+  const endpoint = RF_CONFIG.SUPABASE_URL + '/functions/v1/intake-comercial-web';
+  const payload = rfBuildIntakePayload(materialLabel, tituloEmpresa);
+
+  return fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': RF_CONFIG.SUPABASE_KEY,
+      'Authorization': 'Bearer ' + RF_CONFIG.SUPABASE_KEY
+    },
+    body: JSON.stringify({
+      surface_id: 'widget_comercial_guiado',
+      channel: 'web_publica',
+      intent_type: 'solicitud_cotizacion',
+      requested_handoff: true,
+      source_session_ref: rfSessionId,
+      source_session_kind: 'chatbot_v2_session_id_origen',
+      empresa_contexto: rfEmpresa,
+      idioma: 'es',
+      source_url: document.referrer || window.location.href,
+      sucursal_ref: sucursalId,
+      payload: payload
+    })
+  }).then(async function (resp) {
+    if (!resp.ok) {
+      const detail = await resp.text().catch(function () { return ''; });
+      throw new Error('HTTP ' + resp.status + ' ' + detail.slice(0, 200));
+    }
+    return resp.json().catch(function () { return null; });
+  });
+}
+
+function rfCrearCasoComercial() {
+  if (!RF_USE_INTAKE_V1) {
+    rfCrearOportunidadLegacy();
+    return;
+  }
+
+  rfCrearIntakeComercial().catch(function (e) {
+    console.warn('[RF Chatbot] intake v1 falló; fallback a legacy:', e);
+    rfCrearOportunidadLegacy();
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1028,10 +1108,9 @@ function rfGenerarMensajeWhatsApp() {
 }
 
 function rfNodo7() {
-  // Crear la oportunidad en curated.oportunidades (no bloqueante — ver
-  // rfCrearOportunidad, requiere GRANT INSERT aplicado en producción
-  // antes de que esto realmente escriba algo).
-  rfCrearOportunidad();
+  // Crear el caso comercial (vía intake v1 o vía legacy, según flag).
+  // No bloquea el deeplink de WhatsApp ni la continuidad del visitante.
+  rfCrearCasoComercial();
 
   // Generar WhatsApp deeplink
   const mensaje = rfGenerarMensajeWhatsApp();
