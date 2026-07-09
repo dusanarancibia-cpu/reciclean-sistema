@@ -1942,6 +1942,7 @@
           <label for="bpFiltroRuta" class="block text-xs text-stone-500 mb-1">Ruta</label>
           <select id="bpFiltroRuta" onchange="loadBandejaPrecios()" autocomplete="off" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
             <option value="" selected>Todas las rutas</option>
+            <option value="manual_calc">Calculadora</option>
             <option value="dusan">Dusan</option>
             <option value="andrea">andrea</option>
             <option value="auto">auto</option>
@@ -1967,7 +1968,7 @@
           </select>
         </div>
         <div>
-          <label class="block text-xs text-stone-500 mb-1">Propuesto $/kg</label>
+          <label class="block text-xs text-stone-500 mb-1">Precio nuevo $/kg</label>
           <div class="flex items-center gap-1">
             <input id="bpFiltroPrecioMin" type="number" placeholder="Mín" min="0" step="1"
                    oninput="bpAplicarFiltrosClienteSide()"
@@ -1979,7 +1980,7 @@
           </div>
         </div>
         <div>
-          <label class="block text-xs text-stone-500 mb-1">Vigente $/kg</label>
+          <label class="block text-xs text-stone-500 mb-1">Precio vigente actual $/kg</label>
           <div class="flex items-center gap-1">
             <input id="bpFiltroVigenteMin" type="number" placeholder="Mín" min="0" step="1"
                    oninput="bpAplicarFiltrosClienteSide()"
@@ -2042,8 +2043,8 @@
               <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="cliente_nombre" onclick="bpSortar('cliente_nombre')">Cliente <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
               <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="material_nombre" onclick="bpSortar('material_nombre')">Material <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
               <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="sucursal_nombre" onclick="bpSortar('sucursal_nombre')">Sucursal <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
-              <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="precio_clp_kg" onclick="bpSortar('precio_clp_kg')">Propuesto <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
-              <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="precio_vigente" onclick="bpSortar('precio_vigente')">Vigente <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
+              <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="precio_clp_kg" onclick="bpSortar('precio_clp_kg')">Precio nuevo <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
+              <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="precio_vigente" onclick="bpSortar('precio_vigente')">Vigente actual <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
               <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="desviacion_pct" onclick="bpSortar('desviacion_pct')">Δ% <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
               <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="confidence_score" onclick="bpSortar('confidence_score')">Conf. <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
               <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="ruta" onclick="bpSortar('ruta')">Ruta <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
@@ -2079,8 +2080,8 @@
             <div><dt class="text-xs text-stone-500">Material</dt><dd id="bpDw_material">—</dd></div>
             <div><dt class="text-xs text-stone-500">Sucursal</dt><dd id="bpDw_sucursal">—</dd></div>
             <div><dt class="text-xs text-stone-500">Vigencia</dt><dd id="bpDw_vigencia">—</dd></div>
-            <div><dt class="text-xs text-stone-500">Propuesto</dt><dd id="bpDw_propuesto" class="font-bold text-stone-900">—</dd></div>
-            <div><dt class="text-xs text-stone-500">Vigente</dt><dd id="bpDw_vigente">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Precio nuevo</dt><dd id="bpDw_propuesto" class="font-bold text-stone-900">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Vigente anterior</dt><dd id="bpDw_vigente">—</dd></div>
             <div><dt class="text-xs text-stone-500">Δ%</dt><dd id="bpDw_delta">—</dd></div>
             <div><dt class="text-xs text-stone-500">Confianza</dt><dd id="bpDw_confidence">—</dd></div>
             <div><dt class="text-xs text-stone-500">Ruta</dt><dd id="bpDw_ruta">—</dd></div>
@@ -2103,6 +2104,18 @@
               <span class="text-xs text-stone-500">CLP/kg</span>
             </div>
             <div id="bpMargenAjuste" class="text-xs text-stone-500 mt-1 hidden"></div>
+          </div>
+
+          <div id="bpOverrideBox" class="hidden bg-rose-50 border border-rose-200 rounded p-3 mb-3">
+            <div id="bpOverrideMsg" class="text-xs text-rose-800 font-medium mb-2">—</div>
+            <label class="flex items-center gap-2 text-xs text-stone-800">
+              <input id="bpOverrideCheck" type="checkbox" class="accent-rose-600" onchange="bpActualizarOverrideUI()">
+              Aplicar bajo mi responsabilidad (override CEO)
+            </label>
+            <input id="bpOverrideMotivo" type="text"
+                   placeholder="Motivo (obligatorio)"
+                   class="mt-2 w-full px-2 py-1 border border-rose-300 rounded text-sm focus:outline-none focus:border-rose-500"
+                   oninput="bpActualizarOverrideUI()">
           </div>
 
           <div class="flex flex-wrap gap-2 mb-3">
@@ -2235,12 +2248,13 @@
         </table>
       </div>
       <p class="text-xs text-stone-400 mt-2">Fuente: curated.v_margen_vs_costos · Actualiza Vigía 06:00 AM + Calibrador cada lunes</p>
+      <p class="text-xs text-stone-500 mt-1">Costo ref. = base de costo usada para margen. Precio vigente = valor publicado que debe ver equipo, widget y web. Esta vista no separa aún la referencia externa de venta.</p>
 
       <!-- Bandeja CEO (Etapa 4B · PC5 2026-06-11) -->
-      <div class="mt-6 border border-amber-200 rounded-lg overflow-hidden">
+      <div id="pvBandejaWrap" class="mt-6 border border-amber-200 rounded-lg overflow-hidden">
         <div class="bg-amber-50 px-4 py-2 flex items-center justify-between">
           <span class="font-semibold text-amber-800 text-sm">📬 Bandeja CEO — aprobaciones pendientes</span>
-          <span id="pvBandejaCnt" class="text-xs bg-amber-200 text-amber-900 rounded-full px-2 py-0.5">...</span>
+          <span id="pvBandejaCnt" class="text-xs bg-amber-200 text-amber-900 rounded-full px-2 py-0.5">0</span>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-xs">
@@ -2248,7 +2262,7 @@
               <tr>
                 <th class="px-3 py-2 text-left">Material</th>
                 <th class="px-3 py-2 text-left">Sucursal</th>
-                <th class="px-3 py-2 text-right">Precio actual</th>
+                <th class="px-3 py-2 text-right">Vigente ref.</th>
                 <th class="px-3 py-2 text-right">Precio propuesto</th>
                 <th class="px-3 py-2 text-right">MG resultante</th>
                 <th class="px-3 py-2 text-center">Tipo</th>
@@ -2256,21 +2270,25 @@
               </tr>
             </thead>
             <tbody id="pvBandejaTbody">
-              <tr><td colspan="7" class="px-3 py-4 text-center text-stone-400">Cargando...</td></tr>
+              <tr><td colspan="7" class="px-3 py-4 text-center text-stone-500">Bloque CEO oculto temporalmente en panel local para evitar dobles lecturas con Precios Vivos.</td></tr>
             </tbody>
           </table>
         </div>
-        <div class="bg-stone-50 px-4 py-2 flex items-center gap-2">
+        <div id="pvBandejaActions" class="hidden bg-stone-50 px-4 py-2 flex items-center gap-2">
           <button onclick="window.pvAprobarTodos && window.pvAprobarTodos()"
             class="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded hover:bg-emerald-700 font-medium">
-            ✅ Aprobar todos (<span id="pvBandejaCnt2">—</span>)
+            ✅ Aprobar todos (<span id="pvBandejaCnt2">0</span>)
           </button>
-          <span class="text-xs text-stone-400">Acción 0 del plan: libera dashboard sin cambiar precios</span>
+          <span class="text-xs text-stone-400">Acción 0 del plan: libera dashboard sin cambiar precios. Si un precio ya quedó vigente arriba, esta bandeja lo oculta para evitar dobles lecturas.</span>
         </div>
       </div>
 
+      <div class="mt-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-500">
+        Bloques CEO/Calibrador ocultos temporalmente en panel local para mantener foco operativo en precios vigentes.
+      </div>
+
       <!-- Calibrador CEO (Etapa 4B · PC5 2026-06-11 · actualizado Lote 13) -->
-      <div class="mt-4 border border-blue-200 rounded-lg overflow-hidden">
+      <div class="hidden mt-4 border border-blue-200 rounded-lg overflow-hidden">
         <div class="bg-blue-50 px-4 py-2 flex items-center justify-between">
           <span class="font-semibold text-blue-800 text-sm">🤖 Calibrador — Rutas CEO (plásticos + metales)</span>
           <span class="text-xs text-blue-600">Score actual: <span id="pvCalibradorScore">—</span>/100</span>
@@ -2299,7 +2317,7 @@
       </div>
 
       <!-- Acelerador/Freno (PC5 2026-06-11) -->
-      <div class="mt-4 border-2 border-amber-300 rounded-lg p-4 bg-amber-50">
+      <div class="hidden mt-4 border-2 border-amber-300 rounded-lg p-4 bg-amber-50">
         <div class="flex items-center gap-3 mb-3">
           <div class="text-2xl">🟡</div>
           <div>
@@ -2328,7 +2346,7 @@
       </div>
 
       <!-- Score del Sistema Completo (PC5 2026-06-11) -->
-      <div class="mt-4 bg-white border border-stone-200 rounded-lg p-4">
+      <div class="hidden mt-4 bg-white border border-stone-200 rounded-lg p-4">
         <div class="flex items-center justify-between mb-2">
           <div class="text-sm font-semibold text-stone-700">📊 Score del sistema completo — escala de madurez</div>
           <div class="text-xs text-stone-400">Informe Maestro Precios · firmado 26-may-2026</div>
@@ -2355,7 +2373,7 @@
       </div>
 
       <!-- Flujo Operativo 10 pasos (PC5 2026-06-11) -->
-      <div class="mt-4 bg-white border border-stone-200 rounded-lg p-4">
+      <div class="hidden mt-4 bg-white border border-stone-200 rounded-lg p-4">
         <div class="text-sm font-semibold text-stone-700 mb-3">🔄 Flujo operativo — estado en tiempo real</div>
         <div class="overflow-x-auto">
           <div class="flex items-start gap-0.5 min-w-max text-xs">
@@ -2991,7 +3009,7 @@
         <div>
           <label class="block text-xs text-stone-600 mb-1">Sucursal</label>
           <select id="calcSucursal" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm bg-white">
-            <option value="">Todas</option>
+            <option value="">Elegí sucursal…</option>
           </select>
         </div>
         <div>
@@ -3085,12 +3103,53 @@
         </div>
       </div>
 
+      <div id="calcPreviewBox" class="bg-white border border-emerald-200 rounded-lg p-4 mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div>
+            <div class="text-xs text-stone-500 uppercase tracking-wider">Vista previa antes de publicar</div>
+            <div class="text-sm font-semibold text-stone-800">Esto es lo que deberías aprobar, no a ciegas.</div>
+          </div>
+          <div class="text-[11px] text-stone-500">Se actualiza con material, sucursal y sliders.</div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 text-sm">
+          <div class="rounded border border-stone-200 p-3 bg-stone-50">
+            <div class="text-xs text-stone-500 uppercase tracking-wider">Material</div>
+            <div id="calcPrevMaterial" class="mt-1 font-semibold text-stone-800">Elegí material…</div>
+          </div>
+          <div class="rounded border border-stone-200 p-3 bg-stone-50">
+            <div class="text-xs text-stone-500 uppercase tracking-wider">Sucursal</div>
+            <div id="calcPrevSucursal" class="mt-1 font-semibold text-stone-800">Elegí sucursal…</div>
+          </div>
+          <div class="rounded border border-stone-200 p-3 bg-stone-50">
+            <div class="text-xs text-stone-500 uppercase tracking-wider">Precio vigente actual</div>
+            <div id="calcPrevVigente" class="mt-1 font-semibold text-stone-800">—</div>
+            <div id="calcPrevVigenteMeta" class="text-xs text-stone-500 mt-1">Referencia actual del sistema</div>
+          </div>
+          <div class="rounded border border-emerald-200 p-3 bg-emerald-50">
+            <div class="text-xs text-emerald-700 uppercase tracking-wider">Precio nuevo</div>
+            <div id="calcPrevNuevo" class="mt-1 text-lg font-bold text-emerald-700">—</div>
+            <div class="text-xs text-emerald-700 mt-1">Valor que se enviará a la propuesta</div>
+          </div>
+          <div class="rounded border border-stone-200 p-3 bg-stone-50">
+            <div class="text-xs text-stone-500 uppercase tracking-wider">Delta</div>
+            <div id="calcPrevDelta" class="mt-1 font-semibold text-stone-800">—</div>
+            <div id="calcPrevDeltaMeta" class="text-xs text-stone-500 mt-1">Comparado contra el vigente actual</div>
+          </div>
+          <div class="rounded border border-sky-200 p-3 bg-sky-50">
+            <div class="text-xs text-sky-700 uppercase tracking-wider">Cómo quedará en web/widget</div>
+            <div id="calcPrevSalida" class="mt-1 font-semibold text-sky-800">Elegí material y sucursal para ver la salida esperada.</div>
+          </div>
+        </div>
+        <p id="calcPrevNota" class="text-xs text-stone-500 mt-3">Afuera cambia recién después de <strong>Aprobar y aplicar</strong> y de la sincronización web/widget.</p>
+        <p id="calcPrevMargenGate" class="text-xs text-stone-600 mt-2">—</p>
+      </div>
+
       <div class="flex flex-wrap items-center gap-3">
         <button id="calcPublicar" type="button"
                 class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
           📤 Publicar como propuesta
         </button>
-        <button type="button" onclick="document.querySelector('button[data-tab=&quot;bandeja_precios&quot;]')?.click()"
+        <button type="button" onclick="window.bpIrDesdeCalculadora && window.bpIrDesdeCalculadora()"
                 class="text-xs text-sky-700 underline">
           📥 Ver Bandeja Precios
         </button>
@@ -7834,16 +7893,23 @@ async function loadAccesoRapido() {
 function applySiloTabs() {
   // Fase 4 · consume PERMS.pestanas_por_silo directamente (la RPC ya filtró por perfil).
   const perms = window.PERMS || { pestanas_por_silo: {}, silos: [] };
+  const normTabCodes = (arr) => (arr || [])
+    .map(x => (typeof x === 'string'
+      ? x
+      : (x && typeof x === 'object'
+        ? (x.codigo || x.code || x.tab || null)
+        : null)))
+    .filter(Boolean);
   let tabsHabilitadas;
   if (currentSilo === null) {
     // Vista global (es_admin) → unión de todas las pestañas de todos los silos visibles
     const union = new Set();
-    Object.values(perms.pestanas_por_silo || {}).forEach(arr => (arr || []).forEach(c => union.add(c)));
+    Object.values(perms.pestanas_por_silo || {}).forEach(arr => normTabCodes(arr).forEach(c => union.add(c)));
     // Además incluir todas las activas del catálogo si es_admin (por si hay pestañas globales no listadas por silo)
     if (perms.es_admin) PESTANAS_CATALOGO.forEach(p => union.add(p.codigo));
     tabsHabilitadas = union;
   } else {
-    tabsHabilitadas = new Set(perms.pestanas_por_silo?.[currentSilo] || []);
+    tabsHabilitadas = new Set(normTabCodes(perms.pestanas_por_silo?.[currentSilo] || []));
   }
 
   // La RPC ya aplicó requiere_perfil. Solo respetamos overrides HTML data-*-perfil
@@ -8015,6 +8081,9 @@ function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const tabId = btn.getAttribute('data-tab');
+      if (['precios', 'precios_vivos', 'kpi_precios', 'analisis_micro', 'calculadora_precios', 'bandeja_precios'].includes(tabId)) {
+        try { window.diegoMinimizarSiAbierto && window.diegoMinimizarSiAbierto(); } catch (_) {}
+      }
       document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
       // PC2 25-jun · auto-CamelCase antifrágil: convierte snake_case → camelCase
       // (precios_vivos→tabPreciosVivos · plan_2026→tabPlan2026 · ya no requiere mapeo manual)
@@ -13921,6 +13990,45 @@ document.getElementById('resetPassword2').addEventListener('keypress', e => {
     }
   });
 
+  function v4ResolveSectionId(tabId) {
+    return (window.TAB_SECTION_MAP && window.TAB_SECTION_MAP[tabId]) || ('tab' +
+      String(tabId || '').split(/[_-]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(''));
+  }
+
+  function v4AbrirTabFallback(tabId) {
+    const sectionId = v4ResolveSectionId(tabId);
+    const targetSection = document.getElementById(sectionId);
+    if (!targetSection) return false;
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+    targetSection.classList.remove('hidden');
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    });
+    const realBtn = document.querySelector('button[data-tab="' + tabId + '"]');
+    if (realBtn) {
+      realBtn.classList.add('active');
+      realBtn.setAttribute('aria-selected', 'true');
+    }
+    try {
+      const main = document.getElementById('mainContent');
+      if (main) main.scrollTop = 0;
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    } catch (_) {}
+    if (tabId === 'precios') window.initPrecios && window.initPrecios();
+    if (tabId === 'bandeja_precios') window.initBandejaPrecios && window.initBandejaPrecios();
+    if (tabId === 'precios_vivos') window.initPreciosVivos && window.initPreciosVivos();
+    if (tabId === 'kpi_precios') window.initKpiPrecios && window.initKpiPrecios();
+    if (tabId === 'analisis_micro') window.initAnalisisMicro && window.initAnalisisMicro();
+    if (tabId === 'indicadores_adel') window.initIndicadoresAdel && window.initIndicadoresAdel();
+    if (tabId === 'modo_precios') window.initModoPrecios && window.initModoPrecios();
+    if (tabId === 'calculadora_precios') window.initCalculadoraPrecios && window.initCalculadoraPrecios();
+    if (tabId === 'boveda_historica') window.initBovedaHistorica && window.initBovedaHistorica();
+    if (tabId === 'flujo_operativo') window.initFlujoOperativo && window.initFlujoOperativo();
+    if (tabId === 'tablero_precios') window.initTableroPrecios && window.initTableroPrecios();
+    return true;
+  }
+
   // Atajos del sidebar a tabs reales del panel productivo
   document.querySelectorAll('[data-v4-tab]').forEach(a => {
     a.addEventListener('click', (e) => {
@@ -13928,6 +14036,11 @@ document.getElementById('resetPassword2').addEventListener('keypress', e => {
       const target = a.getAttribute('data-v4-tab');
       const realBtn = document.querySelector('button[data-tab="' + target + '"]');
       if (realBtn) realBtn.click();
+      const sectionId = v4ResolveSectionId(target);
+      const section = document.getElementById(sectionId);
+      if (!section || section.classList.contains('hidden')) {
+        v4AbrirTabFallback(target);
+      }
       // Marca activo el item del sidebar
       document.querySelectorAll('[data-v4-tab]').forEach(x => x.classList.remove('active'));
       a.classList.add('active');
@@ -15344,6 +15457,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+  window.diegoMinimizarSiAbierto = function diegoMinimizarSiAbierto() {
+    if (!chatWin) return;
+    if (chatWin.classList.contains('open')) chatWin.classList.add('minimized');
+  };
   // M4 · click en badge ≠ click en FAB → ir a tab Bandeja Diego (donde caen las tareas)
   const fabBadgeEl = document.getElementById('diegoFabBadge');
   if (fabBadgeEl) {
@@ -16076,7 +16193,76 @@ document.addEventListener('DOMContentLoaded', () => {
   let bpRefreshTimer = null;
   let bpCurrentId = null;
   let bpCurrentHualPrice = null;
+  let bpCurrentPrecioPropuesto = null;
+  let bpCurrentPrecioVigente = null;
+  let bpCurrentMgPct = null;
+  let bpCurrentMgRequerido = null;
   let bpSearchDebounce = null;
+
+  function bpGetNumber(v) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function bpGetMargenMovilPct() {
+    const v = (typeof CONFIG_PANEL !== 'undefined' && CONFIG_PANEL) ? CONFIG_PANEL.margen_movil_pct : null;
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))) return Number(v);
+    return null;
+  }
+
+  function bpGetMargenMinimoRequerido() {
+    const mov = bpGetMargenMovilPct();
+    if (mov != null) return mov;
+    return 20;
+  }
+
+  function bpGetOverrideEmails() {
+    const v = (typeof CONFIG_PANEL !== 'undefined' && CONFIG_PANEL) ? CONFIG_PANEL.override_margen_emails : null;
+    if (Array.isArray(v)) return v.map(x => String(x || '').toLowerCase()).filter(Boolean);
+    return [];
+  }
+
+  function bpPuedeOverrideMargen() {
+    const email = String(currentUser || '').toLowerCase();
+    if (!email) return false;
+    const allow = bpGetOverrideEmails();
+    if (allow.length) return allow.includes(email);
+    return email === 'gerencia@gestionrepchile.cl';
+  }
+
+  function bpActualizarOverrideUI() {
+    const box = document.getElementById('bpOverrideBox');
+    const msg = document.getElementById('bpOverrideMsg');
+    const chk = document.getElementById('bpOverrideCheck');
+    const mot = document.getElementById('bpOverrideMotivo');
+    const btn = document.getElementById('bpBtnAprobar');
+    if (!box || !msg || !chk || !mot || !btn) return;
+    if (bpCurrentMgPct == null || bpCurrentMgRequerido == null || bpCurrentMgPct >= bpCurrentMgRequerido) {
+      box.classList.add('hidden');
+      chk.checked = false;
+      mot.value = '';
+      btn.disabled = false;
+      btn.classList.remove('opacity-50');
+      return;
+    }
+    const puede = bpPuedeOverrideMargen();
+    msg.textContent = `⚠️ Margen objetivo ${bpCurrentMgPct.toFixed(1)}% está bajo el mínimo requerido ${bpCurrentMgRequerido.toFixed(1)}%.`;
+    if (!puede) {
+      chk.checked = false;
+      mot.value = '';
+      chk.disabled = true;
+      mot.disabled = true;
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+      return;
+    }
+    chk.disabled = false;
+    mot.disabled = false;
+    const ok = chk.checked && String(mot.value || '').trim().length >= 6;
+    btn.disabled = !ok;
+    btn.classList.toggle('opacity-50', !ok);
+  }
 
   function esc(s) {
     return String(s ?? '').replace(/[&<>"']/g, (c) => ({
@@ -16297,6 +16483,29 @@ document.addEventListener('DOMContentLoaded', () => {
     loadKpis();
   }
 
+  window.bpFocusFromCalc = null;
+  async function bpIrDesdeCalculadora(focus = window.bpFocusFromCalc || null) {
+    const tabBtn = document.querySelector('button[data-tab="bandeja_precios"]');
+    if (tabBtn) tabBtn.click();
+    const estEl = document.getElementById('bpFiltroEstado');
+    const rutaEl = document.getElementById('bpFiltroRuta');
+    const sucEl = document.getElementById('bpFiltroSucursal');
+    const matEl = document.getElementById('bpFiltroMaterial');
+    const buscarEl = document.getElementById('bpFiltroBuscar');
+    if (estEl) estEl.value = 'pendiente';
+    if (rutaEl) rutaEl.value = 'manual_calc';
+    if (buscarEl) buscarEl.value = focus?.materialNombre || '';
+    await loadBandejaPrecios();
+    if (focus?.sucursalId && sucEl && Array.from(sucEl.options).some(o => o.value === focus.sucursalId)) {
+      sucEl.value = focus.sucursalId;
+      await loadBandejaPrecios();
+    }
+    if (focus?.materialId && matEl && Array.from(matEl.options).some(o => o.value === focus.materialId)) {
+      matEl.value = focus.materialId;
+    }
+    bpAplicarFiltrosClienteSide();
+  }
+
   let bpRows = [];
   let bpVisibleRows = [];
   let bpSortCol = 'created_at';
@@ -16381,6 +16590,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('bpDw_vigencia').textContent     = r.fecha_vigencia ?? 'desde hoy';
     document.getElementById('bpDw_propuesto').textContent    = fmtCLP(r.precio_clp_kg);
     document.getElementById('bpDw_vigente').textContent      = fmtCLP(r.precio_vigente);
+    bpCurrentPrecioPropuesto = Number(r.precio_clp_kg ?? 0) || null;
+    bpCurrentPrecioVigente = Number(r.precio_vigente ?? 0) || null;
+    bpCurrentMgPct = bpGetNumber(r.mg_pct ?? r?.metadata?.mg_pct);
+    bpCurrentMgRequerido = bpGetMargenMinimoRequerido();
     document.getElementById('bpDw_delta').textContent        = fmtPct(r.desviacion_pct);
     document.getElementById('bpDw_confidence').textContent   = r.confidence_score != null ? Number(r.confidence_score).toFixed(2) : '—';
     document.getElementById('bpDw_ruta').innerHTML           = rutaBadge(r.ruta);
@@ -16408,15 +16621,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnAprobar  = document.getElementById('bpBtnAprobar');
     const btnRechazar = document.getElementById('bpBtnRechazar');
     const yaCerrada = r.estado === 'aplicado' || r.estado === 'rechazado' || r.estado === 'obsoleto';
-    btnAprobar.disabled  = yaCerrada;
+    const faltanDatosAplicacion = !r.material_id || !r.sucursal_id;
+    btnAprobar.disabled  = yaCerrada || faltanDatosAplicacion;
     btnRechazar.disabled = yaCerrada;
-    btnAprobar.classList.toggle('opacity-50', yaCerrada);
+    btnAprobar.classList.toggle('opacity-50', yaCerrada || faltanDatosAplicacion);
     btnRechazar.classList.toggle('opacity-50', yaCerrada);
+    if (faltanDatosAplicacion) {
+      const origen = r.ruta === 'manual_calc' ? ' desde Calculadora' : '';
+      bpMsg(`Esta propuesta${origen} quedó sin sucursal. Volvé a Calculadora, elegí una sucursal concreta y publícala de nuevo.`, false);
+    }
 
     // Reset campo ajuste precio + cargar precio HUAL para preview margen
     const inputAjuste = document.getElementById('bpPrecioAjustado');
     if (inputAjuste) inputAjuste.value = '';
     document.getElementById('bpMargenAjuste').classList.add('hidden');
+    const oChk = document.getElementById('bpOverrideCheck');
+    const oMot = document.getElementById('bpOverrideMotivo');
+    if (oChk) oChk.checked = false;
+    if (oMot) oMot.value = '';
     bpCurrentHualPrice = null;
     if (r.material_id && typeof sb !== 'undefined' && sb) {
       try {
@@ -16425,6 +16647,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (hp?.precio_clp_kg) bpCurrentHualPrice = Number(hp.precio_clp_kg);
       } catch (_) { /* no bloquea */ }
     }
+    bpActualizarMargenAjuste('');
+    bpActualizarOverrideUI();
 
     document.getElementById('bpDrawerMsg').classList.add('hidden');
     document.getElementById('bpDrawer').classList.remove('hidden');
@@ -16449,19 +16673,127 @@ document.addEventListener('DOMContentLoaded', () => {
     el.className = 'text-xs p-2 rounded ' + (ok ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
   }
 
+  function bpApplyFailureText(payload, httpStatus) {
+    const detailMsg = payload?.detail?.message || payload?.detail || payload?.message || payload?.error || payload?.raw;
+    const detail = String(detailMsg || 'No se pudo aplicar');
+    if (detail.includes('TRIAGE_PISO_MARGEN')) {
+      const limpio = detail
+        .replace(/^TRIAGE_PISO_MARGEN:\s*/i, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      return `✗ Rechazado por piso de margen. ${limpio}`;
+    }
+    return `✗ [HTTP ${httpStatus}] ${detail.slice(0, 220)}`;
+  }
+
+  async function syncAsistenteSnapshotDesdeVigentes(pVersionLabel) {
+    if (typeof sb === 'undefined' || !sb) throw new Error('Supabase no disponible');
+
+    const [vigentesRes, materialesRes, sucursalesRes] = await Promise.all([
+      sb.schema('curated').from('vw_materiales_sucursal_precios_vigente')
+        .select('material_id, sucursal_id, precio_compra_clp, precio_venta_clp, vigencia_hasta')
+        .is('vigencia_hasta', null),
+      sb.from('materiales')
+        .select('id, nombre, farex, reciclean, margen_default, iva, flete_default, meta_kg, categorias(nombre)'),
+      sb.schema('curated').from('sucursales')
+        .select('sucursal_id, nombre')
+        .eq('activa', true)
+        .order('nombre'),
+    ]);
+
+    if (vigentesRes.error) throw vigentesRes.error;
+    if (materialesRes.error) throw materialesRes.error;
+    if (sucursalesRes.error) throw sucursalesRes.error;
+
+    const vigentes = vigentesRes.data || [];
+    const materiales = materialesRes.data || [];
+    const sucursales = sucursalesRes.data || [];
+    if (!vigentes.length) throw new Error('No hay precios vigentes para publicar al snapshot');
+
+    const materialById = new Map(materiales.map(m => [Number(m.id), m]));
+    const data = {};
+
+    sucursales.forEach(s => {
+      if (s?.nombre) data[s.nombre] = [];
+    });
+
+    vigentes.forEach(row => {
+      const sucursal = sucursales.find(s => Number(s.sucursal_id) === Number(row.sucursal_id));
+      const sucNom = sucursal?.nombre;
+      if (!sucNom) return;
+
+      const meta = materialById.get(Number(row.material_id));
+      const precioCompra = Number(row.precio_compra_clp || 0);
+      const precioVenta = Number(row.precio_venta_clp || 0);
+      const margenCalculado = (precioVenta > 0 && precioCompra > 0)
+        ? ((precioVenta - precioCompra) / precioVenta)
+        : Number(meta?.margen_default || 0);
+
+      data[sucNom].push({
+        id: Number(row.material_id),
+        categoria: meta?.categorias?.nombre || 'SIN CATEGORIA',
+        material: meta?.nombre || ('Material ' + row.material_id),
+        reciclean: !!meta?.reciclean,
+        farex: !!meta?.farex,
+        precioCompra,
+        precioLista: precioVenta,
+        precioEjecutivo: precioVenta,
+        precioMaximo: precioVenta,
+        metaKgTotal: Number(meta?.meta_kg || 0),
+        metaCategoriaTotal: 0,
+        ivaTret: !!meta?.iva,
+        flete: Number(meta?.flete_default || 0),
+        margen: margenCalculado,
+      });
+    });
+
+    Object.keys(data).forEach(suc => {
+      const catMeta = {};
+      data[suc].forEach(m => {
+        const cat = m.categoria || 'SIN CATEGORIA';
+        catMeta[cat] = (catMeta[cat] || 0) + Number(m.metaKgTotal || 0);
+      });
+      data[suc].forEach(m => {
+        m.metaCategoriaTotal = catMeta[m.categoria || 'SIN CATEGORIA'] || 0;
+      });
+      data[suc].sort((a, b) => {
+        const catCmp = String(a.categoria || '').localeCompare(String(b.categoria || ''), 'es');
+        if (catCmp !== 0) return catCmp;
+        return String(a.material || '').localeCompare(String(b.material || ''), 'es');
+      });
+    });
+
+    const versionLabel = pVersionLabel || ('vigentes_' + new Date().toISOString().replace(/[:.]/g, '-'));
+    const { error: upsertErr } = await sb.from('asistente_snapshot').upsert({
+      id: 1,
+      datos: data,
+      version_label: versionLabel,
+      actualizado_en: new Date().toISOString(),
+    });
+    if (upsertErr) throw upsertErr;
+
+    return { ok: true, versionLabel, totalRegistros: vigentes.length };
+  }
+
   function bpActualizarMargenAjuste(valor) {
     const el = document.getElementById('bpMargenAjuste');
     const v = parseFloat(valor);
-    if (!v || v <= 0) { el.classList.add('hidden'); return; }
-    el.classList.remove('hidden');
+    const candidato = (v && v > 0) ? v : bpCurrentPrecioPropuesto;
+    const lineas = [];
+    if (!candidato || candidato <= 0) { el.classList.add('hidden'); return; }
+    if (bpCurrentPrecioVigente && Number(candidato) === Number(bpCurrentPrecioVigente)) {
+      lineas.push('ℹ Este valor no cambia el vigente actual. Si quieres mover la propuesta, ajusta el precio antes de aplicar.');
+    }
     if (bpCurrentHualPrice && bpCurrentHualPrice > 0) {
-      const margen = (bpCurrentHualPrice - v) / bpCurrentHualPrice * 100;
+      const margen = (bpCurrentHualPrice - Number(candidato)) / bpCurrentHualPrice * 100;
       const color = margen >= 40 ? 'text-green-600' : margen >= 25 ? 'text-yellow-600' : 'text-red-600';
       const sem = margen >= 40 ? '🟢' : margen >= 25 ? '🟡' : '🔴';
-      el.innerHTML = `${sem} Margen vs HUAL: <span class="${color} font-medium">${margen.toFixed(1)}%</span> · HUAL paga ${fmtCLP(bpCurrentHualPrice)}/kg`;
+      lineas.push(`${sem} Margen vs HUAL: <span class="${color} font-medium">${margen.toFixed(1)}%</span> · HUAL paga ${fmtCLP(bpCurrentHualPrice)}/kg`);
     } else {
-      el.textContent = 'Sin precio HUAL para calcular margen';
+      lineas.push('ℹ Sin referencia HUAL en panel. Esto no bloquea aplicar por sí solo.');
     }
+    el.classList.remove('hidden');
+    el.innerHTML = lineas.join('<br>');
   }
 
   async function bpAprobar() {
@@ -16484,11 +16816,53 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
+      const overrideNecesario = (bpCurrentMgPct != null && bpCurrentMgRequerido != null && bpCurrentMgPct < bpCurrentMgRequerido);
+      let overridePayload = null;
+      if (overrideNecesario) {
+        if (!bpPuedeOverrideMargen()) {
+          bpMsg('⚠️ Este margen está bajo el mínimo. Solo un usuario autorizado puede aplicar bajo responsabilidad.', false);
+          btn.disabled = false;
+          return;
+        }
+        const chk = document.getElementById('bpOverrideCheck');
+        const mot = document.getElementById('bpOverrideMotivo');
+        const motivo = String(mot?.value || '').trim();
+        if (!chk?.checked || motivo.length < 6) {
+          bpMsg('⚠️ Falta confirmar el override y escribir un motivo (mín 6 caracteres).', false);
+          btn.disabled = false;
+          return;
+        }
+        overridePayload = {
+          permitido: true,
+          minimo_requerido_pct: bpCurrentMgRequerido,
+          margen_objetivo_pct: bpCurrentMgPct,
+          motivo,
+          aprobado_por: currentUser,
+          aprobado_at: new Date().toISOString(),
+        };
+        try {
+          const { data: prevRow } = await sb.schema('staging').from('precios_propuestos')
+            .select('metadata').eq('id', bpCurrentId).maybeSingle();
+          const prevMeta = (prevRow && prevRow.metadata && typeof prevRow.metadata === 'object') ? prevRow.metadata : {};
+          const nextMeta = { ...prevMeta, override_margen: overridePayload };
+          await sb.schema('staging').from('precios_propuestos')
+            .update({ metadata: nextMeta, updated_at: new Date().toISOString() })
+            .eq('id', bpCurrentId);
+        } catch (_) {}
+      }
       // v2 (Dusan 2026-07-04, caza de seguridad): mandar el token real de la sesión,
       // no la clave pública fija — precio-aplicar v2 valida identidad de verdad con
       // ese token y descarta cualquier "aprobado_por" que se pase por body.
       const { data: sessionData } = await sb.auth.getSession();
       const accessToken = sessionData?.session?.access_token || SUPABASE_ANON_KEY;
+      //#region debug-point bp-apply-request
+      window.__bpApplyDebug = {
+        propuesta_id: bpCurrentId,
+        has_session: !!sessionData?.session,
+        access_token_source: sessionData?.session?.access_token ? 'session' : 'anon',
+        started_at: new Date().toISOString(),
+      };
+      //#endregion debug-point bp-apply-request
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/precio-aplicar`, {
         method: 'POST',
         headers: {
@@ -16496,13 +16870,58 @@ document.addEventListener('DOMContentLoaded', () => {
           apikey: SUPABASE_ANON_KEY,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ propuesta_id: bpCurrentId }),
+        body: JSON.stringify({ propuesta_id: bpCurrentId, override_margen: overridePayload }),
       });
-      const j = await resp.json();
+      const rawText = await resp.text();
+      let j = {};
+      try { j = rawText ? JSON.parse(rawText) : {}; } catch (_) { j = { raw: rawText }; }
+      //#region debug-point bp-apply-response
+      window.__bpApplyDebug.response = {
+        ok: !!resp.ok,
+        status: resp.status,
+        status_text: resp.statusText,
+        body: j,
+        raw: String(rawText || '').slice(0, 700),
+        finished_at: new Date().toISOString(),
+      };
+      //#endregion debug-point bp-apply-response
       if (resp.ok && j.ok) {
-        bpMsg(`✓ Aplicado. Nueva vigencia desde ${j.vigencia_desde ?? '—'} a ${fmtCLP(j.precio_venta_clp)}.`, true);
+        bpMsg(`✓ Aplicado. Precio vigente publicado desde ${j.vigencia_desde ?? '—'} a ${fmtCLP(j.precio_venta_clp)}.`, true);
         // DeepSeek ronda 2 · feedback inmediato Andrea
-        if (window.showToast) window.showToast(`Precio aplicado · ${fmtCLP(j.precio_venta_clp)}`, 'success');
+        if (window.showToast) window.showToast(`Precio vigente publicado · ${fmtCLP(j.precio_venta_clp)}`, 'success');
+        // Salida publica limpia: regenerar snapshot desde precios vigentes reales,
+        // no desde la capa vieja de v_precios_activos/cache.
+        try {
+          const snapshotRes = await syncAsistenteSnapshotDesdeVigentes(
+            `vigentes_${new Date().toISOString().replace(/[:.]/g, '-')}`
+          );
+          console.info('[precios-snapshot] snapshot limpio sincronizado', snapshotRes);
+        } catch (snapshotErr) {
+          console.warn('[precios-snapshot] no pude sincronizar snapshot limpio', snapshotErr);
+          if (window.showToast) {
+            window.showToast('Precio aplicado, pero no pude sincronizar el snapshot limpio', 'warning');
+          }
+          // Fallback heredado: intentar el puente viejo solo para no perder sincronizacion interna,
+          // pero la web publica sigue protegida por mantenimiento.
+          try {
+            const bridgeLabel = `bridge_${new Date().toISOString().replace(/[:.]/g, '-')}`;
+            const { data: bridgeRes, error: bridgeErr } = await sb.rpc(
+              'bridge_sync_asistente_snapshot_desde_public_precios',
+              {
+                p_version_label: bridgeLabel,
+                p_origen: 'panel-rdo-fallback',
+              }
+            );
+            if (bridgeErr || bridgeRes?.ok === false) {
+              console.warn('[precios-bridge] fallback tambien fallo', bridgeErr || bridgeRes);
+            }
+          } catch (bridgeEx) {
+            console.warn('[precios-bridge] fallback inesperado al sincronizar snapshot', bridgeEx);
+            if (window.showToast) {
+              window.showToast('Precio aplicado, pero el puente web/asistente fallo', 'warning');
+            }
+          }
+        }
         // Disparar feed Andrea (best-effort, no bloquea)
         try {
           fetch(`${SUPABASE_URL}/functions/v1/notif-precios`, {
@@ -16517,10 +16936,18 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (_) { /* no bloquea */ }
         setTimeout(() => { bpCerrarDrawer(); loadBandejaPrecios(); }, 1500);
       } else {
-        bpMsg(`✗ ${j.error ?? j.detail?.message ?? 'No se pudo aplicar'}`, false);
+        const detalle = j?.detail?.message ?? j?.detail ?? j?.message ?? j?.error ?? window.__bpApplyDebug?.response?.raw ?? 'No se pudo aplicar';
+        bpMsg(bpApplyFailureText({ ...j, detail: detalle }, resp.status), false);
         btn.disabled = false;
       }
     } catch (e) {
+      //#region debug-point bp-apply-catch
+      window.__bpApplyDebug = {
+        ...(window.__bpApplyDebug || {}),
+        catch_error: String(e),
+        failed_at: new Date().toISOString(),
+      };
+      //#endregion debug-point bp-apply-catch
       bpMsg(`Error de red: ${String(e).slice(0, 100)}`, false);
       btn.disabled = false;
     }
@@ -16724,6 +17151,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Exponer al global para que setupTabs + onclick HTML puedan invocarlo
   window.initBandejaPrecios = initBandejaPrecios;
   window.loadBandejaPrecios = loadBandejaPrecios;
+  window.bpIrDesdeCalculadora = bpIrDesdeCalculadora;
   window.bpAbrirDrawer      = bpAbrirDrawer;
   window.bpCerrarDrawer     = bpCerrarDrawer;
   window.bpAprobar          = bpAprobar;
@@ -16734,6 +17162,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.bpBulkRechazar             = bpBulkRechazar;
   window.bpBulkAprobar              = bpBulkAprobar;
   window.bpActualizarMargenAjuste   = bpActualizarMargenAjuste;
+  window.bpActualizarOverrideUI     = bpActualizarOverrideUI;
 })();
 </script>
 
@@ -16746,6 +17175,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let pvData = [];
   let pvTimer = null;
   const REFRESH_MS = 5 * 60 * 1000; // 5 min
+  // Se deja también en window porque esta función se expone globalmente y en
+  // algunos arranques locales terminaba evaluándose fuera del cierre del IIFE.
+  window.PV_OCULTAR_BANDEJA_CEO_LOCAL = true;
 
   async function pvCargar() {
     if (typeof sb === 'undefined' || !sb) return;
@@ -16758,6 +17190,7 @@ document.addEventListener('DOMContentLoaded', () => {
       pvActualizarKPIs();
       pvPopularCategoriasFiltro();
       pvFiltrar();
+      pvCargarBandeja();
     } catch (e) {
       if (window.panelToastErr) panelToastErr('PreciosVivos', e); else console.warn('[PreciosVivos] error:', e);
       if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="px-3 py-4 text-center text-red-400">Error al cargar: ' + String(e).slice(0, 80) + '</td></tr>';
@@ -16878,7 +17311,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }).join('');
     } else {
       const thead = document.querySelector('#pvTbody')?.closest('table')?.querySelector('thead');
-      if (thead) thead.innerHTML = '<tr class="bg-stone-100 text-stone-600 text-xs uppercase"><th class="px-3 py-2 text-left">Material</th><th class="px-3 py-2 text-left">Sucursal</th><th class="px-3 py-2 text-right">Compra</th><th class="px-3 py-2 text-right">Venta</th><th class="px-3 py-2 text-right">MG real</th><th class="px-3 py-2 text-right">Meta MG</th><th class="px-3 py-2 text-right">vs Meta</th><th class="px-3 py-2 text-center">Semáforo</th><th class="px-3 py-2 text-left">Desde</th></tr>';
+      if (thead) thead.innerHTML = '<tr class="bg-stone-100 text-stone-600 text-xs uppercase"><th class="px-3 py-2 text-left">Material</th><th class="px-3 py-2 text-left">Sucursal</th><th class="px-3 py-2 text-right">Costo ref.</th><th class="px-3 py-2 text-right">Precio vigente</th><th class="px-3 py-2 text-right">MG real</th><th class="px-3 py-2 text-right">Meta MG</th><th class="px-3 py-2 text-right">vs Meta</th><th class="px-3 py-2 text-center">Semáforo</th><th class="px-3 py-2 text-left">Desde</th></tr>';
       tbody.innerHTML = rows.map(r => `
         <tr class="${rowBg(r.semaforo)} hover:bg-stone-50 border-b border-stone-100">
           <td class="px-3 py-2 font-medium text-stone-800">${r.nombre || r.material_id}</td>
@@ -17574,7 +18007,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
 (function () {
   let calcCargado = false;
-  let calcRefPrecioVenta = 0; // precio venta aprobado de bandeja para el material activo
+  let calcRefPrecioVenta = 0; // precio nuevo ya aprobado/publicado para el material activo
   // T-42b/c/d/e/f (Dusan 2026-07-04): valor de la última propuesta publicada para
   // el material activo, uno por slider — null = sin historial (material nunca
   // publicado desde acá). Mismo mecanismo para los 5: gris sin referencia,
@@ -17592,6 +18025,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // ve en pantalla (antes divergían: pantalla mostraba con IVA restado, BD guardaba
   // sin restar). CAZA Dusan 2026-07-03.
   let calcUltimoCalculo = null;
+  let calcPrecioVigenteActual = null;
+  let calcPrecioVigenteFuente = 'Elegí material y sucursal concreta para traer el vigente actual.';
   // Modo de redondeo de P.Max/P.Lista/P.Ejec (Dusan 2026-07-04): '0' termina en
   // 0 (piso a la decena) · '5' termina en 0 o 5 (piso al múltiplo de 5) ·
   // 'exacto' no redondea (muestra el entero calculado tal cual). Se recuerda
@@ -17625,6 +18060,95 @@ document.addEventListener('DOMContentLoaded', () => {
   function calcSet(id, val) {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
+  }
+  function calcSetClass(id, className) {
+    const el = document.getElementById(id);
+    if (el) el.className = className;
+  }
+  function calcFmtDeltaClp(n) {
+    if (n == null || isNaN(n)) return '—';
+    const sign = n > 0 ? '+' : n < 0 ? '−' : '±';
+    return sign + '$' + Math.abs(Math.round(n)).toLocaleString('es-CL');
+  }
+  function calcFmtPctSigned(n) {
+    if (n == null || !isFinite(n)) return '—';
+    const sign = n > 0 ? '+' : n < 0 ? '−' : '±';
+    return sign + Math.abs(Number(n)).toFixed(1) + '%';
+  }
+  function calcGetMargenMovilPct() {
+    const v = (typeof CONFIG_PANEL !== 'undefined' && CONFIG_PANEL) ? CONFIG_PANEL.margen_movil_pct : null;
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))) return Number(v);
+    return null;
+  }
+  function calcGetMargenMinimoRequerido() {
+    const mov = calcGetMargenMovilPct();
+    if (mov != null) return mov;
+    return 20;
+  }
+  function calcRenderPreview() {
+    const materialNombre = document.getElementById('calcMaterial')?.selectedOptions?.[0]?.textContent?.trim() || 'Elegí material…';
+    const sucursalNombre = document.getElementById('calcSucursal')?.selectedOptions?.[0]?.textContent?.trim() || 'Elegí sucursal…';
+    const tieneSucursal = !!(document.getElementById('calcSucursal')?.value);
+    const c = calcUltimoCalculo;
+
+    calcSet('calcPrevMaterial', materialNombre);
+    calcSet('calcPrevSucursal', sucursalNombre);
+    calcSet('calcPrevVigente', calcFmtClp(calcPrecioVigenteActual));
+    calcSet('calcPrevVigenteMeta', calcPrecioVigenteFuente);
+    calcSet('calcPrevNuevo', calcFmtClp(c?.plista));
+
+    let deltaTxt = '—';
+    let deltaMeta = 'Comparado contra el vigente actual';
+    let deltaClass = 'mt-1 font-semibold text-stone-800';
+    let salidaTxt = 'Elegí material y sucursal para ver la salida esperada.';
+    let notaTxt = 'Afuera cambia recién después de Aprobar y aplicar y de la sincronización web/widget.';
+
+    if (tieneSucursal && c && calcPrecioVigenteActual != null && isFinite(calcPrecioVigenteActual)) {
+      const delta = c.plista - calcPrecioVigenteActual;
+      const pct = calcPrecioVigenteActual > 0 ? (delta / calcPrecioVigenteActual) * 100 : null;
+      deltaTxt = calcFmtDeltaClp(delta) + (pct != null ? ' · ' + calcFmtPctSigned(pct) : '');
+      deltaMeta = delta === 0
+        ? 'Queda igual que el vigente actual'
+        : (delta > 0 ? 'Sube respecto al vigente actual' : 'Baja respecto al vigente actual');
+      deltaClass = 'mt-1 font-semibold ' + (delta > 0 ? 'text-emerald-700' : delta < 0 ? 'text-rose-700' : 'text-stone-700');
+      salidaTxt = 'Si luego apruebas y aplicas, debería quedar visible como precio vigente ' + calcFmtClp(c.plista) + ' en ' + sucursalNombre + ' para equipo, web y widget.';
+      notaTxt = 'La web/widget no cambian con este botón. Cambian después de Bandeja + Aprobar y aplicar + sync.';
+    } else if (tieneSucursal && c) {
+      salidaTxt = 'El cálculo está listo, pero falta traer el vigente actual para comparar antes de publicar.';
+      notaTxt = 'Si no hay vigente actual, revisa si ese material ya existe en la sucursal o si falta dato en la vista vigente.';
+    } else if (c) {
+      salidaTxt = 'Falta elegir sucursal concreta. Sin sucursal no se puede comparar ni aprobar bien.';
+      notaTxt = 'La comparación previa se activa con material + sucursal concreta.';
+    }
+
+    calcSet('calcPrevDelta', deltaTxt);
+    calcSet('calcPrevDeltaMeta', deltaMeta);
+    calcSetClass('calcPrevDelta', deltaClass);
+    calcSet('calcPrevSalida', salidaTxt);
+    calcSet('calcPrevNota', notaTxt);
+
+    const gateEl = document.getElementById('calcPrevMargenGate');
+    if (gateEl) {
+      const mgObj = calcGetVal('calcMg');
+      const req = calcGetMargenMinimoRequerido();
+      const mov = calcGetMargenMovilPct();
+      if (!tieneSucursal || !c) {
+        gateEl.textContent = '—';
+        gateEl.className = 'text-xs text-stone-600 mt-2';
+      } else if (mgObj < req) {
+        gateEl.textContent =
+          `⚠️ Margen objetivo ${mgObj.toFixed(1)}% < requerido ${req.toFixed(1)}%` +
+          (mov != null ? ' (móvil)' : ' (piso)') +
+          '. En Bandeja te pedirá override + motivo para poder aplicar.';
+        gateEl.className = 'text-xs text-rose-700 mt-2 font-medium';
+      } else {
+        gateEl.textContent =
+          `✅ Margen objetivo ${mgObj.toFixed(1)}% cumple mínimo requerido ${req.toFixed(1)}%` +
+          (mov != null ? ' (móvil)' : ' (piso)') + '.';
+        gateEl.className = 'text-xs text-emerald-700 mt-2';
+      }
+    }
   }
   // T-42a/b/c/d/e/f (Dusan 2026-07-04): color de cada slider según el valor de
   // la última propuesta publicada para el material activo. Gris sin historial ·
@@ -17706,6 +18230,7 @@ document.addEventListener('DOMContentLoaded', () => {
       plista, pmax, pejec,
       ivaAmt, ivaPct: ivaP
     };
+    calcRenderPreview();
   }
 
   let calcMetasCache = null;
@@ -17814,7 +18339,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
       const sel = document.getElementById('calcSucursal');
       if (!sel) return;
-      sel.innerHTML = '<option value="">Todas</option>' +
+      sel.innerHTML = '<option value="">Elegí sucursal…</option>' +
         (data || []).map(s =>
           '<option value="' + s.sucursal_id + '">' + (s.nombre || s.sucursal_id) + '</option>'
         ).join('');
@@ -17835,9 +18360,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const materialId = document.getElementById('calcMaterial')?.value || '';
     const sucursalId = document.getElementById('calcSucursal')?.value || null;
     const categoria  = document.getElementById('calcCategoria')?.value || null;
+    const materialNombre = document.getElementById('calcMaterial')?.selectedOptions?.[0]?.textContent?.trim() || materialId || 'material';
+    const sucursalNombre = document.getElementById('calcSucursal')?.selectedOptions?.[0]?.textContent?.trim() || 'Todas';
     if (!materialId) {
       msg.textContent = 'Seleccioná material primero';
       msg.className = 'text-xs text-rose-600';
+      return;
+    }
+    if (!sucursalId) {
+      msg.textContent = 'Elegí una sucursal concreta antes de publicar. "Todas" después no se puede aprobar.';
+      msg.className = 'text-xs text-amber-700';
       return;
     }
     const mgP = calcGetVal('calcMg');
@@ -17845,6 +18377,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const bP  = calcGetVal('calcB');
     const vol = calcGetVal('calcVol');
     const ivaP = calcGetVal('calcIva');
+    const margenMovil = calcGetMargenMovilPct();
+    const margenReq = calcGetMargenMinimoRequerido();
 
     // Reutiliza el cálculo de calcRecompute (fuente única) en vez de recalcular acá
     // — antes esta función tenía su propia fórmula duplicada y podía guardar en BD
@@ -17893,6 +18427,9 @@ document.addEventListener('DOMContentLoaded', () => {
             plista: c.plista,
             pejec: c.pejec,
             mg_pct: mgP,
+            mg_minimo_requerido_pct: margenReq,
+            mg_movil_pct: margenMovil,
+            mg_override_requerido: (mgP < margenReq),
             flete: fl,
             volumen_kg: vol,
             spread_pct: bP,
@@ -17909,7 +18446,15 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       if (error) throw error;
-      msg.textContent = '✅ Propuesta publicada · P.Lista ' + calcFmtClp(plista) + (c.ivaAmt > 0 ? ' (IVA Farex −' + calcFmtClp(c.ivaAmt) + ' ya restado)' : '');
+      window.bpFocusFromCalc = {
+        materialId,
+        materialNombre,
+        sucursalId: sucursalId || '',
+        sucursalNombre,
+        precio: plista,
+        ruta: 'manual_calc'
+      };
+      msg.textContent = '✅ Propuesta publicada · ' + materialNombre + ' · ' + sucursalNombre + ' · precio nuevo ' + calcFmtClp(plista) + (c.ivaAmt > 0 ? ' (IVA Farex −' + calcFmtClp(c.ivaAmt) + ' ya restado)' : '');
       msg.className = 'text-xs text-emerald-700';
       // Enlace adicional a Bandeja Precios (Dusan 2026-07-03) — se agrega al lado
       // del mensaje existente, no lo reemplaza ni toca el botón "Publicar como
@@ -17924,11 +18469,11 @@ document.addEventListener('DOMContentLoaded', () => {
         linkBandeja.className = 'text-xs text-sky-700 underline ml-2';
         linkBandeja.addEventListener('click', (ev) => {
           ev.preventDefault();
-          document.querySelector('button[data-tab="bandeja_precios"]')?.click();
+          window.bpIrDesdeCalculadora && window.bpIrDesdeCalculadora();
         });
         msg.insertAdjacentElement('afterend', linkBandeja);
       }
-      linkBandeja.textContent = '📍 Ver en Bandeja Precios';
+      linkBandeja.textContent = '📍 Abrir Bandeja filtrada';
       linkBandeja.classList.remove('hidden');
     } catch (e) {
       msg.textContent = '❌ Error: ' + (e.message || String(e)).slice(0, 100);
@@ -17945,24 +18490,39 @@ document.addEventListener('DOMContentLoaded', () => {
   async function calcRestoreSlidersDesdeMetadata(matId, sucId) {
     const infoEl = document.getElementById('calcHistorialInfo');
     try {
-      let q = sb.schema('staging').from('precios_propuestos')
-        .select('metadata, updated_at').eq('material_id', matId).not('metadata', 'is', null)
-        .order('updated_at', { ascending: false }).limit(1);
-      if (sucId) q = q.eq('sucursal_id', sucId);
-      const { data } = await q;
-      const meta = data && data.length ? data[0].metadata : null;
+      const fetchUltima = async (filtrarPorSucursal) => {
+        let q = sb.schema('staging').from('precios_propuestos')
+          .select('metadata, updated_at, sucursal_id').eq('material_id', matId).not('metadata', 'is', null)
+          .order('updated_at', { ascending: false }).limit(1);
+        if (filtrarPorSucursal && sucId) q = q.eq('sucursal_id', sucId);
+        const { data } = await q;
+        return data && data.length ? data[0] : null;
+      };
+      let row = await fetchUltima(true);
+      let heredadaDeOtraSucursal = false;
+      if (!row && sucId) {
+        row = await fetchUltima(false);
+        heredadaDeOtraSucursal = !!row;
+      }
+      const meta = row ? row.metadata : null;
       if (!meta) {
         calcRefFecha = null;
         if (infoEl) infoEl.textContent = 'Sin historial — este material nunca fue publicado desde acá.';
-        return false;
+        return { found: false, heredada: false };
       }
       // Fecha/hora de esta propuesta — una sola, compartida por los 6 sliders
       // (todos salen de la misma fila).
-      calcRefFecha = data[0].updated_at || null;
+      calcRefFecha = row.updated_at || null;
       if (infoEl) {
-        infoEl.textContent = calcRefFecha
-          ? 'Última propuesta publicada: ' + new Date(calcRefFecha).toLocaleString('es-CL')
-          : 'Sin historial — este material nunca fue publicado desde acá.';
+        if (calcRefFecha) {
+          infoEl.textContent = heredadaDeOtraSucursal
+            ? 'Referencia heredada del mismo material (otra sucursal): ' + new Date(calcRefFecha).toLocaleString('es-CL')
+            : 'Última propuesta publicada para esta sucursal: ' + new Date(calcRefFecha).toLocaleString('es-CL');
+        } else {
+          infoEl.textContent = heredadaDeOtraSucursal
+            ? 'Referencia heredada del mismo material (otra sucursal).'
+            : 'Última propuesta publicada para esta sucursal.';
+        }
       }
       const setIf = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
       // T-42b/c/d/e/f: guarda cada valor de la última propuesta publicada como
@@ -17979,8 +18539,8 @@ document.addEventListener('DOMContentLoaded', () => {
       setIf('calcIva', meta.iva_pct);
       const catSel = document.getElementById('calcCategoria');
       if (catSel && meta.categoria) catSel.value = meta.categoria;
-      return true;
-    } catch (e) { console.warn('[Calc] restoreSliders:', e); return false; }
+      return { found: true, heredada: heredadaDeOtraSucursal };
+    } catch (e) { console.warn('[Calc] restoreSliders:', e); return { found: false, heredada: false }; }
   }
 
   // Margen inicial T-42b: si no hay metadata previa para este material (nunca
@@ -18014,15 +18574,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const sucId = document.getElementById('calcSucursal')?.value || '';
     if (!matId || typeof sb === 'undefined') { calcRecompute(); return; }
     calcRefPrecioVenta = 0;
+    calcPrecioVigenteActual = null;
+    calcPrecioVigenteFuente = sucId
+      ? 'Buscando vigente actual en el sistema…'
+      : 'Elegí una sucursal concreta para comparar contra el vigente actual.';
     calcRefMgPct = null;
     calcRefFlete = null;
     calcRefSpreadPct = null;
     calcRefVolumenKg = null;
     calcRefIvaPct = null;
     calcRefFecha = null;
-    const huboMetadataPrevia = await calcRestoreSlidersDesdeMetadata(matId, sucId);
+    const restoreMeta = await calcRestoreSlidersDesdeMetadata(matId, sucId);
+    const huboMetadataPrevia = !!restoreMeta?.found;
     if (!huboMetadataPrevia) calcAplicarMargenMetaCategoria(matId);
     try {
+      if (sucId) {
+        const { data: vigenteRows } = await sb.schema('curated').from('vw_materiales_sucursal_precios_vigente')
+          .select('precio_venta_clp, vigencia_desde')
+          .eq('material_id', matId)
+          .eq('sucursal_id', sucId)
+          .is('vigencia_hasta', null)
+          .order('vigencia_desde', { ascending: false })
+          .limit(1);
+        const vigente = vigenteRows && vigenteRows.length ? vigenteRows[0] : null;
+        if (vigente && vigente.precio_venta_clp != null) {
+          calcPrecioVigenteActual = Number(vigente.precio_venta_clp);
+          calcPrecioVigenteFuente = vigente.vigencia_desde
+            ? 'Vigente actual desde ' + vigente.vigencia_desde
+            : 'Referencia actual del sistema';
+        } else {
+          calcPrecioVigenteFuente = 'Sin vigente actual encontrado para esta sucursal.';
+        }
+      }
       // Fuente -1: precio contractual vigente (curated.comprador_precio_actual).
       // Si el material tiene contrato con un comprador (ej. HUAL), mig-326 archiva
       // automático cualquier propuesta manual en staging.precios_propuestos ("material
@@ -18051,7 +18634,13 @@ document.addEventListener('DOMContentLoaded', () => {
         .order('updated_at', { ascending: false }).limit(1);
       if (sucId) q0 = q0.eq('sucursal_id', sucId);
       const { data: d0 } = await q0;
-      const precioAprobado = d0 && d0.length ? Number(d0[0].precio_clp_kg || 0) : 0;
+      let precioAprobado = d0 && d0.length ? Number(d0[0].precio_clp_kg || 0) : 0;
+      if (!(precioAprobado > 0) && sucId) {
+        const { data: d0b } = await sb.schema('staging').from('precios_propuestos')
+          .select('precio_clp_kg').eq('material_id', matId).in('estado', ['aprobado', 'aplicado'])
+          .order('updated_at', { ascending: false }).limit(1);
+        precioAprobado = d0b && d0b.length ? Number(d0b[0].precio_clp_kg || 0) : 0;
+      }
       if (precioAprobado > 0) {
         calcRefPrecioVenta = precioAprobado;
         const slider = document.getElementById('calcP');
@@ -18126,11 +18715,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function initCalculadoraPrecios() {
-    if (calcCargado) { calcRecompute(); return; }
+    if (calcCargado) { await calcAutoFillPrecioCompra(); return; }
     calcCargado = true;
     calcBindSliders();
     await Promise.all([calcLoadCategorias(), calcLoadMateriales(), calcLoadSucursales()]);
-    calcRecompute();
+    await calcAutoFillPrecioCompra();
   }
 
   window.calcRecompute          = calcRecompute;
@@ -18900,13 +19489,17 @@ document.addEventListener('DOMContentLoaded', () => {
   async function pvCargarBandeja() {
     const tbody = document.getElementById('pvBandejaTbody');
     if (!tbody) return;
+    if (window.PV_OCULTAR_BANDEJA_CEO_LOCAL) {
+      pvRenderBandejaCeoNeutralizada();
+      return;
+    }
     try {
       // FIX bug #2 runtime cazado 2026-06-30: vista vive en panel.* · sbSelect default public = 404. Uso sb.schema('panel').
       const { data: bandeja, error: err } = await sb.schema('panel').from('v_bandeja_resumen')
         .select('id,material_nombre,sucursal_nombre,precio_vigente,precio_propuesto,margen_propuesto,tipo_display')
         .eq('estado','pendiente').order('categoria').order('material_id');
       if (err) { console.warn('pvCargarBandeja', err); return; }
-      const rows = Array.isArray(bandeja) ? bandeja : [];
+      const rows = pvFiltrarBandejaSinSombras(Array.isArray(bandeja) ? bandeja : []);
       const cnt = rows.length;
       ['pvBandejaCnt','pvBandejaCnt2'].forEach(id => {
         const el = document.getElementById(id);
@@ -18940,6 +19533,91 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('pvCargarBandeja', e);
       if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-red-400">Error al cargar bandeja</td></tr>';
     }
+  }
+
+  function pvSetBandejaCnt(cnt) {
+    ['pvBandejaCnt','pvBandejaCnt2','pvTriagesPending','pvBandejaFrenos','pvFlujoCnt'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = cnt;
+    });
+  }
+
+  function pvRenderBandejaCeoNeutralizada() {
+    const tbody = document.getElementById('pvBandejaTbody');
+    const actions = document.getElementById('pvBandejaActions');
+    pvSetBandejaCnt(0);
+    if (tbody) {
+      tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-stone-500">Bloque CEO oculto temporalmente en panel local para evitar dobles lecturas con Precios Vivos.</td></tr>';
+    }
+    if (actions) {
+      actions.classList.add('hidden');
+    }
+  }
+
+  function pvNormTxt(v) {
+    try {
+      return String(v ?? '').trim().toLowerCase();
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function pvNormNum(v) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function pvFiltrarBandejaSinSombras(rows) {
+    try {
+      return (Array.isArray(rows) ? rows : []).filter(r => {
+        try {
+          return !pvBandejaEsSombraVigente(r);
+        } catch (e) {
+          console.warn('pvFiltrarBandejaSinSombras', e, r);
+          return true;
+        }
+      });
+    } catch (e) {
+      console.warn('pvFiltrarBandejaSinSombras fallback', e);
+      return Array.isArray(rows) ? rows : [];
+    }
+  }
+
+  function pvBandejaEsSombraVigente(r) {
+    try {
+      if (!r || !Array.isArray(pvData) || !pvData.length) return false;
+      const material = pvNormTxt(r.material_nombre);
+      const sucursal = pvNormTxt(r.sucursal_nombre);
+      const propuesto = pvNormNum(r.precio_propuesto);
+      if (!material || !sucursal || propuesto == null) return false;
+      return pvData.some(v =>
+        pvCoincideMaterialVivo(v, material) &&
+        pvCoincideSucursalViva(v, sucursal) &&
+        pvNormNum(v?.precio_venta_clp) === propuesto
+      );
+    } catch (e) {
+      console.warn('pvBandejaEsSombraVigente', e, r);
+      return false;
+    }
+  }
+
+  function pvCoincideMaterialVivo(v, material) {
+    const candidatos = [
+      v?.nombre,
+      v?.material_nombre,
+      v?.material,
+      v?.material_id
+    ].map(pvNormTxt).filter(Boolean);
+    return candidatos.includes(material);
+  }
+
+  function pvCoincideSucursalViva(v, sucursal) {
+    const candidatos = [
+      v?.sucursal_nombre,
+      v?.sucursal,
+      v?.sucursal_id
+    ].map(pvNormTxt).filter(Boolean);
+    return candidatos.includes(sucursal);
   }
 
   // T-36 fix R-AUD-024: usar currentUser real, no hardcode 'dusan'
