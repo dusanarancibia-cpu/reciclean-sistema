@@ -183,6 +183,29 @@
 .rf-opt-btn:hover { background:#2a3942; border-color:#22c55e; transform:translateX(2px); }
 .rf-opt-btn.rf-disabled { opacity:.5; pointer-events:none; }
 
+/* Captura de contacto in-widget — reemplaza al "cierra el chat y escribe por WhatsApp" */
+.rf-captura {
+  display:flex; flex-direction:column; gap:8px;
+  padding:10px; margin:4px 0; max-width:88%; align-self:flex-start;
+  background:#1f2c33; border:1px solid #2a3942; border-radius:10px;
+}
+.rf-captura-input {
+  background:#0b141a; border:1px solid #2a3942; color:#e9edef;
+  padding:10px 12px; border-radius:8px; font-size:13px; font-family:inherit;
+}
+.rf-captura-input:focus { outline:none; border-color:#22c55e; }
+.rf-captura-btn {
+  background:#22c55e; border:none; color:#06280f; font-weight:700;
+  padding:10px 14px; border-radius:8px; font-size:13px; cursor:pointer;
+  font-family:inherit; transition:transform .15s;
+}
+.rf-captura-btn:hover { transform:translateY(-1px); }
+.rf-captura-btn:disabled { opacity:.6; cursor:default; }
+.rf-wa-secundario {
+  display:block; text-align:center; color:#9fb0b8; font-size:12px;
+  margin-top:6px;
+}
+
 /* Input fake (no editable, solo visual) */
 #rf-bot-bottombar {
   background:#1f2c33; padding:10px 14px; flex-shrink:0;
@@ -430,11 +453,12 @@ function rfCrearOportunidadLegacy() {
         session_id_origen: rfSessionId,
         solicita_ejecutivo: false, // no existe todavía el botón "hablar con ejecutivo" (Fase 2)
         responsable: null,
-        // CORREGIDO 03-jul: la CHECK constraint `chk_op_cliente` exige que
-        // cliente_id o cliente_nombre_libre tengan un valor — el visitante
-        // del widget es anónimo hasta que responde por WhatsApp, así que
-        // se manda un texto honesto de placeholder, no un nombre inventado.
-        cliente_nombre_libre: 'Visitante web anónimo'
+        // R-WIDGET-001: si el visitante completó la captura in-widget
+        // (rfNodoContacto), usamos su nombre real. Si no llegó a ese paso
+        // (ej. abandonó antes), mandamos el placeholder honesto de antes —
+        // nunca un nombre inventado.
+        cliente_nombre_libre: rfState.nombre_contacto || 'Visitante web anónimo',
+        metadata: rfState.telefono_contacto ? { telefono_contacto: rfState.telefono_contacto } : null
         // cantidad_estimada: NO se envía con valor inventado — el flujo
         // actual del widget no pregunta cantidad en el chat (eso es
         // Fase 2, sección 7 de la propuesta V2.2); queda NULL a
@@ -457,7 +481,7 @@ function rfBuildIntakePayload(materialLabel, tituloEmpresa) {
 
   return {
     material: materialLabel,
-    cliente_nombre_libre: 'Visitante web anónimo',
+    cliente_nombre_libre: rfState.nombre_contacto || 'Visitante web anónimo',
     resumen: 'Solicitud comercial desde widget web guiado',
     titulo_referencia: 'Venta ' + materialLabel + ' — Widget web (' + tituloEmpresa + ')',
     ciudad: rfState.ciudad || null,
@@ -498,6 +522,11 @@ function rfCrearIntakeComercial() {
       idioma: 'es',
       source_url: document.referrer || window.location.href,
       sucursal_ref: sucursalId,
+      contacto: {
+        nombre: rfState.nombre_contacto || null,
+        telefono: rfState.telefono_contacto || null,
+        email: null
+      },
       payload: payload
     })
   }).then(async function (resp) {
@@ -597,11 +626,23 @@ function rfAddBotMsg(html, delay=0) {
   });
 }
 
+// Escapa meta-caracteres HTML antes de insertar cualquier texto que pueda
+// venir de un input del visitante (CodeQL js/xss-through-dom). Los mensajes
+// de opciones fijas (labels de botones) no la necesitan pero no les afecta.
+function rfEscapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function rfAddUserMsg(text) {
   document.querySelectorAll('.rf-opt-btn').forEach(b => b.classList.add('rf-disabled'));
   const wrap = document.createElement('div');
   wrap.className = 'rf-user-msg';
-  wrap.innerHTML = '<div><div class="rf-user-bubble">'+text+'</div><div class="rf-user-time">'+rfTime()+' ✓✓</div></div>';
+  wrap.innerHTML = '<div><div class="rf-user-bubble">'+rfEscapeHtml(text)+'</div><div class="rf-user-time">'+rfTime()+' ✓✓</div></div>';
   rfChat.appendChild(wrap);
   rfScroll();
 }
@@ -618,6 +659,54 @@ function rfAddOptions(opts) {
   });
   rfChat.appendChild(container);
   rfScroll();
+}
+
+// Captura nombre + teléfono DENTRO del widget (sin salir a WhatsApp).
+// onSubmit se dispara solo cuando ambos campos tienen contenido.
+function rfAddCapturaContacto(onSubmit) {
+  const wrap = document.createElement('div');
+  wrap.className = 'rf-captura';
+  wrap.innerHTML =
+    '<input type="text" class="rf-captura-input" placeholder="Nombre y apellido" />' +
+    '<input type="tel" class="rf-captura-input" placeholder="Teléfono o WhatsApp" />' +
+    '<button type="button" class="rf-captura-btn">Enviar mis datos ✅</button>';
+  rfChat.appendChild(wrap);
+  rfScroll();
+
+  const inputs = wrap.querySelectorAll('.rf-captura-input');
+  const nombreInput = inputs[0];
+  const telInput = inputs[1];
+  const btn = wrap.querySelector('.rf-captura-btn');
+  const btnLabelOriginal = btn.textContent;
+
+  btn.onclick = () => {
+    const nombre = nombreInput.value.trim();
+    const telefono = telInput.value.trim();
+    if (!nombre || !telefono) {
+      btn.textContent = 'Completa ambos datos';
+      setTimeout(() => { btn.textContent = btnLabelOriginal; }, 1500);
+      return;
+    }
+    rfState.nombre_contacto = nombre;
+    rfState.telefono_contacto = telefono;
+    rfAddUserMsg(nombre + ' · ' + telefono);
+    nombreInput.disabled = true;
+    telInput.disabled = true;
+    btn.disabled = true;
+    onSubmit();
+  };
+}
+
+// Nodo intermedio: reemplaza el viejo patrón "cierra el chat y escribe por
+// WhatsApp con estos datos". Ahora el dato se pide y se registra ACÁ, sin
+// obligar a salir del widget. WhatsApp queda como continuación opcional en
+// rfNodo7().
+function rfNodoContacto() {
+  rfBotSequence([
+    '📋 Para registrar tu solicitud y que un ejecutivo te contacte, cuéntanos:'
+  ], () => {
+    rfAddCapturaContacto(() => rfNodo7());
+  });
 }
 
 async function rfBotSequence(messages, thenFn, instant=false) {
@@ -861,7 +950,10 @@ function rfNodo3am() {
     grupos[m.categoria].push(m);
   });
   Object.keys(grupos).forEach(cat => {
-    html += '<div class="rf-pt-section">' + cat + '</div>';
+    // rfFetchPrecios() no siempre trae categoria (fuente de cache no la
+    // expone) — en ese caso cat llega como el string 'null' (clave de
+    // objeto JS) y no debe mostrarse como si fuera un título real.
+    if (cat && cat !== 'null') html += '<div class="rf-pt-section">' + cat + '</div>';
     grupos[cat].forEach(m => {
       html += '<div class="rf-pt-row"><span>' + m.material + '</span><span class="rf-pt-val">' + rfFmtPrecio(m.precioLista) + '</span></div>';
     });
@@ -887,9 +979,9 @@ function rfNodo3am() {
 }
 
 function rfNodo3av() {
-  rfBotSequence(['Para materiales variados, un ejecutivo te orientará con la mejor alternativa. Cierra el chat y presiona el botón de WhatsApp para escribirle directamente a Andrea.'], () => {
+  rfBotSequence(['Para materiales variados, un ejecutivo te orientará con la mejor alternativa. Déjanos tus datos y te contactamos.'], () => {
     rfState.intent = 'materiales_varios';
-    rfNodo7();
+    rfNodoContacto();
   });
 }
 
@@ -960,10 +1052,10 @@ function rfNodo5a() {
 // ═══════════════════════════════════════════════════════════════
 function rfNodo6a() {
   rfBotSequence([
-    'Perfecto. Necesitamos algunos datos antes de cerrar la cotización. Cuando termines, te conectamos con Andrea por WhatsApp con toda la información pre-cargada.\n\n📋 Datos que necesitaremos:\n• Nombre y apellido\n• RUT\n• ¿Venta a nombre de empresa? (Sí → nombre + RUT empresa)\n• Correo electrónico\n• Día preferido para entregar\n• Jornada (AM o PM)\n\n💳 Los datos bancarios para la transferencia serán coordinados por un ejecutivo.'
+    'Perfecto. Déjanos tus datos y un ejecutivo te contacta para coordinar RUT, día y jornada de entrega.\n\n💳 Los datos bancarios para la transferencia serán coordinados por un ejecutivo.'
   ], () => {
     rfState.intent = 'vender_material';
-    rfNodo7();
+    rfNodoContacto();
   });
 }
 
@@ -986,8 +1078,8 @@ function rfNodo3b() {
 
 function rfNodo3bPersonal() {
   rfBotSequence([
-    'Perfecto. Los datos que necesitaremos:\n\n• Nombre y apellido\n• Kilos aproximados a donar\n• Día preferido para entregar\n• Jornada (AM o PM)\n\nAl cerrar el chat te redirigimos a WhatsApp con esos campos listos para completar.'
-  ], () => rfNodo7());
+    'Perfecto. Déjanos tus datos y coordinamos kilos aproximados, día y jornada para la donación.'
+  ], () => rfNodoContacto());
 }
 
 function rfNodo3bEmpresa() {
@@ -996,8 +1088,8 @@ function rfNodo3bEmpresa() {
     '¿Requieren un <b>Certificado de Recepción Ley REP</b>?\n\nEste certificado acredita oficialmente la entrega de materiales para reciclaje y tiene un valor de <b>2,7 UF anuales</b>.'
   ], () => {
     rfAddOptions([
-      { label:'✅ Sí, necesitamos el certificado REP', action:()=>{ rfAddUserMsg('Sí, certificado REP'); rfState.requiere_cert_rep=true; rfNodo7(); }},
-      { label:'❌ No lo necesitamos', action:()=>{ rfAddUserMsg('No lo necesitamos'); rfState.requiere_cert_rep=false; rfNodo7(); }}
+      { label:'✅ Sí, necesitamos el certificado REP', action:()=>{ rfAddUserMsg('Sí, certificado REP'); rfState.requiere_cert_rep=true; rfNodoContacto(); }},
+      { label:'❌ No lo necesitamos', action:()=>{ rfAddUserMsg('No lo necesitamos'); rfState.requiere_cert_rep=false; rfNodoContacto(); }}
     ]);
   });
 }
@@ -1008,9 +1100,9 @@ function rfNodo3bEmpresa() {
 function rfNodo3c() {
   rfState.intent = 'cotizar_retiro';
   rfBotSequence([
-    '¡Perfecto! Para preparar tu cotización de retiro necesitamos estos datos:\n\n• Nombre y apellido\n• Correo electrónico\n• Dirección donde retirar\n• Ubicación Google Maps\n• 2 o más fotos del material\n• Tipo de camión (pequeño / ampliroll / que nos recomienden)\n• Kilos aproximados\n• Grúa horquilla disponible (sí/no)\n• Día y jornada preferida\n• Comentarios adicionales',
-    '📌 Al cerrar el chat te redirigimos a WhatsApp con esta lista lista para que nos la completes. Andrea te responderá con la cotización.'
-  ], () => rfNodo7());
+    '¡Perfecto! Para preparar tu cotización de retiro, un ejecutivo necesitará: dirección, fotos del material, tipo de camión, kilos aproximados y día/jornada preferida.',
+    '📌 Déjanos tus datos ahora y te contactamos para coordinar el resto.'
+  ], () => rfNodoContacto());
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1024,7 +1116,7 @@ function rfNodo3d() {
     '¿Te gustaría que un ejecutivo te contacte cuando lo decidas?'
   ], () => {
     rfAddOptions([
-      { label:'1. Sí, que me contacten', action:()=>{ rfAddUserMsg('Sí, que me contacten'); rfNodo7(); }},
+      { label:'1. Sí, que me contacten', action:()=>{ rfAddUserMsg('Sí, que me contacten'); rfNodoContacto(); }},
       { label:'2. No, no es necesario', action:()=>{ rfAddUserMsg('No, gracias'); rfNodofin(); }},
       { label:'3. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }}
     ]);
@@ -1109,21 +1201,29 @@ function rfGenerarMensajeWhatsApp() {
 
 function rfNodo7() {
   // Crear el caso comercial (vía intake v1 o vía legacy, según flag).
-  // No bloquea el deeplink de WhatsApp ni la continuidad del visitante.
+  // Se registra SIEMPRE acá, independiente de si el visitante abre WhatsApp
+  // o no — WhatsApp ya no es requisito para quedar registrado (R-WIDGET-001).
   rfCrearCasoComercial();
 
-  // Generar WhatsApp deeplink
+  // WhatsApp deeplink — queda como continuación OPCIONAL, no como salida obligatoria.
   const mensaje = rfGenerarMensajeWhatsApp();
   const waLink = 'https://wa.me/' + RF_CONFIG.WHATSAPP + '?text=' + encodeURIComponent(mensaje);
+  // rfEscapeHtml: nombre_contacto/telefono_contacto vienen de un <input> del
+  // visitante — igual que en rfAddUserMsg, nunca se interpolan crudos en HTML.
+  const saludoNombre = rfState.nombre_contacto ? ', ' + rfEscapeHtml(rfState.nombre_contacto) : '';
+  const telefonoMsg = rfState.telefono_contacto ? ' al ' + rfEscapeHtml(rfState.telefono_contacto) : '';
 
   rfBotSequence([
-    '✅ <b>¡Listo!</b> Reúne los datos que te pedí y presiona el botón de abajo para enviarlos directamente a Andrea por WhatsApp (ya vienen pre-cargados).\n\nAndrea te responderá a la brevedad con la información o cotización.'
+    '✅ <b>¡Listo' + saludoNombre + '!</b> Ya registramos tu solicitud. Un ejecutivo de Reciclean-Farex te contactará a la brevedad' + telefonoMsg + '.'
   ], () => {
-    // Agregar botón CTA de WhatsApp directo
     const wrap = document.createElement('div');
     wrap.className = 'rf-bot-msg';
     wrap.style.maxWidth = '92%';
-    wrap.innerHTML = '<div style="width:100%"><a href="' + waLink + '" target="_blank" class="rf-wa-cta"><span class="rf-wa-icon">💬</span>Abrir WhatsApp con datos pre-cargados</a></div>';
+    wrap.innerHTML =
+      '<div style="width:100%">' +
+        '<a href="' + waLink + '" target="_blank" class="rf-wa-cta"><span class="rf-wa-icon">💬</span>Avanzar ahora por WhatsApp (opcional)</a>' +
+        '<span class="rf-wa-secundario">No es obligatorio — igual te contactaremos con los datos que ya dejaste.</span>' +
+      '</div>';
     rfChat.appendChild(wrap);
     rfScroll();
 
