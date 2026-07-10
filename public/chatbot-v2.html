@@ -340,9 +340,6 @@ const RF_USE_INTAKE_V1 = true;
 
 // Estado global del flujo
 let rfState = {};
-let rfCatalogoPrecios = null;   // Cargado desde Supabase
-let rfCatalogoFecha = null;
-let rfCatalogoOrigen = null;    // 'hoy' | 'cache' | null — de dónde vino el precio mostrado
 const rfChat = document.getElementById('rf-bot-chat');
 const rfWindow = document.getElementById('rf-bot-window');
 const rfToggle = document.getElementById('rf-bot-toggle');
@@ -673,7 +670,7 @@ function rfAddCapturaContacto(onSubmit) {
   wrap.className = 'rf-captura';
   wrap.innerHTML =
     '<input type="text" class="rf-captura-input" placeholder="Nombre y apellido" />' +
-    '<input type="tel" class="rf-captura-input" placeholder="Teléfono o WhatsApp" />' +
+    '<input type="tel" class="rf-captura-input" placeholder="Teléfono de contacto" />' +
     '<button type="button" class="rf-captura-btn">Enviar mis datos ✅</button>';
   rfChat.appendChild(wrap);
   rfScroll();
@@ -728,116 +725,31 @@ async function rfBotSequence(messages, thenFn, instant=false) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SUPABASE · Cargar catálogo de precios en vivo
-// ═══════════════════════════════════════════════════════════════
-async function rfFetchPrecios() {
-  // Intento 1: fuente principal (asistente_snapshot), igual que antes.
+// SUPABASE · Canasta curada del widget (curated.materiales_widget_config,
+// mig 371 + 372). Deny-by-default: un material solo aparece si alguien lo
+// ratificó explícitamente para este canal. Reemplaza al viejo esquema
+// asistente_snapshot / v_precio_cache, que mostraba CUALQUIER precio vivo
+// sin curaduría y disparaba el banner "* precio de respaldo" siempre (la
+// fuente "hoy" — asistente_snapshot — está vacía desde 03-jul, así que ese
+// banner nunca reflejaba una fuente real, solo la ausencia de curaduría).
+// Ver mayordomo/PLAN-2026/WIDGET-CURADURIA-VISIBILIDAD-V1.md.
+async function rfFetchCurado(sucursal, filtros) {
   try {
-    const r = await fetch(RF_CONFIG.SUPABASE_URL + '/rest/v1/asistente_snapshot?id=eq.1&select=datos,version_label,actualizado_en', {
-      headers: { 'apikey': RF_CONFIG.SUPABASE_KEY, 'Authorization': 'Bearer ' + RF_CONFIG.SUPABASE_KEY }
-    });
-    const rows = await r.json();
-    const row = rows && rows[0];
-    if (row && row.datos && Object.keys(row.datos).length > 0) {
-      rfCatalogoPrecios = row.datos;
-      rfCatalogoFecha = row.actualizado_en;
-      rfCatalogoOrigen = 'hoy';
-      return true;
-    }
-    console.warn('[RF Chatbot] Fuente principal vacía, probando cache de respaldo…');
-  } catch(e) { console.warn('[RF Chatbot] Fuente principal falló, probando cache de respaldo:', e); }
-
-  // Intento 2: cache de último precio válido, vía la vista pública
-  // public.v_precio_cache (GRANT SELECT a anon ya aplicado en producción).
-  try {
-    const r2 = await fetch(RF_CONFIG.SUPABASE_URL + '/rest/v1/v_precio_cache?select=material,sucursal,empresa,precio_lista_clp,actualizado_en', {
-      headers: { 'apikey': RF_CONFIG.SUPABASE_KEY, 'Authorization': 'Bearer ' + RF_CONFIG.SUPABASE_KEY }
-    });
-    const filas = await r2.json();
-    if (Array.isArray(filas) && filas.length > 0) {
-      // Reconstruye la forma { sucursal: [ {material, farex, reciclean, precioLista, categoria} ] }
-      // que ya esperan rfGetPrecio()/rfTopMateriales(), para no tocar esas funciones.
-      const catalogo = {};
-      let fechaMasVieja = null;
-      filas.forEach(f => {
-        if (!catalogo[f.sucursal]) catalogo[f.sucursal] = [];
-        catalogo[f.sucursal].push({
-          material: f.material,
-          farex: f.empresa === 'farex',
-          reciclean: f.empresa === 'reciclean',
-          precioLista: f.precio_lista_clp,
-          categoria: null
-        });
-        if (!fechaMasVieja || f.actualizado_en < fechaMasVieja) fechaMasVieja = f.actualizado_en;
-      });
-      rfCatalogoPrecios = catalogo;
-      rfCatalogoFecha = fechaMasVieja;
-      rfCatalogoOrigen = 'cache';
-      return true;
-    }
-  } catch (e2) { console.warn('[RF Chatbot] Cache de respaldo también falló:', e2); }
-
-  // Ambas fuentes vacías/fallidas.
-  rfCatalogoPrecios = null;
-  rfCatalogoOrigen = null;
-  rfTrack('precio_no_disponible', {});
-  return false;
-}
-
-// Busca precio_lista de un material específico, en una sucursal específica
-// Devuelve el precio o null si no hay match
-function rfGetPrecio(nombreMaterial, sucursal, empresaFilter) {
-  if (!rfCatalogoPrecios) return null;
-  const lista = rfCatalogoPrecios[sucursal] || rfCatalogoPrecios['Cerrillos'] || [];
-  // Busca por nombre exacto, case-insensitive
-  const match = lista.find(m => {
-    if (empresaFilter === 'farex' && !m.farex) return false;
-    if (empresaFilter === 'reciclean' && !m.reciclean) return false;
-    return m.material && m.material.toLowerCase() === nombreMaterial.toLowerCase();
-  });
-  return match && match.precioLista > 0 ? match.precioLista : null;
-}
-
-// Lista top N materiales de una empresa en una sucursal, ordenados por precio descendente
-function rfTopMateriales(empresa, sucursal, topN) {
-  if (!rfCatalogoPrecios) return [];
-  const lista = rfCatalogoPrecios[sucursal] || rfCatalogoPrecios['Cerrillos'] || [];
-  return lista
-    .filter(m => m[empresa] && m.precioLista > 0)
-    .sort((a,b) => b.precioLista - a.precioLista)
-    .slice(0, topN || 20);
-}
-
-// Canasta curada del widget (curated.materiales_widget_config, mig 371).
-// A diferencia de rfTopMateriales (que muestra TODO lo que exista en la
-// tabla de precios), esto es deny-by-default: solo aparece un material si
-// alguien lo ratificó explícitamente para este canal. Ver
-// mayordomo/PLAN-2026/WIDGET-CURADURIA-VISIBILIDAD-V1.md.
-async function rfFetchMetalesCurados(sucursal) {
-  try {
+    const qs = new URLSearchParams({ sucursal: 'eq.' + sucursal, order: 'orden_widget.asc.nullslast' });
+    Object.keys(filtros || {}).forEach(k => qs.set(k, 'eq.' + filtros[k]));
     const r = await fetch(
-      RF_CONFIG.SUPABASE_URL + '/rest/v1/v_widget_materiales_curados' +
-      '?sucursal=eq.' + encodeURIComponent(sucursal) +
-      '&empresa=eq.farex&order=orden_widget.asc.nullslast',
+      RF_CONFIG.SUPABASE_URL + '/rest/v1/v_widget_materiales_curados?' + qs.toString(),
       { headers: { 'apikey': RF_CONFIG.SUPABASE_KEY, 'Authorization': 'Bearer ' + RF_CONFIG.SUPABASE_KEY } }
     );
     const rows = await r.json();
     return Array.isArray(rows) ? rows : [];
   } catch (e) {
-    console.warn('[RF Chatbot] rfFetchMetalesCurados falló:', e);
+    console.warn('[RF Chatbot] rfFetchCurado falló:', e);
     return [];
   }
 }
-
-function rfFmtPrecio(v) {
-  if (!v) return 'consultar';
-  const base = '$' + Math.round(v).toLocaleString('es-CL') + '/kg';
-  // Sufijo compacto (*) cuando el precio viene del cache de respaldo,
-  // no de la fuente del día — el detalle completo ("dato de respaldo,
-  // actualizado el...") se muestra 1 sola vez arriba de la lista de
-  // materiales (rfNodo3a), no repetido en cada línea de precio.
-  return rfCatalogoOrigen === 'cache' ? base + ' *' : base;
-}
+const rfFetchMetalesCurados = (sucursal) => rfFetchCurado(sucursal, { seccion_widget: 'metales_completo' });
+const rfFetchPrincipalCurado = (sucursal) => rfFetchCurado(sucursal, { seccion_widget: 'principal' });
 
 // ═══════════════════════════════════════════════════════════════
 // NODOS DEL FLUJO v9 (adaptado de simulacion_v9_sin_ia (8).html)
@@ -913,39 +825,43 @@ function rfNodo2c() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// N3A · TIPO DE RESIDUO · precios DESDE SUPABASE
+// N3A · TIPO DE RESIDUO · canasta curada (curated.materiales_widget_config,
+// seccion_widget='principal') — reemplaza el array hardcodeado de 8
+// materiales. Mismo modelo deny-by-default que la pantalla de metales.
 // ═══════════════════════════════════════════════════════════════
-function rfNodo3a() {
-  const sucursal = rfState.sucursal || 'Cerrillos';
-  // Materiales RECICLEAN disponibles (nombres canónicos del catálogo)
-  const materialesRec = [
-    { label:'Cartón',               canonico:'Cartón',             empresa:'reciclean' },
-    { label:'Blanco 2',              canonico:'Blanco 2',           empresa:'reciclean' },
-    { label:'Vidrio',                canonico:'Vidrio',             empresa:'reciclean' },
-    { label:'PET Transparente',      canonico:'PET Transparente',   empresa:'reciclean' },
-    { label:'Polietileno Limpio',    canonico:'Polietileno Limpio', empresa:'reciclean' },
-    { label:'Tapas Bebidas',         canonico:'Tapas Bebidas',      empresa:'reciclean' },
-    { label:'Aluminio UBC (latas)',  canonico:'Aluminio UBC',       empresa:'farex'    },
-    { label:'Lata Chatarra',         canonico:'Lata Chatarra',      empresa:'farex',   esMetal:true }
-  ];
+// Único material donde empresa=farex no implica esMetal=true: el negocio
+// SÍ acepta donación de latas de aluminio (a diferencia de chatarra). No es
+// derivable de curated.materiales — se deja explícito acá.
+const RF_ES_METAL_OVERRIDE = { 'Aluminio UBC': false };
 
-  const introMsg = rfCatalogoOrigen === 'cache'
-    ? '¿Qué tipo de material quieres vender?\n\n<i>* precio de respaldo, actualizado el ' + (rfCatalogoFecha ? new Date(rfCatalogoFecha).toLocaleDateString('es-CL') : '—') + '</i>'
-    : '¿Qué tipo de material quieres vender?';
-  rfBotSequence([introMsg]);
+async function rfNodo3a() {
+  const sucursal = rfState.sucursal || 'Cerrillos';
+  const filas = await rfFetchPrincipalCurado(sucursal);
+
+  rfBotSequence(['¿Qué tipo de material quieres vender?']);
 
   setTimeout(() => {
-    const opts = materialesRec.map(m => ({
-      label: m.label + ' · ' + rfFmtPrecio(rfGetPrecio(m.canonico, sucursal, m.empresa)),
-      action: () => {
-        rfAddUserMsg(m.label);
-        rfState.material = m.canonico;
-        rfState.empresa = m.empresa;
-        rfState.esMetal = !!m.esMetal;
-        rfState.precio = rfGetPrecio(m.canonico, sucursal, m.empresa);
-        rfNodo4();
-      }
-    }));
+    if (filas.length === 0) {
+      rfBotSequence(['Todavía no tenemos materiales confirmados para este canal en ' + sucursal + '. Por favor contacta a un ejecutivo.']);
+      return;
+    }
+    const opts = filas.map(m => {
+      const precio = m.modo_widget === 'precio' ? m.precio_lista_clp : null;
+      const esMetal = m.empresa === 'farex'
+        ? (RF_ES_METAL_OVERRIDE.hasOwnProperty(m.material) ? RF_ES_METAL_OVERRIDE[m.material] : true)
+        : false;
+      return {
+        label: m.material + ' · ' + (precio ? '$' + Math.round(precio).toLocaleString('es-CL') + '/kg' : 'consultar'),
+        action: () => {
+          rfAddUserMsg(m.material);
+          rfState.material = m.material;
+          rfState.empresa = m.empresa;
+          rfState.esMetal = esMetal;
+          rfState.precio = precio;
+          rfNodo4();
+        }
+      };
+    });
     opts.push({
       label:'🔩 Fierro y otros metales (Farex)',
       action: () => { rfAddUserMsg('Fierro y metales'); rfState.esMetal=true; rfState.empresa='farex'; rfNodo3am(); }
@@ -1271,10 +1187,8 @@ function rfNodofin() {
 // ═══════════════════════════════════════════════════════════════
 // INICIALIZACIÓN
 // ═══════════════════════════════════════════════════════════════
-(async function rfInit() {
-  // Pre-cargar catálogo de precios en background
-  await rfFetchPrecios();
-  console.log('[RF Chatbot MVP v' + RF_CONFIG.VERSION + '] Listo. Catálogo:', rfCatalogoPrecios ? 'cargado' : 'sin datos (usará consultas directas)');
+(function rfInit() {
+  console.log('[RF Chatbot MVP v' + RF_CONFIG.VERSION + '] Listo. Precios vía canasta curada (curated.materiales_widget_config).');
 })();
 </script>
 
