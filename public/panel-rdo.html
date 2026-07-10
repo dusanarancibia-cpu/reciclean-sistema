@@ -4254,6 +4254,7 @@
                   class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
             <option value="rdo">Solo RDO nativo</option>
             <option value="crm">Solo CRM Impulsa</option>
+            <option value="widget_excepciones">🔔 Excepciones Widget</option>
             <option value="">Todos</option>
           </select>
         </div>
@@ -12200,6 +12201,11 @@ async function loadOportunidadesKanban() {
   let q = sb.schema('panel').from('v_oportunidades_kanban_v2').select('*').order('fecha_recepcion', { ascending: false });
   if (origenFiltro === 'rdo') q = q.neq('origen', 'crm_impulsa');
   else if (origenFiltro === 'crm') q = q.eq('origen', 'crm_impulsa');
+  else if (origenFiltro === 'widget_excepciones') {
+    // Motor de resolución (mig 370): solo lo que Andrea debe mirar de verdad
+    // — casos del widget que el bot NO pudo resolver solo.
+    q = q.eq('origen', 'widget_web').in('nivel_autonomia', ['semi_auto', 'excepcion']);
+  }
   if (!mostrarCerrados) q = q.not('estado', 'in', '("ganada","perdida","pagado")');
 
   // Capa 2b · filtro por responsable o por sucursal del usuario logueado
@@ -12307,6 +12313,21 @@ function oppRenderCard(o) {
   const fechaRec = o.fecha_recepcion ? new Date(o.fecha_recepcion).toLocaleDateString('es-CL') : '';
   const embudoBadge = o.embudo ? `<span class="text-xs px-1 py-0.5 bg-purple-100 text-purple-700 rounded">${escapeHtml(o.embudo)}</span>` : '';
   const crmDot = esCrm ? '<span title="CRM Impulsa" class="inline-block w-2 h-2 rounded-full bg-purple-400 mr-1"></span>' : '';
+  // Motor de resolución widget (mig 370) — resumen clicable de por qué este
+  // caso necesita ojo humano, sin obligar a abrir el drawer para saberlo.
+  const MOTIVO_LABELS = {
+    sin_contacto: 'Sin datos de contacto',
+    material_no_catalogado: 'Material no catalogado',
+    requiere_cotizacion_logistica: 'Retiro — falta cotizar logística',
+    requiere_certificado_rep: 'Requiere certificado REP',
+    sin_precio_vigente: 'Sin precio vigente',
+    seguimiento_futuro: 'Pidió seguimiento futuro',
+    no_clasificado: 'Caso no clasificado',
+    pre_motor_resolucion: 'Anterior al motor de resolución',
+  };
+  const excepcionBadge = o.nivel_autonomia && o.nivel_autonomia !== 'auto'
+    ? `<div class="mt-1"><span class="text-xs px-1 py-0.5 ${o.nivel_autonomia === 'excepcion' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'} rounded">🔔 ${escapeHtml(MOTIVO_LABELS[o.motivo_excepcion] || o.nivel_autonomia)}</span></div>`
+    : '';
   return `
     <div onclick="oppAbrirDrawer('${escapeHtml(o.oportunidad_id)}')"
          role="button" tabindex="0"
@@ -12325,6 +12346,7 @@ function oppRenderCard(o) {
         <span>${escapeHtml(fechaRec)}</span>
       </div>
       ${embudoBadge ? `<div class="mt-1">${embudoBadge}</div>` : ''}
+      ${excepcionBadge}
       ${o.responsable ? `<div class="text-xs text-stone-400 mt-1">👤 ${escapeHtml(o.responsable)}</div>` : ''}
     </div>`;
 }
