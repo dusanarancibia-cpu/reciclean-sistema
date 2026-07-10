@@ -471,7 +471,10 @@ function rfBuildIntakePayload(materialLabel, tituloEmpresa) {
     cotizar_retiro: 'Cotizar retiro',
     donar: 'Quiero donar material',
     meditar: 'Me gustaría que me contacten luego',
-    materiales_varios: 'Consulta por materiales varios'
+    materiales_varios: 'Consulta por materiales varios',
+    servicio_certificados: 'Certificados y respaldo documental',
+    servicio_atencion_empresa: 'Atención periódica para empresa',
+    servicio_otro: 'Otro requerimiento de servicio'
   };
   const mensajeWhatsapp = rfGenerarMensajeWhatsApp();
   const waLink = 'https://wa.me/' + RF_CONFIG.WHATSAPP + '?text=' + encodeURIComponent(mensajeWhatsapp);
@@ -762,7 +765,7 @@ function rfNodo1() {
   ], () => {
     rfAddOptions([
       { label:'1. Vender materiales', action:()=>{ rfAddUserMsg('1. Vender materiales'); rfNodo2(); }},
-      { label:'2. Cotizar servicio de retiro', action:()=>{ rfAddUserMsg('2. Cotizar servicio de retiro'); rfNodo3c(); }},
+      { label:'2. 🏢 Servicios para empresas', action:()=>{ rfAddUserMsg('2. Servicios para empresas'); rfNodoServicios(); }},
       { label:'3. 🤝 Quiénes somos', action:()=>{ rfAddUserMsg('3. Quiénes somos'); rfNodo1b(); }}
     ]);
   });
@@ -1061,6 +1064,49 @@ function rfNodo3bEmpresa() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// N-SERV · SERVICIOS PARA EMPRESAS · menú ampliado
+// Reemplaza el acceso directo del menú principal a "Cotizar servicio de
+// retiro" — retiro sigue existiendo (rfNodo3c, sin cambios), pero ahora es
+// 1 de 4 caminos, no la única cara del negocio de servicios.
+// ═══════════════════════════════════════════════════════════════
+function rfNodoServicios() {
+  rfBotSequence([
+    '🏢 Además de comprar materiales, en el Grupo Reciclean-Farex ofrecemos servicios de gestión de residuos para empresas y particulares.\n\n¿Qué necesitas?'
+  ], () => {
+    rfAddOptions([
+      { label:'1. 🚛 Retiro de material', action:()=>{ rfAddUserMsg('Retiro de material'); rfNodo3c(); }},
+      { label:'2. 📄 Certificados y respaldo documental', action:()=>{ rfAddUserMsg('Certificados y respaldo documental'); rfNodoServCertificados(); }},
+      { label:'3. 🏢 Atención periódica para empresa', action:()=>{ rfAddUserMsg('Atención periódica para empresa'); rfNodoServEmpresa(); }},
+      { label:'4. Otro requerimiento', action:()=>{ rfAddUserMsg('Otro requerimiento'); rfNodoServOtro(); }},
+      { label:'5. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }}
+    ]);
+  });
+}
+
+function rfNodoServCertificados() {
+  rfState.intent = 'servicio_certificados';
+  rfBotSequence([
+    'Emitimos certificados de recepción y respaldo documental para acreditar el manejo correcto de tus residuos (Ley REP 20.920, DS 594, fiscalización SMA).',
+    'Déjanos tus datos y un ejecutivo te confirma qué certificado corresponde a tu caso y el detalle del proceso.'
+  ], () => rfNodoContacto());
+}
+
+function rfNodoServEmpresa() {
+  rfState.intent = 'servicio_atencion_empresa';
+  rfBotSequence([
+    'Para empresas con generación recurrente de residuos coordinamos atención periódica: retiros programados, documentación por período y un punto de contacto fijo.',
+    'Déjanos tus datos y un ejecutivo te contacta para levantar el detalle de tu operación.'
+  ], () => rfNodoContacto());
+}
+
+function rfNodoServOtro() {
+  rfState.intent = 'servicio_otro';
+  rfBotSequence([
+    'Sin problema. Cuéntanos qué necesitas al dejar tus datos — un ejecutivo revisa tu caso y te confirma la mejor alternativa.'
+  ], () => rfNodoContacto());
+}
+
+// ═══════════════════════════════════════════════════════════════
 // N3C · COTIZAR RETIRO
 // ═══════════════════════════════════════════════════════════════
 function rfNodo3c() {
@@ -1099,7 +1145,10 @@ function rfGenerarMensajeWhatsApp() {
     'cotizar_retiro':  '🚛 Cotizar retiro',
     'donar':           '💚 Quiero donar material',
     'meditar':         '🤔 Me gustaría que me contacten luego',
-    'materiales_varios': '❓ Consulta materiales varios'
+    'materiales_varios': '❓ Consulta materiales varios',
+    'servicio_certificados': '📄 Certificados y respaldo documental',
+    'servicio_atencion_empresa': '🏢 Atención periódica para empresa',
+    'servicio_otro': '📩 Otro requerimiento de servicio'
   };
   const header = intent_labels[s.intent] || '📩 Nueva consulta desde el chatbot web';
 
@@ -1159,6 +1208,20 @@ function rfGenerarMensajeWhatsApp() {
     msg += '• Describe los materiales que tienes: \n';
     msg += '• Cantidad aproximada: \n';
     msg += '• Ciudad: \n';
+  } else if (s.intent === 'servicio_certificados') {
+    msg += '• Nombre y apellido: \n';
+    msg += '• Empresa (si aplica): \n';
+    msg += '• Certificado o documento que necesita: \n';
+    msg += '• Motivo / para qué proceso: \n';
+  } else if (s.intent === 'servicio_atencion_empresa') {
+    msg += '• Nombre y apellido: \n';
+    msg += '• Empresa: \n';
+    msg += '• RUT empresa: \n';
+    msg += '• Frecuencia de generación de residuos: \n';
+    msg += '• Volumen aproximado mensual: \n';
+  } else if (s.intent === 'servicio_otro') {
+    msg += '• Nombre y apellido: \n';
+    msg += '• Detalle de la solicitud: \n';
   }
 
   msg += '\n_Gracias por contactarnos 💚_';
