@@ -4575,6 +4575,16 @@
 
           <div id="bdDrawerTags" class="flex flex-wrap gap-2 mb-3"></div>
 
+          <!-- Enlace a la entidad de origen (ej. oportunidad del widget) —
+               referencia_tabla/referencia_id ya existían en panel.diego_bandeja
+               como campos genéricos, sin uso hasta ahora. -->
+          <div id="bdDrawerRefBox" class="hidden mb-3">
+            <button id="bdDrawerRefBtn" onclick="bdIrAReferencia()"
+                    class="w-full text-sm px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-medium">
+              🔗 Abrir oportunidad
+            </button>
+          </div>
+
           <div class="bg-stone-50 p-3 rounded mb-3">
             <div class="text-xs text-stone-500 mb-1">Mensaje</div>
             <div id="bdDrawerMensaje" class="text-sm text-stone-800 whitespace-pre-line">—</div>
@@ -13196,6 +13206,21 @@ window.bdAbrirDrawer = async function(id) {
     : '';
   document.getElementById('bdBtnResolver').style.display = (b.estado === 'pendiente') ? '' : 'none';
   document.getElementById('bdBtnReabrir').classList.toggle('hidden', b.estado !== 'resuelto');
+
+  _bdDrawerRef = (b.referencia_tabla && b.referencia_id) ? { tabla: b.referencia_tabla, id: b.referencia_id } : null;
+  document.getElementById('bdDrawerRefBox').classList.toggle('hidden', !_bdDrawerRef);
+};
+
+// Navega a la entidad de origen del item de bandeja (hoy: solo oportunidades).
+// Reutiliza el tab y el drawer de Oportunidades ya existentes — cero UI nueva.
+let _bdDrawerRef = null;
+window.bdIrAReferencia = function() {
+  if (!_bdDrawerRef || _bdDrawerRef.tabla !== 'oportunidades') return;
+  const oppId = _bdDrawerRef.id;
+  bdCerrarDrawer();
+  const oppTabBtn = document.querySelector('[data-tab="oportunidades"]');
+  if (oppTabBtn) oppTabBtn.click();
+  setTimeout(() => { if (typeof oppAbrirDrawer === 'function') oppAbrirDrawer(oppId); }, 400);
 };
 
 window.bdCerrarDrawer = function() {
