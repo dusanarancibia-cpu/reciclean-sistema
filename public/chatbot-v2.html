@@ -808,6 +808,27 @@ function rfTopMateriales(empresa, sucursal, topN) {
     .slice(0, topN || 20);
 }
 
+// Canasta curada del widget (curated.materiales_widget_config, mig 371).
+// A diferencia de rfTopMateriales (que muestra TODO lo que exista en la
+// tabla de precios), esto es deny-by-default: solo aparece un material si
+// alguien lo ratificó explícitamente para este canal. Ver
+// mayordomo/PLAN-2026/WIDGET-CURADURIA-VISIBILIDAD-V1.md.
+async function rfFetchMetalesCurados(sucursal) {
+  try {
+    const r = await fetch(
+      RF_CONFIG.SUPABASE_URL + '/rest/v1/v_widget_materiales_curados' +
+      '?sucursal=eq.' + encodeURIComponent(sucursal) +
+      '&empresa=eq.farex&order=orden_widget.asc.nullslast',
+      { headers: { 'apikey': RF_CONFIG.SUPABASE_KEY, 'Authorization': 'Bearer ' + RF_CONFIG.SUPABASE_KEY } }
+    );
+    const rows = await r.json();
+    return Array.isArray(rows) ? rows : [];
+  } catch (e) {
+    console.warn('[RF Chatbot] rfFetchMetalesCurados falló:', e);
+    return [];
+  }
+}
+
 function rfFmtPrecio(v) {
   if (!v) return 'consultar';
   const base = '$' + Math.round(v).toLocaleString('es-CL') + '/kg';
@@ -940,33 +961,24 @@ function rfNodo3a() {
 // ═══════════════════════════════════════════════════════════════
 // N3A-M · Fierro y Metales Farex (tabla dinámica desde Supabase)
 // ═══════════════════════════════════════════════════════════════
-function rfNodo3am() {
+async function rfNodo3am() {
   const sucursal = rfState.sucursal || 'Cerrillos';
-  const top = rfTopMateriales('farex', sucursal, 15);
+  const filas = await rfFetchMetalesCurados(sucursal);
 
   let html = '<div class="rf-precio-tabla">';
   html += '<div class="rf-pt-title">🔧 Metales y Fierros · ' + sucursal + '</div>';
-  html += '<div class="rf-pt-fecha">' + new Date().toLocaleDateString('es-CL') + ' · precios en vivo</div>';
+  html += '<div class="rf-pt-fecha">' + new Date().toLocaleDateString('es-CL') + ' · canasta confirmada</div>';
 
-  // Agrupar por categoría
-  const grupos = {};
-  top.forEach(m => {
-    if (!grupos[m.categoria]) grupos[m.categoria] = [];
-    grupos[m.categoria].push(m);
-  });
-  Object.keys(grupos).forEach(cat => {
-    // rfFetchPrecios() no siempre trae categoria (fuente de cache no la
-    // expone) — en ese caso cat llega como el string 'null' (clave de
-    // objeto JS) y no debe mostrarse como si fuera un título real.
-    if (cat && cat !== 'null') html += '<div class="rf-pt-section">' + cat + '</div>';
-    grupos[cat].forEach(m => {
-      html += '<div class="rf-pt-row"><span>' + m.material + '</span><span class="rf-pt-val">' + rfFmtPrecio(m.precioLista) + '</span></div>';
-    });
+  filas.forEach(m => {
+    const valor = m.modo_widget === 'precio' && m.precio_lista_clp
+      ? '$' + Math.round(m.precio_lista_clp).toLocaleString('es-CL') + '/kg'
+      : 'consultar';
+    html += '<div class="rf-pt-row"><span>' + m.material + '</span><span class="rf-pt-val">' + valor + '</span></div>';
   });
   html += '</div>';
 
-  if (top.length === 0) {
-    html = '<div style="color:#fb923c">No hay precios disponibles en este momento. Por favor contacta a un ejecutivo.</div>';
+  if (filas.length === 0) {
+    html = '<div style="color:#fb923c">Todavía no tenemos materiales confirmados para este canal en ' + sucursal + '. Por favor contacta a un ejecutivo.</div>';
   }
 
   rfBotSequence([html], () => {
