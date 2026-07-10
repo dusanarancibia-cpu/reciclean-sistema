@@ -834,6 +834,15 @@ function rfNodo2c() {
 // derivable de curated.materiales — se deja explícito acá.
 const RF_ES_METAL_OVERRIDE = { 'Aluminio UBC': false };
 
+// Direcciones por sucursal — hoisted desde rfNodo4() para reutilizar en el
+// cierre de la ruta de metales (rfNodo3am), sin duplicar los datos.
+const RF_DIRECCIONES_SUCURSAL = {
+  'Cerrillos': 'Piloto Acevedo #424, Cerrillos, Santiago\n🗺 maps.app.goo.gl/fwcnfB9NxoZ8iSLg8',
+  'Maipú': 'Cerro Sombrero #940, Maipú, Santiago\n🗺 maps.app.goo.gl/2ZBAkSqeKwi8YP3d9',
+  'Talca': 'Fundo El Sauzal S/N, Chacarillas, Talca\n🗺 maps.app.goo.gl/TmooQP9vxhvGC7kE8',
+  'Puerto Montt': 'El Tepual km3, Línea 10 Lote 2, Puerto Montt\n🗺 maps.app.goo.gl/DqtEpj9aKXhVNCZ26'
+};
+
 async function rfNodo3a() {
   const sucursal = rfState.sucursal || 'Cerrillos';
   const filas = await rfFetchPrincipalCurado(sucursal);
@@ -919,9 +928,16 @@ async function rfNodo3am() {
     rfAddOptions([
       { label:'1. Continuar — me interesa vender ✅', action:()=>{
           rfAddUserMsg('Me interesa vender');
-          rfState.material='metales varios';
-          rfState.precio=null;
-          rfNodo5a();
+          rfState.material = filas.map(m => m.material).join(', ') || 'metales varios';
+          rfState.precio = null;
+          rfBotSequence([
+            '💳 Pago al contado con transferencia bancaria. Contamos con romana eléctrica para el pesaje.',
+            '📍 <b>Dirección:</b>\n' + (RF_DIRECCIONES_SUCURSAL[sucursal] || RF_DIRECCIONES_SUCURSAL['Cerrillos']),
+            '🕐 <b>Horarios:</b>\nLunes a Jueves: 8:30 — 18:00 hrs\nViernes: 8:30 — 17:00 hrs',
+            '⚠ Precio con IVA Retención 19%'
+          ], () => {
+            rfNodo5a();
+          });
       }},
       { label:'2. Cotizar servicio de retiro', action:()=>{ rfAddUserMsg('Cotizar retiro'); rfNodo3c(); }},
       { label:'3. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }}
@@ -949,12 +965,7 @@ function rfNodo4() {
   const precio = rfState.precio ? '$' + Math.round(rfState.precio).toLocaleString('es-CL') + '/kg' : 'consultar con ejecutivo';
   const material = rfState.material || 'el material';
 
-  const direcciones = {
-    'Cerrillos': 'Piloto Acevedo #424, Cerrillos, Santiago\n🗺 maps.app.goo.gl/fwcnfB9NxoZ8iSLg8',
-    'Maipú': 'Cerro Sombrero #940, Maipú, Santiago\n🗺 maps.app.goo.gl/2ZBAkSqeKwi8YP3d9',
-    'Talca': 'Fundo El Sauzal S/N, Chacarillas, Talca\n🗺 maps.app.goo.gl/TmooQP9vxhvGC7kE8',
-    'Puerto Montt': 'El Tepual km3, Línea 10 Lote 2, Puerto Montt\n🗺 maps.app.goo.gl/DqtEpj9aKXhVNCZ26'
-  };
+  const direcciones = RF_DIRECCIONES_SUCURSAL;
   const romana = ciudad === 'Santiago' ? 'Contamos con romana eléctrica para el pesaje.' : 'Contamos con romana para camiones en las instalaciones.';
   const donacion = !esMetal ? '\n\n💚 Si prefieres, también puedes <b>donar</b> estos materiales.' : '';
   const ivaNota = rfState.empresa === 'farex' ? '\n⚠ Precio con IVA Retención 19%' : '\n⚠ Precio sin IVA';
