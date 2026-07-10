@@ -538,15 +538,20 @@ function rfCrearIntakeComercial() {
   });
 }
 
+// Devuelve la promesa de la respuesta del intake (o null si usó el camino
+// legacy) para que el caller pueda, opcionalmente y sin bloquear el cierre
+// del chat, reaccionar a la clasificación real (nivel_autonomia) que calculó
+// el motor de resolución en el backend — ver rfNodo7().
 function rfCrearCasoComercial() {
   if (!RF_USE_INTAKE_V1) {
     rfCrearOportunidadLegacy();
-    return;
+    return Promise.resolve(null);
   }
 
-  rfCrearIntakeComercial().catch(function (e) {
+  return rfCrearIntakeComercial().catch(function (e) {
     console.warn('[RF Chatbot] intake v1 falló; fallback a legacy:', e);
     rfCrearOportunidadLegacy();
+    return null;
   });
 }
 
@@ -893,7 +898,7 @@ function rfNodo3a() {
   const sucursal = rfState.sucursal || 'Cerrillos';
   // Materiales RECICLEAN disponibles (nombres canónicos del catálogo)
   const materialesRec = [
-    { label:'Cartón',               canonico:'Carton',             empresa:'reciclean' },
+    { label:'Cartón',               canonico:'Cartón',             empresa:'reciclean' },
     { label:'Blanco 2',              canonico:'Blanco 2',           empresa:'reciclean' },
     { label:'Vidrio',                canonico:'Vidrio',             empresa:'reciclean' },
     { label:'PET Transparente',      canonico:'PET Transparente',   empresa:'reciclean' },
@@ -1203,7 +1208,18 @@ function rfNodo7() {
   // Crear el caso comercial (vía intake v1 o vía legacy, según flag).
   // Se registra SIEMPRE acá, independiente de si el visitante abre WhatsApp
   // o no — WhatsApp ya no es requisito para quedar registrado (R-WIDGET-001).
-  rfCrearCasoComercial();
+  // El motor de resolución del backend (intake-comercial-web) clasifica el
+  // caso en auto/semi_auto/excepcion — si vuelve como excepción real, se lo
+  // decimos al visitante SIN bloquear el cierre normal del chat (llega
+  // async, el mensaje principal de abajo ya se mostró igual).
+  rfCrearCasoComercial().then(function (resp) {
+    // Delay > tiempo de la secuencia principal de abajo, para que este
+    // mensaje aparezca DESPUÉS de la confirmación, no antes (la respuesta
+    // del backend puede llegar más rápido que la animación de "escribiendo").
+    if (resp && resp.nivel_autonomia === 'excepcion') {
+      rfAddBotMsg('🧑‍💼 Tu caso quedó marcado para revisión personalizada — un ejecutivo lo va a mirar directamente.', 1600);
+    }
+  });
 
   // WhatsApp deeplink — queda como continuación OPCIONAL, no como salida obligatoria.
   const mensaje = rfGenerarMensajeWhatsApp();
