@@ -842,7 +842,25 @@ async function rfNodo3a() {
 
   setTimeout(() => {
     if (filas.length === 0) {
-      rfBotSequence(['Todavía no tenemos materiales confirmados para este canal en ' + sucursal + '. Por favor contacta a un ejecutivo.']);
+      rfBotSequence([
+        'Todavía no tenemos materiales confirmados para este canal en ' + sucursal + '.',
+        'Puedes revisar la canasta confirmada de Fierro y otros metales, o dejarnos tu solicitud para orientarte correctamente según material y volumen.'
+      ], () => {
+        rfAddOptions([
+          {
+            label:'1. 🔩 Fierro y otros metales (Farex)',
+            action: () => { rfAddUserMsg('Fierro y metales'); rfState.esMetal=true; rfState.empresa='farex'; rfNodo3am(); }
+          },
+          {
+            label:'2. Otros materiales',
+            action: () => { rfAddUserMsg('Otros materiales'); rfNodo3av(); }
+          },
+          {
+            label:'3. Volver al menú principal',
+            action: () => { rfAddUserMsg('Volver al menú'); rfNodo1(); }
+          }
+        ]);
+      });
       return;
     }
     const opts = filas.map(m => {
@@ -894,7 +912,7 @@ async function rfNodo3am() {
   html += '</div>';
 
   if (filas.length === 0) {
-    html = '<div style="color:#fb923c">Todavía no tenemos materiales confirmados para este canal en ' + sucursal + '. Por favor contacta a un ejecutivo.</div>';
+    html = '<div style="color:#fb923c">Todavía no tenemos materiales confirmados para este canal en ' + sucursal + '. Déjanos tus datos y registramos tu solicitud para orientarte correctamente según material y volumen.</div>';
   }
 
   rfBotSequence([html], () => {
@@ -912,7 +930,10 @@ async function rfNodo3am() {
 }
 
 function rfNodo3av() {
-  rfBotSequence(['Para materiales variados, un ejecutivo te orientará con la mejor alternativa. Déjanos tus datos y te contactamos.'], () => {
+  rfBotSequence([
+    'Todavía no tenemos un precio autorizado para este material en este canal.',
+    'Déjanos tus datos y registramos tu solicitud para revisarla correctamente.'
+  ], () => {
     rfState.intent = 'materiales_varios';
     rfNodoContacto();
   });
@@ -939,11 +960,12 @@ function rfNodo4() {
   const ivaNota = rfState.empresa === 'farex' ? '\n⚠ Precio con IVA Retención 19%' : '\n⚠ Precio sin IVA';
 
   const seqs = [];
-  if (rfState.precio) seqs.push('💰 El precio de compra es <b>' + precio + ' de ' + material + '</b>, puesto en nuestra empresa.' + ivaNota);
-  else seqs.push('💰 Para este material: ' + precio + '. Un ejecutivo te confirmará el valor exacto.');
+  if (rfState.precio) seqs.push('💰 El precio de compra autorizado para este canal es <b>' + precio + ' para ' + material + '</b>, puesto en nuestra sucursal de ' + sucursal + '.' + ivaNota);
+  else seqs.push('💰 Todavía no tenemos un precio autorizado para ' + material + ' en este canal. Déjanos tus datos y registramos tu solicitud para revisarla correctamente.');
   seqs.push('💳 Pago al contado con transferencia bancaria. ' + romana + donacion);
   seqs.push('📍 <b>Dirección:</b>\n' + (direcciones[sucursal] || direcciones['Cerrillos']));
   seqs.push('🕐 <b>Horarios:</b>\nLunes a Jueves: 8:30 — 18:00 hrs\nViernes: 8:30 — 17:00 hrs');
+  seqs.push('📝 Si te interesa avanzar, deja tus datos para registrar tu llegada o coordinar mejor la entrega.');
 
   rfTrack('cotizacion_completa', { material: rfState.material, sucursal: sucursal, empresa: rfState.empresa });
 
@@ -985,7 +1007,7 @@ function rfNodo5a() {
 // ═══════════════════════════════════════════════════════════════
 function rfNodo6a() {
   rfBotSequence([
-    'Perfecto. Déjanos tus datos y un ejecutivo te contacta para coordinar RUT, día y jornada de entrega.\n\n💳 Los datos bancarios para la transferencia serán coordinados por un ejecutivo.'
+    'Perfecto. Déjanos tus datos y registramos tu entrega en el sistema para coordinar RUT, día y jornada.\n\n💳 Los datos bancarios para la transferencia se comparten al momento de coordinar la recepción.'
   ], () => {
     rfState.intent = 'vender_material';
     rfNodoContacto();
@@ -1011,7 +1033,7 @@ function rfNodo3b() {
 
 function rfNodo3bPersonal() {
   rfBotSequence([
-    'Perfecto. Déjanos tus datos y coordinamos kilos aproximados, día y jornada para la donación.'
+    'Perfecto. Déjanos tus datos y registramos tu donación para coordinar kilos aproximados, día y jornada.'
   ], () => rfNodoContacto());
 }
 
@@ -1033,8 +1055,8 @@ function rfNodo3bEmpresa() {
 function rfNodo3c() {
   rfState.intent = 'cotizar_retiro';
   rfBotSequence([
-    '¡Perfecto! Para preparar tu cotización de retiro, un ejecutivo necesitará: dirección, fotos del material, tipo de camión, kilos aproximados y día/jornada preferida.',
-    '📌 Déjanos tus datos ahora y te contactamos para coordinar el resto.'
+    '¡Perfecto! Para preparar tu cotización de retiro necesitaremos: dirección, fotos del material, tipo de camión, kilos aproximados y día/jornada preferida.',
+    '📌 Déjanos tus datos ahora y registramos tu solicitud para coordinar el resto.'
   ], () => rfNodoContacto());
 }
 
@@ -1046,10 +1068,10 @@ function rfNodo3d() {
   rfBotSequence([
     '¡Sin problema! Tómate el tiempo que necesites. 😊',
     'Cuando estés listo, puedes volver a escribirnos y retomamos desde donde quedamos.',
-    '¿Te gustaría que un ejecutivo te contacte cuando lo decidas?'
+    '¿Quieres dejar tus datos para que podamos seguir tu caso cuando lo decidas?'
   ], () => {
     rfAddOptions([
-      { label:'1. Sí, que me contacten', action:()=>{ rfAddUserMsg('Sí, que me contacten'); rfNodoContacto(); }},
+      { label:'1. Sí, dejar mis datos', action:()=>{ rfAddUserMsg('Sí, dejar mis datos'); rfNodoContacto(); }},
       { label:'2. No, no es necesario', action:()=>{ rfAddUserMsg('No, gracias'); rfNodofin(); }},
       { label:'3. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }}
     ]);
@@ -1158,15 +1180,15 @@ function rfNodo7() {
   const telefonoMsg = rfState.telefono_contacto ? ' al ' + rfEscapeHtml(rfState.telefono_contacto) : '';
 
   rfBotSequence([
-    '✅ <b>¡Listo' + saludoNombre + '!</b> Ya registramos tu solicitud. Un ejecutivo de Reciclean-Farex te contactará a la brevedad' + telefonoMsg + '.'
+    '✅ <b>¡Listo' + saludoNombre + '!</b> Ya registramos tu solicitud en nuestro sistema' + telefonoMsg + '. Si el caso requiere seguimiento adicional, lo haremos con los datos que ya dejaste.'
   ], () => {
     const wrap = document.createElement('div');
     wrap.className = 'rf-bot-msg';
     wrap.style.maxWidth = '92%';
     wrap.innerHTML =
       '<div style="width:100%">' +
-        '<a href="' + waLink + '" target="_blank" class="rf-wa-cta"><span class="rf-wa-icon">💬</span>Avanzar ahora por WhatsApp (opcional)</a>' +
-        '<span class="rf-wa-secundario">No es obligatorio — igual te contactaremos con los datos que ya dejaste.</span>' +
+        '<a href="' + waLink + '" target="_blank" class="rf-wa-cta"><span class="rf-wa-icon">💬</span>Continuar por WhatsApp (opcional)</a>' +
+        '<span class="rf-wa-secundario">Tu solicitud ya quedó registrada. Este paso es solo si prefieres seguir por ese canal.</span>' +
       '</div>';
     rfChat.appendChild(wrap);
     rfScroll();
