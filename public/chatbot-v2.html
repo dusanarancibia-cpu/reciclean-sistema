@@ -626,11 +626,23 @@ function rfAddBotMsg(html, delay=0) {
   });
 }
 
+// Escapa meta-caracteres HTML antes de insertar cualquier texto que pueda
+// venir de un input del visitante (CodeQL js/xss-through-dom). Los mensajes
+// de opciones fijas (labels de botones) no la necesitan pero no les afecta.
+function rfEscapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function rfAddUserMsg(text) {
   document.querySelectorAll('.rf-opt-btn').forEach(b => b.classList.add('rf-disabled'));
   const wrap = document.createElement('div');
   wrap.className = 'rf-user-msg';
-  wrap.innerHTML = '<div><div class="rf-user-bubble">'+text+'</div><div class="rf-user-time">'+rfTime()+' ✓✓</div></div>';
+  wrap.innerHTML = '<div><div class="rf-user-bubble">'+rfEscapeHtml(text)+'</div><div class="rf-user-time">'+rfTime()+' ✓✓</div></div>';
   rfChat.appendChild(wrap);
   rfScroll();
 }
@@ -1196,10 +1208,13 @@ function rfNodo7() {
   // WhatsApp deeplink — queda como continuación OPCIONAL, no como salida obligatoria.
   const mensaje = rfGenerarMensajeWhatsApp();
   const waLink = 'https://wa.me/' + RF_CONFIG.WHATSAPP + '?text=' + encodeURIComponent(mensaje);
-  const saludoNombre = rfState.nombre_contacto ? ', ' + rfState.nombre_contacto : '';
+  // rfEscapeHtml: nombre_contacto/telefono_contacto vienen de un <input> del
+  // visitante — igual que en rfAddUserMsg, nunca se interpolan crudos en HTML.
+  const saludoNombre = rfState.nombre_contacto ? ', ' + rfEscapeHtml(rfState.nombre_contacto) : '';
+  const telefonoMsg = rfState.telefono_contacto ? ' al ' + rfEscapeHtml(rfState.telefono_contacto) : '';
 
   rfBotSequence([
-    '✅ <b>¡Listo' + saludoNombre + '!</b> Ya registramos tu solicitud. Un ejecutivo de Reciclean-Farex te contactará a la brevedad' + (rfState.telefono_contacto ? ' al ' + rfState.telefono_contacto : '') + '.'
+    '✅ <b>¡Listo' + saludoNombre + '!</b> Ya registramos tu solicitud. Un ejecutivo de Reciclean-Farex te contactará a la brevedad' + telefonoMsg + '.'
   ], () => {
     const wrap = document.createElement('div');
     wrap.className = 'rf-bot-msg';
