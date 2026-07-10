@@ -4384,6 +4384,21 @@
             </dl>
           </div>
 
+          <!-- Datos del chatbot (widget_web) — motor de resolución mig 370-372.
+               Antes vivían solo en metadata.payload (jsonb), invisibles para
+               Andrea salvo que alguien consultara la BD directo. -->
+          <div id="oppDrawerWidgetSection" class="hidden mt-4 pt-3 border-t border-stone-200">
+            <div class="text-xs font-semibold text-emerald-700 mb-2">💬 Datos del chatbot</div>
+            <div id="oppDrawerWidgetBadge" class="mb-2"></div>
+            <dl class="text-sm space-y-2">
+              <div><dt class="text-xs text-stone-500">Teléfono de contacto</dt><dd id="oppDrawerWidgetTelefono" class="font-medium">—</dd></div>
+              <div><dt class="text-xs text-stone-500">Qué quería el cliente</dt><dd id="oppDrawerWidgetIntent">—</dd></div>
+              <div><dt class="text-xs text-stone-500">Modo de entrega</dt><dd id="oppDrawerWidgetEntrega">—</dd></div>
+              <div><dt class="text-xs text-stone-500">Precio informado en el chat</dt><dd id="oppDrawerWidgetPrecio">—</dd></div>
+              <div id="oppDrawerWidgetRepRow" class="hidden"><dt class="text-xs text-stone-500">Certificado REP</dt><dd id="oppDrawerWidgetRep">—</dd></div>
+            </dl>
+          </div>
+
           <!-- Adjuntos (Capa 2b · panel.opp_archivos + bucket opp-files) -->
           <div class="mt-4 pt-3 border-t border-stone-200">
             <div class="flex justify-between items-center mb-2">
@@ -4559,6 +4574,16 @@
           </div>
 
           <div id="bdDrawerTags" class="flex flex-wrap gap-2 mb-3"></div>
+
+          <!-- Enlace a la entidad de origen (ej. oportunidad del widget) —
+               referencia_tabla/referencia_id ya existían en panel.diego_bandeja
+               como campos genéricos, sin uso hasta ahora. -->
+          <div id="bdDrawerRefBox" class="hidden mb-3">
+            <button id="bdDrawerRefBtn" onclick="bdIrAReferencia()"
+                    class="w-full text-sm px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-medium">
+              🔗 Abrir oportunidad
+            </button>
+          </div>
 
           <div class="bg-stone-50 p-3 rounded mb-3">
             <div class="text-xs text-stone-500 mb-1">Mensaje</div>
@@ -12080,6 +12105,20 @@ let _oppDrawerOrig = null;
 let _oppSucursalesMap = null;
 let _oppSearchTimer   = null;
 
+// Motor de resolución widget (mig 370) — usado por la card (oppRenderCard)
+// y por el drawer (oppAbrirDrawer) para traducir motivo_excepcion a texto
+// legible. Un solo diccionario, sin duplicar entre las dos funciones.
+const OPP_MOTIVO_LABELS = {
+  sin_contacto: 'Sin datos de contacto',
+  material_no_catalogado: 'Material no catalogado',
+  requiere_cotizacion_logistica: 'Retiro — falta cotizar logística',
+  requiere_certificado_rep: 'Requiere certificado REP',
+  sin_precio_vigente: 'Sin precio vigente',
+  seguimiento_futuro: 'Pidió seguimiento futuro',
+  no_clasificado: 'Caso no clasificado',
+  pre_motor_resolucion: 'Anterior al motor de resolución',
+};
+
 function oppDebouncedSearch() {
   clearTimeout(_oppSearchTimer);
   _oppSearchTimer = setTimeout(() => loadOportunidadesKanban(), 300);
@@ -12315,18 +12354,8 @@ function oppRenderCard(o) {
   const crmDot = esCrm ? '<span title="CRM Impulsa" class="inline-block w-2 h-2 rounded-full bg-purple-400 mr-1"></span>' : '';
   // Motor de resolución widget (mig 370) — resumen clicable de por qué este
   // caso necesita ojo humano, sin obligar a abrir el drawer para saberlo.
-  const MOTIVO_LABELS = {
-    sin_contacto: 'Sin datos de contacto',
-    material_no_catalogado: 'Material no catalogado',
-    requiere_cotizacion_logistica: 'Retiro — falta cotizar logística',
-    requiere_certificado_rep: 'Requiere certificado REP',
-    sin_precio_vigente: 'Sin precio vigente',
-    seguimiento_futuro: 'Pidió seguimiento futuro',
-    no_clasificado: 'Caso no clasificado',
-    pre_motor_resolucion: 'Anterior al motor de resolución',
-  };
   const excepcionBadge = o.nivel_autonomia && o.nivel_autonomia !== 'auto'
-    ? `<div class="mt-1"><span class="text-xs px-1 py-0.5 ${o.nivel_autonomia === 'excepcion' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'} rounded">🔔 ${escapeHtml(MOTIVO_LABELS[o.motivo_excepcion] || o.nivel_autonomia)}</span></div>`
+    ? `<div class="mt-1"><span class="text-xs px-1 py-0.5 ${o.nivel_autonomia === 'excepcion' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'} rounded">🔔 ${escapeHtml(OPP_MOTIVO_LABELS[o.motivo_excepcion] || o.nivel_autonomia)}</span></div>`
     : '';
   return `
     <div onclick="oppAbrirDrawer('${escapeHtml(o.oportunidad_id)}')"
@@ -12468,8 +12497,10 @@ window.oppAbrirDrawer = async function(oppId) {
     'oppDrawerMonto','oppDrawerProb','oppDrawerTipo','oppDrawerResp','oppDrawerSucursal',
     'oppDrawerFechaRec','oppDrawerFechaCierre','oppDrawerViabilidad','oppDrawerDesc',
     'oppDrawerEmbudo','oppDrawerRazonPerdida','oppDrawerTagsCrm','oppDrawerUnidadNeg',
-    'oppDrawerCrmId','oppDrawerTotalCrm'];
+    'oppDrawerCrmId','oppDrawerTotalCrm',
+    'oppDrawerWidgetTelefono','oppDrawerWidgetIntent','oppDrawerWidgetEntrega','oppDrawerWidgetPrecio','oppDrawerWidgetRep'];
   resetIds.forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
+  { const el = document.getElementById('oppDrawerWidgetBadge'); if (el) el.innerHTML = ''; }
   document.getElementById('oppDrawerTags').innerHTML = '';
 
   const { data: o, error } = await sb.schema('panel').from('v_oportunidades_kanban_v2').select('*').eq('oportunidad_id', oppId).maybeSingle();
@@ -12531,6 +12562,35 @@ window.oppAbrirDrawer = async function(oppId) {
       document.getElementById('oppDrawerRazonPerdida').textContent = o.razon_perdida;
     } else { razonRow.classList.add('hidden'); }
   } else if (impulsaSection) { impulsaSection.classList.add('hidden'); }
+
+  // Datos del chatbot (widget_web) — mig 374. Antes solo vivían en
+  // metadata.payload (jsonb), invisibles para Andrea sin consultar la BD.
+  const widgetSection = document.getElementById('oppDrawerWidgetSection');
+  const tieneDatosWidget = !!(o.widget_telefono || o.widget_intent || o.widget_modo_entrega || o.widget_precio_referencia);
+  if (widgetSection) {
+    widgetSection.classList.toggle('hidden', !tieneDatosWidget);
+    if (tieneDatosWidget) {
+      document.getElementById('oppDrawerWidgetTelefono').textContent = o.widget_telefono || '—';
+      document.getElementById('oppDrawerWidgetIntent').textContent = o.widget_intent_label || o.widget_intent || '—';
+      document.getElementById('oppDrawerWidgetEntrega').textContent =
+        o.widget_modo_entrega === 'retiro' ? 'Con retiro (costo)' :
+        o.widget_modo_entrega === 'entrega_propia' ? 'Entrega propia' : '—';
+      document.getElementById('oppDrawerWidgetPrecio').textContent = o.widget_precio_referencia
+        ? '$' + Number(o.widget_precio_referencia).toLocaleString('es-CL') + '/kg'
+        : 'No se le informó precio (sin precio vigente en el chat)';
+      const repRow = document.getElementById('oppDrawerWidgetRepRow');
+      if (repRow) {
+        repRow.classList.toggle('hidden', !o.widget_requiere_cert_rep);
+        if (o.widget_requiere_cert_rep) document.getElementById('oppDrawerWidgetRep').textContent = 'Sí, solicitado (2,7 UF anuales)';
+      }
+      const badgeDiv = document.getElementById('oppDrawerWidgetBadge');
+      if (badgeDiv) {
+        badgeDiv.innerHTML = (o.nivel_autonomia && o.nivel_autonomia !== 'auto')
+          ? `<span class="text-xs px-2 py-1 rounded ${o.nivel_autonomia === 'excepcion' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'} font-semibold">🔔 ${escapeHtml(OPP_MOTIVO_LABELS[o.motivo_excepcion] || o.nivel_autonomia)}</span>`
+          : '<span class="text-xs px-2 py-1 rounded bg-green-100 text-green-700 font-semibold">✅ Resuelto solo por el bot</span>';
+      }
+    }
+  }
 
   // Capa 2b · Badge DTE bifurcación V/C
   const dteBadge = document.getElementById('oppDrawerDteBadge');
@@ -13146,6 +13206,21 @@ window.bdAbrirDrawer = async function(id) {
     : '';
   document.getElementById('bdBtnResolver').style.display = (b.estado === 'pendiente') ? '' : 'none';
   document.getElementById('bdBtnReabrir').classList.toggle('hidden', b.estado !== 'resuelto');
+
+  _bdDrawerRef = (b.referencia_tabla && b.referencia_id) ? { tabla: b.referencia_tabla, id: b.referencia_id } : null;
+  document.getElementById('bdDrawerRefBox').classList.toggle('hidden', !_bdDrawerRef);
+};
+
+// Navega a la entidad de origen del item de bandeja (hoy: solo oportunidades).
+// Reutiliza el tab y el drawer de Oportunidades ya existentes — cero UI nueva.
+let _bdDrawerRef = null;
+window.bdIrAReferencia = function() {
+  if (!_bdDrawerRef || _bdDrawerRef.tabla !== 'oportunidades') return;
+  const oppId = _bdDrawerRef.id;
+  bdCerrarDrawer();
+  const oppTabBtn = document.querySelector('[data-tab="oportunidades"]');
+  if (oppTabBtn) oppTabBtn.click();
+  setTimeout(() => { if (typeof oppAbrirDrawer === 'function') oppAbrirDrawer(oppId); }, 400);
 };
 
 window.bdCerrarDrawer = function() {
