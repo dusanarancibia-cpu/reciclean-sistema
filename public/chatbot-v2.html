@@ -800,31 +800,68 @@ function rfNodo1() {
     rfAddOptions([
       { label:'1. Vender materiales', action:()=>{ rfAddUserMsg('1. Vender materiales'); rfNodo2(); }},
       { label:'2. 🛠️ Servicios', action:()=>{ rfAddUserMsg('2. Servicios'); rfNodo3e(); }},
-      { label:'3. 🤝 Quiénes somos', action:()=>{ rfAddUserMsg('3. Quiénes somos'); rfNodo1b(); }}
+      { label:'3. 🏢 Empresa, cobertura y respaldo', action:()=>{ rfAddUserMsg('3. Empresa, cobertura y respaldo'); rfNodo1b(); }}
     ]);
   });
 }
 
+// ═══════════════════════════════════════════════════════════════
+// N1B · EMPRESA, COBERTURA Y RESPALDO · reemplaza la antigua "Quiénes
+// somos" (un solo párrafo de historia/dirección que terminaba en "No,
+// gracias" sin ninguna forma de dejar datos). Ahora es un menú de 3
+// caminos reales — cobertura, certificaciones, ayuda para empresa — que
+// abren diálogo en vez de cerrarlo. "Ayuda para tu empresa" y "Solicitar
+// mi certificado" reutilizan los nodos de N3E (rfNodo3eEmpresa/rfNodo3eCert)
+// en vez de duplicar un segundo flujo de captura — una sola conversación
+// de certificados, una sola de atención empresa, sin importar por dónde
+// se entre.
+// ═══════════════════════════════════════════════════════════════
 function rfNodo1b() {
   rfBotSequence([
-    '🏢 Somos el <b>Grupo Reciclean-Farex</b>, empresa chilena de reciclaje industrial fundada en 2012 en Santiago. Partimos en Cerrillos, acreditados en los principales registros nacionales. Hoy operamos en 3 sucursales activas.\n\n📧 comercial@gestionrepchile.cl\n📱 +56 9 9534 2437\n🌐 reciclean.cl · farex.cl\n\n📍 <b>Sucursales:</b>\nSantiago Cerrillos — Piloto Acevedo #424\nSantiago Maipú — Cerro Sombrero #940\nTalca — Fundo El Sauzal S/N, Chacarillas\n\n🕐 Lun-Jue 8:30-18:00 · Vie hasta 17:00'
+    '🏢 <b>Grupo Reciclean-Farex</b> es gestor de residuos certificado, con presencia en 3 sucursales (Santiago y Talca) y respaldo documental para tu empresa.\n\nTrabajamos con compañías que necesitan resolver su gestión de residuos con trazabilidad y continuidad — no solo un retiro puntual.\n\n¿Qué necesitas revisar?'
   ], () => {
     rfAddOptions([
-      { label:'1. 📄 Ver certificados y autorizaciones', action:()=>{ rfAddUserMsg('Ver certificados'); rfNodo1c(); }},
-      { label:'2. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }},
-      { label:'3. No, muchas gracias', action:()=>{ rfAddUserMsg('No, gracias'); rfNodofin(); }}
+      { label:'1. 📍 Cobertura y sucursales', action:()=>{ rfAddUserMsg('Cobertura y sucursales'); rfNodo1bCobertura(); }},
+      { label:'2. 📄 Certificaciones y respaldo', action:()=>{ rfAddUserMsg('Certificaciones y respaldo'); rfNodo1c(); }},
+      { label:'3. 🤝 Ayuda para tu empresa', action:()=>{ rfAddUserMsg('Ayuda para mi empresa'); rfNodo3eEmpresa(); }},
+      { label:'4. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }}
     ]);
   });
 }
 
+// N1B-1 · Cobertura y sucursales — antes era un bloque de direcciones sin
+// contexto, enterrado en el párrafo de historia. Ahora se enmarca como
+// capacidad instalada (presencia real, doble empresa del grupo) y sigue
+// abriendo camino hacia certificaciones o ayuda empresa en vez de cerrar
+// la conversación.
+function rfNodo1bCobertura() {
+  rfBotSequence([
+    '📍 Operamos con presencia física real en 3 sucursales, no solo un punto de acopio:\n\n• <b>Santiago Cerrillos</b> — Piloto Acevedo #424\n• <b>Santiago Maipú</b> — Cerro Sombrero #940\n• <b>Talca</b> — Fundo El Sauzal S/N, Chacarillas\n\nGestor certificado desde 2012. Dos empresas del mismo grupo — <b>Reciclean</b> (reciclables) y <b>Farex</b> (metales/chatarra) — para que no necesites dos proveedores distintos.\n\n🕐 Lun-Jue 8:30-18:00 · Vie hasta 17:00\n📧 comercial@gestionrepchile.cl · 📱 +56 9 9534 2437'
+  ], () => {
+    rfAddOptions([
+      { label:'1. 📄 Certificaciones y respaldo', action:()=>{ rfAddUserMsg('Certificaciones y respaldo'); rfNodo1c(); }},
+      { label:'2. 🤝 Ayuda para tu empresa', action:()=>{ rfAddUserMsg('Ayuda para mi empresa'); rfNodo3eEmpresa(); }},
+      { label:'3. Volver al menú de Empresa', action:()=>{ rfAddUserMsg('Volver a Empresa'); rfNodo1b(); }},
+      { label:'4. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }}
+    ]);
+  });
+}
+
+// N1B-2 · Certificaciones y respaldo — el contenido legal (Ley REP / DS 594
+// / SMA) y la caja de acreditaciones se mantienen igual, son sólidos y
+// serios. Lo que cambia es el cierre: antes terminaba en "No, gracias" sin
+// ninguna forma de pedir el certificado; ahora enlaza directo al mismo
+// flujo de solicitud que ya existe en Servicios (rfNodo3eCert).
 function rfNodo1c() {
   rfBotSequence([
     '📋 <b>¿Por qué trabajar con un gestor certificado?</b>\n\nSi tu empresa genera residuos industriales, la ley te obliga a demostrar que los gestionaste correctamente:\n\n• <b>Ley 20.920 (REP):</b> Los residuos deben entregarse a gestores autorizados y registrados ante el Ministerio del Medio Ambiente.\n\n• <b>DS 594/1999:</b> Toda empresa debe declarar ante la SEREMI de Salud qué hace con sus residuos industriales.\n\n• Sin un certificado de recepción, tu empresa no puede acreditar cumplimiento ante una fiscalización de la SMA.\n\n✅ Al trabajar con nosotros, recibes un <b>Certificado de Recepción de Materiales</b> que respalda tu declaración legal.',
     '🛡 <b>Nuestras acreditaciones:</b>\n\n<div class="rf-cert-box"><div class="rf-cert-empresa">RECICLEAN SPA</div><div class="rf-cert-item">• Resolución 041098</div><div class="rf-cert-item">• RETC #5464578</div><div class="rf-cert-item">• REP envases / embalajes</div></div>\n<div class="rf-cert-box"><div class="rf-cert-empresa">FAREX SPA</div><div class="rf-cert-item">• Resolución 041097</div><div class="rf-cert-item">• RETC #5465033</div><div class="rf-cert-item">• REP envases metálicos</div></div>'
   ], () => {
     rfAddOptions([
-      { label:'1. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }},
-      { label:'2. No, muchas gracias', action:()=>{ rfAddUserMsg('No, gracias'); rfNodofin(); }}
+      { label:'1. 📝 Solicitar mi certificado', action:()=>{ rfAddUserMsg('Solicitar mi certificado'); rfNodo3eCert(); }},
+      { label:'2. 🤝 Ayuda para tu empresa', action:()=>{ rfAddUserMsg('Ayuda para mi empresa'); rfNodo3eEmpresa(); }},
+      { label:'3. Volver al menú de Empresa', action:()=>{ rfAddUserMsg('Volver a Empresa'); rfNodo1b(); }},
+      { label:'4. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }}
     ]);
   });
 }
@@ -1161,7 +1198,10 @@ function rfNodo3eCert() {
       { label:'1. Certificado de una entrega ya realizada', action:()=>{ rfAddUserMsg('Certificado de entrega realizada'); rfState.tipo_certificado='recepcion_entrega'; rfNodo3eCertContacto(); }},
       { label:'2. Certificado Ley REP para mi empresa', action:()=>{ rfAddUserMsg('Certificado Ley REP'); rfState.tipo_certificado='ley_rep'; rfNodo3eCertContacto(); }},
       { label:'3. No estoy seguro, que me orienten', action:()=>{ rfAddUserMsg('No estoy seguro'); rfState.tipo_certificado='orientacion'; rfNodo3eCertContacto(); }},
-      { label:'4. Volver al menú de servicios', action:()=>{ rfAddUserMsg('Volver a servicios'); rfNodo3e(); }}
+      // Volver al menú PRINCIPAL, no a Servicios: este nodo ahora se entra
+      // también desde Empresa/rfNodo1c (N1B-2) — "volver a servicios" sería
+      // incorrecto si el visitante nunca pasó por ahí.
+      { label:'4. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }}
     ]);
   });
 }
@@ -1186,7 +1226,9 @@ function rfNodo3eEmpresa() {
       { label:'1. Retiro periódico / contrato recurrente', action:()=>{ rfAddUserMsg('Retiro periódico'); rfState.tipo_atencion_empresa='retiro_periodico'; rfNodo3eEmpresaContacto(); }},
       { label:'2. Somos nuevos, queremos partir como cliente', action:()=>{ rfAddUserMsg('Cliente nuevo empresa'); rfState.tipo_atencion_empresa='alta_cliente'; rfNodo3eEmpresaContacto(); }},
       { label:'3. Otra necesidad de mi empresa', action:()=>{ rfAddUserMsg('Otra necesidad empresa'); rfState.tipo_atencion_empresa='otro'; rfNodo3eEmpresaContacto(); }},
-      { label:'4. Volver al menú de servicios', action:()=>{ rfAddUserMsg('Volver a servicios'); rfNodo3e(); }}
+      // Mismo motivo que en rfNodo3eCert: este nodo se entra también desde
+      // Empresa/rfNodo1b y rfNodo1c (N1B), no solo desde Servicios.
+      { label:'4. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }}
     ]);
   });
 }
