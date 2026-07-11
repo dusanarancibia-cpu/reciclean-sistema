@@ -27,22 +27,50 @@
 #rf-bot-container, #rf-bot-container * { box-sizing:border-box; }
 #rf-bot-container { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
+/* ─────────────────────────────────────────────────────────────
+   PALETA · rediseño visual (10-jul-2026) — de "WhatsApp dark mode
+   genérico" (fondo #0b141a, burbujas #202c33/#005c4b calcadas de
+   WhatsApp) a una base clara verde-agua propia de Reciclean-Farex.
+   El verde de marca (#1A7A3C/#0F4B25, header + botón flotante) se
+   mantiene intacto — es la identidad ya construida. Lo que cambia es
+   el fondo y las superficies alrededor de ese verde, para que dejen
+   de leerse "duras" y pasen a leerse "empresa seria, clara".
+   Variables scoped a #rf-bot-container — no hay riesgo de fuga al
+   sitio host (mismo namespace rf-bot-* de siempre).
+───────────────────────────────────────────────────────────────── */
+#rf-bot-container {
+  --rf-bg: #F2F9F5;           /* fondo ventana/chat — verde-agua muy suave, no blanco puro */
+  --rf-surface: #FFFFFF;       /* burbujas recibidas, tarjetas, opciones */
+  --rf-surface-tint: #E6F4EC;  /* burbuja enviada (usuario), acentos suaves */
+  --rf-border: #DCEBE2;        /* bordes de tarjetas/opciones */
+  --rf-border-soft: #E8F3ED;   /* separadores finos */
+  --rf-ink: #16281E;           /* texto principal — verde-negro, no negro puro */
+  --rf-ink-muted: #4C6157;     /* texto secundario/hora — ≥4.5:1 sobre --rf-surface y --rf-bg */
+  --rf-brand: #1A7A3C;         /* verde de marca — sin cambios */
+  --rf-brand-dark: #0F4B25;    /* verde de marca oscuro — sin cambios */
+  --rf-legal-bg: #EEF1FB;      /* tarjeta certificaciones/legal — distinta del verde a propósito */
+  --rf-legal-border: #D7DDF3;
+  --rf-legal-ink: #29335C;
+  --rf-wa: #25d366;            /* verde WhatsApp — solo para el CTA de WhatsApp, es su propio color de marca */
+  --rf-wa-dark: #128c7e;
+}
+
 /* Botón flotante tipo burbuja (bottom-right) */
 #rf-bot-toggle {
   position:fixed; bottom:24px; right:24px; z-index:999998;
   width:64px; height:64px; border-radius:50%;
-  background:linear-gradient(135deg,#1A7A3C 0%,#0F4B25 100%);
+  background:linear-gradient(135deg,var(--rf-brand) 0%,var(--rf-brand-dark) 100%);
   border:none; cursor:pointer;
   color:#fff; font-size:30px;
-  box-shadow:0 8px 28px rgba(26,122,60,.45), 0 2px 6px rgba(0,0,0,.2);
+  box-shadow:0 8px 28px rgba(26,122,60,.35), 0 2px 6px rgba(15,35,25,.15);
   display:flex; align-items:center; justify-content:center;
   transition:transform .25s ease, box-shadow .25s ease;
 }
-#rf-bot-toggle:hover { transform:scale(1.08); box-shadow:0 12px 32px rgba(26,122,60,.6); }
-#rf-bot-toggle.open { background:linear-gradient(135deg,#475569 0%,#1e293b 100%); }
+#rf-bot-toggle:hover { transform:scale(1.08); box-shadow:0 12px 32px rgba(26,122,60,.5); }
+#rf-bot-toggle.open { background:linear-gradient(135deg,#3E5B4C 0%,#25392F 100%); }
 #rf-bot-toggle .rf-pulse {
   position:absolute; inset:-4px; border-radius:50%;
-  border:2px solid #1A7A3C; opacity:0;
+  border:2px solid var(--rf-brand); opacity:0;
   animation:rfPulse 2s infinite;
 }
 @keyframes rfPulse { 0%{opacity:.8;transform:scale(1)} 100%{opacity:0;transform:scale(1.4)} }
@@ -51,11 +79,11 @@
 #rf-bot-window {
   position:fixed; bottom:100px; right:24px; z-index:999999;
   width:400px; height:640px; max-height:calc(100vh - 140px);
-  background:#0b141a; border-radius:18px;
-  box-shadow:0 30px 80px rgba(0,0,0,.45), 0 6px 20px rgba(0,0,0,.25);
+  background:var(--rf-bg); border-radius:18px;
+  box-shadow:0 24px 60px rgba(15,35,25,.18), 0 4px 14px rgba(15,35,25,.1);
   overflow:hidden; display:none;
   flex-direction:column;
-  border:1px solid rgba(255,255,255,.08);
+  border:1px solid var(--rf-border);
   animation:rfSlideUp .3s ease;
 }
 #rf-bot-window.open { display:flex; }
@@ -63,7 +91,7 @@
 
 /* Header */
 #rf-bot-header {
-  background:linear-gradient(135deg,#1A7A3C 0%,#0F4B25 100%);
+  background:linear-gradient(135deg,var(--rf-brand) 0%,var(--rf-brand-dark) 100%);
   padding:14px 18px;
   display:flex; align-items:center; gap:12px;
   flex-shrink:0;
@@ -80,87 +108,89 @@
 #rf-bot-header .rf-brand { flex:1; min-width:0; }
 #rf-bot-header .rf-name { font-size:15px; font-weight:700; color:#fff; line-height:1.2; }
 #rf-bot-header .rf-status {
-  font-size:11px; color:rgba(255,255,255,.75); margin-top:2px;
+  font-size:11px; color:rgba(255,255,255,.8); margin-top:2px;
   display:flex; align-items:center; gap:5px;
 }
 #rf-bot-header .rf-status::before {
   content:""; width:8px; height:8px; border-radius:50%;
-  background:#22c55e; box-shadow:0 0 0 0 rgba(34,197,94,.7);
+  background:#4ADE80; box-shadow:0 0 0 0 rgba(74,222,128,.7);
   animation:rfDot 2s infinite;
 }
-@keyframes rfDot { 0%{box-shadow:0 0 0 0 rgba(34,197,94,.7)} 70%{box-shadow:0 0 0 6px rgba(34,197,94,0)} 100%{box-shadow:0 0 0 0 rgba(34,197,94,0)} }
+@keyframes rfDot { 0%{box-shadow:0 0 0 0 rgba(74,222,128,.7)} 70%{box-shadow:0 0 0 6px rgba(74,222,128,0)} 100%{box-shadow:0 0 0 0 rgba(74,222,128,0)} }
 #rf-bot-header .rf-close {
-  background:rgba(255,255,255,.12); border:none;
+  background:rgba(255,255,255,.14); border:none;
   width:32px; height:32px; border-radius:50%;
   color:#fff; cursor:pointer; font-size:16px;
   display:flex; align-items:center; justify-content:center;
   transition:background .15s;
 }
-#rf-bot-header .rf-close:hover { background:rgba(255,255,255,.22); }
+#rf-bot-header .rf-close:hover { background:rgba(255,255,255,.24); }
 
 /* Reset bar */
 #rf-bot-resetbar {
-  padding:8px 18px; background:#050c0f;
-  border-bottom:1px solid rgba(255,255,255,.05);
+  padding:8px 18px; background:var(--rf-surface);
+  border-bottom:1px solid var(--rf-border-soft);
   flex-shrink:0;
   display:flex; justify-content:center;
 }
 #rf-bot-resetbar button {
-  background:transparent; border:1px solid #2a3942;
-  color:#8696a0; font-size:11px;
+  background:transparent; border:1px solid var(--rf-border);
+  color:var(--rf-ink-muted); font-size:11px;
   padding:5px 14px; border-radius:12px; cursor:pointer;
   transition:all .15s;
   font-family:inherit;
 }
-#rf-bot-resetbar button:hover { border-color:#22c55e; color:#22c55e; }
+#rf-bot-resetbar button:hover { border-color:var(--rf-brand); color:var(--rf-brand); }
 
-/* Chat area */
+/* Chat area — se retira el patrón decorativo tipo WhatsApp: fondo plano,
+   menos "recargado", más lectura limpia */
 #rf-bot-chat {
   flex:1; overflow-y:auto; padding:12px 10px;
-  background:#0b141a;
-  background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background:var(--rf-bg);
   display:flex; flex-direction:column; gap:4px;
 }
 #rf-bot-chat::-webkit-scrollbar { width:4px; }
-#rf-bot-chat::-webkit-scrollbar-thumb { background:#2a3942; border-radius:2px; }
+#rf-bot-chat::-webkit-scrollbar-thumb { background:var(--rf-border); border-radius:2px; }
 
 /* Date separator */
 .rf-datesep { text-align:center; margin:8px 0; }
 .rf-datesep span {
-  background:#1f2c33; color:#8696a0; font-size:11px;
+  background:var(--rf-surface-tint); color:var(--rf-ink-muted); font-size:11px;
   padding:3px 12px; border-radius:6px;
 }
 
 /* Bot bubble */
 .rf-bot-msg { display:flex; align-items:flex-end; gap:6px; margin-bottom:2px; max-width:88%; align-self:flex-start; }
 .rf-bot-bubble {
-  background:#202c33; color:#e9edef;
+  background:var(--rf-surface); color:var(--rf-ink);
+  border:1px solid var(--rf-border-soft);
   padding:9px 13px; border-radius:0 12px 12px 12px;
   font-size:13.5px; line-height:1.5;
   white-space:pre-wrap; word-break:break-word;
-  position:relative; box-shadow:0 1px 2px rgba(0,0,0,.2);
+  position:relative; box-shadow:0 1px 2px rgba(15,35,25,.05);
 }
-.rf-bot-time { font-size:10px; color:#8696a0; margin-top:2px; margin-left:4px; }
+.rf-bot-time { font-size:10px; color:var(--rf-ink-muted); margin-top:2px; margin-left:4px; }
 
-/* User bubble */
+/* User bubble — tinte verde suave en vez del verde-negro de WhatsApp */
 .rf-user-msg { display:flex; align-items:flex-end; justify-content:flex-end; gap:6px; margin-bottom:2px; max-width:88%; align-self:flex-end; }
 .rf-user-bubble {
-  background:#005c4b; color:#e9edef;
+  background:var(--rf-surface-tint); color:var(--rf-brand-dark);
   padding:9px 13px; border-radius:12px 0 12px 12px;
-  font-size:13.5px; line-height:1.5;
+  font-size:13.5px; line-height:1.5; font-weight:500;
   white-space:pre-wrap; word-break:break-word;
-  box-shadow:0 1px 2px rgba(0,0,0,.2);
+  box-shadow:0 1px 2px rgba(15,35,25,.05);
 }
-.rf-user-time { font-size:10px; color:#8696a0; margin-top:2px; margin-right:4px; text-align:right; }
+.rf-user-time { font-size:10px; color:var(--rf-ink-muted); margin-top:2px; margin-right:4px; text-align:right; }
 
 /* Typing indicator */
 .rf-typing {
-  background:#202c33; padding:12px 16px;
+  background:var(--rf-surface); border:1px solid var(--rf-border-soft);
+  padding:12px 16px;
   border-radius:0 12px 12px 12px;
   display:flex; gap:4px; align-items:center;
 }
 .rf-typing .rf-dot {
-  width:7px; height:7px; background:#8696a0; border-radius:50%;
+  width:7px; height:7px; background:var(--rf-border); border-radius:50%;
   animation:rfBounce 1.2s infinite;
 }
 .rf-typing .rf-dot:nth-child(2) { animation-delay:.15s; }
@@ -174,102 +204,112 @@
   max-width:88%; align-self:flex-start;
 }
 .rf-opt-btn {
-  background:#1f2c33; border:1px solid #2a3942;
-  color:#e9edef; padding:10px 14px;
+  background:var(--rf-surface); border:1px solid var(--rf-border);
+  color:var(--rf-ink); padding:10px 14px;
   border-radius:10px; font-size:13px; text-align:left;
   cursor:pointer; transition:all .15s;
   font-family:inherit;
 }
-.rf-opt-btn:hover { background:#2a3942; border-color:#22c55e; transform:translateX(2px); }
+.rf-opt-btn:hover { background:var(--rf-surface-tint); border-color:var(--rf-brand); transform:translateX(2px); }
 .rf-opt-btn.rf-disabled { opacity:.5; pointer-events:none; }
 
 /* Captura de contacto in-widget — reemplaza al "cierra el chat y escribe por WhatsApp" */
 .rf-captura {
   display:flex; flex-direction:column; gap:8px;
   padding:10px; margin:4px 0; max-width:88%; align-self:flex-start;
-  background:#1f2c33; border:1px solid #2a3942; border-radius:10px;
+  background:var(--rf-surface); border:1px solid var(--rf-border); border-radius:10px;
 }
 .rf-captura-input {
-  background:#0b141a; border:1px solid #2a3942; color:#e9edef;
+  background:var(--rf-bg); border:1px solid var(--rf-border); color:var(--rf-ink);
   padding:10px 12px; border-radius:8px; font-size:13px; font-family:inherit;
 }
-.rf-captura-input:focus { outline:none; border-color:#22c55e; }
+.rf-captura-input::placeholder { color:var(--rf-ink-muted); }
+.rf-captura-input:focus { outline:none; border-color:var(--rf-brand); }
 .rf-captura-btn {
-  background:#22c55e; border:none; color:#06280f; font-weight:700;
+  background:var(--rf-brand); border:none; color:#fff; font-weight:700;
   padding:10px 14px; border-radius:8px; font-size:13px; cursor:pointer;
-  font-family:inherit; transition:transform .15s;
+  font-family:inherit; transition:transform .15s, background .15s;
 }
-.rf-captura-btn:hover { transform:translateY(-1px); }
+.rf-captura-btn:hover { background:var(--rf-brand-dark); transform:translateY(-1px); }
 .rf-captura-btn:disabled { opacity:.6; cursor:default; }
 .rf-wa-secundario {
-  display:block; text-align:center; color:#9fb0b8; font-size:12px;
+  display:block; text-align:center; color:var(--rf-ink-muted); font-size:12px;
   margin-top:6px;
 }
 
 /* Input fake (no editable, solo visual) */
 #rf-bot-bottombar {
-  background:#1f2c33; padding:10px 14px; flex-shrink:0;
-  border-top:1px solid rgba(255,255,255,.05);
+  background:var(--rf-surface); padding:10px 14px; flex-shrink:0;
+  border-top:1px solid var(--rf-border-soft);
   display:flex; align-items:center; gap:10px;
 }
 #rf-bot-bottombar .rf-input-fake {
-  flex:1; background:#2a3942; color:#8696a0;
+  flex:1; background:var(--rf-bg); color:var(--rf-ink-muted);
+  border:1px solid var(--rf-border-soft);
   padding:9px 14px; border-radius:22px; font-size:12.5px;
   font-style:italic;
 }
 #rf-bot-bottombar .rf-wa-btn {
-  background:#25d366; color:#fff; border:none;
+  background:var(--rf-wa); color:#fff; border:none;
   width:36px; height:36px; border-radius:50%;
   cursor:pointer; font-size:16px;
   display:flex; align-items:center; justify-content:center;
   text-decoration:none;
 }
-#rf-bot-bottombar .rf-wa-btn:hover { background:#128c7e; }
+#rf-bot-bottombar .rf-wa-btn:hover { background:var(--rf-wa-dark); }
 
-/* Precios tables inline */
+/* Precios tables inline — mismos datos, solo recoloreados para fondo
+   claro (el valor en verde brillante #86efac era ilegible sobre blanco;
+   el título en gris #94a3b8 y la sección en naranja #fb923c no
+   alcanzaban contraste 4.5:1 sobre blanco tampoco) */
 .rf-precio-tabla {
-  font-size:12px; line-height:1.55;
+  font-size:12px; line-height:1.55; color:var(--rf-ink);
 }
 .rf-precio-tabla .rf-pt-title {
-  font-weight:700; color:#94a3b8;
+  font-weight:700; color:var(--rf-ink);
   margin-bottom:2px;
 }
 .rf-precio-tabla .rf-pt-fecha {
-  font-size:10px; color:#475569; margin-bottom:6px;
+  font-size:10px; color:var(--rf-ink-muted); margin-bottom:6px;
 }
 .rf-precio-tabla .rf-pt-section {
-  color:#fb923c; font-weight:700; font-size:11px;
-  margin:6px 0 3px; border-bottom:1px solid #334155;
+  color:var(--rf-brand-dark); font-weight:700; font-size:11px;
+  margin:6px 0 3px; border-bottom:1px solid var(--rf-border);
   padding-bottom:2px;
 }
 .rf-precio-tabla .rf-pt-row {
   display:flex; justify-content:space-between;
   padding:2px 0;
 }
-.rf-precio-tabla .rf-pt-row .rf-pt-val { color:#86efac; font-weight:600; }
-.rf-precio-tabla .rf-pt-row .rf-pt-consultar { color:#64748b; font-size:11px; }
+.rf-precio-tabla .rf-pt-row .rf-pt-val { color:var(--rf-brand-dark); font-weight:700; }
+.rf-precio-tabla .rf-pt-row .rf-pt-consultar { color:var(--rf-ink-muted); font-size:11px; }
 
-/* Certificados highlight */
+/* Certificados / respaldo legal — antes usaba el patrón "borde de color a
+   la izquierda" (anti-patrón de tarjeta), ahora es una tarjeta completa
+   con tinte propio (distinto del verde, para seguir señalando "esto es
+   legal/oficial") y borde parejo en los 4 lados */
 .rf-cert-box {
-  background:#162032; border-left:3px solid #6366f1;
-  padding:8px 12px; border-radius:0 8px 8px 0;
+  background:var(--rf-legal-bg); border:1px solid var(--rf-legal-border);
+  padding:10px 12px; border-radius:10px;
   font-size:12px; margin-top:6px;
 }
-.rf-cert-empresa { font-weight:700; color:#a5b4fc; font-size:12px; margin-bottom:3px; }
-.rf-cert-item { color:#86efac; font-size:11.5px; line-height:1.6; }
+.rf-cert-empresa { font-weight:700; color:var(--rf-legal-ink); font-size:12px; margin-bottom:3px; }
+.rf-cert-item { color:var(--rf-legal-ink); font-size:11.5px; line-height:1.6; opacity:.85; }
 
-/* WhatsApp deeplink button — CTA final */
+/* WhatsApp deeplink button — CTA final. Se mantiene el verde de
+   WhatsApp (es su propio color de marca reconocible, distinto a
+   propósito del verde de Reciclean) con sombra algo más contenida */
 .rf-wa-cta {
   display:flex; align-items:center; justify-content:center; gap:10px;
-  background:linear-gradient(135deg,#25d366 0%,#128c7e 100%);
+  background:linear-gradient(135deg,var(--rf-wa) 0%,var(--rf-wa-dark) 100%);
   color:#fff; text-decoration:none;
   padding:14px 20px; border-radius:12px;
   font-size:14px; font-weight:700;
-  box-shadow:0 6px 20px rgba(37,211,102,.4);
+  box-shadow:0 6px 16px rgba(37,211,102,.3);
   margin:10px 0;
   transition:transform .2s;
 }
-.rf-wa-cta:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(37,211,102,.5); }
+.rf-wa-cta:hover { transform:translateY(-2px); box-shadow:0 10px 22px rgba(37,211,102,.4); }
 .rf-wa-cta .rf-wa-icon { font-size:22px; }
 
 /* Responsive mobile */
@@ -995,7 +1035,12 @@ async function rfNodo3am() {
   html += '</div>';
 
   if (filas.length === 0) {
-    html = '<div style="color:#fb923c">Todavía no tenemos materiales confirmados para este canal en ' + sucursal + '. Déjanos tus datos y registramos tu solicitud para orientarte correctamente según material y volumen.</div>';
+    // Color inline en vez de variable CSS: este <div> se inyecta como texto
+    // plano fuera de #rf-bot-container en el momento de construirse (antes
+    // de insertarse en el chat), así que necesita su propio valor legible
+    // sobre fondo claro — antes era #fb923c (naranja para fondo oscuro,
+    // contraste insuficiente sobre blanco).
+    html = '<div style="color:#8a5a1e">Todavía no tenemos materiales confirmados para este canal en ' + sucursal + '. Déjanos tus datos y registramos tu solicitud para orientarte correctamente según material y volumen.</div>';
   }
 
   rfBotSequence([html], () => {
