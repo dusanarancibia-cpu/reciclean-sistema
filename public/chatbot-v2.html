@@ -425,6 +425,16 @@ function rfCrearOportunidadLegacy() {
     const sucursalId = RF_SUCURSAL_ID[rfState.sucursal] || null;
     const materialLabel = rfState.material || 'Consulta general';
     const tituloEmpresa = rfState.empresa === 'farex' ? 'Farex' : 'Reciclean';
+    // Mismo fix de título que rfBuildIntakePayload: los 3 servicios nuevos
+    // (N3E) no son una venta de material, no deberían salir como "Venta
+    // Consulta general". RF_SERVICIO_INTENTS se declara más abajo en el
+    // archivo pero ya existe en runtime cuando esta función se llama.
+    const esServicioLegacy = RF_SERVICIO_INTENTS.has(rfState.intent);
+    const tituloLegacy = esServicioLegacy
+      ? (rfState.intent === 'servicio_certificado' ? 'Certificados y respaldo documental'
+        : rfState.intent === 'servicio_atencion_empresa' ? 'Atención para empresa'
+        : 'Otro requerimiento')
+      : materialLabel;
 
     fetch(RF_CONFIG.SUPABASE_URL + '/rest/v1/oportunidades', {
       method: 'POST',
@@ -437,7 +447,7 @@ function rfCrearOportunidadLegacy() {
         'Prefer': 'return=minimal'
       },
       body: JSON.stringify({
-        titulo: 'Venta ' + materialLabel + ' — Widget web (' + tituloEmpresa + ')',
+        titulo: (esServicioLegacy ? 'Servicio ' : 'Venta ') + tituloLegacy + ' — Widget web (' + tituloEmpresa + ')',
         // CORREGIDO 03-jul (prueba real en producción): 'venta_material' no
         // es un valor válido de la CHECK constraint de `tipo` — los valores
         // reales en uso son 'necesidad' / 'cotizacion' / 'idea'. Este flujo
@@ -465,22 +475,34 @@ function rfCrearOportunidadLegacy() {
   } catch (e) { console.warn('[RF Chatbot] rfCrearOportunidad falló (no bloqueante):', e); }
 }
 
+// Intents de servicio agregados en la rama N3E (rfNodo3e*). No son venta
+// de material — usan su propio prefijo de título para no salir como
+// "Venta Consulta general" en curated.oportunidades (RF_SERVICIO_INTENTS
+// también se reutiliza en rfCrearOportunidadLegacy para el mismo fix).
+const RF_SERVICIO_INTENTS = new Set(['servicio_certificado', 'servicio_atencion_empresa', 'servicio_otro']);
+
 function rfBuildIntakePayload(materialLabel, tituloEmpresa) {
   const intentLabels = {
     vender_material: 'Quiero vender material',
     cotizar_retiro: 'Cotizar retiro',
     donar: 'Quiero donar material',
     meditar: 'Me gustaría que me contacten luego',
-    materiales_varios: 'Consulta por materiales varios'
+    materiales_varios: 'Consulta por materiales varios',
+    servicio_certificado: 'Certificados y respaldo documental',
+    servicio_atencion_empresa: 'Atención para empresa',
+    servicio_otro: 'Otro requerimiento'
   };
   const mensajeWhatsapp = rfGenerarMensajeWhatsApp();
   const waLink = 'https://wa.me/' + RF_CONFIG.WHATSAPP + '?text=' + encodeURIComponent(mensajeWhatsapp);
+  const esServicio = RF_SERVICIO_INTENTS.has(rfState.intent);
+  const tituloLabel = esServicio ? (intentLabels[rfState.intent] || 'Servicio') : materialLabel;
+  const tituloPrefijo = esServicio ? 'Servicio' : 'Venta';
 
   return {
     material: materialLabel,
     cliente_nombre_libre: rfState.nombre_contacto || 'Visitante web anónimo',
     resumen: 'Solicitud comercial desde widget web guiado',
-    titulo_referencia: 'Venta ' + materialLabel + ' — Widget web (' + tituloEmpresa + ')',
+    titulo_referencia: tituloPrefijo + ' ' + tituloLabel + ' — Widget web (' + tituloEmpresa + ')',
     ciudad: rfState.ciudad || null,
     sucursal_label: rfState.sucursal || null,
     intent: rfState.intent || null,
@@ -489,9 +511,24 @@ function rfBuildIntakePayload(materialLabel, tituloEmpresa) {
     precio_referencia: typeof rfState.precio === 'number' ? Math.round(rfState.precio) : null,
     tipo_cliente: rfState.tipo_cliente || null,
     requiere_cert_rep: !!rfState.requiere_cert_rep,
+    tipo_certificado: rfState.tipo_certificado || null,
+    tipo_atencion_empresa: rfState.tipo_atencion_empresa || null,
     whatsapp_prefill_message: mensajeWhatsapp,
     whatsapp_prefill_url: waLink
   };
+}
+
+// intent_type es el catálogo del contrato backend (INTENT_TYPES en
+// intake-web-contract.ts) — NO se toca ese archivo ni el motor de
+// resolución (clasificarNivelAutonomia lee rfState.intent, no esto).
+// Antes SIEMPRE se mandaba 'solicitud_cotizacion' sin importar la rama;
+// para los 3 servicios nuevos eso describía mal la solicitud, así que acá
+// solo se elige, entre valores YA existentes en ese catálogo, el que
+// corresponde — 'solicitud_contacto' para lo que no es cotizar un
+// material. El resto de las ramas (retiro/venta/donar/etc.) sigue
+// mandando exactamente lo mismo que antes.
+function rfIntentTypeFor(intent) {
+  return RF_SERVICIO_INTENTS.has(intent) ? 'solicitud_contacto' : 'solicitud_cotizacion';
 }
 
 function rfCrearIntakeComercial() {
@@ -511,7 +548,7 @@ function rfCrearIntakeComercial() {
     body: JSON.stringify({
       surface_id: 'widget_comercial_guiado',
       channel: 'web_publica',
-      intent_type: 'solicitud_cotizacion',
+      intent_type: rfIntentTypeFor(rfState.intent),
       requested_handoff: true,
       source_session_ref: rfSessionId,
       source_session_kind: 'chatbot_v2_session_id_origen',
@@ -762,7 +799,7 @@ function rfNodo1() {
   ], () => {
     rfAddOptions([
       { label:'1. Vender materiales', action:()=>{ rfAddUserMsg('1. Vender materiales'); rfNodo2(); }},
-      { label:'2. Cotizar servicio de retiro', action:()=>{ rfAddUserMsg('2. Cotizar servicio de retiro'); rfNodo3c(); }},
+      { label:'2. 🛠️ Servicios', action:()=>{ rfAddUserMsg('2. Servicios'); rfNodo3e(); }},
       { label:'3. 🤝 Quiénes somos', action:()=>{ rfAddUserMsg('3. Quiénes somos'); rfNodo1b(); }}
     ]);
   });
@@ -1090,6 +1127,89 @@ function rfNodo3d() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// N3E · SERVICIOS · antes esta rama era solo "retiro" (rfNodo1 saltaba
+// directo a rfNodo3c). El retiro sigue exactamente igual — mismo nodo,
+// mismo intent 'cotizar_retiro', mismo comportamiento en el motor de
+// resolución (curated.oportunidades / clasificarNivelAutonomia). Lo que
+// cambia es que ahora "Servicios" abre a un menú con más opciones reales
+// del negocio, en vez de asumir que todo pedido de servicio es un retiro.
+// ═══════════════════════════════════════════════════════════════
+function rfNodo3e() {
+  rfBotSequence([
+    '🛠️ Además del retiro, te podemos ayudar con otras necesidades. ¿Qué buscas?'
+  ], () => {
+    rfAddOptions([
+      { label:'1. 🚛 Retiro de materiales', action:()=>{ rfAddUserMsg('Retiro de materiales'); rfNodo3c(); }},
+      { label:'2. 📄 Certificados y respaldo documental', action:()=>{ rfAddUserMsg('Certificados y respaldo documental'); rfNodo3eCert(); }},
+      { label:'3. 🏢 Atención para tu empresa', action:()=>{ rfAddUserMsg('Atención para mi empresa'); rfNodo3eEmpresa(); }},
+      { label:'4. 💬 Otro requerimiento', action:()=>{ rfAddUserMsg('Otro requerimiento'); rfNodo3eOtro(); }},
+      { label:'5. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }}
+    ]);
+  });
+}
+
+// N3E-1 · Certificados y respaldo documental. Reutiliza el mismo valor
+// (Certificado de Recepción / Ley REP) ya presentado en rfNodo1c, pero acá
+// se puede pedir como servicio en sí — antes solo aparecía como argumento
+// dentro de "Quiénes somos", nunca como algo accionable.
+function rfNodo3eCert() {
+  rfBotSequence([
+    '📄 Como gestor certificado, respaldamos cada entrega con la documentación correspondiente:\n\n• <b>Certificado de Recepción de Materiales</b> — respalda una entrega ya realizada.\n• <b>Certificado de Recepción Ley REP</b> — acredita el cumplimiento de tu empresa ante la SEREMI (Ley 20.920), valor 2,7 UF anuales.',
+    '¿Cuál necesitas?'
+  ], () => {
+    rfAddOptions([
+      { label:'1. Certificado de una entrega ya realizada', action:()=>{ rfAddUserMsg('Certificado de entrega realizada'); rfState.tipo_certificado='recepcion_entrega'; rfNodo3eCertContacto(); }},
+      { label:'2. Certificado Ley REP para mi empresa', action:()=>{ rfAddUserMsg('Certificado Ley REP'); rfState.tipo_certificado='ley_rep'; rfNodo3eCertContacto(); }},
+      { label:'3. No estoy seguro, que me orienten', action:()=>{ rfAddUserMsg('No estoy seguro'); rfState.tipo_certificado='orientacion'; rfNodo3eCertContacto(); }},
+      { label:'4. Volver al menú de servicios', action:()=>{ rfAddUserMsg('Volver a servicios'); rfNodo3e(); }}
+    ]);
+  });
+}
+
+function rfNodo3eCertContacto() {
+  rfState.intent = 'servicio_certificado';
+  rfBotSequence([
+    'Perfecto. Déjanos tus datos y registramos tu solicitud para que un ejecutivo la revise y te confirme los pasos.'
+  ], () => rfNodoContacto());
+}
+
+// N3E-2 · Atención para empresa — retiro periódico, alta de cliente nuevo
+// u otra necesidad corporativa. No compite con "Vender materiales": esa
+// rama es para transacciones puntuales por material; esta es para la
+// relación comercial en sí (contrato, cuenta, cumplimiento).
+function rfNodo3eEmpresa() {
+  rfBotSequence([
+    '🏢 Para empresas ofrecemos más que un retiro puntual: contratos de retiro periódico, atención dedicada y, como gestor certificado, te ayudamos a cumplir la Ley REP y el DS 594 sin complicaciones.',
+    '¿Qué te interesa?'
+  ], () => {
+    rfAddOptions([
+      { label:'1. Retiro periódico / contrato recurrente', action:()=>{ rfAddUserMsg('Retiro periódico'); rfState.tipo_atencion_empresa='retiro_periodico'; rfNodo3eEmpresaContacto(); }},
+      { label:'2. Somos nuevos, queremos partir como cliente', action:()=>{ rfAddUserMsg('Cliente nuevo empresa'); rfState.tipo_atencion_empresa='alta_cliente'; rfNodo3eEmpresaContacto(); }},
+      { label:'3. Otra necesidad de mi empresa', action:()=>{ rfAddUserMsg('Otra necesidad empresa'); rfState.tipo_atencion_empresa='otro'; rfNodo3eEmpresaContacto(); }},
+      { label:'4. Volver al menú de servicios', action:()=>{ rfAddUserMsg('Volver a servicios'); rfNodo3e(); }}
+    ]);
+  });
+}
+
+function rfNodo3eEmpresaContacto() {
+  rfState.intent = 'servicio_atencion_empresa';
+  rfBotSequence([
+    'Perfecto. Déjanos tus datos y un ejecutivo dedicado a empresas te contacta para revisar el mejor plan.'
+  ], () => rfNodoContacto());
+}
+
+// N3E-3 · Otro requerimiento — válvula de escape honesta para lo que no
+// entra en las 3 categorías de arriba. No hay campo de texto libre en el
+// widget todavía (fuera de scope esta ronda); se capturan nombre+teléfono
+// y el detalle se completa por WhatsApp o cuando el ejecutivo contacta.
+function rfNodo3eOtro() {
+  rfState.intent = 'servicio_otro';
+  rfBotSequence([
+    'Sin problema. Déjanos tus datos y registramos tu solicitud — cuando te contactemos nos cuentas el detalle y te derivamos con la persona indicada.'
+  ], () => rfNodoContacto());
+}
+
+// ═══════════════════════════════════════════════════════════════
 // N7 · CIERRE · Genera WhatsApp deeplink con TODO el state pre-lleno
 // ═══════════════════════════════════════════════════════════════
 function rfGenerarMensajeWhatsApp() {
@@ -1099,7 +1219,10 @@ function rfGenerarMensajeWhatsApp() {
     'cotizar_retiro':  '🚛 Cotizar retiro',
     'donar':           '💚 Quiero donar material',
     'meditar':         '🤔 Me gustaría que me contacten luego',
-    'materiales_varios': '❓ Consulta materiales varios'
+    'materiales_varios': '❓ Consulta materiales varios',
+    'servicio_certificado': '📄 Certificados y respaldo documental',
+    'servicio_atencion_empresa': '🏢 Atención para empresa',
+    'servicio_otro': '💬 Otro requerimiento'
   };
   const header = intent_labels[s.intent] || '📩 Nueva consulta desde el chatbot web';
 
@@ -1159,6 +1282,25 @@ function rfGenerarMensajeWhatsApp() {
     msg += '• Describe los materiales que tienes: \n';
     msg += '• Cantidad aproximada: \n';
     msg += '• Ciudad: \n';
+  } else if (s.intent === 'servicio_certificado') {
+    const tipoCertLabel = s.tipo_certificado === 'ley_rep' ? 'Certificado Ley REP'
+      : s.tipo_certificado === 'recepcion_entrega' ? 'Certificado de entrega ya realizada'
+      : 'Por confirmar con el cliente';
+    msg += '• Nombre y apellido: \n';
+    msg += '• Empresa (si aplica): \n';
+    msg += '• Tipo de certificado: ' + tipoCertLabel + '\n';
+    msg += '• Correo para enviar el certificado: \n';
+  } else if (s.intent === 'servicio_atencion_empresa') {
+    const tipoAtencionLabel = s.tipo_atencion_empresa === 'retiro_periodico' ? 'Retiro periódico / contrato recurrente'
+      : s.tipo_atencion_empresa === 'alta_cliente' ? 'Empresa nueva, quiere partir como cliente'
+      : 'Otra necesidad, por especificar con el cliente';
+    msg += '• Nombre y apellido: \n';
+    msg += '• Empresa: \n';
+    msg += '• Qué necesita: ' + tipoAtencionLabel + '\n';
+    msg += '• Día/horario preferido para contacto: \n';
+  } else if (s.intent === 'servicio_otro') {
+    msg += '• Nombre y apellido: \n';
+    msg += '• Detalle de lo que necesita (a confirmar con el cliente): \n';
   }
 
   msg += '\n_Gracias por contactarnos 💚_';
