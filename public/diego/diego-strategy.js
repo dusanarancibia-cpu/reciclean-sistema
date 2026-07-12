@@ -275,6 +275,86 @@
     return strategy?.duration || 'Hasta nueva definicion ejecutiva.';
   }
 
+  function inferExecutiveSummary(context, strategy, materialRole) {
+    const materialName = context?.materialName || 'este material';
+    const firstBranch = Array.isArray(context?.branchNames) && context.branchNames.length ? context.branchNames[0] : 'la sucursal foco';
+    if (strategy?.id === 'margen_defendido') {
+      return 'No corras detras del precio con ' + materialName + '; defendelo si no abre volumen o valor nuevo.';
+    }
+    if (strategy?.id === 'captura_servicio') {
+      return 'Usa ' + materialName + ' para vender cumplimiento y continuidad, no solo precio.';
+    }
+    if (strategy?.id === 'volumen_locomotora') {
+      return materialRole === 'Locomotora'
+        ? materialName + ' es locomotora: puede justificar mover la canasta si arrastra volumen real.'
+        : materialName + ' funciona como apoyo; no conviene pelearlo como si fuera la locomotora principal.';
+    }
+    if (strategy?.id === 'apertura_proyecto') {
+      return 'Acepta una entrada medida en ' + materialName + ' solo si abre relacion o proyecto de valor mayor.';
+    }
+    if (strategy?.id === 'defensa_sucursal') {
+      return 'Dale aire a ' + firstBranch + ' sin contagiar automaticamente a toda la red.';
+    }
+    if (strategy?.id === 'tactica_temporal') {
+      return 'Jugada temporal sobre ' + materialName + ': entra con fecha de salida definida desde el inicio.';
+    }
+    return 'Resolvé ' + materialName + ' con criterio defendible, trazable y sin improvisacion.';
+  }
+
+  function inferExample(context, strategy, materialRole) {
+    const materialName = context?.materialName || 'este material';
+    const branches = Array.isArray(context?.branchNames) ? context.branchNames.filter(Boolean) : [];
+    const branchSpan = branches.length ? branches.join(' y ') : 'las sucursales afectadas';
+    if (strategy?.id === 'margen_defendido') {
+      return 'Ejemplo: si ' + materialName + ' sube por competencia pero no trae mas volumen ni mejor servicio, defendé el numero y no publiques por ansiedad.';
+    }
+    if (strategy?.id === 'captura_servicio') {
+      return 'Ejemplo: si el cliente acepta pagar parecido pero exige retiro rapido y trazabilidad, sostené servicio y evita subsidiarlo con precio oculto.';
+    }
+    if (strategy?.id === 'volumen_locomotora') {
+      return materialRole === 'Locomotora'
+        ? 'Ejemplo: si ' + materialName + ' abre ' + branchSpan + ' y arrastra otros materiales, podés entrar mas agresivo en la locomotora y defender los vagones.'
+        : 'Ejemplo: si ' + materialName + ' viene junto a una locomotora, usalo como acompanante y no lo expongas como precio estrella.';
+    }
+    if (strategy?.id === 'apertura_proyecto') {
+      return 'Ejemplo: si este primer negocio abre contrato o flujo recurrente, podés aceptar una entrada medida con condicion de continuidad visible.';
+    }
+    if (strategy?.id === 'defensa_sucursal') {
+      return 'Ejemplo: si una sucursal esta siendo presionada localmente, apoyala con una asimetria controlada sin replicarla por defecto al resto.';
+    }
+    if (strategy?.id === 'tactica_temporal') {
+      return 'Ejemplo: si hay una oportunidad de pocos dias, publicá con fecha de salida y revisá si la ventana sigue viva antes de renovar.';
+    }
+    return 'Ejemplo: si el caso no abre una jugada comercial especial, resolvelo con criterio defendible y seguimiento corto.';
+  }
+
+  function inferTimeSuggestion(context, strategy) {
+    const urgent = Number(context?.urgentCount || 0);
+    if (strategy?.id === 'margen_defendido') {
+      return urgent > 0
+        ? 'Resolver hoy y revisar en 24-48 h si la presion de margen sigue viva.'
+        : 'Usarla en ventana corta y revisarla semanalmente o cuando cambie el riesgo.';
+    }
+    if (strategy?.id === 'captura_servicio') {
+      return 'Mantenerla mientras servicio siga moviendo el negocio; revisar cada semana o ante un incumplimiento.';
+    }
+    if (strategy?.id === 'volumen_locomotora') {
+      return 'Ventana tactica de 1 a 2 semanas, con revision de volumen real, canasta y caja capturada.';
+    }
+    if (strategy?.id === 'apertura_proyecto') {
+      return 'Usarla como piloto corto: 1 a 3 semanas o hasta la primera evidencia real de traccion.';
+    }
+    if (strategy?.id === 'defensa_sucursal') {
+      return urgent > 0
+        ? 'Resolver hoy y medir en 3-7 dias si la sucursal recupera posicion.'
+        : 'Aplicarla por pocos dias y revisar si la condicion local sigue justificando apoyo.';
+    }
+    if (strategy?.id === 'tactica_temporal') {
+      return 'Definir fecha de salida desde el inicio: horas, dias o una campana puntual, pero nunca indefinida.';
+    }
+    return 'Usarla por ventana corta y revalidarla apenas cambie el contexto.';
+  }
+
   function buildGuide(context, strategy) {
     const active = strategy || getActive();
     const resolvedContext = cloneContext(context) || getContext();
@@ -290,6 +370,9 @@
       branchDirective: inferBranchDirective(resolvedContext, active),
       validityDecision: inferWindow(resolvedContext, active),
       exitDirective: active.exitCondition || 'Sin condicion de salida visible.',
+      executiveSummary: inferExecutiveSummary(resolvedContext, active, materialRole),
+      exampleScenario: inferExample(resolvedContext, active, materialRole),
+      timeSuggestion: inferTimeSuggestion(resolvedContext, active),
     };
   }
 
