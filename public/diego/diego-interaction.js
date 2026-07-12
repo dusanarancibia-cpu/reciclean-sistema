@@ -122,7 +122,7 @@
     const attach = pendingFile;
     const nextHistory = [...(typeof getHistory === 'function' ? getHistory() : [])];
     nextHistory.push({ role: 'user', mensaje: msg || '(adjunto)', attach: attach?.file_name, ts: Date.now() });
-    nextHistory.push({ role: 'thinking', mensaje: 'Diego está escribiendo<span class="diego-typing-dots"><span></span><span></span><span></span></span>', ts: Date.now() });
+    nextHistory.push({ role: 'thinking', mensaje: 'Diego esta escribiendo', ts: Date.now() });
     if (typeof setHistory === 'function') setHistory(nextHistory);
     render();
 

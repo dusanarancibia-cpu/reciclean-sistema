@@ -23,7 +23,8 @@
       const sixW = entry.six_w && (entry.six_w.what || entry.six_w.when)
         ? `<div class="diego-msg-meta">🧠 ${safeEsc(esc, entry.six_w.what || '')}${entry.six_w.when ? ' · ⏰ ' + safeEsc(esc, entry.six_w.when) : ''}${entry.six_w.who ? ' · 👤 ' + safeEsc(esc, entry.six_w.who) : ''}</div>`
         : '';
-      const msgHtml = cls === 'thinking' ? String(entry.mensaje) : safeEsc(esc, entry.mensaje);
+      const thinkingHtml = 'Diego esta escribiendo<span class="diego-typing-dots"><span></span><span></span><span></span></span>';
+      const msgHtml = cls === 'thinking' ? thinkingHtml : safeEsc(esc, entry.mensaje);
       const contract = cls === 'diego'
         ? (() => {
             const c = typeof inferDiegoContract === 'function'
