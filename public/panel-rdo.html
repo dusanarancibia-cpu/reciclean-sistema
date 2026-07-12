@@ -15850,6 +15850,100 @@ document.addEventListener('DOMContentLoaded', () => {
   let pendingFile = null;          // { file_url, file_mime, file_name }
   let history = [];                // [{role:'user'|'diego', mensaje, ts, attach?, six_w?, actions?, suggestions?}]
 
+  function getDiegoMemoryApi() {
+    return window.DIEGO_MEMORY || null;
+  }
+  function getDiegoMemoryEmail() {
+    return getUserEmail() || (typeof window.getCurrentEmail === 'function' ? window.getCurrentEmail() : null) || 'anon';
+  }
+  function hydrateDiegoMemory() {
+    const api = getDiegoMemoryApi();
+    if (!api || typeof api.hydrateTurn !== 'function') return [];
+    return api.hydrateTurn({ email: getDiegoMemoryEmail() });
+  }
+  function persistDiegoTurnMemory() {
+    const api = getDiegoMemoryApi();
+    if (!api || typeof api.persistTurn !== 'function') return history;
+    return api.persistTurn({
+      email: getDiegoMemoryEmail(),
+      history,
+    });
+  }
+  function syncDiegoCaseMemory(cases) {
+    const api = getDiegoMemoryApi();
+    if (!api || typeof api.syncCases !== 'function') return Array.isArray(cases) ? cases : [];
+    return api.syncCases({
+      email: getDiegoMemoryEmail(),
+      history,
+      cases,
+    });
+  }
+  function rememberDiegoCaseMutation(item) {
+    const api = getDiegoMemoryApi();
+    if (!api || typeof api.rememberCase !== 'function' || !item) return null;
+    const lastDiego = [...history].reverse().find(h => h.role === 'diego');
+    return api.rememberCase({
+      email: getDiegoMemoryEmail(),
+      item,
+      lastMessage: cleanMsg(lastDiego?.mensaje || ''),
+    });
+  }
+  function getTurnMemorySnapshot(profile) {
+    const api = getDiegoMemoryApi();
+    if (!api || typeof api.buildTurnSnapshot !== 'function') return null;
+    return api.buildTurnSnapshot({ history, profile });
+  }
+  function getCaseMemorySnapshot() {
+    const api = getDiegoMemoryApi();
+    if (!api || typeof api.listCaseMemory !== 'function') return [];
+    return api.listCaseMemory({ email: getDiegoMemoryEmail(), limit: 4 });
+  }
+  function getTeamMemorySnapshot() {
+    const api = getDiegoMemoryApi();
+    if (!api || typeof api.buildTeamSnapshot !== 'function') return null;
+    const cases = window.DIEGO_CASE_STORE && typeof window.DIEGO_CASE_STORE.listCases === 'function'
+      ? window.DIEGO_CASE_STORE.listCases()
+      : [];
+    return api.buildTeamSnapshot({ cases });
+  }
+  function renderTurnMemory(profile) {
+    const memory = getTurnMemorySnapshot(profile);
+    if (!memory || !memory.total) {
+      return `<div class="diego-side-sub">Diego parte desde cero en este navegador hasta que exista un turno real.</div>`;
+    }
+    return `<div class="diego-flow-list">
+      <div><strong>Foco retenido:</strong> ${esc(memory.focus)}</div>
+      <div><strong>Intercambios guardados:</strong> ${esc(memory.total)}</div>
+      ${memory.lastUser ? `<div><strong>Ultimo pedido:</strong> ${esc(memory.lastUser)}</div>` : ''}
+      ${memory.lastDiego ? `<div><strong>Ultima respuesta:</strong> ${esc(memory.lastDiego)}</div>` : ''}
+    </div>`;
+  }
+  function renderCaseMemory() {
+    const items = getCaseMemorySnapshot();
+    if (!items.length) {
+      return `<div class="diego-side-sub">Aun no hay memoria consolidada por caso.</div>`;
+    }
+    return `<div class="diego-flow-list">
+      ${items.map(item => `<div>
+        <strong>${esc(item.title)}</strong><br>
+        Dueño: ${esc(item.owner)} · Estado: ${esc(item.status)} · Paso: ${esc(item.step)}
+      </div>`).join('')}
+    </div>`;
+  }
+  function renderTeamMemory() {
+    const memory = getTeamMemorySnapshot();
+    if (!memory || !memory.total) {
+      return `<div class="diego-side-sub">Sin carga compartida visible todavia para el equipo.</div>`;
+    }
+    return `<div class="diego-flow-list">
+      <div><strong>Carga viva:</strong> ${esc(memory.total)} caso(s) abiertos</div>
+      <div><strong>Urgentes:</strong> ${esc(memory.urgent)} con prioridad alta</div>
+      ${(memory.byOwner || []).map(row => `<div><strong>${esc(row.owner)}:</strong> ${esc(row.total)} activo(s) · ${esc(row.alta)} alto(s)</div>`).join('')}
+    </div>`;
+  }
+
+  history = hydrateDiegoMemory();
+
   function getUserEmail() {
     try {
       const s = JSON.parse(localStorage.getItem('rf_session') || 'null');
@@ -16176,6 +16270,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     if (window.DIEGO_CASE_STORE && typeof window.DIEGO_CASE_STORE.syncCases === 'function') {
       const cases = window.DIEGO_CASE_STORE.syncCases({ cases: inferredCases, profile });
+      syncDiegoCaseMemory(cases);
       if (window.DIEGO_CASE_SYNC && typeof window.DIEGO_CASE_SYNC.schedulePush === 'function') {
         window.DIEGO_CASE_SYNC.schedulePush({
           sb,
@@ -16185,6 +16280,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return cases;
     }
+    syncDiegoCaseMemory(inferredCases);
     return inferredCases;
   }
   function getCaseSyncSummary() {
@@ -16352,6 +16448,9 @@ document.addEventListener('DOMContentLoaded', () => {
         renderDiegoStrategicCards,
         renderCaseBoard,
         renderTeamPromptGrid,
+        renderTurnMemory,
+        renderCaseMemory,
+        renderTeamMemory,
       });
     }
     if (!last) {
@@ -16512,6 +16611,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function persistCaseMutation(item) {
     if (!item) return;
+    rememberDiegoCaseMutation(item);
     if (window.DIEGO_CASE_SYNC && typeof window.DIEGO_CASE_SYNC.persistCase === 'function') {
       window.DIEGO_CASE_SYNC.persistCase({
         sb,
@@ -16620,6 +16720,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function render() {
+    persistDiegoTurnMemory();
     if (window.DIEGO_RENDER && typeof window.DIEGO_RENDER.render === 'function') {
       const ok = window.DIEGO_RENDER.render({
         history,
@@ -16948,7 +17049,7 @@ document.addEventListener('DOMContentLoaded', () => {
     win.classList.add('open');
     suscribir();
     refreshBadge();
-    if (!history.length) render();
+    render();
     setTimeout(() => input.focus(), 50);
   });
   closeBtn.addEventListener('click', () => win.classList.remove('open'));
@@ -27443,6 +27544,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="./diego/diego-case-sync.js"></script>
 <script src="./diego/diego-voice.js"></script>
 <script src="./diego/diego-ui.js"></script>
+<script src="./diego/diego-memory.js"></script>
 <script src="./diego/diego-context.js"></script>
 <script src="./diego/diego-render.js"></script>
 <script src="./diego/diego-interaction.js"></script>
