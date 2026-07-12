@@ -189,8 +189,17 @@
     const profile = options?.profile || { key: 'general' };
     const onCasesChanged = options?.onCasesChanged;
     const onCaseMutated = options?.onCaseMutated;
+    const onOpenBandejaCase = options?.onOpenBandejaCase;
     const store = window.DIEGO_CASE_STORE;
     if (!body || !store) return;
+
+    body.querySelectorAll('button[data-case-open-bandeja-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const bandejaId = btn.getAttribute('data-case-open-bandeja-id');
+        if (!bandejaId) return;
+        if (typeof onOpenBandejaCase === 'function') onOpenBandejaCase(bandejaId);
+      });
+    });
 
     body.querySelectorAll('button[data-case-status-id]').forEach(btn => {
       btn.addEventListener('click', () => {

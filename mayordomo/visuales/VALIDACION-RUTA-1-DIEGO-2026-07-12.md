@@ -71,6 +71,7 @@ Se agregó persistencia local en `public/diego/diego-case-store.js`.
 También quedó preparado el puente backend:
 
 - modulo `public/diego/diego-case-sync.js`
+- modulo `public/diego/diego-bandeja-sync.js`
 - migracion `supabase/migrations/diego_casos_shared.sql`
 - estrategia `best effort`: si la tabla existe, sincroniza; si no existe, sigue en modo local sin romper el panel
 
@@ -82,6 +83,10 @@ Capacidades verificadas:
 - el estado puede rotarse
 - el siguiente paso puede editarse
 - el board ahora muestra estado visible de sincronizacion: `Modo compartido`, `Validando sync` o `Modo local`
+- el store de casos ya puede hidratar mensajes reales desde `vw_diego_bandeja_detalle` y mostrarlos con traza `Bandeja Diego #...`
+- cuando un caso viene de `Bandeja Diego`, los cambios de dueño, estado y siguiente paso intentan reflejarse tambien en `panel.diego_bandeja`
+- cuando un caso nace desde `Bandeja Diego`, el rail ya expone `Abrir bandeja` para volver al item origen y abrir su drawer operativo
+- validacion tecnica del salto `Caso Diego -> Bandeja Diego` completada con prueba dirigida sobre `openBandejaCaseFromRail()` y `bindCaseActions()`: propaga `bandejaId`, cambia al tab `bandeja_dieg` y llama `window.bdAbrirDrawer(id)`
 
 La persistencia actual queda en `localStorage`, como puente operativo antes de llevar `Caso Diego` a entidad backend.
 

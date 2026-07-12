@@ -16123,6 +16123,13 @@ document.addEventListener('DOMContentLoaded', () => {
     return base.length > 88 ? (base.slice(0, 85) + '...') : base;
   }
   function buildDiegoCases(profile) {
+    if (window.DIEGO_BANDEJA_SYNC && typeof window.DIEGO_BANDEJA_SYNC.hydrate === 'function') {
+      window.DIEGO_BANDEJA_SYNC.hydrate({
+        sb,
+        getCurrentEmail: window.getCurrentEmail,
+        onHydrated: render,
+      });
+    }
     if (window.DIEGO_CASE_SYNC && typeof window.DIEGO_CASE_SYNC.hydrate === 'function') {
       window.DIEGO_CASE_SYNC.hydrate({
         sb,
@@ -16198,23 +16205,24 @@ document.addEventListener('DOMContentLoaded', () => {
       return {
         tone: 'local',
         label: 'Modo local',
-        detail: 'Falta la tabla compartida `panel.diego_casos`; el panel sigue operativo localmente.',
+        detail: 'Falta la tabla compartida `panel.diego_casos`; el panel sigue operativo localmente y puede sumar casos desde Bandeja Diego.',
       };
     }
     return {
       tone: 'local',
       label: 'Modo local',
-      detail: 'No hubo confirmación de backend; Diego sigue guardando en este navegador.',
+      detail: 'No hubo confirmación de backend; Diego sigue guardando en este navegador y puede nutrirse desde Bandeja Diego.',
     };
   }
   function renderCaseBoard(profile) {
     const cases = buildDiegoCases(profile);
     const sync = getCaseSyncSummary();
+    const bandejaCount = cases.filter(c => String(c?.sourceKey || '').startsWith('bandeja::')).length;
     if (!cases.length) {
       return `<div class="diego-case-empty">Aun no hay casos visibles en este turno. Cuando Diego detecte un reclamo, oportunidad, bloqueo o tarea, los verás resumidos aquí con dueño, prioridad y estado.</div>`;
     }
     return `<div class="diego-case-board">
-      <div class="diego-case-summary">${cases.length} caso(s) activos. ${esc(sync.detail)} <span class="diego-case-sync diego-case-sync-${esc(sync.tone)}">${esc(sync.label)}</span></div>
+      <div class="diego-case-summary">${cases.length} caso(s) activos. ${bandejaCount > 0 ? `${bandejaCount} vienen desde Bandeja Diego viva y ahora sincronizan dueño, estado y siguiente paso. ` : ''}${esc(sync.detail)} <span class="diego-case-sync diego-case-sync-${esc(sync.tone)}">${esc(sync.label)}</span></div>
       ${cases.map(c => `
       <div class="diego-case-card">
         <div class="diego-case-head">
@@ -16226,11 +16234,15 @@ document.addEventListener('DOMContentLoaded', () => {
           <span class="diego-case-badge diego-case-status-${esc(c.status.key)}">${esc(c.status.label)}</span>
         </div>
         <div class="diego-case-meta">
+          <div><strong>Origen:</strong> ${String(c?.sourceKey || '').startsWith('bandeja::') ? 'Bandeja Diego' : 'Conversacion Diego'}</div>
           <div><strong>Dueño:</strong> ${esc(c.owner)}</div>
           <div><strong>Traza:</strong> ${esc(c.trace)}</div>
           <div><strong>Siguiente paso:</strong> ${esc(c.step)}</div>
         </div>
         <div class="diego-case-actions">
+          ${String(c?.sourceKey || '').startsWith('bandeja::')
+            ? `<button type="button" data-case-open-bandeja-id="${esc(String(c.sourceKey).slice('bandeja::'.length))}">Abrir bandeja</button>`
+            : ''}
           <button type="button" data-case-owner-id="${esc(c.id)}" data-case-owner="${esc(c.owner)}">Dueño</button>
           <button type="button" data-case-priority-id="${esc(c.id)}">Prioridad</button>
           <button type="button" data-case-status-id="${esc(c.id)}">Estado</button>
@@ -16487,6 +16499,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     bindCaseActions();
   }
+  function persistCaseMutation(item) {
+    if (!item) return;
+    if (window.DIEGO_CASE_SYNC && typeof window.DIEGO_CASE_SYNC.persistCase === 'function') {
+      window.DIEGO_CASE_SYNC.persistCase({
+        sb,
+        getCurrentEmail: window.getCurrentEmail,
+        item,
+      });
+    }
+    if (window.DIEGO_BANDEJA_SYNC && typeof window.DIEGO_BANDEJA_SYNC.persistCase === 'function') {
+      window.DIEGO_BANDEJA_SYNC.persistCase({
+        sb,
+        getCurrentEmail: window.getCurrentEmail,
+        item,
+      });
+    }
+  }
+  function openBandejaCaseFromRail(bandejaId) {
+    if (!bandejaId) return;
+    const tabBtn = document.querySelector('[data-v4-tab="bandeja_dieg"]')
+      || document.querySelector('[data-tab="bandeja_dieg"]');
+    if (tabBtn) tabBtn.click();
+    win.classList.remove('open');
+    window.setTimeout(() => {
+      if (typeof window.bdAbrirDrawer === 'function') window.bdAbrirDrawer(bandejaId);
+    }, tabBtn ? 350 : 0);
+  }
   function bindCaseActions() {
     const profile = getDiegoRoleProfile();
     if (window.DIEGO_CONTEXT && typeof window.DIEGO_CONTEXT.bindCaseActions === 'function') {
@@ -16494,15 +16533,8 @@ document.addEventListener('DOMContentLoaded', () => {
         body,
         profile,
         onCasesChanged: render,
-        onCaseMutated: (item) => {
-          if (window.DIEGO_CASE_SYNC && typeof window.DIEGO_CASE_SYNC.persistCase === 'function') {
-            window.DIEGO_CASE_SYNC.persistCase({
-              sb,
-              getCurrentEmail: window.getCurrentEmail,
-              item,
-            });
-          }
-        },
+        onCaseMutated: persistCaseMutation,
+        onOpenBandejaCase: openBandejaCaseFromRail,
       });
       return;
     }
@@ -16523,26 +16555,19 @@ document.addEventListener('DOMContentLoaded', () => {
     body.querySelectorAll('button[data-case-status-id]').forEach(btn => {
       btn.addEventListener('click', () => {
         const updated = window.DIEGO_CASE_STORE.cycleStatus(btn.getAttribute('data-case-status-id'));
-        if (window.DIEGO_CASE_SYNC && typeof window.DIEGO_CASE_SYNC.persistCase === 'function' && updated) {
-          window.DIEGO_CASE_SYNC.persistCase({
-            sb,
-            getCurrentEmail: window.getCurrentEmail,
-            item: updated,
-          });
-        }
+        persistCaseMutation(updated);
         render();
+      });
+    });
+    body.querySelectorAll('button[data-case-open-bandeja-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        openBandejaCaseFromRail(btn.getAttribute('data-case-open-bandeja-id'));
       });
     });
     body.querySelectorAll('button[data-case-priority-id]').forEach(btn => {
       btn.addEventListener('click', () => {
         const updated = window.DIEGO_CASE_STORE.cyclePriority(btn.getAttribute('data-case-priority-id'));
-        if (window.DIEGO_CASE_SYNC && typeof window.DIEGO_CASE_SYNC.persistCase === 'function' && updated) {
-          window.DIEGO_CASE_SYNC.persistCase({
-            sb,
-            getCurrentEmail: window.getCurrentEmail,
-            item: updated,
-          });
-        }
+        persistCaseMutation(updated);
         render();
       });
     });
@@ -16551,13 +16576,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const nextOwner = await askText('Asignar dueño', 'Responsable del caso', btn.getAttribute('data-case-owner') || '');
         if (!nextOwner || !String(nextOwner).trim()) return;
         const updated = window.DIEGO_CASE_STORE.updateCase(btn.getAttribute('data-case-owner-id'), { owner: nextOwner });
-        if (window.DIEGO_CASE_SYNC && typeof window.DIEGO_CASE_SYNC.persistCase === 'function' && updated) {
-          window.DIEGO_CASE_SYNC.persistCase({
-            sb,
-            getCurrentEmail: window.getCurrentEmail,
-            item: updated,
-          });
-        }
+        persistCaseMutation(updated);
         render();
       });
     });
@@ -16566,13 +16585,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const nextStep = await askText('Siguiente paso', 'Que sigue para este caso', btn.getAttribute('data-case-step') || '');
         if (!nextStep || !String(nextStep).trim()) return;
         const updated = window.DIEGO_CASE_STORE.updateCase(btn.getAttribute('data-case-step-id'), { step: nextStep });
-        if (window.DIEGO_CASE_SYNC && typeof window.DIEGO_CASE_SYNC.persistCase === 'function' && updated) {
-          window.DIEGO_CASE_SYNC.persistCase({
-            sb,
-            getCurrentEmail: window.getCurrentEmail,
-            item: updated,
-          });
-        }
+        persistCaseMutation(updated);
         render();
       });
     });
@@ -27332,6 +27345,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="./diego/diego-state.js"></script>
 <script src="./diego/diego-cases.js"></script>
 <script src="./diego/diego-case-store.js"></script>
+<script src="./diego/diego-bandeja-sync.js"></script>
 <script src="./diego/diego-case-sync.js"></script>
 <script src="./diego/diego-voice.js"></script>
 <script src="./diego/diego-ui.js"></script>
