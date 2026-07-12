@@ -31,6 +31,9 @@
     const renderDiegoStrategicCards = options?.renderDiegoStrategicCards;
     const renderCaseBoard = options?.renderCaseBoard;
     const renderTeamPromptGrid = options?.renderTeamPromptGrid;
+    const renderTurnMemory = options?.renderTurnMemory;
+    const renderCaseMemory = options?.renderCaseMemory;
+    const renderTeamMemory = options?.renderTeamMemory;
     const strategicCards = `${typeof renderExecutivePriceCard === 'function' ? renderExecutivePriceCard(profile) : ''}${typeof renderDiegoStrategicCards === 'function' ? renderDiegoStrategicCards() : ''}`;
 
     if (!last) {
@@ -55,12 +58,15 @@
         strategicCards
           ? renderSection(esc, 'Decision y estrategia', strategicCards, { hint: 'precio y criterio' })
           : '',
+        renderSection(esc, 'Memoria del turno', `${typeof renderTurnMemory === 'function' ? renderTurnMemory(profile) : ''}`, { hint: 'continuidad' }),
         renderSection(esc, 'Casos Diego', `${typeof renderCaseBoard === 'function' ? renderCaseBoard(profile) : ''}`, { open: true, hint: 'seguimiento vivo' }),
+        renderSection(esc, 'Memoria por caso', `${typeof renderCaseMemory === 'function' ? renderCaseMemory(profile) : ''}`, { hint: 'seguimiento retenido' }),
         renderSection(esc, 'Empuje del equipo', `
           <div class="diego-side-actions">
             ${typeof renderTeamPromptGrid === 'function' ? renderTeamPromptGrid(profile) : ''}
           </div>
         `, { hint: 'pendientes y foco' }),
+        renderSection(esc, 'Memoria del equipo', `${typeof renderTeamMemory === 'function' ? renderTeamMemory(profile) : ''}`, { hint: 'carga compartida' }),
         renderSection(esc, 'Ir directo', `
           <div class="diego-side-nav">
             <button type="button" data-ctx-tab="bandeja_dieg">📥 Bandeja Diego</button>
@@ -104,7 +110,9 @@
           ${suggestions || `<button type="button" data-ctx-prompt="${safeEsc(esc, typeof inferNextStep === 'function' ? inferNextStep(last) : 'Seguir')}">${safeEsc(esc, typeof inferNextStep === 'function' ? inferNextStep(last) : 'Seguir')}</button>`}
         </div>
       `, { open: true, hint: 'accion inmediata' }),
+      renderSection(esc, 'Memoria del turno', `${typeof renderTurnMemory === 'function' ? renderTurnMemory(profile) : ''}`, { open: true, hint: 'continuidad' }),
       renderSection(esc, 'Casos Diego', `${typeof renderCaseBoard === 'function' ? renderCaseBoard(profile) : ''}`, { open: true, hint: 'seguimiento vivo' }),
+      renderSection(esc, 'Memoria por caso', `${typeof renderCaseMemory === 'function' ? renderCaseMemory(profile) : ''}`, { hint: 'seguimiento retenido' }),
       renderSection(esc, 'Contexto del turno', `${sixW}`, { hint: 'que cuando quien' }),
       renderSection(esc, 'Acciones detectadas', actions
         ? `<div class="diego-side-list">${actions}</div>`
@@ -124,6 +132,7 @@
           ${typeof renderTeamPromptGrid === 'function' ? renderTeamPromptGrid(profile) : ''}
         </div>
       `, { hint: 'pendientes y foco' }),
+      renderSection(esc, 'Memoria del equipo', `${typeof renderTeamMemory === 'function' ? renderTeamMemory(profile) : ''}`, { hint: 'carga compartida' }),
       renderSection(esc, 'Vistas relacionadas', `
         <div class="diego-side-nav">
           <button type="button" data-ctx-tab="bandeja_dieg">📥 Bandeja Diego</button>
