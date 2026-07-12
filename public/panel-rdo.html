@@ -1956,9 +1956,9 @@
           </select>
         </div>
         <div>
-          <label for="bpFiltroCliente" class="block text-xs text-stone-500 mb-1">Cliente</label>
+          <label for="bpFiltroCliente" class="block text-xs text-stone-500 mb-1">Fuente</label>
           <select id="bpFiltroCliente" onchange="bpAplicarFiltrosClienteSide()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
-            <option value="">Todos los clientes</option>
+            <option value="">Todas las fuentes</option>
           </select>
         </div>
         <div>
@@ -2028,8 +2028,8 @@
           </div>
         </div>
         <div class="flex-1 min-w-[12rem]">
-          <label for="bpFiltroBuscar" class="block text-xs text-stone-500 mb-1">Buscar (cliente, material, notas)</label>
-          <input id="bpFiltroBuscar" type="text" placeholder="Ej. cartón blanco SOREPA"
+          <label for="bpFiltroBuscar" class="block text-xs text-stone-500 mb-1">Buscar (fuente, material, notas)</label>
+          <input id="bpFiltroBuscar" type="text" placeholder="Ej. Santiago, cartón blanco, SOREPA"
                  oninput="bpDebouncedFiltro()" aria-label="Buscar"
                  class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
         </div>
@@ -2040,9 +2040,9 @@
         <table class="w-full text-sm">
           <thead class="bg-stone-50 text-stone-600 text-left select-none">
             <tr>
-              <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="cliente_nombre" onclick="bpSortar('cliente_nombre')">Cliente <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
+              <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="bp_fuente" onclick="bpSortar('bp_fuente')">Fuente <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
               <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="material_nombre" onclick="bpSortar('material_nombre')">Material <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
-              <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="sucursal_nombre" onclick="bpSortar('sucursal_nombre')">Sucursal <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
+              <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="bp_alcance" onclick="bpSortar('bp_alcance')">Alcance <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
               <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="precio_clp_kg" onclick="bpSortar('precio_clp_kg')">Precio nuevo <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
               <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="precio_vigente" onclick="bpSortar('precio_vigente')">Vigente actual <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
               <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="desviacion_pct" onclick="bpSortar('desviacion_pct')">Δ% <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
@@ -2076,9 +2076,9 @@
           <div id="bpDrawerLockWarn" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-xs p-2 rounded mb-3">—</div>
 
           <dl class="text-sm grid grid-cols-2 gap-2 mb-3">
-            <div><dt class="text-xs text-stone-500">Cliente</dt><dd id="bpDw_cliente">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Fuente</dt><dd id="bpDw_cliente">—</dd></div>
             <div><dt class="text-xs text-stone-500">Material</dt><dd id="bpDw_material">—</dd></div>
-            <div><dt class="text-xs text-stone-500">Sucursal</dt><dd id="bpDw_sucursal">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Alcance</dt><dd id="bpDw_sucursal">—</dd></div>
             <div><dt class="text-xs text-stone-500">Vigencia</dt><dd id="bpDw_vigencia">—</dd></div>
             <div><dt class="text-xs text-stone-500">Precio nuevo</dt><dd id="bpDw_propuesto" class="font-bold text-stone-900">—</dd></div>
             <div><dt class="text-xs text-stone-500">Vigente anterior</dt><dd id="bpDw_vigente">—</dd></div>
@@ -3036,6 +3036,10 @@
           Simulador con 6 sliders para preparar decisiones directas. Semáforo MG conectado a <code>curated.margen_metas</code>.
           Publica a <code>staging.precios_propuestos</code> con ruta <code>manual_calc</code> y luego deriva a la Mesa.
         </p>
+        <div id="calcPendingMaterialsHint" class="mt-2 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs text-amber-800">
+          <span class="font-semibold">Materiales por resolver:</span>
+          <span id="calcPendingMaterialsCount">—</span>
+        </div>
       </header>
 
       <div class="grid md:grid-cols-3 gap-4 mb-4">
@@ -17729,7 +17733,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tbody.innerHTML = `<tr><td colspan="10" class="px-3 py-4 text-center text-red-600">Error: ${esc(error.message)}</td></tr>`;
       return;
     }
-    const rows = data ?? [];
+    const rows = (data ?? []).map(bpDecorateRow);
     bpPopularSucursalFiltro(rows);
     bpPopularClienteFiltro(rows);
     bpPopularMaterialFiltro(rows);
@@ -17768,6 +17772,54 @@ document.addEventListener('DOMContentLoaded', () => {
   let bpVisibleRows = [];
   let bpSortCol = 'created_at';
   let bpSortDir = 'desc';
+  const BP_SCOPE_RULES = [
+    { aliases: ['santiago'], source: 'Santiago', alcance: ['Cerrillos', 'Maipu'] },
+    { aliases: ['cerrillos'], source: 'Cerrillos', alcance: ['Cerrillos'] },
+    { aliases: ['maipu'], source: 'Maipu', alcance: ['Maipu'] },
+    { aliases: ['talca'], source: 'Talca', alcance: ['Talca'] },
+    { aliases: ['puerto montt', 'puerto_montt', 'pto montt'], source: 'Puerto Montt', alcance: ['Puerto Montt'] },
+  ];
+
+  function bpSafeText(value) {
+    return String(value || '').trim();
+  }
+
+  function bpFindScopeRule(...parts) {
+    const haystack = parts.map(bpSafeText).join(' | ').toLowerCase();
+    if (!haystack) return null;
+    return BP_SCOPE_RULES.find(rule => rule.aliases.some(alias => haystack.includes(alias)));
+  }
+
+  function bpInferFuente(row) {
+    const explicit = bpSafeText(row?.cliente_nombre);
+    if (explicit) return explicit;
+    const rule = bpFindScopeRule(row?.cliente_nombre, row?.notas, row?.sucursal_nombre);
+    if (rule) return rule.source;
+    if (row?.ruta === 'manual_calc') return 'Calculadora soporte';
+    if (row?.ruta === 'dusan') return 'Decision CEO';
+    if (row?.ruta === 'andrea') return 'Revision Andrea';
+    if (row?.ruta === 'auto') return 'Automatica';
+    if (row?.ruta === 'competencia') return 'Competencia';
+    return 'Sin fuente visible';
+  }
+
+  function bpInferAlcance(row, fuente) {
+    const explicit = bpSafeText(row?.sucursal_nombre || row?.sucursal_id);
+    if (explicit) return explicit;
+    const rule = bpFindScopeRule(fuente, row?.notas, row?.cliente_nombre);
+    if (rule) return rule.alcance.join(' + ');
+    if (row?.ruta === 'manual_calc') return 'Sucursal por definir';
+    return 'Sin alcance definido';
+  }
+
+  function bpDecorateRow(row) {
+    const fuente = bpInferFuente(row);
+    return {
+      ...row,
+      bp_fuente: fuente,
+      bp_alcance: bpInferAlcance(row, fuente),
+    };
+  }
 
   function bpRowHtml(r) {
     const lockActive = r.lock_until && new Date(r.lock_until).getTime() > Date.now();
@@ -17777,9 +17829,9 @@ document.addEventListener('DOMContentLoaded', () => {
                   : Math.abs(Number(r.desviacion_pct)) > 15 ? 'text-amber-700'
                   : 'text-stone-600';
     return `<tr class="border-t hover:bg-stone-50 cursor-pointer" onclick="bpAbrirDrawer(${r.id})">
-      <td class="px-3 py-2">${esc(r.cliente_nombre ?? '—')}${lockTag}</td>
+      <td class="px-3 py-2">${esc(r.bp_fuente ?? '—')}${lockTag}</td>
       <td class="px-3 py-2">${esc(r.material_nombre ?? '—')}</td>
-      <td class="px-3 py-2">${esc(r.sucursal_nombre ?? '—')}</td>
+      <td class="px-3 py-2">${esc(r.bp_alcance ?? '—')}</td>
       <td class="px-3 py-2 text-right font-medium">${fmtCLP(r.precio_clp_kg)}</td>
       <td class="px-3 py-2 text-right text-stone-500">${fmtCLP(r.precio_vigente)}</td>
       <td class="px-3 py-2 text-right ${deltaCls}">${fmtPct(r.desviacion_pct)}</td>
@@ -17836,15 +17888,16 @@ document.addEventListener('DOMContentLoaded', () => {
   async function bpAbrirDrawer(id) {
     if (typeof sb === 'undefined' || !sb) return;
     bpCurrentId = id;
-    const { data: r, error } = await sb.schema('staging').from('v_bandeja_precios').select('*').eq('id', id).maybeSingle();
-    if (error || !r) {
+    const { data: raw, error } = await sb.schema('staging').from('v_bandeja_precios').select('*').eq('id', id).maybeSingle();
+    if (error || !raw) {
       alert('No pude cargar la propuesta: ' + (error?.message ?? 'no existe'));
       return;
     }
+    const r = bpDecorateRow(raw);
     document.getElementById('bpDrawerSubtitle').textContent  = `#${r.id} · creada ${fmtEdad(r.created_at)} atrás`;
-    document.getElementById('bpDw_cliente').textContent      = r.cliente_nombre ?? r.cliente_id ?? '—';
+    document.getElementById('bpDw_cliente').textContent      = r.bp_fuente ?? r.cliente_nombre ?? r.cliente_id ?? '—';
     document.getElementById('bpDw_material').textContent     = r.material_nombre ?? r.material_id ?? '—';
-    document.getElementById('bpDw_sucursal').textContent     = r.sucursal_nombre ?? r.sucursal_id ?? 'todas';
+    document.getElementById('bpDw_sucursal').textContent     = r.bp_alcance ?? r.sucursal_nombre ?? r.sucursal_id ?? 'todas';
     document.getElementById('bpDw_vigencia').textContent     = r.fecha_vigencia ?? 'desde hoy';
     document.getElementById('bpDw_propuesto').textContent    = fmtCLP(r.precio_clp_kg);
     document.getElementById('bpDw_vigente').textContent      = fmtCLP(r.precio_vigente);
@@ -18193,7 +18246,11 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify({ modo: 'feed', propuesta_id: bpCurrentId }),
           }).catch((e) => console.warn('notif-precios feed:', e));
         } catch (_) { /* no bloquea */ }
-        setTimeout(() => { bpCerrarDrawer(); loadBandejaPrecios(); }, 1500);
+        setTimeout(() => {
+          bpCerrarDrawer();
+          loadBandejaPrecios();
+          if (typeof window.initCalculadoraPrecios === 'function') window.initCalculadoraPrecios();
+        }, 1500);
       } else {
         const detalle = j?.detail?.message ?? j?.detail ?? j?.message ?? j?.error ?? window.__bpApplyDebug?.response?.raw ?? 'No se pudo aplicar';
         bpMsg(bpApplyFailureText({ ...j, detail: detalle }, resp.status), false);
@@ -18234,7 +18291,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       bpMsg('✓ Rechazada.', true);
-      setTimeout(() => { bpCerrarDrawer(); loadBandejaPrecios(); }, 1000);
+      setTimeout(() => {
+        bpCerrarDrawer();
+        loadBandejaPrecios();
+        if (typeof window.initCalculadoraPrecios === 'function') window.initCalculadoraPrecios();
+      }, 1000);
     } catch (e) {
       bpMsg(`Error: ${String(e).slice(0, 100)}`, false);
       btn.disabled = false;
@@ -18246,12 +18307,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!sel) return;
     const prev = sel.value;
     const clientes = [...new Map((rows || [])
-      .filter(r => r.cliente_id)
-      .map(r => [r.cliente_id, r.cliente_nombre || r.cliente_id]))
+      .map(r => [bpSafeText(r.bp_fuente), bpSafeText(r.bp_fuente)])
+      .filter(([id]) => id))
       .entries()]
       .map(([id, nombre]) => ({ id, nombre }))
       .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
-    sel.innerHTML = '<option value="">Todos los clientes</option>' +
+    sel.innerHTML = '<option value="">Todas las fuentes</option>' +
       clientes.map(c => `<option value="${esc(c.id)}">${esc(c.nombre)}</option>`).join('');
     if (prev && Array.from(sel.options).some(o => o.value === prev)) sel.value = prev;
   }
@@ -18288,7 +18349,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fechaHasta  = gv('bpFiltroFechaHasta');
     const buscar      = gv('bpFiltroBuscar').trim().toLowerCase();
     bpVisibleRows = bpRows.filter(r => {
-      if (cliente  && r.cliente_id  !== cliente)  return false;
+      if (cliente  && bpSafeText(r.bp_fuente) !== cliente) return false;
       if (material && r.material_id !== material)  return false;
       if (precioMin  !== null && (r.precio_clp_kg    ?? 0) < precioMin)  return false;
       if (precioMax  !== null && (r.precio_clp_kg    ?? 0) > precioMax)  return false;
@@ -18301,7 +18362,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (fechaDesde && r.created_at && r.created_at.slice(0, 10) < fechaDesde) return false;
       if (fechaHasta && r.created_at && r.created_at.slice(0, 10) > fechaHasta) return false;
       if (buscar && !(
-        (r.cliente_nombre  ?? '').toLowerCase().includes(buscar) ||
+        (r.bp_fuente      ?? '').toLowerCase().includes(buscar) ||
+        (r.bp_alcance     ?? '').toLowerCase().includes(buscar) ||
         (r.material_nombre ?? '').toLowerCase().includes(buscar) ||
         (r.notas           ?? '').toLowerCase().includes(buscar)
       )) return false;
@@ -19436,6 +19498,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let calcUltimoCalculo = null;
   let calcPrecioVigenteActual = null;
   let calcPrecioVigenteFuente = 'Elegí material y sucursal concreta para traer el vigente actual.';
+  let calcPendingMaterialRows = [];
   // Modo de redondeo de P.Max/P.Lista/P.Ejec (Dusan 2026-07-04): '0' termina en
   // 0 (piso a la decena) · '5' termina en 0 o 5 (piso al múltiplo de 5) ·
   // 'exacto' no redondea (muestra el entero calculado tal cual). Se recuerda
@@ -19718,19 +19781,53 @@ document.addEventListener('DOMContentLoaded', () => {
   async function calcLoadMateriales() {
     if (typeof sb === 'undefined' || !sb) return;
     try {
-      const { data, error } = await sb.schema('curated')
-        .from('materiales')
-        .select('material_id, nombre, categoria')
-        .eq('activo', true)
-        .order('nombre')
-        .limit(500);
+      const [{ data: pendingRows, error: pendingError }, { data, error }] = await Promise.all([
+        sb.schema('staging').from('v_bandeja_precios')
+          .select('material_id, material_nombre')
+          .eq('estado', 'pendiente')
+          .order('created_at', { ascending: false })
+          .limit(600),
+        sb.schema('curated').from('materiales')
+          .select('material_id, nombre, categoria')
+          .eq('activo', true)
+          .order('nombre')
+          .limit(500)
+      ]);
+      if (pendingError) throw pendingError;
       if (error) throw error;
       const sel = document.getElementById('calcMaterial');
       if (!sel) return;
-      sel.innerHTML = '<option value="">(seleccionar)</option>' +
-        (data || []).map(m =>
+      const prevValue = sel.value;
+      const pendingMap = new Map((pendingRows || [])
+        .filter(row => row?.material_id)
+        .map(row => [String(row.material_id), row.material_nombre || row.material_id]));
+      const materialesPendientes = (data || [])
+        .filter(m => pendingMap.has(String(m.material_id)))
+        .map(m => ({
+          ...m,
+          nombre: pendingMap.get(String(m.material_id)) || m.nombre || m.material_id,
+        }));
+      calcPendingMaterialRows = materialesPendientes;
+      const countEl = document.getElementById('calcPendingMaterialsCount');
+      if (countEl) {
+        countEl.textContent = materialesPendientes.length
+          ? `${materialesPendientes.length} material(es) vivos en mesa`
+          : '0 materiales pendientes';
+      }
+      if (!materialesPendientes.length) {
+        sel.disabled = true;
+        sel.innerHTML = '<option value="">(sin materiales pendientes)</option>';
+        calcSet('calcHistorialInfo', 'No hay materiales pendientes por resolver en este momento.');
+        return;
+      }
+      sel.disabled = false;
+      sel.innerHTML = '<option value="">(seleccionar material pendiente)</option>' +
+        materialesPendientes.map(m =>
           '<option value="' + m.material_id + '" data-categoria="' + (m.categoria || '') + '">' + (m.nombre || m.material_id) + '</option>'
         ).join('');
+      if (prevValue && Array.from(sel.options).some(opt => opt.value === prevValue)) {
+        sel.value = prevValue;
+      }
     } catch (e) {
       if (window.panelToastErr) panelToastErr('Calculadora materiales', e); else console.warn('[Calc] materiales:', e);
     }
@@ -20132,7 +20229,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function initCalculadoraPrecios() {
-    if (calcCargado) { await calcAutoFillPrecioCompra(); return; }
+    if (calcCargado) {
+      await calcLoadMateriales();
+      await calcAutoFillPrecioCompra();
+      return;
+    }
     calcCargado = true;
     calcBindSliders();
     await Promise.all([calcLoadCategorias(), calcLoadMateriales(), calcLoadSucursales()]);
@@ -20794,7 +20895,7 @@ document.addEventListener('DOMContentLoaded', () => {
         + '</div>'
         + '<div class="mt-3 flex flex-wrap gap-3 text-xs">'
         + (pending
-          ? '<button type="button" onclick="window.mpResolverPropuesta && window.mpResolverPropuesta(' + pending.id + ')" class="px-3 py-1.5 rounded-lg bg-emerald-700 text-white hover:bg-emerald-800">Resolver en Bandeja</button>'
+          ? '<button type="button" onclick="window.mpResolverPropuesta && window.mpResolverPropuesta(' + pending.id + ')" class="px-3 py-1.5 rounded-lg bg-emerald-700 text-white hover:bg-emerald-800">Seguir al contenido</button>'
           : '')
         + '<button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab(' + "'" + 'precios_vivos' + "'" + ')" class="text-sky-700 underline">Ver publicados</button>'
         + '</div>'
@@ -20810,10 +20911,11 @@ document.addEventListener('DOMContentLoaded', () => {
       + '<div class="text-xl font-bold text-stone-800 mt-1">' + tapEscape(group.material_nombre) + '</div>'
       + '<div class="text-sm text-stone-500 mt-1">' + group.rows.length + ' propuesta(s) pendientes en ' + group.branches + ' sucursal(es).</div>'
       + '</div>'
-      + '<div class="flex flex-wrap gap-2 text-xs">'
+      + '<div class="flex flex-wrap items-center justify-end gap-2 text-xs">'
       + '<span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">Directas ' + group.direct + '</span>'
       + '<span class="px-2 py-1 rounded-full bg-sky-100 text-sky-700">Señales ' + group.signals + '</span>'
       + '<span class="px-2 py-1 rounded-full ' + (group.urgent ? 'bg-rose-100 text-rose-700' : 'bg-stone-100 text-stone-700') + '">Urgentes ' + group.urgent + '</span>'
+      + (group.preview?.id ? '<button type="button" onclick="window.mpResolverPropuesta && window.mpResolverPropuesta(' + group.preview.id + ')" class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-50">Abrir contenido</button>' : '')
       + '</div>'
       + '</div>'
       + '<div class="mt-3 text-sm text-stone-600">Revisá las sucursales afectadas, compará contra el vigente y resolvé la propuesta final desde Bandeja.</div>'
@@ -20925,6 +21027,9 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   window.mpResolverPropuesta = async function (id) {
     mpOpenTab('bandeja_precios');
+    if (typeof window.loadBandejaPrecios === 'function') {
+      await window.loadBandejaPrecios();
+    }
     if (typeof window.bpAbrirDrawer === 'function') {
       await window.bpAbrirDrawer(id);
     }
