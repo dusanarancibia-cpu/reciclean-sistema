@@ -3,6 +3,20 @@
     return typeof esc === 'function' ? esc(value) : String(value || '');
   }
 
+  function renderSection(esc, title, body, options) {
+    const open = options?.open ? ' open' : '';
+    const hint = options?.hint ? `<span class="diego-side-section-hint">${safeEsc(esc, options.hint)}</span>` : '';
+    return `<details class="diego-side-section"${open}>
+      <summary>
+        <span>${safeEsc(esc, title)}</span>
+        ${hint}
+      </summary>
+      <div class="diego-side-section-body">
+        ${body}
+      </div>
+    </details>`;
+  }
+
   function renderContextPanel(options) {
     const last = options?.last || null;
     const profile = options?.profile || { label: 'Equipo', tone: '' };
@@ -17,55 +31,53 @@
     const renderDiegoStrategicCards = options?.renderDiegoStrategicCards;
     const renderCaseBoard = options?.renderCaseBoard;
     const renderTeamPromptGrid = options?.renderTeamPromptGrid;
+    const strategicCards = `${typeof renderExecutivePriceCard === 'function' ? renderExecutivePriceCard(profile) : ''}${typeof renderDiegoStrategicCards === 'function' ? renderDiegoStrategicCards() : ''}`;
 
     if (!last) {
-      return `<aside class="diego-context">
-        <div class="diego-side-card">
-          <div class="diego-side-label">Rol activo</div>
-          <div class="diego-side-main">${safeEsc(esc, profile.label)}</div>
-          <div class="diego-side-sub">${safeEsc(esc, profile.tone)}</div>
-        </div>
-        <div class="diego-side-card">
-          <div class="diego-side-label">Ejemplos por rol</div>
+      const sections = [
+        renderSection(esc, 'Arranque por rol', `
           <div class="diego-role-grid">
             ${typeof renderRolePromptGrid === 'function' ? renderRolePromptGrid(profile) : ''}
           </div>
-        </div>
-        <div class="diego-side-card">
-          <div class="diego-side-label">Intake de reclamos</div>
+        `, { open: true, hint: 'prompts utiles' }),
+        renderSection(esc, 'Intake de reclamos', `
           <div class="diego-role-grid">
             ${typeof renderComplaintPromptGrid === 'function' ? renderComplaintPromptGrid() : ''}
           </div>
-        </div>
-        <div class="diego-side-card">
-          <div class="diego-side-label">Modelo de trabajo</div>
+        `, { hint: 'panel y terreno' }),
+        renderSection(esc, 'Modelo de trabajo', `
           <div class="diego-flow-list">
             <div><strong>1.</strong> Registrar reclamo o ruido real</div>
             <div><strong>2.</strong> Decidir si va a oportunidad, incidente o pendiente</div>
             <div><strong>3.</strong> Bajar dueño, prioridad y siguiente control</div>
           </div>
-        </div>
-        ${typeof renderExecutivePriceCard === 'function' ? renderExecutivePriceCard(profile) : ''}
-        ${typeof renderDiegoStrategicCards === 'function' ? renderDiegoStrategicCards() : ''}
-        <div class="diego-side-card">
-          <div class="diego-side-label">Casos Diego</div>
-          ${typeof renderCaseBoard === 'function' ? renderCaseBoard(profile) : ''}
-        </div>
-        <div class="diego-side-card">
-          <div class="diego-side-label">Empuje del equipo</div>
+        `, { hint: 'como opera Diego' }),
+        strategicCards
+          ? renderSection(esc, 'Decision y estrategia', strategicCards, { hint: 'precio y criterio' })
+          : '',
+        renderSection(esc, 'Casos Diego', `${typeof renderCaseBoard === 'function' ? renderCaseBoard(profile) : ''}`, { open: true, hint: 'seguimiento vivo' }),
+        renderSection(esc, 'Empuje del equipo', `
           <div class="diego-side-actions">
             ${typeof renderTeamPromptGrid === 'function' ? renderTeamPromptGrid(profile) : ''}
           </div>
-        </div>
-        <div class="diego-side-card">
-          <div class="diego-side-label">Ir directo</div>
+        `, { hint: 'pendientes y foco' }),
+        renderSection(esc, 'Ir directo', `
           <div class="diego-side-nav">
             <button type="button" data-ctx-tab="bandeja_dieg">📥 Bandeja Diego</button>
             <button type="button" data-ctx-tab="mi_dia">📅 Mi Dia</button>
             <button type="button" data-ctx-tab="oportunidades">🎯 Oportunidades</button>
             <button type="button" data-ctx-tab="tablero_precios">🎯 Mesa de Precios</button>
           </div>
+        `, { hint: 'saltos rapidos' }),
+      ].filter(Boolean).join('');
+
+      return `<aside class="diego-context">
+        <div class="diego-side-card diego-side-card-key">
+          <div class="diego-side-label">Rol activo</div>
+          <div class="diego-side-main">${safeEsc(esc, profile.label)}</div>
+          <div class="diego-side-sub">${safeEsc(esc, profile.tone)}</div>
         </div>
+        ${sections}
       </aside>`;
     }
 
@@ -86,8 +98,44 @@
         </div>`
       : `<div class="diego-side-sub">Sin contexto adicional visible en este turno.</div>`;
 
+    const sections = [
+      renderSection(esc, 'Siguiente movimiento', `
+        <div class="diego-side-actions">
+          ${suggestions || `<button type="button" data-ctx-prompt="${safeEsc(esc, typeof inferNextStep === 'function' ? inferNextStep(last) : 'Seguir')}">${safeEsc(esc, typeof inferNextStep === 'function' ? inferNextStep(last) : 'Seguir')}</button>`}
+        </div>
+      `, { open: true, hint: 'accion inmediata' }),
+      renderSection(esc, 'Casos Diego', `${typeof renderCaseBoard === 'function' ? renderCaseBoard(profile) : ''}`, { open: true, hint: 'seguimiento vivo' }),
+      renderSection(esc, 'Contexto del turno', `${sixW}`, { hint: 'que cuando quien' }),
+      renderSection(esc, 'Acciones detectadas', actions
+        ? `<div class="diego-side-list">${actions}</div>`
+        : `<div class="diego-side-sub">Sin acciones registradas en este turno.</div>`, { hint: 'lectura actual' }),
+      renderSection(esc, 'Reclamos y oportunidades', `
+        <div class="diego-flow-list">
+          <div><strong>Entrada:</strong> panel, precios, documentos, informacion, servicios, cobros, pagos o trabas.</div>
+          <div><strong>Decision:</strong> reclamo gestionable, oportunidad real o bloqueo que escalar.</div>
+          <div><strong>Salida:</strong> responsable, prioridad, seguimiento y cierre.</div>
+        </div>
+      `, { hint: 'marco operativo' }),
+      strategicCards
+        ? renderSection(esc, 'Decision y estrategia', strategicCards, { hint: 'precio y criterio' })
+        : '',
+      renderSection(esc, 'Empuje del equipo', `
+        <div class="diego-side-actions">
+          ${typeof renderTeamPromptGrid === 'function' ? renderTeamPromptGrid(profile) : ''}
+        </div>
+      `, { hint: 'pendientes y foco' }),
+      renderSection(esc, 'Vistas relacionadas', `
+        <div class="diego-side-nav">
+          <button type="button" data-ctx-tab="bandeja_dieg">📥 Bandeja Diego</button>
+          <button type="button" data-ctx-tab="mi_dia">📅 Mi Dia</button>
+          <button type="button" data-ctx-tab="oportunidades">🎯 Oportunidades</button>
+          <button type="button" data-ctx-tab="tablero_precios">🎯 Mesa de Precios</button>
+        </div>
+      `, { hint: 'saltos rapidos' }),
+    ].filter(Boolean).join('');
+
     return `<aside class="diego-context">
-      <div class="diego-side-card">
+      <div class="diego-side-card diego-side-card-key">
         <div class="diego-side-label">Estado actual</div>
         <div class="diego-side-main">${safeEsc(esc, contract.modeLabel)} · ${safeEsc(esc, contract.stateLabel)}</div>
         <div class="diego-side-sub">${safeEsc(esc, typeof cleanMsg === 'function' ? cleanMsg(last.mensaje) || 'Sin detalle' : String(last.mensaje || 'Sin detalle'))}</div>
@@ -102,49 +150,7 @@
         <div class="diego-side-main">${safeEsc(esc, typeof inferTrace === 'function' ? inferTrace(last) : 'Sin traza')}</div>
         <div class="diego-side-sub">Siguiente paso: ${safeEsc(esc, typeof inferNextStep === 'function' ? inferNextStep(last) : 'Seguir')}</div>
       </div>
-      <div class="diego-side-card">
-        <div class="diego-side-label">Contexto</div>
-        ${sixW}
-      </div>
-      <div class="diego-side-card">
-        <div class="diego-side-label">Acciones detectadas</div>
-        ${actions ? `<div class="diego-side-list">${actions}</div>` : `<div class="diego-side-sub">Sin acciones registradas en este turno.</div>`}
-      </div>
-      <div class="diego-side-card">
-        <div class="diego-side-label">Siguiente movimiento</div>
-        <div class="diego-side-actions">
-          ${suggestions || `<button type="button" data-ctx-prompt="${safeEsc(esc, typeof inferNextStep === 'function' ? inferNextStep(last) : 'Seguir')}">${safeEsc(esc, typeof inferNextStep === 'function' ? inferNextStep(last) : 'Seguir')}</button>`}
-        </div>
-      </div>
-      <div class="diego-side-card">
-        <div class="diego-side-label">Reclamos y oportunidades</div>
-        <div class="diego-flow-list">
-          <div><strong>Entrada:</strong> panel, precios, documentos, informacion, servicios, cobros, pagos o trabas.</div>
-          <div><strong>Decision:</strong> reclamo gestionable, oportunidad real o bloqueo que escalar.</div>
-          <div><strong>Salida:</strong> responsable, prioridad, seguimiento y cierre.</div>
-        </div>
-      </div>
-      ${typeof renderExecutivePriceCard === 'function' ? renderExecutivePriceCard(profile) : ''}
-      ${typeof renderDiegoStrategicCards === 'function' ? renderDiegoStrategicCards() : ''}
-      <div class="diego-side-card">
-        <div class="diego-side-label">Casos Diego</div>
-        ${typeof renderCaseBoard === 'function' ? renderCaseBoard(profile) : ''}
-      </div>
-      <div class="diego-side-card">
-        <div class="diego-side-label">Empuje del equipo</div>
-        <div class="diego-side-actions">
-          ${typeof renderTeamPromptGrid === 'function' ? renderTeamPromptGrid(profile) : ''}
-        </div>
-      </div>
-      <div class="diego-side-card">
-        <div class="diego-side-label">Vistas relacionadas</div>
-        <div class="diego-side-nav">
-          <button type="button" data-ctx-tab="bandeja_dieg">📥 Bandeja Diego</button>
-          <button type="button" data-ctx-tab="mi_dia">📅 Mi Dia</button>
-          <button type="button" data-ctx-tab="oportunidades">🎯 Oportunidades</button>
-          <button type="button" data-ctx-tab="tablero_precios">🎯 Mesa de Precios</button>
-        </div>
-      </div>
+      ${sections}
     </aside>`;
   }
 

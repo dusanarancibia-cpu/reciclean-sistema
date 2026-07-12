@@ -15544,11 +15544,20 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-turn-sub{font-size:11px;color:#64748b;line-height:1.45;margin-top:4px}
   .diego-turn-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
   .diego-turn-pill{display:inline-flex;align-items:center;gap:5px;background:#eff6ff;border:1px solid #dbeafe;color:#1e3a8a;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:600}
-  .diego-context{border-left:1px solid #e2e8f0;background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);padding:14px;overflow-y:auto;display:grid;gap:10px;align-content:start}
+  .diego-context{border-left:1px solid #e2e8f0;background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;align-content:start;min-width:0}
   .diego-side-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:10px 11px;box-shadow:0 8px 24px -18px rgba(15,23,42,.28)}
+  .diego-side-card-key{position:sticky;top:0;z-index:2}
   .diego-side-label{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin-bottom:5px}
   .diego-side-main{font-size:13px;font-weight:600;color:#0f172a;line-height:1.45}
   .diego-side-sub{font-size:11px;color:#64748b;line-height:1.5;margin-top:4px}
+  .diego-side-section{background:rgba(255,255,255,.82);border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 8px 24px -20px rgba(15,23,42,.22);overflow:hidden}
+  .diego-side-section summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px;cursor:pointer;font-size:12px;font-weight:700;color:#0f172a;background:linear-gradient(180deg,#fff 0%,#f8fafc 100%)}
+  .diego-side-section summary::-webkit-details-marker{display:none}
+  .diego-side-section summary::after{content:'+';font-size:14px;font-weight:700;color:#64748b}
+  .diego-side-section[open] summary::after{content:'-'}
+  .diego-side-section-hint{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#94a3b8}
+  .diego-side-section-body{padding:0 11px 11px;display:grid;gap:10px}
+  .diego-side-section-body > .diego-side-card{box-shadow:none;border-color:#e5e7eb;background:#fff}
   .diego-side-list{display:grid;gap:6px;margin-top:4px}
   .diego-side-list div{font-size:11px;color:#334155;line-height:1.45}
   .diego-side-actions{display:flex;flex-wrap:wrap;gap:6px}
@@ -15679,6 +15688,8 @@ document.addEventListener('DOMContentLoaded', () => {
     .diego-conversation-head{top:-12px}
     .diego-turn-summary{padding:10px 11px;border-radius:14px}
     .diego-context{border-left:0;border-top:1px solid #e2e8f0;max-height:28vh;padding:10px 12px 12px}
+    .diego-side-card-key{position:static}
+    .diego-side-section summary{padding:9px 10px}
     .diego-side-nav{grid-template-columns:1fr}
     .diego-side-actions button{width:100%;justify-content:flex-start}
   }
