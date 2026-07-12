@@ -16660,51 +16660,133 @@ document.addEventListener('DOMContentLoaded', () => {
       updateChatStatus();
       return;
     }
-    const html = history.map(h => {
+    const buildFallbackMessageNode = function (h) {
       const cls = h.role === 'user' ? 'mine' : (h.role === 'thinking' ? 'thinking' : 'diego');
-      const attach = h.attach ? `<div class="diego-msg-attach">📎 ${esc(h.attach)}</div>` : '';
-      const actionsArr = (h.actions || []).map(a => `<span class="chip">${esc(a.tool || a)}</span>`).join('');
-      const actions = actionsArr ? `<div class="diego-actions">${actionsArr}</div>` : '';
-      const suggestionsArr = (h.suggestions || []).slice(0, 4).map((s, i) =>
-        `<button type="button" data-sugg="${i}">${esc(s.label || s)}</button>`).join('');
-      const suggestions = suggestionsArr ? `<div class="diego-suggestions">${suggestionsArr}</div>` : '';
-      const sixW = h.six_w && (h.six_w.what || h.six_w.when)
-        ? `<div class="diego-msg-meta">🧠 ${esc(h.six_w.what || '')}${h.six_w.when ? ' · ⏰ ' + esc(h.six_w.when) : ''}${h.six_w.who ? ' · 👤 ' + esc(h.six_w.who) : ''}</div>`
-        : '';
-      // thinking row: usar solo HTML fijo/controlado para evitar reinterpretar texto del DOM como HTML.
-      const thinkingHtml = 'Diego esta escribiendo<span class="diego-typing-dots"><span></span><span></span><span></span></span>';
-      const msgHtml = (cls === 'thinking') ? thinkingHtml : esc(h.mensaje);
-      const contract = cls === 'diego'
-        ? (() => {
-            const c = inferDiegoContract(h);
-            return `<div class="diego-contract">
-              <div class="diego-contract-badges">
-                <span class="diego-badge mode-${c.mode}">${esc(c.modeLabel)}</span>
-                <span class="diego-badge state-${c.state}">${esc(c.stateLabel)}</span>
-              </div>
-              <div class="diego-kv"><strong>Resultado:</strong> ${esc(cleanMsg(h.mensaje) || '(sin detalle)')}</div>
-              <div class="diego-kv"><strong>Trazabilidad:</strong> ${esc(inferTrace(h))}</div>
-              <div class="diego-kv"><strong>Siguiente paso:</strong> ${esc(inferNextStep(h))}</div>
-            </div>`;
-          })()
-        : '';
-      return `<div class="diego-msg ${cls}">
-        <div class="${cls === 'thinking' ? '' : 'diego-summary'}">${msgHtml}</div>
-        ${attach}
-        ${contract}
-        ${actions}
-        ${sixW}
-        <div class="diego-msg-meta">${cls === 'mine' ? 'Vos' : 'Diego'} · ${fmtHora(h.ts)}${h.tokens ? ' · ' + h.tokens + ' tok' : ''}${h.cola_id ? ' · ✅ cola' : ''}</div>
-        ${suggestions}
-      </div>`;
-    }).join('');
-    const lastDiego = [...history].reverse().find(h => h.role === 'diego');
+      const msg = document.createElement('div');
+      msg.className = `diego-msg ${cls}`;
+
+      const summary = document.createElement('div');
+      if (cls !== 'thinking') summary.className = 'diego-summary';
+      if (cls === 'thinking') {
+        summary.appendChild(document.createTextNode('Diego esta escribiendo'));
+        const dots = document.createElement('span');
+        dots.className = 'diego-typing-dots';
+        for (let i = 0; i < 3; i += 1) {
+          dots.appendChild(document.createElement('span'));
+        }
+        summary.appendChild(dots);
+      } else {
+        summary.textContent = String(h.mensaje || '');
+      }
+      msg.appendChild(summary);
+
+      if (h.attach) {
+        const attach = document.createElement('div');
+        attach.className = 'diego-msg-attach';
+        attach.textContent = `📎 ${String(h.attach)}`;
+        msg.appendChild(attach);
+      }
+
+      if (cls === 'diego') {
+        const c = inferDiegoContract(h);
+        const contract = document.createElement('div');
+        contract.className = 'diego-contract';
+
+        const badges = document.createElement('div');
+        badges.className = 'diego-contract-badges';
+
+        const mode = document.createElement('span');
+        mode.className = `diego-badge mode-${c.mode}`;
+        mode.textContent = String(c.modeLabel || '');
+        badges.appendChild(mode);
+
+        const state = document.createElement('span');
+        state.className = `diego-badge state-${c.state}`;
+        state.textContent = String(c.stateLabel || '');
+        badges.appendChild(state);
+
+        contract.appendChild(badges);
+
+        const result = document.createElement('div');
+        result.className = 'diego-kv';
+        result.innerHTML = '<strong>Resultado:</strong> ';
+        result.appendChild(document.createTextNode(String(cleanMsg(h.mensaje) || '(sin detalle)')));
+        contract.appendChild(result);
+
+        const trace = document.createElement('div');
+        trace.className = 'diego-kv';
+        trace.innerHTML = '<strong>Trazabilidad:</strong> ';
+        trace.appendChild(document.createTextNode(String(inferTrace(h) || 'Sin traza')));
+        contract.appendChild(trace);
+
+        const next = document.createElement('div');
+        next.className = 'diego-kv';
+        next.innerHTML = '<strong>Siguiente paso:</strong> ';
+        next.appendChild(document.createTextNode(String(inferNextStep(h) || 'Seguir')));
+        contract.appendChild(next);
+
+        msg.appendChild(contract);
+      }
+
+      const actions = (h.actions || []);
+      if (actions.length) {
+        const actionsBox = document.createElement('div');
+        actionsBox.className = 'diego-actions';
+        actions.forEach(a => {
+          const chip = document.createElement('span');
+          chip.className = 'chip';
+          chip.textContent = String(a?.tool || a || '');
+          actionsBox.appendChild(chip);
+        });
+        msg.appendChild(actionsBox);
+      }
+
+      if (h.six_w && (h.six_w.what || h.six_w.when)) {
+        const sixW = document.createElement('div');
+        sixW.className = 'diego-msg-meta';
+        sixW.textContent = `🧠 ${String(h.six_w.what || '')}${h.six_w.when ? ' · ⏰ ' + String(h.six_w.when) : ''}${h.six_w.who ? ' · 👤 ' + String(h.six_w.who) : ''}`;
+        msg.appendChild(sixW);
+      }
+
+      const meta = document.createElement('div');
+      meta.className = 'diego-msg-meta';
+      meta.textContent = `${cls === 'mine' ? 'Vos' : 'Diego'} · ${fmtHora(h.ts)}${h.tokens ? ' · ' + h.tokens + ' tok' : ''}${h.cola_id ? ' · ✅ cola' : ''}`;
+      msg.appendChild(meta);
+
+      const suggestions = (h.suggestions || []).slice(0, 4);
+      if (suggestions.length) {
+        const suggestionsBox = document.createElement('div');
+        suggestionsBox.className = 'diego-suggestions';
+        suggestions.forEach((s, i) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.setAttribute('data-sugg', String(i));
+          btn.textContent = String(s?.label || s || '');
+          suggestionsBox.appendChild(btn);
+        });
+        msg.appendChild(suggestionsBox);
+      }
+
+      return msg;
+    };
     body.innerHTML = `<div class="diego-shell">
-        <div class="diego-conversation" id="diegoConversationPane">${renderConversationHeader(lastDiego)}${html}</div>
-        ${renderContextPanel(lastDiego)}
+        <div class="diego-conversation" id="diegoConversationPane"></div>
+        <aside class="diego-context">
+          <div class="diego-side-card">
+            <div class="diego-side-label">Modo fallback</div>
+            <div class="diego-side-main">Diego sigue operativo</div>
+            <div class="diego-side-sub">Vista segura temporal mientras cargan los modulos externos.</div>
+          </div>
+        </aside>
       </div>
       <div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>`;
-    document.getElementById('diegoConversationPane')?.scrollTo({ top: 999999, behavior: 'auto' });
+    const pane = document.getElementById('diegoConversationPane');
+    const fallbackHead = document.createElement('div');
+    fallbackHead.className = 'diego-conversation-head';
+    fallbackHead.textContent = 'Diego en modo fallback seguro';
+    pane?.appendChild(fallbackHead);
+    history.forEach(h => pane?.appendChild(buildFallbackMessageNode(h)));
+    pane?.scrollTo({ top: 999999, behavior: 'auto' });
     updateChatStatus();
 
     // Re-bind sugerencias (event delegation simple)
