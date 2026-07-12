@@ -8502,6 +8502,70 @@ let _diegRecBlob      = null;
 let _diegRecInterval  = null;
 let _diegRecSecs      = 0;
 
+function getDiegoRuntimeState() {
+  return window.DIEGO_STATE || null;
+}
+function getDiegDestinos() {
+  const store = getDiegoRuntimeState();
+  return store && typeof store.getDestinos === 'function' ? store.getDestinos() : _diegDestinos;
+}
+function setDiegDestinos(items) {
+  _diegDestinos = Array.isArray(items) ? items : [];
+  const store = getDiegoRuntimeState();
+  if (store && typeof store.setDestinos === 'function') store.setDestinos(_diegDestinos);
+}
+function getDiegTopClientes() {
+  const store = getDiegoRuntimeState();
+  return store && typeof store.getTopClientes === 'function' ? store.getTopClientes() : _diegTopClientes;
+}
+function setDiegTopClientes(items) {
+  _diegTopClientes = Array.isArray(items) ? items : [];
+  const store = getDiegoRuntimeState();
+  if (store && typeof store.setTopClientes === 'function') store.setTopClientes(_diegTopClientes);
+}
+function getDiegSeleccionados() {
+  const store = getDiegoRuntimeState();
+  return store && typeof store.getSeleccionados === 'function' ? store.getSeleccionados() : _diegSeleccionados;
+}
+function setDiegSeleccionados(ids) {
+  _diegSeleccionados = new Set(Array.isArray(ids) ? ids : []);
+  const store = getDiegoRuntimeState();
+  if (store && typeof store.setSeleccionados === 'function') store.setSeleccionados([..._diegSeleccionados]);
+}
+function getDiegAiSugeridos() {
+  const store = getDiegoRuntimeState();
+  return store && typeof store.getAiSugeridos === 'function' ? store.getAiSugeridos() : _diegAiSugeridos;
+}
+function setDiegAiSugeridos(ids) {
+  _diegAiSugeridos = new Set(Array.isArray(ids) ? ids : []);
+  const store = getDiegoRuntimeState();
+  if (store && typeof store.setAiSugeridos === 'function') store.setAiSugeridos([..._diegAiSugeridos]);
+}
+function clearDiegSelectionState() {
+  _diegSeleccionados.clear();
+  _diegAiSugeridos.clear();
+  const store = getDiegoRuntimeState();
+  if (store) {
+    if (typeof store.clearSeleccionados === 'function') store.clearSeleccionados();
+    if (typeof store.clearAiSugeridos === 'function') store.clearAiSugeridos();
+  }
+}
+function getDiegArchivo() {
+  const store = getDiegoRuntimeState();
+  return store && typeof store.getArchivo === 'function' ? store.getArchivo() : _diegArchivo;
+}
+function setDiegArchivo(file) {
+  _diegArchivo = file || null;
+  const store = getDiegoRuntimeState();
+  if (store && typeof store.setArchivo === 'function') store.setArchivo(_diegArchivo);
+}
+function clearDiegArchivoState() {
+  _diegArchivo = null;
+  _diegArchivoUrl = null;
+  const store = getDiegoRuntimeState();
+  if (store && typeof store.clearArchivo === 'function') store.clearArchivo();
+}
+
 // ── init ──────────────────────────────────────────────────────────────────────
 async function initDieguito() {
   if (_diegIniciado) return;
@@ -8528,11 +8592,11 @@ async function initDieguito() {
       `<p class="text-xs text-red-500">Error cargando destinos: ${escapeHtml(destinosRes.error?.message ?? 'desconocido')} — ¿Ejecutaste SQL 028?</p>`;
     return;
   }
-  _diegDestinos = destinosRes.data;
+  setDiegDestinos(destinosRes.data);
 
   // Ordenar clientes por jerarquía de categoría y por contribución (cuando hay).
   const ordenCategoria = { 'mejor': 1, 'menos': 2, 'poco': 3, 'en_prueba': 4, 'critica': 5 };
-  _diegTopClientes = (clientesRes.data || [])
+  setDiegTopClientes((clientesRes.data || [])
     .filter(c => c.clientes && c.clientes.razon_social)
     .sort((a, b) => {
       const ca = ordenCategoria[a.categoria_id] ?? 99;
@@ -8548,7 +8612,7 @@ async function initDieguito() {
       cliente_id: c.cliente_id,
       razon_social: c.clientes.razon_social,
       categoria_id: c.categoria_id || null
-    }));
+    })));
 
   diegRenderEtiquetasRapidas();
   diegRenderChips();
@@ -8567,7 +8631,7 @@ function diegRenderEtiquetasRapidas() {
     'en_prueba': 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200',
     'critica': 'bg-red-100 text-red-800 border-red-200 hover:bg-red-200',
   };
-  const chipsClientes = _diegTopClientes.map(c => {
+  const chipsClientes = getDiegTopClientes().map(c => {
     const colorCls = colorPorCategoria[c.categoria_id] || 'bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200';
     return `<button onclick="diegInsertarTag('@${escapeHtml(c.razon_social)}')"
                     class="text-xs rounded-full border px-2 py-0.5 ${colorCls} transition"
@@ -8581,7 +8645,7 @@ function diegRenderEtiquetasRapidas() {
             title="Etiquetar este mensaje como propuesta de precio">
       💰 Precio
     </button>
-    ${_diegTopClientes.length > 0
+    ${getDiegTopClientes().length > 0
       ? `<span class="text-stone-300 mx-1">·</span>${chipsClientes}`
       : '<span class="text-xs text-stone-400 ml-2">sin top clientes cargados</span>'}`;
 }
@@ -8609,7 +8673,10 @@ const KIND_LABELS = { persona:'👤 Personas', silo:'🗂 Silos', area:'📂 Ár
 function diegRenderChips() {
   const container = document.getElementById('diegChips');
   const groups = {};
-  for (const d of _diegDestinos) {
+  const destinos = getDiegDestinos();
+  const seleccionados = getDiegSeleccionados();
+  const aiSugeridos = getDiegAiSugeridos();
+  for (const d of destinos) {
     if (!groups[d.kind]) groups[d.kind] = [];
     groups[d.kind].push(d);
   }
@@ -8620,8 +8687,8 @@ function diegRenderChips() {
     html += `<div class="w-full mt-2 mb-1 text-xs font-semibold text-stone-400 uppercase tracking-wide">${KIND_LABELS[kind] || kind}</div>`;
     for (const d of groups[kind]) {
       const c = DIEG_COLOR[d.color] || DIEG_COLOR.slate;
-      const sel  = _diegSeleccionados.has(d.id);
-      const aiSug = _diegAiSugeridos.has(d.id);
+      const sel  = seleccionados.has(d.id);
+      const aiSug = aiSugeridos.has(d.id);
       html += `<span
         id="diegChip_${d.id}"
         onclick="diegToggleChip(${d.id})"
@@ -8634,14 +8701,15 @@ function diegRenderChips() {
 }
 
 window.diegToggleChip = function(id) {
-  if (_diegSeleccionados.has(id)) _diegSeleccionados.delete(id);
-  else _diegSeleccionados.add(id);
+  const selected = getDiegSeleccionados();
+  if (selected.has(id)) selected.delete(id);
+  else selected.add(id);
+  setDiegSeleccionados([...selected]);
   diegRenderChips();
 };
 
 window.diegLimpiarChips = function() {
-  _diegSeleccionados.clear();
-  _diegAiSugeridos.clear();
+  clearDiegSelectionState();
   const r = document.getElementById('diegReasoning');
   r.classList.add('hidden'); r.textContent = '';
   diegRenderChips();
@@ -8665,8 +8733,8 @@ window.diegAutoSuggest = function(val) {
       if (!resp.ok) return;
       const { ids, reasoning } = await resp.json();
       if (!ids || ids.length === 0) return;
-      _diegAiSugeridos = new Set(ids);
-      if (_diegSeleccionados.size === 0) _diegSeleccionados = new Set(ids);
+      setDiegAiSugeridos(ids);
+      if (getDiegSeleccionados().size === 0) setDiegSeleccionados(ids);
       const r = document.getElementById('diegReasoning');
       r.textContent = '✦ ' + (reasoning || '');
       r.classList.remove('hidden');
@@ -8677,6 +8745,16 @@ window.diegAutoSuggest = function(val) {
 
 // ── grabador de voz ───────────────────────────────────────────────────────────
 window.diegToggleRecording = async function() {
+  if (window.DIEGO_VOICE && typeof window.DIEGO_VOICE.toggleRecording === 'function') {
+    return window.DIEGO_VOICE.toggleRecording({
+      label: document.getElementById('diegRecLabel'),
+      button: document.getElementById('diegRecBtn'),
+      timer: document.getElementById('diegRecTimer'),
+      status: document.getElementById('diegRecStatus'),
+      preview: document.getElementById('diegRecPreview'),
+      player: document.getElementById('diegAudioPlayer'),
+    });
+  }
   if (_diegRecording) {
     _diegRecorder.stop();
     return;
@@ -8740,7 +8818,7 @@ window.diegHandleFile = function(file) {
     alert('El archivo supera 50 MB. Usa uno más chico wn.');
     return;
   }
-  _diegArchivo = file;
+  setDiegArchivo(file);
   const dz = document.getElementById('diegDropzone');
   dz.classList.add('has-file');
   document.getElementById('diegDropLabel').innerHTML =
@@ -8750,8 +8828,7 @@ window.diegHandleFile = function(file) {
 };
 
 window.diegBorrarArchivo = function() {
-  _diegArchivo = null;
-  _diegArchivoUrl = null;
+  clearDiegArchivoState();
   document.getElementById('diegFileInput').value = '';
   document.getElementById('diegDropzone').classList.remove('has-file');
   document.getElementById('diegDropLabel').innerHTML =
@@ -8762,8 +8839,11 @@ window.diegBorrarArchivo = function() {
 // ── mandar ────────────────────────────────────────────────────────────────────
 window.diegMandar = async function() {
   const texto   = document.getElementById('diegTexto').value.trim();
-  const archivo = _diegArchivo || (_diegRecBlob ? new File([_diegRecBlob], `nota_${Date.now()}.webm`, { type: _diegRecBlob.type }) : null);
-  const destIds = [..._diegSeleccionados];
+  const archivoVoz = window.DIEGO_VOICE && typeof window.DIEGO_VOICE.buildRecordedFile === 'function'
+    ? window.DIEGO_VOICE.buildRecordedFile()
+    : (_diegRecBlob ? new File([_diegRecBlob], `nota_${Date.now()}.webm`, { type: _diegRecBlob.type }) : null);
+  const archivo = getDiegArchivo() || archivoVoz;
+  const destIds = [...getDiegSeleccionados()];
 
   if (!texto && !archivo) {
     showResult('diegResult', false, 'Escribe algo, graba una nota o sube un archivo primero wn.');
@@ -8833,11 +8913,21 @@ window.diegMandar = async function() {
     // 7. Limpiar formulario
     document.getElementById('diegTexto').value = '';
     diegBorrarArchivo();
-    _diegRecBlob = null;
-    document.getElementById('diegRecPreview').classList.add('hidden');
-    document.getElementById('diegRecStatus').textContent = '';
-    _diegSeleccionados.clear();
-    _diegAiSugeridos.clear();
+    if (window.DIEGO_VOICE && typeof window.DIEGO_VOICE.clearRecording === 'function') {
+      window.DIEGO_VOICE.clearRecording({
+        label: document.getElementById('diegRecLabel'),
+        button: document.getElementById('diegRecBtn'),
+        timer: document.getElementById('diegRecTimer'),
+        status: document.getElementById('diegRecStatus'),
+        preview: document.getElementById('diegRecPreview'),
+        player: document.getElementById('diegAudioPlayer'),
+      });
+    } else {
+      _diegRecBlob = null;
+      document.getElementById('diegRecPreview').classList.add('hidden');
+      document.getElementById('diegRecStatus').textContent = '';
+    }
+    clearDiegSelectionState();
     document.getElementById('diegReasoning').classList.add('hidden');
     diegRenderChips();
   } catch (err) {
@@ -15436,7 +15526,7 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-fab:hover .diego-fab-label{opacity:1}
   /* Cirugía spacing 23-may-2026: width 380, max-height 60vh, padding burbujas 10px, hora derecha compacta */
   /* Cirugía estética FAB Diego · 12-jun-2026 · 9 specs Dusan */
-  .diego-chat{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;width:calc(100% - 32px);max-width:420px;max-height:70vh;background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 16px 48px -12px rgba(15,23,42,.25);z-index:60;display:none;flex-direction:column;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px}
+  .diego-chat{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;width:calc(100% - 32px);max-width:880px;max-height:74vh;background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 16px 48px -12px rgba(15,23,42,.25);z-index:60;display:none;flex-direction:column;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px}
   .diego-chat.open{display:flex}
   .diego-chat-h{background:#059669;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;flex-shrink:0}
   .diego-chat-h .h-title{display:flex;align-items:center;gap:8px}
@@ -15444,7 +15534,75 @@ document.addEventListener('DOMContentLoaded', () => {
   @keyframes diegoStatusPulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.7)}70%{box-shadow:0 0 0 8px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
   .diego-chat-h .h-version{background:rgba(255,255,255,.2);padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600}
   .diego-chat-h button{background:none;border:0;color:#fff;cursor:pointer;font-size:16px;line-height:1;padding:4px 8px}
-  .diego-chat-body{background:#f8fafc;padding:14px;flex:1;min-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;position:relative}
+  .diego-chat-body{background:#f8fafc;flex:1;min-height:220px;overflow:hidden;position:relative}
+  .diego-shell{display:grid;grid-template-columns:minmax(0,1.72fr) minmax(240px,.84fr);height:100%;min-height:0}
+  .diego-conversation{padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-width:0}
+  .diego-conversation-head{position:sticky;top:-14px;z-index:2;background:linear-gradient(180deg,#f8fafc 0%,rgba(248,250,252,.96) 80%,rgba(248,250,252,0) 100%);padding-bottom:8px}
+  .diego-turn-summary{background:linear-gradient(135deg,#ffffff 0%,#f8fafc 100%);border:1px solid #dbe3ee;border-radius:16px;padding:12px 13px;box-shadow:0 8px 24px -20px rgba(15,23,42,.3)}
+  .diego-turn-kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748b}
+  .diego-turn-title{font-size:14px;font-weight:700;color:#0f172a;margin-top:3px;line-height:1.35}
+  .diego-turn-sub{font-size:11px;color:#64748b;line-height:1.45;margin-top:4px}
+  .diego-turn-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .diego-turn-pill{display:inline-flex;align-items:center;gap:5px;background:#eff6ff;border:1px solid #dbeafe;color:#1e3a8a;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:600}
+  .diego-context{border-left:1px solid #e2e8f0;background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);padding:14px;overflow-y:auto;display:grid;gap:10px;align-content:start}
+  .diego-side-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:10px 11px;box-shadow:0 8px 24px -18px rgba(15,23,42,.28)}
+  .diego-side-label{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin-bottom:5px}
+  .diego-side-main{font-size:13px;font-weight:600;color:#0f172a;line-height:1.45}
+  .diego-side-sub{font-size:11px;color:#64748b;line-height:1.5;margin-top:4px}
+  .diego-side-list{display:grid;gap:6px;margin-top:4px}
+  .diego-side-list div{font-size:11px;color:#334155;line-height:1.45}
+  .diego-side-actions{display:flex;flex-wrap:wrap;gap:6px}
+  .diego-side-actions button{font-size:11px;background:#f1f5f9;border:1px solid #dbe3ee;color:#334155;padding:6px 9px;border-radius:999px;cursor:pointer;font-weight:600}
+  .diego-side-actions button:hover{background:#ecfdf5;border-color:#a7f3d0;color:#166534}
+  .diego-side-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .diego-side-nav button{font-size:11px;background:#fff;border:1px solid #cbd5e1;color:#0f172a;padding:8px 9px;border-radius:12px;cursor:pointer;font-weight:700;text-align:left}
+  .diego-side-nav button:hover{background:#f0fdf4;border-color:#86efac;color:#166534}
+  .diego-role-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .diego-role-chip{font-size:11px;background:#f8fafc;border:1px solid #dbe3ee;color:#0f172a;padding:8px 9px;border-radius:12px;cursor:pointer;font-weight:700;text-align:left}
+  .diego-role-chip:hover{background:#ecfdf5;border-color:#86efac;color:#166534}
+  .diego-role-chip small{display:block;font-size:10px;font-weight:500;color:#64748b;line-height:1.35;margin-top:3px}
+  .diego-side-stack{display:grid;gap:8px}
+  .diego-side-kpi{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .diego-side-kpi strong{font-size:12px;color:#0f172a}
+  .diego-side-kpi span{font-size:10px;color:#64748b;text-align:right}
+  .diego-flow-list{display:grid;gap:6px;margin-top:4px}
+  .diego-flow-list div{font-size:11px;color:#334155;line-height:1.45}
+  .diego-empty-card{background:linear-gradient(135deg,#ffffff 0%,#f8fafc 100%);border:1px solid #dbe3ee;border-radius:16px;padding:14px 14px 12px;box-shadow:0 10px 24px -20px rgba(15,23,42,.28)}
+  .diego-empty-kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748b}
+  .diego-empty-title{font-size:15px;font-weight:700;color:#0f172a;line-height:1.35;margin-top:4px}
+  .diego-empty-sub{font-size:12px;color:#475569;line-height:1.55;margin-top:5px}
+  .diego-empty-list{display:grid;gap:6px;margin-top:10px}
+  .diego-empty-list div{font-size:11px;color:#334155;line-height:1.45}
+  .diego-empty-list strong{color:#0f172a}
+  .diego-case-board{display:grid;gap:8px}
+  .diego-case-card{background:#fff;border:1px solid #dbe3ee;border-radius:14px;padding:10px 11px;display:grid;gap:7px}
+  .diego-case-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+  .diego-case-title{font-size:12px;font-weight:700;color:#0f172a;line-height:1.4}
+  .diego-case-badges{display:flex;flex-wrap:wrap;gap:5px}
+  .diego-case-badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:700}
+  .diego-case-type-reclamo{background:#fee2e2;color:#b91c1c}
+  .diego-case-type-oportunidad{background:#dcfce7;color:#166534}
+  .diego-case-type-bloqueo{background:#fef3c7;color:#b45309}
+  .diego-case-type-tarea{background:#dbeafe;color:#1d4ed8}
+  .diego-case-priority-alta{background:#fee2e2;color:#991b1b}
+  .diego-case-priority-media{background:#fef3c7;color:#92400e}
+  .diego-case-priority-baja{background:#e2e8f0;color:#334155}
+  .diego-case-status-abierto{background:#fef3c7;color:#92400e}
+  .diego-case-status-en_curso{background:#dbeafe;color:#1d4ed8}
+  .diego-case-status-por_confirmar{background:#ede9fe;color:#6d28d9}
+  .diego-case-status-resuelto{background:#dcfce7;color:#166534}
+  .diego-case-summary{font-size:11px;color:#475569;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:8px 10px}
+  .diego-case-sync{display:inline-flex;align-items:center;gap:6px;margin-left:6px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:800}
+  .diego-case-sync-shared{background:#dcfce7;color:#166534}
+  .diego-case-sync-checking{background:#dbeafe;color:#1d4ed8}
+  .diego-case-sync-local{background:#fef3c7;color:#92400e}
+  .diego-case-meta{display:grid;gap:4px}
+  .diego-case-meta div{font-size:11px;color:#475569;line-height:1.45}
+  .diego-case-meta strong{color:#0f172a}
+  .diego-case-actions{display:flex;flex-wrap:wrap;gap:6px}
+  .diego-case-actions button{background:#f8fafc;border:1px solid #dbe3ee;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:700;color:#334155;cursor:pointer}
+  .diego-case-actions button:hover{background:#ecfdf5;border-color:#86efac;color:#166534}
+  .diego-case-empty{font-size:11px;color:#64748b;line-height:1.5}
   .diego-msg{font-size:14px;padding:10px 14px;border-radius:14px;max-width:80%;line-height:1.45;word-wrap:break-word;white-space:normal}
   .diego-msg > div:first-child{white-space:pre-wrap}
   .diego-msg.mine{align-self:flex-end;background:#059669;color:#fff;border-bottom-right-radius:4px}
@@ -15464,6 +15622,17 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-msg-meta{font-size:10px;color:#94a3b8;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;line-height:1.2}
   .diego-msg.mine + .diego-msg-meta,.diego-msg-meta.mine-meta{align-self:flex-end}
   .diego-msg-attach{font-size:11px;background:#f1f5f9;padding:2px 8px;border-radius:6px;color:#475569;margin-top:4px;display:inline-block}
+  .diego-summary{white-space:pre-wrap}
+  .diego-contract{margin-top:8px;padding-top:8px;border-top:1px solid rgba(148,163,184,.18);display:grid;gap:6px}
+  .diego-contract-badges{display:flex;flex-wrap:wrap;gap:6px}
+  .diego-badge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .diego-badge.mode-consulta,.diego-badge.state-lectura{background:#e2e8f0;color:#334155}
+  .diego-badge.mode-analisis,.diego-badge.state-lectura_guiada{background:#dbeafe;color:#1d4ed8}
+  .diego-badge.mode-propuesta,.diego-badge.state-por_confirmar{background:#fef3c7;color:#b45309}
+  .diego-badge.mode-accion,.diego-badge.state-ejecutado{background:#dcfce7;color:#166534}
+  .diego-badge.mode-bloqueo,.diego-badge.state-bloqueado{background:#fee2e2;color:#b91c1c}
+  .diego-kv{font-size:11px;line-height:1.45;color:#475569;background:rgba(255,255,255,.6);border:1px solid rgba(226,232,240,.9);border-radius:10px;padding:7px 9px}
+  .diego-kv strong{color:#0f172a}
   .diego-actions{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
   .diego-actions .chip{font-size:10px;background:#dcfce7;color:#166534;padding:2px 6px;border-radius:4px;font-weight:600}
   .diego-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
@@ -15485,6 +15654,7 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-chat.minimized{max-height:36px;overflow:hidden;border-radius:18px;background:#fff;border-color:#cbd5e1}
   .diego-chat.minimized .diego-chat-h{background:#fff;color:#0f172a;border-bottom:1px solid #e2e8f0;cursor:pointer}
   .diego-chat.minimized .diego-chat-h .h-title{color:#0f172a}
+  .diego-chat.minimized .diego-chat-h .h-subtitle{display:none}
   .diego-chat.minimized .diego-chat-h .h-version,
   .diego-chat.minimized #diegoChatLimpiar,
   .diego-chat.minimized #diegoChatClose{display:none}
@@ -15501,9 +15671,16 @@ document.addEventListener('DOMContentLoaded', () => {
   #v4-bellNotificaciones.has-alerts .bell-dot{display:block}
   /* Responsive mobile · 9 specs Dusan: 100% ancho, 80vh, pegado abajo */
   @media (max-width: 480px) {
-    .diego-chat{left:0;right:0;bottom:0;width:100%;max-width:100%;transform:none;max-height:80vh;border-radius:16px 16px 0 0}
+    .diego-chat{left:0;right:0;bottom:0;width:100%;max-width:100%;transform:none;max-height:84vh;border-radius:16px 16px 0 0}
     .diego-fab{right:16px;bottom:16px;width:54px;height:54px}
     .diego-msg{max-width:88%;font-size:14px}
+    .diego-shell{grid-template-columns:1fr}
+    .diego-conversation{padding:12px 12px 8px}
+    .diego-conversation-head{top:-12px}
+    .diego-turn-summary{padding:10px 11px;border-radius:14px}
+    .diego-context{border-left:0;border-top:1px solid #e2e8f0;max-height:28vh;padding:10px 12px 12px}
+    .diego-side-nav{grid-template-columns:1fr}
+    .diego-side-actions button{width:100%;justify-content:flex-start}
   }
   /* D-DIEGO-LEGAL-IA-001 · Modal banner consentimiento IA */
   .ia-consent-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.85); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 16px; }
@@ -15544,7 +15721,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <div class="diego-chat" id="diegoChat" role="dialog" aria-label="Chat con Diego">
   <div class="diego-chat-h">
-    <span class="h-title"><span class="h-status-dot" aria-hidden="true"></span>🤖 Diego <span class="h-version">v6</span></span>
+    <span class="h-title" style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;">
+      <span style="display:flex;align-items:center;gap:8px;"><span class="h-status-dot" aria-hidden="true"></span>🤖 Diego <span class="h-version">v6</span></span>
+      <span class="h-subtitle" id="diegoChatStatusText" style="font-size:11px;font-weight:500;opacity:.9;">Consulta, analisis y ejecucion con trazabilidad</span>
+    </span>
     <div style="display:flex;gap:4px;align-items:center;">
       <button type="button" id="diegoChatLimpiar" aria-label="Limpiar pantalla" title="Limpiar pantalla — Diego sigue recordando todo">↻</button>
       <button type="button" id="diegoChatMinimize" aria-label="Minimizar chat" title="Minimizar (mantiene conversación)">−</button>
@@ -15647,6 +15827,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('diegoChatForm');
   const input = document.getElementById('diegoChatInput');
   const sendBtn = document.getElementById('diegoChatSend');
+  const statusText = document.getElementById('diegoChatStatusText');
   const fileInput = document.getElementById('diegoFileInput');
   const attachBtn = document.getElementById('diegoAttachBtn');
   const attachPreview = document.getElementById('diegoAttachPreview');
@@ -15671,28 +15852,802 @@ document.addEventListener('DOMContentLoaded', () => {
     try { return (d instanceof Date ? d : new Date(d)).toLocaleString('es-CL', { hour:'2-digit', minute:'2-digit' }); }
     catch { return ''; }
   }
-
-  // D-DIEGO-MEJORA-CONTINUA-001 CL-015 · chips onboarding (rol-aware best-effort)
-  function getOnboardingChips() {
+  function cleanMsg(s) {
+    return String(s == null ? '' : s).replace(/^[✅❌]\s*/, '').trim();
+  }
+  function inferDiegoContract(h) {
+    const raw = String(h?.mensaje || '');
+    if (h?.kind === 'bloqueado' || raw.startsWith('❌')) {
+      return { mode: 'bloqueo', modeLabel: 'Bloqueo', state: 'bloqueado', stateLabel: 'Bloqueado' };
+    }
+    if (h?.kind === 'ejecutado' || h?.cola_id || (h?.actions || []).length > 0 || raw.startsWith('✅')) {
+      return { mode: 'accion', modeLabel: 'Accion', state: 'ejecutado', stateLabel: 'Ejecutado' };
+    }
+    if ((h?.suggestions || []).length > 0) {
+      return { mode: 'propuesta', modeLabel: 'Propuesta', state: 'por_confirmar', stateLabel: 'Por confirmar' };
+    }
+    if (h?.six_w && (h.six_w.what || h.six_w.when || h.six_w.who)) {
+      return { mode: 'analisis', modeLabel: 'Analisis', state: 'lectura_guiada', stateLabel: 'Lectura guiada' };
+    }
+    return { mode: 'consulta', modeLabel: 'Consulta', state: 'lectura', stateLabel: 'Solo lectura' };
+  }
+  function inferTrace(h) {
+    if (h?.cola_id) return `Cola ${h.cola_id}`;
+    const firstAction = (h?.actions || [])[0];
+    if (firstAction) return `Accion ${firstAction.tool || firstAction}`;
+    return 'Sin registro visible en este turno';
+  }
+  function inferNextStep(h) {
+    if (h?.kind === 'bloqueado' || String(h?.mensaje || '').startsWith('❌')) return 'Corregir el bloqueo y volver a intentar';
+    const firstSuggestion = (h?.suggestions || [])[0];
+    if (firstSuggestion) return firstSuggestion.label || firstSuggestion.action || firstSuggestion;
+    if (h?.cola_id) return 'Abrir la entidad relacionada y confirmar avance';
+    if ((h?.actions || []).length > 0) return 'Verificar el resultado en la vista relacionada';
+    return 'Seguir con la siguiente consulta o accion';
+  }
+  function getDiegoProductModel() {
+    return window.DIEGO_PRODUCT_MODEL || null;
+  }
+  function getDiegoRoleConfig(key, fallback) {
+    const model = getDiegoProductModel();
+    const roleCfg = model && model.roles && model.roles[key];
+    return roleCfg ? Object.assign({}, fallback, roleCfg) : fallback;
+  }
+  function getDiegoRoleProfile() {
     let rol = '';
     try { rol = (JSON.parse(localStorage.getItem('rf_session') || '{}').perfil || '').toLowerCase(); } catch {}
     const email = (getUserEmail() || '').toLowerCase();
-    const isComercial = rol.includes('comercial') || email.includes('comercial') || email.includes('andrea');
-    const isOps      = rol.includes('operaciones') || email.includes('cony') || email.includes('ingrid');
-    const isFinanzas = rol.includes('contable') || rol.includes('finanzas') || email.includes('dyana') || email.includes('sercot');
-    if (isComercial) return ['Precio cartón blanco Maipú','¿Qué cobrar a Pincore?','Resumen oportunidades abiertas','Quién es responsable de Resimex'];
-    if (isOps)       return ['Viajes pendientes hoy','Licencias por vencer','Mantenciones de camiones','Pesajes con diferencia >5%'];
-    if (isFinanzas)  return ['Facturas pendientes de pago','Cierre del mes','Resumen IVA mayo','Retenciones SERCOT'];
-    return ['Precio cartón blanco Maipú','Resumen del día','¿Qué tareas tengo pendientes?','Diego del día'];
+    const isDireccion   = rol.includes('admin') || rol.includes('gerencia') || rol.includes('director') || email.includes('dusan');
+    const isComercial   = rol.includes('comercial') || rol.includes('ventas') || email.includes('andrea');
+    const isOps         = rol.includes('operaciones') || rol.includes('logistica') || email.includes('cony') || email.includes('ingrid');
+    const isFinanzas    = rol.includes('contable') || rol.includes('finanzas') || rol.includes('cobranza') || email.includes('dyana') || email.includes('sercot');
+    const isCumplimiento = rol.includes('cumpl') || rol.includes('document') || rol.includes('legal') || rol.includes('permiso');
+
+    if (isDireccion) {
+      return getDiegoRoleConfig('direccion', {
+        key: 'direccion',
+        label: 'Dirección',
+        tone: 'Cercano y firme, con foco en objetivos y excepciones.',
+        emptyTitle: 'Diego puede bajar la estrategia a reclamos, oportunidades y tareas concretas.',
+        emptySub: 'Recibe un ruido operativo, lo ordena, lo convierte en oportunidad cuando corresponde y empuja responsables, pendientes y siguiente movimiento.',
+        prompts: ['¿Qué está frenando los objetivos hoy?','Lista de trabajos que sí debemos asumir como oportunidad','¿Qué debe hacer cada responsable hoy?','Resume reclamos abiertos y su impacto','Calcula precio ejecutivo y dime si corresponde escalar'],
+      });
+    }
+    if (isComercial) {
+      return getDiegoRoleConfig('comercial', {
+        key: 'comercial',
+        label: 'Comercial',
+        tone: 'Cercano y firme para clientes, precios y cierre.',
+        emptyTitle: 'Diego puede convertir reclamos comerciales en oportunidades accionables.',
+        emptySub: 'Sirve para levantar reclamos por precio, servicio, información o cobro y bajarlos a seguimiento, responsable y próximo cierre.',
+        prompts: ['Registrar reclamo por precio de cliente','¿Qué oportunidades comerciales siguen vivas?','¿Qué cobros debo empujar hoy?','¿Qué debe responder Andrea hoy?','Propón precio ejecutivo defendible para este cliente'],
+      });
+    }
+    if (isOps) {
+      return getDiegoRoleConfig('operaciones', {
+        key: 'operaciones',
+        label: 'Operaciones',
+        tone: 'Directo, ordenado y orientado a destrabar ejecución.',
+        emptyTitle: 'Diego puede ordenar reclamos operativos y transformarlos en plan de trabajo.',
+        emptySub: 'Incidentes, trabas, servicio, logística o panel se traducen en responsables, bloqueo, fecha y siguiente validación.',
+        prompts: ['Registrar traba operativa de hoy','¿Qué pendientes tiene el equipo en terreno?','Transforma este incidente en oportunidad','¿Qué debe hacer operaciones ahora?'],
+      });
+    }
+    if (isFinanzas) {
+      return getDiegoRoleConfig('finanzas', {
+        key: 'finanzas',
+        label: 'Finanzas',
+        tone: 'Claro y firme para cobros, pagos y cumplimiento financiero.',
+        emptyTitle: 'Diego puede tomar reclamos de cobro o pago y bajarlos a gestión concreta.',
+        emptySub: 'Ayuda a distinguir qué es reclamo, qué es riesgo y qué sí debe entrar a la lista de trabajo priorizada.',
+        prompts: ['Registrar reclamo por cobro pendiente','¿Qué pagos están trabados hoy?','¿Qué debe hacer finanzas esta semana?','Resume riesgos de cobranza abiertos'],
+      });
+    }
+    if (isCumplimiento) {
+      return getDiegoRoleConfig('cumplimiento', {
+        key: 'cumplimiento',
+        label: 'Cumplimiento y documentos',
+        tone: 'Serio, claro y preventivo para no perder control documental.',
+        emptyTitle: 'Diego puede capturar reclamos de documentos, permisos o información faltante.',
+        emptySub: 'Luego los ordena en oportunidad, riesgo o pendiente documental con responsable y evidencia requerida.',
+        prompts: ['Registrar reclamo por documento faltante','¿Qué permisos o firmas están pendientes?','Convierte este hallazgo en plan de cumplimiento','¿Qué debe hacer cada responsable documental?'],
+      });
+    }
+    return getDiegoRoleConfig('general', {
+      key: 'general',
+      label: 'Equipo general',
+      tone: 'Cercano, firme y orientado a claridad operativa.',
+      emptyTitle: 'Diego puede recibir reclamos, ordenarlos y decir qué hacer después.',
+      emptySub: 'Panel, precios, documentos, información, servicios, cobros, pagos o trabas: toma el caso y lo baja a responsable, prioridad y siguiente paso.',
+      prompts: ['Registrar reclamo del panel','¿Qué tareas tengo pendientes?','Convierte este reclamo en oportunidad','¿Qué debe hacer mi equipo hoy?'],
+    });
+  }
+  function getRoleExamples(profile) {
+    const model = getDiegoProductModel();
+    if (model && Array.isArray(model.roleExamples) && model.roleExamples.length) {
+      const roleExamples = model.roleExamples.slice();
+      if (profile?.key === 'direccion') return roleExamples;
+      return [
+        { label: `Rol activo: ${profile?.label || 'Equipo'}`, prompt: `Como ${profile?.label || 'equipo'}, dime qué debo hacer hoy y qué pendientes debo destrabar`, hint: profile?.tone || 'Foco y ejecución' },
+        ...roleExamples.slice(0, 4)
+      ];
+    }
+    const base = [
+      { label: 'Dirección', prompt: 'Como dirección, dime qué objetivos están en riesgo y qué debe hacer cada responsable hoy', hint: 'Objetivos, excepciones y empuje del equipo' },
+      { label: 'Comercial', prompt: 'Como comercial, registra un reclamo de cliente y conviértelo en oportunidad con siguiente paso', hint: 'Clientes, precios, servicio y cierre' },
+      { label: 'Operaciones', prompt: 'Como operaciones, ordena las trabas del día y dime qué debe hacer cada responsable', hint: 'Incidentes, terreno y destrabes' },
+      { label: 'Finanzas', prompt: 'Como finanzas, resume cobros, pagos y riesgos abiertos con dueño y prioridad', hint: 'Cobranza, pagos y caja' },
+      { label: 'Documentos', prompt: 'Como cumplimiento, registra faltantes documentales y genera lista de trabajo priorizada', hint: 'Permisos, firmas y evidencia' },
+      { label: 'Servicio', prompt: 'Como servicio al cliente, toma este reclamo y llévalo a respuesta, oportunidad o cierre', hint: 'Postventa, atención y seguimiento' },
+    ];
+    if (profile?.key === 'direccion') return base;
+    return [
+      { label: `Rol activo: ${profile?.label || 'Equipo'}`, prompt: `Como ${profile?.label || 'equipo'}, dime qué debo hacer hoy y qué pendientes debo destrabar`, hint: profile?.tone || 'Foco y ejecución' },
+      ...base.slice(1),
+    ];
+  }
+  function getComplaintIntakePrompts() {
+    const model = getDiegoProductModel();
+    if (model && Array.isArray(model.complaintIntake) && model.complaintIntake.length) {
+      return model.complaintIntake;
+    }
+    return [
+      { label: 'Panel', prompt: 'Registrar reclamo del panel y decir si corresponde oportunidad o soporte', hint: 'Errores, vistas, permisos o caídas' },
+      { label: 'Precios', prompt: 'Registrar reclamo de precios y transformarlo en oportunidad con responsable y urgencia', hint: 'Precios, señales y publicación' },
+      { label: 'Documentos', prompt: 'Registrar reclamo documental y bajar lista de pendientes', hint: 'Facturas, contratos, guías, permisos' },
+      { label: 'Información', prompt: 'Registrar reclamo por información faltante y ordenar qué dato debe levantarse', hint: 'Datos ausentes o inconsistentes' },
+      { label: 'Servicios', prompt: 'Registrar reclamo de servicio y convertirlo en plan de respuesta', hint: 'Calidad, atención o postventa' },
+      { label: 'Cobros', prompt: 'Registrar reclamo de cobro y decir qué debe hacer finanzas y comercial', hint: 'Cobranza, vencidos o promesas' },
+      { label: 'Pagos', prompt: 'Registrar reclamo de pago trabado y ordenar responsable, evidencia y fecha', hint: 'Proveedores, aprobaciones y caja' },
+      { label: 'Trabas', prompt: 'Registrar traba operativa y convertirla en oportunidad o incidencia gestionable', hint: 'Bloqueos internos y externos' },
+    ];
+  }
+  function getTeamCoordinationPrompts(profile) {
+    const model = getDiegoProductModel();
+    if (model && model.teamCoordination) {
+      const list = model.teamCoordination[profile?.key] || model.teamCoordination.default;
+      if (Array.isArray(list) && list.length) return list;
+    }
+    const activeLabel = profile?.label || 'equipo';
+    return [
+      `¿Qué debe hacer ${activeLabel.toLowerCase()} hoy para empujar objetivos?`,
+      'Dime qué está pendiente por persona y por prioridad',
+      'Lista de trabajos que sí debemos asumir como oportunidad',
+      '¿Qué reclamos abiertos deben cerrarse hoy y quién responde?'
+    ];
+  }
+  function getExecutivePricePrompts(profile) {
+    const model = getDiegoProductModel();
+    if (model && model.executivePricePrompts) {
+      const priceList = model.executivePricePrompts[profile?.key] || model.executivePricePrompts.default;
+      if (Array.isArray(priceList) && priceList.length) return priceList;
+    }
+    if (profile?.key === 'direccion') {
+      return [
+        'Calcula precio ejecutivo maximo defendible y dime si este caso debe escalar a Dusan',
+        'Separa precio sugerido, techo de autonomia y techo que requiere jerarquia',
+        'Dime si este caso de precio debe ir a Andrea, Mesa de Precios o Dusan'
+      ];
+    }
+    if (profile?.key === 'comercial') {
+      return [
+        'Propón precio ejecutivo defendible para este cliente y explica el riesgo',
+        'Dime hasta donde puedo negociar sin romper margen ni politica',
+        '¿Debo crear propuesta normal o escalar esta discusion de precio?'
+      ];
+    }
+    return [
+      'Dime si este caso de precio es solo lectura, propuesta, confirmacion o escalamiento',
+      'Calcula precio ejecutivo sugerido y el siguiente paso correcto',
+      'Explica si el caso cabe en autonomia o debe escalar'
+    ];
+  }
+  function renderPromptButtonRow(items) {
+    return items.map(item => {
+      const label = typeof item === 'string' ? item : (item.label || item.prompt || '');
+      const prompt = typeof item === 'string' ? item : (item.prompt || item.label || '');
+      const hint = typeof item === 'string' ? '' : (item.hint || '');
+      return `<button type="button" data-ctx-prompt="${esc(prompt)}">${esc(label)}${hint ? `<small>${esc(hint)}</small>` : ''}</button>`;
+    }).join('');
+  }
+  function renderRolePromptGrid(profile) {
+    return getRoleExamples(profile).map(item => `<button type="button" class="diego-role-chip" data-ctx-prompt="${esc(item.prompt)}">${esc(item.label)}${item.hint ? `<small>${esc(item.hint)}</small>` : ''}</button>`).join('');
+  }
+  function renderComplaintPromptGrid() {
+    return getComplaintIntakePrompts().map(item => `<button type="button" class="diego-role-chip" data-ctx-prompt="${esc(item.prompt)}">${esc(item.label)}${item.hint ? `<small>${esc(item.hint)}</small>` : ''}</button>`).join('');
+  }
+  function renderTeamPromptGrid(profile) {
+    return getTeamCoordinationPrompts(profile).map(item => `<button type="button" data-ctx-prompt="${esc(item)}">${esc(item)}</button>`).join('');
+  }
+  function renderDiegoStrategicCards() {
+    const model = getDiegoProductModel();
+    const cards = model && Array.isArray(model.sideCards) ? model.sideCards : [];
+    return cards.map(card => `<div class="diego-side-card">
+      <div class="diego-side-label">${esc(card.title || 'Diego')}</div>
+      <div class="diego-flow-list">
+        ${(card.items || []).map((item, index) => `<div><strong>${index + 1}.</strong> ${esc(item)}</div>`).join('')}
+      </div>
+      ${(card.prompts || []).length ? `<div class="diego-side-actions" style="margin-top:8px;">${renderPromptButtonRow(card.prompts)}</div>` : ''}
+    </div>`).join('');
+  }
+  function renderExecutivePriceCard(profile) {
+    const prompts = getExecutivePricePrompts(profile);
+    return `<div class="diego-side-card">
+      <div class="diego-side-label">Precio ejecutivo</div>
+      <div class="diego-side-list">
+        <div><strong>1.</strong> Leer precio y contexto canonico</div>
+        <div><strong>2.</strong> Proponer el mejor numero defendible</div>
+        <div><strong>3.</strong> Escalar si toca margen, cliente clave o excepcion</div>
+      </div>
+      <div class="diego-side-actions" style="margin-top:8px;">
+        ${renderPromptButtonRow(prompts)}
+      </div>
+    </div>`;
+  }
+  function inferCaseType(h) {
+    const txt = String(h?.mensaje || '').toLowerCase();
+    if (h?.kind === 'bloqueado' || txt.includes('bloqueo') || txt.includes('traba')) return { key: 'bloqueo', label: 'Bloqueo' };
+    if (h?.kind === 'ejecutado' || h?.cola_id || txt.includes('oportunidad') || txt.includes('cliente')) return { key: 'oportunidad', label: 'Oportunidad' };
+    if ((h?.suggestions || []).length > 0 || txt.includes('debe hacer') || txt.includes('pendiente')) return { key: 'tarea', label: 'Tarea' };
+    return { key: 'reclamo', label: 'Reclamo' };
+  }
+  function inferCasePriority(h) {
+    const txt = String(h?.mensaje || '').toLowerCase();
+    if (h?.kind === 'bloqueado' || txt.includes('urgente') || txt.includes('hoy') || txt.includes('caida') || txt.includes('cobro')) {
+      return { key: 'alta', label: 'Alta' };
+    }
+    if ((h?.suggestions || []).length > 0 || (h?.actions || []).length > 0 || txt.includes('precio') || txt.includes('servicio')) {
+      return { key: 'media', label: 'Media' };
+    }
+    return { key: 'baja', label: 'Baja' };
+  }
+  function inferCaseStatus(h) {
+    if (h?.kind === 'ejecutado' || h?.cola_id) return { key: 'resuelto', label: 'Resuelto' };
+    if (h?.kind === 'bloqueado') return { key: 'abierto', label: 'Abierto' };
+    if ((h?.suggestions || []).length > 0) return { key: 'por_confirmar', label: 'Por confirmar' };
+    if ((h?.actions || []).length > 0) return { key: 'en_curso', label: 'En curso' };
+    return { key: 'abierto', label: 'Abierto' };
+  }
+  function inferCaseOwner(profile, h) {
+    const txt = String(h?.mensaje || '').toLowerCase();
+    if (txt.includes('precio') || txt.includes('cliente') || txt.includes('comercial')) return 'Andrea / Comercial';
+    if (txt.includes('cobro') || txt.includes('pago') || txt.includes('factura')) return 'Finanzas';
+    if (txt.includes('document') || txt.includes('permiso') || txt.includes('firma')) return 'Cumplimiento';
+    if (txt.includes('panel') || txt.includes('servicio') || txt.includes('traba') || txt.includes('oper')) return 'Operaciones';
+    if (profile?.key === 'direccion') return 'Dirección';
+    return profile?.label || 'Equipo';
+  }
+  function inferCaseTitle(h, index) {
+    const base = cleanMsg(h?.mensaje || '').replace(/\s+/g, ' ').trim();
+    if (!base) return `Caso Diego ${index + 1}`;
+    return base.length > 88 ? (base.slice(0, 85) + '...') : base;
+  }
+  function buildDiegoCases(profile) {
+    if (window.DIEGO_BANDEJA_SYNC && typeof window.DIEGO_BANDEJA_SYNC.hydrate === 'function') {
+      window.DIEGO_BANDEJA_SYNC.hydrate({
+        sb,
+        getCurrentEmail: window.getCurrentEmail,
+        onHydrated: render,
+      });
+    }
+    if (window.DIEGO_CASE_SYNC && typeof window.DIEGO_CASE_SYNC.hydrate === 'function') {
+      window.DIEGO_CASE_SYNC.hydrate({
+        sb,
+        getCurrentEmail: window.getCurrentEmail,
+        onHydrated: render,
+      });
+    }
+    const inferredCases = window.DIEGO_CASES && typeof window.DIEGO_CASES.buildCases === 'function'
+      ? window.DIEGO_CASES.buildCases({
+        history,
+        profile,
+        cleanMsg,
+        inferTrace,
+        inferNextStep,
+      })
+      : [...history]
+        .filter(h => h.role === 'diego' && h.kind !== 'consulta')
+        .slice(-4)
+        .reverse()
+        .map((h, index) => {
+          const type = inferCaseType(h);
+          const priority = inferCasePriority(h);
+          const status = inferCaseStatus(h);
+          return {
+            title: inferCaseTitle(h, index),
+            type,
+            priority,
+            status,
+            owner: inferCaseOwner(profile, h),
+            trace: inferTrace(h),
+            step: inferNextStep(h),
+          };
+        });
+    if (window.DIEGO_CASE_STORE && typeof window.DIEGO_CASE_STORE.syncCases === 'function') {
+      const cases = window.DIEGO_CASE_STORE.syncCases({ cases: inferredCases, profile });
+      if (window.DIEGO_CASE_SYNC && typeof window.DIEGO_CASE_SYNC.schedulePush === 'function') {
+        window.DIEGO_CASE_SYNC.schedulePush({
+          sb,
+          getCurrentEmail: window.getCurrentEmail,
+          getCases: () => window.DIEGO_CASE_STORE.listCases(),
+        });
+      }
+      return cases;
+    }
+    return inferredCases;
+  }
+  function getCaseSyncSummary() {
+    const status = window.DIEGO_CASE_SYNC && typeof window.DIEGO_CASE_SYNC.getStatus === 'function'
+      ? window.DIEGO_CASE_SYNC.getStatus()
+      : null;
+    if (!status) {
+      return {
+        tone: 'local',
+        label: 'Modo local',
+        detail: 'Los cambios quedan guardados en este navegador.',
+      };
+    }
+    if (status.mode === 'shared') {
+      return {
+        tone: 'shared',
+        label: 'Modo compartido',
+        detail: 'Los casos pueden hidratar y persistir contra backend.',
+      };
+    }
+    if (status.mode === 'checking') {
+      return {
+        tone: 'checking',
+        label: 'Validando sync',
+        detail: 'Diego está revisando si puede usar la entidad compartida.',
+      };
+    }
+    if (status.reason === 'missing_table') {
+      return {
+        tone: 'local',
+        label: 'Modo local',
+        detail: 'Falta la tabla compartida `panel.diego_casos`; el panel sigue operativo localmente y puede sumar casos desde Bandeja Diego.',
+      };
+    }
+    return {
+      tone: 'local',
+      label: 'Modo local',
+      detail: 'No hubo confirmación de backend; Diego sigue guardando en este navegador y puede nutrirse desde Bandeja Diego.',
+    };
+  }
+  function renderCaseBoard(profile) {
+    const cases = buildDiegoCases(profile);
+    const sync = getCaseSyncSummary();
+    const bandejaCount = cases.filter(c => String(c?.sourceKey || '').startsWith('bandeja::')).length;
+    if (!cases.length) {
+      return `<div class="diego-case-empty">Aun no hay casos visibles en este turno. Cuando Diego detecte un reclamo, oportunidad, bloqueo o tarea, los verás resumidos aquí con dueño, prioridad y estado.</div>`;
+    }
+    return `<div class="diego-case-board">
+      <div class="diego-case-summary">${cases.length} caso(s) activos. ${bandejaCount > 0 ? `${bandejaCount} vienen desde Bandeja Diego viva y ahora sincronizan dueño, estado y siguiente paso. ` : ''}${esc(sync.detail)} <span class="diego-case-sync diego-case-sync-${esc(sync.tone)}">${esc(sync.label)}</span></div>
+      ${cases.map(c => `
+      <div class="diego-case-card">
+        <div class="diego-case-head">
+          <div class="diego-case-title">${esc(c.title)}</div>
+        </div>
+        <div class="diego-case-badges">
+          <span class="diego-case-badge diego-case-type-${esc(c.type.key)}">${esc(c.type.label)}</span>
+          <span class="diego-case-badge diego-case-priority-${esc(c.priority.key)}">${esc(c.priority.label)}</span>
+          <span class="diego-case-badge diego-case-status-${esc(c.status.key)}">${esc(c.status.label)}</span>
+        </div>
+        <div class="diego-case-meta">
+          <div><strong>Origen:</strong> ${String(c?.sourceKey || '').startsWith('bandeja::') ? 'Bandeja Diego' : 'Conversacion Diego'}</div>
+          <div><strong>Dueño:</strong> ${esc(c.owner)}</div>
+          <div><strong>Traza:</strong> ${esc(c.trace)}</div>
+          <div><strong>Siguiente paso:</strong> ${esc(c.step)}</div>
+        </div>
+        <div class="diego-case-actions">
+          ${String(c?.sourceKey || '').startsWith('bandeja::')
+            ? `<button type="button" data-case-open-bandeja-id="${esc(String(c.sourceKey).slice('bandeja::'.length))}">Abrir bandeja</button>`
+            : ''}
+          <button type="button" data-case-owner-id="${esc(c.id)}" data-case-owner="${esc(c.owner)}">Dueño</button>
+          <button type="button" data-case-priority-id="${esc(c.id)}">Prioridad</button>
+          <button type="button" data-case-status-id="${esc(c.id)}">Estado</button>
+          <button type="button" data-case-step-id="${esc(c.id)}" data-case-step="${esc(c.step)}">Siguiente paso</button>
+        </div>
+      </div>
+    `).join('')}</div>`;
+  }
+  function updateChatStatus() {
+    if (window.DIEGO_UI && typeof window.DIEGO_UI.updateChatStatus === 'function') {
+      const ok = window.DIEGO_UI.updateChatStatus({
+        statusText,
+        history,
+        inferDiegoContract,
+      });
+      if (ok) return;
+    }
+    if (!statusText) return;
+    const last = [...history].reverse().find(h => h.role === 'diego');
+    if (!last) {
+      statusText.textContent = 'Consulta, analisis y ejecucion con trazabilidad';
+      return;
+    }
+    const contract = inferDiegoContract(last);
+    statusText.textContent = `Modo actual: ${contract.modeLabel} · Estado: ${contract.stateLabel}`;
+  }
+  function renderConversationHeader(last) {
+    const profile = getDiegoRoleProfile();
+    if (window.DIEGO_UI && typeof window.DIEGO_UI.renderConversationHeader === 'function') {
+      return window.DIEGO_UI.renderConversationHeader({
+        last,
+        profile,
+        esc,
+        cleanMsg,
+        inferDiegoContract,
+        inferTrace,
+        inferNextStep,
+      });
+    }
+    if (!last) {
+      return `<div class="diego-conversation-head">
+        <div class="diego-turn-summary">
+          <div class="diego-turn-kicker">Foco del momento</div>
+          <div class="diego-turn-title">Diego listo para reclamos, oportunidades y ejecucion por rol</div>
+          <div class="diego-turn-sub">${esc(profile.tone)} ${esc(profile.emptySub)}</div>
+          <div class="diego-turn-pills">
+            <span class="diego-turn-pill">Rol activo: ${esc(profile.label)}</span>
+            <span class="diego-turn-pill">Reclamo → oportunidad</span>
+            <span class="diego-turn-pill">Tareas con responsable</span>
+          </div>
+        </div>
+      </div>`;
+    }
+    const contract = inferDiegoContract(last);
+    return `<div class="diego-conversation-head">
+      <div class="diego-turn-summary">
+        <div class="diego-turn-kicker">Turno actual</div>
+        <div class="diego-turn-title">${esc(contract.modeLabel)} · ${esc(contract.stateLabel)}</div>
+        <div class="diego-turn-sub">${esc(cleanMsg(last.mensaje) || 'Sin detalle')}</div>
+        <div class="diego-turn-pills">
+          <span class="diego-turn-pill">Traza: ${esc(inferTrace(last))}</span>
+          <span class="diego-turn-pill">Paso: ${esc(inferNextStep(last))}</span>
+        </div>
+      </div>
+    </div>`;
+  }
+  function renderIntelligentEmptyState(profile) {
+    if (window.DIEGO_UI && typeof window.DIEGO_UI.renderIntelligentEmptyState === 'function') {
+      return window.DIEGO_UI.renderIntelligentEmptyState({ profile, esc });
+    }
+    return `<div class="diego-empty-card">
+      <div class="diego-empty-kicker">Modo operativo</div>
+      <div class="diego-empty-title">${esc(profile.emptyTitle)}</div>
+      <div class="diego-empty-sub">${esc(profile.emptySub)}</div>
+      <div class="diego-empty-list">
+        <div><strong>1.</strong> Recibe reclamos de panel, precios, documentos, información, servicios, cobros, pagos o trabas.</div>
+        <div><strong>2.</strong> Los ordena como reclamo, oportunidad, bloqueo o tarea priorizada.</div>
+        <div><strong>3.</strong> Baja responsable, pendiente, siguiente paso y tono de empuje cercano y firme.</div>
+      </div>
+    </div>`;
+  }
+  function renderContextPanel(last) {
+    const profile = getDiegoRoleProfile();
+    if (window.DIEGO_CONTEXT && typeof window.DIEGO_CONTEXT.renderContextPanel === 'function') {
+      return window.DIEGO_CONTEXT.renderContextPanel({
+        last,
+        profile,
+        esc,
+        cleanMsg,
+        inferDiegoContract,
+        inferTrace,
+        inferNextStep,
+        renderRolePromptGrid,
+        renderComplaintPromptGrid,
+        renderExecutivePriceCard,
+        renderDiegoStrategicCards,
+        renderCaseBoard,
+        renderTeamPromptGrid,
+      });
+    }
+    if (!last) {
+      return `<aside class="diego-context">
+        <div class="diego-side-card">
+          <div class="diego-side-label">Rol activo</div>
+          <div class="diego-side-main">${esc(profile.label)}</div>
+          <div class="diego-side-sub">${esc(profile.tone)}</div>
+        </div>
+        <div class="diego-side-card">
+          <div class="diego-side-label">Ejemplos por rol</div>
+          <div class="diego-role-grid">
+            ${renderRolePromptGrid(profile)}
+          </div>
+        </div>
+        <div class="diego-side-card">
+          <div class="diego-side-label">Intake de reclamos</div>
+          <div class="diego-role-grid">
+            ${renderComplaintPromptGrid()}
+          </div>
+        </div>
+        <div class="diego-side-card">
+          <div class="diego-side-label">Modelo de trabajo</div>
+          <div class="diego-flow-list">
+            <div><strong>1.</strong> Registrar reclamo o ruido real</div>
+            <div><strong>2.</strong> Decidir si va a oportunidad, incidente o pendiente</div>
+            <div><strong>3.</strong> Bajar dueño, prioridad y siguiente control</div>
+          </div>
+        </div>
+        ${renderExecutivePriceCard(profile)}
+        ${renderDiegoStrategicCards()}
+        <div class="diego-side-card">
+          <div class="diego-side-label">Casos Diego</div>
+          ${renderCaseBoard(profile)}
+        </div>
+        <div class="diego-side-card">
+          <div class="diego-side-label">Empuje del equipo</div>
+          <div class="diego-side-actions">
+            ${renderTeamPromptGrid(profile)}
+          </div>
+        </div>
+        <div class="diego-side-card">
+          <div class="diego-side-label">Ir directo</div>
+          <div class="diego-side-nav">
+            <button type="button" data-ctx-tab="bandeja_dieg">📥 Bandeja Diego</button>
+            <button type="button" data-ctx-tab="mi_dia">📅 Mi Dia</button>
+            <button type="button" data-ctx-tab="oportunidades">🎯 Oportunidades</button>
+            <button type="button" data-ctx-tab="tablero_precios">🎯 Mesa de Precios</button>
+          </div>
+        </div>
+      </aside>`;
+    }
+    const contract = inferDiegoContract(last);
+    const actions = (last.actions || []).slice(0, 4).map(a => `<div>${esc(a.tool || a)}</div>`).join('');
+    const suggestions = (last.suggestions || []).slice(0, 3).map(s => {
+      const label = s.label || s.action || s;
+      const prompt = s.action || s.label || s;
+      return `<button type="button" data-ctx-prompt="${esc(prompt)}">${esc(label)}</button>`;
+    }).join('');
+    const sixW = last.six_w && (last.six_w.what || last.six_w.when || last.six_w.who)
+      ? `<div class="diego-side-list">
+          ${last.six_w.what ? `<div><strong>Que:</strong> ${esc(last.six_w.what)}</div>` : ''}
+          ${last.six_w.when ? `<div><strong>Cuando:</strong> ${esc(last.six_w.when)}</div>` : ''}
+          ${last.six_w.who ? `<div><strong>Quien:</strong> ${esc(last.six_w.who)}</div>` : ''}
+        </div>`
+      : `<div class="diego-side-sub">Sin contexto adicional visible en este turno.</div>`;
+    return `<aside class="diego-context">
+      <div class="diego-side-card">
+        <div class="diego-side-label">Estado actual</div>
+        <div class="diego-side-main">${esc(contract.modeLabel)} · ${esc(contract.stateLabel)}</div>
+        <div class="diego-side-sub">${esc(cleanMsg(last.mensaje) || 'Sin detalle')}</div>
+      </div>
+      <div class="diego-side-card">
+        <div class="diego-side-label">Rol que conduce</div>
+        <div class="diego-side-main">${esc(profile.label)}</div>
+        <div class="diego-side-sub">${esc(profile.tone)}</div>
+      </div>
+      <div class="diego-side-card">
+        <div class="diego-side-label">Trazabilidad</div>
+        <div class="diego-side-main">${esc(inferTrace(last))}</div>
+        <div class="diego-side-sub">Siguiente paso: ${esc(inferNextStep(last))}</div>
+      </div>
+      <div class="diego-side-card">
+        <div class="diego-side-label">Contexto</div>
+        ${sixW}
+      </div>
+      <div class="diego-side-card">
+        <div class="diego-side-label">Acciones detectadas</div>
+        ${actions ? `<div class="diego-side-list">${actions}</div>` : `<div class="diego-side-sub">Sin acciones registradas en este turno.</div>`}
+      </div>
+      <div class="diego-side-card">
+        <div class="diego-side-label">Siguiente movimiento</div>
+        <div class="diego-side-actions">
+          ${suggestions || `<button type="button" data-ctx-prompt="${esc(inferNextStep(last))}">${esc(inferNextStep(last))}</button>`}
+        </div>
+      </div>
+      <div class="diego-side-card">
+        <div class="diego-side-label">Reclamos y oportunidades</div>
+        <div class="diego-flow-list">
+          <div><strong>Entrada:</strong> panel, precios, documentos, informacion, servicios, cobros, pagos o trabas.</div>
+          <div><strong>Decision:</strong> reclamo gestionable, oportunidad real o bloqueo que escalar.</div>
+          <div><strong>Salida:</strong> responsable, prioridad, seguimiento y cierre.</div>
+        </div>
+      </div>
+      ${renderExecutivePriceCard(profile)}
+      ${renderDiegoStrategicCards()}
+      <div class="diego-side-card">
+        <div class="diego-side-label">Casos Diego</div>
+        ${renderCaseBoard(profile)}
+      </div>
+      <div class="diego-side-card">
+        <div class="diego-side-label">Empuje del equipo</div>
+        <div class="diego-side-actions">
+          ${renderTeamPromptGrid(profile)}
+        </div>
+      </div>
+      <div class="diego-side-card">
+        <div class="diego-side-label">Vistas relacionadas</div>
+        <div class="diego-side-nav">
+          <button type="button" data-ctx-tab="bandeja_dieg">📥 Bandeja Diego</button>
+          <button type="button" data-ctx-tab="mi_dia">📅 Mi Dia</button>
+          <button type="button" data-ctx-tab="oportunidades">🎯 Oportunidades</button>
+          <button type="button" data-ctx-tab="tablero_precios">🎯 Mesa de Precios</button>
+        </div>
+      </div>
+    </aside>`;
+  }
+  function bindContextPrompts() {
+    if (window.DIEGO_CONTEXT && typeof window.DIEGO_CONTEXT.bindContextPrompts === 'function') {
+      window.DIEGO_CONTEXT.bindContextPrompts({ body, input });
+      return;
+    }
+    body.querySelectorAll('button[data-ctx-prompt]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        input.value = btn.getAttribute('data-ctx-prompt') || '';
+        input.focus();
+      });
+    });
+  }
+  function bindContextTabs() {
+    if (window.DIEGO_CONTEXT && typeof window.DIEGO_CONTEXT.bindContextTabs === 'function') {
+      window.DIEGO_CONTEXT.bindContextTabs({ body, win });
+    }
+    else {
+      body.querySelectorAll('button[data-ctx-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tabId = btn.getAttribute('data-ctx-tab');
+          if (!tabId) return;
+          const target = document.querySelector(`[data-v4-tab="${tabId}"]`) || document.querySelector(`[data-tab="${tabId}"]`);
+          if (target) {
+            win.classList.remove('open');
+            target.click();
+          }
+        });
+      });
+    }
+    bindCaseActions();
+  }
+  function persistCaseMutation(item) {
+    if (!item) return;
+    if (window.DIEGO_CASE_SYNC && typeof window.DIEGO_CASE_SYNC.persistCase === 'function') {
+      window.DIEGO_CASE_SYNC.persistCase({
+        sb,
+        getCurrentEmail: window.getCurrentEmail,
+        item,
+      });
+    }
+    if (window.DIEGO_BANDEJA_SYNC && typeof window.DIEGO_BANDEJA_SYNC.persistCase === 'function') {
+      window.DIEGO_BANDEJA_SYNC.persistCase({
+        sb,
+        getCurrentEmail: window.getCurrentEmail,
+        item,
+      });
+    }
+  }
+  function openBandejaCaseFromRail(bandejaId) {
+    if (!bandejaId) return;
+    const tabBtn = document.querySelector('[data-v4-tab="bandeja_dieg"]')
+      || document.querySelector('[data-tab="bandeja_dieg"]');
+    if (tabBtn) tabBtn.click();
+    win.classList.remove('open');
+    window.setTimeout(() => {
+      if (typeof window.bdAbrirDrawer === 'function') window.bdAbrirDrawer(bandejaId);
+    }, tabBtn ? 350 : 0);
+  }
+  function bindCaseActions() {
+    const profile = getDiegoRoleProfile();
+    if (window.DIEGO_CONTEXT && typeof window.DIEGO_CONTEXT.bindCaseActions === 'function') {
+      window.DIEGO_CONTEXT.bindCaseActions({
+        body,
+        profile,
+        onCasesChanged: render,
+        onCaseMutated: persistCaseMutation,
+        onOpenBandejaCase: openBandejaCaseFromRail,
+      });
+      return;
+    }
+    if (!window.DIEGO_CASE_STORE) return;
+    const askText = function (title, message, initialValue) {
+      if (window.showModalInput) {
+        return window.showModalInput({
+          title,
+          message,
+          initialValue,
+          placeholder: initialValue || '',
+          required: true,
+          okLabel: 'Guardar',
+        });
+      }
+      return Promise.resolve(window.prompt(message || title, initialValue || ''));
+    };
+    body.querySelectorAll('button[data-case-status-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const updated = window.DIEGO_CASE_STORE.cycleStatus(btn.getAttribute('data-case-status-id'));
+        persistCaseMutation(updated);
+        render();
+      });
+    });
+    body.querySelectorAll('button[data-case-open-bandeja-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        openBandejaCaseFromRail(btn.getAttribute('data-case-open-bandeja-id'));
+      });
+    });
+    body.querySelectorAll('button[data-case-priority-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const updated = window.DIEGO_CASE_STORE.cyclePriority(btn.getAttribute('data-case-priority-id'));
+        persistCaseMutation(updated);
+        render();
+      });
+    });
+    body.querySelectorAll('button[data-case-owner-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const nextOwner = await askText('Asignar dueño', 'Responsable del caso', btn.getAttribute('data-case-owner') || '');
+        if (!nextOwner || !String(nextOwner).trim()) return;
+        const updated = window.DIEGO_CASE_STORE.updateCase(btn.getAttribute('data-case-owner-id'), { owner: nextOwner });
+        persistCaseMutation(updated);
+        render();
+      });
+    });
+    body.querySelectorAll('button[data-case-step-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const nextStep = await askText('Siguiente paso', 'Que sigue para este caso', btn.getAttribute('data-case-step') || '');
+        if (!nextStep || !String(nextStep).trim()) return;
+        const updated = window.DIEGO_CASE_STORE.updateCase(btn.getAttribute('data-case-step-id'), { step: nextStep });
+        persistCaseMutation(updated);
+        render();
+      });
+    });
+  }
+
+  // D-DIEGO-MEJORA-CONTINUA-001 CL-015 · chips onboarding (rol-aware best-effort)
+  function getOnboardingChips() {
+    const profile = getDiegoRoleProfile();
+    const intake = getComplaintIntakePrompts().slice(0, 2).map(x => x.prompt);
+    if (window.DIEGO_UI && typeof window.DIEGO_UI.getOnboardingChips === 'function') {
+      return window.DIEGO_UI.getOnboardingChips({ profile, intakePrompts: intake });
+    }
+    return [...profile.prompts, ...intake].slice(0, 6);
+  }
+
+  const diegoLegacyFallbackUsage = new Set();
+  function warnDiegoLegacyFallback(area) {
+    if (!area || diegoLegacyFallbackUsage.has(area)) return;
+    diegoLegacyFallbackUsage.add(area);
+    console.warn(`[Diego Ruta 1] fallback legado activo en ${area}. Revisar carga de modulos en public/diego/.`);
   }
 
   function render() {
+    if (window.DIEGO_RENDER && typeof window.DIEGO_RENDER.render === 'function') {
+      const ok = window.DIEGO_RENDER.render({
+        history,
+        body,
+        input,
+        form,
+        esc,
+        cleanMsg,
+        fmtHora,
+        inferDiegoContract,
+        inferTrace,
+        inferNextStep,
+        getOnboardingChips,
+        getDiegoRoleProfile,
+        renderConversationHeader,
+        renderIntelligentEmptyState,
+        renderContextPanel,
+        updateChatStatus,
+        bindContextPrompts,
+        bindContextTabs,
+      });
+      if (ok) return;
+    }
+    warnDiegoLegacyFallback('render');
+    // Fallback legado temporal mientras termina la extraccion modular de Diego.
     if (!history.length) {
       const chips = getOnboardingChips().map(c => `<button type="button" data-chip="${esc(c)}">${esc(c)}</button>`).join('');
-      body.innerHTML = '<div class="diego-empty">¿En qué te ayudo? Probá:'
-        + `<div class="diego-onboarding-chips">${chips}</div>`
-        + '<div style="margin-top:8px;font-size:11px;color:#94a3b8">o arrastrá una foto · audio · PDF</div></div>'
-        + '<div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>';
+      body.innerHTML = `<div class="diego-shell">
+          <div class="diego-conversation">
+            ${renderConversationHeader(null)}
+            ${renderIntelligentEmptyState(getDiegoRoleProfile())}
+            <div class="diego-empty">Probá con esto:
+              <div class="diego-onboarding-chips">${chips}</div>
+              <div style="margin-top:8px;font-size:11px;color:#94a3b8">o arrastrá una foto · audio · PDF</div>
+            </div>
+          </div>
+          ${renderContextPanel(null)}
+        </div>
+        <div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>`;
       body.querySelectorAll('button[data-chip]').forEach(btn => {
         btn.addEventListener('click', () => {
           input.value = btn.getAttribute('data-chip') || '';
@@ -15700,32 +16655,139 @@ document.addEventListener('DOMContentLoaded', () => {
           form.dispatchEvent(new Event('submit'));
         });
       });
+      bindContextPrompts();
+      bindContextTabs();
+      updateChatStatus();
       return;
     }
-    const html = history.map(h => {
+    const buildFallbackMessageNode = function (h) {
       const cls = h.role === 'user' ? 'mine' : (h.role === 'thinking' ? 'thinking' : 'diego');
-      const attach = h.attach ? `<div class="diego-msg-attach">📎 ${esc(h.attach)}</div>` : '';
-      const actionsArr = (h.actions || []).map(a => `<span class="chip">${esc(a.tool || a)}</span>`).join('');
-      const actions = actionsArr ? `<div class="diego-actions">${actionsArr}</div>` : '';
-      const suggestionsArr = (h.suggestions || []).slice(0, 4).map((s, i) =>
-        `<button type="button" data-sugg="${i}">${esc(s.label || s)}</button>`).join('');
-      const suggestions = suggestionsArr ? `<div class="diego-suggestions">${suggestionsArr}</div>` : '';
-      const sixW = h.six_w && (h.six_w.what || h.six_w.when)
-        ? `<div class="diego-msg-meta">🧠 ${esc(h.six_w.what || '')}${h.six_w.when ? ' · ⏰ ' + esc(h.six_w.when) : ''}${h.six_w.who ? ' · 👤 ' + esc(h.six_w.who) : ''}</div>`
-        : '';
-      // thinking row: el mensaje es HTML controlado (typing dots), no escapar — el resto sí.
-      const msgHtml = (cls === 'thinking') ? String(h.mensaje) : esc(h.mensaje);
-      return `<div class="diego-msg ${cls}">
-        <div>${msgHtml}</div>
-        ${attach}
-        ${actions}
-        ${sixW}
-        <div class="diego-msg-meta">${cls === 'mine' ? 'Vos' : 'Diego'} · ${fmtHora(h.ts)}${h.tokens ? ' · ' + h.tokens + ' tok' : ''}${h.cola_id ? ' · ✅ cola' : ''}</div>
-        ${suggestions}
-      </div>`;
-    }).join('');
-    body.innerHTML = html + '<div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>';
-    body.scrollTop = body.scrollHeight;
+      const msg = document.createElement('div');
+      msg.className = `diego-msg ${cls}`;
+
+      const summary = document.createElement('div');
+      if (cls !== 'thinking') summary.className = 'diego-summary';
+      if (cls === 'thinking') {
+        summary.appendChild(document.createTextNode('Diego esta escribiendo'));
+        const dots = document.createElement('span');
+        dots.className = 'diego-typing-dots';
+        for (let i = 0; i < 3; i += 1) {
+          dots.appendChild(document.createElement('span'));
+        }
+        summary.appendChild(dots);
+      } else {
+        summary.textContent = String(h.mensaje || '');
+      }
+      msg.appendChild(summary);
+
+      if (h.attach) {
+        const attach = document.createElement('div');
+        attach.className = 'diego-msg-attach';
+        attach.textContent = `📎 ${String(h.attach)}`;
+        msg.appendChild(attach);
+      }
+
+      if (cls === 'diego') {
+        const c = inferDiegoContract(h);
+        const contract = document.createElement('div');
+        contract.className = 'diego-contract';
+
+        const badges = document.createElement('div');
+        badges.className = 'diego-contract-badges';
+
+        const mode = document.createElement('span');
+        mode.className = `diego-badge mode-${c.mode}`;
+        mode.textContent = String(c.modeLabel || '');
+        badges.appendChild(mode);
+
+        const state = document.createElement('span');
+        state.className = `diego-badge state-${c.state}`;
+        state.textContent = String(c.stateLabel || '');
+        badges.appendChild(state);
+
+        contract.appendChild(badges);
+
+        const result = document.createElement('div');
+        result.className = 'diego-kv';
+        result.innerHTML = '<strong>Resultado:</strong> ';
+        result.appendChild(document.createTextNode(String(cleanMsg(h.mensaje) || '(sin detalle)')));
+        contract.appendChild(result);
+
+        const trace = document.createElement('div');
+        trace.className = 'diego-kv';
+        trace.innerHTML = '<strong>Trazabilidad:</strong> ';
+        trace.appendChild(document.createTextNode(String(inferTrace(h) || 'Sin traza')));
+        contract.appendChild(trace);
+
+        const next = document.createElement('div');
+        next.className = 'diego-kv';
+        next.innerHTML = '<strong>Siguiente paso:</strong> ';
+        next.appendChild(document.createTextNode(String(inferNextStep(h) || 'Seguir')));
+        contract.appendChild(next);
+
+        msg.appendChild(contract);
+      }
+
+      const actions = (h.actions || []);
+      if (actions.length) {
+        const actionsBox = document.createElement('div');
+        actionsBox.className = 'diego-actions';
+        actions.forEach(a => {
+          const chip = document.createElement('span');
+          chip.className = 'chip';
+          chip.textContent = String(a?.tool || a || '');
+          actionsBox.appendChild(chip);
+        });
+        msg.appendChild(actionsBox);
+      }
+
+      if (h.six_w && (h.six_w.what || h.six_w.when)) {
+        const sixW = document.createElement('div');
+        sixW.className = 'diego-msg-meta';
+        sixW.textContent = `🧠 ${String(h.six_w.what || '')}${h.six_w.when ? ' · ⏰ ' + String(h.six_w.when) : ''}${h.six_w.who ? ' · 👤 ' + String(h.six_w.who) : ''}`;
+        msg.appendChild(sixW);
+      }
+
+      const meta = document.createElement('div');
+      meta.className = 'diego-msg-meta';
+      meta.textContent = `${cls === 'mine' ? 'Vos' : 'Diego'} · ${fmtHora(h.ts)}${h.tokens ? ' · ' + h.tokens + ' tok' : ''}${h.cola_id ? ' · ✅ cola' : ''}`;
+      msg.appendChild(meta);
+
+      const suggestions = (h.suggestions || []).slice(0, 4);
+      if (suggestions.length) {
+        const suggestionsBox = document.createElement('div');
+        suggestionsBox.className = 'diego-suggestions';
+        suggestions.forEach((s, i) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.setAttribute('data-sugg', String(i));
+          btn.textContent = String(s?.label || s || '');
+          suggestionsBox.appendChild(btn);
+        });
+        msg.appendChild(suggestionsBox);
+      }
+
+      return msg;
+    };
+    body.innerHTML = `<div class="diego-shell">
+        <div class="diego-conversation" id="diegoConversationPane"></div>
+        <aside class="diego-context">
+          <div class="diego-side-card">
+            <div class="diego-side-label">Modo fallback</div>
+            <div class="diego-side-main">Diego sigue operativo</div>
+            <div class="diego-side-sub">Vista segura temporal mientras cargan los modulos externos.</div>
+          </div>
+        </aside>
+      </div>
+      <div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>`;
+    const pane = document.getElementById('diegoConversationPane');
+    const fallbackHead = document.createElement('div');
+    fallbackHead.className = 'diego-conversation-head';
+    fallbackHead.textContent = 'Diego en modo fallback seguro';
+    pane?.appendChild(fallbackHead);
+    history.forEach(h => pane?.appendChild(buildFallbackMessageNode(h)));
+    pane?.scrollTo({ top: 999999, behavior: 'auto' });
+    updateChatStatus();
 
     // Re-bind sugerencias (event delegation simple)
     body.querySelectorAll('button[data-sugg]').forEach((btn, idx) => {
@@ -15739,6 +16801,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     });
+    bindContextPrompts();
+    bindContextTabs();
   }
 
   async function refreshBadge() {
@@ -15877,6 +16941,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => input.focus(), 50);
   });
   closeBtn.addEventListener('click', () => win.classList.remove('open'));
+  window.addEventListener('diego-case-sync-status', () => {
+    if (win.classList.contains('open')) render();
+  });
 
   // D-DIEGO-MEJORA-CONTINUA-001 CL-013 · hotkey Ctrl/Cmd+K para abrir/cerrar FAB
   document.addEventListener('keydown', (e) => {
@@ -15907,13 +16974,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // -- Submit --
   form.addEventListener('submit', async (e) => {
+    if (window.DIEGO_INTERACTION && typeof window.DIEGO_INTERACTION.handleSubmit === 'function') {
+      const handled = await window.DIEGO_INTERACTION.handleSubmit({
+        event: e,
+        input,
+        sendBtn,
+        attachPreview,
+        render,
+        callDiego,
+        refreshBadge,
+        sb,
+        getUserEmail,
+        getPendingFile: () => pendingFile,
+        clearPendingFile: () => { pendingFile = null; },
+        getHistory: () => history,
+        setHistory: (nextHistory) => { history = Array.isArray(nextHistory) ? nextHistory : []; },
+      });
+      if (handled) return;
+    }
+    warnDiegoLegacyFallback('submit');
+    // Fallback legado temporal mientras termina la extraccion modular de Diego.
     e.preventDefault();
     const msg = input.value.trim();
     if (!msg && !pendingFile) return;
     sendBtn.disabled = true;
     const attach = pendingFile;
     history.push({ role: 'user', mensaje: msg || `(adjunto)`, attach: attach?.file_name, ts: Date.now() });
-    history.push({ role: 'thinking', mensaje: 'Diego está escribiendo<span class="diego-typing-dots"><span></span><span></span><span></span></span>', ts: Date.now() });
+    history.push({ role: 'thinking', mensaje: 'Diego esta escribiendo', ts: Date.now() });
     render();
     input.value = '';
     input.style.height = 'auto';
@@ -15960,13 +17047,15 @@ document.addEventListener('DOMContentLoaded', () => {
           history.push({
             role: 'diego',
             mensaje: '✅ ' + total + ' propuesta(s) creadas en bandeja. Andrea y Dusan reciben aviso.',
-            ts: Date.now()
+            ts: Date.now(),
+            kind: 'ejecutado'
           });
         } else {
           history.push({
             role: 'diego',
             mensaje: '❌ ' + (resultado.motivo || 'No pude procesar los precios'),
-            ts: Date.now()
+            ts: Date.now(),
+            kind: 'bloqueado'
           });
         }
         render();
@@ -15978,7 +17067,8 @@ document.addEventListener('DOMContentLoaded', () => {
         history.push({
           role: 'diego',
           mensaje: '❌ Error flujo precios: ' + (errPrecios.message || errPrecios) + ' · sigo flujo normal',
-          ts: Date.now()
+          ts: Date.now(),
+          kind: 'bloqueado'
         });
         render();
         console.error('[Precios] interceptor fallo:', errPrecios);
@@ -15991,12 +17081,13 @@ document.addEventListener('DOMContentLoaded', () => {
     history = history.filter(h => h.role !== 'thinking');
 
     if (resp.error) {
-      history.push({ role: 'diego', mensaje: '❌ ' + resp.error, ts: Date.now() });
+      history.push({ role: 'diego', mensaje: '❌ ' + resp.error, ts: Date.now(), kind: 'bloqueado' });
     } else {
       history.push({
         role: 'diego',
         mensaje: resp.reply || '(sin respuesta)',
         ts: Date.now(),
+        kind: resp.cola_id || (resp.actions_taken || []).length ? 'ejecutado' : ((resp.suggestions || []).length ? 'propuesta' : ((resp.six_w && (resp.six_w.what || resp.six_w.when || resp.six_w.who)) ? 'analisis' : 'consulta')),
         actions: resp.actions_taken || [],
         suggestions: resp.suggestions || [],
         six_w: resp.six_w || {},
@@ -26333,6 +27424,16 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(tryApply, 2000);
 })();
 </script>
-
+<script src="./diego/diego-product.js"></script>
+<script src="./diego/diego-state.js"></script>
+<script src="./diego/diego-cases.js"></script>
+<script src="./diego/diego-case-store.js"></script>
+<script src="./diego/diego-bandeja-sync.js"></script>
+<script src="./diego/diego-case-sync.js"></script>
+<script src="./diego/diego-voice.js"></script>
+<script src="./diego/diego-ui.js"></script>
+<script src="./diego/diego-context.js"></script>
+<script src="./diego/diego-render.js"></script>
+<script src="./diego/diego-interaction.js"></script>
 </body>
 </html>
