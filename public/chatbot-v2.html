@@ -253,7 +253,7 @@
   background:var(--rf-wa); color:#fff; border:none;
   width:36px; height:36px; border-radius:50%;
   cursor:pointer; font-size:16px;
-  display:flex; align-items:center; justify-content:center;
+  display:none; align-items:center; justify-content:center;
   text-decoration:none;
 }
 #rf-bot-bottombar .rf-wa-btn:hover { background:var(--rf-wa-dark); }
@@ -356,7 +356,7 @@
 
     <div id="rf-bot-bottombar">
       <div class="rf-input-fake">Selecciona una opción...</div>
-      <a href="https://wa.me/56995342437" target="_blank" class="rf-wa-btn" title="WhatsApp directo">💬</a>
+      <a href="https://wa.me/56995342437" target="_blank" class="rf-wa-btn" title="Canal directo por WhatsApp">💬</a>
     </div>
   </div>
 
@@ -384,6 +384,46 @@ const rfChat = document.getElementById('rf-bot-chat');
 const rfWindow = document.getElementById('rf-bot-window');
 const rfToggle = document.getElementById('rf-bot-toggle');
 const rfToggleIcon = document.getElementById('rf-bot-toggle-icon');
+let rfFlowVersion = 0;
+const rfPendingTimers = new Set();
+const rfCatalogFetchControllers = new Set();
+const rfCatalogCache = new Map();
+const RF_CATALOG_CACHE_TTL_MS = 15000;
+
+function rfCurrentFlow() {
+  return rfFlowVersion;
+}
+
+function rfIsFlowActive(flowVersion) {
+  return flowVersion === rfFlowVersion;
+}
+
+function rfSetTimer(fn, delay) {
+  const timerId = setTimeout(() => {
+    rfPendingTimers.delete(timerId);
+    fn();
+  }, delay);
+  rfPendingTimers.add(timerId);
+  return timerId;
+}
+
+function rfClearPendingTimers() {
+  rfPendingTimers.forEach(timerId => clearTimeout(timerId));
+  rfPendingTimers.clear();
+}
+
+function rfAbortCatalogFetches() {
+  rfCatalogFetchControllers.forEach(controller => controller.abort());
+  rfCatalogFetchControllers.clear();
+}
+
+function rfAdvanceFlow() {
+  rfFlowVersion += 1;
+  rfClearPendingTimers();
+  rfAbortCatalogFetches();
+  rfRemoveTyping();
+  return rfFlowVersion;
+}
 
 // ═══════════════════════════════════════════════════════════════
 // FASE 1 · Identidad del visitante + empresa + mapeo sucursal
@@ -637,9 +677,12 @@ function rfBotToggle() {
   rfToggle.classList.toggle('open', isOpen);
   rfToggleIcon.textContent = isOpen ? '✕' : '💬';
   if (isOpen && rfChat.children.length === 0) {
+    const flowVersion = rfAdvanceFlow();
     rfAddDate();
     rfTrack('widget_open', { empresa: rfEmpresa });
-    setTimeout(rfNodo1, 400);
+    rfSetTimer(() => {
+      if (rfIsFlowActive(flowVersion)) rfNodo1();
+    }, 400);
   }
   // Comunicar al parent window (para embed iframe cross-origin)
   try {
@@ -652,10 +695,13 @@ function rfBotToggle() {
 }
 
 function rfReset() {
+  const flowVersion = rfAdvanceFlow();
   rfChat.innerHTML = '';
   rfState = {};
   rfAddDate();
-  setTimeout(rfNodo1, 300);
+  rfSetTimer(() => {
+    if (rfIsFlowActive(flowVersion)) rfNodo1();
+  }, 300);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -667,7 +713,7 @@ function rfTime() {
 }
 
 function rfScroll() {
-  setTimeout(() => { rfChat.scrollTop = rfChat.scrollHeight; }, 60);
+  rfSetTimer(() => { rfChat.scrollTop = rfChat.scrollHeight; }, 60);
 }
 
 function rfAddDate() {
@@ -691,9 +737,13 @@ function rfRemoveTyping() {
   if (t) t.remove();
 }
 
-function rfAddBotMsg(html, delay=0) {
+function rfAddBotMsg(html, delay=0, flowVersion=rfCurrentFlow()) {
   return new Promise(resolve => {
-    setTimeout(() => {
+    rfSetTimer(() => {
+      if (!rfIsFlowActive(flowVersion)) {
+        resolve();
+        return;
+      }
       rfRemoveTyping();
       const wrap = document.createElement('div');
       wrap.className = 'rf-bot-msg';
@@ -721,19 +771,24 @@ function rfAddUserMsg(text) {
   document.querySelectorAll('.rf-opt-btn').forEach(b => b.classList.add('rf-disabled'));
   const wrap = document.createElement('div');
   wrap.className = 'rf-user-msg';
-  wrap.innerHTML = '<div><div class="rf-user-bubble">'+rfEscapeHtml(text)+'</div><div class="rf-user-time">'+rfTime()+' ✓✓</div></div>';
+  wrap.innerHTML = '<div><div class="rf-user-bubble">'+rfEscapeHtml(text)+'</div><div class="rf-user-time">'+rfTime()+'</div></div>';
   rfChat.appendChild(wrap);
   rfScroll();
 }
 
-function rfAddOptions(opts) {
+function rfAddOptions(opts, flowVersion=rfCurrentFlow()) {
+  if (!rfIsFlowActive(flowVersion)) return;
   const container = document.createElement('div');
   container.className = 'rf-options';
   opts.forEach(o => {
     const btn = document.createElement('button');
     btn.className = 'rf-opt-btn';
     btn.textContent = o.label;
-    btn.onclick = () => o.action();
+    btn.onclick = () => {
+      if (!rfIsFlowActive(flowVersion)) return;
+      rfAdvanceFlow();
+      o.action();
+    };
     container.appendChild(btn);
   });
   rfChat.appendChild(container);
@@ -742,7 +797,8 @@ function rfAddOptions(opts) {
 
 // Captura nombre + teléfono DENTRO del widget (sin salir a WhatsApp).
 // onSubmit se dispara solo cuando ambos campos tienen contenido.
-function rfAddCapturaContacto(onSubmit) {
+function rfAddCapturaContacto(onSubmit, flowVersion=rfCurrentFlow()) {
+  if (!rfIsFlowActive(flowVersion)) return;
   const wrap = document.createElement('div');
   wrap.className = 'rf-captura';
   wrap.innerHTML =
@@ -759,11 +815,14 @@ function rfAddCapturaContacto(onSubmit) {
   const btnLabelOriginal = btn.textContent;
 
   btn.onclick = () => {
+    if (!rfIsFlowActive(flowVersion)) return;
     const nombre = nombreInput.value.trim();
     const telefono = telInput.value.trim();
     if (!nombre || !telefono) {
       btn.textContent = 'Completa ambos datos';
-      setTimeout(() => { btn.textContent = btnLabelOriginal; }, 1500);
+      rfSetTimer(() => {
+        if (document.body.contains(btn)) btn.textContent = btnLabelOriginal;
+      }, 1500);
       return;
     }
     rfState.nombre_contacto = nombre;
@@ -772,6 +831,7 @@ function rfAddCapturaContacto(onSubmit) {
     nombreInput.disabled = true;
     telInput.disabled = true;
     btn.disabled = true;
+    rfAdvanceFlow();
     onSubmit();
   };
 }
@@ -781,24 +841,31 @@ function rfAddCapturaContacto(onSubmit) {
 // obligar a salir del widget. WhatsApp queda como continuación opcional en
 // rfNodo7().
 function rfNodoContacto() {
+  const flowVersion = rfCurrentFlow();
   rfBotSequence([
-    '📋 Para registrar tu solicitud y que un ejecutivo te contacte, cuéntanos:'
+    '📋 Para registrar tu solicitud en el sistema, cuéntanos:'
   ], () => {
-    rfAddCapturaContacto(() => rfNodo7());
-  });
+    rfAddCapturaContacto(() => rfNodo7(), flowVersion);
+  }, false, flowVersion);
 }
 
-async function rfBotSequence(messages, thenFn, instant=false) {
+async function rfBotSequence(messages, thenFn, instant=false, flowVersion=rfCurrentFlow()) {
   for (let i = 0; i < messages.length; i++) {
+    if (!rfIsFlowActive(flowVersion)) return;
     if (!instant) {
+      if (!rfIsFlowActive(flowVersion)) return;
       rfAddTyping();
-      await new Promise(r => setTimeout(r, 800 + Math.random()*300));
+      await new Promise(r => rfSetTimer(r, 800 + Math.random()*300));
+      if (!rfIsFlowActive(flowVersion)) {
+        rfRemoveTyping();
+        return;
+      }
       rfRemoveTyping();
     }
-    await rfAddBotMsg(messages[i], 0);
-    if (!instant && i < messages.length - 1) await new Promise(r => setTimeout(r, 250));
+    await rfAddBotMsg(messages[i], 0, flowVersion);
+    if (!instant && i < messages.length - 1) await new Promise(r => rfSetTimer(r, 250));
   }
-  if (thenFn) thenFn();
+  if (thenFn && rfIsFlowActive(flowVersion)) thenFn();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -811,18 +878,36 @@ async function rfBotSequence(messages, thenFn, instant=false) {
 // banner nunca reflejaba una fuente real, solo la ausencia de curaduría).
 // Ver mayordomo/PLAN-2026/WIDGET-CURADURIA-VISIBILIDAD-V1.md.
 async function rfFetchCurado(sucursal, filtros) {
+  const cacheKey = JSON.stringify({ sucursal: sucursal, filtros: filtros || {} });
+  const now = Date.now();
+  const cached = rfCatalogCache.get(cacheKey);
+  if (cached && (now - cached.ts) < RF_CATALOG_CACHE_TTL_MS) {
+    return cached.rows;
+  }
+
+  const controller = new AbortController();
+  rfCatalogFetchControllers.add(controller);
   try {
     const qs = new URLSearchParams({ sucursal: 'eq.' + sucursal, order: 'orden_widget.asc.nullslast' });
     Object.keys(filtros || {}).forEach(k => qs.set(k, 'eq.' + filtros[k]));
     const r = await fetch(
       RF_CONFIG.SUPABASE_URL + '/rest/v1/v_widget_materiales_curados?' + qs.toString(),
-      { headers: { 'apikey': RF_CONFIG.SUPABASE_KEY, 'Authorization': 'Bearer ' + RF_CONFIG.SUPABASE_KEY } }
+      {
+        headers: { 'apikey': RF_CONFIG.SUPABASE_KEY, 'Authorization': 'Bearer ' + RF_CONFIG.SUPABASE_KEY },
+        signal: controller.signal
+      }
     );
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     const rows = await r.json();
-    return Array.isArray(rows) ? rows : [];
+    const safeRows = Array.isArray(rows) ? rows : [];
+    rfCatalogCache.set(cacheKey, { ts: now, rows: safeRows });
+    return safeRows;
   } catch (e) {
+    if (e && e.name === 'AbortError') return [];
     console.warn('[RF Chatbot] rfFetchCurado falló:', e);
     return [];
+  } finally {
+    rfCatalogFetchControllers.delete(controller);
   }
 }
 const rfFetchMetalesCurados = (sucursal) => rfFetchCurado(sucursal, { seccion_widget: 'metales_completo' });
@@ -929,7 +1014,7 @@ function rfNodo2b() {
 
 function rfNodo2c() {
   rfBotSequence([
-    'No tenemos sucursal en tu ciudad, pero podemos coordinar un retiro especial dependiendo del volumen. Un ejecutivo te contactará para evaluar la opción.'
+    'Hoy no tenemos una sucursal operativa en tu ciudad, pero podemos revisar un retiro especial según volumen y ubicación. Déjanos tu solicitud y la evaluamos de inmediato.'
   ], () => {
     rfAddOptions([
       { label:'1. Continuar con cotización de retiro', action:()=>{ rfAddUserMsg('Continuar cotización'); rfNodo3c(); }},
@@ -958,32 +1043,43 @@ const RF_DIRECCIONES_SUCURSAL = {
 };
 
 async function rfNodo3a() {
+  const flowVersion = rfCurrentFlow();
   const sucursal = rfState.sucursal || 'Cerrillos';
-  const filas = await rfFetchPrincipalCurado(sucursal);
+  const [filas, metalesCurados] = await Promise.all([
+    rfFetchPrincipalCurado(sucursal),
+    rfFetchMetalesCurados(sucursal)
+  ]);
+  if (!rfIsFlowActive(flowVersion)) return;
 
-  rfBotSequence(['¿Qué tipo de material quieres vender?']);
+  rfBotSequence(['¿Qué tipo de material quieres vender?'], null, false, flowVersion);
 
-  setTimeout(() => {
+  rfSetTimer(() => {
+    if (!rfIsFlowActive(flowVersion)) return;
     if (filas.length === 0) {
-      rfBotSequence([
-        'Todavía no tenemos materiales confirmados para este canal en ' + sucursal + '.',
-        'Puedes revisar la canasta confirmada de Fierro y otros metales, o dejarnos tu solicitud para orientarte correctamente según material y volumen.'
-      ], () => {
+      const seqs = [
+        'Todavía no tenemos materiales confirmados para este canal en ' + sucursal + '.'
+      ];
+      if (metalesCurados.length > 0) {
+        seqs.push('Sí tenemos una canasta autorizada de metales para esta sucursal. También podemos registrar tu solicitud si tu material requiere revisión.');
+      } else {
+        seqs.push('Podemos registrar tu solicitud para revisarla según material, volumen y sucursal.');
+      }
+      rfBotSequence(seqs, () => {
         rfAddOptions([
-          {
-            label:'1. 🔩 Fierro y otros metales (Farex)',
+          ...(metalesCurados.length > 0 ? [{
+            label:'1. 🔩 Ver metales con precio autorizado',
             action: () => { rfAddUserMsg('Fierro y metales'); rfState.esMetal=true; rfState.empresa='farex'; rfNodo3am(); }
-          },
+          }] : []),
           {
-            label:'2. Otros materiales',
+            label: metalesCurados.length > 0 ? '2. Otros materiales' : '1. Otros materiales',
             action: () => { rfAddUserMsg('Otros materiales'); rfNodo3av(); }
           },
           {
-            label:'3. Volver al menú principal',
+            label: metalesCurados.length > 0 ? '3. Volver al menú principal' : '2. Volver al menú principal',
             action: () => { rfAddUserMsg('Volver al menú'); rfNodo1(); }
           }
-        ]);
-      });
+        ], flowVersion);
+      }, false, flowVersion);
       return;
     }
     const opts = filas.map(m => {
@@ -1011,7 +1107,7 @@ async function rfNodo3a() {
       label:'Otros materiales',
       action: () => { rfAddUserMsg('Otros materiales'); rfNodo3av(); }
     });
-    rfAddOptions(opts);
+    rfAddOptions(opts, flowVersion);
   }, 1200);
 }
 
@@ -1019,12 +1115,14 @@ async function rfNodo3a() {
 // N3A-M · Fierro y Metales Farex (tabla dinámica desde Supabase)
 // ═══════════════════════════════════════════════════════════════
 async function rfNodo3am() {
+  const flowVersion = rfCurrentFlow();
   const sucursal = rfState.sucursal || 'Cerrillos';
   const filas = await rfFetchMetalesCurados(sucursal);
+  if (!rfIsFlowActive(flowVersion)) return;
 
   let html = '<div class="rf-precio-tabla">';
-  html += '<div class="rf-pt-title">🔧 Metales y Fierros · ' + sucursal + '</div>';
-  html += '<div class="rf-pt-fecha">' + new Date().toLocaleDateString('es-CL') + ' · canasta confirmada</div>';
+  html += '<div class="rf-pt-title">🔧 Compra de metales · precio autorizado · ' + sucursal + '</div>';
+  html += '<div class="rf-pt-fecha">' + new Date().toLocaleDateString('es-CL') + ' · valores de compra vigentes para este canal</div>';
 
   filas.forEach(m => {
     const valor = m.modo_widget === 'precio' && m.precio_lista_clp
@@ -1040,7 +1138,7 @@ async function rfNodo3am() {
     // de insertarse en el chat), así que necesita su propio valor legible
     // sobre fondo claro — antes era #fb923c (naranja para fondo oscuro,
     // contraste insuficiente sobre blanco).
-    html = '<div style="color:#8a5a1e">Todavía no tenemos materiales confirmados para este canal en ' + sucursal + '. Déjanos tus datos y registramos tu solicitud para orientarte correctamente según material y volumen.</div>';
+    html = '<div style="color:#8a5a1e">Todavía no tenemos materiales confirmados para este canal en ' + sucursal + '. Déjanos tus datos y registramos tu solicitud para revisión comercial.</div>';
   }
 
   rfBotSequence([html], () => {
@@ -1050,7 +1148,7 @@ async function rfNodo3am() {
           rfState.material = filas.map(m => m.material).join(', ') || 'metales varios';
           rfState.precio = null;
           rfBotSequence([
-            '💳 Pago al contado con transferencia bancaria. Contamos con romana eléctrica para el pesaje.',
+            '💳 Pago al contado por transferencia bancaria. Contamos con romana eléctrica para el pesaje.',
             '📍 <b>Dirección:</b>\n' + (RF_DIRECCIONES_SUCURSAL[sucursal] || RF_DIRECCIONES_SUCURSAL['Cerrillos']),
             '🕐 <b>Horarios:</b>\nLunes a Jueves: 8:30 — 18:00 hrs\nViernes: 8:30 — 17:00 hrs',
             '⚠ Precio con IVA Retención 19%'
@@ -1058,16 +1156,17 @@ async function rfNodo3am() {
             rfNodo5a();
           });
       }},
-      { label:'2. Cotizar servicio de retiro', action:()=>{ rfAddUserMsg('Cotizar retiro'); rfNodo3c(); }},
+      { label:'2. 🛠️ Ver servicios', action:()=>{ rfAddUserMsg('Ver servicios'); rfNodo3e(); }},
       { label:'3. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }}
-    ]);
-  });
+    ], flowVersion);
+  }, false, flowVersion);
 }
 
 function rfNodo3av() {
   rfBotSequence([
     'Todavía no tenemos un precio autorizado para este material en este canal.',
-    'Déjanos tus datos y registramos tu solicitud para revisarla correctamente.'
+    'Déjanos tus datos y registramos tu solicitud para revisión comercial.',
+    'Si corresponde, el equipo la verá desde Oportunidades para darte la mejor alternativa.'
   ], () => {
     rfState.intent = 'materiales_varios';
     rfNodoContacto();
@@ -1081,7 +1180,6 @@ function rfNodo4() {
   const ciudad = rfState.ciudad || 'Santiago';
   const sucursal = rfState.sucursal || (ciudad === 'Santiago' ? 'Cerrillos' : ciudad);
   const esMetal = rfState.esMetal;
-  const precio = rfState.precio ? '$' + Math.round(rfState.precio).toLocaleString('es-CL') + '/kg' : 'consultar con ejecutivo';
   const material = rfState.material || 'el material';
 
   const direcciones = RF_DIRECCIONES_SUCURSAL;
@@ -1090,12 +1188,15 @@ function rfNodo4() {
   const ivaNota = rfState.empresa === 'farex' ? '\n⚠ Precio con IVA Retención 19%' : '\n⚠ Precio sin IVA';
 
   const seqs = [];
-  if (rfState.precio) seqs.push('💰 El precio de compra autorizado para este canal es <b>' + precio + ' para ' + material + '</b>, puesto en nuestra sucursal de ' + sucursal + '.' + ivaNota);
-  else seqs.push('💰 Todavía no tenemos un precio autorizado para ' + material + ' en este canal. Déjanos tus datos y registramos tu solicitud para revisarla correctamente.');
-  seqs.push('💳 Pago al contado con transferencia bancaria. ' + romana + donacion);
+  if (rfState.precio) {
+    const precio = '$' + Math.round(rfState.precio).toLocaleString('es-CL') + '/kg';
+    seqs.push('💰 El precio de compra autorizado hoy para este canal es <b>' + precio + ' para ' + material + '</b> en nuestra sucursal de ' + sucursal + '.' + ivaNota);
+  }
+  else seqs.push('💰 Todavía no tenemos un precio autorizado para ' + material + ' en este canal. Déjanos tus datos y registramos tu solicitud para revisión comercial.');
+  seqs.push('💳 Pago al contado por transferencia bancaria. ' + romana + donacion);
   seqs.push('📍 <b>Dirección:</b>\n' + (direcciones[sucursal] || direcciones['Cerrillos']));
   seqs.push('🕐 <b>Horarios:</b>\nLunes a Jueves: 8:30 — 18:00 hrs\nViernes: 8:30 — 17:00 hrs');
-  seqs.push('📝 Si te interesa avanzar, deja tus datos para registrar tu llegada o coordinar mejor la entrega.');
+  seqs.push('📝 Si te interesa avanzar, deja tus datos y registramos la siguiente etapa de la entrega.');
 
   rfTrack('cotizacion_completa', { material: rfState.material, sucursal: sucursal, empresa: rfState.empresa });
 
@@ -1103,17 +1204,17 @@ function rfNodo4() {
     if (esMetal) {
       rfAddOptions([
         { label:'1. Me interesa vender ✅', action:()=>{ rfAddUserMsg('Me interesa vender'); rfNodo5a(); }},
-        { label:'2. Cotizar servicio de retiro', action:()=>{ rfAddUserMsg('Cotizar retiro'); rfNodo3c(); }},
+        { label:'2. 🛠️ Ver servicios', action:()=>{ rfAddUserMsg('Ver servicios'); rfNodo3e(); }},
         { label:'3. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }},
-        { label:'4. Lo voy a meditar...', action:()=>{ rfAddUserMsg('Lo voy a meditar'); rfNodo3d(); }}
+        { label:'4. Necesito revisarlo', action:()=>{ rfAddUserMsg('Necesito revisarlo'); rfNodo3d(); }}
       ]);
     } else {
       rfAddOptions([
         { label:'1. Me interesa vender ✅', action:()=>{ rfAddUserMsg('Me interesa vender'); rfNodo5a(); }},
         { label:'2. Quiero donar 💚', action:()=>{ rfAddUserMsg('Quiero donar'); rfNodo3b(); }},
-        { label:'3. Cotizar servicio de retiro', action:()=>{ rfAddUserMsg('Cotizar retiro'); rfNodo3c(); }},
+        { label:'3. 🛠️ Ver servicios', action:()=>{ rfAddUserMsg('Ver servicios'); rfNodo3e(); }},
         { label:'4. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }},
-        { label:'5. Lo voy a meditar...', action:()=>{ rfAddUserMsg('Lo voy a meditar'); rfNodo3d(); }}
+        { label:'5. Necesito revisarlo', action:()=>{ rfAddUserMsg('Necesito revisarlo'); rfNodo3d(); }}
       ]);
     }
   });
@@ -1137,7 +1238,7 @@ function rfNodo5a() {
 // ═══════════════════════════════════════════════════════════════
 function rfNodo6a() {
   rfBotSequence([
-    'Perfecto. Déjanos tus datos y registramos tu entrega en el sistema para coordinar RUT, día y jornada.\n\n💳 Los datos bancarios para la transferencia se comparten al momento de coordinar la recepción.'
+    'Perfecto. Déjanos tus datos y registramos tu entrega en el sistema para coordinar RUT, día y jornada.\n\n💳 Los datos bancarios se comparten al confirmar la recepción.'
   ], () => {
     rfState.intent = 'vender_material';
     rfNodoContacto();
@@ -1185,8 +1286,8 @@ function rfNodo3bEmpresa() {
 function rfNodo3c() {
   rfState.intent = 'cotizar_retiro';
   rfBotSequence([
-    '¡Perfecto! Para preparar tu cotización de retiro necesitaremos: dirección, fotos del material, tipo de camión, kilos aproximados y día/jornada preferida.',
-    '📌 Déjanos tus datos ahora y registramos tu solicitud para coordinar el resto.'
+    'Para preparar una cotización de retiro necesitamos: dirección, fotos del material, tipo de camión, kilos aproximados y día o jornada preferida.',
+    '📌 Déjanos tus datos y dejamos la solicitud ingresada ahora para continuar la coordinación.'
   ], () => rfNodoContacto());
 }
 
@@ -1196,13 +1297,12 @@ function rfNodo3c() {
 function rfNodo3d() {
   rfState.intent = 'meditar';
   rfBotSequence([
-    '¡Sin problema! Tómate el tiempo que necesites. 😊',
-    'Cuando estés listo, puedes volver a escribirnos y retomamos desde donde quedamos.',
-    '¿Quieres dejar tus datos para que podamos seguir tu caso cuando lo decidas?'
+    'Entendido. Puedes revisarlo con calma y retomar la conversación cuando te acomode.',
+    'Si quieres, deja tus datos y registramos el caso para darle continuidad cuando decidas avanzar.'
   ], () => {
     rfAddOptions([
-      { label:'1. Sí, dejar mis datos', action:()=>{ rfAddUserMsg('Sí, dejar mis datos'); rfNodoContacto(); }},
-      { label:'2. No, no es necesario', action:()=>{ rfAddUserMsg('No, gracias'); rfNodofin(); }},
+      { label:'1. Sí, registrar mis datos', action:()=>{ rfAddUserMsg('Sí, registrar mis datos'); rfNodoContacto(); }},
+      { label:'2. No por ahora', action:()=>{ rfAddUserMsg('No por ahora'); rfNodofin(); }},
       { label:'3. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfNodo1(); }}
     ]);
   });
@@ -1218,7 +1318,7 @@ function rfNodo3d() {
 // ═══════════════════════════════════════════════════════════════
 function rfNodo3e() {
   rfBotSequence([
-    '🛠️ Además del retiro, te podemos ayudar con otras necesidades. ¿Qué buscas?'
+    '🛠️ Podemos ayudarte con retiros, certificados, continuidad operativa y atención para tu empresa. ¿Qué necesitas activar?'
   ], () => {
     rfAddOptions([
       { label:'1. 🚛 Retiro de materiales', action:()=>{ rfAddUserMsg('Retiro de materiales'); rfNodo3c(); }},
@@ -1242,7 +1342,7 @@ function rfNodo3eCert() {
     rfAddOptions([
       { label:'1. Certificado de una entrega ya realizada', action:()=>{ rfAddUserMsg('Certificado de entrega realizada'); rfState.tipo_certificado='recepcion_entrega'; rfNodo3eCertContacto(); }},
       { label:'2. Certificado Ley REP para mi empresa', action:()=>{ rfAddUserMsg('Certificado Ley REP'); rfState.tipo_certificado='ley_rep'; rfNodo3eCertContacto(); }},
-      { label:'3. No estoy seguro, que me orienten', action:()=>{ rfAddUserMsg('No estoy seguro'); rfState.tipo_certificado='orientacion'; rfNodo3eCertContacto(); }},
+      { label:'3. No estoy seguro, necesito orientación', action:()=>{ rfAddUserMsg('Necesito orientación'); rfState.tipo_certificado='orientacion'; rfNodo3eCertContacto(); }},
       // Volver al menú PRINCIPAL, no a Servicios: este nodo ahora se entra
       // también desde Empresa/rfNodo1c (N1B-2) — "volver a servicios" sería
       // incorrecto si el visitante nunca pasó por ahí.
@@ -1254,7 +1354,7 @@ function rfNodo3eCert() {
 function rfNodo3eCertContacto() {
   rfState.intent = 'servicio_certificado';
   rfBotSequence([
-    'Perfecto. Déjanos tus datos y registramos tu solicitud para que un ejecutivo la revise y te confirme los pasos.'
+    'Perfecto. Déjanos tus datos y registramos tu solicitud para continuar la gestión con el respaldo correspondiente.'
   ], () => rfNodoContacto());
 }
 
@@ -1264,7 +1364,7 @@ function rfNodo3eCertContacto() {
 // relación comercial en sí (contrato, cuenta, cumplimiento).
 function rfNodo3eEmpresa() {
   rfBotSequence([
-    '🏢 Para empresas ofrecemos más que un retiro puntual: contratos de retiro periódico, atención dedicada y, como gestor certificado, te ayudamos a cumplir la Ley REP y el DS 594 sin complicaciones.',
+    '🏢 Para empresas ofrecemos continuidad operacional: retiros periódicos, atención dedicada y respaldo para cumplimiento REP y DS 594.',
     '¿Qué te interesa?'
   ], () => {
     rfAddOptions([
@@ -1281,7 +1381,7 @@ function rfNodo3eEmpresa() {
 function rfNodo3eEmpresaContacto() {
   rfState.intent = 'servicio_atencion_empresa';
   rfBotSequence([
-    'Perfecto. Déjanos tus datos y un ejecutivo dedicado a empresas te contacta para revisar el mejor plan.'
+    'Perfecto. Déjanos tus datos y registramos tu caso para continuar con la propuesta adecuada para tu empresa.'
   ], () => rfNodoContacto());
 }
 
@@ -1292,7 +1392,7 @@ function rfNodo3eEmpresaContacto() {
 function rfNodo3eOtro() {
   rfState.intent = 'servicio_otro';
   rfBotSequence([
-    'Sin problema. Déjanos tus datos y registramos tu solicitud — cuando te contactemos nos cuentas el detalle y te derivamos con la persona indicada.'
+    'Sin problema. Déjanos tus datos y registramos tu solicitud para derivarla por el carril correcto.'
   ], () => rfNodoContacto());
 }
 
@@ -1395,6 +1495,7 @@ function rfGenerarMensajeWhatsApp() {
 }
 
 function rfNodo7() {
+  const flowVersion = rfCurrentFlow();
   // Crear el caso comercial (vía intake v1 o vía legacy, según flag).
   // Se registra SIEMPRE acá, independiente de si el visitante abre WhatsApp
   // o no — WhatsApp ya no es requisito para quedar registrado (R-WIDGET-001).
@@ -1406,8 +1507,8 @@ function rfNodo7() {
     // Delay > tiempo de la secuencia principal de abajo, para que este
     // mensaje aparezca DESPUÉS de la confirmación, no antes (la respuesta
     // del backend puede llegar más rápido que la animación de "escribiendo").
-    if (resp && resp.nivel_autonomia === 'excepcion') {
-      rfAddBotMsg('🧑‍💼 Tu caso quedó marcado para revisión personalizada — un ejecutivo lo va a mirar directamente.', 1600);
+    if (rfIsFlowActive(flowVersion) && resp && resp.nivel_autonomia === 'excepcion') {
+      rfAddBotMsg('🧑‍💼 Tu caso quedó marcado para revisión prioritaria por nuestro equipo comercial.', 1600, flowVersion);
     }
   });
 
@@ -1420,26 +1521,28 @@ function rfNodo7() {
   const telefonoMsg = rfState.telefono_contacto ? ' al ' + rfEscapeHtml(rfState.telefono_contacto) : '';
 
   rfBotSequence([
-    '✅ <b>¡Listo' + saludoNombre + '!</b> Ya registramos tu solicitud en nuestro sistema' + telefonoMsg + '. Si el caso requiere seguimiento adicional, lo haremos con los datos que ya dejaste.'
+    '✅ <b>¡Listo' + saludoNombre + '!</b> Ya registramos tu solicitud en nuestro sistema' + telefonoMsg + '. El caso continúa con los datos que ya dejaste, sin que tengas que repetirlos.'
   ], () => {
+    if (!rfIsFlowActive(flowVersion)) return;
     const wrap = document.createElement('div');
     wrap.className = 'rf-bot-msg';
     wrap.style.maxWidth = '92%';
     wrap.innerHTML =
       '<div style="width:100%">' +
-        '<a href="' + waLink + '" target="_blank" class="rf-wa-cta"><span class="rf-wa-icon">💬</span>Continuar por WhatsApp (opcional)</a>' +
-        '<span class="rf-wa-secundario">Tu solicitud ya quedó registrada. Este paso es solo si prefieres seguir por ese canal.</span>' +
+        '<a href="' + waLink + '" target="_blank" class="rf-wa-cta"><span class="rf-wa-icon">💬</span>Canal directo por WhatsApp (opcional)</a>' +
+        '<span class="rf-wa-secundario">Tu solicitud ya quedó registrada. Este canal es opcional si prefieres avanzar por ahí.</span>' +
       '</div>';
     rfChat.appendChild(wrap);
     rfScroll();
 
-    setTimeout(() => {
+    rfSetTimer(() => {
+      if (!rfIsFlowActive(flowVersion)) return;
       rfAddOptions([
         { label:'1. Volver al menú principal', action:()=>{ rfAddUserMsg('Volver al menú'); rfReset(); }},
-        { label:'2. No, muchas gracias 👋', action:()=>{ rfAddUserMsg('Muchas gracias'); rfNodofin(); }}
-      ]);
+        { label:'2. Cerrar por ahora', action:()=>{ rfAddUserMsg('Cerrar por ahora'); rfNodofin(); }}
+      ], flowVersion);
     }, 600);
-  });
+  }, false, flowVersion);
 }
 
 function rfNodofin() {
