@@ -3426,6 +3426,7 @@
             <option value="">Cargando…</option>
           </select>
           <div class="mt-3 text-xs text-stone-500" id="mpStrategyUse">Cargando criterio…</div>
+          <div class="mt-3 rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-600" id="mpStrategyApplied">Sin lectura aplicada al material actual.</div>
         </div>
         <div class="bg-white border border-stone-300 rounded-xl p-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
@@ -3434,8 +3435,24 @@
               <div class="text-stone-700" id="mpStrategyObjective">—</div>
             </div>
             <div>
+              <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Segmento foco</div>
+              <div class="text-stone-700" id="mpStrategySegment">—</div>
+            </div>
+            <div>
               <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Politica de publicacion</div>
               <div class="text-stone-700" id="mpStrategyPublish">—</div>
+            </div>
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Politica de precio</div>
+              <div class="text-stone-700" id="mpStrategyPrice">—</div>
+            </div>
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Politica de servicio</div>
+              <div class="text-stone-700" id="mpStrategyService">—</div>
+            </div>
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Materiales foco</div>
+              <div class="text-stone-700" id="mpStrategyMaterial">—</div>
             </div>
             <div>
               <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Apoyo por sucursal</div>
@@ -3444,6 +3461,10 @@
             <div>
               <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Ventana de uso</div>
               <div class="text-stone-700" id="mpStrategyWindow">—</div>
+            </div>
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Condicion de salida</div>
+              <div class="text-stone-700" id="mpStrategyExit">—</div>
             </div>
           </div>
         </div>
@@ -16179,9 +16200,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderExecutivePriceCard(profile) {
     const prompts = getExecutivePricePrompts(profile);
     const strategyApi = window.DIEGO_STRATEGY;
-    const strategy = strategyApi && typeof strategyApi.getActive === 'function'
-      ? strategyApi.getActive()
+    const snapshot = strategyApi && typeof strategyApi.getSnapshot === 'function'
+      ? strategyApi.getSnapshot()
       : null;
+    const strategy = snapshot?.active || (strategyApi && typeof strategyApi.getActive === 'function'
+      ? strategyApi.getActive()
+      : null);
     return `<div class="diego-side-card">
       <div class="diego-side-label">Precio ejecutivo</div>
       <div class="diego-side-list">
@@ -16192,7 +16216,13 @@ document.addEventListener('DOMContentLoaded', () => {
       ${strategy ? `<div class="diego-side-list" style="margin-top:8px;">
         <div><strong>Estrategia activa:</strong> ${esc(strategy.title || 'Estrategia')}</div>
         <div><strong>Objetivo:</strong> ${esc(strategy.objective || 'Sin objetivo visible')}</div>
-        <div><strong>Publicacion:</strong> ${esc(strategy.publicationPolicy || 'Sin politica visible')}</div>
+        <div><strong>Segmento:</strong> ${esc(strategy.segmentFocus || 'Sin segmento visible')}</div>
+        <div><strong>Publicacion:</strong> ${esc(snapshot?.publicationDecision || strategy.publicationPolicy || 'Sin politica visible')}</div>
+        <div><strong>Sucursal:</strong> ${esc(snapshot?.branchDirective || strategy.branchPolicy || 'Sin politica visible')}</div>
+        <div><strong>Ventana:</strong> ${esc(snapshot?.validityDecision || strategy.duration || 'Sin ventana visible')}</div>
+        <div><strong>Salida:</strong> ${esc(snapshot?.exitDirective || strategy.exitCondition || 'Sin salida visible')}</div>
+        <div><strong>Material en foco:</strong> ${esc(snapshot?.context?.materialName || 'Sin material activo')}</div>
+        <div><strong>Rol del material:</strong> ${esc(snapshot?.materialRole || 'Sin lectura visible')}</div>
       </div>` : ''}
       <div class="diego-side-actions" style="margin-top:8px;">
         ${renderPromptButtonRow(prompts)}
@@ -17064,6 +17094,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   closeBtn.addEventListener('click', () => win.classList.remove('open'));
   window.addEventListener('diego-case-sync-status', () => {
+    if (win.classList.contains('open')) render();
+  });
+  window.addEventListener('diego-strategy-changed', () => {
+    if (win.classList.contains('open')) render();
+  });
+  window.addEventListener('diego-strategy-context-changed', () => {
     if (win.classList.contains('open')) render();
   });
 
@@ -20638,18 +20674,72 @@ document.addEventListener('DOMContentLoaded', () => {
       id: 'operacion_general',
       title: 'Operacion general',
       objective: 'Resolver precios con criterio operativo y foco en continuidad.',
+      segmentFocus: 'Generadores sin estrategia explicita seleccionada.',
       whenToUse: 'Mientras no haya una estrategia comercial explicita seleccionada.',
+      materialFocus: 'Materiales pendientes sin clasificacion estrategica adicional.',
+      servicePolicy: 'Sostener servicio base y trazabilidad.',
+      pricePolicy: 'Resolver el mejor numero defendible con el contexto disponible.',
       publicationPolicy: 'Publicar solo decisiones defendibles y trazables.',
       branchPolicy: 'Mantener coherencia basica entre sucursales y excepciones visibles.',
       duration: 'Hasta nueva definicion ejecutiva.',
+      exitCondition: 'Salir cuando exista una estrategia comercial explicita mejor definida.',
     };
   }
 
-  function mpRenderStrategy() {
+  function mpBuildStrategyContext(group) {
+    if (!group) return null;
+    const notes = group.rows.map(row => row?.notas).filter(Boolean).join(' | ');
+    const branchNames = group.rows.map(row => mpGetSucursalNombre(row)).filter(Boolean);
+    const sourceNames = group.rows.map(row => row?.cliente_nombre).filter(Boolean);
+    let materialRoleHint = '';
+    if (group.urgent > 0 && group.branches === 1) materialRoleHint = 'local';
+    else if (group.signals > group.direct) materialRoleHint = 'acompanante';
+    else if (group.branches > 1 || group.direct > 0) materialRoleHint = 'locomotora';
+    return {
+      materialId: group.material_id || null,
+      materialName: group.material_nombre || '',
+      materialRoleHint,
+      branchNames,
+      rowCount: group.rows.length || 0,
+      urgentCount: group.urgent || 0,
+      directCount: group.direct || 0,
+      signalCount: group.signals || 0,
+      notes,
+      sourceNames,
+    };
+  }
+
+  function mpGetStrategySnapshot(group) {
+    const active = mpGetActiveStrategy();
+    const api = mpGetStrategyApi();
+    const context = mpBuildStrategyContext(group);
+    if (api && typeof api.getGuide === 'function') {
+      return api.getGuide(context);
+    }
+    return {
+      active,
+      context,
+      materialRole: context?.materialRoleHint || 'Sin material foco activo',
+      appliedSummary: active.title || 'Operacion general',
+      publicationDecision: active.publicationPolicy || 'Sin politica visible.',
+      branchDirective: active.branchPolicy || 'Sin foco por sucursal visible.',
+      validityDecision: active.duration || 'Sin ventana definida.',
+      exitDirective: active.exitCondition || 'Sin condicion de salida visible.',
+    };
+  }
+
+  function mpSyncStrategyContext(group) {
+    const api = mpGetStrategyApi();
+    if (!api || typeof api.setContext !== 'function') return;
+    api.setContext(mpBuildStrategyContext(group));
+  }
+
+  function mpRenderStrategy(group) {
     const select = document.getElementById('mpStrategySelect');
     const badge = document.getElementById('mpStrategyBadge');
     const rule = document.getElementById('mpStrategyRule');
-    const active = mpGetActiveStrategy();
+    const snapshot = mpGetStrategySnapshot(group);
+    const active = snapshot.active || mpGetActiveStrategy();
     const api = mpGetStrategyApi();
     const presets = api ? api.getPresets() : [active];
 
@@ -20670,12 +20760,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (badge) badge.textContent = active.title || 'Estrategia';
     tapSet('mpStrategyUse', active.whenToUse || 'Sin criterio visible.');
+    tapSet('mpStrategyApplied', snapshot.appliedSummary || 'Sin lectura aplicada al material actual.');
     tapSet('mpStrategyObjective', active.objective || 'Sin objetivo visible.');
+    tapSet('mpStrategySegment', active.segmentFocus || 'Sin segmento foco visible.');
     tapSet('mpStrategyPublish', active.publicationPolicy || 'Sin politica visible.');
+    tapSet('mpStrategyPrice', active.pricePolicy || 'Sin politica de precio visible.');
+    tapSet('mpStrategyService', active.servicePolicy || 'Sin politica de servicio visible.');
+    tapSet('mpStrategyMaterial', active.materialFocus || 'Sin materiales foco visibles.');
     tapSet('mpStrategyBranch', active.branchPolicy || 'Sin politica por sucursal visible.');
     tapSet('mpStrategyWindow', active.duration || 'Sin ventana definida.');
+    tapSet('mpStrategyExit', active.exitCondition || 'Sin condicion de salida visible.');
     if (rule) {
-      rule.textContent = '5. Estrategia activa: ' + (active.title || 'Operacion general') + '. ' + (active.publicationPolicy || 'Sin politica visible.');
+      rule.textContent = '5. Estrategia activa: ' + (active.title || 'Operacion general') + '. ' + (snapshot.publicationDecision || active.publicationPolicy || 'Sin politica visible.');
     }
   }
 
@@ -20939,7 +21035,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function mpRenderDetail(group) {
     const el = document.getElementById('mpDetail');
-    const strategy = mpGetActiveStrategy();
+    const snapshot = mpGetStrategySnapshot(group);
+    const strategy = snapshot.active || mpGetActiveStrategy();
     if (!el) return;
     if (!group) {
       el.innerHTML = '<div class="rounded-xl border border-dashed border-stone-300 px-4 py-8 text-sm text-stone-400">Seleccioná un material para ver sus sucursales y abrir la resolución completa.</div>';
@@ -21003,6 +21100,12 @@ document.addEventListener('DOMContentLoaded', () => {
       + '<div class="mt-3 rounded-lg bg-white px-3 py-2 text-xs text-stone-600"><strong>Publicacion y ventana:</strong> '
       + tapEscape(strategy.publicationPolicy || 'Sin politica visible.') + ' · '
       + tapEscape(strategy.duration || 'Sin ventana definida.') + '</div>'
+      + '<div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">'
+      + '<div class="rounded-lg bg-white px-3 py-2 text-stone-600"><strong>Rol del material:</strong> ' + tapEscape(snapshot.materialRole || 'Sin lectura') + '</div>'
+      + '<div class="rounded-lg bg-white px-3 py-2 text-stone-600"><strong>Decision de publicacion:</strong> ' + tapEscape(snapshot.publicationDecision || strategy.publicationPolicy || 'Sin politica visible.') + '</div>'
+      + '<div class="rounded-lg bg-white px-3 py-2 text-stone-600"><strong>Sucursal y alcance:</strong> ' + tapEscape(snapshot.branchDirective || strategy.branchPolicy || 'Sin politica visible.') + '</div>'
+      + '<div class="rounded-lg bg-white px-3 py-2 text-stone-600"><strong>Vigencia y salida:</strong> ' + tapEscape(snapshot.validityDecision || strategy.duration || 'Sin ventana definida.') + ' · ' + tapEscape(snapshot.exitDirective || strategy.exitCondition || 'Sin condicion visible.') + '</div>'
+      + '</div>'
       + '</div>'
       + '<div class="grid grid-cols-1 lg:grid-cols-2 gap-3">' + branchCards.join('') + '</div>'
       + '</div>';
@@ -21045,7 +21148,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const groups = mpFilterGroups(allGroups);
     mpApplyFocus(groups);
     const selected = groups.find(g => g.key === mpState.selectedKey) || null;
-    mpRenderStrategy();
+    mpSyncStrategyContext(selected);
+    mpRenderStrategy(selected);
     mpRenderSummary(allGroups);
     mpRenderFilters();
     mpRenderException(groups);
