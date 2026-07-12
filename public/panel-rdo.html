@@ -336,6 +336,22 @@
       /* En desktop no hace falta el gradient porque los tabs caben. */
       .nav-tabs-wrapper::after, .nav-tabs-wrapper .chevron-more { display: none; }
     }
+    .mobile-exec-nav { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.15rem; }
+    .mobile-exec-nav .tab-btn {
+      white-space: nowrap;
+      border: 1px solid #d6d3d1;
+      border-bottom-width: 1px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: #fff;
+      padding: 0.6rem 0.85rem;
+    }
+    .mobile-exec-nav .tab-btn.active {
+      background: #ecfdf5;
+      border-color: #10b981;
+      color: #047857;
+    }
   </style>
 
   <!-- ============================================================
@@ -1164,78 +1180,16 @@
     </div>
   </div>
 
-  <nav class="border-b border-stone-200 px-6 bg-white md:hidden" aria-label="Pestañas del panel (mobile)">
+  <nav class="border-b border-stone-200 px-6 bg-white md:hidden" aria-label="Atajos ejecutivos del panel (mobile)">
     <div class="nav-tabs-wrapper">
-      <div class="flex gap-2 overflow-x-auto" role="tablist" aria-label="Pestañas del panel">
-        <button data-tab="portada"     class="tab-btn py-3 px-3 text-stone-600 active" role="tab" aria-selected="true"  aria-controls="tabPortada">🏠 Portada</button>
-        <button data-tab="pesaje"      class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabPesaje">⚖️ Pesaje S1</button>
-        <button data-tab="facturacion" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabFacturacion">🧾 Facturación S5</button>
-        <button data-tab="dieguito"    class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabDieguito">📎 Dieguito</button>
-        <button data-tab="comunicados" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabComunicados">🎧 Comunicados</button>
-        <button data-tab="manual" class="tab-btn py-3 px-3 text-stone-600"              role="tab" aria-selected="false" aria-controls="tabManual">📖 Manual</button>
-        <button data-tab="mi_memoria" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabMiMemoria">🧠 Mi memoria</button>
-        <button data-tab="mi_bandeja" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabMiBandeja">📥 Mi Bandeja</button>
-        <button data-tab="mis_reportes" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabMisReportes">📬 Mis reportes</button>
-        <button data-tab="mis_envios_diego" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabMisEnviosDiego">📤 Mis envíos a Diego</button>
-        <button data-tab="material_nuevo" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabMaterialNuevo">🆕 Material nuevo</button>
-        <button data-tab="despacho_coord" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabDespachoCoord">🚚 Coord. despacho</button>
-        <button data-tab="incidentes_op" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabIncidentesOp">🛠️ Incidentes</button>
-        <button data-tab="firmas_pend" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabFirmasPend">📝 Firmas pendientes</button>
-        <button data-tab="firmas_reglas" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabFirmasReglas">🔏 Firmas reglas (ALT3)</button>
-        <button data-tab="tarifas_ext" class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabTarifasExt">💰 Tarifas externas</button>
-        <button data-tab="cumplimiento" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCumplimiento">📋 Trámites</button>
-        <button data-tab="herramientas_ext" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabHerramientasExt">🌐 Herramientas ext.</button>
-        <button data-tab="facturacion_grupo" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabFacturacionGrupo">💰 Facturación grupo</button>
-        <button data-tab="vales_portal" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabValesPortal">📊 Vales portal</button>
-        <button data-tab="auditoria_ingesta" class="tab-btn py-3 px-3 text-stone-600"  role="tab" aria-selected="false" aria-controls="tabAuditoriaIngesta">🔍 Auditoría Ingesta</button>
-        <button data-tab="piloto_pwa"  class="tab-btn py-3 px-3 text-stone-600"          role="tab" aria-selected="false" aria-controls="tabPilotoPwa">📲 Piloto PWA</button>
-        <button data-tab="mis_archivos" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabMisArchivos">📦 Mis archivos</button>
-        <button data-tab="rdo"         class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabRdo">📈 RDO Resumen</button>
-        <button data-tab="andrea_dup_clientes" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaDupClientes">🔀 Duplicados clientes</button>
-        <button data-tab="andrea_drift_libre" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaDriftLibre">📝 Nombres opps</button>
-        <button data-tab="andrea_ruts_invalidos" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaRutsInvalidos">🆔 RUTs a verificar</button>
-        <button data-tab="andrea_comex" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaComex">🚢 Comex</button>
-        <button data-tab="decisor_venta" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabDecisorVenta">💰 Decisor venta</button>
-        <button data-tab="mi_dia" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabMiDia">📅 Mi Día</button>
-        <button data-tab="andrea_cobranza" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaCobranza">💸 Cobranza</button>
-        <button data-tab="andrea_actas" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabAndreaActas">📝 Actas</button>
-        <button data-tab="negocios"   class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabNegocios">💼 Negocios</button>
-        <button data-tab="cotizador"  class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCotizador">📋 Cotizador</button>
-        <button data-tab="evolucion"  class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabEvolucion">📈 Evolución</button>
-        <button data-tab="cierres"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabCierres">📅 Cierres</button>
-        <button data-tab="precios"    class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabPrecios">💲 Precios</button>
-        <button data-tab="tablero_precios" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabTableroPrecios">🎯 Mesa de Precios</button>
-        <button data-tab="bandeja_precios" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabBandejaPrecios">📨 Bandeja técnica <span id="bpBadgeNavbar" class="bp-badge-counter hidden text-xs font-bold px-1.5 py-0.5 rounded-full ml-1">0</span></button>
-        <button data-tab="hual_compra" class="tab-btn py-3 px-3 text-stone-600"        role="tab" aria-selected="false" aria-controls="tabHualCompra">🎯 HUAL vs Compra</button>
-        <button data-tab="precios_vivos" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabPreciosVivos">💰 Precios publicados</button>
-        <button data-tab="errores_bucles" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabErroresBucles">🚦 Errores y Bucles</button>
-        <button data-tab="cronograma_24h" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCronograma24h">⏰ Cronograma 24h</button>
-        <button data-tab="kpi_precios"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabKpiPrecios">🎯 KPIs Precios Home</button>
-        <button data-tab="analisis_micro" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabAnalisisMicro">📊 Análisis Micro/Macro</button>
-        <button data-tab="indicadores_adel" class="tab-btn py-3 px-3 text-stone-600"   role="tab" aria-selected="false" aria-controls="tabIndicadoresAdel">📡 Anticipación Tendencias</button>
-        <button data-tab="modo_precios"  class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabModoPrecios">⚙️ Acelerador/Freno</button>
-        <button data-tab="calculadora_precios" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabCalculadoraPrecios">🧮 Calculadora soporte</button>
-        <button data-tab="boveda_historica" class="tab-btn py-3 px-3 text-stone-600"   role="tab" aria-selected="false" aria-controls="tabBovedaHistorica">📦 Bóveda Histórica</button>
-        <button data-tab="flujo_operativo" class="tab-btn py-3 px-3 text-stone-600"    role="tab" aria-selected="false" aria-controls="tabFlujoOperativo">🔄 Flujo Operativo</button>
-        <button data-tab="operativos" class="tab-btn py-3 px-3 text-stone-600"         role="tab" aria-selected="false" aria-controls="tabOperativos">📑 OPERATIVOS</button>
-        <button data-tab="reconciliacion" class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabReconciliacion">🔗 Reconciliación</button>
-        <button data-tab="cartera"        class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabCartera">👥 Cartera</button>
-        <button data-tab="oportunidades" class="tab-btn py-3 px-3 text-stone-600"      role="tab" aria-selected="false" aria-controls="tabOportunidades">🎯 Oportunidades</button>
-        <button data-tab="entregables"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabEntregables">📤 Entregables</button>
-        <button data-tab="plan_2026"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPlan2026">🗳️ Plan 2026</button>
-        <button data-tab="bandeja_dieg"   class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabBandejaDiego">📥 Bandeja Diego</button>
-        <button data-tab="ops_diarias"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabOpsDiarias">🌅 Operaciones Día</button>
-        <button data-tab="inventario"     class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabInventario" id="btnTabInventario">📦 Inventario</button>
-        <button data-tab="panorama_sucursales" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabPanoramaSucursales">🏭 Panorama Sucursales</button>
-        <button data-tab="flota_grupo"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabFlotaGrupo">🚛 Flota Grupo</button>
-        <button data-tab="comercial"      class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabComercial">💼 Comercial</button>
-        <button data-tab="pcs_vivo"       class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabPcsVivo">🟢 Estado vivo 4 PCs</button>
-        <button data-tab="diego_coord"    class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabDiegoCoord">🎭 Diego Coordinador</button>
-        <button data-tab="mesa_control_99_99" class="tab-btn py-3 px-3 text-stone-600" role="tab" aria-selected="false" aria-controls="tabMesaControl9999">🎛️ Mesa de Control 99-99</button>
-        <button data-tab="bucle_vivo"     class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabBucleVivo">🔁 Bucle vivo</button>
-        <button data-tab="dod_dashboard"  class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabDodDashboard">✅ DoD dashboard</button>
-        <button data-tab="gantt"          class="tab-btn py-3 px-3 text-stone-600"     role="tab" aria-selected="false" aria-controls="tabGantt">📊 Gantt Viva</button>
-        <button data-tab="admin" id="adminTab" class="tab-btn py-3 px-3 text-stone-600 hidden" role="tab" aria-selected="false" aria-controls="tabAdmin">⚙️ Admin</button>
+      <div class="mobile-exec-nav" role="tablist" aria-label="Atajos ejecutivos del panel">
+        <button data-tab="tablero_precios" class="tab-btn text-stone-600" role="tab" aria-selected="false" aria-controls="tabTableroPrecios">🎯 Mesa</button>
+        <button data-tab="bandeja_precios" class="tab-btn text-stone-600" role="tab" aria-selected="false" aria-controls="tabBandejaPrecios">📨 Bandeja <span id="bpBadgeNavbar" class="bp-badge-counter hidden text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">0</span></button>
+        <button data-tab="precios_vivos" class="tab-btn text-stone-600" role="tab" aria-selected="false" aria-controls="tabPreciosVivos">💰 Publicados</button>
+        <button data-tab="calculadora_precios" class="tab-btn text-stone-600" role="tab" aria-selected="false" aria-controls="tabCalculadoraPrecios">🧮 Calculadora</button>
+        <button data-tab="dieguito" class="tab-btn text-stone-600" role="tab" aria-selected="false" aria-controls="tabDieguito">📎 Diego</button>
+        <button data-tab="mi_dia" class="tab-btn text-stone-600" role="tab" aria-selected="false" aria-controls="tabMiDia">📅 Mi Dia</button>
+        <button data-tab="portada" class="tab-btn text-stone-600 active" role="tab" aria-selected="true" aria-controls="tabPortada">🏠 Portada</button>
       </div>
       <span class="chevron-more" aria-hidden="true">›</span>
     </div>
@@ -3457,6 +3411,44 @@
         </div>
       </div>
 
+      <div class="grid grid-cols-1 xl:grid-cols-[0.85fr,1.15fr] gap-4 mb-4" id="mpStrategyBox">
+        <div class="bg-white border border-stone-300 rounded-xl p-4">
+          <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Estrategia activa</div>
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h3 class="text-sm font-bold text-stone-700">Criterio comercial en uso</h3>
+              <p class="text-xs text-stone-500 mt-1">La mesa decide con un juego explicito, no por intuicion dispersa.</p>
+            </div>
+            <span id="mpStrategyBadge" class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-semibold">Cargando…</span>
+          </div>
+          <label for="mpStrategySelect" class="block text-xs text-stone-500 mt-4 mb-1">Cambiar estrategia</label>
+          <select id="mpStrategySelect" class="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700">
+            <option value="">Cargando…</option>
+          </select>
+          <div class="mt-3 text-xs text-stone-500" id="mpStrategyUse">Cargando criterio…</div>
+        </div>
+        <div class="bg-white border border-stone-300 rounded-xl p-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Objetivo</div>
+              <div class="text-stone-700" id="mpStrategyObjective">—</div>
+            </div>
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Politica de publicacion</div>
+              <div class="text-stone-700" id="mpStrategyPublish">—</div>
+            </div>
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Apoyo por sucursal</div>
+              <div class="text-stone-700" id="mpStrategyBranch">—</div>
+            </div>
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Ventana de uso</div>
+              <div class="text-stone-700" id="mpStrategyWindow">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="grid grid-cols-2 xl:grid-cols-5 gap-3 mb-4">
         <div class="bg-white border border-stone-300 rounded-xl p-4">
           <div class="text-xs text-stone-500 uppercase tracking-wider">Pendientes por decidir</div>
@@ -3555,6 +3547,7 @@
             <li class="text-stone-500">2. Las señales externas entran como contexto, no como barrera.</li>
             <li class="text-stone-500">3. La resolución completa sigue usando la Bandeja actual para no romper el motor.</li>
             <li class="text-stone-500">4. El destino final sigue siendo Precios publicados.</li>
+            <li class="text-stone-500" id="mpStrategyRule">5. La estrategia activa ordena que publicar, que defender y por cuanto tiempo.</li>
           </ul>
         </div>
       </div>
@@ -16123,29 +16116,37 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function getExecutivePricePrompts(profile) {
     const model = getDiegoProductModel();
+    const strategyApi = window.DIEGO_STRATEGY;
+    const strategyPrompts = strategyApi && typeof strategyApi.getPromptPack === 'function'
+      ? strategyApi.getPromptPack()
+      : [];
+    let prompts = [];
     if (model && model.executivePricePrompts) {
       const priceList = model.executivePricePrompts[profile?.key] || model.executivePricePrompts.default;
-      if (Array.isArray(priceList) && priceList.length) return priceList;
+      if (Array.isArray(priceList) && priceList.length) prompts = priceList;
     }
-    if (profile?.key === 'direccion') {
-      return [
+    if (!prompts.length && profile?.key === 'direccion') {
+      prompts = [
         'Calcula precio ejecutivo maximo defendible y dime si este caso debe escalar a Dusan',
         'Separa precio sugerido, techo de autonomia y techo que requiere jerarquia',
         'Dime si este caso de precio debe ir a Andrea, Mesa de Precios o Dusan'
       ];
     }
-    if (profile?.key === 'comercial') {
-      return [
+    if (!prompts.length && profile?.key === 'comercial') {
+      prompts = [
         'Propón precio ejecutivo defendible para este cliente y explica el riesgo',
         'Dime hasta donde puedo negociar sin romper margen ni politica',
         '¿Debo crear propuesta normal o escalar esta discusion de precio?'
       ];
     }
-    return [
-      'Dime si este caso de precio es solo lectura, propuesta, confirmacion o escalamiento',
-      'Calcula precio ejecutivo sugerido y el siguiente paso correcto',
-      'Explica si el caso cabe en autonomia o debe escalar'
-    ];
+    if (!prompts.length) {
+      prompts = [
+        'Dime si este caso de precio es solo lectura, propuesta, confirmacion o escalamiento',
+        'Calcula precio ejecutivo sugerido y el siguiente paso correcto',
+        'Explica si el caso cabe en autonomia o debe escalar'
+      ];
+    }
+    return [...new Set([...(prompts || []), ...(strategyPrompts || [])])].slice(0, 5);
   }
   function renderPromptButtonRow(items) {
     return items.map(item => {
@@ -16177,6 +16178,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function renderExecutivePriceCard(profile) {
     const prompts = getExecutivePricePrompts(profile);
+    const strategyApi = window.DIEGO_STRATEGY;
+    const strategy = strategyApi && typeof strategyApi.getActive === 'function'
+      ? strategyApi.getActive()
+      : null;
     return `<div class="diego-side-card">
       <div class="diego-side-label">Precio ejecutivo</div>
       <div class="diego-side-list">
@@ -16184,6 +16189,11 @@ document.addEventListener('DOMContentLoaded', () => {
         <div><strong>2.</strong> Proponer el mejor numero defendible</div>
         <div><strong>3.</strong> Escalar si toca margen, cliente clave o excepcion</div>
       </div>
+      ${strategy ? `<div class="diego-side-list" style="margin-top:8px;">
+        <div><strong>Estrategia activa:</strong> ${esc(strategy.title || 'Estrategia')}</div>
+        <div><strong>Objetivo:</strong> ${esc(strategy.objective || 'Sin objetivo visible')}</div>
+        <div><strong>Publicacion:</strong> ${esc(strategy.publicationPolicy || 'Sin politica visible')}</div>
+      </div>` : ''}
       <div class="diego-side-actions" style="margin-top:8px;">
         ${renderPromptButtonRow(prompts)}
       </div>
@@ -20582,6 +20592,7 @@ document.addEventListener('DOMContentLoaded', () => {
     materiales: new Map(),
     selectedKey: null,
     catalogsLoaded: false,
+    strategyBound: false,
   };
 
   function tapEscape(s) {
@@ -20610,6 +20621,62 @@ document.addEventListener('DOMContentLoaded', () => {
   function tapSet(id, val) {
     const el = document.getElementById(id);
     if (el) el.textContent = val == null ? '—' : String(val);
+  }
+
+  function mpGetStrategyApi() {
+    return window.DIEGO_STRATEGY
+      && typeof window.DIEGO_STRATEGY.getActive === 'function'
+      && typeof window.DIEGO_STRATEGY.getPresets === 'function'
+      ? window.DIEGO_STRATEGY
+      : null;
+  }
+
+  function mpGetActiveStrategy() {
+    const api = mpGetStrategyApi();
+    const active = api ? api.getActive() : null;
+    return active && active.id ? active : {
+      id: 'operacion_general',
+      title: 'Operacion general',
+      objective: 'Resolver precios con criterio operativo y foco en continuidad.',
+      whenToUse: 'Mientras no haya una estrategia comercial explicita seleccionada.',
+      publicationPolicy: 'Publicar solo decisiones defendibles y trazables.',
+      branchPolicy: 'Mantener coherencia basica entre sucursales y excepciones visibles.',
+      duration: 'Hasta nueva definicion ejecutiva.',
+    };
+  }
+
+  function mpRenderStrategy() {
+    const select = document.getElementById('mpStrategySelect');
+    const badge = document.getElementById('mpStrategyBadge');
+    const rule = document.getElementById('mpStrategyRule');
+    const active = mpGetActiveStrategy();
+    const api = mpGetStrategyApi();
+    const presets = api ? api.getPresets() : [active];
+
+    if (select) {
+      const selectedBefore = select.value;
+      if (select.options.length !== presets.length) {
+        while (select.firstChild) select.removeChild(select.firstChild);
+        presets.forEach((preset) => {
+          const option = document.createElement('option');
+          option.value = preset.id;
+          option.textContent = preset.title || preset.id;
+          select.appendChild(option);
+        });
+      }
+      select.value = presets.some(preset => preset.id === active.id)
+        ? active.id
+        : (selectedBefore || active.id);
+    }
+    if (badge) badge.textContent = active.title || 'Estrategia';
+    tapSet('mpStrategyUse', active.whenToUse || 'Sin criterio visible.');
+    tapSet('mpStrategyObjective', active.objective || 'Sin objetivo visible.');
+    tapSet('mpStrategyPublish', active.publicationPolicy || 'Sin politica visible.');
+    tapSet('mpStrategyBranch', active.branchPolicy || 'Sin politica por sucursal visible.');
+    tapSet('mpStrategyWindow', active.duration || 'Sin ventana definida.');
+    if (rule) {
+      rule.textContent = '5. Estrategia activa: ' + (active.title || 'Operacion general') + '. ' + (active.publicationPolicy || 'Sin politica visible.');
+    }
   }
 
   // SAFELIST Tailwind (usadas dinámicamente en P4 semáforo + checks P11):
@@ -20788,9 +20855,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const hint = document.getElementById('mpFocusHint');
     if (hint) {
-      hint.textContent = mpState.focus
+      const strategy = mpGetActiveStrategy();
+      const focusTxt = mpState.focus
         ? 'Foco activo desde Calculadora: ' + tapEscape(mpState.focus.materialNombre || mpState.focus.materialId || 'material')
         : 'Filtro actual: ' + mpGetChipLabel(mpState.chip || 'todos');
+      hint.textContent = focusTxt + ' · Estrategia: ' + tapEscape(strategy.title || 'Operacion general');
     }
   }
 
@@ -20870,6 +20939,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function mpRenderDetail(group) {
     const el = document.getElementById('mpDetail');
+    const strategy = mpGetActiveStrategy();
     if (!el) return;
     if (!group) {
       el.innerHTML = '<div class="rounded-xl border border-dashed border-stone-300 px-4 py-8 text-sm text-stone-400">Seleccioná un material para ver sus sucursales y abrir la resolución completa.</div>';
@@ -20926,9 +20996,13 @@ document.addEventListener('DOMContentLoaded', () => {
       + '<span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">Directas ' + group.direct + '</span>'
       + '<span class="px-2 py-1 rounded-full bg-sky-100 text-sky-700">Señales ' + group.signals + '</span>'
       + '<span class="px-2 py-1 rounded-full ' + (group.urgent ? 'bg-rose-100 text-rose-700' : 'bg-stone-100 text-stone-700') + '">Urgentes ' + group.urgent + '</span>'
+        + '<span class="px-2 py-1 rounded-full bg-violet-100 text-violet-700">' + tapEscape(strategy.title || 'Operacion general') + '</span>'
       + '</div>'
       + '</div>'
       + '<div class="mt-3 text-sm text-stone-600">Revisá las sucursales afectadas, compará contra el vigente y resolvé la propuesta final desde Bandeja.</div>'
+      + '<div class="mt-3 rounded-lg bg-white px-3 py-2 text-xs text-stone-600"><strong>Publicacion y ventana:</strong> '
+      + tapEscape(strategy.publicationPolicy || 'Sin politica visible.') + ' · '
+      + tapEscape(strategy.duration || 'Sin ventana definida.') + '</div>'
       + '</div>'
       + '<div class="grid grid-cols-1 lg:grid-cols-2 gap-3">' + branchCards.join('') + '</div>'
       + '</div>';
@@ -20971,6 +21045,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const groups = mpFilterGroups(allGroups);
     mpApplyFocus(groups);
     const selected = groups.find(g => g.key === mpState.selectedKey) || null;
+    mpRenderStrategy();
     mpRenderSummary(allGroups);
     mpRenderFilters();
     mpRenderException(groups);
@@ -21012,6 +21087,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function initTableroPrecios() {
+    mpRenderStrategy();
     tapCargar();
     const btn = document.getElementById('tapRefrescar');
     if (btn && !btn.dataset.bound) {
@@ -21026,6 +21102,24 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       chipBtn.dataset.bound = '1';
     });
+    const strategySelect = document.getElementById('mpStrategySelect');
+    if (strategySelect && !strategySelect.dataset.bound) {
+      strategySelect.addEventListener('change', () => {
+        const api = mpGetStrategyApi();
+        if (api && typeof api.setActive === 'function') {
+          api.setActive(strategySelect.value || '');
+        }
+        mpRender();
+      });
+      strategySelect.dataset.bound = '1';
+    }
+    if (!mpState.strategyBound) {
+      window.addEventListener('diego-strategy-changed', () => {
+        mpRenderStrategy();
+        mpRender();
+      });
+      mpState.strategyBound = true;
+    }
     if (tapTimer) clearInterval(tapTimer);
     tapTimer = setInterval(tapCargar, TAP_REFRESH_MS);
   }
@@ -27544,6 +27638,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="./diego/diego-case-sync.js"></script>
 <script src="./diego/diego-voice.js"></script>
 <script src="./diego/diego-ui.js"></script>
+<script src="./diego/diego-strategy.js"></script>
 <script src="./diego/diego-memory.js"></script>
 <script src="./diego/diego-context.js"></script>
 <script src="./diego/diego-render.js"></script>
