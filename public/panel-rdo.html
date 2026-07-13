@@ -20926,6 +20926,14 @@ document.addEventListener('DOMContentLoaded', () => {
     tapSet('mpStrategyBranch', active.branchPolicy || 'Sin politica por sucursal visible.');
     tapSet('mpStrategyWindow', active.duration || 'Sin ventana definida.');
     tapSet('mpStrategyExit', active.exitCondition || 'Sin condicion de salida visible.');
+    // Politica de publicacion inteligente (4 campos, T3 los dejo creados sin poblar):
+    // fuente real = DIEGO_STRATEGY.getSnapshot() -> inferDefaultPublicationRule/inferTacticalValidityRule/
+    // inferBranchExceptionRule/inferExitVisibleRule en diego/diego-strategy.js, ya calculados por estrategia
+    // activa + contexto de material. No existia el tapSet que los llevara a estos 4 ids.
+    tapSet('mpStrategyPublishDefault', snapshot.publishDefaultRule || 'Sin regla de publicacion por defecto visible.');
+    tapSet('mpStrategyTacticalWindow', snapshot.tacticalValidityRule || 'Sin regla de vigencia tactica visible.');
+    tapSet('mpStrategyBranchException', snapshot.branchExceptionRule || 'Sin regla de excepcion por sucursal visible.');
+    tapSet('mpStrategyExitVisible', snapshot.exitVisibleRule || 'Sin criterio de salida visible.');
     if (rule) {
       rule.textContent = '5. Estrategia activa: ' + (active.title || 'Operacion general') + '. ' + (snapshot.publicationRule || snapshot.publicationDecision || active.publicationPolicy || 'Sin politica visible.');
     }
