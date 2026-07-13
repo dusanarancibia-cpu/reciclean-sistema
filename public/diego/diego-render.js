@@ -6,12 +6,11 @@
   function renderMessagesHtml(options) {
     const history = Array.isArray(options?.history) ? options.history : [];
     const esc = options?.esc;
-    const cleanMsg = options?.cleanMsg;
-    const inferDiegoContract = options?.inferDiegoContract;
-    const inferTrace = options?.inferTrace;
-    const inferNextStep = options?.inferNextStep;
     const fmtHora = options?.fmtHora;
 
+    // Nota UX 13-jul-2026: el detalle de modo/estado/trazabilidad/siguiente paso
+    // vive en el header del turno (diego-turn-summary) y en el panel lateral
+    // colapsado (diego-context.js). No se repite acá para que el mensaje respire.
     return history.map(entry => {
       const cls = entry.role === 'user' ? 'mine' : (entry.role === 'thinking' ? 'thinking' : 'diego');
       const attach = entry.attach ? `<div class="diego-msg-attach">📎 ${safeEsc(esc, entry.attach)}</div>` : '';
@@ -20,34 +19,13 @@
       const suggestionsArr = (entry.suggestions || []).slice(0, 4).map((suggestion, index) =>
         `<button type="button" data-sugg="${index}">${safeEsc(esc, suggestion.label || suggestion)}</button>`).join('');
       const suggestions = suggestionsArr ? `<div class="diego-suggestions">${suggestionsArr}</div>` : '';
-      const sixW = entry.six_w && (entry.six_w.what || entry.six_w.when)
-        ? `<div class="diego-msg-meta">🧠 ${safeEsc(esc, entry.six_w.what || '')}${entry.six_w.when ? ' · ⏰ ' + safeEsc(esc, entry.six_w.when) : ''}${entry.six_w.who ? ' · 👤 ' + safeEsc(esc, entry.six_w.who) : ''}</div>`
-        : '';
       const thinkingHtml = 'Diego esta escribiendo<span class="diego-typing-dots"><span></span><span></span><span></span></span>';
       const msgHtml = cls === 'thinking' ? thinkingHtml : safeEsc(esc, entry.mensaje);
-      const contract = cls === 'diego'
-        ? (() => {
-            const c = typeof inferDiegoContract === 'function'
-              ? inferDiegoContract(entry)
-              : { mode: 'consulta', modeLabel: 'Consulta', state: 'lectura', stateLabel: 'Lectura' };
-            return `<div class="diego-contract">
-              <div class="diego-contract-badges">
-                <span class="diego-badge mode-${c.mode}">${safeEsc(esc, c.modeLabel)}</span>
-                <span class="diego-badge state-${c.state}">${safeEsc(esc, c.stateLabel)}</span>
-              </div>
-              <div class="diego-kv"><strong>Resultado:</strong> ${safeEsc(esc, typeof cleanMsg === 'function' ? cleanMsg(entry.mensaje) || '(sin detalle)' : String(entry.mensaje || '(sin detalle)'))}</div>
-              <div class="diego-kv"><strong>Trazabilidad:</strong> ${safeEsc(esc, typeof inferTrace === 'function' ? inferTrace(entry) : 'Sin traza')}</div>
-              <div class="diego-kv"><strong>Siguiente paso:</strong> ${safeEsc(esc, typeof inferNextStep === 'function' ? inferNextStep(entry) : 'Seguir')}</div>
-            </div>`;
-          })()
-        : '';
 
       return `<div class="diego-msg ${cls}">
         <div class="${cls === 'thinking' ? '' : 'diego-summary'}">${msgHtml}</div>
         ${attach}
-        ${contract}
         ${actions}
-        ${sixW}
         <div class="diego-msg-meta">${cls === 'mine' ? 'Vos' : 'Diego'} · ${typeof fmtHora === 'function' ? fmtHora(entry.ts) : ''}${entry.tokens ? ' · ' + entry.tokens + ' tok' : ''}${entry.cola_id ? ' · ✅ cola' : ''}</div>
         ${suggestions}
       </div>`;

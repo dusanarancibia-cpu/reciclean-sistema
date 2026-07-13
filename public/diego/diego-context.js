@@ -3,10 +3,26 @@
     return typeof esc === 'function' ? esc(value) : String(value || '');
   }
 
+  // Regla de diseño 13-jul-2026: capacidad interna alta, superficie visible baja,
+  // detalle solo bajo demanda. Todo lo que sea trazabilidad/memoria/instrumentacion
+  // arranca colapsado. Excepcion: caso critico (bloqueo o prioridad alta abierta)
+  // fuerza abierto "Casos Diego" y lo marca fuerte — gestion por excepcion.
+  function hasCriticalCase() {
+    const store = window.DIEGO_CASE_STORE;
+    if (!store || typeof store.listCases !== 'function') return false;
+    try {
+      return store.listCases().some(c => c?.status?.key !== 'resuelto'
+        && (c?.priority?.key === 'alta' || c?.type?.key === 'bloqueo'));
+    } catch (error) {
+      return false;
+    }
+  }
+
   function renderSection(esc, title, body, options) {
     const open = options?.open ? ' open' : '';
+    const critical = options?.critical ? ' critical' : '';
     const hint = options?.hint ? `<span class="diego-side-section-hint">${safeEsc(esc, options.hint)}</span>` : '';
-    return `<details class="diego-side-section"${open}>
+    return `<details class="diego-side-section${critical}"${open}>
       <summary>
         <span>${safeEsc(esc, title)}</span>
         ${hint}
@@ -21,7 +37,6 @@
     const last = options?.last || null;
     const profile = options?.profile || { label: 'Equipo', tone: '' };
     const esc = options?.esc;
-    const cleanMsg = options?.cleanMsg;
     const inferDiegoContract = options?.inferDiegoContract;
     const inferTrace = options?.inferTrace;
     const inferNextStep = options?.inferNextStep;
@@ -35,6 +50,8 @@
     const renderCaseMemory = options?.renderCaseMemory;
     const renderTeamMemory = options?.renderTeamMemory;
     const strategicCards = `${typeof renderExecutivePriceCard === 'function' ? renderExecutivePriceCard(profile) : ''}${typeof renderDiegoStrategicCards === 'function' ? renderDiegoStrategicCards() : ''}`;
+    const critical = hasCriticalCase();
+    const casosHint = critical ? '⚠ atencion' : 'seguimiento vivo';
 
     if (!last) {
       const sections = [
@@ -43,6 +60,7 @@
             ${typeof renderRolePromptGrid === 'function' ? renderRolePromptGrid(profile) : ''}
           </div>
         `, { open: true, hint: 'prompts utiles' }),
+        renderSection(esc, 'Casos Diego', `${typeof renderCaseBoard === 'function' ? renderCaseBoard(profile) : ''}`, { open: critical, critical, hint: casosHint }),
         renderSection(esc, 'Intake de reclamos', `
           <div class="diego-role-grid">
             ${typeof renderComplaintPromptGrid === 'function' ? renderComplaintPromptGrid() : ''}
@@ -59,8 +77,7 @@
           ? renderSection(esc, 'Decision y estrategia', strategicCards, { hint: 'precio y criterio' })
           : '',
         renderSection(esc, 'Memoria del turno', `${typeof renderTurnMemory === 'function' ? renderTurnMemory(profile) : ''}`, { hint: 'continuidad' }),
-        renderSection(esc, 'Casos Diego', `${typeof renderCaseBoard === 'function' ? renderCaseBoard(profile) : ''}`, { open: true, hint: 'seguimiento vivo' }),
-        renderSection(esc, 'Memoria por caso', `${typeof renderCaseMemory === 'function' ? renderCaseMemory(profile) : ''}`, { hint: 'seguimiento retenido' }),
+        renderSection(esc, 'Memoria por caso', `${typeof renderCaseMemory === 'function' ? renderCaseMemory(profile) : ''}`, { hint: 'retenido' }),
         renderSection(esc, 'Empuje del equipo', `
           <div class="diego-side-actions">
             ${typeof renderTeamPromptGrid === 'function' ? renderTeamPromptGrid(profile) : ''}
@@ -89,7 +106,8 @@
 
     const contract = typeof inferDiegoContract === 'function'
       ? inferDiegoContract(last)
-      : { modeLabel: 'Consulta', stateLabel: 'Lectura' };
+      : { mode: 'consulta', modeLabel: 'Consulta', stateLabel: 'Lectura' };
+    const casosCritical = critical || contract.mode === 'bloqueo';
     const actions = (last.actions || []).slice(0, 4).map(action => `<div>${safeEsc(esc, action.tool || action)}</div>`).join('');
     const suggestions = (last.suggestions || []).slice(0, 3).map(suggestion => {
       const label = suggestion.label || suggestion.action || suggestion;
@@ -104,19 +122,38 @@
         </div>`
       : `<div class="diego-side-sub">Sin contexto adicional visible en este turno.</div>`;
 
+    // Detalle del turno: fusiona lo que antes eran 2 tarjetas siempre-visibles
+    // (Estado actual + Trazabilidad) mas 2 secciones (Contexto + Acciones) en
+    // una sola caja colapsada. Misma info completa, un solo lugar, menos protagonismo.
+    const detalleTurno = `
+      <div class="diego-side-card">
+        <div class="diego-side-label">Estado</div>
+        <div class="diego-side-main">${safeEsc(esc, contract.modeLabel)} · ${safeEsc(esc, contract.stateLabel)}</div>
+        <div class="diego-side-sub">Traza: ${safeEsc(esc, typeof inferTrace === 'function' ? inferTrace(last) : 'Sin traza')}</div>
+      </div>
+      <div class="diego-side-card">
+        <div class="diego-side-label">Contexto del turno</div>
+        ${sixW}
+      </div>
+      <div class="diego-side-card">
+        <div class="diego-side-label">Acciones detectadas</div>
+        ${actions ? `<div class="diego-side-list">${actions}</div>` : `<div class="diego-side-sub">Sin acciones registradas en este turno.</div>`}
+      </div>
+    `;
+
     const sections = [
       renderSection(esc, 'Siguiente movimiento', `
         <div class="diego-side-actions">
           ${suggestions || `<button type="button" data-ctx-prompt="${safeEsc(esc, typeof inferNextStep === 'function' ? inferNextStep(last) : 'Seguir')}">${safeEsc(esc, typeof inferNextStep === 'function' ? inferNextStep(last) : 'Seguir')}</button>`}
         </div>
       `, { open: true, hint: 'accion inmediata' }),
-      renderSection(esc, 'Memoria del turno', `${typeof renderTurnMemory === 'function' ? renderTurnMemory(profile) : ''}`, { open: true, hint: 'continuidad' }),
-      renderSection(esc, 'Casos Diego', `${typeof renderCaseBoard === 'function' ? renderCaseBoard(profile) : ''}`, { open: true, hint: 'seguimiento vivo' }),
-      renderSection(esc, 'Memoria por caso', `${typeof renderCaseMemory === 'function' ? renderCaseMemory(profile) : ''}`, { hint: 'seguimiento retenido' }),
-      renderSection(esc, 'Contexto del turno', `${sixW}`, { hint: 'que cuando quien' }),
-      renderSection(esc, 'Acciones detectadas', actions
-        ? `<div class="diego-side-list">${actions}</div>`
-        : `<div class="diego-side-sub">Sin acciones registradas en este turno.</div>`, { hint: 'lectura actual' }),
+      renderSection(esc, 'Casos Diego', `${typeof renderCaseBoard === 'function' ? renderCaseBoard(profile) : ''}`, { open: casosCritical, critical: casosCritical, hint: casosCritical ? '⚠ atencion' : 'seguimiento vivo' }),
+      renderSection(esc, 'Detalle del turno', detalleTurno, { hint: 'traza y contexto' }),
+      renderSection(esc, 'Memoria del turno', `${typeof renderTurnMemory === 'function' ? renderTurnMemory(profile) : ''}`, { hint: 'continuidad' }),
+      renderSection(esc, 'Memoria por caso', `${typeof renderCaseMemory === 'function' ? renderCaseMemory(profile) : ''}`, { hint: 'retenido' }),
+      strategicCards
+        ? renderSection(esc, 'Decision y estrategia', strategicCards, { hint: 'precio y criterio' })
+        : '',
       renderSection(esc, 'Reclamos y oportunidades', `
         <div class="diego-flow-list">
           <div><strong>Entrada:</strong> panel, precios, documentos, informacion, servicios, cobros, pagos o trabas.</div>
@@ -124,9 +161,6 @@
           <div><strong>Salida:</strong> responsable, prioridad, seguimiento y cierre.</div>
         </div>
       `, { hint: 'marco operativo' }),
-      strategicCards
-        ? renderSection(esc, 'Decision y estrategia', strategicCards, { hint: 'precio y criterio' })
-        : '',
       renderSection(esc, 'Empuje del equipo', `
         <div class="diego-side-actions">
           ${typeof renderTeamPromptGrid === 'function' ? renderTeamPromptGrid(profile) : ''}
@@ -145,19 +179,9 @@
 
     return `<aside class="diego-context">
       <div class="diego-side-card diego-side-card-key">
-        <div class="diego-side-label">Estado actual</div>
-        <div class="diego-side-main">${safeEsc(esc, contract.modeLabel)} · ${safeEsc(esc, contract.stateLabel)}</div>
-        <div class="diego-side-sub">${safeEsc(esc, typeof cleanMsg === 'function' ? cleanMsg(last.mensaje) || 'Sin detalle' : String(last.mensaje || 'Sin detalle'))}</div>
-      </div>
-      <div class="diego-side-card">
-        <div class="diego-side-label">Rol que conduce</div>
+        <div class="diego-side-label">Rol activo</div>
         <div class="diego-side-main">${safeEsc(esc, profile.label)}</div>
         <div class="diego-side-sub">${safeEsc(esc, profile.tone)}</div>
-      </div>
-      <div class="diego-side-card">
-        <div class="diego-side-label">Trazabilidad</div>
-        <div class="diego-side-main">${safeEsc(esc, typeof inferTrace === 'function' ? inferTrace(last) : 'Sin traza')}</div>
-        <div class="diego-side-sub">Siguiente paso: ${safeEsc(esc, typeof inferNextStep === 'function' ? inferNextStep(last) : 'Seguir')}</div>
       </div>
       ${sections}
     </aside>`;
