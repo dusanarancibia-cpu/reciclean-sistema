@@ -16298,6 +16298,13 @@ document.addEventListener('DOMContentLoaded', () => {
         <div><strong>Salida:</strong> ${esc(snapshot?.exitDirective || strategy.exitCondition || 'Sin salida visible')}</div>
         <div><strong>Material en foco:</strong> ${esc(snapshot?.context?.materialName || 'Sin material activo')}</div>
         <div><strong>Rol del material:</strong> ${esc(snapshot?.materialRole || 'Sin lectura visible')}</div>
+      </div>
+      <div class="diego-side-list" style="margin-top:8px;">
+        <div><strong>Politica de publicacion inteligente</strong></div>
+        <div><strong>1. Publicacion por defecto:</strong> ${esc(snapshot?.publishDefaultRule || 'Sin regla de publicacion por defecto visible.')}</div>
+        <div><strong>2. Vigencia tactica:</strong> ${esc(snapshot?.tacticalValidityRule || 'Sin regla de vigencia tactica visible.')}</div>
+        <div><strong>3. Excepcion por sucursal:</strong> ${esc(snapshot?.branchExceptionRule || 'Sin regla de excepcion por sucursal visible.')}</div>
+        <div><strong>4. Criterio de salida:</strong> ${esc(snapshot?.exitVisibleRule || 'Sin criterio de salida visible.')}</div>
       </div>` : ''}
       <div class="diego-side-actions" style="margin-top:8px;">
         ${renderPromptButtonRow(prompts)}
