@@ -3455,6 +3455,24 @@
               <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyPublishRule">—</div>
             </div>
           </div>
+          <div class="mt-3 rounded-xl border border-stone-300 bg-stone-900 px-3 py-3 text-sm text-white">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-300 mb-1">Mapa de roles</div>
+            <div class="text-sm font-semibold leading-5 text-white" id="mpStrategyRoleSummary">Lista publica · Ejecutivo opera · Maximo techa</div>
+          </div>
+          <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Lista = publicado</div>
+              <div class="text-sm font-semibold leading-5 text-emerald-950" id="mpStrategyListRole">—</div>
+            </div>
+            <div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">Ejecutivo = operativo</div>
+              <div class="text-sm font-semibold leading-5 text-sky-950" id="mpStrategyExecutiveRole">—</div>
+            </div>
+            <div class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-3">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-rose-700 mb-1">Maximo = techo</div>
+              <div class="text-sm font-semibold leading-5 text-rose-950" id="mpStrategyMaxRole">—</div>
+            </div>
+          </div>
         </div>
         <div class="bg-white border border-stone-300 rounded-xl p-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
@@ -16245,6 +16263,10 @@ document.addEventListener('DOMContentLoaded', () => {
         <div><strong>Estrategia activa:</strong> ${esc(strategy.title || 'Estrategia')}</div>
         <div><strong>Objetivo:</strong> ${esc(strategy.objective || 'Sin objetivo visible')}</div>
         <div><strong>Segmento:</strong> ${esc(strategy.segmentFocus || 'Sin segmento visible')}</div>
+        <div><strong>Mapa:</strong> ${esc(snapshot?.roleSummary || 'Lista publica · Ejecutivo opera · Maximo techa')}</div>
+        <div><strong>Lista:</strong> ${esc(snapshot?.listRoleDirective || 'Sin lectura visible')}</div>
+        <div><strong>Ejecutivo:</strong> ${esc(snapshot?.executiveRoleDirective || 'Sin lectura visible')}</div>
+        <div><strong>Maximo:</strong> ${esc(snapshot?.maxRoleDirective || 'Sin lectura visible')}</div>
         <div><strong>Operar ahora:</strong> ${esc(snapshot?.operatingDirective || 'Sin lectura operativa visible')}</div>
         <div><strong>Publicar ahora:</strong> ${esc(snapshot?.publicDirective || 'Sin lectura publica visible')}</div>
         <div><strong>Regla:</strong> ${esc(snapshot?.publicationRule || 'Sin regla visible')}</div>
@@ -20655,6 +20677,7 @@ document.addEventListener('DOMContentLoaded', () => {
     pendingRows: [],
     publishedRows: [],
     publishedError: null,
+    pendingMeta: new Map(),
     sucursales: [],
     materiales: new Map(),
     selectedKey: null,
@@ -20732,6 +20755,30 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  function mpGetMetaNumber(meta, keys, fallback) {
+    const list = Array.isArray(keys) ? keys : [keys];
+    for (const key of list) {
+      const value = Number(meta?.[key] || 0);
+      if (value > 0) return value;
+    }
+    const fallbackNumber = Number(fallback || 0);
+    return fallbackNumber > 0 ? fallbackNumber : 0;
+  }
+
+  function mpDecoratePendingRow(row, metadata) {
+    const meta = metadata && typeof metadata === 'object' ? metadata : {};
+    const lista = mpGetMetaNumber(meta, ['plista', 'plista_con_iva'], row?.precio_clp_kg);
+    const ejecutivo = mpGetMetaNumber(meta, ['pejec', 'pejec_con_iva'], lista);
+    const maximo = mpGetMetaNumber(meta, ['pmax', 'pmax_con_iva'], 0);
+    return {
+      ...row,
+      metadata: meta,
+      precio_lista: lista || null,
+      precio_ejecutivo: ejecutivo || null,
+      precio_maximo: maximo || null,
+    };
+  }
+
   function mpBuildStrategyContext(group) {
     if (!group) return null;
     const notes = group.rows.map(row => row?.notas).filter(Boolean).join(' | ');
@@ -20739,6 +20786,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const sourceNames = group.rows.map(row => row?.cliente_nombre).filter(Boolean);
     const publishedRows = (mpState.publishedRows || []).filter((row) => String(row.material_id || '') === String(group.material_id || ''));
     const proposedStats = mpBuildMinMax(mpCollectPositiveNumbers(group.rows, row => row?.precio_clp_kg));
+    const listStats = mpBuildMinMax(mpCollectPositiveNumbers(group.rows, row => row?.precio_lista));
+    const executiveStats = mpBuildMinMax(mpCollectPositiveNumbers(group.rows, row => row?.precio_ejecutivo));
+    const maxStats = mpBuildMinMax(mpCollectPositiveNumbers(group.rows, row => row?.precio_maximo));
     const currentStats = mpBuildMinMax(mpCollectPositiveNumbers(group.rows, row => row?.precio_vigente));
     const publishedStats = mpBuildMinMax(mpCollectPositiveNumbers(publishedRows, row => row?.precio_compra_clp));
     let materialRoleHint = '';
@@ -20757,6 +20807,12 @@ document.addEventListener('DOMContentLoaded', () => {
       signalCount: group.signals || 0,
       proposedMin: proposedStats.min,
       proposedMax: proposedStats.max,
+      listMin: listStats.min || proposedStats.min,
+      listMax: listStats.max || proposedStats.max,
+      executiveMin: executiveStats.min || proposedStats.min,
+      executiveMax: executiveStats.max || proposedStats.max,
+      maxMin: maxStats.min,
+      maxMax: maxStats.max,
       currentMin: currentStats.min,
       currentMax: currentStats.max,
       publishedMin: publishedStats.min,
@@ -20785,6 +20841,10 @@ document.addEventListener('DOMContentLoaded', () => {
       executiveSummary: 'Resolvé ' + (context?.materialName || 'el material') + ' con criterio defendible y trazable.',
       exampleScenario: 'Ejemplo: si el caso no abre una jugada comercial especial, defendé numero y no publiques por ansiedad.',
       timeSuggestion: 'Usala por ventana corta y revalidala apenas cambie el contexto.',
+      roleSummary: 'Lista publica · Ejecutivo opera · Maximo techa',
+      listRoleDirective: 'Lista es la cara publica recomendada: referencia visible y defendible.',
+      executiveRoleDirective: 'Ejecutivo es el numero operativo: sirve para negociar y cerrar sin publicar todo.',
+      maxRoleDirective: 'Maximo es el techo de autonomia: no se publica automatico.',
       operatingDirective: 'Operá ' + (context?.materialName || 'el material') + ' como numero interno defendible antes de publicarlo.',
       publicDirective: 'Publicá solo cuando convenga mostrar el numero hacia afuera, no por arrastre automatico.',
       publicationRule: 'La regla es separar operativo y publicado hasta validar que conviene exponer.',
@@ -20830,6 +20890,10 @@ document.addEventListener('DOMContentLoaded', () => {
     tapSet('mpStrategyOperate', snapshot.operatingDirective || 'Sin lectura operativa visible.');
     tapSet('mpStrategyPublicNow', snapshot.publicDirective || 'Sin lectura publica visible.');
     tapSet('mpStrategyPublishRule', snapshot.publicationRule || 'Sin regla de publicacion visible.');
+    tapSet('mpStrategyRoleSummary', snapshot.roleSummary || 'Lista publica · Ejecutivo opera · Maximo techa');
+    tapSet('mpStrategyListRole', snapshot.listRoleDirective || 'Sin lectura visible.');
+    tapSet('mpStrategyExecutiveRole', snapshot.executiveRoleDirective || 'Sin lectura visible.');
+    tapSet('mpStrategyMaxRole', snapshot.maxRoleDirective || 'Sin lectura visible.');
     tapSet('mpStrategyObjective', active.objective || 'Sin objetivo visible.');
     tapSet('mpStrategySegment', active.segmentFocus || 'Sin segmento foco visible.');
     tapSet('mpStrategyPublish', active.publicationPolicy || 'Sin politica visible.');
@@ -21094,8 +21158,10 @@ document.addEventListener('DOMContentLoaded', () => {
         + (group.urgent ? '<span class="px-2 py-1 rounded-full bg-rose-100 text-rose-700">Urgentes ' + group.urgent + '</span>' : '')
         + '</div>'
         + '<div class="mt-3 flex flex-wrap gap-2 text-xs">'
-        + '<span class="px-2 py-1 rounded-full bg-stone-100 text-stone-700">Propuesto ' + tapFmtClp(previewRow.precio_clp_kg) + '</span>'
-        + '<span class="px-2 py-1 rounded-full bg-stone-100 text-stone-700">Vigente ' + tapFmtClp(previewRow.precio_vigente) + '</span>'
+        + '<span class="px-2 py-1 rounded-full bg-sky-100 text-sky-700">Operativo ' + tapFmtClp(previewRow.precio_ejecutivo ?? previewRow.precio_clp_kg) + '</span>'
+        + '<span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">Lista ' + tapFmtClp(previewRow.precio_lista ?? previewRow.precio_clp_kg) + '</span>'
+        + (previewRow.precio_maximo ? '<span class="px-2 py-1 rounded-full bg-rose-100 text-rose-700">Maximo ' + tapFmtClp(previewRow.precio_maximo) + '</span>' : '')
+        + '<span class="px-2 py-1 rounded-full bg-stone-100 text-stone-700">Publicado ' + tapFmtClp(previewRow.precio_vigente) + '</span>'
         + '<span class="px-2 py-1 rounded-full ' + (group.urgent ? 'bg-rose-100 text-rose-700' : 'bg-stone-100 text-stone-700') + '">' + mpFmtDelta(delta) + '</span>'
         + '</div>'
         + '</button>';
@@ -21126,6 +21192,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!pending && !published) return '';
       const meta = mpGetRouteMeta(pending?.ruta);
       const focusMatch = mpState.focus && mpState.focus.sucursalId && String(mpState.focus.sucursalId) === String(suc.id || '');
+      const operativo = pending?.precio_ejecutivo ?? pending?.precio_clp_kg;
+      const lista = pending?.precio_lista ?? pending?.precio_clp_kg;
+      const maximo = pending?.precio_maximo;
       return '<div class="rounded-xl border ' + (focusMatch ? 'border-emerald-400 bg-emerald-50' : 'border-stone-200 bg-stone-50') + ' p-4">'
         + '<div class="flex items-start justify-between gap-2">'
         + '<div>'
@@ -21135,11 +21204,17 @@ document.addEventListener('DOMContentLoaded', () => {
         + (pending ? '<span class="text-[11px] px-2 py-1 rounded-full ' + meta.cls + '">' + tapEscape(meta.label) + '</span>' : '<span class="text-[11px] px-2 py-1 rounded-full bg-stone-200 text-stone-600">Publicado</span>')
         + '</div>'
         + '<div class="grid grid-cols-2 gap-3 mt-3 text-sm">'
-        + '<div><div class="text-xs uppercase text-stone-500">Operativo</div><div class="font-semibold text-stone-800">' + tapFmtClp(pending?.precio_clp_kg) + '</div></div>'
+        + '<div><div class="text-xs uppercase text-stone-500">Operativo</div><div class="font-semibold text-stone-800">' + tapFmtClp(operativo) + '</div></div>'
         + '<div><div class="text-xs uppercase text-stone-500">Publicado</div><div class="font-semibold text-stone-800">' + tapFmtClp((pending && pending.precio_vigente) ?? published?.precio_compra_clp) + '</div></div>'
         + '<div><div class="text-xs uppercase text-stone-500">Delta</div><div class="' + (mpIsUrgent(pending) ? 'text-rose-700 font-semibold' : 'text-stone-700') + '">' + mpFmtDelta(pending?.desviacion_pct) + '</div></div>'
         + '<div><div class="text-xs uppercase text-stone-500">Publicado desde</div><div class="text-stone-700">' + tapEscape(published?.vigencia_desde ? new Date(published.vigencia_desde).toLocaleDateString('es-CL') : (mpState.publishedError ? 'No visible en este acceso' : '—')) + '</div></div>'
         + '</div>'
+        + (pending
+          ? '<div class="mt-3 rounded-lg bg-white px-3 py-2 text-xs text-stone-600"><strong>Lista / Maximo:</strong> '
+            + tapEscape(tapFmtClp(lista)) + ' como cara publica sugerida'
+            + (maximo ? ' · ' + tapEscape(tapFmtClp(maximo)) + ' como techo de autonomia' : '')
+            + '</div>'
+          : '')
         + '<div class="mt-3 flex flex-wrap gap-3 text-xs">'
         + (pending
           ? '<button type="button" onclick="window.mpResolverPropuesta && window.mpResolverPropuesta(' + pending.id + ')" class="px-3 py-1.5 rounded-lg bg-emerald-700 text-white hover:bg-emerald-800">Resolver en Bandeja</button>'
@@ -21175,6 +21250,12 @@ document.addEventListener('DOMContentLoaded', () => {
       + '<div class="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-indigo-700 mb-1">Operar ahora</div><div class="text-sm font-semibold leading-5 text-indigo-950">' + tapEscape(snapshot.operatingDirective || 'Sin lectura operativa visible.') + '</div></div>'
       + '<div class="rounded-xl border border-fuchsia-200 bg-fuchsia-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-fuchsia-700 mb-1">Publicar ahora</div><div class="text-sm font-semibold leading-5 text-fuchsia-950">' + tapEscape(snapshot.publicDirective || 'Sin lectura publica visible.') + '</div></div>'
       + '<div class="rounded-xl border border-stone-300 bg-stone-100 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-stone-600 mb-1">Regla de publicacion</div><div class="text-sm font-semibold leading-5 text-stone-900">' + tapEscape(snapshot.publicationRule || 'Sin regla visible.') + '</div></div>'
+      + '</div>'
+      + '<div class="mt-3 rounded-xl border border-stone-300 bg-stone-900 px-3 py-3 text-xs text-white"><div class="text-[11px] font-semibold uppercase tracking-wider text-stone-300 mb-1">Mapa de roles</div><div class="text-sm font-semibold leading-5 text-white">' + tapEscape(snapshot.roleSummary || 'Lista publica · Ejecutivo opera · Maximo techa') + '</div></div>'
+      + '<div class="mt-3 grid grid-cols-1 xl:grid-cols-3 gap-3 text-xs">'
+      + '<div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Lista = publicado</div><div class="text-sm font-semibold leading-5 text-emerald-950">' + tapEscape(snapshot.listRoleDirective || 'Sin lectura visible.') + '</div></div>'
+      + '<div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">Ejecutivo = operativo</div><div class="text-sm font-semibold leading-5 text-sky-950">' + tapEscape(snapshot.executiveRoleDirective || 'Sin lectura visible.') + '</div></div>'
+      + '<div class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-rose-700 mb-1">Maximo = techo</div><div class="text-sm font-semibold leading-5 text-rose-950">' + tapEscape(snapshot.maxRoleDirective || 'Sin lectura visible.') + '</div></div>'
       + '</div>'
       + '<div class="mt-3 rounded-lg bg-white px-3 py-2 text-xs text-stone-600"><strong>Publicacion y ventana:</strong> '
       + tapEscape(strategy.publicationPolicy || 'Sin politica visible.') + ' · '
@@ -21255,7 +21336,23 @@ document.addEventListener('DOMContentLoaded', () => {
           .limit(400)
       ]);
       if (pendingRes.error) throw pendingRes.error;
-      mpState.pendingRows = pendingRes.data || [];
+      const pendingRows = pendingRes.data || [];
+      const pendingIds = pendingRows.map(row => row?.id).filter(Boolean);
+      const metaById = new Map();
+      if (pendingIds.length) {
+        const { data: metaRows, error: metaError } = await sb.schema('staging').from('precios_propuestos')
+          .select('id, metadata')
+          .in('id', pendingIds);
+        if (!metaError) {
+          (metaRows || []).forEach((row) => {
+            metaById.set(row.id, row?.metadata && typeof row.metadata === 'object' ? row.metadata : {});
+          });
+        } else {
+          console.warn('[Mesa de Precios] metadata de propuestas no disponible:', metaError);
+        }
+      }
+      mpState.pendingMeta = metaById;
+      mpState.pendingRows = pendingRows.map((row) => mpDecoratePendingRow(row, metaById.get(row.id)));
       mpState.publishedRows = publishedRes.error ? [] : (publishedRes.data || []);
       mpState.publishedError = publishedRes.error ? humanizeSupabaseError(publishedRes.error) : null;
       mpRender();
