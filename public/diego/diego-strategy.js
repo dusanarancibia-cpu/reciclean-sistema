@@ -462,6 +462,75 @@
     return 'Lista publica · Ejecutivo opera · Maximo techa';
   }
 
+  function inferExitDirective(context, strategy, materialRole) {
+    const materialName = context?.materialName || 'este material';
+    const firstBranch = Array.isArray(context?.branchNames) && context.branchNames.length ? context.branchNames[0] : 'la sucursal foco';
+    if (strategy?.id === 'tactica_temporal') {
+      return 'La salida queda visible desde el inicio: termina al cumplir fecha, condicion o agotarse la oportunidad en ' + materialName + '.';
+    }
+    if (strategy?.id === 'defensa_sucursal') {
+      return 'La salida es recuperar equilibrio en ' + firstBranch + '; cuando la presion local baja, el apoyo se retira.';
+    }
+    if (strategy?.id === 'apertura_proyecto') {
+      return 'La salida es pasar de apertura a estrategia estable o cortar si el proyecto no demuestra traccion real.';
+    }
+    if (strategy?.id === 'volumen_locomotora') {
+      return materialRole === 'Locomotora'
+        ? 'La salida es cortar si ' + materialName + ' deja de arrastrar volumen real o vagones suficientes.'
+        : 'La salida es dejar de sostener ' + materialName + ' si ya no ayuda a la locomotora principal.';
+    }
+    if (strategy?.id === 'captura_servicio') {
+      return 'La salida es dejar esta jugada cuando el servicio ya no sea la palanca principal del negocio.';
+    }
+    return strategy?.exitCondition || 'Sin condicion de salida visible.';
+  }
+
+  function inferDefaultPublicationRule(context, strategy, materialRole) {
+    const listBand = formatBand(context?.listMin || context?.proposedMin, context?.listMax || context?.proposedMax);
+    const executiveBand = formatBand(context?.executiveMin || context?.proposedMin, context?.executiveMax || context?.proposedMax);
+    if (strategy?.id === 'volumen_locomotora') {
+      return materialRole === 'Locomotora'
+        ? 'Por defecto, locomotora puede salir con Lista ' + listBand + ' si conviene mostrarla; los acompanantes quedan en Ejecutivo ' + executiveBand + ' o fuera de pizarra.'
+        : 'Por defecto, el acompanante no sale: se opera con Ejecutivo ' + executiveBand + ' y solo se publica si aporta claridad real.';
+    }
+    if (strategy?.id === 'apertura_proyecto') {
+      return 'Por defecto, apertura no sale a publicacion masiva: se opera con Ejecutivo ' + executiveBand + ' y Lista ' + listBand + ' queda como referencia eventual.';
+    }
+    return 'Por defecto, Operativo/Ejecutivo ' + executiveBand + ' se usa adentro y Lista ' + listBand + ' solo sale si conviene exponerla hacia afuera.';
+  }
+
+  function inferTacticalValidityRule(context, strategy) {
+    const urgent = Number(context?.urgentCount || 0);
+    if (strategy?.id === 'tactica_temporal') {
+      return 'Si esta jugada sale afuera, nace con vigencia corta obligatoria y revision definida desde el dia 1.';
+    }
+    if (strategy?.id === 'defensa_sucursal') {
+      return urgent > 0
+        ? 'El apoyo local se trata como tactica corta: resolver hoy, revisar en pocos dias y evitar heredarla.'
+        : 'Toda defensa local debe tener vigencia corta y revision obligatoria antes de renovarse.';
+    }
+    if (strategy?.id === 'volumen_locomotora') {
+      return 'La tactica de locomotora vive por ventana corta o semanal; si el volumen no aparece, se corta.';
+    }
+    return 'Si el precio se usa como tactica, no queda abierto: sale con vigencia corta y revision obligatoria.';
+  }
+
+  function inferBranchExceptionRule(context, strategy) {
+    const branchNames = Array.isArray(context?.branchNames) ? context.branchNames.filter(Boolean) : [];
+    if (!branchNames.length) return 'La excepcion por sucursal se define localmente; no hay foco visible todavia.';
+    if (strategy?.id === 'defensa_sucursal') {
+      return 'La excepcion nace en ' + branchNames[0] + ' y no contagia al resto salvo decision explicita.';
+    }
+    if (branchNames.length === 1) {
+      return 'La decision nace en ' + branchNames[0] + ' y se queda local por defecto.';
+    }
+    return 'Aunque participen ' + branchNames.join(' · ') + ', cada sucursal mantiene su propia lectura; no se contagian cambios por arrastre.';
+  }
+
+  function inferExitVisibleRule(context, strategy, materialRole) {
+    return 'Antes de publicar, deja visible como termina la jugada: ' + inferExitDirective(context, strategy, materialRole);
+  }
+
   function inferPublicationRule(context, strategy, materialRole) {
     const hasSpread = Number(context?.branchCount || 0) > 1;
     if (strategy?.id === 'volumen_locomotora') {
@@ -500,7 +569,7 @@
       publicationDecision: inferPublicationDecision(resolvedContext, active, materialRole),
       branchDirective: inferBranchDirective(resolvedContext, active),
       validityDecision: inferWindow(resolvedContext, active),
-      exitDirective: active.exitCondition || 'Sin condicion de salida visible.',
+      exitDirective: inferExitDirective(resolvedContext, active, materialRole),
       executiveSummary: inferExecutiveSummary(resolvedContext, active, materialRole),
       exampleScenario: inferExample(resolvedContext, active, materialRole),
       timeSuggestion: inferTimeSuggestion(resolvedContext, active),
@@ -511,6 +580,10 @@
       operatingDirective: inferOperatingDirective(resolvedContext, active, materialRole),
       publicDirective: inferPublicDirective(resolvedContext, active, materialRole),
       publicationRule: inferPublicationRule(resolvedContext, active, materialRole),
+      publishDefaultRule: inferDefaultPublicationRule(resolvedContext, active, materialRole),
+      tacticalValidityRule: inferTacticalValidityRule(resolvedContext, active),
+      branchExceptionRule: inferBranchExceptionRule(resolvedContext, active),
+      exitVisibleRule: inferExitVisibleRule(resolvedContext, active, materialRole),
     };
   }
 
