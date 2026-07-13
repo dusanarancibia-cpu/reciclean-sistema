@@ -154,6 +154,12 @@
       signalCount: Number(context.signalCount || 0),
       proposedMin: Number(context.proposedMin || 0),
       proposedMax: Number(context.proposedMax || 0),
+      listMin: Number(context.listMin || 0),
+      listMax: Number(context.listMax || 0),
+      executiveMin: Number(context.executiveMin || 0),
+      executiveMax: Number(context.executiveMax || 0),
+      maxMin: Number(context.maxMin || 0),
+      maxMax: Number(context.maxMax || 0),
       currentMin: Number(context.currentMin || 0),
       currentMax: Number(context.currentMax || 0),
       publishedMin: Number(context.publishedMin || 0),
@@ -381,56 +387,79 @@
 
   function inferOperatingDirective(context, strategy, materialRole) {
     const materialName = context?.materialName || 'este material';
-    const opBand = formatBand(context?.proposedMin, context?.proposedMax);
+    const opBand = formatBand(context?.executiveMin || context?.proposedMin, context?.executiveMax || context?.proposedMax);
     const firstBranch = Array.isArray(context?.branchNames) && context.branchNames.length ? context.branchNames[0] : 'la sucursal foco';
     if (strategy?.id === 'volumen_locomotora') {
       return materialRole === 'Locomotora'
-        ? 'Operá ' + materialName + ' cerca de ' + opBand + ' como locomotora para capturar canasta.'
-        : 'Operá ' + materialName + ' cerca de ' + opBand + ' solo como apoyo, no como precio estrella.';
+        ? 'Operá con Ejecutivo cerca de ' + opBand + ' y usá ' + materialName + ' como locomotora para capturar canasta.'
+        : 'Operá con Ejecutivo cerca de ' + opBand + ' y usá ' + materialName + ' solo como apoyo, no como precio estrella.';
     }
     if (strategy?.id === 'captura_servicio') {
-      return 'Operá ' + materialName + ' cerca de ' + opBand + ' sin regalar precio; el diferencial debe sostener servicio.';
+      return 'Operá con Ejecutivo cerca de ' + opBand + ' sin regalar precio; el diferencial debe sostener servicio en ' + materialName + '.';
     }
     if (strategy?.id === 'apertura_proyecto') {
-      return 'Operá ' + materialName + ' cerca de ' + opBand + ' como entrada medida, no como lista general.';
+      return 'Operá con Ejecutivo cerca de ' + opBand + ' como entrada medida para ' + materialName + ', no como lista general.';
     }
     if (strategy?.id === 'defensa_sucursal') {
-      return 'Operá ' + firstBranch + ' cerca de ' + opBand + ' y evitá copiar ese numero por inercia al resto.';
+      return 'Operá con Ejecutivo en ' + firstBranch + ' cerca de ' + opBand + ' y evitá copiar ese numero por inercia al resto.';
     }
     if (strategy?.id === 'tactica_temporal') {
-      return 'Operá ' + materialName + ' cerca de ' + opBand + ' solo mientras la ventana tactica siga viva.';
+      return 'Operá con Ejecutivo cerca de ' + opBand + ' solo mientras la ventana tactica de ' + materialName + ' siga viva.';
     }
-    return 'Operá ' + materialName + ' cerca de ' + opBand + ' como numero defendible de resolucion.';
+    return 'Operá con Ejecutivo cerca de ' + opBand + ' como numero defendible de resolucion para ' + materialName + '.';
   }
 
   function inferPublicDirective(context, strategy, materialRole) {
     const materialName = context?.materialName || 'este material';
-    const opBand = formatBand(context?.proposedMin, context?.proposedMax);
+    const listBand = formatBand(context?.listMin || context?.proposedMin, context?.listMax || context?.proposedMax);
     const liveBand = formatBand(context?.publishedMin || context?.currentMin, context?.publishedMax || context?.currentMax);
-    const proposedMax = Number(context?.proposedMax || 0);
+    const proposedMax = Number(context?.listMax || context?.proposedMax || 0);
     const currentMax = Number(context?.publishedMax || context?.currentMax || 0);
     const gapUp = proposedMax > 0 && currentMax > 0 && proposedMax > (currentMax * 1.08);
     if (strategy?.id === 'volumen_locomotora') {
       return materialRole === 'Locomotora'
-        ? 'Publicá ' + opBand + ' solo si querés usar ' + materialName + ' como locomotora visible; los acompanantes quedan fuera o con referencia ' + liveBand + '.'
-        : 'Mantené publicado ' + liveBand + ' y usá ' + opBand + ' solo como apoyo comercial.';
+        ? 'Publicá con Lista cerca de ' + listBand + ' solo si querés usar ' + materialName + ' como locomotora visible; los acompanantes quedan fuera o con referencia ' + liveBand + '.'
+        : 'Mantené publicado ' + liveBand + ' y usá Lista ' + listBand + ' solo si suma claridad; el resto queda como apoyo comercial.';
     }
     if (strategy?.id === 'captura_servicio') {
-      return 'Mostrá hacia afuera lo minimo necesario; si ya existe ' + liveBand + ', no conviertas todo el operativo en precio publico.';
+      return 'Mostrá hacia afuera Lista ' + listBand + ' solo si ayuda a sostener la promesa; si ya existe ' + liveBand + ', no conviertas todo el operativo en precio publico.';
     }
     if (strategy?.id === 'apertura_proyecto') {
-      return 'No publiques masivo; si hace falta mostrar algo, dejá referencia ' + liveBand + ' y negociá ' + opBand + ' caso a caso.';
+      return 'No publiques masivo; si hace falta mostrar algo, dejá Lista ' + listBand + ' como referencia y negociá el resto caso a caso.';
     }
     if (strategy?.id === 'defensa_sucursal') {
-      return 'Publicá solo en la sucursal foco cuando haga falta defenderla; base visible actual: ' + liveBand + '.';
+      return 'Publicá con Lista ' + listBand + ' solo en la sucursal foco cuando haga falta defenderla; base visible actual: ' + liveBand + '.';
     }
     if (strategy?.id === 'tactica_temporal') {
-      return 'Publicá ' + opBand + ' con vigencia corta y fecha de salida visible.';
+      return 'Publicá con Lista ' + listBand + ' con vigencia corta y fecha de salida visible.';
     }
     if (gapUp) {
-      return 'Publicá por ahora ' + liveBand + ' y no subas automatico a ' + opBand + ' hasta validar margen y contexto.';
+      return 'Publicá por ahora ' + liveBand + ' y no subas automatico a Lista ' + listBand + ' hasta validar margen y contexto.';
     }
-    return 'Publicá solo si el numero operativo ' + opBand + ' sigue siendo defendible como cara visible.';
+    return 'Publicá con Lista ' + listBand + ' solo si sigue siendo defendible como cara visible.';
+  }
+
+  function inferListRoleDirective(context) {
+    const listBand = formatBand(context?.listMin || context?.proposedMin, context?.listMax || context?.proposedMax);
+    const publishedBand = formatBand(context?.publishedMin || context?.currentMin, context?.publishedMax || context?.currentMax);
+    if (publishedBand !== 'sin numero visible') {
+      return 'Lista ' + listBand + ' es la cara publica. Si hoy afuera vive ' + publishedBand + ', solo la movés cuando conviene exponer el cambio.';
+    }
+    return 'Lista ' + listBand + ' es la cara publica recomendada: referencia visible, defendible y apta para mostrar afuera.';
+  }
+
+  function inferExecutiveRoleDirective(context) {
+    const executiveBand = formatBand(context?.executiveMin || context?.proposedMin, context?.executiveMax || context?.proposedMax);
+    return 'Ejecutivo ' + executiveBand + ' es el numero operativo: sirve para negociar, cerrar y jugar la estrategia sin volver todo precio publico.';
+  }
+
+  function inferMaxRoleDirective(context) {
+    const maxBand = formatBand(context?.maxMin, context?.maxMax);
+    return 'Maximo ' + maxBand + ' es el techo de autonomia. No se publica automatico y se usa solo como limite o excepcion.';
+  }
+
+  function inferRoleSummary() {
+    return 'Lista publica · Ejecutivo opera · Maximo techa';
   }
 
   function inferPublicationRule(context, strategy, materialRole) {
@@ -475,6 +504,10 @@
       executiveSummary: inferExecutiveSummary(resolvedContext, active, materialRole),
       exampleScenario: inferExample(resolvedContext, active, materialRole),
       timeSuggestion: inferTimeSuggestion(resolvedContext, active),
+      roleSummary: inferRoleSummary(),
+      listRoleDirective: inferListRoleDirective(resolvedContext, active),
+      executiveRoleDirective: inferExecutiveRoleDirective(resolvedContext, active, materialRole),
+      maxRoleDirective: inferMaxRoleDirective(resolvedContext, active, materialRole),
       operatingDirective: inferOperatingDirective(resolvedContext, active, materialRole),
       publicDirective: inferPublicDirective(resolvedContext, active, materialRole),
       publicationRule: inferPublicationRule(resolvedContext, active, materialRole),
