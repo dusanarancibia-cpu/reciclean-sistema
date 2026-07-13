@@ -77,7 +77,7 @@
           ? renderSection(esc, 'Decision y estrategia', strategicCards, { hint: 'precio y criterio' })
           : '',
         renderSection(esc, 'Memoria del turno', `${typeof renderTurnMemory === 'function' ? renderTurnMemory(profile) : ''}`, { hint: 'continuidad' }),
-        renderSection(esc, 'Memoria por caso', `${typeof renderCaseMemory === 'function' ? renderCaseMemory(profile) : ''}`, { hint: 'seguimiento retenido' }),
+        renderSection(esc, 'Memoria por caso', `${typeof renderCaseMemory === 'function' ? renderCaseMemory(profile) : ''}`, { hint: 'retenido' }),
         renderSection(esc, 'Empuje del equipo', `
           <div class="diego-side-actions">
             ${typeof renderTeamPromptGrid === 'function' ? renderTeamPromptGrid(profile) : ''}
@@ -148,9 +148,9 @@
         </div>
       `, { open: true, hint: 'accion inmediata' }),
       renderSection(esc, 'Casos Diego', `${typeof renderCaseBoard === 'function' ? renderCaseBoard(profile) : ''}`, { open: casosCritical, critical: casosCritical, hint: casosCritical ? '⚠ atencion' : 'seguimiento vivo' }),
-      renderSection(esc, 'Detalle del turno', detalleTurno, { hint: 'trazabilidad y contexto' }),
+      renderSection(esc, 'Detalle del turno', detalleTurno, { hint: 'traza y contexto' }),
       renderSection(esc, 'Memoria del turno', `${typeof renderTurnMemory === 'function' ? renderTurnMemory(profile) : ''}`, { hint: 'continuidad' }),
-      renderSection(esc, 'Memoria por caso', `${typeof renderCaseMemory === 'function' ? renderCaseMemory(profile) : ''}`, { hint: 'seguimiento retenido' }),
+      renderSection(esc, 'Memoria por caso', `${typeof renderCaseMemory === 'function' ? renderCaseMemory(profile) : ''}`, { hint: 'retenido' }),
       strategicCards
         ? renderSection(esc, 'Decision y estrategia', strategicCards, { hint: 'precio y criterio' })
         : '',
