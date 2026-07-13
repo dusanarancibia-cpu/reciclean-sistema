@@ -44,7 +44,7 @@
   function inferCaseTitle(entry, index, cleanMsg) {
     const base = cleanText(entry?.mensaje || '', cleanMsg);
     if (!base) return `Caso Diego ${index + 1}`;
-    return base.length > 88 ? `${base.slice(0, 85)}...` : base;
+    return base;
   }
 
   function buildCases(options) {

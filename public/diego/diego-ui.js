@@ -3,10 +3,6 @@
     return typeof esc === 'function' ? esc(value) : String(value || '');
   }
 
-  function safeClean(cleanMsg, value) {
-    return typeof cleanMsg === 'function' ? cleanMsg(value || '') : String(value || '').trim();
-  }
-
   function updateChatStatus(options) {
     const statusText = options?.statusText;
     const history = Array.isArray(options?.history) ? options.history : [];
@@ -28,9 +24,7 @@
     const last = options?.last || null;
     const profile = options?.profile || { label: 'Equipo', tone: '' };
     const esc = options?.esc;
-    const cleanMsg = options?.cleanMsg;
     const inferDiegoContract = options?.inferDiegoContract;
-    const inferTrace = options?.inferTrace;
     const inferNextStep = options?.inferNextStep;
 
     if (!last) {
@@ -38,11 +32,9 @@
         <div class="diego-turn-summary">
           <div class="diego-turn-kicker">Foco del momento</div>
           <div class="diego-turn-title">Diego listo para reclamos, oportunidades y ejecucion por rol</div>
-          <div class="diego-turn-sub">${safeEsc(esc, profile.tone)} ${safeEsc(esc, profile.emptySub || '')}</div>
           <div class="diego-turn-pills">
             <span class="diego-turn-pill">Rol activo: ${safeEsc(esc, profile.label)}</span>
             <span class="diego-turn-pill">Reclamo → oportunidad</span>
-            <span class="diego-turn-pill">Tareas con responsable</span>
           </div>
         </div>
       </div>`;
@@ -50,18 +42,18 @@
 
     const contract = typeof inferDiegoContract === 'function'
       ? inferDiegoContract(last)
-      : { modeLabel: 'Consulta', stateLabel: 'Lectura' };
-    const trace = typeof inferTrace === 'function' ? inferTrace(last) : 'Sin traza';
+      : { mode: 'consulta', modeLabel: 'Consulta', stateLabel: 'Lectura' };
     const nextStep = typeof inferNextStep === 'function' ? inferNextStep(last) : 'Seguir';
+    const critical = contract.mode === 'bloqueo';
 
+    // Un mensaje, una linea compacta de modo/estado, un siguiente paso.
+    // El detalle (traza, memoria, casos) vive colapsado en el panel lateral.
     return `<div class="diego-conversation-head">
-      <div class="diego-turn-summary">
-        <div class="diego-turn-kicker">Turno actual</div>
+      <div class="diego-turn-summary${critical ? ' critical' : ''}">
+        <div class="diego-turn-kicker">${critical ? '⚠ Bloqueo' : 'Turno actual'}</div>
         <div class="diego-turn-title">${safeEsc(esc, contract.modeLabel)} · ${safeEsc(esc, contract.stateLabel)}</div>
-        <div class="diego-turn-sub">${safeEsc(esc, safeClean(cleanMsg, last.mensaje) || 'Sin detalle')}</div>
         <div class="diego-turn-pills">
-          <span class="diego-turn-pill">Traza: ${safeEsc(esc, trace)}</span>
-          <span class="diego-turn-pill">Paso: ${safeEsc(esc, nextStep)}</span>
+          <span class="diego-turn-pill${critical ? ' critical' : ''}">Siguiente: ${safeEsc(esc, nextStep)}</span>
         </div>
       </div>
     </div>`;
