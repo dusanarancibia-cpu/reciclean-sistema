@@ -3441,6 +3441,20 @@
               <div class="text-sm font-semibold leading-5 text-amber-950" id="mpStrategyTime">—</div>
             </div>
           </div>
+          <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-3">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-indigo-700 mb-1">Operar ahora</div>
+              <div class="text-sm font-semibold leading-5 text-indigo-950" id="mpStrategyOperate">—</div>
+            </div>
+            <div class="rounded-xl border border-fuchsia-200 bg-fuchsia-50 px-3 py-3">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-fuchsia-700 mb-1">Publicar ahora</div>
+              <div class="text-sm font-semibold leading-5 text-fuchsia-950" id="mpStrategyPublicNow">—</div>
+            </div>
+            <div class="rounded-xl border border-stone-300 bg-stone-100 px-3 py-3">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-600 mb-1">Regla de publicacion</div>
+              <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyPublishRule">—</div>
+            </div>
+          </div>
         </div>
         <div class="bg-white border border-stone-300 rounded-xl p-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
@@ -16231,6 +16245,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <div><strong>Estrategia activa:</strong> ${esc(strategy.title || 'Estrategia')}</div>
         <div><strong>Objetivo:</strong> ${esc(strategy.objective || 'Sin objetivo visible')}</div>
         <div><strong>Segmento:</strong> ${esc(strategy.segmentFocus || 'Sin segmento visible')}</div>
+        <div><strong>Operar ahora:</strong> ${esc(snapshot?.operatingDirective || 'Sin lectura operativa visible')}</div>
+        <div><strong>Publicar ahora:</strong> ${esc(snapshot?.publicDirective || 'Sin lectura publica visible')}</div>
+        <div><strong>Regla:</strong> ${esc(snapshot?.publicationRule || 'Sin regla visible')}</div>
         <div><strong>Publicacion:</strong> ${esc(snapshot?.publicationDecision || strategy.publicationPolicy || 'Sin politica visible')}</div>
         <div><strong>Sucursal:</strong> ${esc(snapshot?.branchDirective || strategy.branchPolicy || 'Sin politica visible')}</div>
         <div><strong>Ventana:</strong> ${esc(snapshot?.validityDecision || strategy.duration || 'Sin ventana visible')}</div>
@@ -20700,11 +20717,30 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  function mpCollectPositiveNumbers(rows, readValue) {
+    return (rows || [])
+      .map(readValue)
+      .map((value) => Number(value || 0))
+      .filter((value) => value > 0);
+  }
+
+  function mpBuildMinMax(values) {
+    if (!values.length) return { min: 0, max: 0 };
+    return {
+      min: Math.min.apply(null, values),
+      max: Math.max.apply(null, values),
+    };
+  }
+
   function mpBuildStrategyContext(group) {
     if (!group) return null;
     const notes = group.rows.map(row => row?.notas).filter(Boolean).join(' | ');
     const branchNames = group.rows.map(row => mpGetSucursalNombre(row)).filter(Boolean);
     const sourceNames = group.rows.map(row => row?.cliente_nombre).filter(Boolean);
+    const publishedRows = (mpState.publishedRows || []).filter((row) => String(row.material_id || '') === String(group.material_id || ''));
+    const proposedStats = mpBuildMinMax(mpCollectPositiveNumbers(group.rows, row => row?.precio_clp_kg));
+    const currentStats = mpBuildMinMax(mpCollectPositiveNumbers(group.rows, row => row?.precio_vigente));
+    const publishedStats = mpBuildMinMax(mpCollectPositiveNumbers(publishedRows, row => row?.precio_compra_clp));
     let materialRoleHint = '';
     if (group.urgent > 0 && group.branches === 1) materialRoleHint = 'local';
     else if (group.signals > group.direct) materialRoleHint = 'acompanante';
@@ -20714,10 +20750,17 @@ document.addEventListener('DOMContentLoaded', () => {
       materialName: group.material_nombre || '',
       materialRoleHint,
       branchNames,
+      branchCount: branchNames.length,
       rowCount: group.rows.length || 0,
       urgentCount: group.urgent || 0,
       directCount: group.direct || 0,
       signalCount: group.signals || 0,
+      proposedMin: proposedStats.min,
+      proposedMax: proposedStats.max,
+      currentMin: currentStats.min,
+      currentMax: currentStats.max,
+      publishedMin: publishedStats.min,
+      publishedMax: publishedStats.max,
       notes,
       sourceNames,
     };
@@ -20739,9 +20782,12 @@ document.addEventListener('DOMContentLoaded', () => {
       branchDirective: active.branchPolicy || 'Sin foco por sucursal visible.',
       validityDecision: active.duration || 'Sin ventana definida.',
       exitDirective: active.exitCondition || 'Sin condicion de salida visible.',
-      executiveSummary: 'Resolve ' + (context?.materialName || 'el material') + ' con criterio defendible y trazable.',
+      executiveSummary: 'Resolvé ' + (context?.materialName || 'el material') + ' con criterio defendible y trazable.',
       exampleScenario: 'Ejemplo: si el caso no abre una jugada comercial especial, defendé numero y no publiques por ansiedad.',
       timeSuggestion: 'Usala por ventana corta y revalidala apenas cambie el contexto.',
+      operatingDirective: 'Operá ' + (context?.materialName || 'el material') + ' como numero interno defendible antes de publicarlo.',
+      publicDirective: 'Publicá solo cuando convenga mostrar el numero hacia afuera, no por arrastre automatico.',
+      publicationRule: 'La regla es separar operativo y publicado hasta validar que conviene exponer.',
     };
   }
 
@@ -20781,6 +20827,9 @@ document.addEventListener('DOMContentLoaded', () => {
     tapSet('mpStrategyMeaning', snapshot.executiveSummary || 'Sin lectura ejecutiva visible.');
     tapSet('mpStrategyExample', snapshot.exampleScenario || 'Sin ejemplo visible.');
     tapSet('mpStrategyTime', snapshot.timeSuggestion || 'Sin sugerencia de tiempo visible.');
+    tapSet('mpStrategyOperate', snapshot.operatingDirective || 'Sin lectura operativa visible.');
+    tapSet('mpStrategyPublicNow', snapshot.publicDirective || 'Sin lectura publica visible.');
+    tapSet('mpStrategyPublishRule', snapshot.publicationRule || 'Sin regla de publicacion visible.');
     tapSet('mpStrategyObjective', active.objective || 'Sin objetivo visible.');
     tapSet('mpStrategySegment', active.segmentFocus || 'Sin segmento foco visible.');
     tapSet('mpStrategyPublish', active.publicationPolicy || 'Sin politica visible.');
@@ -20791,7 +20840,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tapSet('mpStrategyWindow', active.duration || 'Sin ventana definida.');
     tapSet('mpStrategyExit', active.exitCondition || 'Sin condicion de salida visible.');
     if (rule) {
-      rule.textContent = '5. Estrategia activa: ' + (active.title || 'Operacion general') + '. ' + (snapshot.publicationDecision || active.publicationPolicy || 'Sin politica visible.');
+      rule.textContent = '5. Estrategia activa: ' + (active.title || 'Operacion general') + '. ' + (snapshot.publicationRule || snapshot.publicationDecision || active.publicationPolicy || 'Sin politica visible.');
     }
   }
 
@@ -21086,8 +21135,8 @@ document.addEventListener('DOMContentLoaded', () => {
         + (pending ? '<span class="text-[11px] px-2 py-1 rounded-full ' + meta.cls + '">' + tapEscape(meta.label) + '</span>' : '<span class="text-[11px] px-2 py-1 rounded-full bg-stone-200 text-stone-600">Publicado</span>')
         + '</div>'
         + '<div class="grid grid-cols-2 gap-3 mt-3 text-sm">'
-        + '<div><div class="text-xs uppercase text-stone-500">Propuesto</div><div class="font-semibold text-stone-800">' + tapFmtClp(pending?.precio_clp_kg) + '</div></div>'
-        + '<div><div class="text-xs uppercase text-stone-500">Vigente</div><div class="font-semibold text-stone-800">' + tapFmtClp((pending && pending.precio_vigente) ?? published?.precio_compra_clp) + '</div></div>'
+        + '<div><div class="text-xs uppercase text-stone-500">Operativo</div><div class="font-semibold text-stone-800">' + tapFmtClp(pending?.precio_clp_kg) + '</div></div>'
+        + '<div><div class="text-xs uppercase text-stone-500">Publicado</div><div class="font-semibold text-stone-800">' + tapFmtClp((pending && pending.precio_vigente) ?? published?.precio_compra_clp) + '</div></div>'
         + '<div><div class="text-xs uppercase text-stone-500">Delta</div><div class="' + (mpIsUrgent(pending) ? 'text-rose-700 font-semibold' : 'text-stone-700') + '">' + mpFmtDelta(pending?.desviacion_pct) + '</div></div>'
         + '<div><div class="text-xs uppercase text-stone-500">Publicado desde</div><div class="text-stone-700">' + tapEscape(published?.vigencia_desde ? new Date(published.vigencia_desde).toLocaleDateString('es-CL') : (mpState.publishedError ? 'No visible en este acceso' : '—')) + '</div></div>'
         + '</div>'
@@ -21121,6 +21170,11 @@ document.addEventListener('DOMContentLoaded', () => {
       + '<div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">Que te esta diciendo</div><div class="text-sm font-semibold leading-5 text-sky-950">' + tapEscape(snapshot.executiveSummary || 'Sin lectura ejecutiva visible.') + '</div></div>'
       + '<div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Ejemplo en cristiano</div><div class="text-sm font-semibold leading-5 text-emerald-950">' + tapEscape(snapshot.exampleScenario || 'Sin ejemplo visible.') + '</div></div>'
       + '<div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 mb-1">Tiempo sugerido</div><div class="text-sm font-semibold leading-5 text-amber-950">' + tapEscape(snapshot.timeSuggestion || 'Sin sugerencia de tiempo visible.') + '</div></div>'
+      + '</div>'
+      + '<div class="mt-3 grid grid-cols-1 xl:grid-cols-3 gap-3 text-xs">'
+      + '<div class="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-indigo-700 mb-1">Operar ahora</div><div class="text-sm font-semibold leading-5 text-indigo-950">' + tapEscape(snapshot.operatingDirective || 'Sin lectura operativa visible.') + '</div></div>'
+      + '<div class="rounded-xl border border-fuchsia-200 bg-fuchsia-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-fuchsia-700 mb-1">Publicar ahora</div><div class="text-sm font-semibold leading-5 text-fuchsia-950">' + tapEscape(snapshot.publicDirective || 'Sin lectura publica visible.') + '</div></div>'
+      + '<div class="rounded-xl border border-stone-300 bg-stone-100 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-stone-600 mb-1">Regla de publicacion</div><div class="text-sm font-semibold leading-5 text-stone-900">' + tapEscape(snapshot.publicationRule || 'Sin regla visible.') + '</div></div>'
       + '</div>'
       + '<div class="mt-3 rounded-lg bg-white px-3 py-2 text-xs text-stone-600"><strong>Publicacion y ventana:</strong> '
       + tapEscape(strategy.publicationPolicy || 'Sin politica visible.') + ' · '

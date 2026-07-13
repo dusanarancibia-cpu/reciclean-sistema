@@ -147,10 +147,17 @@
       materialName: context.materialName || '',
       materialRoleHint: context.materialRoleHint || '',
       branchNames: Array.isArray(context.branchNames) ? [...context.branchNames] : [],
+      branchCount: Number(context.branchCount || 0),
       rowCount: Number(context.rowCount || 0),
       urgentCount: Number(context.urgentCount || 0),
       directCount: Number(context.directCount || 0),
       signalCount: Number(context.signalCount || 0),
+      proposedMin: Number(context.proposedMin || 0),
+      proposedMax: Number(context.proposedMax || 0),
+      currentMin: Number(context.currentMin || 0),
+      currentMax: Number(context.currentMax || 0),
+      publishedMin: Number(context.publishedMin || 0),
+      publishedMax: Number(context.publishedMax || 0),
       notes: context.notes || '',
       sourceNames: Array.isArray(context.sourceNames) ? [...context.sourceNames] : [],
     } : null;
@@ -355,6 +362,101 @@
     return 'Usarla por ventana corta y revalidarla apenas cambie el contexto.';
   }
 
+  function formatClp(value) {
+    const numeric = Number(value || 0);
+    if (!(numeric > 0)) return 'sin numero visible';
+    return '$' + Math.round(numeric).toLocaleString('es-CL');
+  }
+
+  function formatBand(min, max) {
+    const safeMin = Number(min || 0);
+    const safeMax = Number(max || 0);
+    if (!(safeMin > 0) && !(safeMax > 0)) return 'sin numero visible';
+    if (safeMin > 0 && safeMax > 0) {
+      if (Math.round(safeMin) === Math.round(safeMax)) return formatClp(safeMax);
+      return formatClp(safeMin) + ' a ' + formatClp(safeMax);
+    }
+    return formatClp(safeMax || safeMin);
+  }
+
+  function inferOperatingDirective(context, strategy, materialRole) {
+    const materialName = context?.materialName || 'este material';
+    const opBand = formatBand(context?.proposedMin, context?.proposedMax);
+    const firstBranch = Array.isArray(context?.branchNames) && context.branchNames.length ? context.branchNames[0] : 'la sucursal foco';
+    if (strategy?.id === 'volumen_locomotora') {
+      return materialRole === 'Locomotora'
+        ? 'Operá ' + materialName + ' cerca de ' + opBand + ' como locomotora para capturar canasta.'
+        : 'Operá ' + materialName + ' cerca de ' + opBand + ' solo como apoyo, no como precio estrella.';
+    }
+    if (strategy?.id === 'captura_servicio') {
+      return 'Operá ' + materialName + ' cerca de ' + opBand + ' sin regalar precio; el diferencial debe sostener servicio.';
+    }
+    if (strategy?.id === 'apertura_proyecto') {
+      return 'Operá ' + materialName + ' cerca de ' + opBand + ' como entrada medida, no como lista general.';
+    }
+    if (strategy?.id === 'defensa_sucursal') {
+      return 'Operá ' + firstBranch + ' cerca de ' + opBand + ' y evitá copiar ese numero por inercia al resto.';
+    }
+    if (strategy?.id === 'tactica_temporal') {
+      return 'Operá ' + materialName + ' cerca de ' + opBand + ' solo mientras la ventana tactica siga viva.';
+    }
+    return 'Operá ' + materialName + ' cerca de ' + opBand + ' como numero defendible de resolucion.';
+  }
+
+  function inferPublicDirective(context, strategy, materialRole) {
+    const materialName = context?.materialName || 'este material';
+    const opBand = formatBand(context?.proposedMin, context?.proposedMax);
+    const liveBand = formatBand(context?.publishedMin || context?.currentMin, context?.publishedMax || context?.currentMax);
+    const proposedMax = Number(context?.proposedMax || 0);
+    const currentMax = Number(context?.publishedMax || context?.currentMax || 0);
+    const gapUp = proposedMax > 0 && currentMax > 0 && proposedMax > (currentMax * 1.08);
+    if (strategy?.id === 'volumen_locomotora') {
+      return materialRole === 'Locomotora'
+        ? 'Publicá ' + opBand + ' solo si querés usar ' + materialName + ' como locomotora visible; los acompanantes quedan fuera o con referencia ' + liveBand + '.'
+        : 'Mantené publicado ' + liveBand + ' y usá ' + opBand + ' solo como apoyo comercial.';
+    }
+    if (strategy?.id === 'captura_servicio') {
+      return 'Mostrá hacia afuera lo minimo necesario; si ya existe ' + liveBand + ', no conviertas todo el operativo en precio publico.';
+    }
+    if (strategy?.id === 'apertura_proyecto') {
+      return 'No publiques masivo; si hace falta mostrar algo, dejá referencia ' + liveBand + ' y negociá ' + opBand + ' caso a caso.';
+    }
+    if (strategy?.id === 'defensa_sucursal') {
+      return 'Publicá solo en la sucursal foco cuando haga falta defenderla; base visible actual: ' + liveBand + '.';
+    }
+    if (strategy?.id === 'tactica_temporal') {
+      return 'Publicá ' + opBand + ' con vigencia corta y fecha de salida visible.';
+    }
+    if (gapUp) {
+      return 'Publicá por ahora ' + liveBand + ' y no subas automatico a ' + opBand + ' hasta validar margen y contexto.';
+    }
+    return 'Publicá solo si el numero operativo ' + opBand + ' sigue siendo defendible como cara visible.';
+  }
+
+  function inferPublicationRule(context, strategy, materialRole) {
+    const hasSpread = Number(context?.branchCount || 0) > 1;
+    if (strategy?.id === 'volumen_locomotora') {
+      return materialRole === 'Locomotora'
+        ? 'Separá locomotora publicada de vagones internos: no todo lo que mueve negocio va a pizarra.'
+        : 'Si es acompanante, la regla es simple: operar si ayuda, publicar solo si suma claridad y no erosiona referencia.';
+    }
+    if (strategy?.id === 'captura_servicio') {
+      return 'La regla manda que servicio viaje en la explicacion y no quede escondido como descuento permanente.';
+    }
+    if (strategy?.id === 'apertura_proyecto') {
+      return 'La regla es entrada controlada: negociar adentro, publicar solo cuando el caso deje de ser piloto.';
+    }
+    if (strategy?.id === 'defensa_sucursal') {
+      return hasSpread
+        ? 'La regla es asimetria controlada: una sucursal se puede defender sin contaminar a toda la red.'
+        : 'La regla es apoyo local: sostener la sucursal sin convertirlo en politica general.';
+    }
+    if (strategy?.id === 'tactica_temporal') {
+      return 'La regla es vigencia visible: si el precio sale afuera, debe salir con reloj y condicion de salida.';
+    }
+    return 'La regla es no igualar automaticamente operativo y publicado; primero se valida si conviene mostrarlo afuera.';
+  }
+
   function buildGuide(context, strategy) {
     const active = strategy || getActive();
     const resolvedContext = cloneContext(context) || getContext();
@@ -373,6 +475,9 @@
       executiveSummary: inferExecutiveSummary(resolvedContext, active, materialRole),
       exampleScenario: inferExample(resolvedContext, active, materialRole),
       timeSuggestion: inferTimeSuggestion(resolvedContext, active),
+      operatingDirective: inferOperatingDirective(resolvedContext, active, materialRole),
+      publicDirective: inferPublicDirective(resolvedContext, active, materialRole),
+      publicationRule: inferPublicationRule(resolvedContext, active, materialRole),
     };
   }
 
