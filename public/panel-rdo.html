@@ -11172,6 +11172,10 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-tts-btn{margin-top:6px;font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:4px}
   .diego-tts-btn:hover{background:#e2e8f0}
   .diego-tts-btn.speaking{background:#059669;color:#fff;border-color:#059669}
+  /* Botón de PRUEBA dictado STT (D-DIEGO-VOZ-CONVERSACIONAL-001 PR1) — borde
+     punteado a propósito para señalar visualmente que es experimental */
+  .diego-stt-btn{border-style:dashed !important}
+  .diego-stt-btn.listening{background:#7c3aed;color:#fff;border-color:#7c3aed;animation:pulse-rec 1.2s ease-in-out infinite}
   .diego-empty{color:#94a3b8;font-size:12px;text-align:center;padding:24px 8px}
   .diego-chat-form{display:flex;gap:8px;padding:10px;border-top:1px solid #e2e8f0;background:#fff;align-items:center;flex-shrink:0}
   .diego-chat-form .attach-btn{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:24px;padding:10px 14px;font-size:14px;cursor:pointer;color:#475569}
@@ -11201,6 +11205,12 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-chat.minimized .diego-chat-form{display:none}
   /* M3 — Botón attach con SVG en lugar de emoji */
   .diego-chat-form .attach-btn{padding:8px;display:inline-flex;align-items:center;justify-content:center}
+  /* D-DIEGO-VOZ-CONVERSACIONAL-001 PR1 · #diegoSttBtn usa .hidden para
+     mostrar/ocultar según soporte del navegador — selector ID+clase para que
+     gane siempre a ".diego-chat-form .attach-btn{display:inline-flex}"
+     (0,2,0) sin importar orden en la hoja, mismo bug ya resuelto antes con
+     #diegoVoicePreview.hidden */
+  #diegoSttBtn.hidden{display:none}
   /* M4 — Badge FAB clickeable: cursor pointer + hover */
   .diego-fab-badge{cursor:pointer}
   .diego-fab-badge:hover{transform:scale(1.1)}
@@ -11302,6 +11312,16 @@ document.addEventListener('DOMContentLoaded', () => {
       </svg>
     </button>
     <span id="diegoMicTimer" class="hidden" style="font-size:11px;color:#ef4444;font-family:monospace;white-space:nowrap;">00:00</span>
+    <!-- PRUEBA D-DIEGO-VOZ-CONVERSACIONAL-001 PR1 · dicta al input, NO envía solo,
+         NO adjunta audio. Se oculta con gracia si el navegador no soporta STT. -->
+    <button type="button" class="attach-btn diego-stt-btn hidden" id="diegoSttBtn" aria-label="Dictar por voz (prueba)" title="🧪 Dictar por voz — prueba, no envía automático">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+        <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
+        <path d="M8 21h8"/>
+        <path d="M12 19v2"/>
+      </svg>
+    </button>
     <textarea id="diegoChatInput" placeholder="Escribí, adjuntá o grabá una nota de voz…" maxlength="2000" aria-label="Mensaje a Diego" rows="1"></textarea>
     <button type="submit" class="send" id="diegoChatSend">Enviar</button>
   </form>
@@ -12686,6 +12706,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // -- Dictado por voz · PRUEBA (D-DIEGO-VOZ-CONVERSACIONAL-001 PR1) --
+  // window.DIEGO_STT (public/diego/diego-stt.js) es un módulo nuevo y aislado,
+  // separado de DIEGO_VOICE (graba y sube un archivo adjunto) y de DIEGO_TTS
+  // (voz de salida). Este botón SOLO dicta hacia el input existente — el
+  // usuario decide si edita y envía con el flujo normal ya existente. Cero
+  // autosend, cero adjunto de audio, cero modo voz conversacional todavía.
+  const sttBtn = document.getElementById('diegoSttBtn');
+  if (sttBtn) {
+    sttBtn.addEventListener('click', () => {
+      if (!window.DIEGO_STT || typeof window.DIEGO_STT.startListening !== 'function') return;
+      if (window.DIEGO_STT.isListening()) {
+        window.DIEGO_STT.stopListening();
+        return;
+      }
+      sttBtn.classList.add('listening');
+      window.DIEGO_STT.startListening({
+        onInterim: (text) => {
+          input.value = text;
+          input.style.height = 'auto';
+          input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+        },
+        onFinal: (text) => {
+          input.value = text;
+          input.style.height = 'auto';
+          input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+          sttBtn.classList.remove('listening');
+        },
+        onError: (e) => {
+          sttBtn.classList.remove('listening');
+          console.warn('[Diego STT] error:', e);
+        },
+      });
+    });
+  }
+
   // Drag & drop
   ['dragenter', 'dragover'].forEach(ev => body.addEventListener(ev, (e) => {
     e.preventDefault();
@@ -12710,6 +12765,10 @@ document.addEventListener('DOMContentLoaded', () => {
     suscribir();
     refreshBadge();
     render();
+    // Mostrar el botón de dictado (PRUEBA) solo si el navegador soporta STT nativo.
+    // Se chequea acá (al abrir, no al cargar el IIFE) porque diego-stt.js carga
+    // casi al final del <body> — mismo motivo que el fix de carga del mic (PR #674).
+    if (sttBtn) sttBtn.classList.toggle('hidden', !(window.DIEGO_STT && window.DIEGO_STT.isSupported()));
     setTimeout(() => input.focus(), 50);
   });
   closeBtn.addEventListener('click', () => {
@@ -18243,6 +18302,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="./diego/diego-case-sync.js"></script>
 <script src="./diego/diego-voice.js"></script>
 <script src="./diego/diego-tts.js"></script>
+<script src="./diego/diego-stt.js"></script>
 <script src="./diego/diego-ui.js"></script>
 <script src="./diego/diego-strategy.js"></script>
 <script src="./diego/diego-memory.js"></script>
