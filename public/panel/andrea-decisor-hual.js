@@ -1,5 +1,5 @@
 // ============================================================
-// ANDREA — BANDEJAS ADMINISTRATIVAS + DECISOR + HUAL COMPRA
+// ANDREA — BANDEJAS ADMINISTRATIVAS + DECISOR
 // extraído de panel-rdo.html (antifragilidad panel, bloque 13)
 //
 // UN SOLO DOMINIO ADMINISTRATIVO (no 2 mezclados por accidente — verificado
@@ -15,9 +15,9 @@
 //      vistas v_andrea_dup_pendientes/v_andrea_drift_libre/
 //      v_andrea_ruts_invalidos + variantes _historico)
 //   2. Comex (RPCs comex_alta/comex_avanzar_estado, vista v_andrea_comex_activos)
-//   3. Decisión comercial: Decisor Venta + HUAL Compra (HUAL vive físicamente
-//      dentro de la sección de Decisor en el original, sin header propio —
-//      probable par compra/venta construido junto)
+//   3. Decisión comercial: Decisor Venta (lee panel.v_matriz_precios_compradores
+//      — lectura read-only de vista pricing-adjacente, cero acoplamiento de
+//      código con los tabs de Precios excluidos)
 //   4. Documentos financieros: Cobranza + Actas (RPCs f_estado_bono/
 //      firmar_acta, vistas v_andrea_cobranza/v_andrea_actas)
 //
@@ -25,30 +25,16 @@
 // ninguno — $$/esc/fmtFecha/fmtPct con 85/54/4/2 usos respectivamente;
 // fmtCLP usado por Decisor+Cobranza).
 //
-// init() único: registra los 8 bind() de tab-switch + los listeners
+// init() único: registra los bind() de tab-switch + los listeners
 // delegados de los 4 grupos. No se dividió porque no hay 2 dominios reales
 // que separar (a diferencia de Mesa Control 99-99 vs Firmas/Tarifas).
 //
-// ⚠️ Lecturas read-only de vistas pricing-adjacentes (documentado, no
-// bloqueante — cero acoplamiento de código con los tabs de Precios
-// excluidos):
-//   - HUAL Compra lee curated.comprador_precio_actual +
-//     curated.vw_calibracion_triple (misma vista que usa el Calibrador de
-//     Margen, ya extraído en bloque 11 · public/panel/mesa-control-99-99.js).
-//   - Decisor Venta lee panel.v_matriz_precios_compradores.
-//
-// ⚠️ HALLAZGO — contrato inline HTML pre-existente (reportado antes de
-// extraer, resuelto según autorización explícita de Dusan):
-//   El HTML original tiene onchange="loadHualCompra()" (select
-//   hualFiltroSuc) y onclick="loadHualCompra()" (botón Actualizar) — únicos
-//   handlers inline de todo este bloque (los otros 7 tabs usan 100%
-//   addEventListener interno). Verificado en producción ANTES de esta
-//   extracción: typeof window.loadHualCompra === 'undefined' — el filtro
-//   de sucursal y el botón Actualizar de HUAL YA estaban rotos en
-//   producción (bug pre-existente, no introducido por este cambio). Se
-//   resuelve agregando `window.loadHualCompra = loadHualCompra;` (línea
-//   marcada abajo) — mismo contrato HTML preservado tal cual, sin tocar
-//   panel-rdo.html.
+// HUAL Compra fue RETIRADO (2026-07-14, cambio de criterio canónico de
+// Dusan): pieza exploratoria sin contexto profundo suficiente, no debía
+// consolidarse como capacidad fuera de Mesa de Precios. Se eliminó
+// completo: HTML (sección + link de sidebar), JS (loadHualCompra,
+// _hualSucLoaded, window.loadHualCompra, bind de tab-switch), y la entrada
+// 'hual_compra' de FALLBACK_TABS_GLOBALES en panel-rdo.html.
 //
 // Fuera de alcance (no tocado): CRM Impulsa/Ficha-Cliente/Gestiones,
 // Herramientas Externas/Facturación Grupo, Diego LLM, Precios (tabs),
@@ -313,89 +299,6 @@
       if (sel) sel.innerHTML = '<option value="">Elegí sucursal…</option>' + _decSucCache.map(s => `<option value="${esc(s.sucursal_id)}">${esc(s.nombre)}</option>`).join('');
     }
   }
-  // ── HUAL vs Compra ──────────────────────────────────────────────
-  let _hualSucLoaded = false;
-  async function loadHualCompra() {
-    const div = $$('hualCompraTabla'); if (!div) return;
-    div.innerHTML = '<div class="text-xs text-stone-400 italic py-4 text-center">Cargando…</div>';
-    try {
-      // 1. Precios HUAL (PV07)
-      const { data: hualRows, error: e1 } = await sb.schema('curated').from('comprador_precio_actual')
-        .select('material_id, precio_clp_kg, vigente_desde')
-        .eq('comprador_id', 'PV07').is('vigente_hasta', null);
-      if (e1) throw e1;
-
-      // 2. Nombres de materiales
-      const { data: mats } = await sb.schema('curated').from('materiales').select('material_id, nombre');
-      const matMap = Object.fromEntries((mats || []).map(m => [m.material_id, m.nombre]));
-
-      // 3. Precios de compra efectivos (real_30d si hay vales, si no catálogo)
-      const sucFiltro = $$('hualFiltroSuc')?.value || '';
-      let q = sb.schema('curated').from('vw_calibracion_triple')
-        .select('material_id, sucursal_id, precio_compra_efectivo_clp');
-      if (sucFiltro) q = q.eq('sucursal_id', sucFiltro);
-      const { data: compraRows } = await q;
-
-      // 4. Llenar filtro sucursales (1 vez)
-      if (!_hualSucLoaded) {
-        const { data: sucs } = await sb.schema('curated').from('sucursales').select('sucursal_id, nombre').order('nombre');
-        const sel = $$('hualFiltroSuc');
-        if (sel && sucs) {
-          sel.innerHTML = '<option value="">Todas las sucursales</option>' + sucs.map(s => `<option value="${esc(s.sucursal_id)}">${esc(s.nombre)}</option>`).join('');
-        }
-        _hualSucLoaded = true;
-      }
-
-      // 5. Build map: material_id → avg precio_compra
-      const compraMap = {};
-      for (const r of (compraRows || [])) {
-        if (!compraMap[r.material_id]) compraMap[r.material_id] = [];
-        compraMap[r.material_id].push(Number(r.precio_compra_efectivo_clp || 0));
-      }
-      const compraAvg = {};
-      for (const [mid, vals] of Object.entries(compraMap)) {
-        compraAvg[mid] = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
-      }
-
-      // 6. Render
-      if (!hualRows || hualRows.length === 0) {
-        div.innerHTML = '<div class="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">No hay precios HUAL cargados para PV07. Usá la función actualizar_precio_comprador desde SQL Editor.</div>';
-        return;
-      }
-      const filas = hualRows.map(r => {
-        const hual = Number(r.precio_clp_kg || 0);
-        const compra = compraAvg[r.material_id] ?? null;
-        const margen = (hual > 0 && compra !== null) ? Math.round(((hual - compra) / hual) * 100) : null;
-        const sem = margen === null ? '⚪' : margen >= 40 ? '🟢' : margen >= 25 ? '🟡' : '🔴';
-        const dia = r.vigente_desde ? r.vigente_desde.slice(0, 10) : '—';
-        return { material: matMap[r.material_id] || r.material_id, hual, compra, margen, sem, dia };
-      }).sort((a, b) => (a.margen ?? 999) - (b.margen ?? 999));
-
-      div.innerHTML = `<table class="w-full text-xs border-collapse">
-        <thead><tr class="bg-stone-100 text-stone-700">
-          <th class="text-left px-2 py-2">Material</th>
-          <th class="text-right px-2 py-2">HUAL paga</th>
-          <th class="text-right px-2 py-2">Tú pagas</th>
-          <th class="text-right px-2 py-2">Margen</th>
-          <th class="text-center px-2 py-2">Estado</th>
-          <th class="text-right px-2 py-2 text-stone-400">Precio desde</th>
-        </tr></thead>
-        <tbody>${filas.map(f => `<tr class="border-b border-stone-100 hover:bg-stone-50">
-          <td class="px-2 py-1.5 font-medium">${esc(f.material)}</td>
-          <td class="px-2 py-1.5 text-right text-emerald-700 font-semibold">$${f.hual.toLocaleString('es-CL')}</td>
-          <td class="px-2 py-1.5 text-right">${f.compra !== null ? '$' + f.compra.toLocaleString('es-CL') : '<span class="text-stone-400">—</span>'}</td>
-          <td class="px-2 py-1.5 text-right font-bold ${f.margen === null ? 'text-stone-400' : f.margen >= 40 ? 'text-emerald-700' : f.margen >= 25 ? 'text-amber-600' : 'text-red-600'}">${f.margen !== null ? f.margen + '%' : '—'}</td>
-          <td class="px-2 py-1.5 text-center text-base">${f.sem}</td>
-          <td class="px-2 py-1.5 text-right text-stone-400">${esc(f.dia)}</td>
-        </tr>`).join('')}</tbody>
-      </table>`;
-    } catch (err) {
-      div.innerHTML = `<div class="text-red-600 text-sm p-3">${esc(err.message || String(err))}</div>`;
-    }
-  }
-  window.loadHualCompra = loadHualCompra; // fix: onclick/onchange inline en HTML requieren global (bug pre-existente, ver header)
-  // ────────────────────────────────────────────────────────────────
-
   async function loadDecisor() {
     const lista = $$('dec_lista'); if (!lista) return;
     await decBootstrap();
@@ -604,7 +507,7 @@
   // ------------------ Wiring ------------------
   function init() {
     // Loaders al click del tab (ambos navbars)
-    [['andrea_dup_clientes', loadDup], ['andrea_drift_libre', loadDrift], ['andrea_ruts_invalidos', loadRuts], ['andrea_comex', loadComex], ['decisor_venta', decBootstrap], ['andrea_cobranza', loadCobranza], ['andrea_actas', loadActas], ['hual_compra', loadHualCompra]].forEach(([code, fn]) => {
+    [['andrea_dup_clientes', loadDup], ['andrea_drift_libre', loadDrift], ['andrea_ruts_invalidos', loadRuts], ['andrea_comex', loadComex], ['decisor_venta', decBootstrap], ['andrea_cobranza', loadCobranza], ['andrea_actas', loadActas]].forEach(([code, fn]) => {
       document.querySelector('button[data-tab="' + code + '"]')?.addEventListener('click', () => setTimeout(fn, 100));
       document.querySelector('a[data-v4-tab="' + code + '"]')?.addEventListener('click', () => setTimeout(fn, 100));
     });
