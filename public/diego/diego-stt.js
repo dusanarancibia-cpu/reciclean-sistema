@@ -11,6 +11,12 @@
 // lo envía, lo edita o lo descarta. Cero autosend, cero backend, cero
 // dependencia de diego-chat-process ni de diego-tts.js.
 //
+// PR2a (14-jul-2026): motor nativo aceptado como camino real tras prueba
+// humana (ver mayordomo/BITACORA-VIVA.md). Corrección de nombres propios
+// y registro de aprendizaje viven en módulos aparte
+// (diego-stt-correcciones.js / diego-stt-log.js) — este archivo sigue
+// siendo solo el wrapper de SpeechRecognition, sin lógica de negocio.
+//
 // Reversible a propósito, mismo criterio que diego-tts.js: si el día de
 // mañana hace falta más precisión (Whisper u otro motor), se reescribe
 // adentro de startListening()/stopListening() — el consumidor no cambia.
@@ -61,6 +67,7 @@
 
     recognition.onstart = function () {
       state.listening = true;
+      if (typeof options.onStart === 'function') options.onStart();
     };
 
     recognition.onresult = function (event) {

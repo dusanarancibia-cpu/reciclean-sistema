@@ -11190,6 +11190,9 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-stt-test-banner p{margin:0 0 6px;line-height:1.5}
   .diego-stt-test-frases span{font-weight:600;display:block;margin-bottom:2px}
   .diego-stt-test-frases ul{margin:0;padding-left:18px;line-height:1.6}
+  /* PR2a · nota de corrección de sucursal SIEMPRE visible (nunca en silencio) */
+  #diegoSttCorreccionNote.hidden{display:none}
+  .diego-stt-correccion-note{background:#fffbeb;border-top:1px solid #fde68a;border-bottom:1px solid #fde68a;padding:6px 12px;font-size:11px;color:#92400e}
   .diego-empty{color:#94a3b8;font-size:12px;text-align:center;padding:24px 8px}
   .diego-chat-form{display:flex;gap:8px;padding:10px;border-top:1px solid #e2e8f0;background:#fff;align-items:center;flex-shrink:0}
   .diego-chat-form .attach-btn{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:24px;padding:10px 14px;font-size:14px;cursor:pointer;color:#475569}
@@ -11331,6 +11334,9 @@ document.addEventListener('DOMContentLoaded', () => {
       </ul>
     </div>
   </div>
+  <!-- PR2a D-DIEGO-VOZ-CONVERSACIONAL-001 · corrección de sucursales SIEMPRE
+       visible — pedido explícito de Dusan: "no quiero correcciones invisibles" -->
+  <div class="diego-stt-correccion-note hidden" id="diegoSttCorreccionNote"></div>
   <form class="diego-chat-form" id="diegoChatForm" autocomplete="off">
     <input type="file" id="diegoFileInput" accept="image/*,audio/*,application/pdf,text/plain,text/csv,application/json" style="display:none;" />
     <button type="button" class="attach-btn" id="diegoAttachBtn" aria-label="Adjuntar archivo" title="Foto, audio o PDF">
@@ -12743,21 +12749,60 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // -- Dictado por voz · PRUEBA (D-DIEGO-VOZ-CONVERSACIONAL-001 PR1) --
-  // window.DIEGO_STT (public/diego/diego-stt.js) es un módulo nuevo y aislado,
-  // separado de DIEGO_VOICE (graba y sube un archivo adjunto) y de DIEGO_TTS
-  // (voz de salida). Este botón SOLO dicta hacia el input existente — el
-  // usuario decide si edita y envía con el flujo normal ya existente. Cero
-  // autosend, cero adjunto de audio, cero modo voz conversacional todavía.
+  // -- Dictado por voz (D-DIEGO-VOZ-CONVERSACIONAL-001 · PR1 + PR2a) --
+  // window.DIEGO_STT (public/diego/diego-stt.js) sigue siendo el único módulo
+  // que sabe de SpeechRecognition. La corrección de sucursales
+  // (diego-stt-correcciones.js) y el registro de aprendizaje
+  // (diego-stt-log.js) son módulos aparte — este bloque solo los orquesta.
+  // Motor nativo aceptado como camino real (decisión Dusan 14-jul-2026):
+  // sigue con confirmación manual antes de enviar, sin autosend todavía.
   const sttBtn = document.getElementById('diegoSttBtn');
   const sttBtnLabel = sttBtn?.querySelector('.diego-stt-btn-label');
   const sttTestBanner = document.getElementById('diegoSttTestBanner');
   const sttTestClose = document.getElementById('diegoSttTestClose');
+  const sttCorreccionNote = document.getElementById('diegoSttCorreccionNote');
   if (sttTestClose) {
     sttTestClose.addEventListener('click', () => {
       if (sttTestBanner) sttTestBanner.classList.add('hidden');
     });
   }
+
+  // Beep corto al arrancar a escuchar — hallazgo de la prueba humana: sin
+  // señal sonora, el micrófono agarra preámbulo ("no espérate, estoy
+  // ocupándome...") antes de la frase real. Web Audio API, sin archivo.
+  function sttPlayBeep() {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch (e) { /* sin audio no es crítico */ }
+  }
+
+  // Estado del turno de dictado en curso — se resetea en cada onFinal/onError
+  // y al editar el input a mano (señal de que el usuario tomó el control).
+  let sttRawFinalText = '';
+  let sttWasVoiceTurn = false;
+
+  function sttClearCorreccionNote() {
+    if (sttCorreccionNote) {
+      sttCorreccionNote.classList.add('hidden');
+      sttCorreccionNote.textContent = '';
+    }
+  }
+
+  // Editar a mano después de dictar = el usuario ya vio y decidió corregir
+  // algo más — no seguimos mostrando la nota de una corrección vieja.
+  input.addEventListener('input', () => { sttClearCorreccionNote(); });
+
   if (sttBtn) {
     sttBtn.addEventListener('click', () => {
       if (!window.DIEGO_STT || typeof window.DIEGO_STT.startListening !== 'function') return;
@@ -12767,18 +12812,33 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       sttBtn.classList.add('listening');
       if (sttBtnLabel) sttBtnLabel.textContent = 'Escuchando…';
+      sttClearCorreccionNote();
       window.DIEGO_STT.startListening({
+        onStart: () => { sttPlayBeep(); },
         onInterim: (text) => {
           input.value = text;
           input.style.height = 'auto';
           input.style.height = Math.min(input.scrollHeight, 120) + 'px';
         },
         onFinal: (text) => {
-          input.value = text;
+          sttRawFinalText = text;
+          sttWasVoiceTurn = true;
+          // Corrección de sucursales SIEMPRE visible — pedido explícito:
+          // "no quiero correcciones invisibles". Se aplica al input, pero
+          // se muestra qué cambió en una nota aparte, no en silencio.
+          const correccion = window.DIEGO_STT_CORRECCIONES
+            ? window.DIEGO_STT_CORRECCIONES.corregir(text)
+            : { textoCorregido: text, huboCorreccion: false, cambios: [] };
+          input.value = correccion.textoCorregido;
           input.style.height = 'auto';
           input.style.height = Math.min(input.scrollHeight, 120) + 'px';
           sttBtn.classList.remove('listening');
           if (sttBtnLabel) sttBtnLabel.textContent = 'Prueba dictado';
+          if (correccion.huboCorreccion && sttCorreccionNote) {
+            const detalle = correccion.cambios.map(c => `"${c.original}" → "${c.corregido}"`).join(' · ');
+            sttCorreccionNote.textContent = `✏️ Corregido automático: ${detalle}`;
+            sttCorreccionNote.classList.remove('hidden');
+          }
         },
         onError: (e) => {
           sttBtn.classList.remove('listening');
@@ -12863,11 +12923,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Habla automático (PR2a) solo si el turno que se está mandando vino por
+  // dictado — el chat de texto normal sigue sin autoplay, como siempre.
+  function sttAutoSpeakLastReplyIfVoiceTurn(wasVoiceTurn) {
+    if (!wasVoiceTurn || !window.DIEGO_TTS) return;
+    const lastDiego = [...history].reverse().find(h => h.role === 'diego');
+    if (lastDiego && lastDiego.mensaje) {
+      window.DIEGO_TTS.speak(lastDiego.mensaje, { id: lastDiego.ts });
+    }
+  }
+
   // -- Submit --
   form.addEventListener('submit', async (e) => {
     // preventDefault sincrónico primero: si hay grabación pendiente, el upload es async y
     // no debe dejar una ventana donde el form intente hacer un submit nativo (reload).
     e.preventDefault();
+    // Capturar ANTES de que se limpie el input — necesitamos lo dictado (crudo,
+    // ya con corrección de sucursal aplicada) vs lo que realmente se manda
+    // (después de cualquier edición manual) para el registro de aprendizaje.
+    const sttThisTurnWasVoice = sttWasVoiceTurn;
+    const sttRawForLog = sttRawFinalText;
+    const sttFinalForLog = input.value.trim();
+    sttWasVoiceTurn = false;
+    sttClearCorreccionNote();
+    if (sttThisTurnWasVoice && window.DIEGO_STT_LOG && sttFinalForLog) {
+      const correccionesAplicadas = window.DIEGO_STT_CORRECCIONES
+        ? window.DIEGO_STT_CORRECCIONES.corregir(sttRawForLog).cambios
+        : [];
+      window.DIEGO_STT_LOG.registrar({
+        crudo: sttRawForLog,
+        final: sttFinalForLog,
+        correccionesDiccionario: correccionesAplicadas,
+      });
+    }
     await resolvePendingVoiceRecording();
     if (window.DIEGO_INTERACTION && typeof window.DIEGO_INTERACTION.handleSubmit === 'function') {
       const handled = await window.DIEGO_INTERACTION.handleSubmit({
@@ -12885,7 +12973,10 @@ document.addEventListener('DOMContentLoaded', () => {
         getHistory: () => history,
         setHistory: (nextHistory) => { history = Array.isArray(nextHistory) ? nextHistory : []; },
       });
-      if (handled) return;
+      if (handled) {
+        sttAutoSpeakLastReplyIfVoiceTurn(sttThisTurnWasVoice);
+        return;
+      }
     }
     warnDiegoLegacyFallback('submit');
     // Fallback legado temporal mientras termina la extraccion modular de Diego.
@@ -12993,6 +13084,7 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
     sendBtn.disabled = false;
     refreshBadge();
+    sttAutoSpeakLastReplyIfVoiceTurn(sttThisTurnWasVoice);
   });
 
   // Refresh badge al cargar
@@ -18354,6 +18446,8 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="./diego/diego-voice.js"></script>
 <script src="./diego/diego-tts.js"></script>
 <script src="./diego/diego-stt.js"></script>
+<script src="./diego/diego-stt-correcciones.js"></script>
+<script src="./diego/diego-stt-log.js"></script>
 <script src="./diego/diego-ui.js"></script>
 <script src="./diego/diego-strategy.js"></script>
 <script src="./diego/diego-memory.js"></script>
