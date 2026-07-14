@@ -3407,159 +3407,171 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 xl:grid-cols-[0.85fr,1.15fr] gap-4 mb-4" id="mpStrategyBox">
-        <div class="bg-white border border-stone-300 rounded-xl p-4">
-          <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Estrategia activa</div>
-          <div class="flex items-start justify-between gap-3">
+      <div class="bg-white border border-stone-300 rounded-xl p-4 mb-4" id="mpStrategyBox">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3 flex-wrap">
             <div>
-              <h3 class="text-sm font-bold text-stone-700">Criterio comercial en uso</h3>
-              <p class="text-xs text-stone-500 mt-1">La mesa decide con un juego explicito, no por intuicion dispersa.</p>
+              <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Estrategia activa</div>
+              <span id="mpStrategyBadge" class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-semibold">Cargando…</span>
             </div>
-            <span id="mpStrategyBadge" class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-semibold">Cargando…</span>
+            <div class="text-sm font-medium text-stone-700 max-w-xl" id="mpStrategyUse">Cargando criterio…</div>
           </div>
-          <label for="mpStrategySelect" class="block text-xs text-stone-500 mt-4 mb-1">Cambiar estrategia</label>
-          <select id="mpStrategySelect" class="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700">
-            <option value="">Cargando…</option>
-          </select>
-          <div class="mt-3 text-sm font-medium text-stone-700" id="mpStrategyUse">Cargando criterio…</div>
-          <div class="mt-3 rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-sm font-semibold leading-5 text-violet-900" id="mpStrategyApplied">Sin lectura aplicada al material actual.</div>
-          <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">Que significa ahora</div>
-              <div class="text-sm font-semibold leading-5 text-sky-950" id="mpStrategyMeaning">—</div>
-            </div>
-            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Ejemplo en cristiano</div>
-              <div class="text-sm font-semibold leading-5 text-emerald-950" id="mpStrategyExample">—</div>
-            </div>
-            <div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 mb-1">Tiempo sugerido</div>
-              <div class="text-sm font-semibold leading-5 text-amber-950" id="mpStrategyTime">—</div>
-            </div>
-          </div>
-          <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-indigo-700 mb-1">Operar ahora</div>
-              <div class="text-sm font-semibold leading-5 text-indigo-950" id="mpStrategyOperate">—</div>
-            </div>
-            <div class="rounded-xl border border-fuchsia-200 bg-fuchsia-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-fuchsia-700 mb-1">Publicar ahora</div>
-              <div class="text-sm font-semibold leading-5 text-fuchsia-950" id="mpStrategyPublicNow">—</div>
-            </div>
-            <div class="rounded-xl border border-stone-300 bg-stone-100 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-600 mb-1">Regla de publicacion</div>
-              <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyPublishRule">—</div>
-            </div>
-          </div>
-          <div class="mt-3 rounded-xl border border-stone-300 bg-stone-50 px-3 py-3">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-2">Politica de publicacion inteligente</div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-              <div class="rounded-xl border border-emerald-200 bg-white px-3 py-3">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">1. Publicacion por defecto</div>
-                <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyPublishDefault">—</div>
-              </div>
-              <div class="rounded-xl border border-amber-200 bg-white px-3 py-3">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 mb-1">2. Vigencia tactica</div>
-                <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyTacticalWindow">—</div>
-              </div>
-              <div class="rounded-xl border border-sky-200 bg-white px-3 py-3">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">3. Excepcion por sucursal</div>
-                <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyBranchException">—</div>
-              </div>
-              <div class="rounded-xl border border-rose-200 bg-white px-3 py-3">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-rose-700 mb-1">4. Criterio de salida</div>
-                <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyExitVisible">—</div>
-              </div>
-            </div>
-          </div>
-          <div id="mpArchitectureShell" class="mt-3"></div>
-          <div class="mt-3 rounded-xl border border-stone-300 bg-stone-900 px-3 py-3 text-sm text-white">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-300 mb-1">Mapa de roles</div>
-            <div class="text-sm font-semibold leading-5 text-white" id="mpStrategyRoleSummary">Lista publica · Ejecutivo opera · Maximo techa</div>
-          </div>
-          <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Lista = publicado</div>
-              <div class="text-sm font-semibold leading-5 text-emerald-950" id="mpStrategyListRole">—</div>
-            </div>
-            <div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">Ejecutivo = operativo</div>
-              <div class="text-sm font-semibold leading-5 text-sky-950" id="mpStrategyExecutiveRole">—</div>
-            </div>
-            <div class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-rose-700 mb-1">Maximo = techo</div>
-              <div class="text-sm font-semibold leading-5 text-rose-950" id="mpStrategyMaxRole">—</div>
-            </div>
+          <div class="flex items-center gap-2">
+            <label for="mpStrategySelect" class="sr-only">Cambiar estrategia</label>
+            <select id="mpStrategySelect" class="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700">
+              <option value="">Cargando…</option>
+            </select>
           </div>
         </div>
-        <div class="bg-white border border-stone-300 rounded-xl p-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+        <details class="mt-3">
+          <summary class="text-xs text-sky-700 underline cursor-pointer select-none w-fit">Ver detalle</summary>
+          <div class="mt-3 grid grid-cols-1 xl:grid-cols-[0.85fr,1.15fr] gap-4">
             <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Objetivo</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyObjective">—</div>
+              <div class="rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-sm font-semibold leading-5 text-violet-900" id="mpStrategyApplied">Sin lectura aplicada al material actual.</div>
+              <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">Que significa ahora</div>
+                  <div class="text-sm font-semibold leading-5 text-sky-950" id="mpStrategyMeaning">—</div>
+                </div>
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Ejemplo en cristiano</div>
+                  <div class="text-sm font-semibold leading-5 text-emerald-950" id="mpStrategyExample">—</div>
+                </div>
+                <div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 mb-1">Tiempo sugerido</div>
+                  <div class="text-sm font-semibold leading-5 text-amber-950" id="mpStrategyTime">—</div>
+                </div>
+              </div>
+              <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-indigo-700 mb-1">Operar ahora</div>
+                  <div class="text-sm font-semibold leading-5 text-indigo-950" id="mpStrategyOperate">—</div>
+                </div>
+                <div class="rounded-xl border border-fuchsia-200 bg-fuchsia-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-fuchsia-700 mb-1">Publicar ahora</div>
+                  <div class="text-sm font-semibold leading-5 text-fuchsia-950" id="mpStrategyPublicNow">—</div>
+                </div>
+                <div class="rounded-xl border border-stone-300 bg-stone-100 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-600 mb-1">Regla de publicacion</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyPublishRule">—</div>
+                </div>
+              </div>
+              <div class="mt-3 rounded-xl border border-stone-300 bg-stone-50 px-3 py-3">
+                <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-2">Politica de publicacion inteligente</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div class="rounded-xl border border-emerald-200 bg-white px-3 py-3">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">1. Publicacion por defecto</div>
+                    <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyPublishDefault">—</div>
+                  </div>
+                  <div class="rounded-xl border border-amber-200 bg-white px-3 py-3">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 mb-1">2. Vigencia tactica</div>
+                    <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyTacticalWindow">—</div>
+                  </div>
+                  <div class="rounded-xl border border-sky-200 bg-white px-3 py-3">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">3. Excepcion por sucursal</div>
+                    <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyBranchException">—</div>
+                  </div>
+                  <div class="rounded-xl border border-rose-200 bg-white px-3 py-3">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-rose-700 mb-1">4. Criterio de salida</div>
+                    <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyExitVisible">—</div>
+                  </div>
+                </div>
+              </div>
+              <div id="mpArchitectureShell" class="mt-3"></div>
+              <div class="mt-3 rounded-xl border border-stone-300 bg-stone-900 px-3 py-3 text-sm text-white">
+                <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-300 mb-1">Mapa de roles</div>
+                <div class="text-sm font-semibold leading-5 text-white" id="mpStrategyRoleSummary">Lista publica · Ejecutivo opera · Maximo techa</div>
+              </div>
+              <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Lista = publicado</div>
+                  <div class="text-sm font-semibold leading-5 text-emerald-950" id="mpStrategyListRole">—</div>
+                </div>
+                <div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">Ejecutivo = operativo</div>
+                  <div class="text-sm font-semibold leading-5 text-sky-950" id="mpStrategyExecutiveRole">—</div>
+                </div>
+                <div class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-rose-700 mb-1">Maximo = techo</div>
+                  <div class="text-sm font-semibold leading-5 text-rose-950" id="mpStrategyMaxRole">—</div>
+                </div>
+              </div>
             </div>
             <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Segmento foco</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategySegment">—</div>
-            </div>
-            <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Politica de publicacion</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyPublish">—</div>
-            </div>
-            <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Politica de precio</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyPrice">—</div>
-            </div>
-            <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Politica de servicio</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyService">—</div>
-            </div>
-            <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Materiales foco</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyMaterial">—</div>
-            </div>
-            <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Apoyo por sucursal</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyBranch">—</div>
-            </div>
-            <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Ventana de uso</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyWindow">—</div>
-            </div>
-            <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Condicion de salida</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyExit">—</div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Objetivo</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyObjective">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Segmento foco</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategySegment">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Politica de publicacion</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyPublish">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Politica de precio</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyPrice">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Politica de servicio</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyService">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Materiales foco</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyMaterial">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Apoyo por sucursal</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyBranch">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Ventana de uso</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyWindow">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Condicion de salida</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyExit">—</div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </details>
       </div>
 
       <div class="grid grid-cols-2 xl:grid-cols-5 gap-3 mb-4">
-        <div class="bg-white border border-stone-300 rounded-xl p-4">
+        <button type="button" data-mp-kpi="sin_decidir" title="Ver pendientes en la cola"
+                class="text-left w-full bg-white border border-stone-300 rounded-xl p-4 hover:border-emerald-400 hover:shadow-md transition cursor-pointer">
           <div class="text-xs text-stone-500 uppercase tracking-wider">Pendientes por decidir</div>
           <div class="text-2xl font-bold text-stone-800 mt-1" id="tapP1Total">—</div>
           <div class="text-xs text-stone-500 mt-1">propuestas activas en mesa</div>
-        </div>
-        <div class="bg-white border border-emerald-300 bg-emerald-50 rounded-xl p-4">
+        </button>
+        <button type="button" data-mp-kpi="decision_directa" title="Ver decisión directa en la cola"
+                class="text-left w-full bg-white border border-emerald-300 bg-emerald-50 rounded-xl p-4 hover:border-emerald-500 hover:shadow-md transition cursor-pointer">
           <div class="text-xs text-emerald-700 uppercase tracking-wider">Decisión directa</div>
           <div class="text-2xl font-bold text-emerald-700 mt-1" id="tapP1Verde">—</div>
           <div class="text-xs text-emerald-700 mt-1">viene desde Calculadora</div>
-        </div>
-        <div class="bg-white border border-sky-300 bg-sky-50 rounded-xl p-4">
+        </button>
+        <button type="button" data-mp-kpi="senal" title="Ver señales externas en la cola"
+                class="text-left w-full bg-white border border-sky-300 bg-sky-50 rounded-xl p-4 hover:border-sky-500 hover:shadow-md transition cursor-pointer">
           <div class="text-xs text-sky-700 uppercase tracking-wider">Señales externas</div>
           <div class="text-2xl font-bold text-sky-700 mt-1" id="tapP1Amarillo">—</div>
           <div class="text-xs text-sky-700 mt-1">competencia, cliente u otra fuente</div>
-        </div>
-        <div class="bg-white border border-rose-300 bg-rose-50 rounded-xl p-4">
+        </button>
+        <button type="button" data-mp-kpi="urgente" title="Ver urgentes en la cola"
+                class="text-left w-full bg-white border border-rose-300 bg-rose-50 rounded-xl p-4 hover:border-rose-500 hover:shadow-md transition cursor-pointer">
           <div class="text-xs text-rose-700 uppercase tracking-wider">Urgentes</div>
           <div class="text-2xl font-bold text-rose-700 mt-1" id="tapP1Rojo">—</div>
           <div class="text-xs text-rose-700 mt-1">desviación relevante o dato incompleto</div>
-        </div>
-        <div class="bg-white border border-stone-300 rounded-xl p-4">
+        </button>
+        <button type="button" data-mp-kpi="publicados" title="Ir a precios publicados"
+                class="text-left w-full bg-white border border-stone-300 rounded-xl p-4 hover:border-emerald-400 hover:shadow-md transition cursor-pointer">
           <div class="text-xs text-stone-500 uppercase tracking-wider">Publicados vigentes</div>
           <div class="text-2xl font-bold text-stone-800 mt-1" id="tapP3Mg">—</div>
           <div class="text-xs text-stone-500 mt-1" id="tapP3Kg">—</div>
-        </div>
+        </button>
       </div>
 
       <div class="flex flex-wrap gap-2 mb-4" id="mpFilters">
@@ -3582,7 +3594,8 @@
               <h3 class="text-sm font-bold text-stone-700">Qué revisar ahora</h3>
               <p class="text-xs text-stone-500">1 material = 1 ficha operativa con sus sucursales.</p>
             </div>
-            <div class="text-xs text-stone-500" id="tapP2Count">—</div>
+            <button type="button" data-mp-kpi="todos" title="Ver todos los materiales en mesa"
+                    class="text-xs text-stone-500 hover:text-emerald-700 hover:underline cursor-pointer" id="tapP2Count">—</button>
           </div>
           <div id="mpQueue" class="space-y-2 max-h-[38rem] overflow-y-auto pr-1">
             <div class="text-sm text-stone-400">Cargando mesa…</div>
@@ -16867,6 +16880,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btn) btn.click();
   }
 
+  // Todo KPI numérico de la Mesa es navegación (1 clic): setea el chip
+  // correcto y re-renderiza la cola, o salta al tab de publicados.
+  function mpOnKpiClick(action) {
+    if (action === 'publicados') { mpOpenTab('precios_vivos'); return; }
+    mpState.chip = action;
+    mpRender();
+    const queue = document.getElementById('mpQueue');
+    if (queue) queue.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
   function mpIsUrgent(row) {
     if (!row) return false;
     const delta = Number(row.desviacion_pct);
@@ -17144,30 +17167,9 @@ document.addEventListener('DOMContentLoaded', () => {
       + '</div>'
       + '</div>'
       + '<div class="mt-3 text-sm text-stone-600">Revisá las sucursales afectadas, compará contra el vigente y resolvé la propuesta final desde Bandeja.</div>'
-      + '<div class="mt-3 grid grid-cols-1 xl:grid-cols-3 gap-3 text-xs">'
-      + '<div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">Que te esta diciendo</div><div class="text-sm font-semibold leading-5 text-sky-950">' + tapEscape(snapshot.executiveSummary || 'Sin lectura ejecutiva visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Ejemplo en cristiano</div><div class="text-sm font-semibold leading-5 text-emerald-950">' + tapEscape(snapshot.exampleScenario || 'Sin ejemplo visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 mb-1">Tiempo sugerido</div><div class="text-sm font-semibold leading-5 text-amber-950">' + tapEscape(snapshot.timeSuggestion || 'Sin sugerencia de tiempo visible.') + '</div></div>'
-      + '</div>'
-      + '<div class="mt-3 grid grid-cols-1 xl:grid-cols-3 gap-3 text-xs">'
-      + '<div class="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-indigo-700 mb-1">Operar ahora</div><div class="text-sm font-semibold leading-5 text-indigo-950">' + tapEscape(snapshot.operatingDirective || 'Sin lectura operativa visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-fuchsia-200 bg-fuchsia-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-fuchsia-700 mb-1">Publicar ahora</div><div class="text-sm font-semibold leading-5 text-fuchsia-950">' + tapEscape(snapshot.publicDirective || 'Sin lectura publica visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-stone-300 bg-stone-100 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-stone-600 mb-1">Regla de publicacion</div><div class="text-sm font-semibold leading-5 text-stone-900">' + tapEscape(snapshot.publicationRule || 'Sin regla visible.') + '</div></div>'
-      + '</div>'
-      + '<div class="mt-3 rounded-xl border border-stone-300 bg-stone-900 px-3 py-3 text-xs text-white"><div class="text-[11px] font-semibold uppercase tracking-wider text-stone-300 mb-1">Mapa de roles</div><div class="text-sm font-semibold leading-5 text-white">' + tapEscape(snapshot.roleSummary || 'Lista publica · Ejecutivo opera · Maximo techa') + '</div></div>'
-      + '<div class="mt-3 grid grid-cols-1 xl:grid-cols-3 gap-3 text-xs">'
-      + '<div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Lista = publicado</div><div class="text-sm font-semibold leading-5 text-emerald-950">' + tapEscape(snapshot.listRoleDirective || 'Sin lectura visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">Ejecutivo = operativo</div><div class="text-sm font-semibold leading-5 text-sky-950">' + tapEscape(snapshot.executiveRoleDirective || 'Sin lectura visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-rose-700 mb-1">Maximo = techo</div><div class="text-sm font-semibold leading-5 text-rose-950">' + tapEscape(snapshot.maxRoleDirective || 'Sin lectura visible.') + '</div></div>'
-      + '</div>'
-      + '<div class="mt-3 rounded-lg bg-white px-3 py-2 text-xs text-stone-600"><strong>Publicacion y ventana:</strong> '
-      + tapEscape(strategy.publicationPolicy || 'Sin politica visible.') + ' · '
-      + tapEscape(strategy.duration || 'Sin ventana definida.') + '</div>'
-      + '<div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">'
-      + '<div class="rounded-xl border border-stone-200 bg-white px-3 py-3 text-stone-700"><div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Rol del material</div><div class="text-sm font-semibold leading-5 text-stone-900">' + tapEscape(snapshot.materialRole || 'Sin lectura') + '</div></div>'
-      + '<div class="rounded-xl border border-stone-200 bg-white px-3 py-3 text-stone-700"><div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Decision de publicacion</div><div class="text-sm font-semibold leading-5 text-stone-900">' + tapEscape(snapshot.publicationDecision || strategy.publicationPolicy || 'Sin politica visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-stone-200 bg-white px-3 py-3 text-stone-700"><div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Sucursal y alcance</div><div class="text-sm font-semibold leading-5 text-stone-900">' + tapEscape(snapshot.branchDirective || strategy.branchPolicy || 'Sin politica visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-stone-200 bg-white px-3 py-3 text-stone-700"><div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Vigencia y salida</div><div class="text-sm font-semibold leading-5 text-stone-900">' + tapEscape(snapshot.validityDecision || strategy.duration || 'Sin ventana definida.') + ' · ' + tapEscape(snapshot.exitDirective || strategy.exitCondition || 'Sin condicion visible.') + '</div></div>'
+      + '<div class="mt-3 rounded-xl border border-stone-200 bg-white px-3 py-3 text-xs text-stone-700 flex flex-wrap items-center justify-between gap-2">'
+      + '<div><span class="font-semibold uppercase tracking-wider text-stone-500">Rol de este material:</span> ' + tapEscape(snapshot.materialRole || 'Sin lectura') + '</div>'
+      + '<button type="button" onclick="document.getElementById(\'mpStrategyBox\')?.scrollIntoView({behavior:\'smooth\',block:\'start\'}); document.querySelector(\'#mpStrategyBox details\')?.setAttribute(\'open\',\'\')" class="text-sky-700 underline">Ver estrategia completa ↑</button>'
       + '</div>'
       + '</div>'
       + '<div class="grid grid-cols-1 lg:grid-cols-2 gap-3">' + branchCards.join('') + '</div>'
@@ -17277,6 +17279,13 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', tapCargar);
       btn.dataset.bound = '1';
     }
+    document.querySelectorAll('[data-mp-kpi]').forEach((kpiBtn) => {
+      if (kpiBtn.dataset.bound) return;
+      kpiBtn.addEventListener('click', () => {
+        mpOnKpiClick(kpiBtn.getAttribute('data-mp-kpi') || 'todos');
+      });
+      kpiBtn.dataset.bound = '1';
+    });
     document.querySelectorAll('#mpFilters [data-mp-chip]').forEach((chipBtn) => {
       if (chipBtn.dataset.bound) return;
       chipBtn.addEventListener('click', () => {
@@ -17308,6 +17317,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.mpAbrirTab = mpOpenTab;
+  window.mpOnKpiClick = mpOnKpiClick;
   window.mpSeleccionarGrupo = function (key) {
     mpState.selectedKey = key;
     mpRender();
