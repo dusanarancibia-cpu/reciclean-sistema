@@ -10,6 +10,7 @@
 (function () {
   const state = {
     currentId: null,
+    voices: [],
   };
 
   function isSupported() {
@@ -19,6 +20,54 @@
   function stop() {
     if (isSupported()) window.speechSynthesis.cancel();
     state.currentId = null;
+  }
+
+  // Selección de voz nativa (cierre etapa voz 14-jul-2026). getVoices() puede
+  // devolver [] en la primera llamada — varios navegadores (Chrome incluido)
+  // cargan la lista de voces de forma async y recién avisan con el evento
+  // 'voiceschanged'. Por eso se refresca al cargar el modulo Y cada vez que
+  // ese evento dispara, no solo una vez.
+  function refreshVoices() {
+    if (!isSupported()) return;
+    try {
+      state.voices = window.speechSynthesis.getVoices() || [];
+    } catch (e) {
+      state.voices = [];
+    }
+  }
+
+  function normalizeLang(lang) {
+    return String(lang || '').toLowerCase().replace('_', '-');
+  }
+
+  // Prioridad simple y estable: es-CL exacto -> es-ES exacto -> cualquier
+  // es-* -> null (fallback: se deja utterance.lang='es-CL' sin voice fijada,
+  // mismo comportamiento que antes de este cambio).
+  function pickBestVoice() {
+    const voices = state.voices;
+    if (!voices || !voices.length) return null;
+    const byLang = (target) => voices.find((v) => normalizeLang(v.lang) === target);
+    return byLang('es-cl') || byLang('es-es') || voices.find((v) => normalizeLang(v.lang).startsWith('es')) || null;
+  }
+
+  // Inspección simple desde consola: window.DIEGO_TTS.getSelectedVoice() /
+  // .listVoices() — pedido opcional de Dusan, sin UI ni config nueva.
+  function getSelectedVoice() {
+    const v = pickBestVoice();
+    return v ? { name: v.name, lang: v.lang, voiceURI: v.voiceURI, default: !!v.default } : null;
+  }
+
+  function listVoices() {
+    return state.voices.map((v) => ({ name: v.name, lang: v.lang, default: !!v.default }));
+  }
+
+  if (isSupported()) {
+    refreshVoices();
+    if (typeof window.speechSynthesis.addEventListener === 'function') {
+      window.speechSynthesis.addEventListener('voiceschanged', refreshVoices);
+    } else {
+      window.speechSynthesis.onvoiceschanged = refreshVoices;
+    }
   }
 
   function speak(text, opts) {
@@ -46,6 +95,12 @@
     utterance.lang = 'es-CL';
     utterance.rate = 1;
     utterance.pitch = 1;
+    // Si el navegador ya cargó voces nativas en español, fijar la mejor
+    // disponible. Si no hay ninguna (voces vacías o sin match es-*), queda
+    // sin `voice` fijada — mismo comportamiento de siempre: el navegador usa
+    // su default para utterance.lang='es-CL'.
+    const bestVoice = pickBestVoice();
+    if (bestVoice) utterance.voice = bestVoice;
 
     utterance.onstart = function () {
       if (typeof options.onStart === 'function') options.onStart(id);
@@ -78,5 +133,7 @@
     stop,
     isSpeaking,
     getCurrentId,
+    getSelectedVoice,
+    listVoices,
   };
 })();
