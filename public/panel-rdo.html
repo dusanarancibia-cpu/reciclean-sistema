@@ -11218,10 +11218,6 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-chat-form button.send:disabled{opacity:.5;cursor:not-allowed}
   .diego-attach-preview{padding:6px 10px;background:#eff6ff;border-top:1px solid #dbeafe;font-size:11px;color:#1e40af;display:flex;justify-content:space-between;align-items:center}
   .diego-attach-preview button{background:none;border:0;color:#1e40af;cursor:pointer;font-size:14px}
-  /* D-DIEGO-VOZ-COMPOSER-001 · #diegoVoicePreview usa .hidden (toggle vía DIEGO_VOICE) — selector
-     ID+clase para que gane siempre a .diego-attach-preview{display:flex} sin importar orden en la hoja */
-  #diegoVoicePreview.hidden{display:none}
-  #diegoVoicePreview audio{border-radius:8px}
   .diego-drag-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(5,150,105,.9);color:#fff;display:none;align-items:center;justify-content:center;font-weight:600;font-size:14px;border-radius:12px;z-index:5}
   .diego-drag-overlay.active{display:flex}
   /* D-DIEGO-FAB-MEJORAS-001 M1 — Estado minimizado: barra blanca fina anclada abajo-derecha */
@@ -11332,14 +11328,6 @@ document.addEventListener('DOMContentLoaded', () => {
     <span id="diegoAttachName"></span>
     <button type="button" id="diegoAttachRemove" aria-label="Quitar adjunto">✕</button>
   </div>
-  <!-- Nota de voz Diego v6 (D-DIEGO-VOZ-COMPOSER-001) · reutiliza window.DIEGO_VOICE (public/diego/diego-voice.js),
-       misma base ya usada por el grabador de Dieguito. Solo entrada de voz: graba -> preview -> se manda como
-       pendingFile (igual que cualquier adjunto) -> callDiego(msg, attach). Diego responde en texto, sin voz. -->
-  <div class="diego-attach-preview hidden" id="diegoVoicePreview">
-    <audio id="diegoVoicePlayer" controls style="height:30px;flex:1;min-width:0;"></audio>
-    <span id="diegoVoiceStatus" style="font-size:11px;color:#64748b;white-space:nowrap;"></span>
-    <button type="button" id="diegoVoiceRemove" aria-label="Quitar grabación de voz">✕</button>
-  </div>
   <!-- ESPACIO DE PRUEBA · D-DIEGO-VOZ-CONVERSACIONAL-001 PR1 (PR #676, NO mergeado).
        Ayuda temporal para validación humana del dictado por voz. Se retira entero
        (este bloque + su CSS) cuando el PR se cierra o se decide seguir a PR2.
@@ -11362,14 +11350,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 17.98 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
       </svg>
     </button>
-    <button type="button" class="attach-btn" id="diegoMicBtn" aria-label="Grabar nota de voz" title="Grabar nota de voz">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-        <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
-        <line x1="12" y1="19" x2="12" y2="22"/>
-      </svg>
-    </button>
-    <span id="diegoMicTimer" class="hidden" style="font-size:11px;color:#ef4444;font-family:monospace;white-space:nowrap;">00:00</span>
     <!-- PRUEBA D-DIEGO-VOZ-CONVERSACIONAL-001 PR1 · dicta al input, NO envía solo,
          NO adjunta audio. Se oculta con gracia si el navegador no soporta STT.
          Con texto visible (no solo ícono) a propósito, para que no se confunda
@@ -12930,78 +12910,12 @@ document.addEventListener('DOMContentLoaded', () => {
     attachPreview.style.display = 'none';
   });
 
-  // -- Nota de voz (D-DIEGO-VOZ-COMPOSER-001) --
-  // Reutiliza window.DIEGO_VOICE (public/diego/diego-voice.js), misma base ya usada por
-  // el grabador de Dieguito. Solo entrada: graba -> preview -> se sube al enviar, igual
-  // que cualquier adjunto (uploadFile -> pendingFile -> callDiego). Cero respuesta en voz.
-  const micBtn = document.getElementById('diegoMicBtn');
-  const micTimer = document.getElementById('diegoMicTimer');
-  const voicePreview = document.getElementById('diegoVoicePreview');
-  const voicePlayer = document.getElementById('diegoVoicePlayer');
-  const voiceStatus = document.getElementById('diegoVoiceStatus');
-  const voiceRemove = document.getElementById('diegoVoiceRemove');
-
-  function voiceElements() {
-    return {
-      button: micBtn,
-      label: null, // botón de voz es solo ícono, sin texto que actualizar
-      timer: micTimer,
-      status: voiceStatus,
-      preview: voicePreview,
-      player: voicePlayer,
-    };
-  }
-
-  // OJO: no gatear el addEventListener detrás de "window.DIEGO_VOICE existe" acá — este
-  // IIFE corre mucho antes en el <body> que <script src="./diego/diego-voice.js"> (que
-  // carga casi al final). El chequeo de window.DIEGO_VOICE va DENTRO del handler (se
-  // evalúa recién al click, momento en que el script ya cargó) — mismo patrón que ya
-  // usa window.diegToggleRecording (Dieguito) más arriba en este archivo.
-  if (micBtn) {
-    micBtn.addEventListener('click', () => {
-      if (!window.DIEGO_VOICE || typeof window.DIEGO_VOICE.toggleRecording !== 'function') {
-        voiceStatus.textContent = 'Grabador de voz no disponible.';
-        return;
-      }
-      // Mutuamente excluyente con adjunto de archivo: empezar a grabar limpia cualquier
-      // archivo pendiente para no mandar 2 adjuntos a la vez (el mecanismo solo soporta 1).
-      if (!micBtn.classList.contains('recording-pulse') && !window.DIEGO_VOICE.hasRecording()) {
-        pendingFile = null;
-        attachPreview.style.display = 'none';
-      }
-      window.DIEGO_VOICE.toggleRecording(voiceElements());
-    });
-  }
-  if (voiceRemove) {
-    voiceRemove.addEventListener('click', () => {
-      if (window.DIEGO_VOICE && typeof window.DIEGO_VOICE.clearRecording === 'function') {
-        window.DIEGO_VOICE.clearRecording(voiceElements());
-      }
-    });
-  }
-
-  // Sube la grabación pendiente (si hay) reusando uploadFile — mismo bucket diego-chat-files
-  // que cualquier otro adjunto. Se ejecuta al enviar, no al detener la grabación, para no
-  // subir audio que el usuario después decide descartar con "quitar".
+  // Nota de voz como adjunto (D-DIEGO-VOZ-COMPOSER-001, botón #diegoMicBtn) retirada del
+  // composer a pedido de Dusan — quedan intactos DIEGO_VOICE (diego-voice.js, sigue en uso
+  // por el grabador de Dieguito) y el dictado STT (#diegoSttBtn / "Prueba dictado").
   async function resolvePendingVoiceRecording() {
-    if (!window.DIEGO_VOICE || !window.DIEGO_VOICE.hasRecording()) return;
-    const recordedFile = window.DIEGO_VOICE.buildRecordedFile();
-    if (!recordedFile) return;
-    try {
-      pendingFile = await uploadFile(recordedFile);
-    } catch (err) {
-      voiceStatus.textContent = `Error subiendo audio: ${err.message || err}`;
-      return;
-    }
-    window.DIEGO_VOICE.clearRecording(voiceElements());
+    // no-op: sin botón de grabación no hay nada pendiente que subir.
   }
-
-  // Adjuntar un archivo de la forma clásica también es mutuamente excluyente con la voz.
-  fileInput.addEventListener('change', () => {
-    if (window.DIEGO_VOICE && window.DIEGO_VOICE.hasRecording()) {
-      window.DIEGO_VOICE.clearRecording(voiceElements());
-    }
-  });
 
   // -- Dictado por voz (D-DIEGO-VOZ-CONVERSACIONAL-001 · PR1 + PR2a) --
   // window.DIEGO_STT (public/diego/diego-stt.js) sigue siendo el único módulo
