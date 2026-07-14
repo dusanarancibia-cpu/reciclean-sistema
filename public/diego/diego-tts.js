@@ -66,11 +66,25 @@
   // Prioridad: preferencia manual (si sigue existiendo) -> es-CL exacto ->
   // es-ES exacto -> cualquier es-* -> null (fallback: utterance.lang='es-CL'
   // sin voice fijada, mismo comportamiento de siempre).
+  // Voz por defecto elegida por Dusan (14-jul-2026, prueba local con
+  // previewVoice) dentro del selector AUTOMATICO — no es preferencia manual,
+  // por eso sigue perdiendo contra findPreferredVoice(). Match por nombre
+  // (substring, no exacto) + lang normalizado: el string completo de la voz
+  // varia entre versiones de Windows/navegador (ej. "Microsoft Sabina
+  // Desktop - Spanish (Mexico)" en algunos equipos), un match exacto seria
+  // hardcode fragil que se rompe con cualquier variante.
+  function isDefaultPreferredVoice(v) {
+    const name = String(v?.name || '').toLowerCase();
+    return name.includes('sabina') && normalizeLang(v?.lang) === 'es-mx';
+  }
+
   function pickBestVoice() {
     const voices = state.voices;
     if (!voices || !voices.length) return null;
     const preferred = findPreferredVoice();
     if (preferred) return preferred;
+    const defaultPreferred = voices.find(isDefaultPreferredVoice);
+    if (defaultPreferred) return defaultPreferred;
     const byLang = (target) => voices.find((v) => normalizeLang(v.lang) === target);
     return byLang('es-cl') || byLang('es-es') || voices.find((v) => normalizeLang(v.lang).startsWith('es')) || null;
   }
