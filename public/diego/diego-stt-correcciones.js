@@ -30,12 +30,18 @@
 
   // Aplica el diccionario sobre un texto. Devuelve el texto corregido +
   // la lista de reemplazos hechos (para mostrar visible, nunca en silencio).
+  //
+  // BUG real encontrado en la prueba humana (14-jul-2026): \b (word boundary)
+  // de JS considera \w = [A-Za-z0-9_] SOLAMENTE — una tilde como "baipú" queda
+  // afuera de \w, así que \bbaipú\b nunca matcheaba y la corrección real que
+  // motivó este módulo (Maipú) no se aplicaba. Fix: lookaround Unicode-aware
+  // con \p{L}/\p{N} (flag /u) en vez de \b.
   function corregir(texto) {
     let resultado = String(texto || '');
     const cambios = [];
     DICCIONARIO.forEach(({ correcto, variantes }) => {
       variantes.forEach((variante) => {
-        const re = new RegExp('\\b' + escapeRegex(variante) + '\\b', 'gi');
+        const re = new RegExp('(?<![\\p{L}\\p{N}])' + escapeRegex(variante) + '(?![\\p{L}\\p{N}])', 'giu');
         if (re.test(resultado)) {
           const original = resultado.match(re)[0];
           resultado = resultado.replace(re, correcto);
