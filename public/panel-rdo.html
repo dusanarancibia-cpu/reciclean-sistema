@@ -13074,8 +13074,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  if (micBtn && window.DIEGO_VOICE) {
+  // OJO: no gatear el addEventListener detrás de "window.DIEGO_VOICE existe" acá — este
+  // IIFE corre mucho antes en el <body> que <script src="./diego/diego-voice.js"> (que
+  // carga casi al final). El chequeo de window.DIEGO_VOICE va DENTRO del handler (se
+  // evalúa recién al click, momento en que el script ya cargó) — mismo patrón que ya
+  // usa window.diegToggleRecording (Dieguito) más arriba en este archivo.
+  if (micBtn) {
     micBtn.addEventListener('click', () => {
+      if (!window.DIEGO_VOICE || typeof window.DIEGO_VOICE.toggleRecording !== 'function') {
+        voiceStatus.textContent = 'Grabador de voz no disponible.';
+        return;
+      }
       // Mutuamente excluyente con adjunto de archivo: empezar a grabar limpia cualquier
       // archivo pendiente para no mandar 2 adjuntos a la vez (el mecanismo solo soporta 1).
       if (!micBtn.classList.contains('recording-pulse') && !window.DIEGO_VOICE.hasRecording()) {
@@ -13085,9 +13094,11 @@ document.addEventListener('DOMContentLoaded', () => {
       window.DIEGO_VOICE.toggleRecording(voiceElements());
     });
   }
-  if (voiceRemove && window.DIEGO_VOICE) {
+  if (voiceRemove) {
     voiceRemove.addEventListener('click', () => {
-      window.DIEGO_VOICE.clearRecording(voiceElements());
+      if (window.DIEGO_VOICE && typeof window.DIEGO_VOICE.clearRecording === 'function') {
+        window.DIEGO_VOICE.clearRecording(voiceElements());
+      }
     });
   }
 
