@@ -115,8 +115,10 @@
     if (!body || !input || !form) return false;
 
     if (!history.length) {
+      // Cada chip es {label, prompt}: label = texto visible corto, prompt = accion
+      // completa enviada a Diego (ajuste fino PR #677 — antes chip mostraba el prompt entero).
       const chips = typeof getOnboardingChips === 'function'
-        ? getOnboardingChips().map(chip => `<button type="button" data-chip="${safeEsc(esc, chip)}">${safeEsc(esc, chip)}</button>`).join('')
+        ? getOnboardingChips().map(chip => `<button type="button" data-chip="${safeEsc(esc, chip.prompt)}">${safeEsc(esc, chip.label)}</button>`).join('')
         : '';
       const profile = typeof getDiegoRoleProfile === 'function' ? getDiegoRoleProfile() : {};
       body.innerHTML = `<div class="diego-shell">

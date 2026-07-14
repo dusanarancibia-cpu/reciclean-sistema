@@ -3,61 +3,63 @@
     direccion: {
       emptyTitle: 'Diego puede operar como jefe de gabinete y copiloto ejecutivo.',
       emptySub: 'Toma ideas, compromisos, objetivos en riesgo, precio ejecutivo y excepciones, y los baja a casos, agenda o escalamiento.',
+      // label = texto visible del chip (max 2 palabras) · prompt = accion completa
+      // enviada a Diego al click (ajuste fino PR #677, ver diego-ui.js getOnboardingChips).
       prompts: [
-        'Ordena mis compromisos de hoy y dime que merece foco real',
-        'Resume que esta frenando los objetivos y a quien debo empujar',
-        'Calcula precio ejecutivo y dime si este caso requiere escalamiento jerarquico',
-        'Dame el panorama ejecutivo de sucursales, riesgos y pendientes'
+        { label: 'Compromisos', prompt: 'Ordena mis compromisos de hoy y dime que merece foco real' },
+        { label: 'Frenos', prompt: 'Resume que esta frenando los objetivos y a quien debo empujar' },
+        { label: 'Precio', prompt: 'Calcula precio ejecutivo y dime si este caso requiere escalamiento jerarquico' },
+        { label: 'Panorama', prompt: 'Dame el panorama ejecutivo de sucursales, riesgos y pendientes' }
       ]
     },
     comercial: {
       emptyTitle: 'Diego puede capturar reclamos comerciales y mover cierre real.',
       emptySub: 'Convierte reclamos, cotizaciones, cobros y negociaciones en oportunidad, responsable, siguiente paso y seguimiento.',
       prompts: [
-        'Registra esta negociacion y bajala a oportunidad con responsable',
-        'Propone precio ejecutivo defendible para este cliente',
-        'Dime que clientes, cobros y compromisos debo mover hoy',
-        'Resume reclamos comerciales abiertos y cual merece escalar'
+        { label: 'Negociación', prompt: 'Registra esta negociacion y bajala a oportunidad con responsable' },
+        { label: 'Precio', prompt: 'Propone precio ejecutivo defendible para este cliente' },
+        { label: 'Cobros', prompt: 'Dime que clientes, cobros y compromisos debo mover hoy' },
+        { label: 'Reclamos', prompt: 'Resume reclamos comerciales abiertos y cual merece escalar' }
       ]
     },
     operaciones: {
       emptyTitle: 'Diego puede ordenar el dia operativo y destrabar terreno.',
       emptySub: 'Recibe incidentes, servicio, panel, flota o trabas y los convierte en accion, seguimiento y escalamiento util.',
       prompts: [
-        'Ordena las trabas operativas de hoy y dime que destrabar primero',
-        'Transforma este incidente en caso con responsable y control',
-        'Dime que esta caido, que esta atrasado y quien debe responder',
-        'Resume que sucursal requiere ayuda ahora'
+        { label: 'Trabas', prompt: 'Ordena las trabas operativas de hoy y dime que destrabar primero' },
+        { label: 'Incidente', prompt: 'Transforma este incidente en caso con responsable y control' },
+        { label: 'Caído', prompt: 'Dime que esta caido, que esta atrasado y quien debe responder' },
+        { label: 'Sucursal', prompt: 'Resume que sucursal requiere ayuda ahora' }
       ]
     },
     finanzas: {
       emptyTitle: 'Diego puede bajar cobros, pagos y riesgos a gestion real.',
       emptySub: 'Ayuda a distinguir reclamo, compromiso, bloqueo y prioridad financiera con dueno y fecha.',
       prompts: [
-        'Resume cobros, pagos y riesgos abiertos con responsable',
-        'Registra este reclamo de cobro y dime el siguiente paso correcto',
-        'Dime que compromisos financieros estan vencidos o en riesgo',
-        'Que debo empujar hoy para proteger caja y cierre'
+        { label: 'Cobros', prompt: 'Resume cobros, pagos y riesgos abiertos con responsable' },
+        { label: 'Reclamo', prompt: 'Registra este reclamo de cobro y dime el siguiente paso correcto' },
+        { label: 'Vencidos', prompt: 'Dime que compromisos financieros estan vencidos o en riesgo' },
+        { label: 'Caja', prompt: 'Que debo empujar hoy para proteger caja y cierre' }
       ]
     },
     cumplimiento: {
       emptyTitle: 'Diego puede ordenar documentos, permisos y evidencia requerida.',
       emptySub: 'Convierte faltantes documentales en trabajo priorizado, responsable, fecha y cierre visible.',
       prompts: [
-        'Registra este faltante documental y bajalo a lista de trabajo',
-        'Dime que permisos, firmas o evidencias estan en riesgo',
-        'Resume que bloqueo documental requiere escalamiento',
-        'Que debe hacer cada responsable documental hoy'
+        { label: 'Faltante', prompt: 'Registra este faltante documental y bajalo a lista de trabajo' },
+        { label: 'Permisos', prompt: 'Dime que permisos, firmas o evidencias estan en riesgo' },
+        { label: 'Bloqueo', prompt: 'Resume que bloqueo documental requiere escalamiento' },
+        { label: 'Responsable', prompt: 'Que debe hacer cada responsable documental hoy' }
       ]
     },
     general: {
       emptyTitle: 'Diego puede recibir texto o voz y convertirlo en claridad operativa.',
       emptySub: 'Panel, precios, documentos, informacion, cobros, pagos, servicio o agenda: todo debe poder bajar a caso, tarea o escalamiento.',
       prompts: [
-        'Convierte este reclamo en caso con responsable y siguiente paso',
-        'Dime que tengo pendiente hoy y que merece foco primero',
-        'Toma esta idea y bajala a oportunidad o tarea real',
-        'Resume que cosas estan trabadas y a quien debo avisar'
+        { label: 'Caso', prompt: 'Convierte este reclamo en caso con responsable y siguiente paso' },
+        { label: 'Pendientes', prompt: 'Dime que tengo pendiente hoy y que merece foco primero' },
+        { label: 'Idea', prompt: 'Toma esta idea y bajala a oportunidad o tarea real' },
+        { label: 'Trabas', prompt: 'Resume que cosas estan trabadas y a quien debo avisar' }
       ]
     }
   };
