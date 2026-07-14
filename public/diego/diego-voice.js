@@ -81,7 +81,13 @@
 
   function buildRecordedFile() {
     if (!state.blob) return null;
-    return new File([state.blob], `nota_${Date.now()}.webm`, { type: state.blob.type || state.mimeType || 'audio/webm' });
+    const rawType = state.blob.type || state.mimeType || 'audio/webm';
+    // El backend (Whisper vía diego-chat-process) hace match exacto de MIME contra un
+    // diccionario mime->extensión sin parámetros — normalizar acá evita que
+    // "audio/webm;codecs=opus" (lo que reporta Chrome) rompa la transcripción.
+    const normalizedType = rawType.split(';')[0].trim() || 'audio/webm';
+    const ext = normalizedType.split('/')[1] || 'webm';
+    return new File([state.blob], `nota_${Date.now()}.${ext}`, { type: normalizedType });
   }
 
   function clearRecording(elements) {
