@@ -11027,7 +11027,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!-- ===== Diego FAB v6 · chat inteligente (D-DIEGO-PROMPT-V6) ===== -->
 <style>
-  .diego-fab{position:fixed;right:max(24px, env(safe-area-inset-right));bottom:max(24px, env(safe-area-inset-bottom));width:60px;height:60px;background:linear-gradient(135deg,#fde047,#eab308);color:#1f2937;border-radius:50%;border:1px solid #ca8a04;box-shadow:0 16px 32px -12px rgba(202,138,4,.7);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;z-index:94}
+  /* Sube el FAB (ajuste Dusan 14-jul-2026): antes quedaba pegado al borde
+     inferior y se perdía detrás de barras/otros elementos fijos en móvil. */
+  .diego-fab{position:fixed;right:max(24px, env(safe-area-inset-right));bottom:calc(env(safe-area-inset-bottom, 0px) + 96px);width:60px;height:60px;background:linear-gradient(135deg,#fde047,#eab308);color:#1f2937;border-radius:50%;border:1px solid #ca8a04;box-shadow:0 16px 32px -12px rgba(202,138,4,.7);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;z-index:94}
   .diego-fab:hover{transform:scale(1.08);box-shadow:0 18px 36px -12px rgba(202,138,4,.8)}
   .diego-fab-badge{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 6px;background:#ef4444;color:#fff;border-radius:10px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
   .diego-fab-badge.hidden{display:none}
@@ -11187,20 +11189,30 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-tts-btn{margin-top:6px;font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:4px}
   .diego-tts-btn:hover{background:#e2e8f0}
   .diego-tts-btn.speaking{background:#059669;color:#fff;border-color:#059669}
-  /* Botón de dictado STT (D-DIEGO-VOZ-CONVERSACIONAL-001) — mismo estilo que el
-     resto de attach-btn, entrada normal del composer (cierre de etapa 14-jul-2026). */
-  .diego-stt-btn.listening{background:#7c3aed;color:#fff;border-color:#7c3aed;animation:pulse-rec 1.2s ease-in-out infinite}
+  /* Botón de dictado STT — acción PRINCIPAL del composer (ajuste Dusan
+     14-jul-2026): circular, amarillo, más grande que el resto de attach-btn
+     para que sea el más fácil de tocar. Entrada normal, no modo prueba
+     (cierre de etapa 14-jul-2026, sigue vigente). */
+  .diego-stt-btn{cursor:pointer;border-style:solid !important;width:56px !important;min-width:56px;height:56px;padding:0 !important;gap:0 !important;border-radius:50% !important;background:#facc15 !important;border-color:#f59e0b !important;color:#1f2937 !important;box-shadow:0 10px 22px -14px rgba(234,179,8,.9)}
+  .diego-stt-btn svg{width:24px;height:24px}
+  .diego-stt-btn.listening{background:#f59e0b !important;color:#111827 !important;border-color:#d97706 !important;animation:pulse-rec 1.2s ease-in-out infinite}
   /* PR2a · nota de corrección de sucursal SIEMPRE visible (nunca en silencio) */
   #diegoSttCorreccionNote.hidden{display:none}
   .diego-stt-correccion-note{background:#fffbeb;border-top:1px solid #fde68a;border-bottom:1px solid #fde68a;padding:6px 12px;font-size:11px;color:#92400e}
   .diego-empty{color:#94a3b8;font-size:12px;text-align:center;padding:24px 8px}
-  .diego-chat-form{display:flex;gap:8px;padding:10px;border-top:1px solid #e2e8f0;background:#fff;align-items:center;flex-shrink:0}
-  .diego-chat-form .attach-btn{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:24px;padding:10px 14px;font-size:14px;cursor:pointer;color:#475569}
-  .diego-chat-form .attach-btn:hover{background:#059669;color:#fff;border-color:#059669}
-  .diego-chat-form textarea{flex:1;border:1px solid #e2e8f0;border-radius:24px;padding:10px 16px;font-size:14px;outline:none;font-family:inherit;resize:none;min-height:40px;max-height:120px}
+  /* Fila principal del composer (ajuste Dusan 14-jul-2026): dictado + texto +
+     enviar. Adjuntar ya no vive acá — pasa a acción secundaria más abajo
+     para bajar el riesgo de tocarlo por error. */
+  .diego-chat-form{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;padding:12px 12px 8px;border-top:1px solid #e2e8f0;background:#fff;align-items:center;flex-shrink:0}
+  .diego-chat-form textarea{width:100%;min-width:0;border:1px solid #e2e8f0;border-radius:24px;padding:10px 16px;font-size:14px;outline:none;font-family:inherit;resize:none;min-height:40px;max-height:120px}
   .diego-chat-form textarea:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.15)}
   .diego-chat-form button.send{background:#059669;color:#fff;border:0;border-radius:24px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
   .diego-chat-form button.send:disabled{opacity:.5;cursor:not-allowed}
+  /* Adjuntar: acción secundaria, fuera de la fila principal (ajuste Dusan 14-jul-2026) */
+  .diego-composer-secondary{display:flex;justify-content:flex-start;padding:0 12px 8px;background:#fff}
+  #diegoAttachBtn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:#f8fafc;color:#475569;border:1px solid #dbe3ee;cursor:pointer}
+  #diegoAttachBtn:hover{background:#eef2f7;color:#0f172a;border-color:#cbd5e1}
+  #diegoAttachBtn span{font-size:12px;font-weight:600;white-space:nowrap}
   .diego-attach-preview{padding:6px 10px;background:#eff6ff;border-top:1px solid #dbeafe;font-size:11px;color:#1e40af;display:flex;justify-content:space-between;align-items:center}
   .diego-attach-preview button{background:none;border:0;color:#1e40af;cursor:pointer;font-size:14px}
   .diego-drag-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(5,150,105,.9);color:#fff;display:none;align-items:center;justify-content:center;font-weight:600;font-size:14px;border-radius:12px;z-index:5}
@@ -11218,6 +11230,7 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-chat.minimized .diego-chat-corner-resize{display:none !important}
   .diego-chat.minimized .diego-chat-body,
   .diego-chat.minimized .diego-attach-preview,
+  .diego-chat.minimized .diego-composer-secondary,
   .diego-chat.minimized .diego-chat-form{display:none}
   @media (min-width: 481px) {
     .diego-chat.open:not(.minimized) .diego-chat-corner-resize{display:block}
@@ -11241,7 +11254,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .diego-chat{left:0;right:0;bottom:0;width:100%;max-width:100%;transform:none;max-height:84vh;border-radius:16px 16px 0 0}
     .diego-chat-h{cursor:default}
     .diego-chat-resize,.diego-chat-corner-resize{display:none !important}
-    .diego-fab{right:max(12px, env(safe-area-inset-right));bottom:max(12px, env(safe-area-inset-bottom));width:56px;height:56px}
+    .diego-fab{right:16px;bottom:calc(env(safe-area-inset-bottom, 0px) + 108px);width:58px;height:58px}
     .diego-msg{max-width:88%;font-size:14px}
     .diego-shell{grid-template-columns:1fr}
     .diego-conversation{padding:12px 12px 8px}
@@ -11252,6 +11265,9 @@ document.addEventListener('DOMContentLoaded', () => {
     .diego-side-section summary{padding:9px 10px}
     .diego-side-nav{grid-template-columns:1fr}
     .diego-side-actions button{width:100%;justify-content:flex-start}
+    .diego-chat-form{gap:8px;padding:10px 10px 6px}
+    .diego-stt-btn{width:54px !important;min-width:54px;height:54px}
+    .diego-composer-secondary{padding:0 10px 8px}
   }
   /* D-DIEGO-LEGAL-IA-001 · Modal banner consentimiento IA */
   .ia-consent-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.85); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 16px; }
@@ -11318,13 +11334,9 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="diego-stt-correccion-note hidden" id="diegoSttCorreccionNote"></div>
   <form class="diego-chat-form" id="diegoChatForm" autocomplete="off">
     <input type="file" id="diegoFileInput" accept="image/*,audio/*,application/pdf,text/plain,text/csv,application/json" style="display:none;" />
-    <button type="button" class="attach-btn" id="diegoAttachBtn" aria-label="Adjuntar archivo" title="Foto, audio o PDF">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 17.98 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
-      </svg>
-    </button>
-    <!-- Dictado por voz (D-DIEGO-VOZ-CONVERSACIONAL-001) · dicta al input, NO envía
-         solo, NO adjunta audio. Se oculta con gracia si el navegador no soporta STT. -->
+    <!-- Dictado por voz (D-DIEGO-VOZ-CONVERSACIONAL-001) · acción PRINCIPAL del
+         composer (ajuste Dusan 14-jul-2026). Dicta al input, NO envía solo, NO
+         adjunta audio. Se oculta con gracia si el navegador no soporta STT. -->
     <button type="button" class="attach-btn diego-stt-btn hidden" id="diegoSttBtn" aria-label="Dictar por voz" title="Dictar por voz">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
@@ -11336,6 +11348,16 @@ document.addEventListener('DOMContentLoaded', () => {
     <textarea id="diegoChatInput" placeholder="Escribí, adjuntá o dictá por voz…" maxlength="2000" aria-label="Mensaje a Diego" rows="1"></textarea>
     <button type="submit" class="send" id="diegoChatSend">Enviar</button>
   </form>
+  <!-- Adjuntar: acción SECUNDARIA fuera de la fila principal (ajuste Dusan
+       14-jul-2026) — menos riesgo de tocarlo por error que como venía antes. -->
+  <div class="diego-composer-secondary">
+    <button type="button" id="diegoAttachBtn" aria-label="Adjuntar archivo" title="Foto, audio o PDF">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 17.98 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+      </svg>
+      <span>Adjuntar</span>
+    </button>
+  </div>
   <!-- P6 23-jun-2026 · link reportar bug Diego -->
   <div style="text-align:center;padding:4px 0 6px;font-size:11px;color:#94a3b8;">
     <button type="button" onclick="abrirReporteBugDiego()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:11px;text-decoration:underline;padding:0;">🐛 Reportar error de Diego</button>
