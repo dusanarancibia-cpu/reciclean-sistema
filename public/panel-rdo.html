@@ -6477,10 +6477,296 @@
       </div>
     </section>
 
-    <!-- Andrea (Duplicados+Drift+RUTs+Comex) + Decisor Venta + HUAL Compra +
-         Cobranza + Actas — extraída a ./panel/andrea-decisor-hual.js
-         (antifragilidad panel, bloque 13) -->
+    <!-- ============================================================
+         PC2 11-jun · Trio bandejas Cliente Único (mig 292+293) + Comex (mig 295)
+         ============================================================ -->
 
+    <!-- BANDEJA 1 · Duplicados clientes pendientes -->
+    <section id="tabAndreaDupClientes" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">🔀 Duplicados clientes</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Pares con al menos un cliente activo (oportunidad no-terminal último año). Decidí si son el mismo (mergear), distintos, o desestimar.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-stone-600 flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" id="adup_ver_historico"> Ver histórico
+          </label>
+          <button id="adup_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="adup_kpi_total">0</div>
+          <div class="text-xs text-stone-500">Pares pendientes</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-amber-700" id="adup_kpi_alta">0</div>
+          <div class="text-xs text-stone-500">Similitud ≥ 0.7</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-sky-700" id="adup_kpi_baja">0</div>
+          <div class="text-xs text-stone-500">Similitud &lt; 0.7</div>
+        </div>
+      </div>
+      <div id="adup_lista" class="space-y-2">
+        <div class="text-xs text-stone-400 italic py-4 text-center">Cargando...</div>
+      </div>
+    </section>
+
+    <!-- BANDEJA 2 · Drift cliente_nombre_libre en oportunidades -->
+    <section id="tabAndreaDriftLibre" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">📝 Nombres en oportunidades</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Nombres libres con oportunidades activas en el último año. Asigná al cliente correcto, marcá sin match, o descartá.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-stone-600 flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" id="adrift_ver_historico"> Ver histórico (3-7 años atrás)
+          </label>
+          <button id="adrift_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="adrift_kpi_total">0</div>
+          <div class="text-xs text-stone-500">Nombres pendientes</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-amber-700" id="adrift_kpi_opps">0</div>
+          <div class="text-xs text-stone-500">Σ oportunidades afectadas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-sky-700" id="adrift_kpi_top">—</div>
+          <div class="text-xs text-stone-500">Top con más opps</div>
+        </div>
+      </div>
+      <div id="adrift_lista" class="space-y-2">
+        <div class="text-xs text-stone-400 italic py-4 text-center">Cargando...</div>
+      </div>
+    </section>
+
+    <!-- BANDEJA 3 · RUTs inválidos master -->
+    <section id="tabAndreaRutsInvalidos" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">🆔 RUTs a verificar</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Clientes activos con RUT que no pasa el módulo 11. Corregí con el RUT real verificado con el cliente.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-stone-600 flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" id="aruts_ver_historico"> Ver histórico
+          </label>
+          <button id="aruts_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="aruts_kpi_total">0</div>
+          <div class="text-xs text-stone-500">Clientes con RUT inválido</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-emerald-700" id="aruts_kpi_corregidos">0</div>
+          <div class="text-xs text-stone-500">Corregidos esta sesión</div>
+        </div>
+      </div>
+      <div id="aruts_lista" class="space-y-2">
+        <div class="text-xs text-stone-400 italic py-4 text-center">Cargando...</div>
+      </div>
+    </section>
+
+    <!-- TAB 4 · Comex (importaciones/exportaciones) -->
+    <section id="tabAndreaComex" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">🚢 Comex</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Importaciones y exportaciones activas. Estados: iniciado → en_tránsito → llegado.</p>
+        </div>
+        <div class="flex gap-2">
+          <button id="acomex_nueva" class="px-3 py-1 bg-sky-600 text-white rounded text-xs hover:bg-sky-700">+ Nueva operación</button>
+          <button id="acomex_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-4 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="acomex_kpi_total">0</div>
+          <div class="text-xs text-stone-500">Operaciones activas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-amber-700" id="acomex_kpi_iniciado">0</div>
+          <div class="text-xs text-stone-500">⏳ Iniciado</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-sky-700" id="acomex_kpi_transito">0</div>
+          <div class="text-xs text-stone-500">🛳️ En tránsito</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-emerald-700" id="acomex_kpi_llegado">0</div>
+          <div class="text-xs text-stone-500">✅ Llegados &lt;7d</div>
+        </div>
+      </div>
+      <div id="acomex_lista" class="space-y-2">
+        <div class="text-xs text-stone-400 italic py-4 text-center">Cargando...</div>
+      </div>
+      <!-- Form alta inline (oculto por default) -->
+      <div id="acomex_form" class="hidden mt-4 bg-white border border-sky-300 rounded p-3">
+        <h3 class="font-semibold mb-2 text-sm">Nueva operación Comex</h3>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <label>Forwarder *<input id="acomex_f_forwarder" class="w-full border rounded px-2 py-1 mt-0.5"></label>
+          <label>Tipo *<select id="acomex_f_tipo" class="w-full border rounded px-2 py-1 mt-0.5"><option value="importacion">Importación</option><option value="exportacion">Exportación</option></select></label>
+          <label>Cliente master (cliente_id)<input id="acomex_f_cliente_id" class="w-full border rounded px-2 py-1 mt-0.5" placeholder="ej: 102422"></label>
+          <label>Cliente libre (si no está en master)<input id="acomex_f_cliente_libre" class="w-full border rounded px-2 py-1 mt-0.5"></label>
+          <label>BL<input id="acomex_f_bl" class="w-full border rounded px-2 py-1 mt-0.5"></label>
+          <label>Origen<input id="acomex_f_origen" class="w-full border rounded px-2 py-1 mt-0.5" placeholder="Shanghai"></label>
+          <label>Destino<input id="acomex_f_destino" class="w-full border rounded px-2 py-1 mt-0.5" placeholder="Valparaíso"></label>
+          <label>ETD<input type="date" id="acomex_f_etd" class="w-full border rounded px-2 py-1 mt-0.5"></label>
+          <label>ETA<input type="date" id="acomex_f_eta" class="w-full border rounded px-2 py-1 mt-0.5"></label>
+          <label class="col-span-2">Notas<textarea id="acomex_f_notas" rows="2" class="w-full border rounded px-2 py-1 mt-0.5"></textarea></label>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <button id="acomex_f_guardar" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">Guardar</button>
+          <button id="acomex_f_cancelar" class="px-3 py-1 bg-stone-300 text-stone-700 rounded text-xs hover:bg-stone-400">Cancelar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PC5 29-jun · HUAL vs Compra — margen por material/sucursal
+         ============================================================ -->
+    <section id="tabHualCompra" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">🎯 HUAL vs Precio de Compra</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Lo que HUAL paga vs lo que pagás al proveedor. Verde ≥40% · Amarillo ≥25% · Rojo &lt;25%.</p>
+        </div>
+        <div class="flex gap-2 flex-wrap items-center">
+          <select id="hualFiltroSuc" onchange="loadHualCompra()" class="text-xs border border-stone-300 rounded px-2 py-1">
+            <option value="">Todas las sucursales</option>
+          </select>
+          <button onclick="loadHualCompra()" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+        </div>
+      </div>
+      <div id="hualCompraTabla" class="overflow-x-auto"></div>
+    </section>
+
+    <!-- ============================================================
+         PC2 11-jun · Decisor Venta UI (mig 276+277 + 296 backend ya existía)
+         ============================================================ -->
+    <section id="tabDecisorVenta" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">💰 Decisor de Venta</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Elegí material + kg disponibles. Te muestro los compradores ordenados por mejor precio, con bonos vigentes y precios viejos marcados. Registrás la venta con 1 click.</p>
+        </div>
+        <button id="dec_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+      </div>
+
+      <!-- Form selector -->
+      <div class="bg-white border border-stone-200 rounded p-3 mb-3">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-2 text-xs">
+          <label>Material *<select id="dec_material" class="w-full border rounded px-2 py-1 mt-0.5"><option value="">Elegí material…</option></select></label>
+          <label>Kg disponibles *<input id="dec_kg" type="number" min="1" step="1" class="w-full border rounded px-2 py-1 mt-0.5" placeholder="ej: 1000"></label>
+          <label>Sucursal origen *<select id="dec_sucursal" class="w-full border rounded px-2 py-1 mt-0.5"><option value="">Elegí sucursal…</option></select></label>
+          <label>Empresa<select id="dec_empresa" class="w-full border rounded px-2 py-1 mt-0.5"><option value="reciclean">Reciclean</option><option value="farex">Farex</option></select></label>
+        </div>
+        <p class="text-[10px] text-stone-400 mt-1">⚠️ Flete real con google-maps queda fuera por BUG#4 (key referrer-blocked, encolado a Dusan). Por ahora se compara solo por precio + bonos.</p>
+      </div>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-3 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="dec_kpi_total">0</div>
+          <div class="text-xs text-stone-500">Compradores con precio</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-amber-700" id="dec_kpi_stale">0</div>
+          <div class="text-xs text-stone-500">⏰ Con precio &gt;7 días</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-emerald-700" id="dec_kpi_top">—</div>
+          <div class="text-xs text-stone-500">🏆 Mejor total estimado</div>
+        </div>
+      </div>
+
+      <div id="dec_lista" class="space-y-2">
+        <div class="text-xs text-stone-400 italic py-4 text-center">Elegí material + kg + sucursal para empezar.</div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PC2 11-jun · Cobranza + Actas (PDFs) · DeepSeek #2
+         EFs cobranza-pdf-reporte + acta-pdf-render ya deployadas.
+         ============================================================ -->
+
+    <!-- Tab COBRANZA -->
+    <section id="tabAndreaCobranza" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">💸 Cobranza</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Facturas pendientes de pago con buckets aging 0-30/31-60/60+. Generá el PDF mensual para Dusan.</p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <select id="cob_empresa" class="border rounded px-2 py-1 text-xs">
+            <option value="todas">Todas las empresas</option>
+            <option value="reciclean">Reciclean</option>
+            <option value="farex">Farex</option>
+          </select>
+          <input id="cob_mes" type="month" class="border rounded px-2 py-1 text-xs">
+          <button id="cob_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+          <button id="cob_pdf" class="px-3 py-1 bg-sky-600 text-white rounded text-xs hover:bg-sky-700">📄 Generar PDF</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-4 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="cob_kpi_clientes">0</div>
+          <div class="text-xs text-stone-500">Clientes morosos</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="cob_kpi_facturas">0</div>
+          <div class="text-xs text-stone-500">N° facturas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="cob_kpi_total">$0</div>
+          <div class="text-xs text-stone-500">Total pendiente</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-red-700" id="cob_kpi_critico">0%</div>
+          <div class="text-xs text-stone-500">% crítico &gt;60d</div>
+        </div>
+      </div>
+      <div id="cob_lista" class="space-y-2">
+        <div class="text-xs text-stone-400 italic py-4 text-center">Cargando…</div>
+      </div>
+    </section>
+
+    <!-- Tab ACTAS -->
+    <section id="tabAndreaActas" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-bold text-stone-800">📝 Actas</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Tus actas (PDI / compras). Generá el PDF, firmá pendientes, descargá copia para el cliente.</p>
+        </div>
+        <button id="act_refresh" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
+      </div>
+      <div class="grid grid-cols-3 gap-2 mb-3">
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-stone-700" id="act_kpi_total">0</div>
+          <div class="text-xs text-stone-500">Total actas</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-amber-700" id="act_kpi_pendientes">0</div>
+          <div class="text-xs text-stone-500">⏳ Firma pendiente</div>
+        </div>
+        <div class="bg-white border border-stone-200 rounded p-2">
+          <div class="text-2xl font-bold text-emerald-700" id="act_kpi_con_pdf">0</div>
+          <div class="text-xs text-stone-500">📄 Con PDF</div>
+        </div>
+      </div>
+      <div id="act_lista" class="space-y-2">
+        <div class="text-xs text-stone-400 italic py-4 text-center">Cargando…</div>
+      </div>
+    </section>
 
     <!-- Tab Facturacion grupo · D-FACTURACION-ETAPA-1 FASE 6 · PC2 Pablo 06-jun -->
     <section id="tabFacturacionGrupo" class="tab-content hidden">
