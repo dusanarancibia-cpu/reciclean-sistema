@@ -11039,8 +11039,9 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-chat.open{display:flex}
   .diego-chat.desktop-floating{left:0;top:0;right:auto;bottom:auto;transform:none;max-height:calc(100vh - (var(--diego-chat-margin) * 2))}
   .diego-chat.dragging,.diego-chat.resizing{user-select:none}
-  .diego-chat-resize{display:none;height:12px;flex-shrink:0;background:linear-gradient(180deg,#f8fafc 0%,#eef2f7 100%);cursor:ns-resize}
-  .diego-chat-resize::after{content:'';display:block;width:72px;height:4px;border-radius:999px;background:#cbd5e1;margin:4px auto 0}
+  .diego-chat-resize{display:none !important}
+  .diego-chat-corner-resize{display:none;position:absolute;right:8px;bottom:8px;width:18px;height:18px;border-radius:6px;cursor:nwse-resize;z-index:6;opacity:.55;background:linear-gradient(135deg,transparent 0 38%,#94a3b8 38% 46%,transparent 46% 56%,#94a3b8 56% 64%,transparent 64% 74%,#94a3b8 74% 82%,transparent 82% 100%)}
+  .diego-chat-corner-resize:hover{opacity:.8}
   .diego-chat-h{background:#059669;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;flex-shrink:0;cursor:grab}
   .diego-chat.dragging .diego-chat-h{cursor:grabbing}
   .diego-chat-h .h-title{display:flex;align-items:center;gap:8px}
@@ -11048,7 +11049,7 @@ document.addEventListener('DOMContentLoaded', () => {
   @keyframes diegoStatusPulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.7)}70%{box-shadow:0 0 0 8px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
   .diego-chat-h .h-version{background:rgba(255,255,255,.2);padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600}
   .diego-chat-h button{background:none;border:0;color:#fff;cursor:pointer;font-size:16px;line-height:1;padding:4px 8px}
-  .diego-chat-toggle{font-size:11px !important;line-height:1.2 !important;padding:6px 10px !important;border-radius:999px !important;border:1px solid rgba(255,255,255,.28) !important;background:rgba(255,255,255,.14) !important;font-weight:700 !important}
+  .diego-chat-toggle{display:none !important}
   .diego-chat-toggle.is-active{background:#fff !important;color:#065f46 !important;border-color:#d1fae5 !important}
   .diego-chat-body{background:#f8fafc;flex:1;min-height:220px;overflow-y:auto;overflow-x:hidden;position:relative}
   /* Cirugía estética Diego v6 · scrollbar visible + flat mode · 14-jul-2026 */
@@ -11160,7 +11161,7 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-typing-dots span:nth-child(2){animation-delay:-0.16s}
   @keyframes diegoTypingBounce{0%,80%,100%{transform:scale(0.6);opacity:0.5}40%{transform:scale(1);opacity:1}}
   /* D-DIEGO-MEJORA-CONTINUA-001 CL-015 · chips onboarding */
-  .diego-onboarding-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+  .diego-onboarding-chips{display:none}
   .diego-onboarding-chips button{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;padding:5px 10px;border-radius:14px;font-size:11px;cursor:pointer;transition:all .15s ease}
   .diego-onboarding-chips button:hover{background:#d1fae5;transform:translateY(-1px)}
   .diego-msg-meta{font-size:10px;color:#94a3b8;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;line-height:1.2}
@@ -11179,7 +11180,7 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-kv strong{color:#0f172a}
   .diego-actions{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
   .diego-actions .chip{font-size:10px;background:#dcfce7;color:#166534;padding:2px 6px;border-radius:4px;font-weight:600}
-  .diego-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .diego-suggestions{display:none}
   .diego-suggestions button{font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:500}
   .diego-suggestions button:hover{background:#059669;color:#fff;border-color:#059669}
   /* Voz de salida (paso 2 D-DIEGO-VOZ-COMPOSER-001) · botón Escuchar/Detener por respuesta */
@@ -11232,12 +11233,13 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-chat.minimized #diegoChatLayersToggle,
   .diego-chat.minimized #diegoChatLimpiar,
   .diego-chat.minimized #diegoChatClose{display:none}
-  .diego-chat.minimized .diego-chat-resize{display:none !important}
+  .diego-chat.minimized .diego-chat-resize,
+  .diego-chat.minimized .diego-chat-corner-resize{display:none !important}
   .diego-chat.minimized .diego-chat-body,
   .diego-chat.minimized .diego-attach-preview,
   .diego-chat.minimized .diego-chat-form{display:none}
   @media (min-width: 481px) {
-    .diego-chat.open:not(.minimized) .diego-chat-resize{display:block}
+    .diego-chat.open:not(.minimized) .diego-chat-corner-resize{display:block}
   }
   /* M3 — Botón attach con SVG en lugar de emoji */
   .diego-chat-form .attach-btn{padding:8px;display:inline-flex;align-items:center;justify-content:center}
@@ -11257,7 +11259,7 @@ document.addEventListener('DOMContentLoaded', () => {
   @media (max-width: 480px) {
     .diego-chat{left:0;right:0;bottom:0;width:100%;max-width:100%;transform:none;max-height:84vh;border-radius:16px 16px 0 0}
     .diego-chat-h{cursor:default}
-    .diego-chat-resize{display:none !important}
+    .diego-chat-resize,.diego-chat-corner-resize{display:none !important}
     .diego-fab{right:max(12px, env(safe-area-inset-right));bottom:max(12px, env(safe-area-inset-bottom));width:56px;height:56px}
     .diego-msg{max-width:88%;font-size:14px}
     .diego-shell{grid-template-columns:1fr}
@@ -11309,6 +11311,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <div class="diego-chat natural-mode" id="diegoChat" role="dialog" aria-label="Chat con Diego">
   <div class="diego-chat-resize" id="diegoChatResizeHandle" aria-hidden="true"></div>
+  <div class="diego-chat-corner-resize" id="diegoChatCornerResizeHandle" aria-hidden="true"></div>
   <div class="diego-chat-h">
     <span class="h-title" style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;">
       <span style="display:flex;align-items:center;gap:8px;"><span class="h-status-dot" aria-hidden="true"></span>🤖 Diego <span class="h-version">v6</span></span>
@@ -11322,7 +11325,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
   <div class="diego-chat-body" id="diegoChatBody">
-    <div class="diego-empty">¿En qué te ayudo? Probá: <em>"precio cartón Maipú"</em> · <em>"resumen facturación mayo"</em> · arrastrá una foto.</div>
+    <div class="diego-empty">Escribí, adjuntá o grabá una nota de voz.</div>
     <div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>
   </div>
   <div class="diego-attach-preview" id="diegoAttachPreview" style="display:none;">
@@ -11415,6 +11418,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeBtn = document.getElementById('diegoChatClose');
   const layersToggleBtn = document.getElementById('diegoChatLayersToggle');
   const resizeHandle = document.getElementById('diegoChatResizeHandle');
+  const cornerResizeHandle = document.getElementById('diegoChatCornerResizeHandle');
   // 🧹 Botón limpiar vista (NO borra memoria — solo limpia la pantalla del FAB)
   const limpiarBtn = document.getElementById('diegoChatLimpiar');
   const minBtn = document.getElementById('diegoChatMinimize');
@@ -11445,7 +11449,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const raw = JSON.parse(localStorage.getItem(DIEGO_CHAT_UI_KEY) || '{}');
       return {
-        naturalMode: raw.naturalMode !== false,
+        naturalMode: true,
         left: toFiniteNumber(raw.left),
         top: toFiniteNumber(raw.top),
         width: toFiniteNumber(raw.width),
@@ -11475,6 +11479,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let chrome = 0;
     Array.from(win.children).forEach((child) => {
       if (child.id === 'diegoChatBody') return;
+      if (child.id === 'diegoChatCornerResizeHandle') return;
       chrome += child.offsetHeight;
     });
     return Math.max(DIEGO_CHAT_MIN_HEIGHT_FLOOR, chrome + DIEGO_CHAT_BODY_MIN_HEIGHT);
@@ -11521,19 +11526,15 @@ document.addEventListener('DOMContentLoaded', () => {
     win.style.transform = '';
   }
   function syncLayersToggle() {
-    const naturalMode = chatUiState.naturalMode !== false;
+    const naturalMode = true;
+    chatUiState.naturalMode = true;
     win.classList.toggle('natural-mode', naturalMode);
     if (!layersToggleBtn) return;
-    const showingLayers = !naturalMode;
-    layersToggleBtn.classList.toggle('is-active', showingLayers);
-    layersToggleBtn.setAttribute('aria-pressed', showingLayers ? 'true' : 'false');
-    layersToggleBtn.setAttribute('aria-label', showingLayers ? 'Volver a chat simple' : 'Mostrar capas de contexto');
-    layersToggleBtn.setAttribute('title', showingLayers ? 'Volver a chat simple' : 'Mostrar capas de contexto');
-    // "Chat" era ambiguo (¿cierra el chat?). "Simple" es inequívoco con el título/aria de al lado.
-    layersToggleBtn.textContent = showingLayers ? 'Simple' : 'Capas';
+    layersToggleBtn.setAttribute('aria-hidden', 'true');
+    layersToggleBtn.setAttribute('tabindex', '-1');
   }
   function setNaturalMode(nextValue, options) {
-    chatUiState.naturalMode = !!nextValue;
+    chatUiState.naturalMode = true;
     syncLayersToggle();
     if (!options || options.save !== false) saveDiegoChatUiState();
   }
@@ -11604,6 +11605,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function onResizeMove(e) {
     if (!resizeState) return;
+    if (resizeState.mode === 'corner') {
+      applyChatDesktopRect({
+        left: resizeState.left,
+        top: resizeState.top,
+        width: resizeState.width + (e.clientX - resizeState.pointerX),
+        height: resizeState.height + (e.clientY - resizeState.pointerY),
+      }, { save: false });
+      return;
+    }
     applyChatDesktopRect({
       left: resizeState.left,
       top: resizeState.top + (e.clientY - resizeState.pointerY),
@@ -11611,12 +11621,14 @@ document.addEventListener('DOMContentLoaded', () => {
       height: resizeState.height - (e.clientY - resizeState.pointerY),
     }, { save: false });
   }
-  function startResize(e) {
+  function startResize(e, mode) {
     if (!isDesktopChatLayout() || !win.classList.contains('open') || win.classList.contains('minimized')) return;
     if (e.button !== 0) return;
     const rect = normalizeDesktopRectFromCurrent();
     if (!rect) return;
     resizeState = {
+      mode: mode || 'vertical',
+      pointerX: e.clientX,
       pointerY: e.clientY,
       left: rect.left,
       top: rect.top,
@@ -11638,7 +11650,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (layersToggleBtn) {
     layersToggleBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      setNaturalMode(!(chatUiState.naturalMode !== false));
+      setNaturalMode(true);
     });
   }
   if (minBtn && chatWin) {
@@ -11656,7 +11668,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     chatHeader.addEventListener('mousedown', startDrag);
   }
-  if (resizeHandle) resizeHandle.addEventListener('mousedown', startResize);
+  if (resizeHandle) resizeHandle.addEventListener('mousedown', (e) => startResize(e, 'vertical'));
+  if (cornerResizeHandle) cornerResizeHandle.addEventListener('mousedown', (e) => startResize(e, 'corner'));
   window.addEventListener('blur', () => {
     finishDrag();
     finishResize();
@@ -12675,26 +12688,15 @@ document.addEventListener('DOMContentLoaded', () => {
     warnDiegoLegacyFallback('render');
     // Fallback legado temporal mientras termina la extraccion modular de Diego.
     if (!history.length) {
-      const chips = getOnboardingChips().map(c => `<button type="button" data-chip="${esc(c.prompt)}">${esc(c.label)}</button>`).join('');
       body.innerHTML = `<div class="diego-shell">
           <div class="diego-conversation">
             ${renderConversationHeader(null)}
             ${renderIntelligentEmptyState(getDiegoRoleProfile())}
-            <div class="diego-empty">Probá con esto:
-              <div class="diego-onboarding-chips">${chips}</div>
-              <div style="margin-top:8px;font-size:11px;color:#94a3b8">o arrastrá una foto · audio · PDF</div>
-            </div>
+            <div class="diego-empty">Escribí, adjuntá o grabá una nota de voz.</div>
           </div>
           ${renderContextPanel(null)}
         </div>
         <div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>`;
-      body.querySelectorAll('button[data-chip]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          input.value = btn.getAttribute('data-chip') || '';
-          input.focus();
-          form.dispatchEvent(new Event('submit'));
-        });
-      });
       bindContextPrompts();
       bindContextTabs();
       updateChatStatus();
@@ -12793,20 +12795,6 @@ document.addEventListener('DOMContentLoaded', () => {
       meta.textContent = `${cls === 'mine' ? 'Vos' : 'Diego'} · ${fmtHora(h.ts)}${h.tokens ? ' · ' + h.tokens + ' tok' : ''}${h.cola_id ? ' · ✅ cola' : ''}`;
       msg.appendChild(meta);
 
-      const suggestions = (h.suggestions || []).slice(0, 4);
-      if (suggestions.length) {
-        const suggestionsBox = document.createElement('div');
-        suggestionsBox.className = 'diego-suggestions';
-        suggestions.forEach((s, i) => {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.setAttribute('data-sugg', String(i));
-          btn.textContent = String(s?.label || s || '');
-          suggestionsBox.appendChild(btn);
-        });
-        msg.appendChild(suggestionsBox);
-      }
-
       return msg;
     };
     body.innerHTML = `<div class="diego-shell">
@@ -12829,18 +12817,6 @@ document.addEventListener('DOMContentLoaded', () => {
     pane?.scrollTo({ top: 999999, behavior: 'auto' });
     updateChatStatus();
 
-    // Re-bind sugerencias (event delegation simple)
-    body.querySelectorAll('button[data-sugg]').forEach((btn, idx) => {
-      btn.addEventListener('click', (e) => {
-        const last = [...history].reverse().find(h => h.role === 'diego');
-        const sIdx = parseInt(btn.getAttribute('data-sugg'), 10);
-        const s = last?.suggestions?.[sIdx];
-        if (s) {
-          input.value = s.action || s.label || s;
-          input.focus();
-        }
-      });
-    });
     bindContextPrompts();
     bindContextTabs();
   }
