@@ -16,9 +16,6 @@
       const attach = entry.attach ? `<div class="diego-msg-attach">📎 ${safeEsc(esc, entry.attach)}</div>` : '';
       const actionsArr = (entry.actions || []).map(action => `<span class="chip">${safeEsc(esc, action.tool || action)}</span>`).join('');
       const actions = actionsArr ? `<div class="diego-actions">${actionsArr}</div>` : '';
-      const suggestionsArr = (entry.suggestions || []).slice(0, 4).map((suggestion, index) =>
-        `<button type="button" data-sugg="${index}">${safeEsc(esc, suggestion.label || suggestion)}</button>`).join('');
-      const suggestions = suggestionsArr ? `<div class="diego-suggestions">${suggestionsArr}</div>` : '';
       const thinkingHtml = 'Diego esta escribiendo<span class="diego-typing-dots"><span></span><span></span><span></span></span>';
       const msgHtml = cls === 'thinking' ? thinkingHtml : safeEsc(esc, entry.mensaje);
       // Voz de salida (paso 2 D-DIEGO-VOZ-COMPOSER-001) · solo respuestas de Diego,
@@ -37,7 +34,6 @@
         ${tts}
         ${actions}
         <div class="diego-msg-meta">${cls === 'mine' ? 'Vos' : 'Diego'} · ${typeof fmtHora === 'function' ? fmtHora(entry.ts) : ''}${entry.tokens ? ' · ' + entry.tokens + ' tok' : ''}${entry.cola_id ? ' · ✅ cola' : ''}</div>
-        ${suggestions}
       </div>`;
     }).join('');
   }
@@ -115,32 +111,16 @@
     if (!body || !input || !form) return false;
 
     if (!history.length) {
-      // Cada chip es {label, prompt}: label = texto visible corto, prompt = accion
-      // completa enviada a Diego (ajuste fino PR #677 — antes chip mostraba el prompt entero).
-      const chips = typeof getOnboardingChips === 'function'
-        ? getOnboardingChips().map(chip => `<button type="button" data-chip="${safeEsc(esc, chip.prompt)}">${safeEsc(esc, chip.label)}</button>`).join('')
-        : '';
       const profile = typeof getDiegoRoleProfile === 'function' ? getDiegoRoleProfile() : {};
       body.innerHTML = `<div class="diego-shell">
           <div class="diego-conversation">
             ${typeof renderConversationHeader === 'function' ? renderConversationHeader(null) : ''}
             ${typeof renderIntelligentEmptyState === 'function' ? renderIntelligentEmptyState(profile) : ''}
-            <div class="diego-empty">Probá con esto:
-              <div class="diego-onboarding-chips">${chips}</div>
-              <div style="margin-top:8px;font-size:11px;color:#94a3b8">o arrastrá una foto · audio · PDF</div>
-            </div>
+            <div class="diego-empty">Escribí, adjuntá o grabá una nota de voz.</div>
           </div>
           ${typeof renderContextPanel === 'function' ? renderContextPanel(null) : ''}
         </div>
         <div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>`;
-
-      body.querySelectorAll('button[data-chip]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          input.value = btn.getAttribute('data-chip') || '';
-          input.focus();
-          form.dispatchEvent(new Event('submit'));
-        });
-      });
 
       if (typeof bindContextPrompts === 'function') bindContextPrompts();
       if (typeof bindContextTabs === 'function') bindContextTabs();
