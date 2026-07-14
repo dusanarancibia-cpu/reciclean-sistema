@@ -533,6 +533,13 @@ window.oppAbrirDrawer = async function(oppId) {
   } else if (auditDiv) {
     auditDiv.innerHTML = '<div class="text-stone-400 italic">CRM Impulsa · sin audit local</div>';
   }
+
+  // Gestiones (rehogado desde CRM Impulsa/Ficha Cliente — antifragilidad
+  // panel, migración Etapa 1). Usa el cliente_id real que ya trae esta
+  // vista, cero dependencia de CRM Impulsa. Ver public/panel/gestiones.js.
+  if (typeof window.oppCargarGestionesCliente === 'function') {
+    window.oppCargarGestionesCliente(o.cliente_id || null, o.cliente_nombre || '');
+  }
 };
 
 // Capa 2b · Subida real al bucket opp-files
