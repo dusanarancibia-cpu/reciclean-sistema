@@ -11187,24 +11187,9 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-tts-btn{margin-top:6px;font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:4px}
   .diego-tts-btn:hover{background:#e2e8f0}
   .diego-tts-btn.speaking{background:#059669;color:#fff;border-color:#059669}
-  /* Botón de PRUEBA dictado STT (D-DIEGO-VOZ-CONVERSACIONAL-001 PR1) — borde
-     punteado a propósito para señalar visualmente que es experimental. Ancho
-     automático (no circular como el resto) porque lleva texto, no solo ícono —
-     pedido explícito de que no se confunda con el micrófono de adjunto. */
-  .diego-stt-btn{border-style:dashed !important;width:auto !important;padding:8px 12px !important;gap:6px}
-  .diego-stt-btn-label{font-size:12px;font-weight:600;white-space:nowrap}
+  /* Botón de dictado STT (D-DIEGO-VOZ-CONVERSACIONAL-001) — mismo estilo que el
+     resto de attach-btn, entrada normal del composer (cierre de etapa 14-jul-2026). */
   .diego-stt-btn.listening{background:#7c3aed;color:#fff;border-color:#7c3aed;animation:pulse-rec 1.2s ease-in-out infinite}
-  /* Banner de ayuda de PRUEBA (D-DIEGO-VOZ-CONVERSACIONAL-001 PR1) — temporal,
-     se retira entero cuando el PR se cierra. #diegoSttTestBanner.hidden gana por
-     especificidad ID+clase, mismo patrón ya usado para #diegoVoicePreview. */
-  #diegoSttTestBanner.hidden{display:none}
-  .diego-stt-test-banner{background:#faf5ff;border-top:1px solid #e9d5ff;border-bottom:1px solid #e9d5ff;padding:10px 12px;font-size:12px;color:#581c87}
-  .diego-stt-test-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
-  .diego-stt-test-head strong{font-size:12px}
-  .diego-stt-test-head button{background:none;border:0;color:#7c3aed;cursor:pointer;font-size:14px;line-height:1;padding:2px 4px}
-  .diego-stt-test-banner p{margin:0 0 6px;line-height:1.5}
-  .diego-stt-test-frases span{font-weight:600;display:block;margin-bottom:2px}
-  .diego-stt-test-frases ul{margin:0;padding-left:18px;line-height:1.6}
   /* PR2a · nota de corrección de sucursal SIEMPRE visible (nunca en silencio) */
   #diegoSttCorreccionNote.hidden{display:none}
   .diego-stt-correccion-note{background:#fffbeb;border-top:1px solid #fde68a;border-bottom:1px solid #fde68a;padding:6px 12px;font-size:11px;color:#92400e}
@@ -11321,24 +11306,12 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
   <div class="diego-chat-body" id="diegoChatBody">
-    <div class="diego-empty">Escribí, adjuntá o grabá una nota de voz.</div>
+    <div class="diego-empty">Escribí, adjuntá o dictá por voz.</div>
     <div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>
   </div>
   <div class="diego-attach-preview" id="diegoAttachPreview" style="display:none;">
     <span id="diegoAttachName"></span>
     <button type="button" id="diegoAttachRemove" aria-label="Quitar adjunto">✕</button>
-  </div>
-  <!-- ESPACIO DE PRUEBA · D-DIEGO-VOZ-CONVERSACIONAL-001 PR1 (PR #676, NO mergeado).
-       Ayuda temporal para validación humana del dictado por voz. Se retira entero
-       (este bloque + su CSS) cuando el PR se cierra o se decide seguir a PR2.
-       Copy recortado a <=5 palabras visibles (PR #677 ajuste fino) — el detalle
-       completo (cómo probar + frases sugeridas) vive en el `title` (tooltip)
-       para no repetirlo como bloque visual largo. -->
-  <div class="diego-stt-test-banner hidden" id="diegoSttTestBanner" title="Hacé click en 🎙️ Prueba dictado (ícono punteado, junto al micrófono) → hablá → click de nuevo para detener → revisá el texto en el campo de escribir. No se envía solo. Frases sugeridas: &quot;sube cobre tercera en Maipú&quot; · &quot;qué precio tiene bronce amarillo en Cerrillos&quot; · &quot;convierte esto en oportunidad y avisa a Diego&quot; · &quot;tengo un reclamo por retiro en Puerto Montt&quot; · &quot;pesaje de fierro corto en Talca doscientos cincuenta kilos&quot;.">
-    <div class="diego-stt-test-head">
-      <strong>🧪 Prueba de dictado</strong>
-      <button type="button" id="diegoSttTestClose" aria-label="Cerrar ayuda de prueba">✕</button>
-    </div>
   </div>
   <!-- PR2a D-DIEGO-VOZ-CONVERSACIONAL-001 · corrección de sucursales SIEMPRE
        visible — pedido explícito de Dusan: "no quiero correcciones invisibles" -->
@@ -11350,20 +11323,17 @@ document.addEventListener('DOMContentLoaded', () => {
         <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 17.98 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
       </svg>
     </button>
-    <!-- PRUEBA D-DIEGO-VOZ-CONVERSACIONAL-001 PR1 · dicta al input, NO envía solo,
-         NO adjunta audio. Se oculta con gracia si el navegador no soporta STT.
-         Con texto visible (no solo ícono) a propósito, para que no se confunda
-         con el micrófono de adjunto — pedido explícito de validación humana. -->
-    <button type="button" class="attach-btn diego-stt-btn hidden" id="diegoSttBtn" aria-label="Prueba dictado por voz" title="🧪 Prueba dictado — hablá y el texto aparece en el input, no se envía solo">
+    <!-- Dictado por voz (D-DIEGO-VOZ-CONVERSACIONAL-001) · dicta al input, NO envía
+         solo, NO adjunta audio. Se oculta con gracia si el navegador no soporta STT. -->
+    <button type="button" class="attach-btn diego-stt-btn hidden" id="diegoSttBtn" aria-label="Dictar por voz" title="Dictar por voz">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
         <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
         <path d="M8 21h8"/>
         <path d="M12 19v2"/>
       </svg>
-      <span class="diego-stt-btn-label">Prueba dictado</span>
     </button>
-    <textarea id="diegoChatInput" placeholder="Escribí, adjuntá o grabá una nota de voz…" maxlength="2000" aria-label="Mensaje a Diego" rows="1"></textarea>
+    <textarea id="diegoChatInput" placeholder="Escribí, adjuntá o dictá por voz…" maxlength="2000" aria-label="Mensaje a Diego" rows="1"></textarea>
     <button type="submit" class="send" id="diegoChatSend">Enviar</button>
   </form>
   <!-- P6 23-jun-2026 · link reportar bug Diego -->
@@ -12672,7 +12642,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="diego-conversation">
             ${renderConversationHeader(null)}
             ${renderIntelligentEmptyState(getDiegoRoleProfile())}
-            <div class="diego-empty">Escribí, adjuntá o grabá una nota de voz.</div>
+            <div class="diego-empty">Escribí, adjuntá o dictá por voz.</div>
           </div>
           ${renderContextPanel(null)}
         </div>
@@ -12925,15 +12895,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Motor nativo aceptado como camino real (decisión Dusan 14-jul-2026):
   // sigue con confirmación manual antes de enviar, sin autosend todavía.
   const sttBtn = document.getElementById('diegoSttBtn');
-  const sttBtnLabel = sttBtn?.querySelector('.diego-stt-btn-label');
-  const sttTestBanner = document.getElementById('diegoSttTestBanner');
-  const sttTestClose = document.getElementById('diegoSttTestClose');
   const sttCorreccionNote = document.getElementById('diegoSttCorreccionNote');
-  if (sttTestClose) {
-    sttTestClose.addEventListener('click', () => {
-      if (sttTestBanner) sttTestBanner.classList.add('hidden');
-    });
-  }
 
   // Beep corto al arrancar a escuchar — hallazgo de la prueba humana: sin
   // señal sonora, el micrófono agarra preámbulo ("no espérate, estoy
@@ -12978,8 +12940,13 @@ document.addEventListener('DOMContentLoaded', () => {
         window.DIEGO_STT.stopListening();
         return;
       }
+      // Cortar cualquier respuesta hablada en curso antes de escuchar de nuevo —
+      // si Diego sigue leyendo la respuesta anterior en voz, el usuario no debe
+      // tener que esperar ni sentir que se solapan (cierre etapa voz 14-jul-2026).
+      if (window.DIEGO_TTS) window.DIEGO_TTS.stop();
       sttBtn.classList.add('listening');
-      if (sttBtnLabel) sttBtnLabel.textContent = 'Escuchando…';
+      sttBtn.setAttribute('aria-label', 'Escuchando…');
+      sttBtn.setAttribute('title', 'Escuchando… click para detener');
       sttClearCorreccionNote();
       window.DIEGO_STT.startListening({
         onStart: () => { sttPlayBeep(); },
@@ -13001,7 +12968,8 @@ document.addEventListener('DOMContentLoaded', () => {
           input.style.height = 'auto';
           input.style.height = Math.min(input.scrollHeight, 120) + 'px';
           sttBtn.classList.remove('listening');
-          if (sttBtnLabel) sttBtnLabel.textContent = 'Prueba dictado';
+          sttBtn.setAttribute('aria-label', 'Dictar por voz');
+          sttBtn.setAttribute('title', 'Dictar por voz');
           if (correccion.huboCorreccion && sttCorreccionNote) {
             const detalle = correccion.cambios.map(c => `"${c.original}" → "${c.corregido}"`).join(' · ');
             sttCorreccionNote.textContent = `✏️ Corregido automático: ${detalle}`;
@@ -13010,7 +12978,8 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         onError: (e) => {
           sttBtn.classList.remove('listening');
-          if (sttBtnLabel) sttBtnLabel.textContent = 'Prueba dictado';
+          sttBtn.setAttribute('aria-label', 'Dictar por voz');
+          sttBtn.setAttribute('title', 'Dictar por voz');
           console.warn('[Diego STT] error:', e);
         },
       });
@@ -13043,13 +13012,12 @@ document.addEventListener('DOMContentLoaded', () => {
     suscribir();
     refreshBadge();
     render();
-    // Mostrar el botón de dictado (PRUEBA) + su banner de ayuda solo si el
-    // navegador soporta STT nativo. Se chequea acá (al abrir, no al cargar el
-    // IIFE) porque diego-stt.js carga casi al final del <body> — mismo motivo
-    // que el fix de carga del mic (PR #674).
+    // Mostrar el botón de dictado solo si el navegador soporta STT nativo. Se
+    // chequea acá (al abrir, no al cargar el IIFE) porque diego-stt.js carga
+    // casi al final del <body> — mismo motivo que el fix de carga del mic
+    // (PR #674).
     const sttOk = !!(window.DIEGO_STT && window.DIEGO_STT.isSupported());
     if (sttBtn) sttBtn.classList.toggle('hidden', !sttOk);
-    if (sttTestBanner) sttTestBanner.classList.toggle('hidden', !sttOk);
     setTimeout(() => input.focus(), 50);
   });
   closeBtn.addEventListener('click', () => {
