@@ -4,6 +4,7 @@
     warnedMissingTable: false,
     warnedGenericError: false,
     hydratePromise: null,
+    hydrating: false,
     pushTimer: null,
     mode: 'local',
     reason: 'idle',
@@ -129,6 +130,16 @@
     const email = getEmail(getCurrentEmail);
     if (state.hydratedEmail === email) return true;
     if (state.hydratePromise) return state.hydratePromise;
+    // Guard de reentrada sincrónico: setStatus() de abajo dispara
+    // 'diego-case-sync-status' de forma sincrónica (antes del primer await),
+    // y panel-rdo.html puede re-renderizar y volver a llamar hydrate() en el
+    // mismo tick, cuando state.hydratePromise todavía no quedó asignado (la
+    // asignación ocurre recién cuando esta IIFE termina de evaluarse). Sin
+    // esta bandera, esa reentrada no encontraba ningún guard activo todavía
+    // y volvía a entrar en bucle sincrónico → RangeError: Maximum call stack
+    // size exceeded.
+    if (state.hydrating) return true;
+    state.hydrating = true;
 
     state.hydratePromise = (async function () {
       setStatus({
@@ -160,6 +171,7 @@
       return true;
     })().finally(function () {
       state.hydratePromise = null;
+      state.hydrating = false;
     });
 
     return state.hydratePromise;
