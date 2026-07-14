@@ -40,12 +40,37 @@
     return String(lang || '').toLowerCase().replace('_', '-');
   }
 
-  // Prioridad simple y estable: es-CL exacto -> es-ES exacto -> cualquier
-  // es-* -> null (fallback: se deja utterance.lang='es-CL' sin voice fijada,
-  // mismo comportamiento que antes de este cambio).
+  // Preferencia manual de voz (14-jul-2026) — guardada en localStorage, no en
+  // BD ni backend. Se guarda el voiceURI (o el name si el navegador no expone
+  // voiceURI) porque es el identificador mas estable entre recargas de la
+  // misma maquina/navegador.
+  const PREFERRED_VOICE_KEY = 'diego_tts_preferred_voice';
+
+  function readPreferredVoiceId() {
+    try {
+      return (typeof window !== 'undefined' && window.localStorage) ? window.localStorage.getItem(PREFERRED_VOICE_KEY) : null;
+    } catch (e) {
+      return null; // localStorage bloqueado (modo privado, sandbox, etc.) — no es critico.
+    }
+  }
+
+  // Busca la preferencia guardada DENTRO del catalogo de voces ya cargado. Si
+  // el navegador ya no la tiene (voz desinstalada, otro dispositivo, etc.),
+  // devuelve null y pickBestVoice() cae con gracia al selector automatico.
+  function findPreferredVoice() {
+    const storedId = readPreferredVoiceId();
+    if (!storedId) return null;
+    return state.voices.find((v) => v.voiceURI === storedId || v.name === storedId) || null;
+  }
+
+  // Prioridad: preferencia manual (si sigue existiendo) -> es-CL exacto ->
+  // es-ES exacto -> cualquier es-* -> null (fallback: utterance.lang='es-CL'
+  // sin voice fijada, mismo comportamiento de siempre).
   function pickBestVoice() {
     const voices = state.voices;
     if (!voices || !voices.length) return null;
+    const preferred = findPreferredVoice();
+    if (preferred) return preferred;
     const byLang = (target) => voices.find((v) => normalizeLang(v.lang) === target);
     return byLang('es-cl') || byLang('es-es') || voices.find((v) => normalizeLang(v.lang).startsWith('es')) || null;
   }
@@ -59,6 +84,31 @@
 
   function listVoices() {
     return state.voices.map((v) => ({ name: v.name, lang: v.lang, default: !!v.default }));
+  }
+
+  // window.DIEGO_TTS.setPreferredVoice('Google español' | voiceURI) — fija
+  // preferencia manual. Requiere que la voz ya este en el catalogo cargado
+  // (usar listVoices() primero); si no matchea nada, no guarda nada y avisa.
+  function setPreferredVoice(nameOrUri) {
+    const target = String(nameOrUri || '').trim();
+    if (!target) return { ok: false, reason: 'Nombre o voiceURI vacio.' };
+    const match = state.voices.find((v) => v.name === target || v.voiceURI === target);
+    if (!match) {
+      return { ok: false, reason: `No hay ninguna voz cargada que coincida con "${target}". Usa DIEGO_TTS.listVoices() para ver las disponibles.` };
+    }
+    try {
+      if (window.localStorage) window.localStorage.setItem(PREFERRED_VOICE_KEY, match.voiceURI || match.name);
+    } catch (e) {
+      return { ok: false, reason: 'No se pudo guardar en localStorage (modo privado o bloqueado). La preferencia no persiste.' };
+    }
+    return { ok: true, voice: { name: match.name, lang: match.lang, voiceURI: match.voiceURI } };
+  }
+
+  // window.DIEGO_TTS.clearPreferredVoice() — vuelve al selector automatico.
+  function clearPreferredVoice() {
+    try {
+      if (window.localStorage) window.localStorage.removeItem(PREFERRED_VOICE_KEY);
+    } catch (e) { /* noop */ }
   }
 
   if (isSupported()) {
@@ -135,5 +185,7 @@
     getCurrentId,
     getSelectedVoice,
     listVoices,
+    setPreferredVoice,
+    clearPreferredVoice,
   };
 })();
