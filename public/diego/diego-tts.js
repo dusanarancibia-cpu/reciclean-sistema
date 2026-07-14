@@ -44,6 +44,29 @@
   // BD ni backend. Se guarda el voiceURI (o el name si el navegador no expone
   // voiceURI) porque es el identificador mas estable entre recargas de la
   // misma maquina/navegador.
+  //
+  // LIMITE ESTRUCTURAL (14-jul-2026, hallazgo real Dusan: PC y movil suenan
+  // distinto) — no es un bug, es como funciona localStorage:
+  //   localStorage vive aislado por origen (dominio) Y por navegador/perfil.
+  //   Chrome en el PC y Chrome en el celular son DOS cajas de storage
+  //   totalmente separadas, aunque abran la misma URL — no existe ningun
+  //   mecanismo nativo del navegador que las sincronice sin backend. Lo
+  //   mismo pasa entre 2 navegadores distintos en la MISMA maquina (Chrome
+  //   vs Edge). Para que la preferencia manual "viajara" entre dispositivos
+  //   haria falta guardarla en un lugar compartido (ej. Supabase asociado al
+  //   usuario logueado) — eso es justo lo que esta etapa NO debe tocar
+  //   (cero backend, cero proveedor externo).
+  //   Lo que SI se resuelve sin backend: que el DEFAULT AUTOMATICO (sin
+  //   preferencia manual guardada en ESE dispositivo) sea razonable en
+  //   cualquier maquina — ver isDiegoDefaultMaleVoice() mas abajo.
+  //   Limite real que sigue existiendo aun con la heuristica: el catalogo de
+  //   voces de Android/Chrome movil no es el mismo que el de Windows — los
+  //   nombres "Alvaro"/"Jorge"/etc son voces de Microsoft (Windows), Android
+  //   normalmente solo expone "Google español" (motor de Google, sin
+  //   variante masculina conocida por nombre en la mayoria de los equipos).
+  //   Es decir: la heuristica puede acertar en PC/Windows y aun asi caer al
+  //   fallback generico (posiblemente femenino) en el celular, porque ahi
+  //   simplemente no hay ninguna voz masculina identificable por nombre.
   const PREFERRED_VOICE_KEY = 'diego_tts_preferred_voice';
 
   function readPreferredVoiceId() {
@@ -110,6 +133,21 @@
 
   function listVoices() {
     return state.voices.map((v) => ({ name: v.name, lang: v.lang, default: !!v.default }));
+  }
+
+  // window.DIEGO_TTS.listMaleVoiceCandidates() — de las voces cargadas en
+  // ESTE dispositivo/navegador, cuales matchean la heuristica masculina
+  // (isDiegoDefaultMaleVoice) y cual de ellas es la que realmente se usaria
+  // hoy como default (la primera que encuentra state.voices.find(), marcada
+  // aparte). Ayuda de consola pedida por Dusan, sin UI nueva.
+  function listMaleVoiceCandidates() {
+    const candidates = state.voices.filter(isDiegoDefaultMaleVoice);
+    const elegida = candidates[0] || null;
+    const rows = candidates.map((v) => ({ name: v.name, lang: v.lang, usadaComoDefault: v === elegida }));
+    if (typeof console !== 'undefined' && typeof console.table === 'function') {
+      console.table(rows.length ? rows : [{ name: '(ninguna voz masculina conocida en este catálogo)', lang: '-', usadaComoDefault: false }]);
+    }
+    return rows;
   }
 
   // Texto fijo de prueba local (14-jul-2026) — mismo texto para TODAS las
@@ -256,5 +294,6 @@
     listVoicesNumbered,
     previewVoice,
     setPreferredVoiceByIndex,
+    listMaleVoiceCandidates,
   };
 })();
