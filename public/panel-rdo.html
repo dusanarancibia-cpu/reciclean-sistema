@@ -11339,22 +11339,14 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
   <!-- ESPACIO DE PRUEBA · D-DIEGO-VOZ-CONVERSACIONAL-001 PR1 (PR #676, NO mergeado).
        Ayuda temporal para validación humana del dictado por voz. Se retira entero
-       (este bloque + su CSS) cuando el PR se cierra o se decide seguir a PR2. -->
-  <div class="diego-stt-test-banner hidden" id="diegoSttTestBanner">
+       (este bloque + su CSS) cuando el PR se cierra o se decide seguir a PR2.
+       Copy recortado a <=5 palabras visibles (PR #677 ajuste fino) — el detalle
+       completo (cómo probar + frases sugeridas) vive en el `title` (tooltip)
+       para no repetirlo como bloque visual largo. -->
+  <div class="diego-stt-test-banner hidden" id="diegoSttTestBanner" title="Hacé click en 🎙️ Prueba dictado (ícono punteado, junto al micrófono) → hablá → click de nuevo para detener → revisá el texto en el campo de escribir. No se envía solo. Frases sugeridas: &quot;sube cobre tercera en Maipú&quot; · &quot;qué precio tiene bronce amarillo en Cerrillos&quot; · &quot;convierte esto en oportunidad y avisa a Diego&quot; · &quot;tengo un reclamo por retiro en Puerto Montt&quot; · &quot;pesaje de fierro corto en Talca doscientos cincuenta kilos&quot;.">
     <div class="diego-stt-test-head">
-      <strong>🧪 PRUEBA — Dictado por voz (PR #676, sin mergear)</strong>
+      <strong>🧪 Prueba de dictado</strong>
       <button type="button" id="diegoSttTestClose" aria-label="Cerrar ayuda de prueba">✕</button>
-    </div>
-    <p>Hacé click en <strong>🎙️ Prueba dictado</strong> (el ícono con borde punteado, al lado del micrófono) → hablá → hacé click de nuevo para detener → revisá el texto en el campo de escribir de acá abajo. No se envía solo.</p>
-    <div class="diego-stt-test-frases">
-      <span>Frases sugeridas para probar:</span>
-      <ul>
-        <li>"sube cobre tercera en Maipú"</li>
-        <li>"qué precio tiene bronce amarillo en Cerrillos"</li>
-        <li>"convierte esto en oportunidad y avisa a Diego"</li>
-        <li>"tengo un reclamo por retiro en Puerto Montt"</li>
-        <li>"pesaje de fierro corto en Talca doscientos cincuenta kilos"</li>
-      </ul>
     </div>
   </div>
   <!-- PR2a D-DIEGO-VOZ-CONVERSACIONAL-001 · corrección de sucursales SIEMPRE
@@ -11876,7 +11868,13 @@ document.addEventListener('DOMContentLoaded', () => {
         tone: 'Cercano y firme, con foco en objetivos y excepciones.',
         emptyTitle: 'Diego puede bajar la estrategia a reclamos, oportunidades y tareas concretas.',
         emptySub: 'Recibe un ruido operativo, lo ordena, lo convierte en oportunidad cuando corresponde y empuja responsables, pendientes y siguiente movimiento.',
-        prompts: ['¿Qué está frenando los objetivos hoy?','Lista de trabajos que sí debemos asumir como oportunidad','¿Qué debe hacer cada responsable hoy?','Resume reclamos abiertos y su impacto','Calcula precio ejecutivo y dime si corresponde escalar'],
+        prompts: [
+          { label: 'Frenos', prompt: '¿Qué está frenando los objetivos hoy?' },
+          { label: 'Oportunidad', prompt: 'Lista de trabajos que sí debemos asumir como oportunidad' },
+          { label: 'Responsables', prompt: '¿Qué debe hacer cada responsable hoy?' },
+          { label: 'Reclamos', prompt: 'Resume reclamos abiertos y su impacto' },
+          { label: 'Precio', prompt: 'Calcula precio ejecutivo y dime si corresponde escalar' },
+        ],
       });
     }
     if (isComercial) {
@@ -11886,7 +11884,13 @@ document.addEventListener('DOMContentLoaded', () => {
         tone: 'Cercano y firme para clientes, precios y cierre.',
         emptyTitle: 'Diego puede convertir reclamos comerciales en oportunidades accionables.',
         emptySub: 'Sirve para levantar reclamos por precio, servicio, información o cobro y bajarlos a seguimiento, responsable y próximo cierre.',
-        prompts: ['Registrar reclamo por precio de cliente','¿Qué oportunidades comerciales siguen vivas?','¿Qué cobros debo empujar hoy?','¿Qué debe responder Andrea hoy?','Propón precio ejecutivo defendible para este cliente'],
+        prompts: [
+          { label: 'Precio', prompt: 'Registrar reclamo por precio de cliente' },
+          { label: 'Oportunidades', prompt: '¿Qué oportunidades comerciales siguen vivas?' },
+          { label: 'Cobros', prompt: '¿Qué cobros debo empujar hoy?' },
+          { label: 'Pendientes', prompt: '¿Qué debe responder Andrea hoy?' },
+          { label: 'Ejecutivo', prompt: 'Propón precio ejecutivo defendible para este cliente' },
+        ],
       });
     }
     if (isOps) {
@@ -11896,7 +11900,12 @@ document.addEventListener('DOMContentLoaded', () => {
         tone: 'Directo, ordenado y orientado a destrabar ejecución.',
         emptyTitle: 'Diego puede ordenar reclamos operativos y transformarlos en plan de trabajo.',
         emptySub: 'Incidentes, trabas, servicio, logística o panel se traducen en responsables, bloqueo, fecha y siguiente validación.',
-        prompts: ['Registrar traba operativa de hoy','¿Qué pendientes tiene el equipo en terreno?','Transforma este incidente en oportunidad','¿Qué debe hacer operaciones ahora?'],
+        prompts: [
+          { label: 'Trabas', prompt: 'Registrar traba operativa de hoy' },
+          { label: 'Pendientes', prompt: '¿Qué pendientes tiene el equipo en terreno?' },
+          { label: 'Incidente', prompt: 'Transforma este incidente en oportunidad' },
+          { label: 'Operaciones', prompt: '¿Qué debe hacer operaciones ahora?' },
+        ],
       });
     }
     if (isFinanzas) {
@@ -11906,7 +11915,12 @@ document.addEventListener('DOMContentLoaded', () => {
         tone: 'Claro y firme para cobros, pagos y cumplimiento financiero.',
         emptyTitle: 'Diego puede tomar reclamos de cobro o pago y bajarlos a gestión concreta.',
         emptySub: 'Ayuda a distinguir qué es reclamo, qué es riesgo y qué sí debe entrar a la lista de trabajo priorizada.',
-        prompts: ['Registrar reclamo por cobro pendiente','¿Qué pagos están trabados hoy?','¿Qué debe hacer finanzas esta semana?','Resume riesgos de cobranza abiertos'],
+        prompts: [
+          { label: 'Cobro', prompt: 'Registrar reclamo por cobro pendiente' },
+          { label: 'Pagos', prompt: '¿Qué pagos están trabados hoy?' },
+          { label: 'Finanzas', prompt: '¿Qué debe hacer finanzas esta semana?' },
+          { label: 'Cobranza', prompt: 'Resume riesgos de cobranza abiertos' },
+        ],
       });
     }
     if (isCumplimiento) {
@@ -11916,7 +11930,12 @@ document.addEventListener('DOMContentLoaded', () => {
         tone: 'Serio, claro y preventivo para no perder control documental.',
         emptyTitle: 'Diego puede capturar reclamos de documentos, permisos o información faltante.',
         emptySub: 'Luego los ordena en oportunidad, riesgo o pendiente documental con responsable y evidencia requerida.',
-        prompts: ['Registrar reclamo por documento faltante','¿Qué permisos o firmas están pendientes?','Convierte este hallazgo en plan de cumplimiento','¿Qué debe hacer cada responsable documental?'],
+        prompts: [
+          { label: 'Documento', prompt: 'Registrar reclamo por documento faltante' },
+          { label: 'Permisos', prompt: '¿Qué permisos o firmas están pendientes?' },
+          { label: 'Cumplimiento', prompt: 'Convierte este hallazgo en plan de cumplimiento' },
+          { label: 'Responsable', prompt: '¿Qué debe hacer cada responsable documental?' },
+        ],
       });
     }
     return getDiegoRoleConfig('general', {
@@ -11925,7 +11944,12 @@ document.addEventListener('DOMContentLoaded', () => {
       tone: 'Cercano, firme y orientado a claridad operativa.',
       emptyTitle: 'Diego puede recibir reclamos, ordenarlos y decir qué hacer después.',
       emptySub: 'Panel, precios, documentos, información, servicios, cobros, pagos o trabas: toma el caso y lo baja a responsable, prioridad y siguiente paso.',
-      prompts: ['Registrar reclamo del panel','¿Qué tareas tengo pendientes?','Convierte este reclamo en oportunidad','¿Qué debe hacer mi equipo hoy?'],
+      prompts: [
+        { label: 'Panel', prompt: 'Registrar reclamo del panel' },
+        { label: 'Pendientes', prompt: '¿Qué tareas tengo pendientes?' },
+        { label: 'Idea', prompt: 'Convierte este reclamo en oportunidad' },
+        { label: 'Equipo', prompt: '¿Qué debe hacer mi equipo hoy?' },
+      ],
     });
   }
   function getRoleExamples(profile) {
@@ -12604,9 +12628,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // D-DIEGO-MEJORA-CONTINUA-001 CL-015 · chips onboarding (rol-aware best-effort)
+  // Cada item es {label, prompt}: label = texto visible corto, prompt = accion
+  // completa que se envia a Diego al click (ajuste fino PR #677 — antes el chip
+  // mostraba el prompt entero como texto visible).
   function getOnboardingChips() {
     const profile = getDiegoRoleProfile();
-    const intake = getComplaintIntakePrompts().slice(0, 2).map(x => x.prompt);
+    const intake = getComplaintIntakePrompts().slice(0, 2);
     if (window.DIEGO_UI && typeof window.DIEGO_UI.getOnboardingChips === 'function') {
       return window.DIEGO_UI.getOnboardingChips({ profile, intakePrompts: intake });
     }
@@ -12648,7 +12675,7 @@ document.addEventListener('DOMContentLoaded', () => {
     warnDiegoLegacyFallback('render');
     // Fallback legado temporal mientras termina la extraccion modular de Diego.
     if (!history.length) {
-      const chips = getOnboardingChips().map(c => `<button type="button" data-chip="${esc(c)}">${esc(c)}</button>`).join('');
+      const chips = getOnboardingChips().map(c => `<button type="button" data-chip="${esc(c.prompt)}">${esc(c.label)}</button>`).join('');
       body.innerHTML = `<div class="diego-shell">
           <div class="diego-conversation">
             ${renderConversationHeader(null)}
