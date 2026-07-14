@@ -86,6 +86,46 @@
     return state.voices.map((v) => ({ name: v.name, lang: v.lang, default: !!v.default }));
   }
 
+  // Texto fijo de prueba local (14-jul-2026) — mismo texto para TODAS las
+  // voces, para que la comparacion entre ellas sea justa.
+  const PREVIEW_TEXT = 'Hola Dusan, buenos dias, tenemos que revisar los precios y los stock de cerrillos, puerto montt y maipu.';
+
+  // window.DIEGO_TTS.listVoicesNumbered() — misma lista que listVoices() pero
+  // numerada 1..N segun el orden actual de state.voices. El numero es estable
+  // MIENTRAS el catalogo cargado no cambie (no hay otro 'voiceschanged' de por
+  // medio entre llamadas) — alcanza para un test local en una sola sesion.
+  function listVoicesNumbered() {
+    const rows = state.voices.map((v, i) => ({ numero: i + 1, name: v.name, lang: v.lang, default: !!v.default }));
+    if (typeof console !== 'undefined' && typeof console.table === 'function') console.table(rows);
+    return rows;
+  }
+
+  function voiceByIndex(number) {
+    const idx = Number(number) - 1;
+    if (!Number.isInteger(idx) || idx < 0 || idx >= state.voices.length) {
+      return { ok: false, reason: `No hay voz con numero ${number}. Usa DIEGO_TTS.listVoicesNumbered() para ver el rango valido (1-${state.voices.length}).` };
+    }
+    return { ok: true, voice: state.voices[idx] };
+  }
+
+  // window.DIEGO_TTS.previewVoice(numero) — reproduce el texto fijo de prueba
+  // con la voz de ese numero, SIN tocar la preferencia guardada.
+  function previewVoice(number) {
+    const found = voiceByIndex(number);
+    if (!found.ok) return found;
+    const id = speak(PREVIEW_TEXT, { id: `preview-${number}`, voice: found.voice });
+    if (id == null) return { ok: false, reason: 'No se pudo reproducir (speechSynthesis no soportado o modulo no inicializado).' };
+    return { ok: true, number: Number(number), voice: { name: found.voice.name, lang: found.voice.lang, voiceURI: found.voice.voiceURI } };
+  }
+
+  // window.DIEGO_TTS.setPreferredVoiceByIndex(numero) — atajo de
+  // setPreferredVoice() usando el mismo numero que listVoicesNumbered().
+  function setPreferredVoiceByIndex(number) {
+    const found = voiceByIndex(number);
+    if (!found.ok) return found;
+    return setPreferredVoice(found.voice.voiceURI || found.voice.name);
+  }
+
   // window.DIEGO_TTS.setPreferredVoice('Google español' | voiceURI) — fija
   // preferencia manual. Requiere que la voz ya este en el catalogo cargado
   // (usar listVoices() primero); si no matchea nada, no guarda nada y avisa.
@@ -145,11 +185,11 @@
     utterance.lang = 'es-CL';
     utterance.rate = 1;
     utterance.pitch = 1;
-    // Si el navegador ya cargó voces nativas en español, fijar la mejor
-    // disponible. Si no hay ninguna (voces vacías o sin match es-*), queda
-    // sin `voice` fijada — mismo comportamiento de siempre: el navegador usa
-    // su default para utterance.lang='es-CL'.
-    const bestVoice = pickBestVoice();
+    // options.voice fuerza una voz puntual (usado por previewVoice() para
+    // probar una voz especifica sin tocar la preferencia guardada). Sin eso,
+    // sigue el criterio de siempre: preferencia manual -> automatico es-CL/
+    // es-ES/es-* -> sin `voice` fijada (default del navegador).
+    const bestVoice = options.voice || pickBestVoice();
     if (bestVoice) utterance.voice = bestVoice;
 
     utterance.onstart = function () {
@@ -187,5 +227,8 @@
     listVoices,
     setPreferredVoice,
     clearPreferredVoice,
+    listVoicesNumbered,
+    previewVoice,
+    setPreferredVoiceByIndex,
   };
 })();
