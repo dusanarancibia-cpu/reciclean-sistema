@@ -63,28 +63,40 @@
     return state.voices.find((v) => v.voiceURI === storedId || v.name === storedId) || null;
   }
 
-  // Prioridad: preferencia manual (si sigue existiendo) -> es-CL exacto ->
-  // es-ES exacto -> cualquier es-* -> null (fallback: utterance.lang='es-CL'
-  // sin voice fijada, mismo comportamiento de siempre).
-  // Voz por defecto elegida por Dusan (14-jul-2026, prueba local con
-  // previewVoice) dentro del selector AUTOMATICO — no es preferencia manual,
-  // por eso sigue perdiendo contra findPreferredVoice(). Match por nombre
-  // (substring, no exacto) + lang normalizado: el string completo de la voz
-  // varia entre versiones de Windows/navegador (ej. "Microsoft Sabina
-  // Desktop - Spanish (Mexico)" en algunos equipos), un match exacto seria
-  // hardcode fragil que se rompe con cualquier variante.
-  function isDefaultPreferredVoice(v) {
+  // Coherencia de personaje (14-jul-2026): Diego es un personaje masculino —
+  // "Sabina" (voz femenina, es-MX) quedó mal elegida en la pasada anterior y
+  // se retira como default. La Web Speech API NO expone género como campo de
+  // SpeechSynthesisVoice — no hay forma de preguntarle a una voz si es
+  // masculina; el nombre es la única señal real disponible. Lista acotada a
+  // nombres reales y documentados de voces masculinas en español del
+  // catálogo Microsoft (voces "naturales" de Windows 10/11 + Edge/Chrome
+  // sobre Windows, y SAPI5 legado donde aplica) — no es una lista inventada:
+  //   es-ES: Alvaro (neural) · Pablo (legado SAPI5 Desktop)
+  //   es-MX: Jorge (neural)
+  //   es-US: Alonso (neural)
+  //   es-AR: Tomas (neural) · es-CO: Gonzalo (neural)
+  //   es-CL: Lorenzo (neural) · es-VE: Sebastian (neural) · es-UY: Mateo (neural)
+  // Si el equipo real no tiene ninguna de estas instalada, no hay falso
+  // positivo: cae con gracia a la prioridad automática de siempre.
+  const MALE_VOICE_NAMES = ['alvaro', 'pablo', 'jorge', 'alonso', 'tomas', 'gonzalo', 'lorenzo', 'sebastian', 'mateo'];
+
+  function isDiegoDefaultMaleVoice(v) {
     const name = String(v?.name || '').toLowerCase();
-    return name.includes('sabina') && normalizeLang(v?.lang) === 'es-mx';
+    if (!normalizeLang(v?.lang).startsWith('es')) return false;
+    return MALE_VOICE_NAMES.some((n) => name.includes(n));
   }
 
+  // Prioridad: preferencia manual (si sigue existiendo, gana siempre) ->
+  // voz masculina conocida en español (coherencia de personaje) -> es-CL
+  // exacto -> es-ES exacto -> cualquier es-* -> null (fallback: utterance.
+  // lang='es-CL' sin voice fijada, mismo comportamiento de siempre).
   function pickBestVoice() {
     const voices = state.voices;
     if (!voices || !voices.length) return null;
     const preferred = findPreferredVoice();
     if (preferred) return preferred;
-    const defaultPreferred = voices.find(isDefaultPreferredVoice);
-    if (defaultPreferred) return defaultPreferred;
+    const maleDefault = voices.find(isDiegoDefaultMaleVoice);
+    if (maleDefault) return maleDefault;
     const byLang = (target) => voices.find((v) => normalizeLang(v.lang) === target);
     return byLang('es-cl') || byLang('es-es') || voices.find((v) => normalizeLang(v.lang).startsWith('es')) || null;
   }

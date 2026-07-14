@@ -11028,9 +11028,12 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- ===== Diego FAB v6 · chat inteligente (D-DIEGO-PROMPT-V6) ===== -->
 <style>
   /* Sube el FAB (ajuste Dusan 14-jul-2026): antes quedaba pegado al borde
-     inferior y se perdía detrás de barras/otros elementos fijos en móvil. */
-  .diego-fab{position:fixed;right:max(24px, env(safe-area-inset-right));bottom:calc(env(safe-area-inset-bottom, 0px) + 96px);width:60px;height:60px;background:linear-gradient(135deg,#fde047,#eab308);color:#1f2937;border-radius:50%;border:1px solid #ca8a04;box-shadow:0 16px 32px -12px rgba(202,138,4,.7);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;z-index:94}
-  .diego-fab:hover{transform:scale(1.08);box-shadow:0 18px 36px -12px rgba(202,138,4,.8)}
+     inferior y se perdía detrás de barras/otros elementos fijos en móvil.
+     2da pasada (mismo día): más grande + glow permanente — la 1ra pasada
+     (solo mover+amarillo) no se notó lo suficiente en uso real. */
+  .diego-fab{position:fixed;right:max(24px, env(safe-area-inset-right));bottom:calc(env(safe-area-inset-bottom, 0px) + 96px);width:66px;height:66px;background:linear-gradient(135deg,#fde047,#eab308);color:#1f2937;border-radius:50%;border:2px solid #ca8a04;box-shadow:0 16px 32px -10px rgba(202,138,4,.85);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;z-index:94;animation:diegoInviteGlow 2.6s ease-in-out infinite}
+  .diego-fab:hover{transform:scale(1.08);box-shadow:0 18px 36px -8px rgba(202,138,4,.95);animation-play-state:paused}
+  @keyframes diegoInviteGlow{0%,100%{box-shadow:0 16px 32px -10px rgba(202,138,4,.85),0 0 0 0 rgba(234,179,8,.55)}50%{box-shadow:0 16px 32px -10px rgba(202,138,4,.85),0 0 0 10px rgba(234,179,8,0)}}
   .diego-fab-badge{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 6px;background:#ef4444;color:#fff;border-radius:10px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
   .diego-fab-badge.hidden{display:none}
   .diego-fab-label{position:absolute;right:70px;top:50%;transform:translateY(-50%);background:#0f172a;color:#fff;padding:6px 12px;border-radius:8px;font-size:13px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s ease}
@@ -11193,8 +11196,12 @@ document.addEventListener('DOMContentLoaded', () => {
      14-jul-2026): circular, amarillo, más grande que el resto de attach-btn
      para que sea el más fácil de tocar. Entrada normal, no modo prueba
      (cierre de etapa 14-jul-2026, sigue vigente). */
-  .diego-stt-btn{cursor:pointer;border-style:solid !important;width:56px !important;min-width:56px;height:56px;padding:0 !important;gap:0 !important;border-radius:50% !important;background:#facc15 !important;border-color:#f59e0b !important;color:#1f2937 !important;box-shadow:0 10px 22px -14px rgba(234,179,8,.9)}
-  .diego-stt-btn svg{width:24px;height:24px}
+  /* 2da pasada mismo día — más grande + glow permanente en reposo, para que
+     quede protagonista de verdad (la 1ra pasada de tamaño/color no se notó
+     lo suficiente en uso real). */
+  .diego-stt-btn{cursor:pointer;border-style:solid !important;width:64px !important;min-width:64px;height:64px;padding:0 !important;gap:0 !important;border-radius:50% !important;background:#facc15 !important;border-color:#f59e0b !important;color:#1f2937 !important;box-shadow:0 12px 26px -12px rgba(234,179,8,1);animation:diegoInviteGlow 2.6s ease-in-out infinite}
+  .diego-stt-btn svg{width:28px;height:28px}
+  .diego-stt-btn:hover{animation-play-state:paused}
   .diego-stt-btn.listening{background:#f59e0b !important;color:#111827 !important;border-color:#d97706 !important;animation:pulse-rec 1.2s ease-in-out infinite}
   /* PR2a · nota de corrección de sucursal SIEMPRE visible (nunca en silencio) */
   #diegoSttCorreccionNote.hidden{display:none}
@@ -11209,10 +11216,14 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-chat-form button.send{background:#059669;color:#fff;border:0;border-radius:24px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
   .diego-chat-form button.send:disabled{opacity:.5;cursor:not-allowed}
   /* Adjuntar: acción secundaria, fuera de la fila principal (ajuste Dusan 14-jul-2026) */
-  .diego-composer-secondary{display:flex;justify-content:flex-start;padding:0 12px 8px;background:#fff}
-  #diegoAttachBtn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:#f8fafc;color:#475569;border:1px solid #dbe3ee;cursor:pointer}
-  #diegoAttachBtn:hover{background:#eef2f7;color:#0f172a;border-color:#cbd5e1}
-  #diegoAttachBtn span{font-size:12px;font-weight:600;white-space:nowrap}
+  /* 2da pasada mismo día — más separado (border-top + padding) y más
+     discreto (ghost, sin fondo/borde, gris apagado) para que la jerarquía
+     principal/secundaria se note de verdad frente al mic protagonista. */
+  .diego-composer-secondary{display:flex;justify-content:flex-start;padding:6px 12px 6px;background:#fff;border-top:1px dashed #eef1f5}
+  #diegoAttachBtn{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:8px;background:transparent;color:#94a3b8;border:0;cursor:pointer;opacity:.85}
+  #diegoAttachBtn:hover{background:#f1f5f9;color:#475569;opacity:1}
+  #diegoAttachBtn svg{width:14px;height:14px}
+  #diegoAttachBtn span{font-size:11px;font-weight:500;white-space:nowrap}
   .diego-attach-preview{padding:6px 10px;background:#eff6ff;border-top:1px solid #dbeafe;font-size:11px;color:#1e40af;display:flex;justify-content:space-between;align-items:center}
   .diego-attach-preview button{background:none;border:0;color:#1e40af;cursor:pointer;font-size:14px}
   .diego-drag-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(5,150,105,.9);color:#fff;display:none;align-items:center;justify-content:center;font-weight:600;font-size:14px;border-radius:12px;z-index:5}
@@ -11254,7 +11265,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .diego-chat{left:0;right:0;bottom:0;width:100%;max-width:100%;transform:none;max-height:84vh;border-radius:16px 16px 0 0}
     .diego-chat-h{cursor:default}
     .diego-chat-resize,.diego-chat-corner-resize{display:none !important}
-    .diego-fab{right:16px;bottom:calc(env(safe-area-inset-bottom, 0px) + 108px);width:58px;height:58px}
+    .diego-fab{right:16px;bottom:calc(env(safe-area-inset-bottom, 0px) + 108px);width:62px;height:62px}
     .diego-msg{max-width:88%;font-size:14px}
     .diego-shell{grid-template-columns:1fr}
     .diego-conversation{padding:12px 12px 8px}
@@ -11266,8 +11277,8 @@ document.addEventListener('DOMContentLoaded', () => {
     .diego-side-nav{grid-template-columns:1fr}
     .diego-side-actions button{width:100%;justify-content:flex-start}
     .diego-chat-form{gap:8px;padding:10px 10px 6px}
-    .diego-stt-btn{width:54px !important;min-width:54px;height:54px}
-    .diego-composer-secondary{padding:0 10px 8px}
+    .diego-stt-btn{width:58px !important;min-width:58px;height:58px}
+    .diego-composer-secondary{padding:2px 10px 8px}
   }
   /* D-DIEGO-LEGAL-IA-001 · Modal banner consentimiento IA */
   .ia-consent-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.85); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 16px; }
@@ -11301,7 +11312,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <button class="diego-fab" id="diegoFab" type="button" aria-label="Abrir chat Diego" style="display:none">
-  <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+  <svg width="30" height="30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
   <span class="diego-fab-label">Diego — pregúntame</span>
   <span class="diego-fab-badge hidden" id="diegoFabBadge" role="button" tabindex="0" aria-label="Ver tareas pendientes">0</span>
 </button>
