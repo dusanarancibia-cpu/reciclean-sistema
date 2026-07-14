@@ -44,6 +44,29 @@
   // BD ni backend. Se guarda el voiceURI (o el name si el navegador no expone
   // voiceURI) porque es el identificador mas estable entre recargas de la
   // misma maquina/navegador.
+  //
+  // LIMITE ESTRUCTURAL (14-jul-2026, hallazgo real Dusan: PC y movil suenan
+  // distinto) — no es un bug, es como funciona localStorage:
+  //   localStorage vive aislado por origen (dominio) Y por navegador/perfil.
+  //   Chrome en el PC y Chrome en el celular son DOS cajas de storage
+  //   totalmente separadas, aunque abran la misma URL — no existe ningun
+  //   mecanismo nativo del navegador que las sincronice sin backend. Lo
+  //   mismo pasa entre 2 navegadores distintos en la MISMA maquina (Chrome
+  //   vs Edge). Para que la preferencia manual "viajara" entre dispositivos
+  //   haria falta guardarla en un lugar compartido (ej. Supabase asociado al
+  //   usuario logueado) — eso es justo lo que esta etapa NO debe tocar
+  //   (cero backend, cero proveedor externo).
+  //   Lo que SI se resuelve sin backend: que el DEFAULT AUTOMATICO (sin
+  //   preferencia manual guardada en ESE dispositivo) sea razonable en
+  //   cualquier maquina — ver isDiegoDefaultMaleVoice() mas abajo.
+  //   Limite real que sigue existiendo aun con la heuristica: el catalogo de
+  //   voces de Android/Chrome movil no es el mismo que el de Windows — los
+  //   nombres "Alvaro"/"Jorge"/etc son voces de Microsoft (Windows), Android
+  //   normalmente solo expone "Google español" (motor de Google, sin
+  //   variante masculina conocida por nombre en la mayoria de los equipos).
+  //   Es decir: la heuristica puede acertar en PC/Windows y aun asi caer al
+  //   fallback generico (posiblemente femenino) en el celular, porque ahi
+  //   simplemente no hay ninguna voz masculina identificable por nombre.
   const PREFERRED_VOICE_KEY = 'diego_tts_preferred_voice';
 
   function readPreferredVoiceId() {
@@ -80,15 +103,76 @@
   // positivo: cae con gracia a la prioridad automática de siempre.
   const MALE_VOICE_NAMES = ['alvaro', 'pablo', 'jorge', 'alonso', 'tomas', 'gonzalo', 'lorenzo', 'sebastian', 'mateo'];
 
+  // Refuerzo movil (14-jul-2026, hallazgo real Dusan: PC ya suena masculino,
+  // movil sigue sonando femenino/generico). 3 señales adicionales, todas
+  // honestas — ninguna inventa genero donde el catalogo no da ninguna pista:
+  //
+  // 1. Chequear v.voiceURI ademas de v.name — algunos motores (sobre todo en
+  //    Android, donde el motor real suele ser Google TTS o el del fabricante)
+  //    ponen la info descriptiva en voiceURI y no en name, o al reves segun
+  //    version de Chrome/WebView.
+  // 2. Palabras de genero explicitas ("masculin", "hombre", "varon", " male")
+  //    — legitimo en CUALQUIER plataforma: si un motor (Android, Samsung TTS,
+  //    algun engine de terceros) etiqueta la voz con esa palabra literal, es
+  //    señal real, no inventada. "male" lleva espacio/limite delante para no
+  //    matchear como substring de "female"/"femenino".
+  // 3. Exclusion de nombres femeninos CONOCIDOS cuando hay alternativa en el
+  //    mismo nivel de idioma — no es lo mismo que "adivinar cual es macho":
+  //    es "evitar la que se sabe que es mujer" cuando el catalogo ofrece mas
+  //    de una opcion es-* en ese dispositivo. Si esa es la UNICA voz de ese
+  //    idioma disponible, se usa igual — mejor una voz femenina real que
+  //    ningun audio (fallback con gracia sigue vigente).
+  //
+  // Limite real que esto NO resuelve: si Android/Chrome del equipo solo
+  // expone UNA voz en español sin ningun nombre ni palabra de genero (caso
+  // tipico: "Google español" pelado), no hay señal de ningun tipo — ahi se
+  // usa esa unica voz tal cual, sin fingir que sabemos su genero.
+  const FEMALE_VOICE_NAMES = ['sabina', 'helena', 'elvira', 'dalia', 'paloma', 'salome', 'catalina', 'monica', 'laura', 'raquel', 'camila', 'lucia', 'valeria'];
+
+  function voiceHaystack(v) {
+    return `${v?.name || ''} ${v?.voiceURI || ''}`.toLowerCase();
+  }
+
+  // "male" es sustring de "female" — un includes() plano matchearia
+  // "Microsoft Voice Female" como si fuera masculina. \bmale\b exige limite
+  // de palabra en ambos lados: en "female" no hay limite entre 'e' y 'm'
+  // (ambos son caracteres de palabra), asi que el regex NO matchea ahi, pero
+  // SI matchea separadores reales tipicos de voiceURI (punto, guion, espacio,
+  // guion bajo) como "es.male.v2" o "es-ES-male-1".
+  const MALE_WORD_RE = /\bmale\b/;
+
+  function hasExplicitGenderWord(haystack, plainWords) {
+    if (MALE_WORD_RE.test(haystack)) return true;
+    return plainWords.some((w) => haystack.includes(w));
+  }
+
   function isDiegoDefaultMaleVoice(v) {
-    const name = String(v?.name || '').toLowerCase();
     if (!normalizeLang(v?.lang).startsWith('es')) return false;
-    return MALE_VOICE_NAMES.some((n) => name.includes(n));
+    const haystack = voiceHaystack(v);
+    if (MALE_VOICE_NAMES.some((n) => haystack.includes(n))) return true;
+    if (hasExplicitGenderWord(haystack, ['masculin', 'hombre', 'varon'])) return true;
+    return false;
+  }
+
+  function isKnownFemaleVoiceName(v) {
+    const haystack = voiceHaystack(v);
+    if (haystack.includes('femenin') || haystack.includes('female')) return true;
+    return FEMALE_VOICE_NAMES.some((n) => haystack.includes(n));
+  }
+
+  // Entre varias voces del MISMO nivel de idioma, prefiere una que no sea
+  // conocida como femenina si hay alternativa — no inventa cual es "el
+  // macho", solo evita la que se sabe que no lo es. Si la unica opcion
+  // disponible es la femenina conocida, se usa igual (fallback con gracia).
+  function pickAvoidingKnownFemale(candidates) {
+    if (!candidates.length) return null;
+    return candidates.find((v) => !isKnownFemaleVoiceName(v)) || candidates[0];
   }
 
   // Prioridad: preferencia manual (si sigue existiendo, gana siempre) ->
-  // voz masculina conocida en español (coherencia de personaje) -> es-CL
-  // exacto -> es-ES exacto -> cualquier es-* -> null (fallback: utterance.
+  // voz masculina conocida en español (nombre, voiceURI o palabra de genero
+  // explicita) -> es-CL (evitando femeninas conocidas si hay alternativa) ->
+  // es-ES (idem) -> cualquier es-* (idem) -> null (fallback: utterance.
   // lang='es-CL' sin voice fijada, mismo comportamiento de siempre).
   function pickBestVoice() {
     const voices = state.voices;
@@ -97,8 +181,9 @@
     if (preferred) return preferred;
     const maleDefault = voices.find(isDiegoDefaultMaleVoice);
     if (maleDefault) return maleDefault;
-    const byLang = (target) => voices.find((v) => normalizeLang(v.lang) === target);
-    return byLang('es-cl') || byLang('es-es') || voices.find((v) => normalizeLang(v.lang).startsWith('es')) || null;
+    const byLang = (target) => pickAvoidingKnownFemale(voices.filter((v) => normalizeLang(v.lang) === target));
+    const anyEs = voices.filter((v) => normalizeLang(v.lang).startsWith('es'));
+    return byLang('es-cl') || byLang('es-es') || pickAvoidingKnownFemale(anyEs) || null;
   }
 
   // Inspección simple desde consola: window.DIEGO_TTS.getSelectedVoice() /
@@ -110,6 +195,21 @@
 
   function listVoices() {
     return state.voices.map((v) => ({ name: v.name, lang: v.lang, default: !!v.default }));
+  }
+
+  // window.DIEGO_TTS.listMaleVoiceCandidates() — de las voces cargadas en
+  // ESTE dispositivo/navegador, cuales matchean la heuristica masculina
+  // (isDiegoDefaultMaleVoice) y cual de ellas es la que realmente se usaria
+  // hoy como default (la primera que encuentra state.voices.find(), marcada
+  // aparte). Ayuda de consola pedida por Dusan, sin UI nueva.
+  function listMaleVoiceCandidates() {
+    const candidates = state.voices.filter(isDiegoDefaultMaleVoice);
+    const elegida = candidates[0] || null;
+    const rows = candidates.map((v) => ({ name: v.name, lang: v.lang, usadaComoDefault: v === elegida }));
+    if (typeof console !== 'undefined' && typeof console.table === 'function') {
+      console.table(rows.length ? rows : [{ name: '(ninguna voz masculina conocida en este catálogo)', lang: '-', usadaComoDefault: false }]);
+    }
+    return rows;
   }
 
   // Texto fijo de prueba local (14-jul-2026) — mismo texto para TODAS las
@@ -256,5 +356,6 @@
     listVoicesNumbered,
     previewVoice,
     setPreferredVoiceByIndex,
+    listMaleVoiceCandidates,
   };
 })();
