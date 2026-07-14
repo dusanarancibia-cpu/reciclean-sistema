@@ -11430,10 +11430,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatHeader = chatWin?.querySelector('.diego-chat-h');
   const DIEGO_CHAT_UI_KEY = 'diego_chat_ui_v2';
   const DIEGO_CHAT_MIN_WIDTH = 360;
-  // 420, no 320: header(~52)+resize(12)+form(~54)+footer bug-link(~24) = ~142px de
-  // chrome fijo (flex-shrink:0) + .diego-chat-body min-height:220px = ~362px reales.
-  // Con 320 el composer quedaba parcialmente tapado por overflow:hidden al resizear al mínimo.
-  const DIEGO_CHAT_MIN_HEIGHT = 420;
+  // Piso absoluto de seguridad — el mínimo REAL se calcula dinámico en
+  // getDiegoChatMinHeight() porque el chrome fijo (header/form/banners) varía:
+  // el banner de prueba STT, la nota de corrección o el preview de voz pueden
+  // estar visibles o no. Un número fijo (probado con 320 y con 420) se quedaba
+  // corto apenas el banner STT estaba abierto y tapaba el composer.
+  const DIEGO_CHAT_MIN_HEIGHT_FLOOR = 360;
+  const DIEGO_CHAT_BODY_MIN_HEIGHT = 220; // debe calzar con .diego-chat-body{min-height:220px}
   const DIEGO_CHAT_VIEWPORT_MARGIN = 12;
   let dragState = null;
   let resizeState = null;
@@ -11473,13 +11476,24 @@ document.addEventListener('DOMContentLoaded', () => {
   function hasStoredDesktopRect() {
     return [chatUiState.left, chatUiState.top, chatUiState.width, chatUiState.height].every(Number.isFinite);
   }
+  // Suma la altura real de todo lo que NO es .diego-chat-body (header, resize
+  // handle, banners de voz/prueba si están abiertos, form, footer). Los hijos
+  // ocultos (display:none) aportan 0 solos — se autoajusta sin listar casos.
+  function getDiegoChatMinHeight() {
+    let chrome = 0;
+    Array.from(win.children).forEach((child) => {
+      if (child.id === 'diegoChatBody') return;
+      chrome += child.offsetHeight;
+    });
+    return Math.max(DIEGO_CHAT_MIN_HEIGHT_FLOOR, chrome + DIEGO_CHAT_BODY_MIN_HEIGHT);
+  }
   function sanitizeDesktopRect(rect) {
     const margin = DIEGO_CHAT_VIEWPORT_MARGIN;
     const viewportWidth = Math.max(window.innerWidth, 320);
     const viewportHeight = Math.max(window.innerHeight, 320);
     const minWidth = Math.min(DIEGO_CHAT_MIN_WIDTH, Math.max(280, viewportWidth - (margin * 2)));
     const maxWidth = Math.max(minWidth, viewportWidth - (margin * 2));
-    const minHeight = Math.min(DIEGO_CHAT_MIN_HEIGHT, Math.max(260, viewportHeight - (margin * 2)));
+    const minHeight = Math.min(getDiegoChatMinHeight(), Math.max(260, viewportHeight - (margin * 2)));
     const maxHeight = Math.max(minHeight, viewportHeight - (margin * 2));
     const width = clamp(toFiniteNumber(rect?.width) ?? Math.min(880, viewportWidth - 32), minWidth, maxWidth);
     const height = clamp(toFiniteNumber(rect?.height) ?? Math.min(Math.round(viewportHeight * 0.74), viewportHeight - (margin * 2)), minHeight, maxHeight);
