@@ -37,13 +37,17 @@
     window.speechSynthesis.cancel();
 
     const id = options.id != null ? options.id : Date.now();
+    // currentId se setea ACÁ, síncrono, no en onstart — algunos navegadores (o
+    // este entorno de test) tardan en disparar onstart, y un 2do click rápido en
+    // el mismo botón (para "Detener") tiene que ver el id ya activo, no null.
+    state.currentId = id;
+
     const utterance = new SpeechSynthesisUtterance(clean);
     utterance.lang = 'es-CL';
     utterance.rate = 1;
     utterance.pitch = 1;
 
     utterance.onstart = function () {
-      state.currentId = id;
       if (typeof options.onStart === 'function') options.onStart(id);
     };
     utterance.onend = function () {
