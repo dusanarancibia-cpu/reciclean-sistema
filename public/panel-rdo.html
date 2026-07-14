@@ -3403,159 +3403,171 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 xl:grid-cols-[0.85fr,1.15fr] gap-4 mb-4" id="mpStrategyBox">
-        <div class="bg-white border border-stone-300 rounded-xl p-4">
-          <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Estrategia activa</div>
-          <div class="flex items-start justify-between gap-3">
+      <div class="bg-white border border-stone-300 rounded-xl p-4 mb-4" id="mpStrategyBox">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3 flex-wrap">
             <div>
-              <h3 class="text-sm font-bold text-stone-700">Criterio comercial en uso</h3>
-              <p class="text-xs text-stone-500 mt-1">La mesa decide con un juego explicito, no por intuicion dispersa.</p>
+              <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Estrategia activa</div>
+              <span id="mpStrategyBadge" class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-semibold">Cargando…</span>
             </div>
-            <span id="mpStrategyBadge" class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-semibold">Cargando…</span>
+            <div class="text-sm font-medium text-stone-700 max-w-xl" id="mpStrategyUse">Cargando criterio…</div>
           </div>
-          <label for="mpStrategySelect" class="block text-xs text-stone-500 mt-4 mb-1">Cambiar estrategia</label>
-          <select id="mpStrategySelect" class="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700">
-            <option value="">Cargando…</option>
-          </select>
-          <div class="mt-3 text-sm font-medium text-stone-700" id="mpStrategyUse">Cargando criterio…</div>
-          <div class="mt-3 rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-sm font-semibold leading-5 text-violet-900" id="mpStrategyApplied">Sin lectura aplicada al material actual.</div>
-          <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">Que significa ahora</div>
-              <div class="text-sm font-semibold leading-5 text-sky-950" id="mpStrategyMeaning">—</div>
-            </div>
-            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Ejemplo en cristiano</div>
-              <div class="text-sm font-semibold leading-5 text-emerald-950" id="mpStrategyExample">—</div>
-            </div>
-            <div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 mb-1">Tiempo sugerido</div>
-              <div class="text-sm font-semibold leading-5 text-amber-950" id="mpStrategyTime">—</div>
-            </div>
-          </div>
-          <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-indigo-700 mb-1">Operar ahora</div>
-              <div class="text-sm font-semibold leading-5 text-indigo-950" id="mpStrategyOperate">—</div>
-            </div>
-            <div class="rounded-xl border border-fuchsia-200 bg-fuchsia-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-fuchsia-700 mb-1">Publicar ahora</div>
-              <div class="text-sm font-semibold leading-5 text-fuchsia-950" id="mpStrategyPublicNow">—</div>
-            </div>
-            <div class="rounded-xl border border-stone-300 bg-stone-100 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-600 mb-1">Regla de publicacion</div>
-              <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyPublishRule">—</div>
-            </div>
-          </div>
-          <div class="mt-3 rounded-xl border border-stone-300 bg-stone-50 px-3 py-3">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-2">Politica de publicacion inteligente</div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-              <div class="rounded-xl border border-emerald-200 bg-white px-3 py-3">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">1. Publicacion por defecto</div>
-                <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyPublishDefault">—</div>
-              </div>
-              <div class="rounded-xl border border-amber-200 bg-white px-3 py-3">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 mb-1">2. Vigencia tactica</div>
-                <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyTacticalWindow">—</div>
-              </div>
-              <div class="rounded-xl border border-sky-200 bg-white px-3 py-3">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">3. Excepcion por sucursal</div>
-                <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyBranchException">—</div>
-              </div>
-              <div class="rounded-xl border border-rose-200 bg-white px-3 py-3">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-rose-700 mb-1">4. Criterio de salida</div>
-                <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyExitVisible">—</div>
-              </div>
-            </div>
-          </div>
-          <div id="mpArchitectureShell" class="mt-3"></div>
-          <div class="mt-3 rounded-xl border border-stone-300 bg-stone-900 px-3 py-3 text-sm text-white">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-300 mb-1">Mapa de roles</div>
-            <div class="text-sm font-semibold leading-5 text-white" id="mpStrategyRoleSummary">Lista publica · Ejecutivo opera · Maximo techa</div>
-          </div>
-          <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Lista = publicado</div>
-              <div class="text-sm font-semibold leading-5 text-emerald-950" id="mpStrategyListRole">—</div>
-            </div>
-            <div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">Ejecutivo = operativo</div>
-              <div class="text-sm font-semibold leading-5 text-sky-950" id="mpStrategyExecutiveRole">—</div>
-            </div>
-            <div class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-rose-700 mb-1">Maximo = techo</div>
-              <div class="text-sm font-semibold leading-5 text-rose-950" id="mpStrategyMaxRole">—</div>
-            </div>
+          <div class="flex items-center gap-2">
+            <label for="mpStrategySelect" class="sr-only">Cambiar estrategia</label>
+            <select id="mpStrategySelect" class="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700">
+              <option value="">Cargando…</option>
+            </select>
           </div>
         </div>
-        <div class="bg-white border border-stone-300 rounded-xl p-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+        <details class="mt-3">
+          <summary class="text-xs text-sky-700 underline cursor-pointer select-none w-fit">Ver detalle</summary>
+          <div class="mt-3 grid grid-cols-1 xl:grid-cols-[0.85fr,1.15fr] gap-4">
             <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Objetivo</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyObjective">—</div>
+              <div class="rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-sm font-semibold leading-5 text-violet-900" id="mpStrategyApplied">Sin lectura aplicada al material actual.</div>
+              <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">Que significa ahora</div>
+                  <div class="text-sm font-semibold leading-5 text-sky-950" id="mpStrategyMeaning">—</div>
+                </div>
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Ejemplo en cristiano</div>
+                  <div class="text-sm font-semibold leading-5 text-emerald-950" id="mpStrategyExample">—</div>
+                </div>
+                <div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 mb-1">Tiempo sugerido</div>
+                  <div class="text-sm font-semibold leading-5 text-amber-950" id="mpStrategyTime">—</div>
+                </div>
+              </div>
+              <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-indigo-700 mb-1">Operar ahora</div>
+                  <div class="text-sm font-semibold leading-5 text-indigo-950" id="mpStrategyOperate">—</div>
+                </div>
+                <div class="rounded-xl border border-fuchsia-200 bg-fuchsia-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-fuchsia-700 mb-1">Publicar ahora</div>
+                  <div class="text-sm font-semibold leading-5 text-fuchsia-950" id="mpStrategyPublicNow">—</div>
+                </div>
+                <div class="rounded-xl border border-stone-300 bg-stone-100 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-600 mb-1">Regla de publicacion</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyPublishRule">—</div>
+                </div>
+              </div>
+              <div class="mt-3 rounded-xl border border-stone-300 bg-stone-50 px-3 py-3">
+                <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-2">Politica de publicacion inteligente</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div class="rounded-xl border border-emerald-200 bg-white px-3 py-3">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">1. Publicacion por defecto</div>
+                    <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyPublishDefault">—</div>
+                  </div>
+                  <div class="rounded-xl border border-amber-200 bg-white px-3 py-3">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 mb-1">2. Vigencia tactica</div>
+                    <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyTacticalWindow">—</div>
+                  </div>
+                  <div class="rounded-xl border border-sky-200 bg-white px-3 py-3">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">3. Excepcion por sucursal</div>
+                    <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyBranchException">—</div>
+                  </div>
+                  <div class="rounded-xl border border-rose-200 bg-white px-3 py-3">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-rose-700 mb-1">4. Criterio de salida</div>
+                    <div class="text-sm font-semibold leading-5 text-stone-900" id="mpStrategyExitVisible">—</div>
+                  </div>
+                </div>
+              </div>
+              <div id="mpArchitectureShell" class="mt-3"></div>
+              <div class="mt-3 rounded-xl border border-stone-300 bg-stone-900 px-3 py-3 text-sm text-white">
+                <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-300 mb-1">Mapa de roles</div>
+                <div class="text-sm font-semibold leading-5 text-white" id="mpStrategyRoleSummary">Lista publica · Ejecutivo opera · Maximo techa</div>
+              </div>
+              <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Lista = publicado</div>
+                  <div class="text-sm font-semibold leading-5 text-emerald-950" id="mpStrategyListRole">—</div>
+                </div>
+                <div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">Ejecutivo = operativo</div>
+                  <div class="text-sm font-semibold leading-5 text-sky-950" id="mpStrategyExecutiveRole">—</div>
+                </div>
+                <div class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-3">
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-rose-700 mb-1">Maximo = techo</div>
+                  <div class="text-sm font-semibold leading-5 text-rose-950" id="mpStrategyMaxRole">—</div>
+                </div>
+              </div>
             </div>
             <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Segmento foco</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategySegment">—</div>
-            </div>
-            <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Politica de publicacion</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyPublish">—</div>
-            </div>
-            <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Politica de precio</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyPrice">—</div>
-            </div>
-            <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Politica de servicio</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyService">—</div>
-            </div>
-            <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Materiales foco</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyMaterial">—</div>
-            </div>
-            <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Apoyo por sucursal</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyBranch">—</div>
-            </div>
-            <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Ventana de uso</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyWindow">—</div>
-            </div>
-            <div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Condicion de salida</div>
-              <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyExit">—</div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Objetivo</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyObjective">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Segmento foco</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategySegment">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Politica de publicacion</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyPublish">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Politica de precio</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyPrice">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Politica de servicio</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyService">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Materiales foco</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyMaterial">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Apoyo por sucursal</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyBranch">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Ventana de uso</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyWindow">—</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Condicion de salida</div>
+                  <div class="text-sm font-semibold leading-5 text-stone-800" id="mpStrategyExit">—</div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </details>
       </div>
 
       <div class="grid grid-cols-2 xl:grid-cols-5 gap-3 mb-4">
-        <div class="bg-white border border-stone-300 rounded-xl p-4">
+        <button type="button" data-mp-kpi="sin_decidir" title="Ver pendientes en la cola"
+                class="text-left w-full bg-white border border-stone-300 rounded-xl p-4 hover:border-emerald-400 hover:shadow-md transition cursor-pointer">
           <div class="text-xs text-stone-500 uppercase tracking-wider">Pendientes por decidir</div>
           <div class="text-2xl font-bold text-stone-800 mt-1" id="tapP1Total">—</div>
           <div class="text-xs text-stone-500 mt-1">propuestas activas en mesa</div>
-        </div>
-        <div class="bg-white border border-emerald-300 bg-emerald-50 rounded-xl p-4">
+        </button>
+        <button type="button" data-mp-kpi="decision_directa" title="Ver decisión directa en la cola"
+                class="text-left w-full bg-white border border-emerald-300 bg-emerald-50 rounded-xl p-4 hover:border-emerald-500 hover:shadow-md transition cursor-pointer">
           <div class="text-xs text-emerald-700 uppercase tracking-wider">Decisión directa</div>
           <div class="text-2xl font-bold text-emerald-700 mt-1" id="tapP1Verde">—</div>
           <div class="text-xs text-emerald-700 mt-1">viene desde Calculadora</div>
-        </div>
-        <div class="bg-white border border-sky-300 bg-sky-50 rounded-xl p-4">
+        </button>
+        <button type="button" data-mp-kpi="senal" title="Ver señales externas en la cola"
+                class="text-left w-full bg-white border border-sky-300 bg-sky-50 rounded-xl p-4 hover:border-sky-500 hover:shadow-md transition cursor-pointer">
           <div class="text-xs text-sky-700 uppercase tracking-wider">Señales externas</div>
           <div class="text-2xl font-bold text-sky-700 mt-1" id="tapP1Amarillo">—</div>
           <div class="text-xs text-sky-700 mt-1">competencia, cliente u otra fuente</div>
-        </div>
-        <div class="bg-white border border-rose-300 bg-rose-50 rounded-xl p-4">
+        </button>
+        <button type="button" data-mp-kpi="urgente" title="Ver urgentes en la cola"
+                class="text-left w-full bg-white border border-rose-300 bg-rose-50 rounded-xl p-4 hover:border-rose-500 hover:shadow-md transition cursor-pointer">
           <div class="text-xs text-rose-700 uppercase tracking-wider">Urgentes</div>
           <div class="text-2xl font-bold text-rose-700 mt-1" id="tapP1Rojo">—</div>
           <div class="text-xs text-rose-700 mt-1">desviación relevante o dato incompleto</div>
-        </div>
-        <div class="bg-white border border-stone-300 rounded-xl p-4">
+        </button>
+        <button type="button" data-mp-kpi="publicados" title="Ir a precios publicados"
+                class="text-left w-full bg-white border border-stone-300 rounded-xl p-4 hover:border-emerald-400 hover:shadow-md transition cursor-pointer">
           <div class="text-xs text-stone-500 uppercase tracking-wider">Publicados vigentes</div>
           <div class="text-2xl font-bold text-stone-800 mt-1" id="tapP3Mg">—</div>
           <div class="text-xs text-stone-500 mt-1" id="tapP3Kg">—</div>
-        </div>
+        </button>
       </div>
 
       <div class="flex flex-wrap gap-2 mb-4" id="mpFilters">
@@ -3578,7 +3590,8 @@
               <h3 class="text-sm font-bold text-stone-700">Qué revisar ahora</h3>
               <p class="text-xs text-stone-500">1 material = 1 ficha operativa con sus sucursales.</p>
             </div>
-            <div class="text-xs text-stone-500" id="tapP2Count">—</div>
+            <button type="button" data-mp-kpi="todos" title="Ver todos los materiales en mesa"
+                    class="text-xs text-stone-500 hover:text-emerald-700 hover:underline cursor-pointer" id="tapP2Count">—</button>
           </div>
           <div id="mpQueue" class="space-y-2 max-h-[38rem] overflow-y-auto pr-1">
             <div class="text-sm text-stone-400">Cargando mesa…</div>
@@ -11027,12 +11040,18 @@ document.addEventListener('DOMContentLoaded', () => {
   @keyframes diegoStatusPulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.7)}70%{box-shadow:0 0 0 8px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
   .diego-chat-h .h-version{background:rgba(255,255,255,.2);padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600}
   .diego-chat-h button{background:none;border:0;color:#fff;cursor:pointer;font-size:16px;line-height:1;padding:4px 8px}
-  .diego-chat-body{background:#f8fafc;flex:1;min-height:220px;overflow:hidden;position:relative}
+  .diego-chat-body{background:#f8fafc;flex:1;min-height:220px;overflow-y:auto;overflow-x:hidden;position:relative}
+  /* Cirugía estética Diego v6 · scrollbar visible + flat mode · 14-jul-2026 */
+  .diego-chat-body,.diego-conversation,.diego-context{scrollbar-width:auto;scrollbar-color:#cbd5e1 transparent}
+  .diego-chat-body::-webkit-scrollbar,.diego-conversation::-webkit-scrollbar,.diego-context::-webkit-scrollbar{width:8px}
+  .diego-chat-body::-webkit-scrollbar-track,.diego-conversation::-webkit-scrollbar-track,.diego-context::-webkit-scrollbar-track{background:transparent}
+  .diego-chat-body::-webkit-scrollbar-thumb,.diego-conversation::-webkit-scrollbar-thumb,.diego-context::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px}
+  .diego-chat-body::-webkit-scrollbar-thumb:hover,.diego-conversation::-webkit-scrollbar-thumb:hover,.diego-context::-webkit-scrollbar-thumb:hover{background:#94a3b8}
   .diego-shell{display:grid;grid-template-columns:minmax(0,2fr) minmax(220px,.78fr);height:100%;min-height:0}
-  .diego-conversation{padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-width:0}
+  .diego-conversation{padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-width:0;min-height:0}
   .diego-conversation-head{position:sticky;top:-14px;z-index:2;background:linear-gradient(180deg,#f8fafc 0%,rgba(248,250,252,.96) 80%,rgba(248,250,252,0) 100%);padding-bottom:8px}
-  .diego-turn-summary{background:linear-gradient(135deg,#ffffff 0%,#f8fafc 100%);border:1px solid #dbe3ee;border-radius:16px;padding:12px 13px;box-shadow:0 8px 24px -20px rgba(15,23,42,.3)}
-  .diego-turn-summary.critical{background:linear-gradient(135deg,#fff5f5 0%,#fef2f2 100%);border-color:#fecaca;box-shadow:0 8px 24px -16px rgba(220,38,38,.35)}
+  .diego-turn-summary{background:#f8fafc;border:1px solid #eef1f5;border-radius:16px;padding:12px 13px}
+  .diego-turn-summary.critical{background:#fef7f7;border-color:#f7d9d9}
   .diego-turn-kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748b}
   .diego-turn-summary.critical .diego-turn-kicker{color:#b91c1c}
   .diego-turn-title{font-size:14px;font-weight:700;color:#0f172a;margin-top:3px;line-height:1.35}
@@ -11040,26 +11059,26 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-turn-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
   .diego-turn-pill{display:inline-flex;align-items:center;gap:5px;background:#eff6ff;border:1px solid #dbeafe;color:#1e3a8a;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:600}
   .diego-turn-pill.critical{background:#fee2e2;border-color:#fecaca;color:#b91c1c;font-weight:800}
-  .diego-context{border-left:1px solid #e2e8f0;background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;align-content:start;min-width:0}
-  .diego-side-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:10px 11px;box-shadow:0 8px 24px -18px rgba(15,23,42,.28)}
+  .diego-context{border-left:1px solid #e2e8f0;background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;align-content:start;min-width:0;min-height:0}
+  .diego-side-card{background:#fff;border:1px solid #eef1f5;border-radius:14px;padding:10px 11px}
   .diego-side-card-key{position:sticky;top:0;z-index:2}
   .diego-side-label{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin-bottom:5px}
   .diego-side-main{font-size:13px;font-weight:600;color:#0f172a;line-height:1.45}
   .diego-side-sub{font-size:11px;color:#64748b;line-height:1.5;margin-top:4px}
-  .diego-side-section{background:rgba(255,255,255,.82);border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 8px 24px -20px rgba(15,23,42,.22);overflow:hidden;flex-shrink:0}
-  .diego-side-section summary{list-style:none;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:10px 11px;cursor:pointer;font-size:12px;font-weight:700;color:#0f172a;background:linear-gradient(180deg,#fff 0%,#f8fafc 100%)}
+  .diego-side-section{background:transparent;border:1px solid #eef1f5;border-radius:14px;overflow:hidden;flex-shrink:0}
+  .diego-side-section summary{list-style:none;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:10px 11px;cursor:pointer;font-size:12px;font-weight:700;color:#0f172a;background:transparent}
   .diego-side-section summary > span:first-child{flex:1 1 auto;min-width:0;line-height:1.35}
   .diego-side-section summary::after{flex:0 0 auto}
   .diego-side-section summary::-webkit-details-marker{display:none}
   .diego-side-section summary::after{content:'+';font-size:14px;font-weight:700;color:#64748b}
   .diego-side-section[open] summary::after{content:'-'}
   .diego-side-section-hint{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#94a3b8;flex:0 0 auto;white-space:nowrap;text-align:right;line-height:1.35}
-  .diego-side-section.critical{border-color:#fecaca;box-shadow:0 8px 24px -18px rgba(220,38,38,.3)}
-  .diego-side-section.critical summary{background:linear-gradient(180deg,#fff 0%,#fef2f2 100%)}
+  .diego-side-section.critical{border-color:#f7d9d9}
+  .diego-side-section.critical summary{background:transparent}
   .diego-side-section.critical summary span:first-child{color:#b91c1c}
   .diego-side-section.critical .diego-side-section-hint{color:#b91c1c}
   .diego-side-section-body{padding:0 11px 11px;display:grid;gap:10px}
-  .diego-side-section-body > .diego-side-card{box-shadow:none;border-color:#e5e7eb;background:#fff}
+  .diego-side-section-body > .diego-side-card{box-shadow:none;border-color:#eef1f5;background:transparent}
   .diego-side-list{display:grid;gap:6px;margin-top:4px}
   .diego-side-list div{font-size:11px;color:#334155;line-height:1.45}
   .diego-side-actions{display:flex;flex-wrap:wrap;gap:6px}
@@ -11149,6 +11168,10 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
   .diego-suggestions button{font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:500}
   .diego-suggestions button:hover{background:#059669;color:#fff;border-color:#059669}
+  /* Voz de salida (paso 2 D-DIEGO-VOZ-COMPOSER-001) · botón Escuchar/Detener por respuesta */
+  .diego-tts-btn{margin-top:6px;font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:4px}
+  .diego-tts-btn:hover{background:#e2e8f0}
+  .diego-tts-btn.speaking{background:#059669;color:#fff;border-color:#059669}
   .diego-empty{color:#94a3b8;font-size:12px;text-align:center;padding:24px 8px}
   .diego-chat-form{display:flex;gap:8px;padding:10px;border-top:1px solid #e2e8f0;background:#fff;align-items:center;flex-shrink:0}
   .diego-chat-form .attach-btn{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:24px;padding:10px 14px;font-size:14px;cursor:pointer;color:#475569}
@@ -11159,6 +11182,10 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-chat-form button.send:disabled{opacity:.5;cursor:not-allowed}
   .diego-attach-preview{padding:6px 10px;background:#eff6ff;border-top:1px solid #dbeafe;font-size:11px;color:#1e40af;display:flex;justify-content:space-between;align-items:center}
   .diego-attach-preview button{background:none;border:0;color:#1e40af;cursor:pointer;font-size:14px}
+  /* D-DIEGO-VOZ-COMPOSER-001 · #diegoVoicePreview usa .hidden (toggle vía DIEGO_VOICE) — selector
+     ID+clase para que gane siempre a .diego-attach-preview{display:flex} sin importar orden en la hoja */
+  #diegoVoicePreview.hidden{display:none}
+  #diegoVoicePreview audio{border-radius:8px}
   .diego-drag-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(5,150,105,.9);color:#fff;display:none;align-items:center;justify-content:center;font-weight:600;font-size:14px;border-radius:12px;z-index:5}
   .diego-drag-overlay.active{display:flex}
   /* D-DIEGO-FAB-MEJORAS-001 M1 — Estado minimizado: barra blanca fina anclada abajo-derecha */
@@ -11252,6 +11279,14 @@ document.addEventListener('DOMContentLoaded', () => {
     <span id="diegoAttachName"></span>
     <button type="button" id="diegoAttachRemove" aria-label="Quitar adjunto">✕</button>
   </div>
+  <!-- Nota de voz Diego v6 (D-DIEGO-VOZ-COMPOSER-001) · reutiliza window.DIEGO_VOICE (public/diego/diego-voice.js),
+       misma base ya usada por el grabador de Dieguito. Solo entrada de voz: graba -> preview -> se manda como
+       pendingFile (igual que cualquier adjunto) -> callDiego(msg, attach). Diego responde en texto, sin voz. -->
+  <div class="diego-attach-preview hidden" id="diegoVoicePreview">
+    <audio id="diegoVoicePlayer" controls style="height:30px;flex:1;min-width:0;"></audio>
+    <span id="diegoVoiceStatus" style="font-size:11px;color:#64748b;white-space:nowrap;"></span>
+    <button type="button" id="diegoVoiceRemove" aria-label="Quitar grabación de voz">✕</button>
+  </div>
   <form class="diego-chat-form" id="diegoChatForm" autocomplete="off">
     <input type="file" id="diegoFileInput" accept="image/*,audio/*,application/pdf,text/plain,text/csv,application/json" style="display:none;" />
     <button type="button" class="attach-btn" id="diegoAttachBtn" aria-label="Adjuntar archivo" title="Foto, audio o PDF">
@@ -11259,7 +11294,15 @@ document.addEventListener('DOMContentLoaded', () => {
         <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 17.98 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
       </svg>
     </button>
-    <textarea id="diegoChatInput" placeholder="Escribí o adjuntá algo…" maxlength="2000" aria-label="Mensaje a Diego" rows="1"></textarea>
+    <button type="button" class="attach-btn" id="diegoMicBtn" aria-label="Grabar nota de voz" title="Grabar nota de voz">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+        <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
+        <line x1="12" y1="19" x2="12" y2="22"/>
+      </svg>
+    </button>
+    <span id="diegoMicTimer" class="hidden" style="font-size:11px;color:#ef4444;font-family:monospace;white-space:nowrap;">00:00</span>
+    <textarea id="diegoChatInput" placeholder="Escribí, adjuntá o grabá una nota de voz…" maxlength="2000" aria-label="Mensaje a Diego" rows="1"></textarea>
     <button type="submit" class="send" id="diegoChatSend">Enviar</button>
   </form>
   <!-- P6 23-jun-2026 · link reportar bug Diego -->
@@ -11295,6 +11338,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 🧹 Botón limpiar vista (NO borra memoria — solo limpia la pantalla del FAB)
   const limpiarBtn = document.getElementById('diegoChatLimpiar');
   if (limpiarBtn) limpiarBtn.addEventListener('click', () => {
+    if (window.DIEGO_TTS) window.DIEGO_TTS.stop();
     const b = document.getElementById('diegoChatBody');
     if (!b) return;
     b.innerHTML = '<div class="diego-empty">Pantalla limpia ↻ — Diego sigue recordando todo lo anterior. ¿Algo nuevo?</div><div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>';
@@ -11305,6 +11349,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatHeader = chatWin?.querySelector('.diego-chat-h');
   if (minBtn && chatWin) {
     minBtn.addEventListener('click', (e) => {
+      if (window.DIEGO_TTS) window.DIEGO_TTS.stop();
       e.stopPropagation();
       chatWin.classList.add('minimized');
     });
@@ -12568,6 +12613,79 @@ document.addEventListener('DOMContentLoaded', () => {
     attachPreview.style.display = 'none';
   });
 
+  // -- Nota de voz (D-DIEGO-VOZ-COMPOSER-001) --
+  // Reutiliza window.DIEGO_VOICE (public/diego/diego-voice.js), misma base ya usada por
+  // el grabador de Dieguito. Solo entrada: graba -> preview -> se sube al enviar, igual
+  // que cualquier adjunto (uploadFile -> pendingFile -> callDiego). Cero respuesta en voz.
+  const micBtn = document.getElementById('diegoMicBtn');
+  const micTimer = document.getElementById('diegoMicTimer');
+  const voicePreview = document.getElementById('diegoVoicePreview');
+  const voicePlayer = document.getElementById('diegoVoicePlayer');
+  const voiceStatus = document.getElementById('diegoVoiceStatus');
+  const voiceRemove = document.getElementById('diegoVoiceRemove');
+
+  function voiceElements() {
+    return {
+      button: micBtn,
+      label: null, // botón de voz es solo ícono, sin texto que actualizar
+      timer: micTimer,
+      status: voiceStatus,
+      preview: voicePreview,
+      player: voicePlayer,
+    };
+  }
+
+  // OJO: no gatear el addEventListener detrás de "window.DIEGO_VOICE existe" acá — este
+  // IIFE corre mucho antes en el <body> que <script src="./diego/diego-voice.js"> (que
+  // carga casi al final). El chequeo de window.DIEGO_VOICE va DENTRO del handler (se
+  // evalúa recién al click, momento en que el script ya cargó) — mismo patrón que ya
+  // usa window.diegToggleRecording (Dieguito) más arriba en este archivo.
+  if (micBtn) {
+    micBtn.addEventListener('click', () => {
+      if (!window.DIEGO_VOICE || typeof window.DIEGO_VOICE.toggleRecording !== 'function') {
+        voiceStatus.textContent = 'Grabador de voz no disponible.';
+        return;
+      }
+      // Mutuamente excluyente con adjunto de archivo: empezar a grabar limpia cualquier
+      // archivo pendiente para no mandar 2 adjuntos a la vez (el mecanismo solo soporta 1).
+      if (!micBtn.classList.contains('recording-pulse') && !window.DIEGO_VOICE.hasRecording()) {
+        pendingFile = null;
+        attachPreview.style.display = 'none';
+      }
+      window.DIEGO_VOICE.toggleRecording(voiceElements());
+    });
+  }
+  if (voiceRemove) {
+    voiceRemove.addEventListener('click', () => {
+      if (window.DIEGO_VOICE && typeof window.DIEGO_VOICE.clearRecording === 'function') {
+        window.DIEGO_VOICE.clearRecording(voiceElements());
+      }
+    });
+  }
+
+  // Sube la grabación pendiente (si hay) reusando uploadFile — mismo bucket diego-chat-files
+  // que cualquier otro adjunto. Se ejecuta al enviar, no al detener la grabación, para no
+  // subir audio que el usuario después decide descartar con "quitar".
+  async function resolvePendingVoiceRecording() {
+    if (!window.DIEGO_VOICE || !window.DIEGO_VOICE.hasRecording()) return;
+    const recordedFile = window.DIEGO_VOICE.buildRecordedFile();
+    if (!recordedFile) return;
+    try {
+      pendingFile = await uploadFile(recordedFile);
+    } catch (err) {
+      voiceStatus.textContent = `Error subiendo audio: ${err.message || err}`;
+      return;
+    }
+    window.DIEGO_VOICE.clearRecording(voiceElements());
+  }
+
+  // Adjuntar un archivo de la forma clásica también es mutuamente excluyente con la voz.
+  fileInput.addEventListener('change', () => {
+    if (window.DIEGO_VOICE && window.DIEGO_VOICE.hasRecording()) {
+      window.DIEGO_VOICE.clearRecording(voiceElements());
+    }
+  });
+
   // Drag & drop
   ['dragenter', 'dragover'].forEach(ev => body.addEventListener(ev, (e) => {
     e.preventDefault();
@@ -12594,7 +12712,10 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
     setTimeout(() => input.focus(), 50);
   });
-  closeBtn.addEventListener('click', () => win.classList.remove('open'));
+  closeBtn.addEventListener('click', () => {
+    if (window.DIEGO_TTS) window.DIEGO_TTS.stop();
+    win.classList.remove('open');
+  });
   window.addEventListener('diego-case-sync-status', () => {
     if (win.classList.contains('open')) render();
   });
@@ -12634,6 +12755,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // -- Submit --
   form.addEventListener('submit', async (e) => {
+    // preventDefault sincrónico primero: si hay grabación pendiente, el upload es async y
+    // no debe dejar una ventana donde el form intente hacer un submit nativo (reload).
+    e.preventDefault();
+    await resolvePendingVoiceRecording();
     if (window.DIEGO_INTERACTION && typeof window.DIEGO_INTERACTION.handleSubmit === 'function') {
       const handled = await window.DIEGO_INTERACTION.handleSubmit({
         event: e,
@@ -16422,6 +16547,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btn) btn.click();
   }
 
+  // Todo KPI numérico de la Mesa es navegación (1 clic): setea el chip
+  // correcto y re-renderiza la cola, o salta al tab de publicados.
+  function mpOnKpiClick(action) {
+    if (action === 'publicados') { mpOpenTab('precios_vivos'); return; }
+    mpState.chip = action;
+    mpRender();
+    const queue = document.getElementById('mpQueue');
+    if (queue) queue.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
   function mpIsUrgent(row) {
     if (!row) return false;
     const delta = Number(row.desviacion_pct);
@@ -16699,30 +16834,9 @@ document.addEventListener('DOMContentLoaded', () => {
       + '</div>'
       + '</div>'
       + '<div class="mt-3 text-sm text-stone-600">Revisá las sucursales afectadas, compará contra el vigente y resolvé la propuesta final desde Bandeja.</div>'
-      + '<div class="mt-3 grid grid-cols-1 xl:grid-cols-3 gap-3 text-xs">'
-      + '<div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">Que te esta diciendo</div><div class="text-sm font-semibold leading-5 text-sky-950">' + tapEscape(snapshot.executiveSummary || 'Sin lectura ejecutiva visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Ejemplo en cristiano</div><div class="text-sm font-semibold leading-5 text-emerald-950">' + tapEscape(snapshot.exampleScenario || 'Sin ejemplo visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 mb-1">Tiempo sugerido</div><div class="text-sm font-semibold leading-5 text-amber-950">' + tapEscape(snapshot.timeSuggestion || 'Sin sugerencia de tiempo visible.') + '</div></div>'
-      + '</div>'
-      + '<div class="mt-3 grid grid-cols-1 xl:grid-cols-3 gap-3 text-xs">'
-      + '<div class="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-indigo-700 mb-1">Operar ahora</div><div class="text-sm font-semibold leading-5 text-indigo-950">' + tapEscape(snapshot.operatingDirective || 'Sin lectura operativa visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-fuchsia-200 bg-fuchsia-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-fuchsia-700 mb-1">Publicar ahora</div><div class="text-sm font-semibold leading-5 text-fuchsia-950">' + tapEscape(snapshot.publicDirective || 'Sin lectura publica visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-stone-300 bg-stone-100 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-stone-600 mb-1">Regla de publicacion</div><div class="text-sm font-semibold leading-5 text-stone-900">' + tapEscape(snapshot.publicationRule || 'Sin regla visible.') + '</div></div>'
-      + '</div>'
-      + '<div class="mt-3 rounded-xl border border-stone-300 bg-stone-900 px-3 py-3 text-xs text-white"><div class="text-[11px] font-semibold uppercase tracking-wider text-stone-300 mb-1">Mapa de roles</div><div class="text-sm font-semibold leading-5 text-white">' + tapEscape(snapshot.roleSummary || 'Lista publica · Ejecutivo opera · Maximo techa') + '</div></div>'
-      + '<div class="mt-3 grid grid-cols-1 xl:grid-cols-3 gap-3 text-xs">'
-      + '<div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Lista = publicado</div><div class="text-sm font-semibold leading-5 text-emerald-950">' + tapEscape(snapshot.listRoleDirective || 'Sin lectura visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 mb-1">Ejecutivo = operativo</div><div class="text-sm font-semibold leading-5 text-sky-950">' + tapEscape(snapshot.executiveRoleDirective || 'Sin lectura visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-3"><div class="text-[11px] font-semibold uppercase tracking-wider text-rose-700 mb-1">Maximo = techo</div><div class="text-sm font-semibold leading-5 text-rose-950">' + tapEscape(snapshot.maxRoleDirective || 'Sin lectura visible.') + '</div></div>'
-      + '</div>'
-      + '<div class="mt-3 rounded-lg bg-white px-3 py-2 text-xs text-stone-600"><strong>Publicacion y ventana:</strong> '
-      + tapEscape(strategy.publicationPolicy || 'Sin politica visible.') + ' · '
-      + tapEscape(strategy.duration || 'Sin ventana definida.') + '</div>'
-      + '<div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">'
-      + '<div class="rounded-xl border border-stone-200 bg-white px-3 py-3 text-stone-700"><div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Rol del material</div><div class="text-sm font-semibold leading-5 text-stone-900">' + tapEscape(snapshot.materialRole || 'Sin lectura') + '</div></div>'
-      + '<div class="rounded-xl border border-stone-200 bg-white px-3 py-3 text-stone-700"><div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Decision de publicacion</div><div class="text-sm font-semibold leading-5 text-stone-900">' + tapEscape(snapshot.publicationDecision || strategy.publicationPolicy || 'Sin politica visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-stone-200 bg-white px-3 py-3 text-stone-700"><div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Sucursal y alcance</div><div class="text-sm font-semibold leading-5 text-stone-900">' + tapEscape(snapshot.branchDirective || strategy.branchPolicy || 'Sin politica visible.') + '</div></div>'
-      + '<div class="rounded-xl border border-stone-200 bg-white px-3 py-3 text-stone-700"><div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Vigencia y salida</div><div class="text-sm font-semibold leading-5 text-stone-900">' + tapEscape(snapshot.validityDecision || strategy.duration || 'Sin ventana definida.') + ' · ' + tapEscape(snapshot.exitDirective || strategy.exitCondition || 'Sin condicion visible.') + '</div></div>'
+      + '<div class="mt-3 rounded-xl border border-stone-200 bg-white px-3 py-3 text-xs text-stone-700 flex flex-wrap items-center justify-between gap-2">'
+      + '<div><span class="font-semibold uppercase tracking-wider text-stone-500">Rol de este material:</span> ' + tapEscape(snapshot.materialRole || 'Sin lectura') + '</div>'
+      + '<button type="button" onclick="document.getElementById(\'mpStrategyBox\')?.scrollIntoView({behavior:\'smooth\',block:\'start\'}); document.querySelector(\'#mpStrategyBox details\')?.setAttribute(\'open\',\'\')" class="text-sky-700 underline">Ver estrategia completa ↑</button>'
       + '</div>'
       + '</div>'
       + '<div class="grid grid-cols-1 lg:grid-cols-2 gap-3">' + branchCards.join('') + '</div>'
@@ -16832,6 +16946,13 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', tapCargar);
       btn.dataset.bound = '1';
     }
+    document.querySelectorAll('[data-mp-kpi]').forEach((kpiBtn) => {
+      if (kpiBtn.dataset.bound) return;
+      kpiBtn.addEventListener('click', () => {
+        mpOnKpiClick(kpiBtn.getAttribute('data-mp-kpi') || 'todos');
+      });
+      kpiBtn.dataset.bound = '1';
+    });
     document.querySelectorAll('#mpFilters [data-mp-chip]').forEach((chipBtn) => {
       if (chipBtn.dataset.bound) return;
       chipBtn.addEventListener('click', () => {
@@ -16863,6 +16984,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.mpAbrirTab = mpOpenTab;
+  window.mpOnKpiClick = mpOnKpiClick;
   window.mpSeleccionarGrupo = function (key) {
     mpState.selectedKey = key;
     mpRender();
@@ -18120,6 +18242,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="./diego/diego-bandeja-sync.js"></script>
 <script src="./diego/diego-case-sync.js"></script>
 <script src="./diego/diego-voice.js"></script>
+<script src="./diego/diego-tts.js"></script>
 <script src="./diego/diego-ui.js"></script>
 <script src="./diego/diego-strategy.js"></script>
 <script src="./diego/diego-memory.js"></script>
