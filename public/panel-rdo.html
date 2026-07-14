@@ -11613,6 +11613,10 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
   .diego-suggestions button{font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:500}
   .diego-suggestions button:hover{background:#059669;color:#fff;border-color:#059669}
+  /* Voz de salida (paso 2 D-DIEGO-VOZ-COMPOSER-001) · botón Escuchar/Detener por respuesta */
+  .diego-tts-btn{margin-top:6px;font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:4px}
+  .diego-tts-btn:hover{background:#e2e8f0}
+  .diego-tts-btn.speaking{background:#059669;color:#fff;border-color:#059669}
   .diego-empty{color:#94a3b8;font-size:12px;text-align:center;padding:24px 8px}
   .diego-chat-form{display:flex;gap:8px;padding:10px;border-top:1px solid #e2e8f0;background:#fff;align-items:center;flex-shrink:0}
   .diego-chat-form .attach-btn{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:24px;padding:10px 14px;font-size:14px;cursor:pointer;color:#475569}
@@ -11779,6 +11783,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 🧹 Botón limpiar vista (NO borra memoria — solo limpia la pantalla del FAB)
   const limpiarBtn = document.getElementById('diegoChatLimpiar');
   if (limpiarBtn) limpiarBtn.addEventListener('click', () => {
+    if (window.DIEGO_TTS) window.DIEGO_TTS.stop();
     const b = document.getElementById('diegoChatBody');
     if (!b) return;
     b.innerHTML = '<div class="diego-empty">Pantalla limpia ↻ — Diego sigue recordando todo lo anterior. ¿Algo nuevo?</div><div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>';
@@ -11789,6 +11794,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatHeader = chatWin?.querySelector('.diego-chat-h');
   if (minBtn && chatWin) {
     minBtn.addEventListener('click', (e) => {
+      if (window.DIEGO_TTS) window.DIEGO_TTS.stop();
       e.stopPropagation();
       chatWin.classList.add('minimized');
     });
@@ -13151,7 +13157,10 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
     setTimeout(() => input.focus(), 50);
   });
-  closeBtn.addEventListener('click', () => win.classList.remove('open'));
+  closeBtn.addEventListener('click', () => {
+    if (window.DIEGO_TTS) window.DIEGO_TTS.stop();
+    win.classList.remove('open');
+  });
   window.addEventListener('diego-case-sync-status', () => {
     if (win.classList.contains('open')) render();
   });
@@ -19353,6 +19362,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="./diego/diego-bandeja-sync.js"></script>
 <script src="./diego/diego-case-sync.js"></script>
 <script src="./diego/diego-voice.js"></script>
+<script src="./diego/diego-tts.js"></script>
 <script src="./diego/diego-ui.js"></script>
 <script src="./diego/diego-strategy.js"></script>
 <script src="./diego/diego-memory.js"></script>

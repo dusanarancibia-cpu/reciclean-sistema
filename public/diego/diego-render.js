@@ -21,10 +21,20 @@
       const suggestions = suggestionsArr ? `<div class="diego-suggestions">${suggestionsArr}</div>` : '';
       const thinkingHtml = 'Diego esta escribiendo<span class="diego-typing-dots"><span></span><span></span><span></span></span>';
       const msgHtml = cls === 'thinking' ? thinkingHtml : safeEsc(esc, entry.mensaje);
+      // Voz de salida (paso 2 D-DIEGO-VOZ-COMPOSER-001) · solo respuestas de Diego,
+      // nunca "mine"/"thinking". Se oculta con gracia si el navegador no soporta
+      // speechSynthesis. Estado inicial del botón respeta si esta misma respuesta
+      // ya está sonando (ej: re-render mientras habla por un mensaje nuevo).
+      const ttsAvailable = cls === 'diego' && window.DIEGO_TTS && window.DIEGO_TTS.isSupported();
+      const ttsSpeakingNow = ttsAvailable && window.DIEGO_TTS.isSpeaking(entry.ts);
+      const tts = ttsAvailable
+        ? `<button type="button" class="diego-tts-btn${ttsSpeakingNow ? ' speaking' : ''}" data-tts-ts="${entry.ts}">${ttsSpeakingNow ? '⏹ Detener' : '🔊 Escuchar'}</button>`
+        : '';
 
       return `<div class="diego-msg ${cls}">
         <div class="${cls === 'thinking' ? '' : 'diego-summary'}">${msgHtml}</div>
         ${attach}
+        ${tts}
         ${actions}
         <div class="diego-msg-meta">${cls === 'mine' ? 'Vos' : 'Diego'} · ${typeof fmtHora === 'function' ? fmtHora(entry.ts) : ''}${entry.tokens ? ' · ' + entry.tokens + ' tok' : ''}${entry.cola_id ? ' · ✅ cola' : ''}</div>
         ${suggestions}
@@ -47,6 +57,42 @@
           input.value = suggestion.action || suggestion.label || suggestion;
           input.focus();
         }
+      });
+    });
+  }
+
+  // Voz de salida (paso 2 D-DIEGO-VOZ-COMPOSER-001) · botón Escuchar/Detener por
+  // respuesta de Diego. Usa entry.ts como identificador estable (sobrevive a que
+  // el body.innerHTML se reconstruya entero en cada render — no depende de índices
+  // de array, que sí podrían desalinearse). Actualiza el botón puntual al terminar
+  // la locución en vez de forzar un re-render completo (más simple, no rompe scroll).
+  function bindTtsButtons(options) {
+    const body = options?.body;
+    const history = Array.isArray(options?.history) ? options.history : [];
+    if (!body || !window.DIEGO_TTS) return;
+
+    function setButtonState(btn, speaking) {
+      btn.textContent = speaking ? '⏹ Detener' : '🔊 Escuchar';
+      btn.classList.toggle('speaking', speaking);
+    }
+
+    body.querySelectorAll('button[data-tts-ts]').forEach(btn => {
+      const ts = Number(btn.getAttribute('data-tts-ts'));
+      btn.addEventListener('click', () => {
+        if (window.DIEGO_TTS.isSpeaking(ts)) {
+          window.DIEGO_TTS.stop();
+          setButtonState(btn, false);
+          return;
+        }
+        // Arrancar una nueva corta cualquier otra que estuviera en "Detener".
+        body.querySelectorAll('button[data-tts-ts].speaking').forEach(other => setButtonState(other, false));
+        const entry = history.find(h => h.ts === ts);
+        setButtonState(btn, true);
+        window.DIEGO_TTS.speak(entry ? entry.mensaje : '', {
+          id: ts,
+          onEnd: () => setButtonState(btn, false),
+          onError: () => setButtonState(btn, false),
+        });
       });
     });
   }
@@ -111,6 +157,7 @@
     document.getElementById('diegoConversationPane')?.scrollTo({ top: 999999, behavior: 'auto' });
     if (typeof updateChatStatus === 'function') updateChatStatus();
     bindSuggestionButtons({ body, input, history });
+    bindTtsButtons({ body, history });
     if (typeof bindContextPrompts === 'function') bindContextPrompts();
     if (typeof bindContextTabs === 'function') bindContextTabs();
     return true;
