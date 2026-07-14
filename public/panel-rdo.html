@@ -12954,12 +12954,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // y al editar el input a mano (señal de que el usuario tomó el control).
   let sttRawFinalText = '';
   let sttWasVoiceTurn = false;
+  let sttSessionClosed = false;
 
   function sttClearCorreccionNote() {
     if (sttCorreccionNote) {
       sttCorreccionNote.classList.add('hidden');
       sttCorreccionNote.textContent = '';
     }
+  }
+
+  function sttSetIdleUi() {
+    if (!sttBtn) return;
+    sttBtn.classList.remove('listening');
+    sttBtn.setAttribute('aria-label', 'Dictar por voz');
+    sttBtn.setAttribute('title', 'Dictar por voz');
   }
 
   // Editar a mano después de dictar = el usuario ya vio y decidió corregir
@@ -12970,39 +12978,51 @@ document.addEventListener('DOMContentLoaded', () => {
     sttBtn.addEventListener('click', () => {
       if (!window.DIEGO_STT || typeof window.DIEGO_STT.startListening !== 'function') return;
       if (window.DIEGO_STT.isListening()) {
+        sttSessionClosed = true;
         window.DIEGO_STT.stopListening();
+        sttSetIdleUi();
         return;
       }
       // Cortar cualquier respuesta hablada en curso antes de escuchar de nuevo —
       // si Diego sigue leyendo la respuesta anterior en voz, el usuario no debe
       // tener que esperar ni sentir que se solapan (cierre etapa voz 14-jul-2026).
       if (window.DIEGO_TTS) window.DIEGO_TTS.stop();
+      sttSessionClosed = false;
       sttBtn.classList.add('listening');
       sttBtn.setAttribute('aria-label', 'Escuchando…');
       sttBtn.setAttribute('title', 'Escuchando… click para detener');
       sttClearCorreccionNote();
       window.DIEGO_STT.startListening({
-        onStart: () => { sttPlayBeep(); },
+        onStart: () => {
+          sttSessionClosed = false;
+          sttPlayBeep();
+        },
         onInterim: (text) => {
+          if (sttSessionClosed) return;
           input.value = text;
           input.style.height = 'auto';
           input.style.height = Math.min(input.scrollHeight, 120) + 'px';
         },
         onFinal: (text) => {
-          sttRawFinalText = text;
+          if (sttSessionClosed) return;
+          sttSessionClosed = true;
+          const finalText = String(text || '').trim();
+          if (window.DIEGO_STT && window.DIEGO_STT.isListening()) {
+            window.DIEGO_STT.stopListening();
+          }
+          sttSetIdleUi();
+          if (!finalText) return;
+          sttRawFinalText = finalText;
           sttWasVoiceTurn = true;
           // Corrección de sucursales SIEMPRE visible — pedido explícito:
           // "no quiero correcciones invisibles". Se aplica al input, pero
           // se muestra qué cambió en una nota aparte, no en silencio.
           const correccion = window.DIEGO_STT_CORRECCIONES
-            ? window.DIEGO_STT_CORRECCIONES.corregir(text)
-            : { textoCorregido: text, huboCorreccion: false, cambios: [] };
+            ? window.DIEGO_STT_CORRECCIONES.corregir(finalText)
+            : { textoCorregido: finalText, huboCorreccion: false, cambios: [] };
           input.value = correccion.textoCorregido;
           input.style.height = 'auto';
           input.style.height = Math.min(input.scrollHeight, 120) + 'px';
-          sttBtn.classList.remove('listening');
-          sttBtn.setAttribute('aria-label', 'Dictar por voz');
-          sttBtn.setAttribute('title', 'Dictar por voz');
           if (correccion.huboCorreccion && sttCorreccionNote) {
             const detalle = correccion.cambios.map(c => `"${c.original}" → "${c.corregido}"`).join(' · ');
             sttCorreccionNote.textContent = `✏️ Corregido automático: ${detalle}`;
@@ -13010,9 +13030,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         },
         onError: (e) => {
-          sttBtn.classList.remove('listening');
-          sttBtn.setAttribute('aria-label', 'Dictar por voz');
-          sttBtn.setAttribute('title', 'Dictar por voz');
+          sttSessionClosed = true;
+          sttSetIdleUi();
           console.warn('[Diego STT] error:', e);
         },
       });
@@ -13110,6 +13129,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // preventDefault sincrónico primero: si hay grabación pendiente, el upload es async y
     // no debe dejar una ventana donde el form intente hacer un submit nativo (reload).
     e.preventDefault();
+    // Si el usuario envía mientras el STT seguía abierto, cortarlo al instante:
+    // el mensaje a Diego debe salir desde el composer, no permitir que el TTS de
+    // respuesta vuelva a contaminar el textarea y arme un bucle.
+    if (window.DIEGO_STT && window.DIEGO_STT.isListening()) {
+      sttSessionClosed = true;
+      window.DIEGO_STT.stopListening();
+      sttSetIdleUi();
+    }
     // Capturar ANTES de que se limpie el input — necesitamos lo dictado (crudo,
     // ya con corrección de sucursal aplicada) vs lo que realmente se manda
     // (después de cualquier edición manual) para el registro de aprendizaje.
