@@ -819,10 +819,6 @@
             Bandeja técnica
             <span id="bpBadgeSidebar" class="bp-badge-counter hidden ml-auto text-xs font-bold px-1.5 py-0.5 rounded-full">0</span>
           </a>
-          <a href="#" data-v4-tab="hual_compra" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
-            <span class="v4-emoji" aria-hidden="true">🎯</span>
-            HUAL vs Compra
-          </a>
           <a href="#" data-v4-tab="precios_vivos" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📈</span>
             Precios publicados
@@ -6632,25 +6628,6 @@
     </section>
 
     <!-- ============================================================
-         PC5 29-jun · HUAL vs Compra — margen por material/sucursal
-         ============================================================ -->
-    <section id="tabHualCompra" class="tab-content hidden">
-      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-        <div>
-          <h2 class="text-xl font-bold text-stone-800">🎯 HUAL vs Precio de Compra</h2>
-          <p class="text-xs text-stone-500 mt-0.5">Lo que HUAL paga vs lo que pagás al proveedor. Verde ≥40% · Amarillo ≥25% · Rojo &lt;25%.</p>
-        </div>
-        <div class="flex gap-2 flex-wrap items-center">
-          <select id="hualFiltroSuc" onchange="loadHualCompra()" class="text-xs border border-stone-300 rounded px-2 py-1">
-            <option value="">Todas las sucursales</option>
-          </select>
-          <button onclick="loadHualCompra()" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">↻ Actualizar</button>
-        </div>
-      </div>
-      <div id="hualCompraTabla" class="overflow-x-auto"></div>
-    </section>
-
-    <!-- ============================================================
          PC2 11-jun · Decisor Venta UI (mig 276+277 + 296 backend ya existía)
          ============================================================ -->
     <section id="tabDecisorVenta" class="tab-content hidden">
@@ -7466,7 +7443,7 @@ let recordedUrl = null;
 //
 // FALLBACKS (defaults): si las consultas fallan (red/RLS/tabla vacía) el
 // HTML no se rompe — el navbar aparece como en versión hardcoded.
-const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'hual_compra', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'panorama_sucursales', 'flota_grupo', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas', 'firmas_reglas', 'mesa_control_99_99'];
+const FALLBACK_TABS_GLOBALES   = ['portada', 'pesaje', 'facturacion', 'facturacion_grupo', 'herramientas_ext', 'dieguito', 'comunicados', 'manual', 'mi_memoria', 'rdo', 'negocios', 'cotizador', 'cierres', 'precios', 'bandeja_precios', 'operativos', 'reconciliacion', 'cartera', 'oportunidades', 'entregables', 'bandeja_dieg', 'ops_diarias', 'panorama_sucursales', 'flota_grupo', 'pcs_vivo', 'plan_2026', 'gantt', 'admin', 'andrea_dup_clientes', 'andrea_drift_libre', 'andrea_ruts_invalidos', 'andrea_comex', 'decisor_venta', 'andrea_cobranza', 'andrea_actas', 'firmas_reglas', 'mesa_control_99_99'];
 const FALLBACK_TABS_TRANSVERSALES = ['portada', 'dieguito', 'comunicados', 'cierres', 'precios', 'operativos'];
 // Mig 402/403 · Fase 4 Reestructuración Permisos (2026-07-06):
 // FALLBACK_BYPASS_EMAILS ELIMINADO. La RPC public.get_effective_permissions()
