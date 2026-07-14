@@ -116,7 +116,7 @@
           <div class="diego-conversation">
             ${typeof renderConversationHeader === 'function' ? renderConversationHeader(null) : ''}
             ${typeof renderIntelligentEmptyState === 'function' ? renderIntelligentEmptyState(profile) : ''}
-            <div class="diego-empty">Escribí, adjuntá o grabá una nota de voz.</div>
+            <div class="diego-empty">Escribí, adjuntá o dictá por voz.</div>
           </div>
           ${typeof renderContextPanel === 'function' ? renderContextPanel(null) : ''}
         </div>
