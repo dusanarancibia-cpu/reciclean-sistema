@@ -13905,7 +13905,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sucursal = (document.getElementById('bpFiltroSucursal') || {}).value || '';
 
     let q = sb.schema('staging').from('v_bandeja_precios')
-      .select('id, cliente_id, cliente_nombre, material_id, material_nombre, sucursal_id, sucursal_nombre, fuente_id, fuente_nombre, precio_clp_kg, precio_vigente, desviacion_pct, confidence_score, ruta, estado, fecha_vigencia, created_at, revisando_por, lock_until, notas')
+      .select('id, cliente_id, cliente_nombre, material_id, material_nombre, sucursal_id, sucursal_nombre, fuente_id, fuente_nombre, fuente_nombre_ui, fuente_cliente_id, fuente_rol, fuente_cliente_estado, precio_clp_kg, precio_vigente, desviacion_pct, confidence_score, ruta, estado, fecha_vigencia, created_at, revisando_por, lock_until, notas')
       .order('created_at', { ascending: false }).limit(200);
     if (estado)   q = q.eq('estado', estado);
     if (ruta)     q = q.eq('ruta', ruta);
@@ -13964,7 +13964,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   : Math.abs(Number(r.desviacion_pct)) > 15 ? 'text-amber-700'
                   : 'text-stone-600';
     return `<tr class="border-t hover:bg-stone-50 cursor-pointer" onclick="bpAbrirDrawer(${r.id})">
-      <td class="px-3 py-2">${esc(r.fuente_nombre ?? '— sin origen registrado')}${lockTag}</td>
+      <td class="px-3 py-2">${esc(r.fuente_nombre_ui ?? '— sin origen registrado')}${lockTag}</td>
       <td class="px-3 py-2">${esc(r.material_nombre ?? '—')}</td>
       <td class="px-3 py-2">${esc(r.sucursal_nombre ?? '— sin definir')}</td>
       <td class="px-3 py-2 text-right font-medium">${fmtCLP(r.precio_clp_kg)}</td>
@@ -14031,7 +14031,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('bpDrawerSubtitle').textContent  = `#${r.id} · creada ${fmtEdad(r.created_at)} atrás`;
     document.getElementById('bpDw_cliente').textContent      = r.cliente_nombre ?? r.cliente_id ?? '—';
     document.getElementById('bpDw_material').textContent     = r.material_nombre ?? r.material_id ?? '—';
-    document.getElementById('bpDw_fuente').textContent        = r.fuente_nombre ?? '— sin origen registrado';
+    document.getElementById('bpDw_fuente').textContent        = (r.fuente_nombre_ui ?? '— sin origen registrado') + (r.fuente_rol ? ' (' + r.fuente_rol + ')' : '');
 document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ?? r.sucursal_id ?? '— sin definir';
     document.getElementById('bpDw_vigencia').textContent     = r.fecha_vigencia ?? 'desde hoy';
     document.getElementById('bpDw_propuesto').textContent    = fmtCLP(r.precio_clp_kg);
@@ -14437,8 +14437,12 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     if (!sel) return;
     const prev = sel.value;
     const fuentes = [...new Map((rows || [])
-      .filter(r => r.fuente_id)
-      .map(r => [r.fuente_id, r.fuente_nombre || r.fuente_id]))
+      .map(r => {
+        if (r.fuente_cliente_id) return [`cliente:${r.fuente_cliente_id}`, r.fuente_nombre_ui || r.fuente_cliente_id];
+        if (r.fuente_id) return [`catalogo:${r.fuente_id}`, r.fuente_nombre_ui || r.fuente_id];
+        return null;
+      })
+      .filter(Boolean))
       .entries()]
       .map(([id, nombre]) => ({ id, nombre }))
       .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
@@ -14479,7 +14483,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const fechaHasta  = gv('bpFiltroFechaHasta');
     const buscar      = gv('bpFiltroBuscar').trim().toLowerCase();
     bpVisibleRows = bpRows.filter(r => {
-      if (fuente   && r.fuente_id   !== fuente)   return false;
+      const fuenteKey = r.fuente_cliente_id
+        ? `cliente:${r.fuente_cliente_id}`
+        : (r.fuente_id ? `catalogo:${r.fuente_id}` : '');
+      if (fuente && fuenteKey !== fuente) return false;
       if (material && r.material_id !== material)  return false;
       if (precioMin  !== null && (r.precio_clp_kg    ?? 0) < precioMin)  return false;
       if (precioMax  !== null && (r.precio_clp_kg    ?? 0) > precioMax)  return false;
@@ -14492,7 +14499,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       if (fechaDesde && r.created_at && r.created_at.slice(0, 10) < fechaDesde) return false;
       if (fechaHasta && r.created_at && r.created_at.slice(0, 10) > fechaHasta) return false;
       if (buscar && !(
-        (r.fuente_nombre   ?? '').toLowerCase().includes(buscar) ||
+        (r.fuente_nombre_ui ?? '').toLowerCase().includes(buscar) ||
         (r.material_nombre ?? '').toLowerCase().includes(buscar) ||
         (r.notas           ?? '').toLowerCase().includes(buscar)
       )) return false;
