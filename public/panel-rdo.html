@@ -1899,15 +1899,15 @@
           </select>
         </div>
         <div>
-          <label for="bpFiltroSucursal" class="block text-xs text-stone-500 mb-1">Sucursal</label>
+          <label for="bpFiltroSucursal" class="block text-xs text-stone-500 mb-1">Alcance</label>
           <select id="bpFiltroSucursal" onchange="loadBandejaPrecios()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
-            <option value="">Todas las sucursales</option>
+            <option value="">Todos los alcances</option>
           </select>
         </div>
         <div>
-          <label for="bpFiltroCliente" class="block text-xs text-stone-500 mb-1">Cliente</label>
-          <select id="bpFiltroCliente" onchange="bpAplicarFiltrosClienteSide()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
-            <option value="">Todos los clientes</option>
+          <label for="bpFiltroFuente" class="block text-xs text-stone-500 mb-1">Fuente</label>
+          <select id="bpFiltroFuente" onchange="bpAplicarFiltrosClienteSide()" class="border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
+            <option value="">Todas las fuentes</option>
           </select>
         </div>
         <div>
@@ -1977,7 +1977,7 @@
           </div>
         </div>
         <div class="flex-1 min-w-[12rem]">
-          <label for="bpFiltroBuscar" class="block text-xs text-stone-500 mb-1">Buscar (cliente, material, notas)</label>
+          <label for="bpFiltroBuscar" class="block text-xs text-stone-500 mb-1">Buscar (fuente, material, notas)</label>
           <input id="bpFiltroBuscar" type="text" placeholder="Ej. cartón blanco SOREPA"
                  oninput="bpDebouncedFiltro()" aria-label="Buscar"
                  class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:border-green-700 focus:outline-none">
@@ -1989,9 +1989,9 @@
         <table class="w-full text-sm">
           <thead class="bg-stone-50 text-stone-600 text-left select-none">
             <tr>
-              <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="cliente_nombre" onclick="bpSortar('cliente_nombre')">Cliente <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
+              <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="fuente_nombre_ui" onclick="bpSortar('fuente_nombre_ui')">Fuente <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
               <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="material_nombre" onclick="bpSortar('material_nombre')">Material <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
-              <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="sucursal_nombre" onclick="bpSortar('sucursal_nombre')">Sucursal <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
+              <th class="px-3 py-2 cursor-pointer hover:bg-stone-100" data-bpcol="sucursal_nombre" onclick="bpSortar('sucursal_nombre')">Alcance <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
               <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="precio_clp_kg" onclick="bpSortar('precio_clp_kg')">Precio nuevo <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
               <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="precio_vigente" onclick="bpSortar('precio_vigente')">Vigente actual <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
               <th class="px-3 py-2 text-right cursor-pointer hover:bg-stone-100" data-bpcol="desviacion_pct" onclick="bpSortar('desviacion_pct')">Δ% <span class="bp-arrow text-stone-400 text-xs">↕</span></th>
@@ -2027,7 +2027,8 @@
           <dl class="text-sm grid grid-cols-2 gap-2 mb-3">
             <div><dt class="text-xs text-stone-500">Cliente</dt><dd id="bpDw_cliente">—</dd></div>
             <div><dt class="text-xs text-stone-500">Material</dt><dd id="bpDw_material">—</dd></div>
-            <div><dt class="text-xs text-stone-500">Sucursal</dt><dd id="bpDw_sucursal">—</dd></div>
+            <div><dt class="text-xs text-stone-500">Fuente</dt><dd id="bpDw_fuente">—</dd></div>
+<div><dt class="text-xs text-stone-500">Alcance</dt><dd id="bpDw_sucursal">—</dd></div>
             <div><dt class="text-xs text-stone-500">Vigencia</dt><dd id="bpDw_vigencia">—</dd></div>
             <div><dt class="text-xs text-stone-500">Precio nuevo</dt><dd id="bpDw_propuesto" class="font-bold text-stone-900">—</dd></div>
             <div><dt class="text-xs text-stone-500">Vigente anterior</dt><dd id="bpDw_vigente">—</dd></div>
@@ -13779,7 +13780,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!sel) return;
     // Reset completo + preservar selección (patrón canónico T-35 post-DeepSeek)
     const valPrevia = sel.value;
-    sel.innerHTML = '<option value="">Todas las sucursales</option>';
+    sel.innerHTML = '<option value="">Todos los alcances</option>';
     const sucs = [...new Set((data || [])
       .map(r => [r.sucursal_id, r.sucursal_nombre])
       .filter(([id]) => id))]
@@ -13904,7 +13905,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sucursal = (document.getElementById('bpFiltroSucursal') || {}).value || '';
 
     let q = sb.schema('staging').from('v_bandeja_precios')
-      .select('id, cliente_id, cliente_nombre, material_id, material_nombre, sucursal_id, sucursal_nombre, precio_clp_kg, precio_vigente, desviacion_pct, confidence_score, ruta, estado, fecha_vigencia, created_at, revisando_por, lock_until, notas')
+      .select('id, cliente_id, cliente_nombre, material_id, material_nombre, sucursal_id, sucursal_nombre, fuente_id, fuente_nombre, fuente_nombre_ui, fuente_cliente_id, fuente_rol, fuente_cliente_estado, precio_clp_kg, precio_vigente, desviacion_pct, confidence_score, ruta, estado, fecha_vigencia, created_at, revisando_por, lock_until, notas')
       .order('created_at', { ascending: false }).limit(200);
     if (estado)   q = q.eq('estado', estado);
     if (ruta)     q = q.eq('ruta', ruta);
@@ -13917,7 +13918,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const rows = data ?? [];
     bpPopularSucursalFiltro(rows);
-    bpPopularClienteFiltro(rows);
+    bpPopularFuenteFiltro(rows);
     bpPopularMaterialFiltro(rows);
     // Badge counter: todos los pendientes (dusan + competencia + otras rutas manuales)
     const totalPendientes = rows.filter(r => r.estado === 'pendiente').length;
@@ -13963,9 +13964,9 @@ document.addEventListener('DOMContentLoaded', () => {
                   : Math.abs(Number(r.desviacion_pct)) > 15 ? 'text-amber-700'
                   : 'text-stone-600';
     return `<tr class="border-t hover:bg-stone-50 cursor-pointer" onclick="bpAbrirDrawer(${r.id})">
-      <td class="px-3 py-2">${esc(r.cliente_nombre ?? '—')}${lockTag}</td>
+      <td class="px-3 py-2">${esc(r.fuente_nombre_ui ?? '— sin origen registrado')}${lockTag}</td>
       <td class="px-3 py-2">${esc(r.material_nombre ?? '—')}</td>
-      <td class="px-3 py-2">${esc(r.sucursal_nombre ?? '—')}</td>
+      <td class="px-3 py-2">${esc(r.sucursal_nombre ?? '— sin definir')}</td>
       <td class="px-3 py-2 text-right font-medium">${fmtCLP(r.precio_clp_kg)}</td>
       <td class="px-3 py-2 text-right text-stone-500">${fmtCLP(r.precio_vigente)}</td>
       <td class="px-3 py-2 text-right ${deltaCls}">${fmtPct(r.desviacion_pct)}</td>
@@ -14030,7 +14031,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('bpDrawerSubtitle').textContent  = `#${r.id} · creada ${fmtEdad(r.created_at)} atrás`;
     document.getElementById('bpDw_cliente').textContent      = r.cliente_nombre ?? r.cliente_id ?? '—';
     document.getElementById('bpDw_material').textContent     = r.material_nombre ?? r.material_id ?? '—';
-    document.getElementById('bpDw_sucursal').textContent     = r.sucursal_nombre ?? r.sucursal_id ?? 'todas';
+    document.getElementById('bpDw_fuente').textContent        = (r.fuente_nombre_ui ?? '— sin origen registrado') + (r.fuente_rol ? ' (' + r.fuente_rol + ')' : '');
+document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ?? r.sucursal_id ?? '— sin definir';
     document.getElementById('bpDw_vigencia').textContent     = r.fecha_vigencia ?? 'desde hoy';
     document.getElementById('bpDw_propuesto').textContent    = fmtCLP(r.precio_clp_kg);
     document.getElementById('bpDw_vigente').textContent      = fmtCLP(r.precio_vigente);
@@ -14430,18 +14432,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function bpPopularClienteFiltro(rows) {
-    const sel = document.getElementById('bpFiltroCliente');
+  function bpPopularFuenteFiltro(rows) {
+    const sel = document.getElementById('bpFiltroFuente');
     if (!sel) return;
     const prev = sel.value;
-    const clientes = [...new Map((rows || [])
-      .filter(r => r.cliente_id)
-      .map(r => [r.cliente_id, r.cliente_nombre || r.cliente_id]))
+    const fuentes = [...new Map((rows || [])
+      .map(r => {
+        if (r.fuente_cliente_id) return [`cliente:${r.fuente_cliente_id}`, r.fuente_nombre_ui || r.fuente_cliente_id];
+        if (r.fuente_id) return [`catalogo:${r.fuente_id}`, r.fuente_nombre_ui || r.fuente_id];
+        return null;
+      })
+      .filter(Boolean))
       .entries()]
       .map(([id, nombre]) => ({ id, nombre }))
       .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
-    sel.innerHTML = '<option value="">Todos los clientes</option>' +
-      clientes.map(c => `<option value="${esc(c.id)}">${esc(c.nombre)}</option>`).join('');
+    sel.innerHTML = '<option value="">Todas las fuentes</option>' +
+      fuentes.map(f => `<option value="${esc(f.id)}">${esc(f.nombre)}</option>`).join('');
     if (prev && Array.from(sel.options).some(o => o.value === prev)) sel.value = prev;
   }
 
@@ -14463,7 +14469,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function bpAplicarFiltrosClienteSide() {
     const gv = id => (document.getElementById(id) || {}).value || '';
     const gn = id => { const v = parseFloat(gv(id)); return isNaN(v) ? null : v; };
-    const cliente     = gv('bpFiltroCliente');
+    const fuente      = gv('bpFiltroFuente');
     const material    = gv('bpFiltroMaterial');
     const precioMin   = gn('bpFiltroPrecioMin');
     const precioMax   = gn('bpFiltroPrecioMax');
@@ -14477,7 +14483,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const fechaHasta  = gv('bpFiltroFechaHasta');
     const buscar      = gv('bpFiltroBuscar').trim().toLowerCase();
     bpVisibleRows = bpRows.filter(r => {
-      if (cliente  && r.cliente_id  !== cliente)  return false;
+      const fuenteKey = r.fuente_cliente_id
+        ? `cliente:${r.fuente_cliente_id}`
+        : (r.fuente_id ? `catalogo:${r.fuente_id}` : '');
+      if (fuente && fuenteKey !== fuente) return false;
       if (material && r.material_id !== material)  return false;
       if (precioMin  !== null && (r.precio_clp_kg    ?? 0) < precioMin)  return false;
       if (precioMax  !== null && (r.precio_clp_kg    ?? 0) > precioMax)  return false;
@@ -14490,7 +14499,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (fechaDesde && r.created_at && r.created_at.slice(0, 10) < fechaDesde) return false;
       if (fechaHasta && r.created_at && r.created_at.slice(0, 10) > fechaHasta) return false;
       if (buscar && !(
-        (r.cliente_nombre  ?? '').toLowerCase().includes(buscar) ||
+        (r.fuente_nombre_ui ?? '').toLowerCase().includes(buscar) ||
         (r.material_nombre ?? '').toLowerCase().includes(buscar) ||
         (r.notas           ?? '').toLowerCase().includes(buscar)
       )) return false;
