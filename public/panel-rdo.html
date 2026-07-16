@@ -3811,23 +3811,45 @@
           </div>
 
           <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 mb-3">
-            <div class="text-[11px] uppercase tracking-wider text-emerald-700 mb-2">Lectura inmediata del valor</div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div class="text-[11px] uppercase tracking-wider text-emerald-700">Lectura inmediata del valor</div>
+              <div class="flex flex-wrap gap-2 text-[11px]">
+                <span id="wsSafeDecisionBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200">Sin lectura</span>
+                <span id="wsSafeDeltaBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200">Sin diferencia</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 xl:grid-cols-[1fr,1fr,0.78fr] gap-3">
               <div class="rounded-xl border border-emerald-200 bg-white px-4 py-3">
                 <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-1">Valor publicado actual</div>
                 <div id="wsSafePublishedValue" class="text-3xl font-bold text-stone-800">—</div>
+                <div id="wsSafePublishedMeta" class="mt-2 text-xs text-stone-500">Es el número que hoy debería verse afuera.</div>
               </div>
               <div class="rounded-xl border border-amber-200 bg-white px-4 py-3">
                 <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-1">Nuevo valor en evaluación</div>
                 <div id="wsSafeDraftValue" class="text-3xl font-bold text-emerald-700">—</div>
+                <div id="wsSafeDraftMeta" class="mt-2 text-xs text-stone-500">Es la señal o propuesta que estás contrastando.</div>
+              </div>
+              <div class="rounded-xl border border-stone-200 bg-white px-4 py-3">
+                <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-2">Lectura rápida</div>
+                <div class="space-y-2 text-xs">
+                  <div class="flex items-center justify-between gap-2 rounded-lg bg-stone-50 px-3 py-2 border border-stone-200">
+                    <span class="text-stone-600">Diferencia</span><strong id="wsSafeDeltaValue" class="text-stone-800">—</strong>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 rounded-lg bg-stone-50 px-3 py-2 border border-stone-200">
+                    <span class="text-stone-600">Cambio</span><strong id="wsSafeDeltaPct" class="text-stone-800">—</strong>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 rounded-lg bg-stone-50 px-3 py-2 border border-stone-200">
+                    <span class="text-stone-600">Salida sugerida</span><strong id="wsSafeExitMode" class="text-stone-800">—</strong>
+                  </div>
+                </div>
               </div>
             </div>
             <div id="wsSafeValueHint" class="mt-2 text-xs text-stone-600">
-              Primero comparas estos dos números. Después miras si cada canal refleja el <strong>$6.150 publicado</strong>.
+              Primero comparas publicado versus evaluación. Después verificas qué refleja cada canal.
             </div>
           </div>
 
-          <div id="wsSafeChannels" class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+          <div id="wsSafeChannels" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2 mb-3">
             <div class="rounded-xl border border-stone-200 bg-white px-3 py-3 text-xs text-stone-500">
               Sin lectura de canales aún.
             </div>
@@ -17833,14 +17855,14 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       {
         name: 'Reciclean',
         tone: publishedRow ? 'emerald' : 'stone',
-        status: publishedRow ? 'Visible' : 'Sin lectura',
+        status: publishedRow ? 'Publicado' : 'Sin lectura',
         detail: publishedRow ? ('publicado ' + tapFmtClp(publishedValue)) : 'sin precio vigente visible',
       },
       {
         name: 'Farex',
         tone: 'amber',
         status: 'Pendiente',
-        detail: 'sin lectura aún en este carril',
+        detail: publishedRow ? ('pendiente reflejar ' + tapFmtClp(publishedValue)) : 'sin lectura aún en este carril',
       },
       {
         name: 'Widget',
@@ -17870,7 +17892,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       + '</div>'
       + '<span class="px-2 py-1 rounded-full text-[11px] ' + tones[item.tone].badge + '">' + tapEscape(item.status) + '</span>'
       + '</div>'
-      + '<div class="mt-2 text-xs text-stone-600">' + tapEscape(item.detail) + '</div>'
+      + '<div class="mt-2 text-[11px] uppercase tracking-wider text-stone-500">Estado</div>'
+      + '<div class="mt-1 text-xs text-stone-600">' + tapEscape(item.detail) + '</div>'
       + '</div>'
     ).join('');
   }
@@ -17887,13 +17910,14 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const mobileBadgeEl = document.getElementById('wsSafeMobileBadge');
     const actionTitleEl = document.getElementById('wsSafeActionTitle');
     const actionTextEl = document.getElementById('wsSafeActionText');
+    const exitModeEl = document.getElementById('wsSafeExitMode');
     if (mesaBtn && !mesaBtn.dataset.bound) {
       mesaBtn.addEventListener('click', () => {
         window.mpAbrirTab && window.mpAbrirTab('tablero_precios');
       });
       mesaBtn.dataset.bound = '1';
     }
-    if (!metaEl || !resolveBtn || !calcBtn || !mesaBtn || !actionTitleEl || !actionTextEl || !mobileMesaBtn || !mobileCalcBtn || !mobileResolveBtn || !mobileHintEl || !mobileBadgeEl) return;
+    if (!metaEl || !resolveBtn || !calcBtn || !mesaBtn || !actionTitleEl || !actionTextEl || !mobileMesaBtn || !mobileCalcBtn || !mobileResolveBtn || !mobileHintEl || !mobileBadgeEl || !exitModeEl) return;
     [calcBtn, resolveBtn, mesaBtn, mobileMesaBtn, mobileCalcBtn, mobileResolveBtn].forEach((btn) => {
       btn.classList.remove('ring-2', 'ring-sky-200', 'ring-emerald-200', 'ring-amber-200');
     });
@@ -17914,6 +17938,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       mobileHintEl.textContent = 'Selecciona un caso para activar la salida recomendada.';
       mobileBadgeEl.className = 'px-2 py-1 rounded-full bg-stone-100 text-stone-600 text-[11px]';
       mobileBadgeEl.textContent = 'Sin foco';
+      exitModeEl.textContent = '—';
       return;
     }
     metaEl.innerHTML = '<strong class="text-stone-800">' + tapEscape(selected.material_nombre || 'Material') + '</strong>'
@@ -17922,6 +17947,9 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       + ' · propuesta #' + tapEscape(row.id);
     actionTitleEl.textContent = guide?.actionTitle || 'Caso listo para revisar.';
     actionTextEl.textContent = guide?.actionText || 'Usa el motor actual que mejor calce con este caso.';
+    exitModeEl.textContent = guide?.actionTarget === 'resolve'
+      ? 'Bandeja'
+      : (guide?.actionTarget === 'mesa' ? 'Mesa' : 'Calculadora');
     calcBtn.disabled = false;
     calcBtn.onclick = function () {
       window.calcIrDesdeWorkspace && window.calcIrDesdeWorkspace({
@@ -17973,7 +18001,13 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const factAgeEl = document.getElementById('wsSafeFactAge');
     const factConfidenceEl = document.getElementById('wsSafeFactConfidence');
     const factRowsEl = document.getElementById('wsSafeFactRows');
-    if (!materialEl || !alcanceEl || !publishedEl || !draftEl || !hintEl || !caseLeadEl || !caseSupportEl || !sourceBadgeEl || !priorityBadgeEl || !factCurrentEl || !factAgeEl || !factConfidenceEl || !factRowsEl) return;
+    const decisionBadgeEl = document.getElementById('wsSafeDecisionBadge');
+    const deltaBadgeEl = document.getElementById('wsSafeDeltaBadge');
+    const deltaValueEl = document.getElementById('wsSafeDeltaValue');
+    const deltaPctEl = document.getElementById('wsSafeDeltaPct');
+    const publishedMetaEl = document.getElementById('wsSafePublishedMeta');
+    const draftMetaEl = document.getElementById('wsSafeDraftMeta');
+    if (!materialEl || !alcanceEl || !publishedEl || !draftEl || !hintEl || !caseLeadEl || !caseSupportEl || !sourceBadgeEl || !priorityBadgeEl || !factCurrentEl || !factAgeEl || !factConfidenceEl || !factRowsEl || !decisionBadgeEl || !deltaBadgeEl || !deltaValueEl || !deltaPctEl || !publishedMetaEl || !draftMetaEl) return;
     if (!selected) {
       materialEl.textContent = 'Sin material seleccionado';
       alcanceEl.textContent = '—';
@@ -17990,6 +18024,14 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       factAgeEl.textContent = '—';
       factConfidenceEl.textContent = '—';
       factRowsEl.textContent = '—';
+      decisionBadgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200';
+      decisionBadgeEl.textContent = 'Sin lectura';
+      deltaBadgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200';
+      deltaBadgeEl.textContent = 'Sin diferencia';
+      deltaValueEl.textContent = '—';
+      deltaPctEl.textContent = '—';
+      publishedMetaEl.textContent = 'Es el número que hoy debería verse afuera.';
+      draftMetaEl.textContent = 'Es la señal o propuesta que estás contrastando.';
       mpPaintWorkspaceFlow('signal');
       mpRenderWorkspaceChannels(null, null, null);
       tapSet('wsSafeStrategyMode', '—');
@@ -18017,6 +18059,9 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const spreadValue = publishedValue > 0 && draftValue > 0
       ? ((draftValue - publishedValue) / publishedValue) * 100
       : null;
+    const deltaValue = draftValue > 0 && publishedValue > 0
+      ? draftValue - publishedValue
+      : null;
     const marginValue = listaValue > 0 && draftValue > 0
       ? ((listaValue - draftValue) / listaValue) * 100
       : null;
@@ -18036,10 +18081,37 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     factAgeEl.textContent = tapFmtEdad(row.created_at);
     factConfidenceEl.textContent = tapFmtConfidence(row.confidence_score);
     factRowsEl.textContent = mpFmtCountLabel(selected.rows?.length || 0, 'propuesta', 'propuestas') + ' · ' + mpFmtCountLabel(selected.branches || 0, 'sucursal', 'sucursales');
+    decisionBadgeEl.className = guide.actionTarget === 'resolve'
+      ? 'px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200'
+      : (guide.actionTarget === 'mesa'
+        ? 'px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200'
+        : 'px-2 py-1 rounded-full bg-sky-100 text-sky-700 border border-sky-200');
+    decisionBadgeEl.textContent = guide.actionTitle || 'Sin lectura';
+    if (Number.isFinite(deltaValue)) {
+      deltaBadgeEl.className = deltaValue > 0
+        ? 'px-2 py-1 rounded-full bg-rose-100 text-rose-700 border border-rose-200'
+        : (deltaValue < 0
+          ? 'px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200'
+          : 'px-2 py-1 rounded-full bg-stone-100 text-stone-700 border border-stone-200');
+      deltaBadgeEl.textContent = deltaValue > 0 ? 'Sobre publicado' : (deltaValue < 0 ? 'Bajo publicado' : 'Sin cambio');
+      deltaValueEl.textContent = tapFmtClp(Math.abs(deltaValue));
+      deltaPctEl.textContent = Number.isFinite(spreadValue) ? tapFmtPct(spreadValue) : '—';
+    } else {
+      deltaBadgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200';
+      deltaBadgeEl.textContent = 'Sin diferencia';
+      deltaValueEl.textContent = '—';
+      deltaPctEl.textContent = '—';
+    }
     mpPaintWorkspaceFlow(guide.step);
     hintEl.innerHTML = publishedValue > 0
-      ? ('Comparas el <strong>' + tapEscape(tapFmtClp(publishedValue)) + '</strong> publicado contra el nuevo <strong>' + tapEscape(tapFmtClp(draftValue)) + '</strong> en evaluación.')
-      : 'Todavía no veo un valor publicado vigente para este foco; esta vista sigue siendo solo de lectura.';
+      ? ('Compara el <strong>' + tapEscape(tapFmtClp(publishedValue)) + '</strong> publicado contra el <strong>' + tapEscape(tapFmtClp(draftValue)) + '</strong> en evaluación y luego valida canales.')
+      : 'Todavía no veo un valor publicado vigente para este foco; primero conviene contrastar contexto antes de decidir.';
+    publishedMetaEl.textContent = publishedValue > 0
+      ? 'Es el valor que hoy debería verse en web, widget y frente operativo.'
+      : 'Todavía no veo un publicado visible para este foco.';
+    draftMetaEl.textContent = draftValue > 0
+      ? 'Es la señal activa que estás comparando para decidir si mueves el publicado.'
+      : 'Aún no veo un nuevo valor claro para evaluar.';
 
     mpRenderWorkspaceChannels(publishedValue, row, publishedRow);
     tapSet('wsSafeStrategyMode', snapshot.active?.title || 'Operación general');
