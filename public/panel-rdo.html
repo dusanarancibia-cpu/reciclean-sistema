@@ -17025,9 +17025,13 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     pendingRows: [],
     publishedRows: [],
     publishedError: null,
+    snapshotData: null,
+    snapshotUpdatedAt: null,
+    snapshotError: null,
     pendingMeta: new Map(),
     sucursales: [],
     materiales: new Map(),
+    materialMeta: new Map(),
     selectedKey: null,
     catalogsLoaded: false,
     strategyBound: false,
@@ -17063,6 +17067,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
   function tapSet(id, val) {
     const el = document.getElementById(id);
     if (el) el.textContent = val == null ? '—' : String(val);
+  }
+
+  function mpGetMaterialMeta(materialId) {
+    return mpState.materialMeta.get(Number(materialId)) || mpState.materialMeta.get(String(materialId)) || null;
   }
 
   function mpGetStrategyApi() {
@@ -17475,10 +17483,16 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     if (mpState.catalogsLoaded) return Promise.resolve();
     return Promise.all([
       sb.schema('curated').from('sucursales').select('sucursal_id, nombre').eq('activa', true).order('nombre'),
-      sb.schema('curated').from('materiales').select('material_id, nombre').eq('activo', true).order('nombre')
+      sb.schema('curated').from('materiales').select('material_id, nombre, reciclean, farex').eq('activo', true).order('nombre')
     ]).then(([sucRes, matRes]) => {
       mpState.sucursales = (sucRes.data || []).map(r => ({ id: r.sucursal_id, nombre: r.nombre || r.sucursal_id }));
       mpState.materiales = new Map((matRes.data || []).map(r => [r.material_id, r.nombre || r.material_id]));
+      mpState.materialMeta = new Map((matRes.data || []).map(r => [Number(r.material_id), {
+        material_id: r.material_id,
+        nombre: r.nombre || r.material_id,
+        reciclean: !!r.reciclean,
+        farex: !!r.farex,
+      }]));
       mpState.catalogsLoaded = true;
     }).catch((e) => {
       console.warn('[MesaPrecios] catalogos:', e);
@@ -17869,33 +17883,77 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     }).join('');
   }
 
+  function mpGetSnapshotPublication(row, publishedRow) {
+    const datos = mpState.snapshotData;
+    if (!datos || typeof datos !== 'object') return null;
+    const sucursalNombre = mpGetSucursalNombre(publishedRow || row || {});
+    if (!sucursalNombre || !datos[sucursalNombre] || !Array.isArray(datos[sucursalNombre])) return null;
+    const materialId = Number((publishedRow || row || {}).material_id || 0);
+    if (!materialId) return null;
+    return datos[sucursalNombre].find((item) => Number(item?.id || 0) === materialId) || null;
+  }
+
   function mpRenderWorkspaceChannels(publishedValue, row, publishedRow) {
     const el = document.getElementById('wsSafeChannels');
     if (!el) return;
+    const materialMeta = mpGetMaterialMeta((publishedRow || row || {}).material_id);
+    const saleValue = Number(publishedRow?.precio_venta_clp || 0);
+    const snapshotItem = mpGetSnapshotPublication(row, publishedRow);
+    const snapshotPrice = Number(snapshotItem?.precioLista || snapshotItem?.precioEjecutivo || 0);
+    const snapshotAligned = snapshotItem && saleValue > 0 && snapshotPrice === saleValue;
+    const snapshotDate = mpState.snapshotUpdatedAt
+      ? new Date(mpState.snapshotUpdatedAt).toLocaleString('es-CL')
+      : null;
     const items = [
       {
         name: 'Reciclean',
-        tone: publishedRow ? 'emerald' : 'stone',
-        status: publishedRow ? 'Publicado' : 'Sin lectura',
-        detail: publishedRow ? ('publicado ' + tapFmtClp(publishedValue)) : 'sin precio vigente visible',
+        tone: materialMeta?.reciclean
+          ? (publishedRow ? 'emerald' : 'amber')
+          : 'stone',
+        status: !materialMeta
+          ? 'Sin lectura'
+          : (materialMeta.reciclean ? (publishedRow ? 'Publicado' : 'Pendiente') : 'No aplica'),
+        detail: !materialMeta
+          ? 'sin catalogo del material'
+          : (materialMeta.reciclean
+            ? (publishedRow ? ('usa vigente ' + tapFmtClp(saleValue || publishedValue)) : 'material Reciclean sin publicado visible')
+            : 'este material no publica en Reciclean'),
       },
       {
         name: 'Farex',
-        tone: 'amber',
-        status: 'Pendiente',
-        detail: publishedRow ? ('pendiente reflejar ' + tapFmtClp(publishedValue)) : 'sin lectura aún en este carril',
+        tone: materialMeta?.farex
+          ? (publishedRow ? 'emerald' : 'amber')
+          : 'stone',
+        status: !materialMeta
+          ? 'Sin lectura'
+          : (materialMeta.farex ? (publishedRow ? 'Publicado' : 'Pendiente') : 'No aplica'),
+        detail: !materialMeta
+          ? 'sin catalogo del material'
+          : (materialMeta.farex
+            ? (publishedRow ? ('usa vigente ' + tapFmtClp(saleValue || publishedValue)) : 'material Farex sin publicado visible')
+            : 'este material no publica en Farex'),
       },
       {
         name: 'Widget',
-        tone: publishedRow ? 'emerald' : 'stone',
-        status: publishedRow ? 'Alinear' : 'Sin lectura',
-        detail: publishedRow ? ('alinear contra ' + tapFmtClp(publishedValue)) : 'sin lectura aún en este carril',
+        tone: snapshotAligned ? 'emerald' : (snapshotItem ? 'amber' : 'stone'),
+        status: snapshotAligned ? 'Snapshot OK' : (snapshotItem ? 'Revisar' : 'Pendiente'),
+        detail: snapshotItem
+          ? ('snapshot ' + tapFmtClp(snapshotPrice) + (snapshotDate ? ' · ' + snapshotDate : ''))
+          : (mpState.snapshotError ? 'snapshot no disponible en este acceso' : 'sin snapshot alineado aún'),
       },
       {
         name: 'Diego',
-        tone: row?.ruta === 'manual_calc' ? 'emerald' : 'rose',
-        status: row?.ruta === 'manual_calc' ? 'Origen' : 'Desfasado',
-        detail: row?.ruta === 'manual_calc' ? 'viene desde decisión directa' : 'todavía no compara contra este valor',
+        tone: row?.ruta === 'manual_calc'
+          ? 'emerald'
+          : (snapshotAligned ? 'emerald' : (snapshotItem ? 'amber' : 'stone')),
+        status: row?.ruta === 'manual_calc'
+          ? 'Origen'
+          : (snapshotAligned ? 'Listo' : (snapshotItem ? 'Revisar' : 'Pendiente')),
+        detail: row?.ruta === 'manual_calc'
+          ? 'viene desde decisión directa'
+          : (snapshotItem
+            ? ('usa snapshot ' + tapFmtClp(snapshotPrice) + ' para consulta')
+            : 'sin puente visible al snapshot todavía'),
       },
     ];
     const tones = {
@@ -18189,7 +18247,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     if (typeof sb === 'undefined' || !sb) return;
     try {
       await mpEnsureCatalogsLoaded();
-      const [pendingRes, publishedRes] = await Promise.all([
+      const [pendingRes, publishedRes, snapshotRes] = await Promise.all([
         sb.schema('staging').from('v_bandeja_precios')
           .select('id, cliente_nombre, material_id, material_nombre, sucursal_id, sucursal_nombre, precio_clp_kg, precio_vigente, desviacion_pct, confidence_score, ruta, estado, created_at, notas')
           .eq('estado', 'pendiente')
@@ -18198,7 +18256,11 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         sb.schema('curated').from('vw_materiales_sucursal_precios_vigente')
           .select('material_id, sucursal_id, precio_compra_clp, precio_venta_clp, vigencia_desde, notas')
           .order('vigencia_desde', { ascending: false })
-          .limit(400)
+          .limit(400),
+        sb.from('asistente_snapshot')
+          .select('datos, actualizado_en')
+          .eq('id', 1)
+          .maybeSingle()
       ]);
       if (pendingRes.error) throw pendingRes.error;
       const pendingRows = pendingRes.data || [];
@@ -18220,11 +18282,17 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       mpState.pendingRows = pendingRows.map((row) => mpDecoratePendingRow(row, metaById.get(row.id)));
       mpState.publishedRows = publishedRes.error ? [] : (publishedRes.data || []);
       mpState.publishedError = publishedRes.error ? humanizeSupabaseError(publishedRes.error) : null;
+      mpState.snapshotData = snapshotRes.error ? null : (snapshotRes.data?.datos || null);
+      mpState.snapshotUpdatedAt = snapshotRes.error ? null : (snapshotRes.data?.actualizado_en || null);
+      mpState.snapshotError = snapshotRes.error ? humanizeSupabaseError(snapshotRes.error) : null;
       mpRender();
       const el = document.getElementById('tapLastUpdate');
       if (el) el.textContent = new Date().toLocaleString('es-CL');
       if (publishedRes.error) {
         console.warn('[Mesa de Precios] publicados no disponibles:', publishedRes.error);
+      }
+      if (snapshotRes.error) {
+        console.warn('[Mesa de Precios] snapshot no disponible:', snapshotRes.error);
       }
     } catch (e) {
       if (window.panelToastErr) panelToastErr('Mesa de Precios', e); else console.warn('[MesaPrecios] error global:', e);
