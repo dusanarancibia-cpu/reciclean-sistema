@@ -3878,8 +3878,8 @@
               <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-2">Cálculo rápido</div>
               <div class="space-y-3">
                 <div>
-                  <div class="flex items-center justify-between gap-2 text-xs text-stone-600 mb-1"><span>Compra</span><strong id="wsSafeCompraValue" class="text-stone-800">—</strong></div>
-                  <div class="h-2 rounded-full bg-emerald-200 overflow-hidden"><div id="wsSafeCompraBar" class="h-full bg-emerald-500" style="width:0%"></div></div>
+                  <div class="flex items-center justify-between gap-2 text-xs text-stone-600 mb-1"><span>Venta</span><strong id="wsSafeCompraValue" class="text-stone-800">—</strong></div>
+                  <div class="h-2 rounded-full bg-violet-200 overflow-hidden"><div id="wsSafeCompraBar" class="h-full bg-violet-500" style="width:0%"></div></div>
                 </div>
                 <div>
                   <div class="flex items-center justify-between gap-2 text-xs text-stone-600 mb-1"><span>Margen</span><strong id="wsSafeMarginValue" class="text-stone-800">—</strong></div>
@@ -3932,6 +3932,11 @@
               <div class="font-semibold text-emerald-800">Resolver caso activo en Bandeja</div>
               <div class="text-xs text-emerald-700 mt-1">Mantiene la resolución real en el motor actual.</div>
             </button>
+            <button id="wsSafeReferenceBtn" type="button" disabled
+                    class="w-full rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+              <div class="font-semibold text-violet-800">Cerrar como referencia</div>
+              <div class="text-xs text-violet-700 mt-1">Si es bluff o no te interesa mover compra, abre Bandeja para cerrarlo sin cambiar el publicado.</div>
+            </button>
             <button id="wsSafeMesaBtn" type="button"
                     class="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-left hover:border-stone-300">
               <div class="font-semibold text-stone-800">Abrir foco en Mesa</div>
@@ -3972,7 +3977,7 @@
             </div>
             <span id="wsSafeMobileBadge" class="px-2 py-1 rounded-full bg-stone-100 text-stone-600 text-[11px]">Sin foco</span>
           </div>
-          <div class="grid grid-cols-3 gap-2">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <button id="wsSafeMobileMesaBtn" type="button" disabled
                     class="rounded-xl border border-stone-200 bg-stone-50 px-3 py-3 text-sm font-semibold text-stone-800 disabled:opacity-50 disabled:cursor-not-allowed">
               Ver Mesa
@@ -3984,6 +3989,10 @@
             <button id="wsSafeMobileResolveBtn" type="button" disabled
                     class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-sm font-semibold text-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed">
               Resolver en Bandeja
+            </button>
+            <button id="wsSafeMobileReferenceBtn" type="button" disabled
+                    class="rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-sm font-semibold text-violet-800 disabled:opacity-50 disabled:cursor-not-allowed">
+              Solo referencia
             </button>
           </div>
         </div>
@@ -17343,7 +17352,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     });
   }
 
-  function mpGetWorkspaceGuide(selected, row, publishedRow, publishedValue, draftValue) {
+  function mpGetWorkspaceGuide(selected, row, publishedRow, publishedValue, draftValue, saleValue) {
     const routeMeta = mpGetRouteMeta(row?.ruta);
     const material = selected?.material_nombre || mpGetMaterialNombre(row || {}) || 'Material';
     const alcance = row?.sucursal_id ? mpGetSucursalNombre(row) : 'sin alcance definido';
@@ -17394,6 +17403,18 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       return guide;
     }
 
+    if (!saleValue) {
+      guide.priorityLabel = 'Sin $ Venta';
+      guide.priorityClass = 'px-2 py-1 rounded-full border bg-violet-50 text-violet-700 border-violet-200';
+      guide.step = 'decision';
+      guide.lead = material + ' en ' + alcance + ' no tiene $ venta visible.';
+      guide.support = 'Puedes seguir afinando compra en modo conservador mientras consigues ese precio de venta. Si esta señal no te interesa, también puedes cerrarla como referencia sin mover compra.';
+      guide.actionTitle = 'Ajustar compra con cuidado o cerrar como referencia';
+      guide.actionText = 'Sin $ venta visible no bloqueas la operación: puedes recalcular conservador o sacar la señal de tu carga sin cambiar compra.';
+      guide.actionTarget = 'calc';
+      return guide;
+    }
+
     if (row.ruta === 'manual_calc') {
       guide.priorityLabel = mpIsUrgent(row) ? 'Directa urgente' : 'Decisión directa';
       guide.priorityClass = 'px-2 py-1 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200';
@@ -17423,8 +17444,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     guide.step = 'decision';
     guide.lead = material + ' en ' + alcance + ' ya tiene contexto suficiente para decidir.';
     guide.support = 'Compara ' + publishedText + ' publicado versus ' + draftText + ' en evaluación, mira estrategia y luego sal por el motor que más te convenga.';
-    guide.actionTitle = 'Comparar y luego resolver';
-    guide.actionText = 'Si necesitas recalcular, entra a Calculadora. Si ya está claro, cierra por Bandeja.';
+    guide.actionTitle = 'Calcular o cerrar como referencia';
+    guide.actionText = 'Si la señal te sirve, entra a Calculadora. Si es bluff o no amerita cambio, ciérrala como referencia desde Bandeja.';
     guide.actionTarget = 'calc';
     return guide;
   }
@@ -17902,10 +17923,12 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const metaEl = document.getElementById('wsSafeSelectionMeta');
     const calcBtn = document.getElementById('wsSafeCalcBtn');
     const resolveBtn = document.getElementById('wsSafeResolveBtn');
+    const referenceBtn = document.getElementById('wsSafeReferenceBtn');
     const mesaBtn = document.getElementById('wsSafeMesaBtn');
     const mobileMesaBtn = document.getElementById('wsSafeMobileMesaBtn');
     const mobileCalcBtn = document.getElementById('wsSafeMobileCalcBtn');
     const mobileResolveBtn = document.getElementById('wsSafeMobileResolveBtn');
+    const mobileReferenceBtn = document.getElementById('wsSafeMobileReferenceBtn');
     const mobileHintEl = document.getElementById('wsSafeMobileHint');
     const mobileBadgeEl = document.getElementById('wsSafeMobileBadge');
     const actionTitleEl = document.getElementById('wsSafeActionTitle');
@@ -17917,9 +17940,9 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       });
       mesaBtn.dataset.bound = '1';
     }
-    if (!metaEl || !resolveBtn || !calcBtn || !mesaBtn || !actionTitleEl || !actionTextEl || !mobileMesaBtn || !mobileCalcBtn || !mobileResolveBtn || !mobileHintEl || !mobileBadgeEl || !exitModeEl) return;
-    [calcBtn, resolveBtn, mesaBtn, mobileMesaBtn, mobileCalcBtn, mobileResolveBtn].forEach((btn) => {
-      btn.classList.remove('ring-2', 'ring-sky-200', 'ring-emerald-200', 'ring-amber-200');
+    if (!metaEl || !resolveBtn || !calcBtn || !referenceBtn || !mesaBtn || !actionTitleEl || !actionTextEl || !mobileMesaBtn || !mobileCalcBtn || !mobileResolveBtn || !mobileReferenceBtn || !mobileHintEl || !mobileBadgeEl || !exitModeEl) return;
+    [calcBtn, resolveBtn, referenceBtn, mesaBtn, mobileMesaBtn, mobileCalcBtn, mobileResolveBtn, mobileReferenceBtn].forEach((btn) => {
+      btn.classList.remove('ring-2', 'ring-sky-200', 'ring-emerald-200', 'ring-amber-200', 'ring-violet-200');
     });
     if (!selected || !row || !row.id) {
       metaEl.textContent = 'Sin caso activo aún.';
@@ -17935,6 +17958,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       resolveBtn.onclick = null;
       mobileResolveBtn.disabled = true;
       mobileResolveBtn.onclick = null;
+      referenceBtn.disabled = true;
+      referenceBtn.onclick = null;
+      mobileReferenceBtn.disabled = true;
+      mobileReferenceBtn.onclick = null;
       mobileHintEl.textContent = 'Selecciona un caso para activar la salida recomendada.';
       mobileBadgeEl.className = 'px-2 py-1 rounded-full bg-stone-100 text-stone-600 text-[11px]';
       mobileBadgeEl.textContent = 'Sin foco';
@@ -17969,6 +17996,12 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     };
     mobileResolveBtn.disabled = false;
     mobileResolveBtn.onclick = resolveBtn.onclick;
+    referenceBtn.disabled = false;
+    referenceBtn.onclick = function () {
+      window.mpCerrarComoReferencia && window.mpCerrarComoReferencia(row.id);
+    };
+    mobileReferenceBtn.disabled = false;
+    mobileReferenceBtn.onclick = referenceBtn.onclick;
     mobileHintEl.textContent = guide?.actionText || 'Usa el motor actual que mejor calce con este caso.';
     mobileBadgeEl.className = guide?.actionTarget === 'resolve'
       ? 'px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[11px]'
@@ -17984,6 +18017,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     if (guide?.actionTarget === 'mesa') mesaBtn.classList.add('ring-2', 'ring-amber-200');
     if (guide?.actionTarget === 'calc') mobileCalcBtn.classList.add('ring-2', 'ring-sky-200');
     if (guide?.actionTarget === 'resolve') mobileResolveBtn.classList.add('ring-2', 'ring-emerald-200');
+    if (guide?.actionTarget !== 'resolve' && row?.ruta !== 'manual_calc') referenceBtn.classList.add('ring-2', 'ring-violet-200');
   }
 
   function mpRenderWorkspaceSafe(groups, selected) {
@@ -18046,14 +18080,14 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       mpSetWidth('wsSafeMarginBar', 0);
       mpSetWidth('wsSafeSpreadBar', 0);
       mpSetWidth('wsSafeCompetitionBar', 0);
-      mpRenderWorkspaceActions(null, null, mpGetWorkspaceGuide(null, null, null, 0, 0));
+      mpRenderWorkspaceActions(null, null, mpGetWorkspaceGuide(null, null, null, 0, 0, 0));
       return;
     }
     const row = mpGetWorkspaceRow(selected) || {};
     const publishedRow = mpGetWorkspacePublished(selected, row);
     const publishedValue = Number(row.precio_vigente || publishedRow?.precio_compra_clp || 0);
     const draftValue = Number(row.precio_ejecutivo || row.precio_clp_kg || 0);
-    const listaValue = Number(row.precio_lista || draftValue || 0);
+    const saleValue = Number(publishedRow?.precio_venta_clp || 0);
     const competenciaValue = row.ruta === 'manual_calc' ? 0 : draftValue;
     const snapshot = mpGetStrategySnapshot(selected);
     const spreadValue = publishedValue > 0 && draftValue > 0
@@ -18062,10 +18096,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const deltaValue = draftValue > 0 && publishedValue > 0
       ? draftValue - publishedValue
       : null;
-    const marginValue = listaValue > 0 && draftValue > 0
-      ? ((listaValue - draftValue) / listaValue) * 100
+    const marginValue = saleValue > 0 && draftValue > 0
+      ? ((saleValue - draftValue) / saleValue) * 100
       : null;
-    const guide = mpGetWorkspaceGuide(selected, row, publishedRow, publishedValue, draftValue);
+    const guide = mpGetWorkspaceGuide(selected, row, publishedRow, publishedValue, draftValue, saleValue);
 
     materialEl.textContent = selected.material_nombre || 'Material';
     alcanceEl.textContent = mpGetSucursalNombre(row) || '—';
@@ -18115,18 +18149,18 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
 
     mpRenderWorkspaceChannels(publishedValue, row, publishedRow);
     tapSet('wsSafeStrategyMode', snapshot.active?.title || 'Operación general');
-    tapSet('wsSafeStrategyBand', (publishedValue > 0 || listaValue > 0)
-      ? (tapFmtClp(publishedValue || draftValue) + ' / ' + tapFmtClp(listaValue || draftValue))
+    tapSet('wsSafeStrategyBand', (publishedValue > 0 || saleValue > 0)
+      ? (tapFmtClp(publishedValue || draftValue) + ' / ' + tapFmtClp(saleValue || draftValue))
       : '—');
     tapSet('wsSafeStrategyLme', snapshot.active?.pricePolicy ? 'Vigilar según estrategia' : 'Sin lectura');
     tapSet('wsSafeStrategyCompetition', snapshot.publicationRule ? 'Referencia, no mandato' : 'Sin lectura');
-    tapSet('wsSafeCompraValue', draftValue > 0 ? tapFmtClp(draftValue) : '—');
-    tapSet('wsSafeMarginValue', Number.isFinite(marginValue) ? tapFmtPct(marginValue) : '—');
+    tapSet('wsSafeCompraValue', saleValue > 0 ? tapFmtClp(saleValue) : 'Sin $ Venta');
+    tapSet('wsSafeMarginValue', Number.isFinite(marginValue) ? tapFmtPct(marginValue) : 'Sin $ Venta');
     tapSet('wsSafeSpreadValue', Number.isFinite(spreadValue) ? tapFmtPct(spreadValue) : '—');
     tapSet('wsSafeCompetitionValue', competenciaValue > 0 ? tapFmtClp(competenciaValue) : 'Sin señal');
 
-    const maxRef = Math.max(draftValue || 0, listaValue || 0, publishedValue || 0, competenciaValue || 0, 1);
-    mpSetWidth('wsSafeCompraBar', (draftValue / maxRef) * 100);
+    const maxRef = Math.max(draftValue || 0, saleValue || 0, publishedValue || 0, competenciaValue || 0, 1);
+    mpSetWidth('wsSafeCompraBar', saleValue > 0 ? (saleValue / maxRef) * 100 : 0);
     mpSetWidth('wsSafeMarginBar', Number.isFinite(marginValue) ? Math.abs(marginValue) * 2 : 0);
     mpSetWidth('wsSafeSpreadBar', Number.isFinite(spreadValue) ? Math.abs(spreadValue) * 2 : 0);
     mpSetWidth('wsSafeCompetitionBar', competenciaValue > 0 ? (competenciaValue / maxRef) * 100 : 0);
@@ -18162,7 +18196,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
           .order('created_at', { ascending: false })
           .limit(600),
         sb.schema('curated').from('vw_materiales_sucursal_precios_vigente')
-          .select('material_id, sucursal_id, precio_compra_clp, vigencia_desde, notas')
+          .select('material_id, sucursal_id, precio_compra_clp, precio_venta_clp, vigencia_desde, notas')
           .order('vigencia_desde', { ascending: false })
           .limit(400)
       ]);
@@ -18260,6 +18294,18 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     mpOpenTab('bandeja_precios');
     if (typeof window.bpAbrirDrawer === 'function') {
       await window.bpAbrirDrawer(id);
+    }
+  };
+  window.mpCerrarComoReferencia = async function (id) {
+    mpOpenTab('bandeja_precios');
+    if (typeof window.bpAbrirDrawer === 'function') {
+      await window.bpAbrirDrawer(id);
+      const msg = document.getElementById('bpDrawerMsg');
+      if (msg) {
+        msg.textContent = 'Si esta señal es solo referencia o bluff comercial, usa Rechazar para cerrarla sin mover compra.';
+        msg.className = 'text-xs p-2 rounded bg-violet-100 text-violet-800';
+        msg.classList.remove('hidden');
+      }
     }
   };
   window.wsIrDesdeCalculadora = async function (focus) {
