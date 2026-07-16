@@ -44,6 +44,28 @@ No son obligatorias para que levante este release hoy, pero sí recomendadas par
 5. Abrir `/supervision`
 6. Revisar `/_version.json`
 
+## Smoke automático disponible
+
+Quedó un smoke público que no requiere credenciales reales y valida:
+
+- render base de `romanero.html`
+- render base de `pagos.html`
+- render base de `supervision.html`
+- carga mínima de `panel-rdo.html`
+- presencia de `/_version.json`
+
+Ejecutar:
+
+```bash
+npm run test:e2e:primer-release
+```
+
+O contra un preview específico:
+
+```bash
+E2E_BASE_URL=https://tu-preview.vercel.app npm run test:e2e:primer-release
+```
+
 ## Pendiente cuando Pablo tenga accesos
 
 1. Probar login real en las tres vistas
