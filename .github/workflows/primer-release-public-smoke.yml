@@ -1,0 +1,95 @@
+name: Primer Release public smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'romanero.html'
+      - 'pagos.html'
+      - 'supervision.html'
+      - 'src/lib/primer-release-api.js'
+      - 'src/lib/supabase.js'
+      - 'src/romanero-mvp.js'
+      - 'src/pagos-mvp.js'
+      - 'src/supervision-mvp.js'
+      - 'public/panel-rdo.html'
+      - 'vite.config.js'
+      - 'vercel.json'
+      - 'package.json'
+      - 'tests/primer-release-public-smoke.spec.ts'
+      - '.github/workflows/primer-release-public-smoke.yml'
+  push:
+    branches:
+      - main
+      - primer-release-ui-main-limpio
+    paths:
+      - 'romanero.html'
+      - 'pagos.html'
+      - 'supervision.html'
+      - 'src/lib/primer-release-api.js'
+      - 'src/lib/supabase.js'
+      - 'src/romanero-mvp.js'
+      - 'src/pagos-mvp.js'
+      - 'src/supervision-mvp.js'
+      - 'public/panel-rdo.html'
+      - 'vite.config.js'
+      - 'vercel.json'
+      - 'package.json'
+      - 'tests/primer-release-public-smoke.spec.ts'
+      - '.github/workflows/primer-release-public-smoke.yml'
+  workflow_dispatch:
+
+jobs:
+  smoke-public:
+    name: Build + smoke público
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build app
+        run: npm run build
+
+      - name: Start local preview
+        run: |
+          nohup npm run preview -- --host 127.0.0.1 --port 4173 > preview.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/_version.json > /dev/null; then
+              echo "Preview listo"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Preview no respondió a tiempo"
+          cat preview.log || true
+          exit 1
+
+      - name: Run Primer Release smoke
+        env:
+          E2E_BASE_URL: http://127.0.0.1:4173
+        run: npm run test:e2e:primer-release -- --reporter=html,list
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: primer-release-playwright-report
+          path: |
+            playwright-report/
+            test-results/
+            preview.log
+          retention-days: 14
