@@ -17906,73 +17906,83 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       : null;
     const items = [
       {
-        name: 'Reciclean',
+        title: 'Reciclean',
+        subtitle: 'web',
         tone: materialMeta?.reciclean
           ? (publishedRow ? 'emerald' : 'amber')
           : 'stone',
+        price: materialMeta?.reciclean && publishedRow ? tapFmtClp(saleValue || publishedValue) : '',
         status: !materialMeta
-          ? 'Sin lectura'
-          : (materialMeta.reciclean ? (publishedRow ? 'Publicado' : 'Pendiente') : 'No aplica'),
+          ? 'Sin ficha'
+          : (materialMeta.reciclean ? (publishedRow ? 'Visible' : 'Por publicar') : 'No aplica'),
         detail: !materialMeta
-          ? 'sin catalogo del material'
+          ? 'Falta definir este canal en el material'
           : (materialMeta.reciclean
-            ? (publishedRow ? ('usa vigente ' + tapFmtClp(saleValue || publishedValue)) : 'material Reciclean sin publicado visible')
-            : 'este material no publica en Reciclean'),
+            ? (publishedRow ? 'Ya sale con el vigente actual' : 'Todavia no hay vigente visible')
+            : 'Este material no sale por Reciclean'),
       },
       {
-        name: 'Farex',
+        title: 'Farex',
+        subtitle: 'web',
         tone: materialMeta?.farex
           ? (publishedRow ? 'emerald' : 'amber')
           : 'stone',
+        price: materialMeta?.farex && publishedRow ? tapFmtClp(saleValue || publishedValue) : '',
         status: !materialMeta
-          ? 'Sin lectura'
-          : (materialMeta.farex ? (publishedRow ? 'Publicado' : 'Pendiente') : 'No aplica'),
+          ? 'Sin ficha'
+          : (materialMeta.farex ? (publishedRow ? 'Visible' : 'Por publicar') : 'No aplica'),
         detail: !materialMeta
-          ? 'sin catalogo del material'
+          ? 'Falta definir este canal en el material'
           : (materialMeta.farex
-            ? (publishedRow ? ('usa vigente ' + tapFmtClp(saleValue || publishedValue)) : 'material Farex sin publicado visible')
-            : 'este material no publica en Farex'),
+            ? (publishedRow ? 'Ya sale con el vigente actual' : 'Todavia no hay vigente visible')
+            : 'Este material no sale por Farex'),
       },
       {
-        name: 'Widget',
+        title: 'Widget',
+        subtitle: '',
         tone: snapshotAligned ? 'emerald' : (snapshotItem ? 'amber' : 'stone'),
-        status: snapshotAligned ? 'Snapshot OK' : (snapshotItem ? 'Revisar' : 'Pendiente'),
+        price: '',
+        status: snapshotAligned ? 'Sincronizado' : (snapshotItem ? 'Por validar' : 'Pendiente'),
         detail: snapshotItem
-          ? ('snapshot ' + tapFmtClp(snapshotPrice) + (snapshotDate ? ' · ' + snapshotDate : ''))
-          : (mpState.snapshotError ? 'snapshot no disponible en este acceso' : 'sin snapshot alineado aún'),
+          ? ('Snapshot ' + tapFmtClp(snapshotPrice) + (snapshotDate ? ' · ' + snapshotDate : ''))
+          : (mpState.snapshotError ? 'No pude leer el snapshot en este acceso' : 'Todavia no veo snapshot alineado'),
       },
       {
-        name: 'Diego',
+        title: 'Diego',
+        subtitle: '',
         tone: row?.ruta === 'manual_calc'
           ? 'emerald'
-          : (snapshotAligned ? 'emerald' : (snapshotItem ? 'amber' : 'stone')),
+          : (snapshotAligned ? 'emerald' : (snapshotItem ? 'rose' : 'stone')),
+        price: '',
         status: row?.ruta === 'manual_calc'
           ? 'Origen'
-          : (snapshotAligned ? 'Listo' : (snapshotItem ? 'Revisar' : 'Pendiente')),
+          : (snapshotAligned ? 'Alineado' : (snapshotItem ? 'Desfasado' : 'Pendiente')),
         detail: row?.ruta === 'manual_calc'
-          ? 'viene desde decisión directa'
+          ? 'Viene desde decision directa'
           : (snapshotItem
-            ? ('usa snapshot ' + tapFmtClp(snapshotPrice) + ' para consulta')
-            : 'sin puente visible al snapshot todavía'),
+            ? ('Consulta con snapshot ' + tapFmtClp(snapshotPrice))
+            : 'Todavia no veo puente visible al snapshot'),
       },
     ];
     const tones = {
-      emerald: { dot: 'bg-emerald-400', card: 'border-emerald-200 bg-emerald-50/50', badge: 'bg-emerald-100 text-emerald-700' },
-      amber: { dot: 'bg-amber-400', card: 'border-amber-200 bg-amber-50/50', badge: 'bg-amber-100 text-amber-700' },
-      rose: { dot: 'bg-rose-400', card: 'border-rose-200 bg-rose-50/50', badge: 'bg-rose-100 text-rose-700' },
-      stone: { dot: 'bg-stone-300', card: 'border-stone-200 bg-white', badge: 'bg-stone-100 text-stone-700' },
+      emerald: { dot: 'bg-emerald-400', card: 'border-stone-200 bg-white', status: 'text-emerald-700', detail: 'text-stone-500' },
+      amber: { dot: 'bg-amber-400', card: 'border-stone-200 bg-white', status: 'text-amber-700', detail: 'text-stone-500' },
+      rose: { dot: 'bg-rose-400', card: 'border-stone-200 bg-white', status: 'text-rose-700', detail: 'text-stone-500' },
+      stone: { dot: 'bg-stone-300', card: 'border-stone-200 bg-white', status: 'text-stone-500', detail: 'text-stone-500' },
     };
     el.innerHTML = items.map((item) =>
-      '<div class="rounded-xl border px-3 py-3 ' + tones[item.tone].card + '">'
-      + '<div class="flex items-start justify-between gap-2">'
-      + '<div class="flex items-center gap-2 min-w-0">'
-      + '<span class="inline-block w-3.5 h-3.5 rounded-full shrink-0 ' + tones[item.tone].dot + '"></span>'
-      + '<strong class="text-sm text-stone-800 truncate">' + tapEscape(item.name) + '</strong>'
+      '<div class="rounded-3xl border px-4 py-4 ' + tones[item.tone].card + '">'
+      + '<div class="flex items-center gap-3">'
+      + '<span class="inline-block w-5 h-5 rounded-full shrink-0 ' + tones[item.tone].dot + '"></span>'
+      + '<div class="min-w-0">'
+      + '<div class="text-[13px] font-bold leading-tight text-stone-800">'
+      + tapEscape(item.title)
+      + (item.subtitle ? '<span class="block">' + tapEscape(item.subtitle) + '</span>' : '')
       + '</div>'
-      + '<span class="px-2 py-1 rounded-full text-[11px] ' + tones[item.tone].badge + '">' + tapEscape(item.status) + '</span>'
+      + (item.price ? '<div class="mt-1 text-xl font-semibold leading-none text-stone-800">' + tapEscape(item.price) + '</div>' : '')
+      + '<div class="mt-1 text-[13px] leading-tight ' + tones[item.tone].status + '">' + tapEscape(item.status) + '</div>'
+      + '<div class="mt-1 text-[11px] leading-tight ' + tones[item.tone].detail + '">' + tapEscape(item.detail) + '</div>'
       + '</div>'
-      + '<div class="mt-2 text-[11px] uppercase tracking-wider text-stone-500">Estado</div>'
-      + '<div class="mt-1 text-xs text-stone-600">' + tapEscape(item.detail) + '</div>'
       + '</div>'
     ).join('');
   }
