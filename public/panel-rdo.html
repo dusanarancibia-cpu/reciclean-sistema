@@ -813,6 +813,10 @@
             <span class="v4-emoji" aria-hidden="true">🎯</span>
             Mesa de Precios
           </a>
+          <a href="#" data-v4-tab="workspace_precios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
+            <span class="v4-emoji" aria-hidden="true">🧭</span>
+            Workspace seguro
+          </a>
           <a href="#" data-v4-tab="bandeja_precios" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm">
             <span class="v4-emoji" aria-hidden="true">📨</span>
             Bandeja técnica
@@ -3138,9 +3142,9 @@
                 class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
           📤 Publicar como propuesta
         </button>
-        <button type="button" onclick="window.mpIrDesdeCalculadora && window.mpIrDesdeCalculadora()"
+        <button type="button" onclick="window.wsIrDesdeCalculadora && window.wsIrDesdeCalculadora()"
                 class="text-xs text-sky-700 underline">
-          📥 Ver Mesa de Precios
+          🧭 Ver Workspace seguro
         </button>
         <span class="text-xs text-stone-500" id="calcPublicarMsg"></span>
       </div>
@@ -3655,6 +3659,317 @@
         <code>precio-aplicar</code> y <code>curated.vw_materiales_sucursal_precios_vigente</code>.
       </footer>
 
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         WORKSPACE SEGURO DE PRECIOS (Opción B · carril aislado)
+         Primera construcción segura: NO reemplaza Mesa, Calculadora ni Bandeja.
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="tabWorkspacePrecios" data-tab="workspace_precios" role="tabpanel"
+             aria-labelledby="tabWorkspacePreciosLabel"
+             class="tab-content hidden p-4 md:p-6 bg-stone-50">
+
+      <header class="mb-6 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 class="text-2xl font-bold text-stone-800 flex items-center gap-2">
+            <span>🧭</span><span>Workspace seguro de Precios</span>
+          </h2>
+          <p class="text-sm text-stone-500 mt-1 max-w-4xl">
+            Esta es la primera construcción aislada de la Opción B. Sirve para probar la experiencia
+            unificada sin romper el flujo productivo actual. La resolución real sigue viviendo en
+            <strong>Mesa</strong>, <strong>Calculadora</strong> y <strong>Bandeja técnica</strong>.
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab('tablero_precios')"
+                  class="bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
+            🎯 Volver a Mesa
+          </button>
+          <button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab('bandeja_precios')"
+                  class="bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
+            📨 Resolver en Bandeja
+          </button>
+          <button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab('calculadora_precios')"
+                  class="bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
+            🧮 Abrir Calculadora
+          </button>
+        </div>
+      </header>
+
+      <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 mb-4 text-sm text-amber-900">
+        <div class="font-semibold">Carril seguro activo</div>
+        <div class="mt-1 text-amber-800">
+          Esta vista no cambia el motor actual ni reemplaza handlers productivos. Su objetivo es
+          validar diseño, orden operacional y lectura de estado antes de conectar persistencia real.
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-[0.82fr,1.18fr,0.78fr] gap-4">
+        <aside class="bg-white border border-stone-300 rounded-xl p-4">
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Entrada</div>
+              <h3 class="text-sm font-bold text-stone-700">Inbox de señales</h3>
+            </div>
+            <span id="wsSafeCount" class="text-xs px-2 py-1 rounded-full bg-stone-100 text-stone-600">0 activas</span>
+          </div>
+
+          <div id="wsSafeSummaryChips" class="flex flex-wrap gap-2 mb-3 text-xs">
+            <span class="px-2 py-1 rounded-full bg-stone-100 text-stone-700">Sin datos aún</span>
+          </div>
+
+          <div id="wsSafeInboxList" class="space-y-2">
+            <div class="rounded-xl border border-stone-200 bg-white px-4 py-4 text-sm text-stone-500">
+              Cargando señales reales desde la Mesa...
+            </div>
+          </div>
+
+          <div class="mt-4 rounded-xl border border-stone-200 bg-stone-50 px-3 py-3">
+            <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-2">Regla de clic</div>
+            <ul class="text-xs text-stone-600 space-y-1.5">
+              <li>1. Click en tarjeta = selecciona el foco actual.</li>
+              <li>2. Click en chip = filtra o reclasifica.</li>
+              <li>3. Nada persiste hasta salir por acciones terminales.</li>
+            </ul>
+          </div>
+        </aside>
+
+        <section class="bg-white border border-stone-300 rounded-xl p-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Decisión</div>
+              <h3 class="text-sm font-bold text-stone-700">Workspace central</h3>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-full bg-violet-100 text-violet-700">Opción B · carril aislado</span>
+          </div>
+
+          <div class="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 mb-3">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div class="text-[11px] uppercase tracking-wider text-sky-700 mb-1">Guía operativa</div>
+                <div id="wsSafeCaseLead" class="text-sm font-semibold text-sky-900">Selecciona un caso para ver la recomendación.</div>
+                <div id="wsSafeCaseSupport" class="text-xs text-sky-800 mt-1">Este bloque te dice dónde mirar primero y cuál es la siguiente acción segura.</div>
+              </div>
+              <div class="flex flex-wrap gap-2 text-xs">
+                <span id="wsSafeSourceBadge" class="px-2 py-1 rounded-full bg-white text-sky-700 border border-sky-200">Sin ruta</span>
+                <span id="wsSafePriorityBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200">Sin prioridad</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="wsSafeStageFlow" class="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
+            <div id="wsSafeStepSignal" class="rounded-xl border border-stone-200 bg-stone-50 px-3 py-3">
+              <div class="text-[11px] uppercase tracking-wider text-stone-500">Paso 1</div>
+              <div class="mt-1 text-sm font-semibold text-stone-800">Leer señal</div>
+              <div class="mt-1 text-xs text-stone-500">Origen y caso activo.</div>
+            </div>
+            <div id="wsSafeStepContrast" class="rounded-xl border border-stone-200 bg-stone-50 px-3 py-3">
+              <div class="text-[11px] uppercase tracking-wider text-stone-500">Paso 2</div>
+              <div class="mt-1 text-sm font-semibold text-stone-800">Contrastar</div>
+              <div class="mt-1 text-xs text-stone-500">Publicado, alcance y canales.</div>
+            </div>
+            <div id="wsSafeStepDecision" class="rounded-xl border border-stone-200 bg-stone-50 px-3 py-3">
+              <div class="text-[11px] uppercase tracking-wider text-stone-500">Paso 3</div>
+              <div class="mt-1 text-sm font-semibold text-stone-800">Definir número</div>
+              <div class="mt-1 text-xs text-stone-500">Estrategia y cálculo rápido.</div>
+            </div>
+            <div id="wsSafeStepResolve" class="rounded-xl border border-stone-200 bg-stone-50 px-3 py-3">
+              <div class="text-[11px] uppercase tracking-wider text-stone-500">Paso 4</div>
+              <div class="mt-1 text-sm font-semibold text-stone-800">Salir por motor real</div>
+              <div class="mt-1 text-xs text-stone-500">Mesa, Calculadora o Bandeja.</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+            <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
+              <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-1">Material</div>
+              <div id="wsSafeMaterial" class="text-lg font-bold text-stone-800">—</div>
+            </div>
+            <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
+              <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-1">Alcance</div>
+              <div id="wsSafeAlcance" class="text-lg font-bold text-stone-800">—</div>
+            </div>
+          </div>
+
+          <div id="wsSafeQuickFacts" class="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
+            <div class="rounded-xl border border-stone-200 bg-white px-3 py-3">
+              <div class="text-[11px] uppercase tracking-wider text-stone-500">Caso</div>
+              <div id="wsSafeFactCurrent" class="mt-1 text-sm font-semibold text-stone-800">Sin caso</div>
+            </div>
+            <div class="rounded-xl border border-stone-200 bg-white px-3 py-3">
+              <div class="text-[11px] uppercase tracking-wider text-stone-500">Actualizado</div>
+              <div id="wsSafeFactAge" class="mt-1 text-sm font-semibold text-stone-800">—</div>
+            </div>
+            <div class="rounded-xl border border-stone-200 bg-white px-3 py-3">
+              <div class="text-[11px] uppercase tracking-wider text-stone-500">Confianza</div>
+              <div id="wsSafeFactConfidence" class="mt-1 text-sm font-semibold text-stone-800">—</div>
+            </div>
+            <div class="rounded-xl border border-stone-200 bg-white px-3 py-3">
+              <div class="text-[11px] uppercase tracking-wider text-stone-500">Impacto</div>
+              <div id="wsSafeFactRows" class="mt-1 text-sm font-semibold text-stone-800">—</div>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 mb-3">
+            <div class="text-[11px] uppercase tracking-wider text-emerald-700 mb-2">Lectura inmediata del valor</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div class="rounded-xl border border-emerald-200 bg-white px-4 py-3">
+                <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-1">Valor publicado actual</div>
+                <div id="wsSafePublishedValue" class="text-3xl font-bold text-stone-800">—</div>
+              </div>
+              <div class="rounded-xl border border-amber-200 bg-white px-4 py-3">
+                <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-1">Nuevo valor en evaluación</div>
+                <div id="wsSafeDraftValue" class="text-3xl font-bold text-emerald-700">—</div>
+              </div>
+            </div>
+            <div id="wsSafeValueHint" class="mt-2 text-xs text-stone-600">
+              Primero comparas estos dos números. Después miras si cada canal refleja el <strong>$6.150 publicado</strong>.
+            </div>
+          </div>
+
+          <div id="wsSafeChannels" class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+            <div class="rounded-xl border border-stone-200 bg-white px-3 py-3 text-xs text-stone-500">
+              Sin lectura de canales aún.
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
+              <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-2">Estrategia activa</div>
+              <div class="space-y-2 text-xs">
+                <div class="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 border border-stone-200">
+                  <span class="text-stone-600">Modo</span><strong id="wsSafeStrategyMode" class="text-stone-800">—</strong>
+                </div>
+                <div class="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 border border-stone-200">
+                  <span class="text-stone-600">Piso / techo</span><strong id="wsSafeStrategyBand" class="text-stone-800">—</strong>
+                </div>
+                <div class="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 border border-stone-200">
+                  <span class="text-stone-600">Sensib. LME</span><strong id="wsSafeStrategyLme" class="text-stone-800">—</strong>
+                </div>
+                <div class="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 border border-stone-200">
+                  <span class="text-stone-600">Competencia</span><strong id="wsSafeStrategyCompetition" class="text-stone-800">—</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
+              <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-2">Cálculo rápido</div>
+              <div class="space-y-3">
+                <div>
+                  <div class="flex items-center justify-between gap-2 text-xs text-stone-600 mb-1"><span>Compra</span><strong id="wsSafeCompraValue" class="text-stone-800">—</strong></div>
+                  <div class="h-2 rounded-full bg-emerald-200 overflow-hidden"><div id="wsSafeCompraBar" class="h-full bg-emerald-500" style="width:0%"></div></div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between gap-2 text-xs text-stone-600 mb-1"><span>Margen</span><strong id="wsSafeMarginValue" class="text-stone-800">—</strong></div>
+                  <div class="h-2 rounded-full bg-amber-200 overflow-hidden"><div id="wsSafeMarginBar" class="h-full bg-amber-500" style="width:0%"></div></div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between gap-2 text-xs text-stone-600 mb-1"><span>Spread</span><strong id="wsSafeSpreadValue" class="text-stone-800">—</strong></div>
+                  <div class="h-2 rounded-full bg-sky-200 overflow-hidden"><div id="wsSafeSpreadBar" class="h-full bg-sky-500" style="width:0%"></div></div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between gap-2 text-xs text-stone-600 mb-1"><span>Competencia</span><strong id="wsSafeCompetitionValue" class="text-stone-800">—</strong></div>
+                  <div class="h-2 rounded-full bg-rose-200 overflow-hidden"><div id="wsSafeCompetitionBar" class="h-full bg-rose-500" style="width:0%"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600">
+            <strong class="text-stone-800">Contrato de interacción de esta iteración:</strong>
+            click en la señal selecciona foco, click en un valor muestra trazabilidad, click en una acción terminal recién persiste.
+            Aquí no hay persistencia conectada todavía.
+          </div>
+        </section>
+
+        <aside class="bg-white border border-stone-300 rounded-xl p-4">
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Salida</div>
+              <h3 class="text-sm font-bold text-stone-700">Acciones terminales</h3>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-full bg-stone-100 text-stone-600">sin conexión</span>
+          </div>
+
+          <div class="space-y-2">
+            <div id="wsSafeSelectionMeta" class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-500">
+              Sin caso activo aún.
+            </div>
+            <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+              <div class="text-[11px] uppercase tracking-wider text-amber-700 mb-1">Siguiente paso recomendado</div>
+              <div id="wsSafeActionTitle" class="font-semibold text-amber-900">Selecciona un caso primero.</div>
+              <div id="wsSafeActionText" class="text-xs text-amber-800 mt-1">La recomendación cambia según ruta, alcance y si ya existe un valor publicado visible.</div>
+            </div>
+            <button id="wsSafeCalcBtn" type="button" disabled
+                    class="w-full rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+              <div class="font-semibold text-sky-800">Abrir este caso en Calculadora</div>
+              <div class="text-xs text-sky-700 mt-1">Carga material y alcance actuales para ajustar sin buscar de nuevo.</div>
+            </button>
+            <button id="wsSafeResolveBtn" type="button" disabled
+                    class="w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+              <div class="font-semibold text-emerald-800">Resolver caso activo en Bandeja</div>
+              <div class="text-xs text-emerald-700 mt-1">Mantiene la resolución real en el motor actual.</div>
+            </button>
+            <button id="wsSafeMesaBtn" type="button"
+                    class="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-left hover:border-stone-300">
+              <div class="font-semibold text-stone-800">Abrir foco en Mesa</div>
+              <div class="text-xs text-stone-500 mt-1">Sirve para contrastar esta vista nueva con la mesa actual.</div>
+            </button>
+            <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
+              <div class="font-semibold text-stone-800">Publicar / aprobar</div>
+              <div class="text-xs text-stone-500 mt-1">Siguen gobernados por Calculadora y Bandeja hasta la migración final.</div>
+            </div>
+          </div>
+
+          <div class="mt-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3">
+            <div class="text-[11px] uppercase tracking-wider text-sky-700 mb-1">Responsive previsto</div>
+            <ul class="text-xs text-sky-800 space-y-1.5">
+              <li>Desktop: 3 columnas vivas.</li>
+              <li>Tablet: inbox arriba, workspace dominante.</li>
+              <li>Mobile: workspace primero y barra fija inferior.</li>
+            </ul>
+          </div>
+
+          <div class="mt-4 rounded-xl border border-stone-200 bg-white px-4 py-3">
+            <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-2">Siguiente iteración segura</div>
+            <ol class="text-xs text-stone-600 space-y-1.5 list-decimal pl-4">
+              <li>Conectar esta vista a resolución asistida sin sacar a Bandeja.</li>
+              <li>Hacer más explícita la lectura por canal cuando exista fuente real.</li>
+              <li>Mantener Bandeja como motor final mientras migramos la resolución.</li>
+            </ol>
+          </div>
+        </aside>
+      </div>
+
+      <div class="xl:hidden sticky bottom-3 z-10 mt-4">
+        <div class="rounded-2xl border border-stone-300 bg-white/95 backdrop-blur px-3 py-3 shadow-lg">
+          <div class="flex items-center justify-between gap-3 mb-2">
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-stone-500">Salida rápida móvil</div>
+              <div id="wsSafeMobileHint" class="text-xs text-stone-600">Selecciona un caso para activar la salida recomendada.</div>
+            </div>
+            <span id="wsSafeMobileBadge" class="px-2 py-1 rounded-full bg-stone-100 text-stone-600 text-[11px]">Sin foco</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <button id="wsSafeMobileMesaBtn" type="button" disabled
+                    class="rounded-xl border border-stone-200 bg-stone-50 px-3 py-3 text-sm font-semibold text-stone-800 disabled:opacity-50 disabled:cursor-not-allowed">
+              Ver Mesa
+            </button>
+            <button id="wsSafeMobileCalcBtn" type="button" disabled
+                    class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3 text-sm font-semibold text-sky-800 disabled:opacity-50 disabled:cursor-not-allowed">
+              Abrir en Calculadora
+            </button>
+            <button id="wsSafeMobileResolveBtn" type="button" disabled
+                    class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-sm font-semibold text-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed">
+              Resolver en Bandeja
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <footer class="mt-4 text-xs text-stone-500">
+        Estado: iteración 1 aislada · no reemplaza tabs productivas · diseñada para endurecer la Opción B antes de integrarla.
+      </footer>
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -8280,6 +8595,7 @@ function setupTabs() {
       if (tabId === 'boveda_historica') window.initBovedaHistorica && window.initBovedaHistorica();
       if (tabId === 'flujo_operativo') window.initFlujoOperativo && window.initFlujoOperativo();
       if (tabId === 'tablero_precios') window.initTableroPrecios && window.initTableroPrecios();
+      if (tabId === 'workspace_precios') window.initWorkspacePrecios && window.initWorkspacePrecios();
       if (tabId === 'ops_diarias')   initOpsDiarias();
       if (tabId === 'inventario')    initInventario();
       if (tabId === 'panorama_sucursales') initPanorama();
@@ -10130,6 +10446,7 @@ document.getElementById('resetPassword2').addEventListener('keypress', e => {
     if (tabId === 'boveda_historica') window.initBovedaHistorica && window.initBovedaHistorica();
     if (tabId === 'flujo_operativo') window.initFlujoOperativo && window.initFlujoOperativo();
     if (tabId === 'tablero_precios') window.initTableroPrecios && window.initTableroPrecios();
+    if (tabId === 'workspace_precios') window.initWorkspacePrecios && window.initWorkspacePrecios();
     return true;
   }
 
@@ -16070,11 +16387,11 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         linkBandeja.className = 'text-xs text-sky-700 underline ml-2';
         linkBandeja.addEventListener('click', (ev) => {
           ev.preventDefault();
-          window.mpIrDesdeCalculadora && window.mpIrDesdeCalculadora();
+          window.wsIrDesdeCalculadora && window.wsIrDesdeCalculadora();
         });
         msg.insertAdjacentElement('afterend', linkBandeja);
       }
-      linkBandeja.textContent = '📍 Abrir Mesa de Precios';
+      linkBandeja.textContent = '📍 Abrir Workspace seguro';
       linkBandeja.classList.remove('hidden');
     } catch (e) {
       msg.textContent = '❌ Error: ' + (e.message || String(e)).slice(0, 100);
@@ -16331,6 +16648,25 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     await calcAutoFillPrecioCompra();
   }
 
+  window.calcIrDesdeWorkspace = async function (focus) {
+    const payload = focus || {};
+    window.bpFocusFromCalc = {
+      materialId: payload.materialId || '',
+      sucursalId: payload.sucursalId || '',
+    };
+    if (typeof window.v4AbrirTabFallback === 'function') {
+      window.v4AbrirTabFallback('calculadora_precios');
+    } else {
+      const tab = document.querySelector('[data-tab-target="calculadora_precios"]');
+      if (tab) tab.click();
+    }
+    await initCalculadoraPrecios();
+    const matSel = document.getElementById('calcMaterial');
+    const sucSel = document.getElementById('calcSucursal');
+    if (matSel && payload.materialId) matSel.value = payload.materialId;
+    if (sucSel) sucSel.value = payload.sucursalId || '';
+    await calcAutoFillPrecioCompra();
+  };
   window.calcRecompute          = calcRecompute;
   window.initCalculadoraPrecios = initCalculadoraPrecios;
 })();
@@ -16681,6 +17017,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const num = Number(n);
     return (num > 0 ? '+' : '') + num.toFixed(1) + '%';
   }
+  function tapFmtConfidence(n) {
+    if (n == null || isNaN(n)) return '—';
+    return Number(n).toFixed(2) + ' / 1.00';
+  }
   function tapFmtEdad(iso) {
     if (!iso) return '—';
     const diff = Date.now() - new Date(iso).getTime();
@@ -16950,6 +17290,121 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
   function mpFmtCountLabel(n, singular, plural) {
     const num = Number(n || 0);
     return num.toLocaleString('es-CL') + ' ' + (num === 1 ? singular : plural);
+  }
+
+  function mpSetWorkspaceStepState(id, state) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove(
+      'border-stone-200', 'bg-stone-50',
+      'border-emerald-200', 'bg-emerald-50',
+      'border-sky-300', 'bg-sky-50', 'ring-1', 'ring-sky-200'
+    );
+    if (state === 'done') {
+      el.classList.add('border-emerald-200', 'bg-emerald-50');
+      return;
+    }
+    if (state === 'active') {
+      el.classList.add('border-sky-300', 'bg-sky-50', 'ring-1', 'ring-sky-200');
+      return;
+    }
+    el.classList.add('border-stone-200', 'bg-stone-50');
+  }
+
+  function mpPaintWorkspaceFlow(step) {
+    const order = ['signal', 'contrast', 'decision', 'resolve'];
+    const ids = ['wsSafeStepSignal', 'wsSafeStepContrast', 'wsSafeStepDecision', 'wsSafeStepResolve'];
+    const activeIndex = Math.max(0, order.indexOf(step || 'signal'));
+    ids.forEach((id, index) => {
+      const state = index < activeIndex ? 'done' : (index === activeIndex ? 'active' : 'idle');
+      mpSetWorkspaceStepState(id, state);
+    });
+  }
+
+  function mpGetWorkspaceGuide(selected, row, publishedRow, publishedValue, draftValue) {
+    const routeMeta = mpGetRouteMeta(row?.ruta);
+    const material = selected?.material_nombre || mpGetMaterialNombre(row || {}) || 'Material';
+    const alcance = row?.sucursal_id ? mpGetSucursalNombre(row) : 'sin alcance definido';
+    const draftText = draftValue > 0 ? tapFmtClp(draftValue) : 'sin nuevo valor visible';
+    const publishedText = publishedValue > 0 ? tapFmtClp(publishedValue) : 'sin valor publicado visible';
+    const guide = {
+      lead: 'Selecciona un caso para ver la recomendación.',
+      support: 'Este bloque te dice dónde mirar primero y cuál es la siguiente acción segura.',
+      sourceLabel: 'Sin ruta',
+      sourceClass: 'px-2 py-1 rounded-full bg-white text-sky-700 border border-sky-200',
+      priorityLabel: 'Sin prioridad',
+      priorityClass: 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200',
+      step: 'signal',
+      actionTitle: 'Selecciona un caso primero.',
+      actionText: 'La recomendación cambia según ruta, alcance y si ya existe un valor publicado visible.',
+      actionTarget: null,
+    };
+    if (!selected || !row || !row.id) return guide;
+
+    guide.sourceLabel = routeMeta.label;
+    guide.sourceClass = 'px-2 py-1 rounded-full border ' + (
+      row.ruta === 'manual_calc'
+        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+        : 'bg-sky-50 text-sky-700 border-sky-200'
+    );
+
+    if (!row.sucursal_id) {
+      guide.priorityLabel = 'Completar alcance';
+      guide.priorityClass = 'px-2 py-1 rounded-full border bg-rose-50 text-rose-700 border-rose-200';
+      guide.step = 'contrast';
+      guide.lead = material + ' todavía no tiene alcance resuelto.';
+      guide.support = 'La señal existe, pero antes de decidir conviene amarrarla a una sucursal real para no mover un número en el vacío.';
+      guide.actionTitle = 'Resolver este caso en Bandeja';
+      guide.actionText = 'Usa Bandeja para completar alcance y dejar lista la salida final sin perder trazabilidad.';
+      guide.actionTarget = 'resolve';
+      return guide;
+    }
+
+    if (!publishedRow || !publishedValue) {
+      guide.priorityLabel = 'Contrastar publicado';
+      guide.priorityClass = 'px-2 py-1 rounded-full border bg-amber-50 text-amber-700 border-amber-200';
+      guide.step = 'contrast';
+      guide.lead = material + ' en ' + alcance + ' no muestra un valor publicado visible.';
+      guide.support = 'Antes de cerrar la decisión conviene contrastar en Mesa qué vigente estamos viendo y si el caso está realmente listo para salir.';
+      guide.actionTitle = 'Abrir foco en Mesa';
+      guide.actionText = 'Mesa te sirve para confirmar contexto y evitar decidir con una foto incompleta.';
+      guide.actionTarget = 'mesa';
+      return guide;
+    }
+
+    if (row.ruta === 'manual_calc') {
+      guide.priorityLabel = mpIsUrgent(row) ? 'Directa urgente' : 'Decisión directa';
+      guide.priorityClass = 'px-2 py-1 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200';
+      guide.step = 'decision';
+      guide.lead = material + ' en ' + alcance + ' ya viene como decisión directa.';
+      guide.support = 'Tienes ' + draftText + ' en evaluación contra ' + publishedText + ' publicado. Aquí lo natural es recalcular y afinar antes de salir.';
+      guide.actionTitle = 'Abrir este caso en Calculadora';
+      guide.actionText = 'La Calculadora ya recibe material y alcance precargados para ajustar sin volver a buscar el caso.';
+      guide.actionTarget = 'calc';
+      return guide;
+    }
+
+    if (mpIsUrgent(row)) {
+      guide.priorityLabel = 'Urgente';
+      guide.priorityClass = 'px-2 py-1 rounded-full border bg-rose-50 text-rose-700 border-rose-200';
+      guide.step = 'resolve';
+      guide.lead = material + ' en ' + alcance + ' pide una definición rápida.';
+      guide.support = 'La señal ya está contrastada contra ' + publishedText + ' y conviene salir por el motor real para no dejar la excepción abierta.';
+      guide.actionTitle = 'Resolver ya en Bandeja';
+      guide.actionText = 'Bandeja sigue siendo la salida segura cuando el caso ya está listo para aprobar, rechazar o ajustar.';
+      guide.actionTarget = 'resolve';
+      return guide;
+    }
+
+    guide.priorityLabel = 'Listo para decidir';
+    guide.priorityClass = 'px-2 py-1 rounded-full border bg-sky-50 text-sky-700 border-sky-200';
+    guide.step = 'decision';
+    guide.lead = material + ' en ' + alcance + ' ya tiene contexto suficiente para decidir.';
+    guide.support = 'Compara ' + publishedText + ' publicado versus ' + draftText + ' en evaluación, mira estrategia y luego sal por el motor que más te convenga.';
+    guide.actionTitle = 'Comparar y luego resolver';
+    guide.actionText = 'Si necesitas recalcular, entra a Calculadora. Si ya está claro, cierra por Bandeja.';
+    guide.actionTarget = 'calc';
+    return guide;
   }
 
   function mpOpenTab(tab) {
@@ -17285,6 +17740,327 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     }).join('');
   }
 
+  function mpClampPct(value, fallback) {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return fallback;
+    return Math.max(0, Math.min(100, num));
+  }
+
+  function mpSetWidth(id, pct) {
+    const el = document.getElementById(id);
+    if (el) el.style.width = mpClampPct(pct, 0) + '%';
+  }
+
+  function mpGetWorkspaceRow(group) {
+    if (!group || !group.rows || !group.rows.length) return null;
+    if (mpState.focus && mpState.focus.sucursalId) {
+      const focusRow = group.rows.find((row) => String(row.sucursal_id || '') === String(mpState.focus.sucursalId || ''));
+      if (focusRow) return focusRow;
+    }
+    return group.preview || group.rows[0] || null;
+  }
+
+  function mpGetWorkspacePublished(group, row) {
+    const publishedRows = (mpState.publishedRows || []).filter((published) =>
+      String(published.material_id || '') === String(group?.material_id || '')
+    );
+    if (row && row.sucursal_id) {
+      const sameBranch = publishedRows.find((published) => String(published.sucursal_id || '') === String(row.sucursal_id || ''));
+      if (sameBranch) return sameBranch;
+    }
+    return publishedRows[0] || null;
+  }
+
+  function mpBuildWorkspaceSummary(groups) {
+    const total = groups.length;
+    const direct = groups.filter((group) => group.direct > 0).length;
+    const signals = groups.filter((group) => group.signals > 0).length;
+    const urgent = groups.filter((group) => group.urgent > 0).length;
+    return [
+      '<span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">Decisión directa ' + direct + '</span>',
+      '<span class="px-2 py-1 rounded-full bg-sky-100 text-sky-700">Señales ' + signals + '</span>',
+      '<span class="px-2 py-1 rounded-full bg-rose-100 text-rose-700">Urgentes ' + urgent + '</span>',
+      '<span class="px-2 py-1 rounded-full bg-stone-100 text-stone-700">Materiales ' + total + '</span>',
+    ].join('');
+  }
+
+  function mpRenderWorkspaceInbox(groups, selectedKey) {
+    const countEl = document.getElementById('wsSafeCount');
+    if (countEl) countEl.textContent = groups.length + ' activas';
+    const chipsEl = document.getElementById('wsSafeSummaryChips');
+    if (chipsEl) chipsEl.innerHTML = mpBuildWorkspaceSummary(groups);
+    const listEl = document.getElementById('wsSafeInboxList');
+    if (!listEl) return;
+    if (!groups.length) {
+      listEl.innerHTML = '<div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm text-emerald-700">No hay señales activas con el filtro actual.</div>';
+      return;
+    }
+    listEl.innerHTML = groups.slice(0, 6).map((group) => {
+      const row = mpGetWorkspaceRow(group) || {};
+      const active = group.key === selectedKey;
+      const meta = mpGetRouteMeta(row.ruta);
+      const subtitle = row.ruta === 'manual_calc'
+        ? 'Cliente / cálculo directo · entrar a decidir'
+        : ((row.ruta || 'senal') + ' · considerar antes de publicar');
+      const status = !row.sucursal_id
+        ? 'Falta alcance'
+        : (mpIsUrgent(row) ? 'Urgente' : 'Lista para revisar');
+      return '<button type="button" class="w-full text-left rounded-xl border px-4 py-3 '
+        + (active ? 'border-emerald-400 bg-emerald-50' : 'border-stone-200 bg-white hover:border-stone-300')
+        + '" onclick="window.mpSeleccionarGrupo && window.mpSeleccionarGrupo(' + "'" + tapEscape(group.key) + "'" + ')">'
+        + '<div class="flex items-start justify-between gap-2">'
+        + '<div>'
+        + '<div class="font-semibold text-stone-800">' + tapEscape(group.material_nombre) + '</div>'
+        + '<div class="text-xs text-stone-500 mt-1">' + tapEscape(subtitle) + '</div>'
+        + '</div>'
+        + '<span class="px-2 py-1 rounded-full text-[11px] ' + meta.cls + '">' + tapEscape(meta.label) + '</span>'
+        + '</div>'
+        + '<div class="mt-2 flex flex-wrap gap-2 text-[11px]">'
+        + '<span class="px-2 py-1 rounded-full bg-stone-100 text-stone-700">' + mpFmtCountLabel(group.rows.length, 'fila', 'filas') + '</span>'
+        + '<span class="px-2 py-1 rounded-full bg-stone-100 text-stone-700">' + mpFmtCountLabel(group.branches, 'sucursal', 'sucursales') + '</span>'
+        + '<span class="px-2 py-1 rounded-full ' + (!row.sucursal_id ? 'bg-rose-100 text-rose-700' : (mpIsUrgent(row) ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700')) + '">' + tapEscape(status) + '</span>'
+        + (group.urgent ? '<span class="px-2 py-1 rounded-full bg-rose-100 text-rose-700">Urgente ' + group.urgent + '</span>' : '')
+        + '<span class="px-2 py-1 rounded-full bg-stone-100 text-stone-700">Actualizado ' + tapFmtEdad(row.created_at) + '</span>'
+        + '</div>'
+        + '</button>';
+    }).join('');
+  }
+
+  function mpRenderWorkspaceChannels(publishedValue, row, publishedRow) {
+    const el = document.getElementById('wsSafeChannels');
+    if (!el) return;
+    const items = [
+      {
+        name: 'Reciclean',
+        tone: publishedRow ? 'emerald' : 'stone',
+        status: publishedRow ? 'Visible' : 'Sin lectura',
+        detail: publishedRow ? ('publicado ' + tapFmtClp(publishedValue)) : 'sin precio vigente visible',
+      },
+      {
+        name: 'Farex',
+        tone: 'amber',
+        status: 'Pendiente',
+        detail: 'sin lectura aún en este carril',
+      },
+      {
+        name: 'Widget',
+        tone: publishedRow ? 'emerald' : 'stone',
+        status: publishedRow ? 'Alinear' : 'Sin lectura',
+        detail: publishedRow ? ('alinear contra ' + tapFmtClp(publishedValue)) : 'sin lectura aún en este carril',
+      },
+      {
+        name: 'Diego',
+        tone: row?.ruta === 'manual_calc' ? 'emerald' : 'rose',
+        status: row?.ruta === 'manual_calc' ? 'Origen' : 'Desfasado',
+        detail: row?.ruta === 'manual_calc' ? 'viene desde decisión directa' : 'todavía no compara contra este valor',
+      },
+    ];
+    const tones = {
+      emerald: { dot: 'bg-emerald-400', card: 'border-emerald-200 bg-emerald-50/50', badge: 'bg-emerald-100 text-emerald-700' },
+      amber: { dot: 'bg-amber-400', card: 'border-amber-200 bg-amber-50/50', badge: 'bg-amber-100 text-amber-700' },
+      rose: { dot: 'bg-rose-400', card: 'border-rose-200 bg-rose-50/50', badge: 'bg-rose-100 text-rose-700' },
+      stone: { dot: 'bg-stone-300', card: 'border-stone-200 bg-white', badge: 'bg-stone-100 text-stone-700' },
+    };
+    el.innerHTML = items.map((item) =>
+      '<div class="rounded-xl border px-3 py-3 ' + tones[item.tone].card + '">'
+      + '<div class="flex items-start justify-between gap-2">'
+      + '<div class="flex items-center gap-2 min-w-0">'
+      + '<span class="inline-block w-3.5 h-3.5 rounded-full shrink-0 ' + tones[item.tone].dot + '"></span>'
+      + '<strong class="text-sm text-stone-800 truncate">' + tapEscape(item.name) + '</strong>'
+      + '</div>'
+      + '<span class="px-2 py-1 rounded-full text-[11px] ' + tones[item.tone].badge + '">' + tapEscape(item.status) + '</span>'
+      + '</div>'
+      + '<div class="mt-2 text-xs text-stone-600">' + tapEscape(item.detail) + '</div>'
+      + '</div>'
+    ).join('');
+  }
+
+  function mpRenderWorkspaceActions(selected, row, guide) {
+    const metaEl = document.getElementById('wsSafeSelectionMeta');
+    const calcBtn = document.getElementById('wsSafeCalcBtn');
+    const resolveBtn = document.getElementById('wsSafeResolveBtn');
+    const mesaBtn = document.getElementById('wsSafeMesaBtn');
+    const mobileMesaBtn = document.getElementById('wsSafeMobileMesaBtn');
+    const mobileCalcBtn = document.getElementById('wsSafeMobileCalcBtn');
+    const mobileResolveBtn = document.getElementById('wsSafeMobileResolveBtn');
+    const mobileHintEl = document.getElementById('wsSafeMobileHint');
+    const mobileBadgeEl = document.getElementById('wsSafeMobileBadge');
+    const actionTitleEl = document.getElementById('wsSafeActionTitle');
+    const actionTextEl = document.getElementById('wsSafeActionText');
+    if (mesaBtn && !mesaBtn.dataset.bound) {
+      mesaBtn.addEventListener('click', () => {
+        window.mpAbrirTab && window.mpAbrirTab('tablero_precios');
+      });
+      mesaBtn.dataset.bound = '1';
+    }
+    if (!metaEl || !resolveBtn || !calcBtn || !mesaBtn || !actionTitleEl || !actionTextEl || !mobileMesaBtn || !mobileCalcBtn || !mobileResolveBtn || !mobileHintEl || !mobileBadgeEl) return;
+    [calcBtn, resolveBtn, mesaBtn, mobileMesaBtn, mobileCalcBtn, mobileResolveBtn].forEach((btn) => {
+      btn.classList.remove('ring-2', 'ring-sky-200', 'ring-emerald-200', 'ring-amber-200');
+    });
+    if (!selected || !row || !row.id) {
+      metaEl.textContent = 'Sin caso activo aún.';
+      actionTitleEl.textContent = guide?.actionTitle || 'Selecciona un caso primero.';
+      actionTextEl.textContent = guide?.actionText || 'La recomendación cambia según ruta, alcance y si ya existe un valor publicado visible.';
+      mobileMesaBtn.disabled = true;
+      mobileMesaBtn.onclick = null;
+      calcBtn.disabled = true;
+      calcBtn.onclick = null;
+      mobileCalcBtn.disabled = true;
+      mobileCalcBtn.onclick = null;
+      resolveBtn.disabled = true;
+      resolveBtn.onclick = null;
+      mobileResolveBtn.disabled = true;
+      mobileResolveBtn.onclick = null;
+      mobileHintEl.textContent = 'Selecciona un caso para activar la salida recomendada.';
+      mobileBadgeEl.className = 'px-2 py-1 rounded-full bg-stone-100 text-stone-600 text-[11px]';
+      mobileBadgeEl.textContent = 'Sin foco';
+      return;
+    }
+    metaEl.innerHTML = '<strong class="text-stone-800">' + tapEscape(selected.material_nombre || 'Material') + '</strong>'
+      + ' · ' + tapEscape(mpGetSucursalNombre(row) || 'Sin alcance')
+      + ' · ruta ' + tapEscape(row.ruta || 'senal')
+      + ' · propuesta #' + tapEscape(row.id);
+    actionTitleEl.textContent = guide?.actionTitle || 'Caso listo para revisar.';
+    actionTextEl.textContent = guide?.actionText || 'Usa el motor actual que mejor calce con este caso.';
+    calcBtn.disabled = false;
+    calcBtn.onclick = function () {
+      window.calcIrDesdeWorkspace && window.calcIrDesdeWorkspace({
+        materialId: selected.material_id,
+        sucursalId: row.sucursal_id || '',
+      });
+    };
+    mobileMesaBtn.disabled = false;
+    mobileMesaBtn.onclick = function () {
+      window.mpAbrirTab && window.mpAbrirTab('tablero_precios');
+    };
+    mobileCalcBtn.disabled = false;
+    mobileCalcBtn.onclick = calcBtn.onclick;
+    resolveBtn.disabled = false;
+    resolveBtn.onclick = function () {
+      window.mpResolverPropuesta && window.mpResolverPropuesta(row.id);
+    };
+    mobileResolveBtn.disabled = false;
+    mobileResolveBtn.onclick = resolveBtn.onclick;
+    mobileHintEl.textContent = guide?.actionText || 'Usa el motor actual que mejor calce con este caso.';
+    mobileBadgeEl.className = guide?.actionTarget === 'resolve'
+      ? 'px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[11px]'
+      : (guide?.actionTarget === 'mesa'
+        ? 'px-2 py-1 rounded-full bg-amber-100 text-amber-700 text-[11px]'
+        : 'px-2 py-1 rounded-full bg-sky-100 text-sky-700 text-[11px]');
+    mobileBadgeEl.textContent = guide?.actionTarget === 'resolve'
+      ? 'Salida: Bandeja'
+      : (guide?.actionTarget === 'mesa' ? 'Salida: Mesa' : 'Salida: Calculadora');
+    if (guide?.actionTarget === 'mesa') mobileMesaBtn.classList.add('ring-2', 'ring-amber-200');
+    if (guide?.actionTarget === 'calc') calcBtn.classList.add('ring-2', 'ring-sky-200');
+    if (guide?.actionTarget === 'resolve') resolveBtn.classList.add('ring-2', 'ring-emerald-200');
+    if (guide?.actionTarget === 'mesa') mesaBtn.classList.add('ring-2', 'ring-amber-200');
+    if (guide?.actionTarget === 'calc') mobileCalcBtn.classList.add('ring-2', 'ring-sky-200');
+    if (guide?.actionTarget === 'resolve') mobileResolveBtn.classList.add('ring-2', 'ring-emerald-200');
+  }
+
+  function mpRenderWorkspaceSafe(groups, selected) {
+    mpRenderWorkspaceInbox(groups, selected?.key || null);
+    const materialEl = document.getElementById('wsSafeMaterial');
+    const alcanceEl = document.getElementById('wsSafeAlcance');
+    const publishedEl = document.getElementById('wsSafePublishedValue');
+    const draftEl = document.getElementById('wsSafeDraftValue');
+    const hintEl = document.getElementById('wsSafeValueHint');
+    const caseLeadEl = document.getElementById('wsSafeCaseLead');
+    const caseSupportEl = document.getElementById('wsSafeCaseSupport');
+    const sourceBadgeEl = document.getElementById('wsSafeSourceBadge');
+    const priorityBadgeEl = document.getElementById('wsSafePriorityBadge');
+    const factCurrentEl = document.getElementById('wsSafeFactCurrent');
+    const factAgeEl = document.getElementById('wsSafeFactAge');
+    const factConfidenceEl = document.getElementById('wsSafeFactConfidence');
+    const factRowsEl = document.getElementById('wsSafeFactRows');
+    if (!materialEl || !alcanceEl || !publishedEl || !draftEl || !hintEl || !caseLeadEl || !caseSupportEl || !sourceBadgeEl || !priorityBadgeEl || !factCurrentEl || !factAgeEl || !factConfidenceEl || !factRowsEl) return;
+    if (!selected) {
+      materialEl.textContent = 'Sin material seleccionado';
+      alcanceEl.textContent = '—';
+      publishedEl.textContent = '—';
+      draftEl.textContent = '—';
+      hintEl.innerHTML = 'Abre una señal desde el inbox o entra primero a <strong>Mesa de Precios</strong> para cargar el foco actual.';
+      caseLeadEl.textContent = 'Selecciona un caso para ver la recomendación.';
+      caseSupportEl.textContent = 'Este bloque te dice dónde mirar primero y cuál es la siguiente acción segura.';
+      sourceBadgeEl.className = 'px-2 py-1 rounded-full bg-white text-sky-700 border border-sky-200';
+      sourceBadgeEl.textContent = 'Sin ruta';
+      priorityBadgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200';
+      priorityBadgeEl.textContent = 'Sin prioridad';
+      factCurrentEl.textContent = 'Sin caso';
+      factAgeEl.textContent = '—';
+      factConfidenceEl.textContent = '—';
+      factRowsEl.textContent = '—';
+      mpPaintWorkspaceFlow('signal');
+      mpRenderWorkspaceChannels(null, null, null);
+      tapSet('wsSafeStrategyMode', '—');
+      tapSet('wsSafeStrategyBand', '—');
+      tapSet('wsSafeStrategyLme', '—');
+      tapSet('wsSafeStrategyCompetition', '—');
+      tapSet('wsSafeCompraValue', '—');
+      tapSet('wsSafeMarginValue', '—');
+      tapSet('wsSafeSpreadValue', '—');
+      tapSet('wsSafeCompetitionValue', '—');
+      mpSetWidth('wsSafeCompraBar', 0);
+      mpSetWidth('wsSafeMarginBar', 0);
+      mpSetWidth('wsSafeSpreadBar', 0);
+      mpSetWidth('wsSafeCompetitionBar', 0);
+      mpRenderWorkspaceActions(null, null, mpGetWorkspaceGuide(null, null, null, 0, 0));
+      return;
+    }
+    const row = mpGetWorkspaceRow(selected) || {};
+    const publishedRow = mpGetWorkspacePublished(selected, row);
+    const publishedValue = Number(row.precio_vigente || publishedRow?.precio_compra_clp || 0);
+    const draftValue = Number(row.precio_ejecutivo || row.precio_clp_kg || 0);
+    const listaValue = Number(row.precio_lista || draftValue || 0);
+    const competenciaValue = row.ruta === 'manual_calc' ? 0 : draftValue;
+    const snapshot = mpGetStrategySnapshot(selected);
+    const spreadValue = publishedValue > 0 && draftValue > 0
+      ? ((draftValue - publishedValue) / publishedValue) * 100
+      : null;
+    const marginValue = listaValue > 0 && draftValue > 0
+      ? ((listaValue - draftValue) / listaValue) * 100
+      : null;
+    const guide = mpGetWorkspaceGuide(selected, row, publishedRow, publishedValue, draftValue);
+
+    materialEl.textContent = selected.material_nombre || 'Material';
+    alcanceEl.textContent = mpGetSucursalNombre(row) || '—';
+    publishedEl.textContent = publishedValue > 0 ? tapFmtClp(publishedValue) : '—';
+    draftEl.textContent = draftValue > 0 ? tapFmtClp(draftValue) : '—';
+    caseLeadEl.textContent = guide.lead;
+    caseSupportEl.textContent = guide.support;
+    sourceBadgeEl.className = guide.sourceClass;
+    sourceBadgeEl.textContent = guide.sourceLabel;
+    priorityBadgeEl.className = guide.priorityClass;
+    priorityBadgeEl.textContent = guide.priorityLabel;
+    factCurrentEl.textContent = row.id ? ('#' + row.id + ' · ' + (row.ruta || 'senal')) : 'Caso activo';
+    factAgeEl.textContent = tapFmtEdad(row.created_at);
+    factConfidenceEl.textContent = tapFmtConfidence(row.confidence_score);
+    factRowsEl.textContent = mpFmtCountLabel(selected.rows?.length || 0, 'propuesta', 'propuestas') + ' · ' + mpFmtCountLabel(selected.branches || 0, 'sucursal', 'sucursales');
+    mpPaintWorkspaceFlow(guide.step);
+    hintEl.innerHTML = publishedValue > 0
+      ? ('Comparas el <strong>' + tapEscape(tapFmtClp(publishedValue)) + '</strong> publicado contra el nuevo <strong>' + tapEscape(tapFmtClp(draftValue)) + '</strong> en evaluación.')
+      : 'Todavía no veo un valor publicado vigente para este foco; esta vista sigue siendo solo de lectura.';
+
+    mpRenderWorkspaceChannels(publishedValue, row, publishedRow);
+    tapSet('wsSafeStrategyMode', snapshot.active?.title || 'Operación general');
+    tapSet('wsSafeStrategyBand', (publishedValue > 0 || listaValue > 0)
+      ? (tapFmtClp(publishedValue || draftValue) + ' / ' + tapFmtClp(listaValue || draftValue))
+      : '—');
+    tapSet('wsSafeStrategyLme', snapshot.active?.pricePolicy ? 'Vigilar según estrategia' : 'Sin lectura');
+    tapSet('wsSafeStrategyCompetition', snapshot.publicationRule ? 'Referencia, no mandato' : 'Sin lectura');
+    tapSet('wsSafeCompraValue', draftValue > 0 ? tapFmtClp(draftValue) : '—');
+    tapSet('wsSafeMarginValue', Number.isFinite(marginValue) ? tapFmtPct(marginValue) : '—');
+    tapSet('wsSafeSpreadValue', Number.isFinite(spreadValue) ? tapFmtPct(spreadValue) : '—');
+    tapSet('wsSafeCompetitionValue', competenciaValue > 0 ? tapFmtClp(competenciaValue) : 'Sin señal');
+
+    const maxRef = Math.max(draftValue || 0, listaValue || 0, publishedValue || 0, competenciaValue || 0, 1);
+    mpSetWidth('wsSafeCompraBar', (draftValue / maxRef) * 100);
+    mpSetWidth('wsSafeMarginBar', Number.isFinite(marginValue) ? Math.abs(marginValue) * 2 : 0);
+    mpSetWidth('wsSafeSpreadBar', Number.isFinite(spreadValue) ? Math.abs(spreadValue) * 2 : 0);
+    mpSetWidth('wsSafeCompetitionBar', competenciaValue > 0 ? (competenciaValue / maxRef) * 100 : 0);
+    mpRenderWorkspaceActions(selected, row, guide);
+  }
+
   function mpRender() {
     const allGroups = mpBuildGroups();
     const groups = mpFilterGroups(allGroups);
@@ -17297,6 +18073,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     mpRenderException(groups);
     mpRenderQueue(groups);
     mpRenderDetail(selected);
+    mpRenderWorkspaceSafe(groups, selected);
     mpRenderPublished();
   }
 
@@ -17393,6 +18170,14 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     tapTimer = setInterval(tapCargar, TAP_REFRESH_MS);
   }
 
+  async function initWorkspacePrecios() {
+    if (!(mpState.pendingRows || []).length && !(mpState.publishedRows || []).length) {
+      await tapCargar();
+      return;
+    }
+    mpRender();
+  }
+
   window.mpAbrirTab = mpOpenTab;
   window.mpOnKpiClick = mpOnKpiClick;
   window.mpSeleccionarGrupo = function (key) {
@@ -17405,6 +18190,13 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       await window.bpAbrirDrawer(id);
     }
   };
+  window.wsIrDesdeCalculadora = async function (focus) {
+    const payload = focus || window.bpFocusFromCalc || null;
+    mpState.focus = payload;
+    mpState.chip = 'decision_directa';
+    mpOpenTab('workspace_precios');
+    await tapCargar({ focus: payload, chip: 'decision_directa' });
+  };
   window.mpIrDesdeCalculadora = async function (focus) {
     const payload = focus || window.bpFocusFromCalc || null;
     mpState.focus = payload;
@@ -17414,6 +18206,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
   };
   window.bpIrDesdeCalculadora = window.mpIrDesdeCalculadora;
   window.tapCargar           = tapCargar;
+  window.initWorkspacePrecios = initWorkspacePrecios;
   window.initTableroPrecios  = initTableroPrecios;
 })();
 </script>
