@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Romanero MVP · Primer Release</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f1e8;
+      --paper: #fffdf7;
+      --ink: #171717;
+      --muted: #6c665b;
+      --line: #d8d1c3;
+      --brand: #1e6a45;
+      --brand-2: #0f3d2b;
+      --warn: #a14b2f;
+      --warn-bg: #fdf0eb;
+      --ok: #175a3c;
+      --ok-bg: #edf8f1;
+      --shadow: 0 14px 40px rgba(23, 23, 23, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(30, 106, 69, 0.09), transparent 28%),
+        linear-gradient(180deg, #faf8f3 0%, var(--bg) 100%);
+      color: var(--ink);
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    .shell {
+      width: min(1220px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+
+    .shell-center {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+
+    .topbar, .card-head, .toolbar, .topbar-actions, .timeline-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    h1, h2, p { margin: 0; }
+    h1 { font-size: clamp(1.8rem, 3vw, 2.6rem); }
+    h2 { font-size: 1rem; }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 6px 10px;
+      border: 1px solid rgba(30, 106, 69, 0.14);
+      border-radius: 999px;
+      background: rgba(30, 106, 69, 0.08);
+      color: var(--brand);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .subtle {
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 72ch;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+      gap: 18px;
+      margin: 18px 0;
+    }
+
+    .stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      background: color-mix(in srgb, var(--paper) 92%, white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .auth-card {
+      width: min(460px, calc(100vw - 32px));
+    }
+
+    .loading-card {
+      display: grid;
+      place-items: center;
+      gap: 12px;
+      min-width: min(360px, calc(100vw - 32px));
+      padding: 40px 28px;
+    }
+
+    .loader {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 4px solid rgba(30, 106, 69, 0.12);
+      border-top-color: var(--brand);
+      animation: spin 0.9s linear infinite;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field-span-2 {
+      grid-column: span 2;
+    }
+
+    .field span {
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      min-height: 46px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: white;
+      color: var(--ink);
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 98px;
+    }
+
+    .toolbar {
+      margin-top: 18px;
+      justify-content: flex-start;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: white;
+      color: var(--ink);
+      cursor: pointer;
+      transition: 0.16s ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: var(--brand);
+    }
+
+    .btn:disabled {
+      cursor: wait;
+      opacity: 0.6;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      border-color: transparent;
+      color: white;
+    }
+
+    .flash {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid transparent;
+    }
+
+    .flash-ok {
+      color: var(--ok);
+      background: var(--ok-bg);
+      border-color: rgba(23, 90, 60, 0.18);
+    }
+
+    .flash-error {
+      color: var(--warn);
+      background: var(--warn-bg);
+      border-color: rgba(161, 75, 47, 0.18);
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .metric {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(23, 23, 23, 0.03);
+      border: 1px solid rgba(23, 23, 23, 0.06);
+      display: grid;
+      gap: 6px;
+    }
+
+    .metric span,
+    .timeline-date,
+    .status,
+    .session-pill {
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .metric strong {
+      font-size: 1rem;
+      line-height: 1.35;
+    }
+
+    .status,
+    .session-pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(23, 23, 23, 0.05);
+      border: 1px solid rgba(23, 23, 23, 0.06);
+    }
+
+    .timeline {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .timeline-item {
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(23, 23, 23, 0.08);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .timeline-item pre {
+      margin: 12px 0 0;
+      padding: 12px;
+      overflow: auto;
+      border-radius: 12px;
+      background: #141414;
+      color: #f7f7f7;
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+
+    .empty {
+      padding: 18px;
+      margin-top: 14px;
+      border-radius: 16px;
+      background: rgba(23, 23, 23, 0.04);
+      color: var(--muted);
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 920px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .shell {
+        width: min(100vw - 20px, 100%);
+        padding-top: 16px;
+      }
+
+      .card {
+        padding: 16px;
+      }
+
+      .grid,
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field-span-2 {
+        grid-column: span 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/romanero-mvp.js"></script>
+</body>
+</html>

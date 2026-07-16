@@ -25,7 +25,10 @@ export default defineConfig({
       input: {
         main: 'index.html',
         asistente: 'asistente.html',
-        login: 'login.html'
+        login: 'login.html',
+        romanero: 'romanero.html',
+        pagos: 'pagos.html',
+        supervision: 'supervision.html'
       }
     }
   },
