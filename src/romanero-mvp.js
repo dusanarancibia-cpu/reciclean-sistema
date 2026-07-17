@@ -36,6 +36,10 @@ const state = {
     sucursal_id: 'cerrillos',
     material_id: '',
     servicio_clase: 'compra_material',
+    origen_handoff: 'romanero_directo',
+    oportunidad_id: '',
+    referencia_legado: '',
+    retorno_comercial: '',
     fecha_operacion: new Date().toISOString().slice(0, 10),
     peso_neto_kg: '',
     observaciones: ''
@@ -118,13 +122,38 @@ function filteredMateriales() {
   );
 }
 
+function handoffOriginLabel(value) {
+  if (value === 'handoff_andrea') return 'Handoff Andrea -> operación';
+  if (value === 'contingencia_pesaje') return 'Contingencia sobre pesaje existente';
+  return 'Captura directa en sucursal';
+}
+
+function creationEventPayload() {
+  return state.eventos.find((item) => item.tipo_evento === 'expediente_creado')?.payload || null;
+}
+
+function returnEventPayload() {
+  return state.eventos.find((item) => item.tipo_evento === 'retorno_operacion_comercial')?.payload || null;
+}
+
+function currentHandoffContext() {
+  const createdPayload = creationEventPayload() || {};
+  const returnPayload = returnEventPayload() || {};
+  return {
+    origen: createdPayload.origen_operacional || state.form.origen_handoff,
+    oportunidadId: state.expediente?.oportunidad_id || state.form.oportunidad_id || createdPayload.oportunidad_id || null,
+    referenciaLegado: createdPayload.referencia_legado || state.form.referencia_legado || null,
+    retornoComercial: createdPayload.retorno_comercial || state.form.retorno_comercial || returnPayload.estado || null
+  };
+}
+
 function renderLogin() {
   app.innerHTML = `
     <section class="shell shell-center">
       <div class="card auth-card">
         <div class="eyebrow">Primer Release · TT-04</div>
         <h1>Romanero MVP</h1>
-        <p class="subtle">Ingreso con Supabase Auth para operar expediente, precio vigente y pesaje unico. Si no tienes claves todavia, puedes abrir el flujo en modo demo.</p>
+        <p class="subtle">Ingreso con Supabase Auth para operar el expediente, consultar precio canonico y registrar pesaje unico sin abrir doble captura. Si no tienes claves todavia, puedes abrir el flujo en modo demo.</p>
         <form id="login-form" class="stack">
           <label class="field">
             <span>Email</span>
@@ -152,6 +181,8 @@ function renderApp() {
   const material = selectedMaterial();
   const clientes = filteredClientes();
   const materiales = filteredMateriales();
+  const handoff = currentHandoffContext();
+  const captureMode = state.form.origen_handoff === 'contingencia_pesaje' ? 'Contingencia' : state.form.origen_handoff === 'handoff_andrea' ? 'Con handoff' : 'Directo';
 
   app.innerHTML = `
     <section class="shell">
@@ -159,17 +190,19 @@ function renderApp() {
         <div>
           <div class="eyebrow">Primer Release · Romanero</div>
           <h1>Romanero MVP</h1>
-          <p class="subtle">Crea o recupera expediente, consulta precio canonico y registra el pesaje unico.</p>
+          <p class="subtle">Adaptador operativo del release: crea o recupera expediente, consulta precio canonico y registra un solo pesaje sin competir con la plataforma de pesaje existente.</p>
         </div>
         <div class="topbar-actions">
           ${state.demo ? '<div class="session-pill">Modo demo</div>' : ''}
+          <div class="session-pill">${escapeHtml(captureMode)}</div>
           <div class="session-pill">${escapeHtml(state.session?.user?.email || 'sesion activa')}</div>
           ${state.demo ? '<button class="btn" data-action="reset-demo">Reiniciar demo</button>' : ''}
           <button class="btn" data-action="logout"${state.busy ? ' disabled' : ''}>Salir</button>
         </div>
       </header>
 
-      ${state.demo ? '<div class="flash flash-ok">Modo demo activo. Este flujo usa datos locales persistidos en tu navegador para que puedas revisar Romanero, Pagos y Supervisión sin credenciales.</div>' : ''}
+      ${state.demo ? '<div class="flash flash-ok">Modo demo activo. Este flujo usa datos locales persistidos en tu navegador para revisar expediente, handoff y pesaje sin credenciales reales.</div>' : ''}
+      <div class="flash flash-ok">Regla madre del arranque: la misma verdad no se captura dos veces. Si el caso ya vive en la plataforma de pesaje actual, Romanero se usa como adaptador o contingencia, no como reemplazo paralelo.</div>
       ${state.notice ? `<div class="flash flash-ok">${escapeHtml(state.notice)}</div>` : ''}
       ${state.error ? `<div class="flash flash-error">${escapeHtml(state.error)}</div>` : ''}
 
@@ -216,6 +249,24 @@ function renderApp() {
             </label>
 
             <label class="field field-span-2">
+              <span>Origen del caso</span>
+              <select name="origen_handoff">
+                <option value="romanero_directo"${state.form.origen_handoff === 'romanero_directo' ? ' selected' : ''}>Captura directa en sucursal</option>
+                <option value="handoff_andrea"${state.form.origen_handoff === 'handoff_andrea' ? ' selected' : ''}>Handoff Andrea -> operación</option>
+                <option value="contingencia_pesaje"${state.form.origen_handoff === 'contingencia_pesaje' ? ' selected' : ''}>Contingencia sobre pesaje existente</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Oportunidad / handoff ID</span>
+              <input type="text" name="oportunidad_id" value="${escapeHtml(state.form.oportunidad_id)}" placeholder="op-123 / cotizacion / negocio" />
+            </label>
+            <label class="field">
+              <span>Referencia legado</span>
+              <input type="text" name="referencia_legado" value="${escapeHtml(state.form.referencia_legado)}" placeholder="folio, planilla o referencia externa" />
+            </label>
+
+            <label class="field field-span-2">
               <span>Buscar material</span>
               <input type="search" name="filter_material" value="${escapeHtml(state.filters.material)}" placeholder="Nombre o material_id" />
             </label>
@@ -244,6 +295,11 @@ function renderApp() {
             <label class="field">
               <span>Peso neto kg</span>
               <input type="number" min="0" step="0.01" name="peso_neto_kg" value="${escapeHtml(state.form.peso_neto_kg)}" placeholder="1240.50" />
+            </label>
+
+            <label class="field field-span-2">
+              <span>Retorno para comercial</span>
+              <textarea name="retorno_comercial" rows="2" placeholder="Que debe volver a Andrea o comercial como resumen minimo">${escapeHtml(state.form.retorno_comercial)}</textarea>
             </label>
 
             <label class="field field-span-2">
@@ -288,6 +344,10 @@ function renderApp() {
                 <span>Estimado</span>
                 <strong>${money(estimatedMonto())}</strong>
               </div>
+              <div class="metric">
+                <span>Fuente de verdad</span>
+                <strong>Precio canónico</strong>
+              </div>
             </div>
           </section>
 
@@ -314,6 +374,45 @@ function renderApp() {
               <div class="metric">
                 <span>Ultimo pesaje</span>
                 <strong>${state.lastPesaje ? `${money(state.lastPesaje.monto_total)} · ${Number(state.lastPesaje.precio_unitario).toFixed(2)}` : '—'}</strong>
+              </div>
+              <div class="metric">
+                <span>Origen del caso</span>
+                <strong>${escapeHtml(handoffOriginLabel(handoff.origen))}</strong>
+              </div>
+              <div class="metric">
+                <span>Handoff ID</span>
+                <strong>${escapeHtml(handoff.oportunidadId || '—')}</strong>
+              </div>
+              <div class="metric">
+                <span>Referencia legado</span>
+                <strong>${escapeHtml(handoff.referenciaLegado || '—')}</strong>
+              </div>
+              <div class="metric">
+                <span>Retorno comercial</span>
+                <strong>${escapeHtml(handoff.retornoComercial || '—')}</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <div>
+                <h2>Reglas del arranque</h2>
+                <p class="subtle">Aterrizan TT-08 y el arranque del release directamente en la operación.</p>
+              </div>
+            </div>
+            <div class="stack">
+              <div class="metric">
+                <span>Donde sí registra Romanero</span>
+                <strong>Expediente operacional y pesaje único del release</strong>
+              </div>
+              <div class="metric">
+                <span>Donde no debe duplicar</span>
+                <strong>Planillas, módulo viejo o una segunda captura del mismo pesaje</strong>
+              </div>
+              <div class="metric">
+                <span>Qué queda como referencia</span>
+                <strong>Pesaje existente, panel.expedientes y folios externos solo como apoyo</strong>
               </div>
             </div>
           </section>
@@ -377,16 +476,29 @@ async function refreshExpediente(expedienteId) {
 }
 
 function currentPayload() {
+  const oportunidadId = state.form.oportunidad_id.trim();
+  const referenciaLegado = state.form.referencia_legado.trim();
+  const retornoComercial = state.form.retorno_comercial.trim();
+  const origenMap = {
+    romanero_directo: 'romanero',
+    handoff_andrea: 'andrea_handoff',
+    contingencia_pesaje: 'romanero_contingencia'
+  };
+
   return {
-    p_canal_origen: 'romanero',
+    p_canal_origen: origenMap[state.form.origen_handoff] || 'romanero',
     p_cliente_id: state.form.cliente_id,
     p_sucursal_id: state.form.sucursal_id,
     p_servicio_clase: state.form.servicio_clase,
     p_fecha_operacion: state.form.fecha_operacion,
     p_material_id: state.form.material_id || null,
-    p_oportunidad_id: null,
+    p_oportunidad_id: oportunidadId || null,
     p_handoff_payload: {
       origen_ui: 'romanero_mvp',
+      origen_operacional: state.form.origen_handoff,
+      oportunidad_id: oportunidadId || null,
+      referencia_legado: referenciaLegado || null,
+      retorno_comercial: retornoComercial || null,
       observaciones: state.form.observaciones || null
     }
   };
@@ -467,7 +579,7 @@ async function handleRegistrarPesaje() {
       p_material_id: state.form.material_id,
       p_sucursal_id: state.form.sucursal_id,
       p_peso_neto_kg: Number(state.form.peso_neto_kg),
-      p_origen_captura: 'romanero_manual',
+      p_origen_captura: state.form.origen_handoff === 'contingencia_pesaje' ? 'romanero_contingencia' : 'romanero_manual',
       p_capturado_por: state.session?.user?.email || null,
       p_precio_unitario: state.precio?.precio_compra_clp || null,
       p_monto_total: estimatedMonto(),
@@ -475,7 +587,7 @@ async function handleRegistrarPesaje() {
       p_observaciones: state.form.observaciones || null
     });
     await refreshExpediente(expedienteId);
-    setNotice('Pesaje registrado y anclado al expediente operacional');
+    setNotice('Pesaje registrado y anclado al expediente operacional sin abrir una segunda captura paralela');
   } catch (error) {
     setError(error.message);
   } finally {

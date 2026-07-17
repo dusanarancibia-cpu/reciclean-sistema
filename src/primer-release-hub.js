@@ -126,6 +126,25 @@ function materialName(materialId) {
   return state.lookups.materiales.find((item) => item.material_id === materialId)?.nombre || materialId;
 }
 
+function renderOperatingRules() {
+  return `
+    <div class="list">
+      <article class="item">
+        <strong>Expediente único</strong>
+        <span>El caso puede nacer por Andrea o Romanero, pero no debe duplicarse si ambos participan.</span>
+      </article>
+      <article class="item">
+        <strong>Pesaje único</strong>
+        <span>La plataforma de pesaje existente sigue siendo referencia fuerte; Romanero actúa como adaptador o contingencia, no como segundo capturador paralelo.</span>
+      </article>
+      <article class="item">
+        <strong>Handoff trazado</strong>
+        <span>Andrea -> operación -> retorno comercial debe quedar en expediente, no en WhatsApp ni memoria informal.</span>
+      </article>
+    </div>
+  `;
+}
+
 async function loadVersion() {
   try {
     const response = await fetch('/_version.json', { cache: 'no-store' });
@@ -235,6 +254,41 @@ function renderGuest() {
             <article class="item">
               <strong>Build visible</strong>
               <span>${escapeHtml(versionLabel())}</span>
+            </article>
+          </div>
+        </article>
+      </section>
+
+      <section class="grid-2">
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2>Marco del arranque</h2>
+              <p class="subtle">Reglas madre que siguen vigentes aunque el release esté visible en preview.</p>
+            </div>
+          </div>
+          ${renderOperatingRules()}
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2>Frentes del release</h2>
+              <p class="subtle">El preview no reemplaza el plan documental; solo lo vuelve revisable.</p>
+            </div>
+          </div>
+          <div class="list">
+            <article class="item">
+              <strong>Romanero y pesaje</strong>
+              <span>Captura única, precio canónico y contingencia controlada.</span>
+            </article>
+            <article class="item">
+              <strong>Andrea y handoff</strong>
+              <span>Traspaso mínimo y retorno a comercial con trazabilidad.</span>
+            </article>
+            <article class="item">
+              <strong>Pablo pagos</strong>
+              <span>Pago manual con comprobante asociado y conciliación posterior.</span>
             </article>
           </div>
         </article>
@@ -449,6 +503,41 @@ function renderAuthenticated() {
                 <span>${escapeHtml(alert.detail)}</span>
               </article>
             `).join('')}
+          </div>
+        </article>
+      </section>
+
+      <section class="grid-2">
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2>Marco del arranque</h2>
+              <p class="subtle">Reglas que siguen mandando mientras el release convive con legado y operación real.</p>
+            </div>
+          </div>
+          ${renderOperatingRules()}
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2>Handoff y convivencia</h2>
+              <p class="subtle">Lo que no puede quedar implícito si queremos responder bien la pregunta del release.</p>
+            </div>
+          </div>
+          <div class="list">
+            <article class="item">
+              <strong>Andrea -> operación</strong>
+              <span>Romanero ya debe capturar oportunidad/handoff y retorno comercial mínimo.</span>
+            </article>
+            <article class="item">
+              <strong>Legado visible, no autoritativo</strong>
+              <span>\`panel.expedientes\` y referencias externas apoyan, pero no reemplazan el expediente operacional.</span>
+            </article>
+            <article class="item">
+              <strong>Expediente y pesaje</strong>
+              <span>La prioridad sigue siendo evitar duplicación de expediente, pesaje, precio y pago.</span>
+            </article>
           </div>
         </article>
       </section>

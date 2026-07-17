@@ -71,6 +71,7 @@ test.describe('Primer Release público smoke', () => {
     await expect(page.getByRole('button', { name: /Abrir demo/i })).toBeVisible();
     await expect(page.getByText(/Kilos y captura/i)).toBeVisible();
     await expect(page.getByText('/supervision?demo=1')).toBeVisible();
+    await expect(page.getByText('Marco del arranque')).toBeVisible();
 
     const criticos = consoleErrors.filter((entry) =>
       /TypeError|ReferenceError|Failed to fetch|Unexpected token|Cannot read/i.test(entry),
@@ -106,6 +107,8 @@ test.describe('Primer Release público smoke', () => {
     await page.goto('/romanero.html?demo=1');
     await expect(demoPill).toBeVisible();
     await expect(page.locator('select[name="cliente_id"]')).toBeVisible();
+    await expect(page.getByText(/la misma verdad no se captura dos veces/i)).toBeVisible();
+    await expect(page.locator('select[name="origen_handoff"]')).toBeVisible();
 
     await page.goto('/pagos.html');
     await expect(demoPill).toBeVisible();
