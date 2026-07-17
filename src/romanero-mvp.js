@@ -8,6 +8,7 @@ import {
   fetchClienteDespachos,
   fetchClienteOportunidades,
   registrarPesaje,
+  fetchTerrenoSignals,
   fetchExpediente,
   fetchExpedienteEventos,
   enablePrimerReleaseDemo,
@@ -53,6 +54,11 @@ const state = {
   lastPesaje: null,
   despachos: [],
   despachosLoading: false,
+  terreno: {
+    rutas: [],
+    viajes: []
+  },
+  terrenoLoading: false,
   oportunidades: [],
   oportunidadesLoading: false
 };
@@ -219,6 +225,43 @@ function serviceDocuments(service) {
   return ['no informados en despacho_coord'];
 }
 
+function routeProviderCount(route) {
+  return Array.isArray(route?.proveedores_json) ? route.proveedores_json.length : 0;
+}
+
+function terrainRouteLabel(route) {
+  if (route?.estado === 'completada') return 'Ruta completada';
+  if (route?.estado === 'en_curso') return 'Ruta en curso';
+  if (route?.estado === 'pendiente') return 'Ruta pendiente';
+  return route?.estado || 'sin ruta';
+}
+
+function terrainTripLabel(trip) {
+  if (trip?.estado === 'completado') return 'Viaje completado';
+  if (trip?.estado === 'en_curso') return 'Viaje en curso';
+  return trip?.estado || 'sin viaje';
+}
+
+function terrainEvidences(trip) {
+  return [
+    trip?.foto_inicio_url ? 'foto inicio' : null,
+    trip?.foto_fin_url ? 'foto fin' : null,
+    trip?.track_gps_json?.length ? 'track gps' : null,
+    trip?.km_inicio ? 'km inicio' : null,
+    trip?.km_fin ? 'km fin' : null
+  ].filter(Boolean);
+}
+
+function terrainTripDistance(trip) {
+  if (trip?.km_fin && trip?.km_inicio) {
+    return `${Number(trip.km_fin) - Number(trip.km_inicio)} km tablero`;
+  }
+  if (trip?.km_total_gps) {
+    return `${Number(trip.km_total_gps).toFixed(1)} km gps`;
+  }
+  return '—';
+}
+
 async function refreshClienteDespachos() {
   const cliente = selectedCliente();
   if (!state.session || !cliente) {
@@ -235,6 +278,25 @@ async function refreshClienteDespachos() {
     setError(error.message);
   } finally {
     state.despachosLoading = false;
+    render();
+  }
+}
+
+async function refreshTerrenoSignals() {
+  if (!state.session || !state.form.fecha_operacion) {
+    state.terreno = { rutas: [], viajes: [] };
+    state.terrenoLoading = false;
+    return;
+  }
+  state.terrenoLoading = true;
+  render();
+  try {
+    state.terreno = await fetchTerrenoSignals(state.form.fecha_operacion);
+  } catch (error) {
+    state.terreno = { rutas: [], viajes: [] };
+    setError(error.message);
+  } finally {
+    state.terrenoLoading = false;
     render();
   }
 }
@@ -258,7 +320,7 @@ async function refreshClienteOportunidades() {
   }
 }
 
-function applyScheduledService(serviceId) {
+async function applyScheduledService(serviceId) {
   const service = state.despachos.find((item) => String(item.id) === String(serviceId));
   if (!service) {
     throw new Error('No se encontró el servicio agendado seleccionado');
@@ -289,6 +351,7 @@ function applyScheduledService(serviceId) {
   state.lastPesaje = null;
   setNotice('Servicio agendado cargado como puerta de entrada al expediente operacional');
   render();
+  await refreshTerrenoSignals();
 }
 
 function applyOpportunityHandoff(opportunityId) {
@@ -354,6 +417,8 @@ function renderApp() {
   const handoff = currentHandoffContext();
   const captureMode = state.form.origen_handoff === 'contingencia_pesaje' ? 'Contingencia' : state.form.origen_handoff === 'handoff_andrea' ? 'Con handoff' : 'Directo';
   const scheduledService = linkedScheduledService();
+  const latestRoute = state.terreno.rutas[0] || null;
+  const latestTrip = state.terreno.viajes[0] || null;
   const opportunity = linkedOpportunity();
 
   app.innerHTML = `
@@ -574,6 +639,54 @@ function renderApp() {
                 `).join('')}
               </div>
             ` : '<div class="empty">No hay servicios agendados visibles para este cliente en despacho_coord.</div>'}
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <div>
+                <h2>Terreno</h2>
+                <p class="subtle">Lectura operativa del mismo día con rutas_asignadas y viajes_terreno. No fuerza un join falso por cliente: muestra la ejecución real disponible antes de sucursal.</p>
+              </div>
+              <span class="status">${state.terrenoLoading ? 'Cargando' : `${state.terreno.rutas.length} rutas · ${state.terreno.viajes.length} viajes`}</span>
+            </div>
+            ${state.terrenoLoading ? '<div class="empty">Cargando señales de terreno del día...</div>' : `
+              <div class="metric-grid">
+                <div class="metric">
+                  <span>Ruta del día</span>
+                  <strong>${escapeHtml(latestRoute ? terrainRouteLabel(latestRoute) : 'sin ruta')}</strong>
+                </div>
+                <div class="metric">
+                  <span>Viaje del día</span>
+                  <strong>${escapeHtml(latestTrip ? terrainTripLabel(latestTrip) : 'sin viaje')}</strong>
+                </div>
+                <div class="metric">
+                  <span>Proveedores en ruta</span>
+                  <strong>${escapeHtml(latestRoute ? routeProviderCount(latestRoute) : '—')}</strong>
+                </div>
+                <div class="metric">
+                  <span>Salida</span>
+                  <strong>${escapeHtml(latestTrip?.hora_salida ? dateTime(latestTrip.hora_salida) : '—')}</strong>
+                </div>
+                <div class="metric">
+                  <span>Regreso</span>
+                  <strong>${escapeHtml(latestTrip?.hora_regreso ? dateTime(latestTrip.hora_regreso) : '—')}</strong>
+                </div>
+                <div class="metric">
+                  <span>Distancia</span>
+                  <strong>${escapeHtml(terrainTripDistance(latestTrip))}</strong>
+                </div>
+              </div>
+              ${latestTrip ? `
+                <div class="flash flash-ok">
+                  Evidencias de terreno: ${escapeHtml(terrainEvidences(latestTrip).join(' · ') || 'sin evidencias aún')}.
+                </div>
+              ` : '<div class="empty">Aún no hay viaje registrado para esta fecha operativa.</div>'}
+              ${scheduledService ? `
+                <div class="flash flash-ok">
+                  El servicio agendado <strong>${escapeHtml(serviceTitle(scheduledService))}</strong> usa esta lectura de terreno como antesala operativa antes de la recepción en sucursal.
+                </div>
+              ` : ''}
+            `}
           </section>
 
           <section class="card">
@@ -931,6 +1044,8 @@ async function handleLogout() {
     state.lastPesaje = null;
     state.despachos = [];
     state.despachosLoading = false;
+    state.terreno = { rutas: [], viajes: [] };
+    state.terrenoLoading = false;
     state.oportunidades = [];
     state.oportunidadesLoading = false;
     setNotice('Sesion cerrada');
@@ -985,6 +1100,7 @@ async function boot() {
     if (state.session) {
       state.lookups = await loadRomaneroLookups();
       await Promise.all([
+        refreshTerrenoSignals(),
         refreshClienteDespachos(),
         refreshClienteOportunidades()
       ]);
@@ -1039,6 +1155,7 @@ app.addEventListener('change', async (event) => {
         state.form.referencia_legado = '';
         state.form.retorno_comercial = '';
         state.despachos = [];
+        state.terreno = { rutas: [], viajes: [] };
         state.oportunidades = [];
       }
       state.expediente = null;
@@ -1055,6 +1172,9 @@ app.addEventListener('change', async (event) => {
         refreshClienteOportunidades()
       ]);
     }
+    if (name === 'fecha_operacion') {
+      await refreshTerrenoSignals();
+    }
   }
 });
 
@@ -1070,7 +1190,7 @@ app.addEventListener('click', async (event) => {
     if (action === 'precio') await handleConsultarPrecio();
     if (action === 'expediente') await handleCreateOrRecover();
     if (action === 'pesaje') await handleRegistrarPesaje();
-    if (action === 'use-scheduled-service') applyScheduledService(target.dataset.serviceId);
+    if (action === 'use-scheduled-service') await applyScheduledService(target.dataset.serviceId);
     if (action === 'use-opportunity') applyOpportunityHandoff(target.dataset.opportunityId);
   } catch (error) {
     state.busy = false;

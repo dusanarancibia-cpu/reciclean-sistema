@@ -114,6 +114,9 @@ test.describe('Primer Release público smoke', () => {
     await expect(page.getByRole('button', { name: /Usar servicio agendado/i }).first()).toBeVisible();
     await page.getByRole('button', { name: /Usar servicio agendado/i }).first().click();
     await expect(page.locator('input[name="agenda_servicio_id"]')).not.toHaveValue('');
+    await expect(page.getByRole('heading', { name: 'Terreno' })).toBeVisible();
+    await expect(page.getByText(/rutas_asignadas/i)).toBeVisible();
+    await expect(page.getByText(/Evidencias de terreno/i)).toBeVisible();
     await expect(page.getByText('Handoff comercial')).toBeVisible();
     await expect(page.getByRole('button', { name: /Usar como handoff/i }).first()).toBeVisible();
     await page.getByRole('button', { name: /Usar como handoff/i }).first().click();

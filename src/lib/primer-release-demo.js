@@ -129,6 +129,39 @@ function buildInitialState() {
         documentos_esperados: ['guia_despacho', 'acta_entrega']
       }
     ],
+    terreno: [
+      {
+        fecha: createdAt.slice(0, 10),
+        rutas: [
+          {
+            id: 'ruta_demo_001',
+            ejecutivo_id: 8,
+            fecha: createdAt.slice(0, 10),
+            estado: 'en_curso',
+            created_at: createdAt,
+            completada_at: null,
+            proveedores_json: [{ proveedor_id: 101, orden: 1 }, { proveedor_id: 102, orden: 2 }]
+          }
+        ],
+        viajes: [
+          {
+            id: 'viaje_demo_001',
+            ruta_asignada_id: 'ruta_demo_001',
+            usuario_id: 8,
+            fecha: createdAt.slice(0, 10),
+            hora_salida: createdAt,
+            hora_regreso: null,
+            estado: 'en_curso',
+            foto_inicio_url: 'https://example.com/demo-inicio.jpg',
+            foto_fin_url: null,
+            km_inicio: 102340,
+            km_fin: null,
+            km_total_gps: 18.4,
+            track_gps_json: [{ lat: -33.51, lng: -70.74 }, { lat: -33.49, lng: -70.71 }]
+          }
+        ]
+      }
+    ],
     expedientes: [
       {
         expediente_id: expedienteId,
@@ -367,6 +400,12 @@ export async function fetchClienteDespachosDemo(clienteId, limit = 6) {
       .sort((a, b) => String(b.fecha_programada || '').localeCompare(String(a.fecha_programada || '')))
       .slice(0, limit)
   );
+}
+
+export async function fetchTerrenoSignalsDemo(fechaOperacion) {
+  const state = readState();
+  const item = (state.terreno || []).find((entry) => entry.fecha === fechaOperacion);
+  return clone(item || { rutas: [], viajes: [] });
 }
 
 export async function consultarPrecioVigenteDemo(materialId, sucursalId) {

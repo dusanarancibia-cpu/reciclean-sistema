@@ -15,6 +15,7 @@ import {
   fetchPagosByExpedienteDemo,
   fetchPagosByFacturaDemo,
   fetchPesajeByExpedienteDemo,
+  fetchTerrenoSignalsDemo,
   fetchReleaseOverviewSnapshotDemo,
   getDemoSession,
   isPrimerReleaseDemoEnabled,
@@ -190,6 +191,42 @@ export async function fetchClienteDespachos(clienteId, razonSocial, limit = 6) {
     })
     .sort((a, b) => String(b.fecha_programada || '').localeCompare(String(a.fecha_programada || '')))
     .slice(0, limit);
+}
+
+export async function fetchTerrenoSignals(fechaOperacion) {
+  if (!fechaOperacion) {
+    return { rutas: [], viajes: [] };
+  }
+  if (isPrimerReleaseDemoEnabled()) {
+    return fetchTerrenoSignalsDemo(fechaOperacion);
+  }
+
+  const [rutasRes, viajesRes] = await Promise.all([
+    supabase
+      .from('rutas_asignadas')
+      .select('id, ejecutivo_id, fecha, estado, created_at, completada_at, proveedores_json')
+      .eq('fecha', fechaOperacion)
+      .order('created_at', { ascending: false })
+      .limit(8),
+    supabase
+      .from('viajes_terreno')
+      .select('id, ruta_asignada_id, usuario_id, fecha, hora_salida, hora_regreso, estado, foto_inicio_url, foto_fin_url, km_inicio, km_fin, km_total_gps, track_gps_json')
+      .eq('fecha', fechaOperacion)
+      .order('hora_salida', { ascending: false, nullsFirst: false })
+      .limit(8)
+  ]);
+
+  if (rutasRes.error) {
+    throw new Error(normalizedMessage(rutasRes.error, 'No se pudieron leer las rutas del día'));
+  }
+  if (viajesRes.error) {
+    throw new Error(normalizedMessage(viajesRes.error, 'No se pudieron leer los viajes de terreno'));
+  }
+
+  return {
+    rutas: rutasRes.data || [],
+    viajes: viajesRes.data || []
+  };
 }
 
 export async function registrarPesaje(payload) {
