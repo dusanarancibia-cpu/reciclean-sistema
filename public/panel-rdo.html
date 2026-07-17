@@ -3945,6 +3945,29 @@
               <div id="wsSafeInlineStateText" class="text-xs text-stone-600 mt-1">Cuando abras un caso desde aquí, este bloque mostrará el estado del cierre y mantendrá la continuidad del contexto.</div>
               <div id="wsSafeInlineStateMeta" class="text-[11px] text-stone-500 mt-2">Sin caso en ejecución.</div>
             </div>
+            <div id="wsSafeDecisionStateCard" class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <div class="text-[11px] uppercase tracking-wider text-stone-500">Cierre visible</div>
+                <span id="wsSafeDecisionStateBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin drawer</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Ajuste previo</div>
+                  <div id="wsSafeAdjustStateTitle" class="font-semibold text-stone-800">Aún no activo.</div>
+                  <div id="wsSafeAdjustStateText" class="text-xs text-stone-600 mt-1">Se mostrará aquí cuando abras una resolución inline.</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Aprobar / aplicar</div>
+                  <div id="wsSafeApproveStateTitle" class="font-semibold text-stone-800">Sin evaluación.</div>
+                  <div id="wsSafeApproveStateText" class="text-xs text-stone-600 mt-1">La página única mostrará si aplicar ya está listo o si falta algo.</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Rechazar</div>
+                  <div id="wsSafeRejectStateTitle" class="font-semibold text-stone-800">Sin evaluación.</div>
+                  <div id="wsSafeRejectStateText" class="text-xs text-stone-600 mt-1">Aquí verás si el cierre como referencia sigue disponible desde el mismo flujo.</div>
+                </div>
+              </div>
+            </div>
             <button id="wsSafeCalcBtn" type="button" disabled
                     class="w-full rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
               <div class="font-semibold text-sky-800">Abrir este caso en Calculadora</div>
@@ -14047,6 +14070,7 @@ document.addEventListener('DOMContentLoaded', () => {
       mot.value = '';
       btn.disabled = false;
       btn.classList.remove('opacity-50');
+      if (typeof mpSyncInlineDecisionState === 'function') mpSyncInlineDecisionState();
       return;
     }
     const puede = bpPuedeOverrideMargen();
@@ -14059,6 +14083,7 @@ document.addEventListener('DOMContentLoaded', () => {
       mot.disabled = true;
       btn.disabled = true;
       btn.classList.add('opacity-50');
+      if (typeof mpSyncInlineDecisionState === 'function') mpSyncInlineDecisionState();
       return;
     }
     chk.disabled = false;
@@ -14066,6 +14091,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ok = chk.checked && String(mot.value || '').trim().length >= 6;
     btn.disabled = !ok;
     btn.classList.toggle('opacity-50', !ok);
+    if (typeof mpSyncInlineDecisionState === 'function') mpSyncInlineDecisionState();
   }
 
   function esc(s) {
@@ -14482,6 +14508,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       };
       window.__mpWorkspaceInlineContext = null;
       if (typeof mpSyncInlineExecutionState === 'function') mpSyncInlineExecutionState();
+      if (typeof mpSyncInlineDecisionState === 'function') mpSyncInlineDecisionState();
       try {
         const options = {};
         if (inlineCtx.focus) options.focus = inlineCtx.focus;
@@ -14497,6 +14524,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const el = document.getElementById('bpDrawerMsg');
     el.textContent = text;
     el.className = 'text-xs p-2 rounded ' + (ok ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+    if (typeof mpSyncInlineDecisionState === 'function') mpSyncInlineDecisionState();
   }
 
   function bpApplyFailureText(payload, httpStatus) {
@@ -14607,7 +14635,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const v = parseFloat(valor);
     const candidato = (v && v > 0) ? v : bpCurrentPrecioPropuesto;
     const lineas = [];
-    if (!candidato || candidato <= 0) { el.classList.add('hidden'); return; }
+    if (!candidato || candidato <= 0) { el.classList.add('hidden'); if (typeof mpSyncInlineDecisionState === 'function') mpSyncInlineDecisionState(); return; }
     if (bpCurrentPrecioVigente && Number(candidato) === Number(bpCurrentPrecioVigente)) {
       lineas.push('ℹ Este valor no cambia el vigente actual. Si quieres mover la propuesta, ajusta el precio antes de aplicar.');
     }
@@ -14621,6 +14649,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     }
     el.classList.remove('hidden');
     el.innerHTML = lineas.join('<br>');
+    if (typeof mpSyncInlineDecisionState === 'function') mpSyncInlineDecisionState();
   }
 
   async function bpAprobar() {
@@ -14628,6 +14657,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     if (!currentUser || !currentUser.includes('@')) { bpMsg('Falta email del usuario actual.', false); return; }
     const btn = document.getElementById('bpBtnAprobar');
     btn.disabled = true;
+    if (typeof mpSyncInlineDecisionState === 'function') mpSyncInlineDecisionState();
 
     const precioAjustado = parseFloat(document.getElementById('bpPrecioAjustado')?.value ?? '');
 
@@ -14638,6 +14668,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         if (!bpPuedeOverrideMargen()) {
           bpMsg('⚠️ Este margen está bajo el mínimo. Solo un usuario autorizado puede aplicar bajo responsabilidad.', false);
           btn.disabled = false;
+          if (typeof mpSyncInlineDecisionState === 'function') mpSyncInlineDecisionState();
           return;
         }
         const chk = document.getElementById('bpOverrideCheck');
@@ -14646,6 +14677,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         if (!chk?.checked || motivo.length < 6) {
           bpMsg('⚠️ Falta confirmar el override y escribir un motivo (mín 6 caracteres).', false);
           btn.disabled = false;
+          if (typeof mpSyncInlineDecisionState === 'function') mpSyncInlineDecisionState();
           return;
         }
         overridePayload = {
@@ -14751,6 +14783,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         const detalle = j?.detail?.message ?? j?.detail ?? j?.message ?? j?.error ?? window.__bpApplyDebug?.response?.raw ?? 'No se pudo aplicar';
         bpMsg(bpApplyFailureText({ ...j, detail: detalle }, resp.status), false);
         btn.disabled = false;
+        if (typeof mpSyncInlineDecisionState === 'function') mpSyncInlineDecisionState();
       }
     } catch (e) {
       //#region debug-point bp-apply-catch
@@ -14762,6 +14795,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       //#endregion debug-point bp-apply-catch
       bpMsg(`Error de red: ${String(e).slice(0, 100)}`, false);
       btn.disabled = false;
+      if (typeof mpSyncInlineDecisionState === 'function') mpSyncInlineDecisionState();
     }
   }
 
@@ -14797,6 +14831,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     if (!bpCurrentId) return;
     const btn = document.getElementById('bpBtnRechazar');
     btn.disabled = true;
+    if (typeof mpSyncInlineDecisionState === 'function') mpSyncInlineDecisionState();
     try {
       await bpCallPrecioCommand({
         action: 'rechazar',
@@ -14809,6 +14844,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     } catch (e) {
       bpMsg(`Error: ${String(e).slice(0, 100)}`, false);
       btn.disabled = false;
+      if (typeof mpSyncInlineDecisionState === 'function') mpSyncInlineDecisionState();
     }
   }
 
@@ -17584,6 +17620,77 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     metaEl.textContent = 'Sin caso en ejecución.';
   }
 
+  function mpSyncInlineDecisionState() {
+    const badgeEl = document.getElementById('wsSafeDecisionStateBadge');
+    const adjustTitleEl = document.getElementById('wsSafeAdjustStateTitle');
+    const adjustTextEl = document.getElementById('wsSafeAdjustStateText');
+    const approveTitleEl = document.getElementById('wsSafeApproveStateTitle');
+    const approveTextEl = document.getElementById('wsSafeApproveStateText');
+    const rejectTitleEl = document.getElementById('wsSafeRejectStateTitle');
+    const rejectTextEl = document.getElementById('wsSafeRejectStateText');
+    if (!badgeEl || !adjustTitleEl || !adjustTextEl || !approveTitleEl || !approveTextEl || !rejectTitleEl || !rejectTextEl) return;
+    const active = window.__mpWorkspaceInlineContext || null;
+    const inputAjuste = document.getElementById('bpPrecioAjustado');
+    const btnAprobar = document.getElementById('bpBtnAprobar');
+    const btnRechazar = document.getElementById('bpBtnRechazar');
+    const overrideChk = document.getElementById('bpOverrideCheck');
+    const overrideMot = document.getElementById('bpOverrideMotivo');
+    const overrideVisible = !!(bpCurrentMgPct != null && bpCurrentMgRequerido != null && bpCurrentMgPct < bpCurrentMgRequerido);
+    const candidato = Number((parseFloat(inputAjuste?.value || '') > 0 ? parseFloat(inputAjuste?.value || '') : bpCurrentPrecioPropuesto) || 0);
+    const vigenteTxt = bpCurrentPrecioVigente != null ? fmtCLP(bpCurrentPrecioVigente) : 'sin vigente visible';
+    const candidatoTxt = candidato > 0 ? fmtCLP(candidato) : 'sin ajuste visible';
+    const sameAsVigente = candidato > 0 && bpCurrentPrecioVigente != null && Number(candidato) === Number(bpCurrentPrecioVigente);
+    if (!active) {
+      badgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
+      badgeEl.textContent = 'Sin drawer';
+      adjustTitleEl.textContent = 'Aún no activo.';
+      adjustTextEl.textContent = 'Se mostrará aquí cuando abras una resolución inline.';
+      approveTitleEl.textContent = 'Sin evaluación.';
+      approveTextEl.textContent = 'La página única mostrará si aplicar ya está listo o si falta algo.';
+      rejectTitleEl.textContent = 'Sin evaluación.';
+      rejectTextEl.textContent = 'Aquí verás si el cierre como referencia sigue disponible desde el mismo flujo.';
+      return;
+    }
+    badgeEl.className = active.mode === 'reference'
+      ? 'px-2 py-1 rounded-full bg-white text-violet-700 border border-violet-200 text-[11px]'
+      : 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]';
+    badgeEl.textContent = active.mode === 'reference' ? 'Referencia inline' : 'Cierre inline';
+    if (active.mode === 'reference') {
+      adjustTitleEl.textContent = 'Ajuste no aplica.';
+      adjustTextEl.textContent = 'Este flujo se abrió para sacar la señal de tu carga sin mover compra.';
+      approveTitleEl.textContent = 'Aplicar no corresponde.';
+      approveTextEl.textContent = 'En cierre como referencia no necesitas aprobar ni publicar un nuevo precio.';
+      rejectTitleEl.textContent = btnRechazar && !btnRechazar.disabled ? 'Listo para cerrar referencia.' : 'Rechazo no disponible.';
+      rejectTextEl.textContent = btnRechazar && !btnRechazar.disabled
+        ? 'Usa Rechazar en el drawer inline para cerrar la señal sin mover compra.'
+        : 'Este caso ya no permite rechazo desde el drawer actual.';
+      return;
+    }
+    adjustTitleEl.textContent = candidato > 0 ? 'Ajuste listo para evaluar.' : 'Sin ajuste visible.';
+    adjustTextEl.textContent = sameAsVigente
+      ? 'El valor candidato coincide con ' + vigenteTxt + '. Si quieres mover la propuesta, ajusta antes de aplicar.'
+      : ('Candidato actual ' + candidatoTxt + '. El ajuste previo sigue corriendo en el drawer real, pero ya se acompaña desde esta página.');
+    if (overrideVisible) {
+      const puede = typeof bpPuedeOverrideMargen === 'function' ? bpPuedeOverrideMargen() : false;
+      const overrideOk = !!overrideChk?.checked && String(overrideMot?.value || '').trim().length >= 6;
+      approveTitleEl.textContent = puede
+        ? (overrideOk ? 'Aplicar habilitado con override.' : 'Aplicar espera override.')
+        : 'Aplicar bloqueado por margen.';
+      approveTextEl.textContent = puede
+        ? ('Margen objetivo ' + bpCurrentMgPct.toFixed(1) + '% bajo mínimo ' + bpCurrentMgRequerido.toFixed(1) + '%. Confirma override y motivo para aplicar desde el drawer.')
+        : ('El margen objetivo ' + bpCurrentMgPct.toFixed(1) + '% está bajo el mínimo ' + bpCurrentMgRequerido.toFixed(1) + '%. Solo un usuario autorizado puede aplicar.');
+    } else {
+      approveTitleEl.textContent = btnAprobar && !btnAprobar.disabled ? 'Listo para aplicar.' : 'Aplicar no disponible.';
+      approveTextEl.textContent = btnAprobar && !btnAprobar.disabled
+        ? 'El cierre puede aplicar desde el drawer real usando el mismo contexto inline.'
+        : 'Falta completar alguna condición del drawer antes de aplicar.';
+    }
+    rejectTitleEl.textContent = btnRechazar && !btnRechazar.disabled ? 'Rechazo disponible.' : 'Rechazo no disponible.';
+    rejectTextEl.textContent = btnRechazar && !btnRechazar.disabled
+      ? 'Si el caso no amerita cambio, puedes rechazarlo desde el drawer inline sin perder trazabilidad.'
+      : 'Este caso ya no permite rechazo desde el drawer actual.';
+  }
+
   async function mpAbrirDrawerInline(id, mode, meta) {
     if (!id || typeof window.bpAbrirDrawer !== 'function') return;
     window.__mpWorkspaceInlineContext = {
@@ -17598,12 +17705,14 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     };
     window.__mpWorkspaceInlineLastState = null;
     mpSyncInlineExecutionState();
+    mpSyncInlineDecisionState();
     await window.bpAbrirDrawer(id);
     if (window.__mpWorkspaceInlineContext && window.__mpWorkspaceInlineContext.proposalId === id) {
       window.__mpWorkspaceInlineContext.status = 'active';
     }
     const msg = document.getElementById('bpDrawerMsg');
     mpSyncInlineExecutionState();
+    mpSyncInlineDecisionState();
     if (!msg) return;
     if (mode === 'reference') {
       msg.textContent = 'Esta señal se abrió inline desde la página única. Si es bluff o solo referencia, usa Rechazar para cerrarla sin mover compra.';
@@ -18184,6 +18293,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       mobileBadgeEl.textContent = 'Sin foco';
       exitModeEl.textContent = '—';
       mpSyncInlineExecutionState();
+      mpSyncInlineDecisionState();
       return;
     }
     const routeMeta = mpGetRouteMeta(row.ruta);
@@ -18280,6 +18390,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     if (guide?.actionTarget === 'resolve') mobileResolveBtn.classList.add('ring-2', 'ring-emerald-200');
     if (guide?.actionTarget !== 'resolve' && row?.ruta !== 'manual_calc') referenceBtn.classList.add('ring-2', 'ring-violet-200');
     mpSyncInlineExecutionState();
+    mpSyncInlineDecisionState();
   }
 
   function mpRenderWorkspaceSafe(groups, selected) {
