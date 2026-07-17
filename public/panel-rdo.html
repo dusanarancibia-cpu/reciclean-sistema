@@ -3811,7 +3811,7 @@
             </div>
           </div>
 
-          <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 mb-3">
+          <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 mb-3">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
               <div class="text-[11px] uppercase tracking-wider text-emerald-700">Lectura inmediata del valor</div>
               <div class="flex flex-wrap gap-2 text-[11px]">
@@ -3819,20 +3819,20 @@
                 <span id="wsSafeDeltaBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200">Sin diferencia</span>
               </div>
             </div>
-            <div class="grid grid-cols-1 xl:grid-cols-[1fr,1fr,0.78fr] gap-3">
-              <div class="rounded-xl border border-emerald-200 bg-white px-4 py-3">
+            <div class="grid grid-cols-1 xl:grid-cols-[1fr,1fr,0.78fr] gap-2">
+              <div class="rounded-xl border border-emerald-200 bg-white px-3 py-3">
                 <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-1">Valor publicado actual</div>
-                <div id="wsSafePublishedValue" class="text-3xl font-bold text-stone-800">—</div>
-                <div id="wsSafePublishedMeta" class="mt-2 text-xs text-stone-500">Es el número que hoy debería verse afuera.</div>
+                <div id="wsSafePublishedValue" class="text-2xl xl:text-3xl font-bold text-stone-800">—</div>
+                <div id="wsSafePublishedMeta" class="mt-1 text-xs text-stone-500">Es el número visible hoy.</div>
               </div>
-              <div class="rounded-xl border border-amber-200 bg-white px-4 py-3">
+              <div class="rounded-xl border border-amber-200 bg-white px-3 py-3">
                 <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-1">Nuevo valor en evaluación</div>
-                <div id="wsSafeDraftValue" class="text-3xl font-bold text-emerald-700">—</div>
-                <div id="wsSafeDraftMeta" class="mt-2 text-xs text-stone-500">Es la señal o propuesta que estás contrastando.</div>
+                <div id="wsSafeDraftValue" class="text-2xl xl:text-3xl font-bold text-emerald-700">—</div>
+                <div id="wsSafeDraftMeta" class="mt-1 text-xs text-stone-500">Es la señal activa que comparas.</div>
               </div>
-              <div class="rounded-xl border border-stone-200 bg-white px-4 py-3">
+              <div class="rounded-xl border border-stone-200 bg-white px-3 py-3">
                 <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-2">Lectura rápida</div>
-                <div class="space-y-2 text-xs">
+                <div class="space-y-1.5 text-xs">
                   <div class="flex items-center justify-between gap-2 rounded-lg bg-stone-50 px-3 py-2 border border-stone-200">
                     <span class="text-stone-600">Diferencia</span><strong id="wsSafeDeltaValue" class="text-stone-800">—</strong>
                   </div>
@@ -3846,7 +3846,7 @@
               </div>
             </div>
             <div id="wsSafeValueHint" class="mt-2 text-xs text-stone-600">
-              Primero comparas publicado versus evaluación. Después verificas qué refleja cada canal.
+              Compara publicado vs evaluación y luego valida canales.
             </div>
           </div>
 
@@ -3857,7 +3857,7 @@
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
+            <div class="rounded-xl border border-stone-200 bg-stone-50 px-3 py-3">
               <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-2">Estrategia activa</div>
               <div class="space-y-2 text-xs">
                 <div class="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 border border-stone-200">
@@ -3875,9 +3875,9 @@
               </div>
             </div>
 
-            <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
+            <div class="rounded-xl border border-stone-200 bg-stone-50 px-3 py-3">
               <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-2">Cálculo rápido</div>
-              <div class="space-y-3">
+              <div class="space-y-2.5">
                 <div>
                   <div class="flex items-center justify-between gap-2 text-xs text-stone-600 mb-1"><span>Venta</span><strong id="wsSafeCompraValue" class="text-stone-800">—</strong></div>
                   <div class="h-2 rounded-full bg-violet-200 overflow-hidden"><div id="wsSafeCompraBar" class="h-full bg-violet-500" style="width:0%"></div></div>
@@ -3898,10 +3898,9 @@
             </div>
           </div>
 
-          <div class="mt-3 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600">
+          <div class="mt-3 rounded-xl border border-stone-200 bg-stone-50 px-3 py-3 text-xs text-stone-600">
             <strong class="text-stone-800">Contrato de interacción de esta iteración:</strong>
-            click en la señal selecciona foco, click en un valor muestra trazabilidad, click en una acción terminal recién persiste.
-            Aquí no hay persistencia conectada todavía.
+            click en la señal selecciona foco, click en una acción terminal recién persiste. Aquí no hay persistencia conectada todavía.
           </div>
         </section>
 
@@ -17939,22 +17938,22 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       },
     ];
     const tones = {
-      emerald: { dot: 'bg-emerald-400', card: 'border-stone-200 bg-white', status: 'text-emerald-700' },
-      amber: { dot: 'bg-amber-400', card: 'border-stone-200 bg-white', status: 'text-amber-700' },
-      rose: { dot: 'bg-rose-400', card: 'border-stone-200 bg-white', status: 'text-rose-700' },
+      emerald: { dot: 'bg-emerald-400', card: 'border-stone-200 bg-white', status: 'text-emerald-700 text-[13px]' },
+      amber: { dot: 'bg-amber-400', card: 'border-stone-200 bg-white', status: 'text-amber-700 text-[13px]' },
+      rose: { dot: 'bg-rose-400', card: 'border-stone-200 bg-white', status: 'text-rose-700 text-[13px]' },
       stone: { dot: 'bg-stone-300', card: 'border-stone-200 bg-white', status: 'text-stone-500 text-[12px]' },
     };
     el.innerHTML = items.map((item) =>
-      '<div class="rounded-[26px] border px-5 py-4 min-h-[108px] ' + tones[item.tone].card + '">'
-      + '<div class="flex items-center gap-4 h-full">'
-      + '<span class="inline-block w-5 h-5 rounded-full shrink-0 ' + tones[item.tone].dot + '"></span>'
+      '<div class="rounded-xl border px-4 py-3 min-h-[88px] ' + tones[item.tone].card + '">'
+      + '<div class="flex items-center gap-3 h-full">'
+      + '<span class="inline-block w-4 h-4 rounded-full shrink-0 ' + tones[item.tone].dot + '"></span>'
       + '<div class="min-w-0 flex-1">'
-      + '<div class="text-[13px] font-bold leading-tight text-stone-800">'
+      + '<div class="text-sm font-bold leading-tight text-stone-800">'
       + tapEscape(item.title)
-      + (item.subtitle ? '<span class="block">' + tapEscape(item.subtitle) + '</span>' : '')
+      + (item.subtitle ? '<span class="block text-[12px] font-semibold text-stone-600">' + tapEscape(item.subtitle) + '</span>' : '')
       + '</div>'
-      + (item.price ? '<div class="mt-1 text-[28px] font-medium leading-none text-stone-800">' + tapEscape(item.price) + '</div>' : '')
-      + '<div class="mt-1 text-[14px] leading-tight ' + tones[item.tone].status + '">' + tapEscape(item.status) + '</div>'
+      + (item.price ? '<div class="mt-1 text-[24px] font-medium leading-none text-stone-800">' + tapEscape(item.price) + '</div>' : '')
+      + '<div class="mt-1 leading-tight ' + tones[item.tone].status + '">' + tapEscape(item.status) + '</div>'
       + '</div>'
       + '</div>'
       + '</div>'
