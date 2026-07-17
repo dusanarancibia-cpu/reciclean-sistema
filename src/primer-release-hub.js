@@ -9,10 +9,10 @@ import {
 } from './lib/primer-release-api.js';
 import {
   deriveReleaseOverview,
+  formatKg,
   formatMoney,
   healthLabel,
   healthTone,
-  pendingOldestLabel,
   severityLabel
 } from './lib/primer-release-overview.js';
 
@@ -33,7 +33,7 @@ const state = {
     comprobantes: []
   },
   overview: null,
-  lookups: { sucursales: [] },
+  lookups: { sucursales: [], materiales: [] },
   error: '',
   notice: ''
 };
@@ -75,20 +75,29 @@ function buildChecklist(overview) {
   const items = [
     {
       title: 'Abrir Centro de Control',
-      detail: 'Revisar alertas, cola financiera y actividad reciente del release.',
+      detail: overview.kilosHoy > 0
+        ? `Ya hay ${formatKg(overview.kilosHoy)} visibles hoy; conviene revisar captura y continuidad.`
+        : 'Revisar de inmediato si la jornada quedó sin kilos visibles o con captura débil.',
       href: '/supervision'
+    },
+    {
+      title: 'Ver Romanero',
+      detail: overview.expedientesSinPesaje
+        ? `${overview.expedientesSinPesaje} expedientes siguen sin pesaje visible; el origen operativo merece revisión.`
+        : 'Mantener visible el origen operativo del expediente y su contingencia.',
+      href: '/romanero'
+    },
+    {
+      title: 'Bajar al panel',
+      detail: 'Confirmar que el panel legacy ya esté leyendo el mismo pulso operativo del release.',
+      href: '/panel-rdo.html'
     },
     {
       title: 'Revisar Pagos',
       detail: overview.byState.pendiente_pago
-        ? `${overview.byState.pendiente_pago} expedientes siguen en cola de pago.`
+        ? `${overview.byState.pendiente_pago} expedientes siguen en cola de pago, pero ya como segunda capa.`
         : 'La cola de pago está sin pendientes visibles.',
       href: '/pagos'
-    },
-    {
-      title: 'Ver Romanero',
-      detail: 'Mantener visible el origen operativo del expediente y su contingencia.',
-      href: '/romanero'
     }
   ];
 
@@ -111,6 +120,10 @@ function buildChecklist(overview) {
 
 function sucursalName(sucursalId) {
   return state.lookups.sucursales.find((item) => item.sucursal_id === sucursalId)?.nombre || sucursalId;
+}
+
+function materialName(materialId) {
+  return state.lookups.materiales.find((item) => item.material_id === materialId)?.nombre || materialId;
 }
 
 async function loadVersion() {
@@ -147,7 +160,7 @@ function renderGuest() {
           <div>
             <div class="eyebrow">Primer Release · Hub Ejecutivo</div>
             <h1>Primer Release Hub</h1>
-            <p class="subtle">Portada ejecutiva para revisar el release en Vercel, abrir el demo y entrar rápido a los puntos operativos.</p>
+            <p class="subtle">Portada ejecutiva para revisar el release en Vercel con el enfoque correcto: compra y captura primero, pagos después.</p>
           </div>
           <div class="topbar-actions">
             <span class="session-pill">${escapeHtml(versionLabel())}</span>
@@ -159,8 +172,8 @@ function renderGuest() {
         ${state.error ? `<div class="flash flash-error">${escapeHtml(state.error)}</div>` : ''}
         <div class="metric-grid">
           <div class="metric"><span>Modo actual</span><strong>Sin sesión release</strong></div>
-          <div class="metric"><span>Ruta recomendada</span><strong>/romanero?demo=1</strong></div>
-          <div class="metric"><span>Centro de control</span><strong>/supervision</strong></div>
+          <div class="metric"><span>Ruta recomendada</span><strong>/supervision?demo=1</strong></div>
+          <div class="metric"><span>Eje operativo</span><strong>Kilos y captura</strong></div>
           <div class="metric"><span>Build visible</span><strong>${escapeHtml(state.version?.sha || 'sin dato')}</strong></div>
         </div>
       </section>
@@ -169,17 +182,17 @@ function renderGuest() {
         <a class="link-card" href="/romanero?demo=1">
           <div class="kicker">Demo</div>
           <h2>Encender flujo demo</h2>
-          <p class="subtle">Activa el estado compartido y recorre Romanero, Pagos y Centro de Control sin credenciales.</p>
+          <p class="subtle">Activa el estado compartido y recorre Romanero, Supervisión, Pagos y panel sin credenciales.</p>
         </a>
         <a class="link-card" href="/supervision">
           <div class="kicker">Control</div>
           <h2>Centro de Control</h2>
-          <p class="subtle">Lee salud operativa, alertas, radar por sucursal y actividad reciente.</p>
+          <p class="subtle">Lee kilos, captura, desvíos por sucursal, materiales calientes y continuidad operativa.</p>
         </a>
         <a class="link-card" href="/pagos">
-          <div class="kicker">Finanzas</div>
+          <div class="kicker">Cierre</div>
           <h2>Pagos MVP</h2>
-          <p class="subtle">Ver cola de pago, registrar pago manual y revisar comprobantes.</p>
+          <p class="subtle">Cierra la consecuencia financiera del flujo después de asegurar compra, pesaje y expediente.</p>
         </a>
       </section>
 
@@ -188,7 +201,7 @@ function renderGuest() {
           <div class="card-head">
             <div>
               <h2>Qué revisar primero</h2>
-              <p class="subtle">Secuencia mínima para evaluar el release desde un preview.</p>
+              <p class="subtle">Secuencia mínima para evaluar el release desde un preview sin perder el foco operativo.</p>
             </div>
           </div>
           <div class="list">
@@ -207,7 +220,7 @@ function renderGuest() {
           <div class="card-head">
             <div>
               <h2>Estado del preview</h2>
-              <p class="subtle">Se puede revisar sin claves reales mediante demo persistente.</p>
+              <p class="subtle">Se puede revisar sin claves reales mediante demo persistente y pulso kilos-first.</p>
             </div>
           </div>
           <div class="list">
@@ -234,6 +247,8 @@ function renderAuthenticated() {
   const overview = state.overview;
   const tone = healthTone(overview);
   const checklist = buildChecklist(overview);
+  const topOperationalAlerts = overview.operationalAlerts?.slice(0, 4) || [];
+  const topFinancialAlerts = overview.financialAlerts?.slice(0, 3) || [];
 
   app.innerHTML = `
     <section class="shell">
@@ -242,7 +257,7 @@ function renderAuthenticated() {
           <div>
             <div class="eyebrow">Primer Release · Hub Ejecutivo</div>
             <h1>Primer Release Hub</h1>
-            <p class="subtle">${healthLabel(overview)} · build ${escapeHtml(versionLabel())}.</p>
+            <p class="subtle">${healthLabel(overview)} · build ${escapeHtml(versionLabel())}. La lectura ejecutiva parte por compra, kilos y captura.</p>
           </div>
           <div class="topbar-actions">
             ${state.demo ? '<span class="session-pill">Modo demo</span>' : `<span class="session-pill">${escapeHtml(state.session?.user?.email || 'sesion activa')}</span>`}
@@ -254,10 +269,10 @@ function renderAuthenticated() {
         ${state.notice ? `<div class="flash flash-ok">${escapeHtml(state.notice)}</div>` : ''}
         ${state.error ? `<div class="flash flash-error">${escapeHtml(state.error)}</div>` : ''}
         <div class="metric-grid">
-          <div class="metric"><span>Expedientes</span><strong>${overview.byState.total}</strong></div>
-          <div class="metric"><span>Cola de pago</span><strong>${overview.byState.pendiente_pago}</strong></div>
-          <div class="metric"><span>Por conciliar</span><strong>${overview.byState.pagado_pendiente_conciliacion}</strong></div>
-          <div class="metric"><span>Monto pendiente</span><strong>${formatMoney(overview.montoPendiente)}</strong></div>
+          <div class="metric"><span>Kilos hoy</span><strong>${formatKg(overview.kilosHoy)}</strong></div>
+          <div class="metric"><span>Capturas hoy</span><strong>${overview.capturasHoy}</strong></div>
+          <div class="metric"><span>Sin pesaje visible</span><strong>${overview.expedientesSinPesaje}</strong></div>
+          <div class="metric"><span>Cobertura de pesaje</span><strong>${overview.coberturaPesajePct}%</strong></div>
         </div>
       </section>
 
@@ -267,16 +282,16 @@ function renderAuthenticated() {
           <strong>${overview.alertCounts.critical}</strong>
         </article>
         <article class="stat-card">
-          <span>Pagos sin respaldo</span>
-          <strong>${overview.pagosSinComprobante}</strong>
+          <span>Kilos visibles</span>
+          <strong>${formatKg(overview.kilosTotal)}</strong>
         </article>
         <article class="stat-card">
-          <span>Activos sin pesaje</span>
-          <strong>${overview.expedientesSinPesaje}</strong>
+          <span>Sucursales con captura</span>
+          <strong>${overview.sucursalesConCaptura}</strong>
         </article>
         <article class="stat-card">
-          <span>Pago más antiguo</span>
-          <strong>${pendingOldestLabel(overview.oldestPendingHours)}</strong>
+          <span>Materiales activos</span>
+          <strong>${overview.materialesConCaptura}</strong>
         </article>
       </section>
 
@@ -292,17 +307,17 @@ function renderAuthenticated() {
             <a class="link-card" href="/supervision">
               <div class="kicker">Gobierno</div>
               <h3>Centro de Control</h3>
-              <p class="subtle">Alertas, radar por sucursal y lectura ejecutiva del release.</p>
-            </a>
-            <a class="link-card" href="/pagos">
-              <div class="kicker">Finanzas</div>
-              <h3>Pagos MVP</h3>
-              <p class="subtle">${overview.byState.pendiente_pago} expedientes en cola y ${overview.byState.pagado_pendiente_conciliacion} por conciliar.</p>
+              <p class="subtle">Alertas de compra, captura, sucursales calientes y continuidad operativa.</p>
             </a>
             <a class="link-card" href="/romanero">
               <div class="kicker">Operación</div>
               <h3>Romanero MVP</h3>
-              <p class="subtle">Punto de entrada operativo o de contingencia del expediente.</p>
+              <p class="subtle">Origen operativo del expediente, pesaje y consulta canónica de precio.</p>
+            </a>
+            <a class="link-card" href="/pagos">
+              <div class="kicker">Cierre</div>
+              <h3>Pagos MVP</h3>
+              <p class="subtle">${overview.byState.pendiente_pago} expedientes en cola y ${overview.byState.pagado_pendiente_conciliacion} por conciliar como segunda capa.</p>
             </a>
           </div>
         </article>
@@ -310,12 +325,12 @@ function renderAuthenticated() {
         <article class="card">
           <div class="card-head">
             <div>
-              <h2>Alertas prioritarias</h2>
-              <p class="subtle">Lo que más conviene atacar primero.</p>
+              <h2>Alertas de origen</h2>
+              <p class="subtle">Lo que más conviene atacar primero en compra y captura.</p>
             </div>
           </div>
           <div class="list">
-            ${overview.alerts.length ? overview.alerts.slice(0, 4).map((alert) => `
+            ${topOperationalAlerts.length ? topOperationalAlerts.map((alert) => `
               <article class="item">
                 <div class="item-row">
                   <strong>${escapeHtml(alert.title)}</strong>
@@ -323,7 +338,7 @@ function renderAuthenticated() {
                 </div>
                 <span>${escapeHtml(alert.detail)}</span>
               </article>
-            `).join('') : '<div class="empty">No hay alertas activas. El release se ve estable.</div>'}
+            `).join('') : '<div class="empty">No hay alertas operativas activas. El release se ve estable desde compra y captura.</div>'}
           </div>
         </article>
 
@@ -331,17 +346,109 @@ function renderAuthenticated() {
           <div class="card-head">
             <div>
               <h2>Sucursales calientes</h2>
-              <p class="subtle">Dónde está hoy la presión operativa.</p>
+              <p class="subtle">Dónde está hoy el mayor movimiento o la mayor brecha de captura.</p>
             </div>
           </div>
           <div class="list">
             ${overview.sucursales.length ? overview.sucursales.map((item) => `
               <article class="item">
                 <strong>${escapeHtml(sucursalName(item.sucursal_id))}</strong>
-                <span>${item.total} expedientes · ${item.pendiente_pago} en cola · ${item.pagado_pendiente_conciliacion} por conciliar</span>
-                <small>Monto pendiente ${formatMoney(item.montoPendiente)}</small>
+                <span>${formatKg(item.kilosHoy)} hoy · ${formatKg(item.kilosTotal)} visibles · ${item.capturas} capturas</span>
+                <small>${item.expedientesSinPesaje} sin pesaje visible · ${item.activos} activos</small>
               </article>
             `).join('') : '<div class="empty">Todavía no hay presión visible por sucursal.</div>'}
+          </div>
+        </article>
+      </section>
+
+      <section class="grid-2">
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2>Materiales calientes</h2>
+              <p class="subtle">Qué materiales concentran hoy más kilos visibles y más movimiento.</p>
+            </div>
+          </div>
+          <div class="list">
+            ${overview.materiales.length ? overview.materiales.map((item) => `
+              <article class="item">
+                <strong>${escapeHtml(materialName(item.material_id))}</strong>
+                <span>${formatKg(item.kilosHoy)} hoy · ${formatKg(item.kilosTotal)} visibles · ${item.capturas} capturas</span>
+                <small>${item.expedientes} expedientes · ${item.sucursalesCount} sucursales con actividad</small>
+              </article>
+            `).join('') : '<div class="empty">Todavía no hay materiales con captura visible.</div>'}
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2>Siguiente jugada</h2>
+              <p class="subtle">Checklist ejecutivo para mover el release sin perder foco.</p>
+            </div>
+          </div>
+          <div class="list">
+            ${checklist.map((item) => `
+              <article class="item">
+                <strong>${escapeHtml(item.title)}</strong>
+                <span>${escapeHtml(item.detail)}</span>
+                ${item.href ? `<a class="btn btn-ghost" href="${escapeHtml(item.href)}">Abrir</a>` : `<button class="btn btn-ghost" type="button" data-action="${escapeHtml(item.action)}">Ejecutar</button>`}
+              </article>
+            `).join('')}
+            <article class="item">
+              <strong>Build actual</strong>
+              <span>${escapeHtml(versionLabel())}</span>
+              <small>${escapeHtml(state.version?.buildTime ? dt(state.version.buildTime) : 'sin hora de build')}</small>
+            </article>
+          </div>
+        </article>
+      </section>
+
+      <section class="grid-2">
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2>Capturas recientes</h2>
+              <p class="subtle">Últimos kilos visibles del release para revisar ritmo y continuidad.</p>
+            </div>
+          </div>
+          <div class="list">
+            ${overview.recentCaptures.length ? overview.recentCaptures.map((capture) => `
+              <article class="item">
+                <strong>${escapeHtml(capture.expediente_codigo)}</strong>
+                <span>${escapeHtml(materialName(capture.material_id))} · ${escapeHtml(sucursalName(capture.sucursal_id))}</span>
+                <small>${formatKg(capture.peso_neto_kg)} · ${escapeHtml(dt(capture.fecha_captura || capture.created_at))}</small>
+              </article>
+            `).join('') : '<div class="empty">Todavía no hay capturas recientes que mostrar.</div>'}
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2>Señales financieras secundarias</h2>
+              <p class="subtle">El cierre financiero sigue visible, pero subordinado al pulso operativo.</p>
+            </div>
+          </div>
+          <div class="list">
+            <article class="item">
+              <strong>Cola de pago</strong>
+              <span>${overview.byState.pendiente_pago} expedientes · ${formatMoney(overview.montoPendiente)} expuestos</span>
+            </article>
+            <article class="item">
+              <strong>Pagado por conciliar</strong>
+              <span>${overview.byState.pagado_pendiente_conciliacion} expedientes visibles.</span>
+            </article>
+            <article class="item">
+              <strong>Pagos sin respaldo</strong>
+              <span>${overview.pagosSinComprobante} expedientes con pago sin comprobante asociado.</span>
+            </article>
+            ${topFinancialAlerts.map((alert) => `
+              <article class="item">
+                <strong>${escapeHtml(alert.title)}</strong>
+                <span>${escapeHtml(alert.detail)}</span>
+              </article>
+            `).join('')}
           </div>
         </article>
       </section>
@@ -368,22 +475,26 @@ function renderAuthenticated() {
         <article class="card">
           <div class="card-head">
             <div>
-              <h2>Siguiente jugada</h2>
-              <p class="subtle">Checklist ejecutivo para mover el release sin perder foco.</p>
+              <h2>Backlog visible del flujo</h2>
+              <p class="subtle">Resumen del release desde operación hasta cierre financiero.</p>
             </div>
           </div>
           <div class="list">
-            ${checklist.map((item) => `
-              <article class="item">
-                <strong>${escapeHtml(item.title)}</strong>
-                <span>${escapeHtml(item.detail)}</span>
-                ${item.href ? `<a class="btn btn-ghost" href="${escapeHtml(item.href)}">Abrir</a>` : `<button class="btn btn-ghost" type="button" data-action="${escapeHtml(item.action)}">Ejecutar</button>`}
-              </article>
-            `).join('')}
             <article class="item">
-              <strong>Build actual</strong>
-              <span>${escapeHtml(versionLabel())}</span>
-              <small>${escapeHtml(state.version?.buildTime ? dt(state.version.buildTime) : 'sin hora de build')}</small>
+              <strong>Expedientes activos</strong>
+              <span>${overview.expedientesActivos} activos · ${overview.byState.total} totales en snapshot.</span>
+            </article>
+            <article class="item">
+              <strong>Pendiente factura</strong>
+              <span>${overview.byState.pendiente_factura} expedientes a la espera de facturación.</span>
+            </article>
+            <article class="item">
+              <strong>Cola de pago</strong>
+              <span>${overview.byState.pendiente_pago} expedientes todavía por pagar.</span>
+            </article>
+            <article class="item">
+              <strong>Pagado visible</strong>
+              <span>${formatMoney(overview.montoPagado)} registrados en snapshot.</span>
             </article>
           </div>
         </article>
@@ -481,6 +592,7 @@ async function boot() {
     if (state.session) {
       const lookups = await loadRomaneroLookups();
       state.lookups.sucursales = lookups.sucursales || [];
+      state.lookups.materiales = lookups.materiales || [];
       await loadOverview();
     }
   } catch (error) {

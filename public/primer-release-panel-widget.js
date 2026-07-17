@@ -1,6 +1,14 @@
 (function () {
   const DEMO_FLAG_KEY = 'primer-release-demo-enabled-v1';
   const DEMO_STATE_KEY = 'primer-release-demo-state-v1';
+  const ACTIVE_STATES = new Set([
+    'agendado',
+    'recepcionado',
+    'en_proceso',
+    'pendiente_factura',
+    'pendiente_pago',
+    'pagado_pendiente_conciliacion'
+  ]);
 
   function byId(id) {
     return document.getElementById(id);
@@ -15,16 +23,39 @@
     }).format(Number(value));
   }
 
+  function formatKg(value) {
+    if (value === null || value === undefined || value === '') return '—';
+    return `${new Intl.NumberFormat('es-CL', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    }).format(Number(value))} kg`;
+  }
+
+  function dayKey(value) {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
   function buildOverview(snapshot) {
     const expedientes = snapshot.expedientes || [];
+    const pesajes = snapshot.pesajes || [];
     const facturas = snapshot.facturas || [];
     const pagos = snapshot.pagos || [];
     const comprobantes = snapshot.comprobantes || [];
+    const today = dayKey(new Date().toISOString());
 
+    const pesajeByExpediente = new Map();
     const facturasByExpediente = new Map();
     const pagosByExpediente = new Map();
     const comprobantesByFactura = new Map();
 
+    pesajes.forEach((item) => {
+      if (!pesajeByExpediente.has(item.expediente_id)) {
+        pesajeByExpediente.set(item.expediente_id, item);
+      }
+    });
     facturas.forEach((item) => {
       const bucket = facturasByExpediente.get(item.expediente_id) || [];
       bucket.push(item);
@@ -46,8 +77,23 @@
     let pagadoPendiente = 0;
     let montoPendiente = 0;
     let pagosSinComprobante = 0;
+    let kilosHoy = 0;
+    let kilosTotal = 0;
+    let capturasHoy = 0;
+    let expedientesSinPesaje = 0;
+    let expedientesActivos = 0;
+
+    pesajes.forEach((item) => {
+      const kilos = Number(item.peso_neto_kg || 0);
+      kilosTotal += kilos;
+      if (dayKey(item.fecha_captura || item.created_at) === today) {
+        kilosHoy += kilos;
+        capturasHoy += 1;
+      }
+    });
 
     expedientes.forEach((expediente) => {
+      const pesaje = pesajeByExpediente.get(expediente.expediente_id) || null;
       const expFacturas = facturasByExpediente.get(expediente.expediente_id) || [];
       const expPagos = pagosByExpediente.get(expediente.expediente_id) || [];
       const facturaMonto = expFacturas.reduce((sum, item) => sum + Number(item.monto_total || 0), 0);
@@ -55,6 +101,13 @@
       const comprobantesExp = expFacturas.flatMap((factura) =>
         comprobantesByFactura.get(String(factura.factura_raw_id ?? factura.id)) || []
       );
+
+      if (ACTIVE_STATES.has(expediente.estado)) {
+        expedientesActivos += 1;
+      }
+      if (!pesaje && ACTIVE_STATES.has(expediente.estado) && expediente.estado !== 'agendado') {
+        expedientesSinPesaje += 1;
+      }
 
       if (expediente.estado === 'pendiente_pago') {
         pendientePago += 1;
@@ -68,11 +121,16 @@
       }
     });
 
-    const critical = pendientePago >= 5 || pagosSinComprobante >= 2;
-    const warning = !critical && (pendientePago > 0 || pagadoPendiente > 0);
+    const critical = (expedientesActivos > 0 && kilosHoy <= 0) || expedientesSinPesaje >= 2;
+    const warning = !critical && (expedientesSinPesaje > 0 || pendientePago > 0 || pagadoPendiente > 0);
 
     return {
       total: expedientes.length,
+      expedientesActivos,
+      expedientesSinPesaje,
+      kilosHoy,
+      kilosTotal,
+      capturasHoy,
       pendientePago,
       pagadoPendiente,
       pagosSinComprobante,
@@ -130,13 +188,19 @@
   }
 
   async function fetchLiveSnapshot(sb) {
-    const [expedientesRes, facturasRes, pagosRes, comprobantesRes] = await Promise.all([
+    const [expedientesRes, pesajesRes, facturasRes, pagosRes, comprobantesRes] = await Promise.all([
       sb.schema('curated')
         .from('expedientes_operacionales')
         .select('expediente_id, estado, updated_at, created_at')
         .order('fecha_operacion', { ascending: false })
         .order('updated_at', { ascending: false })
         .limit(180),
+      sb.schema('curated')
+        .from('pesajes')
+        .select('pesaje_id, expediente_id, sucursal_id, material_id, peso_neto_kg, fecha_captura, created_at')
+        .order('fecha_captura', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(220),
       sb.schema('curated')
         .from('facturacion_raw')
         .select('id, factura_raw_id, expediente_id, monto_total, estado_pago_release')
@@ -155,12 +219,14 @@
     ]);
 
     if (expedientesRes.error) throw expedientesRes.error;
+    if (pesajesRes.error) throw pesajesRes.error;
     if (facturasRes.error) throw facturasRes.error;
     if (pagosRes.error) throw pagosRes.error;
     if (comprobantesRes.error) throw comprobantesRes.error;
 
     return {
       expedientes: expedientesRes.data || [],
+      pesajes: pesajesRes.data || [],
       facturas: facturasRes.data || [],
       pagos: pagosRes.data || [],
       comprobantes: comprobantesRes.data || []
@@ -187,14 +253,14 @@
     }
 
     if (summaryEl) {
-      summaryEl.textContent = `${overview.total} expedientes · ${overview.pendientePago} en cola de pago · ${overview.pagadoPendiente} por conciliar`;
+      summaryEl.textContent = `${formatKg(overview.kilosHoy)} hoy · ${overview.capturasHoy} capturas · ${overview.expedientesSinPesaje} sin pesaje visible`;
     }
     if (detailEl) {
-      detailEl.textContent = `Monto pendiente ${money(overview.montoPendiente)} · pagos sin respaldo ${overview.pagosSinComprobante}.`;
+      detailEl.textContent = `Pulso visible ${formatKg(overview.kilosTotal)} · activos ${overview.expedientesActivos} · cola pago ${overview.pendientePago} por ${money(overview.montoPendiente)}.`;
     }
-    if (totalEl) totalEl.textContent = String(overview.total);
-    if (queueEl) queueEl.textContent = String(overview.pendientePago);
-    if (reconEl) reconEl.textContent = String(overview.pagadoPendiente);
+    if (totalEl) totalEl.textContent = formatKg(overview.kilosHoy);
+    if (queueEl) queueEl.textContent = String(overview.capturasHoy);
+    if (reconEl) reconEl.textContent = String(overview.expedientesSinPesaje);
     if (versionEl) versionEl.textContent = version ? `${version.sha} · ${version.env}` : 'sin build';
     if (hubLink && mode === 'Demo activo') hubLink.href = '/primer-release?demo=1';
   }

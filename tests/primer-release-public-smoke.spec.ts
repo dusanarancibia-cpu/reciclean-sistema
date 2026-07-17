@@ -69,7 +69,8 @@ test.describe('Primer Release público smoke', () => {
     await expect(page.locator('h1')).toHaveText(/Primer Release Hub/i);
     await expect(page.locator('.eyebrow')).toContainText(/Hub Ejecutivo/i);
     await expect(page.getByRole('button', { name: /Abrir demo/i })).toBeVisible();
-    await expect(page.getByText('/romanero?demo=1')).toBeVisible();
+    await expect(page.getByText(/Kilos y captura/i)).toBeVisible();
+    await expect(page.getByText('/supervision?demo=1')).toBeVisible();
 
     const criticos = consoleErrors.filter((entry) =>
       /TypeError|ReferenceError|Failed to fetch|Unexpected token|Cannot read/i.test(entry),
@@ -128,12 +129,14 @@ test.describe('Primer Release público smoke', () => {
     await page.getByRole('button', { name: /Abrir demo/i }).click();
     await expect(page.locator('.session-pill').filter({ hasText: 'Modo demo' })).toBeVisible();
     await expect(page.getByRole('button', { name: /Reiniciar demo/i })).toBeVisible();
-    await expect(page.getByText('Alertas críticas')).toBeVisible();
+    await expect(page.getByText('Kilos hoy')).toBeVisible();
+    await expect(page.getByText('Alertas de origen')).toBeVisible();
 
     await page.goto('/panel-rdo.html');
     await expect(page.locator('#primer-release-panel-badge')).toContainText(/Demo activo|Release estable|Vigilancia activa|Riesgo operativo/i);
     await expect(page.locator('#primer-release-panel-total')).not.toHaveText('—');
-    await expect(page.locator('#primer-release-panel-detail')).toContainText(/Monto pendiente|pagos sin respaldo/i);
+    await expect(page.locator('#primer-release-panel-summary')).toContainText(/kg|capturas|sin pesaje/i);
+    await expect(page.locator('#primer-release-panel-detail')).toContainText(/Pulso visible|cola pago/i);
 
     const criticos = consoleErrors.filter((entry) =>
       /TypeError|ReferenceError|Failed to fetch|Unexpected token|Cannot read/i.test(entry),
