@@ -7,6 +7,7 @@ import {
   disablePrimerReleaseDemo,
   enablePrimerReleaseDemo,
   fetchComprobantesByFacturaDemo,
+  fetchClienteOportunidadesDemo,
   fetchExpedienteDemo,
   fetchExpedienteEventosDemo,
   fetchFacturasByExpedienteDemo,
@@ -142,6 +143,26 @@ export async function createOrRecoverExpediente(payload) {
     return createOrRecoverExpedienteDemo(payload);
   }
   return rpc('create_or_recover_expediente_operacional', payload);
+}
+
+export async function fetchClienteOportunidades(clienteId, limit = 6) {
+  if (!clienteId) return [];
+  if (isPrimerReleaseDemoEnabled()) {
+    return fetchClienteOportunidadesDemo(clienteId, limit);
+  }
+  const { data, error } = await supabase.schema(CURATED)
+    .from('oportunidades')
+    .select('*')
+    .eq('cliente_id', clienteId)
+    .order('fecha_recepcion', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false, nullsFirst: false })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(normalizedMessage(error, 'No se pudieron leer las oportunidades del cliente'));
+  }
+
+  return data || [];
 }
 
 export async function registrarPesaje(payload) {

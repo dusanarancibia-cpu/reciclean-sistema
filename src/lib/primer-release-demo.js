@@ -61,6 +61,36 @@ function buildInitialState() {
       film_ldpe: { precio_compra_clp: 280, precio_venta_clp: 335 },
       pet_transparente: { precio_compra_clp: 360, precio_venta_clp: 420 }
     },
+    oportunidades: [
+      {
+        oportunidad_id: '8d4df0cf-b6a5-4d92-b5c4-demo000001',
+        cliente_id: 'cli_demo_farex',
+        titulo: 'Film LDPE semanal Farex',
+        estado: 'cotizacion',
+        owner: 'andrea@reciclean.cl',
+        valor_estimado_uf: 14.5,
+        fecha_recepcion: createdAt,
+        fecha_ult_interaccion: createdAt,
+        material_id: 'film_ldpe',
+        sucursal_id: 'cerrillos',
+        fuente: 'curated.oportunidades',
+        notas: 'Cliente con retiro semanal; validar continuidad operativa en sucursal.'
+      },
+      {
+        oportunidad_id: '7f34ad72-c26d-44bd-9b7c-demo000002',
+        cliente_id: 'cli_demo_reciclean',
+        titulo: 'PET transparente Maipu',
+        estado: 'negociacion',
+        owner: 'andrea@reciclean.cl',
+        valor_estimado_uf: 22,
+        fecha_recepcion: createdAt,
+        fecha_ult_interaccion: createdAt,
+        material_id: 'pet_transparente',
+        sucursal_id: 'maipu',
+        fuente: 'curated.oportunidades',
+        notas: 'Negocio activo; falta aterrizar handoff y capacidad operativa.'
+      }
+    ],
     expedientes: [
       {
         expediente_id: expedienteId,
@@ -280,6 +310,15 @@ export async function getDemoSession() {
 export async function loadDemoLookups() {
   const state = readState();
   return clone(state.lookups);
+}
+
+export async function fetchClienteOportunidadesDemo(clienteId, limit = 6) {
+  const state = readState();
+  return clone(
+    (state.oportunidades || [])
+      .filter((item) => item.cliente_id === clienteId)
+      .slice(0, limit)
+  );
 }
 
 export async function consultarPrecioVigenteDemo(materialId, sucursalId) {

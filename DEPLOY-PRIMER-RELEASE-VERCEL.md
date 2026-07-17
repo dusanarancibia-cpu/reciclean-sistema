@@ -54,7 +54,7 @@ No son obligatorias para que levante este release hoy, pero sí recomendadas par
 
 `/panel-rdo.html` ahora refleja el mismo criterio operativo: muestra `Kilos hoy`, `Capturas` y `Sin pesaje` antes de la lectura financiera.
 
-`/romanero` ahora declara explícitamente su rol de `adaptador/contingencia`: captura origen del caso, `handoff` Andrea -> operación, referencia legado y retorno comercial mínimo para no depender de memoria o WhatsApp.
+`/romanero` ahora declara explícitamente su rol de `adaptador/contingencia`: captura origen del caso, `handoff` Andrea -> operación, referencia legado y retorno comercial mínimo para no depender de memoria o WhatsApp. Además, cuando eliges un cliente, ya puede leer oportunidades visibles de `curated.oportunidades` para tomar una como handoff real sin crear un caso comercial paralelo.
 
 ## Revisión sin credenciales
 
@@ -66,6 +66,7 @@ Las tres pantallas nuevas ya exponen un modo demo útil para revisar el release 
 - cada pantalla permite `Reiniciar demo` para volver a la semilla base
 - el orden recomendado de revisión es `Hub -> Supervisión -> Romanero -> Pagos -> panel`
 - en `/romanero`, probar también los campos `Origen del caso`, `Oportunidad / handoff ID` y `Referencia legado`
+- al seleccionar un cliente en `/romanero`, revisar la tarjeta `Handoff comercial` y probar `Usar como handoff`
 
 ## Smoke automático disponible
 
@@ -79,6 +80,7 @@ Quedó un smoke público que no requiere credenciales reales y valida:
 - lectura compartida del demo entre hub y panel
 - foco operativo visible en hub/panel con métricas de kilos y captura
 - visibilidad del marco de arranque y de las reglas anti-duplicación en hub/romanero
+- convergencia visible entre oportunidad comercial y expediente operacional desde Romanero
 - presencia de `/_version.json`
 
 Ejecutar:
@@ -97,7 +99,7 @@ E2E_BASE_URL=https://tu-preview.vercel.app npm run test:e2e:primer-release
 
 1. Probar login real en las tres vistas
 2. Ejecutar flujo vivo:
-   - Romanero crea o recupera expediente con origen/handoff explícito
+   - Romanero crea o recupera expediente con origen/handoff explícito y, si existe, enlazado a oportunidad comercial visible
    - Pagos registra pago y comprobante
    - Supervisión refleja primero kilos/captura y luego el cierre financiero
 3. Si corresponde, reemplazar fallback por variables explícitas en Vercel

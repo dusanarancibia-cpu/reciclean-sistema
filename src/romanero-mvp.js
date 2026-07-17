@@ -5,6 +5,7 @@ import {
   loadRomaneroLookups,
   consultarPrecioVigente,
   createOrRecoverExpediente,
+  fetchClienteOportunidades,
   registrarPesaje,
   fetchExpediente,
   fetchExpedienteEventos,
@@ -47,7 +48,9 @@ const state = {
   precio: null,
   expediente: null,
   eventos: [],
-  lastPesaje: null
+  lastPesaje: null,
+  oportunidades: [],
+  oportunidadesLoading: false
 };
 
 function money(value) {
@@ -57,6 +60,14 @@ function money(value) {
     currency: 'CLP',
     maximumFractionDigits: 0
   }).format(Number(value));
+}
+
+function uf(value) {
+  if (value === null || value === undefined || value === '') return '—';
+  return `${new Intl.NumberFormat('es-CL', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(Number(value))} UF`;
 }
 
 function dateTime(value) {
@@ -147,6 +158,83 @@ function currentHandoffContext() {
   };
 }
 
+function linkedOpportunity() {
+  if (!state.form.oportunidad_id) return null;
+  return state.oportunidades.find((item) => String(item.oportunidad_id) === String(state.form.oportunidad_id)) || null;
+}
+
+function opportunityTitle(opportunity) {
+  return opportunity?.titulo || opportunity?.nombre || opportunity?.asunto || opportunity?.codigo || opportunity?.oportunidad_id || 'Oportunidad';
+}
+
+function opportunityStage(opportunity) {
+  return opportunity?.etapa || opportunity?.estado || opportunity?.fase || 'sin etapa';
+}
+
+function opportunityOwner(opportunity) {
+  return opportunity?.owner || opportunity?.responsable || opportunity?.owner_email || opportunity?.asignado_a || 'sin owner';
+}
+
+function buildCommercialReturn(opportunity) {
+  if (!opportunity) return '';
+  const parts = [
+    `Oportunidad ${opportunityStage(opportunity)}`,
+    opportunityTitle(opportunity)
+  ];
+  if (opportunity.valor_estimado_uf !== null && opportunity.valor_estimado_uf !== undefined) {
+    parts.push(uf(opportunity.valor_estimado_uf));
+  }
+  if (opportunity.fecha_ult_interaccion) {
+    parts.push(`último contacto ${new Date(opportunity.fecha_ult_interaccion).toLocaleDateString('es-CL')}`);
+  }
+  return parts.filter(Boolean).join(' · ');
+}
+
+async function refreshClienteOportunidades() {
+  if (!state.session || !state.form.cliente_id) {
+    state.oportunidades = [];
+    state.oportunidadesLoading = false;
+    return;
+  }
+  state.oportunidadesLoading = true;
+  render();
+  try {
+    state.oportunidades = await fetchClienteOportunidades(state.form.cliente_id, 6);
+  } catch (error) {
+    state.oportunidades = [];
+    setError(error.message);
+  } finally {
+    state.oportunidadesLoading = false;
+    render();
+  }
+}
+
+function applyOpportunityHandoff(opportunityId) {
+  const opportunity = state.oportunidades.find((item) => String(item.oportunidad_id) === String(opportunityId));
+  if (!opportunity) {
+    throw new Error('No se encontró la oportunidad seleccionada');
+  }
+  state.form.origen_handoff = 'handoff_andrea';
+  state.form.oportunidad_id = String(opportunity.oportunidad_id || '');
+  if (!state.form.referencia_legado) {
+    state.form.referencia_legado = opportunity.codigo || opportunity.fuente || 'curated.oportunidades';
+  }
+  if (!state.form.retorno_comercial) {
+    state.form.retorno_comercial = buildCommercialReturn(opportunity);
+  }
+  if (!state.form.material_id && opportunity.material_id && state.lookups.materiales.some((item) => item.material_id === opportunity.material_id)) {
+    state.form.material_id = opportunity.material_id;
+  }
+  if (opportunity.sucursal_id && state.lookups.sucursales.some((item) => item.sucursal_id === opportunity.sucursal_id)) {
+    state.form.sucursal_id = opportunity.sucursal_id;
+  }
+  state.expediente = null;
+  state.eventos = [];
+  state.lastPesaje = null;
+  setNotice('Handoff cargado desde oportunidad comercial existente');
+  render();
+}
+
 function renderLogin() {
   app.innerHTML = `
     <section class="shell shell-center">
@@ -183,6 +271,7 @@ function renderApp() {
   const materiales = filteredMateriales();
   const handoff = currentHandoffContext();
   const captureMode = state.form.origen_handoff === 'contingencia_pesaje' ? 'Contingencia' : state.form.origen_handoff === 'handoff_andrea' ? 'Con handoff' : 'Directo';
+  const opportunity = linkedOpportunity();
 
   app.innerHTML = `
     <section class="shell">
@@ -354,6 +443,50 @@ function renderApp() {
           <section class="card">
             <div class="card-head">
               <div>
+                <h2>Handoff comercial</h2>
+                <p class="subtle">Lectura mínima de oportunidades reales del cliente para converger al mismo expediente.</p>
+              </div>
+              <span class="status">${state.oportunidadesLoading ? 'Cargando' : `${state.oportunidades.length} visibles`}</span>
+            </div>
+            ${!state.form.cliente_id ? '<div class="empty">Selecciona un cliente para revisar sus oportunidades comerciales visibles.</div>' : state.oportunidadesLoading ? '<div class="empty">Cargando oportunidades del cliente...</div>' : state.oportunidades.length ? `
+              <div class="timeline">
+                ${state.oportunidades.map((item) => `
+                  <article class="timeline-item">
+                    <div class="timeline-meta">
+                      <strong>${escapeHtml(opportunityTitle(item))}</strong>
+                      <span>${escapeHtml(opportunityStage(item))}</span>
+                    </div>
+                    <div class="timeline-date">${escapeHtml(item.fecha_recepcion ? dateTime(item.fecha_recepcion) : 'sin fecha recepción')}</div>
+                    <div class="metric-grid">
+                      <div class="metric">
+                        <span>Oportunidad</span>
+                        <strong>${escapeHtml(item.oportunidad_id || '—')}</strong>
+                      </div>
+                      <div class="metric">
+                        <span>Owner</span>
+                        <strong>${escapeHtml(opportunityOwner(item))}</strong>
+                      </div>
+                      <div class="metric">
+                        <span>Valor estimado</span>
+                        <strong>${uf(item.valor_estimado_uf)}</strong>
+                      </div>
+                      <div class="metric">
+                        <span>Último contacto</span>
+                        <strong>${escapeHtml(item.fecha_ult_interaccion ? dateTime(item.fecha_ult_interaccion) : '—')}</strong>
+                      </div>
+                    </div>
+                    <div class="toolbar">
+                      <button class="btn" data-action="use-opportunity" data-opportunity-id="${escapeHtml(item.oportunidad_id || '')}">Usar como handoff</button>
+                    </div>
+                  </article>
+                `).join('')}
+              </div>
+            ` : '<div class="empty">No hay oportunidades visibles para este cliente en la fuente comercial actual.</div>'}
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <div>
                 <h2>Expediente</h2>
                 <p class="subtle">TT-04-05 visible para Romanero.</p>
               </div>
@@ -392,6 +525,11 @@ function renderApp() {
                 <strong>${escapeHtml(handoff.retornoComercial || '—')}</strong>
               </div>
             </div>
+            ${opportunity ? `
+              <div class="flash flash-ok">
+                Handoff vinculado a <strong>${escapeHtml(opportunityTitle(opportunity))}</strong> · ${escapeHtml(opportunityStage(opportunity))} · ${escapeHtml(opportunityOwner(opportunity))}.
+              </div>
+            ` : ''}
           </section>
 
           <section class="card">
@@ -626,6 +764,8 @@ async function handleLogout() {
     state.expediente = null;
     state.eventos = [];
     state.lastPesaje = null;
+    state.oportunidades = [];
+    state.oportunidadesLoading = false;
     setNotice('Sesion cerrada');
   } catch (error) {
     setError(error.message);
@@ -677,6 +817,7 @@ async function boot() {
     state.session = await getRomaneroSession();
     if (state.session) {
       state.lookups = await loadRomaneroLookups();
+      await refreshClienteOportunidades();
     }
     state.loading = false;
     state.busy = false;
@@ -712,7 +853,7 @@ app.addEventListener('input', (event) => {
   }
 });
 
-app.addEventListener('change', (event) => {
+app.addEventListener('change', async (event) => {
   const { name, value } = event.target;
   if (name in state.form) {
     state.form[name] = value;
@@ -723,6 +864,10 @@ app.addEventListener('change', (event) => {
         if (suggestedSucursal && state.lookups.sucursales.some((item) => item.sucursal_id === suggestedSucursal)) {
           state.form.sucursal_id = suggestedSucursal;
         }
+        state.form.oportunidad_id = '';
+        state.form.referencia_legado = '';
+        state.form.retorno_comercial = '';
+        state.oportunidades = [];
       }
       state.expediente = null;
       state.eventos = [];
@@ -732,11 +877,15 @@ app.addEventListener('change', (event) => {
       }
     }
     render();
+    if (name === 'cliente_id') {
+      await refreshClienteOportunidades();
+    }
   }
 });
 
 app.addEventListener('click', async (event) => {
-  const action = event.target.dataset.action;
+  const target = event.target.closest('[data-action]');
+  const action = target?.dataset.action;
   if (!action || state.busy) return;
 
   try {
@@ -746,6 +895,7 @@ app.addEventListener('click', async (event) => {
     if (action === 'precio') await handleConsultarPrecio();
     if (action === 'expediente') await handleCreateOrRecover();
     if (action === 'pesaje') await handleRegistrarPesaje();
+    if (action === 'use-opportunity') applyOpportunityHandoff(target.dataset.opportunityId);
   } catch (error) {
     state.busy = false;
     setError(error.message);
