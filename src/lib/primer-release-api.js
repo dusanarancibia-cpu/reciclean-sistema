@@ -6,6 +6,7 @@ import {
   createSignedStorageUrlDemo,
   disablePrimerReleaseDemo,
   enablePrimerReleaseDemo,
+  fetchClienteDespachosDemo,
   fetchComprobantesByFacturaDemo,
   fetchClienteOportunidadesDemo,
   fetchExpedienteDemo,
@@ -163,6 +164,32 @@ export async function fetchClienteOportunidades(clienteId, limit = 6) {
   }
 
   return data || [];
+}
+
+function normalizeText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .trim();
+}
+
+export async function fetchClienteDespachos(clienteId, razonSocial, limit = 6) {
+  if (!clienteId && !razonSocial) return [];
+  if (isPrimerReleaseDemoEnabled()) {
+    return fetchClienteDespachosDemo(clienteId, limit);
+  }
+  const data = await rpc('despacho_coord_listar', { p_solo_activos: false });
+  const rows = Array.isArray(data) ? data : [];
+  const target = normalizeText(razonSocial);
+
+  return rows
+    .filter((item) => {
+      const candidate = normalizeText(item.cliente_razon_social);
+      return target ? candidate === target : false;
+    })
+    .sort((a, b) => String(b.fecha_programada || '').localeCompare(String(a.fecha_programada || '')))
+    .slice(0, limit);
 }
 
 export async function registrarPesaje(payload) {

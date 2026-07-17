@@ -5,6 +5,7 @@ import {
   loadRomaneroLookups,
   consultarPrecioVigente,
   createOrRecoverExpediente,
+  fetchClienteDespachos,
   fetchClienteOportunidades,
   registrarPesaje,
   fetchExpediente,
@@ -38,6 +39,7 @@ const state = {
     material_id: '',
     servicio_clase: 'compra_material',
     origen_handoff: 'romanero_directo',
+    agenda_servicio_id: '',
     oportunidad_id: '',
     referencia_legado: '',
     retorno_comercial: '',
@@ -49,6 +51,8 @@ const state = {
   expediente: null,
   eventos: [],
   lastPesaje: null,
+  despachos: [],
+  despachosLoading: false,
   oportunidades: [],
   oportunidadesLoading: false
 };
@@ -150,12 +154,22 @@ function returnEventPayload() {
 function currentHandoffContext() {
   const createdPayload = creationEventPayload() || {};
   const returnPayload = returnEventPayload() || {};
+  const agendaPayload = createdPayload.agenda_servicio || null;
   return {
     origen: createdPayload.origen_operacional || state.form.origen_handoff,
+    agendaServicioId: agendaPayload?.agenda_servicio_id || state.form.agenda_servicio_id || null,
     oportunidadId: state.expediente?.oportunidad_id || state.form.oportunidad_id || createdPayload.oportunidad_id || null,
     referenciaLegado: createdPayload.referencia_legado || state.form.referencia_legado || null,
-    retornoComercial: createdPayload.retorno_comercial || state.form.retorno_comercial || returnPayload.estado || null
+    retornoComercial: createdPayload.retorno_comercial || state.form.retorno_comercial || returnPayload.estado || null,
+    agendaDestino: agendaPayload?.destino || null,
+    agendaFecha: agendaPayload?.fecha_programada || null,
+    agendaDocumentos: agendaPayload?.documentos_esperados || []
   };
+}
+
+function linkedScheduledService() {
+  if (!state.form.agenda_servicio_id) return null;
+  return state.despachos.find((item) => String(item.id) === String(state.form.agenda_servicio_id)) || null;
 }
 
 function linkedOpportunity() {
@@ -190,6 +204,41 @@ function buildCommercialReturn(opportunity) {
   return parts.filter(Boolean).join(' · ');
 }
 
+function serviceTitle(service) {
+  return service?.material_nombre || service?.titulo || service?.id || 'Servicio';
+}
+
+function serviceTransport(service) {
+  return service?.transporte_tipo ? String(service.transporte_tipo).replaceAll('_', ' ') : 'sin transporte';
+}
+
+function serviceDocuments(service) {
+  if (Array.isArray(service?.documentos_esperados) && service.documentos_esperados.length) {
+    return service.documentos_esperados.map((item) => String(item).replaceAll('_', ' '));
+  }
+  return ['no informados en despacho_coord'];
+}
+
+async function refreshClienteDespachos() {
+  const cliente = selectedCliente();
+  if (!state.session || !cliente) {
+    state.despachos = [];
+    state.despachosLoading = false;
+    return;
+  }
+  state.despachosLoading = true;
+  render();
+  try {
+    state.despachos = await fetchClienteDespachos(cliente.cliente_id, cliente.razon_social, 6);
+  } catch (error) {
+    state.despachos = [];
+    setError(error.message);
+  } finally {
+    state.despachosLoading = false;
+    render();
+  }
+}
+
 async function refreshClienteOportunidades() {
   if (!state.session || !state.form.cliente_id) {
     state.oportunidades = [];
@@ -207,6 +256,39 @@ async function refreshClienteOportunidades() {
     state.oportunidadesLoading = false;
     render();
   }
+}
+
+function applyScheduledService(serviceId) {
+  const service = state.despachos.find((item) => String(item.id) === String(serviceId));
+  if (!service) {
+    throw new Error('No se encontró el servicio agendado seleccionado');
+  }
+  state.form.agenda_servicio_id = String(service.id || '');
+  state.form.origen_handoff = 'handoff_andrea';
+  state.form.fecha_operacion = service.fecha_programada || state.form.fecha_operacion;
+  if (service.sucursal_codigo && state.lookups.sucursales.some((item) => item.sucursal_id === service.sucursal_codigo)) {
+    state.form.sucursal_id = service.sucursal_codigo;
+  }
+  if (service.material_id && state.lookups.materiales.some((item) => item.material_id === service.material_id)) {
+    state.form.material_id = service.material_id;
+  }
+  if (!state.form.referencia_legado) {
+    state.form.referencia_legado = `despacho_coord:${service.id}`;
+  }
+  if (!state.form.retorno_comercial) {
+    state.form.retorno_comercial = `Servicio ${service.estado || 'programado'} · ${serviceTitle(service)} · ${service.fecha_programada || 'sin fecha'} · ${service.destino || 'sin destino'}`;
+  }
+  if (!state.form.observaciones && service.notas) {
+    state.form.observaciones = service.notas;
+  }
+  if (state.form.servicio_clase === 'compra_material' && service.transporte_tipo && service.transporte_tipo !== 'cliente') {
+    state.form.servicio_clase = 'servicio_operativo';
+  }
+  state.expediente = null;
+  state.eventos = [];
+  state.lastPesaje = null;
+  setNotice('Servicio agendado cargado como puerta de entrada al expediente operacional');
+  render();
 }
 
 function applyOpportunityHandoff(opportunityId) {
@@ -271,6 +353,7 @@ function renderApp() {
   const materiales = filteredMateriales();
   const handoff = currentHandoffContext();
   const captureMode = state.form.origen_handoff === 'contingencia_pesaje' ? 'Contingencia' : state.form.origen_handoff === 'handoff_andrea' ? 'Con handoff' : 'Directo';
+  const scheduledService = linkedScheduledService();
   const opportunity = linkedOpportunity();
 
   app.innerHTML = `
@@ -347,6 +430,10 @@ function renderApp() {
             </label>
 
             <label class="field">
+              <span>Servicio agendado ID</span>
+              <input type="text" name="agenda_servicio_id" value="${escapeHtml(state.form.agenda_servicio_id)}" placeholder="despacho_coord-123 / servicio agendado" />
+            </label>
+            <label class="field field-span-2">
               <span>Oportunidad / handoff ID</span>
               <input type="text" name="oportunidad_id" value="${escapeHtml(state.form.oportunidad_id)}" placeholder="op-123 / cotizacion / negocio" />
             </label>
@@ -443,6 +530,55 @@ function renderApp() {
           <section class="card">
             <div class="card-head">
               <div>
+                <h2>Servicio agendado</h2>
+                <p class="subtle">Puerta de entrada 1: Andrea agenda servicio, define fecha, destino y contexto antes de sucursal.</p>
+              </div>
+              <span class="status">${state.despachosLoading ? 'Cargando' : `${state.despachos.length} visibles`}</span>
+            </div>
+            ${!state.form.cliente_id ? '<div class="empty">Selecciona un cliente para revisar si ya existe servicio agendado.</div>' : state.despachosLoading ? '<div class="empty">Cargando servicios agendados del cliente...</div>' : state.despachos.length ? `
+              <div class="timeline">
+                ${state.despachos.map((item) => `
+                  <article class="timeline-item">
+                    <div class="timeline-meta">
+                      <strong>${escapeHtml(serviceTitle(item))}</strong>
+                      <span>${escapeHtml(item.estado || 'sin estado')}</span>
+                    </div>
+                    <div class="timeline-date">${escapeHtml(item.fecha_programada ? dateTime(item.fecha_programada) : 'sin fecha programada')}</div>
+                    <div class="metric-grid">
+                      <div class="metric">
+                        <span>Servicio</span>
+                        <strong>${escapeHtml(item.id || '—')}</strong>
+                      </div>
+                      <div class="metric">
+                        <span>Destino</span>
+                        <strong>${escapeHtml(item.destino || '—')}</strong>
+                      </div>
+                      <div class="metric">
+                        <span>Transporte</span>
+                        <strong>${escapeHtml(serviceTransport(item))}</strong>
+                      </div>
+                      <div class="metric">
+                        <span>Kg estimado</span>
+                        <strong>${escapeHtml(item.kg_estimado || '—')}</strong>
+                      </div>
+                      <div class="metric field-span-2">
+                        <span>Documentos esperados</span>
+                        <strong>${escapeHtml(serviceDocuments(item).join(' · '))}</strong>
+                      </div>
+                    </div>
+                    ${item.notas ? `<div class="flash flash-ok">${escapeHtml(item.notas)}</div>` : ''}
+                    <div class="toolbar">
+                      <button class="btn" data-action="use-scheduled-service" data-service-id="${escapeHtml(item.id || '')}">Usar servicio agendado</button>
+                    </div>
+                  </article>
+                `).join('')}
+              </div>
+            ` : '<div class="empty">No hay servicios agendados visibles para este cliente en despacho_coord.</div>'}
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <div>
                 <h2>Handoff comercial</h2>
                 <p class="subtle">Lectura mínima de oportunidades reales del cliente para converger al mismo expediente.</p>
               </div>
@@ -513,6 +649,10 @@ function renderApp() {
                 <strong>${escapeHtml(handoffOriginLabel(handoff.origen))}</strong>
               </div>
               <div class="metric">
+                <span>Servicio agendado</span>
+                <strong>${escapeHtml(handoff.agendaServicioId || '—')}</strong>
+              </div>
+              <div class="metric">
                 <span>Handoff ID</span>
                 <strong>${escapeHtml(handoff.oportunidadId || '—')}</strong>
               </div>
@@ -524,7 +664,23 @@ function renderApp() {
                 <span>Retorno comercial</span>
                 <strong>${escapeHtml(handoff.retornoComercial || '—')}</strong>
               </div>
+              <div class="metric">
+                <span>Fecha agenda</span>
+                <strong>${escapeHtml(handoff.agendaFecha || '—')}</strong>
+              </div>
+              <div class="metric">
+                <span>Destino agenda</span>
+                <strong>${escapeHtml(handoff.agendaDestino || '—')}</strong>
+              </div>
             </div>
+            ${scheduledService ? `
+              <div class="flash flash-ok">
+                Servicio agendado vinculado: <strong>${escapeHtml(serviceTitle(scheduledService))}</strong> · ${escapeHtml(scheduledService.fecha_programada || 'sin fecha')} · ${escapeHtml(serviceTransport(scheduledService))}.
+              </div>
+              <div class="flash flash-ok">
+                Documentos esperados: ${escapeHtml(serviceDocuments(scheduledService).join(' · '))}
+              </div>
+            ` : ''}
             ${opportunity ? `
               <div class="flash flash-ok">
                 Handoff vinculado a <strong>${escapeHtml(opportunityTitle(opportunity))}</strong> · ${escapeHtml(opportunityStage(opportunity))} · ${escapeHtml(opportunityOwner(opportunity))}.
@@ -614,7 +770,9 @@ async function refreshExpediente(expedienteId) {
 }
 
 function currentPayload() {
+  const scheduledService = linkedScheduledService();
   const oportunidadId = state.form.oportunidad_id.trim();
+  const agendaServicioId = state.form.agenda_servicio_id.trim();
   const referenciaLegado = state.form.referencia_legado.trim();
   const retornoComercial = state.form.retorno_comercial.trim();
   const origenMap = {
@@ -634,6 +792,13 @@ function currentPayload() {
     p_handoff_payload: {
       origen_ui: 'romanero_mvp',
       origen_operacional: state.form.origen_handoff,
+      agenda_servicio: agendaServicioId ? {
+        agenda_servicio_id: agendaServicioId,
+        fecha_programada: scheduledService?.fecha_programada || state.form.fecha_operacion,
+        destino: scheduledService?.destino || null,
+        transporte_tipo: scheduledService?.transporte_tipo || null,
+        documentos_esperados: serviceDocuments(scheduledService)
+      } : null,
       oportunidad_id: oportunidadId || null,
       referencia_legado: referenciaLegado || null,
       retorno_comercial: retornoComercial || null,
@@ -764,6 +929,8 @@ async function handleLogout() {
     state.expediente = null;
     state.eventos = [];
     state.lastPesaje = null;
+    state.despachos = [];
+    state.despachosLoading = false;
     state.oportunidades = [];
     state.oportunidadesLoading = false;
     setNotice('Sesion cerrada');
@@ -817,7 +984,10 @@ async function boot() {
     state.session = await getRomaneroSession();
     if (state.session) {
       state.lookups = await loadRomaneroLookups();
-      await refreshClienteOportunidades();
+      await Promise.all([
+        refreshClienteDespachos(),
+        refreshClienteOportunidades()
+      ]);
     }
     state.loading = false;
     state.busy = false;
@@ -864,9 +1034,11 @@ app.addEventListener('change', async (event) => {
         if (suggestedSucursal && state.lookups.sucursales.some((item) => item.sucursal_id === suggestedSucursal)) {
           state.form.sucursal_id = suggestedSucursal;
         }
+        state.form.agenda_servicio_id = '';
         state.form.oportunidad_id = '';
         state.form.referencia_legado = '';
         state.form.retorno_comercial = '';
+        state.despachos = [];
         state.oportunidades = [];
       }
       state.expediente = null;
@@ -878,7 +1050,10 @@ app.addEventListener('change', async (event) => {
     }
     render();
     if (name === 'cliente_id') {
-      await refreshClienteOportunidades();
+      await Promise.all([
+        refreshClienteDespachos(),
+        refreshClienteOportunidades()
+      ]);
     }
   }
 });
@@ -895,6 +1070,7 @@ app.addEventListener('click', async (event) => {
     if (action === 'precio') await handleConsultarPrecio();
     if (action === 'expediente') await handleCreateOrRecover();
     if (action === 'pesaje') await handleRegistrarPesaje();
+    if (action === 'use-scheduled-service') applyScheduledService(target.dataset.serviceId);
     if (action === 'use-opportunity') applyOpportunityHandoff(target.dataset.opportunityId);
   } catch (error) {
     state.busy = false;

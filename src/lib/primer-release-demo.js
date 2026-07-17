@@ -91,6 +91,44 @@ function buildInitialState() {
         notas: 'Negocio activo; falta aterrizar handoff y capacidad operativa.'
       }
     ],
+    despachos: [
+      {
+        id: 'desp_demo_001',
+        cliente_id: 'cli_demo_farex',
+        material_nombre: 'Film LDPE',
+        material_id: 'film_ldpe',
+        sucursal_codigo: 'cerrillos',
+        cliente_razon_social: 'Transportes Demo Ltda.',
+        kg_estimado: 1850,
+        fecha_programada: createdAt.slice(0, 10),
+        transporte_tipo: 'camion_propio',
+        destino: 'Sucursal Cerrillos',
+        estado: 'programado',
+        solicitante_email: 'andrea@reciclean.cl',
+        created_at: createdAt,
+        ejecutado_at: null,
+        notas: 'Retiro agendado desde comercial; pedir guia de despacho y validar referencia operativa.',
+        documentos_esperados: ['guia_despacho', 'referencia_operativa']
+      },
+      {
+        id: 'desp_demo_002',
+        cliente_id: 'cli_demo_reciclean',
+        material_nombre: 'PET transparente',
+        material_id: 'pet_transparente',
+        sucursal_codigo: 'maipu',
+        cliente_razon_social: 'Reciclean Demo SPA',
+        kg_estimado: 920,
+        fecha_programada: createdAt.slice(0, 10),
+        transporte_tipo: 'cliente',
+        destino: 'Sucursal Maipu',
+        estado: 'en_ejecucion',
+        solicitante_email: 'andrea@reciclean.cl',
+        created_at: createdAt,
+        ejecutado_at: null,
+        notas: 'Chofer externo confirmado; material entra como servicio operativo.',
+        documentos_esperados: ['guia_despacho', 'acta_entrega']
+      }
+    ],
     expedientes: [
       {
         expediente_id: expedienteId,
@@ -317,6 +355,16 @@ export async function fetchClienteOportunidadesDemo(clienteId, limit = 6) {
   return clone(
     (state.oportunidades || [])
       .filter((item) => item.cliente_id === clienteId)
+      .slice(0, limit)
+  );
+}
+
+export async function fetchClienteDespachosDemo(clienteId, limit = 6) {
+  const state = readState();
+  return clone(
+    (state.despachos || [])
+      .filter((item) => item.cliente_id === clienteId)
+      .sort((a, b) => String(b.fecha_programada || '').localeCompare(String(a.fecha_programada || '')))
       .slice(0, limit)
   );
 }
