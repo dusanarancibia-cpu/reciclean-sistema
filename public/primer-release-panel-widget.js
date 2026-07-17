@@ -93,6 +93,7 @@
     let agendaCount = 0;
     let terrenoCount = 0;
     let sucursalCount = 0;
+    let materialCount = 0;
     let plantaCount = 0;
     let finanzasCount = 0;
 
@@ -152,6 +153,12 @@
       || terrenoRutas.filter((item) => !['cancelada', 'cerrada', 'completada'].includes(String(item.estado || '').toLowerCase())).length
       || terrenoViajes.filter((item) => dayKey(item.fecha || item.hora_salida || item.created_at) === today).length
       || terrenoRutas.filter((item) => dayKey(item.fecha || item.created_at) === today).length;
+    materialCount = new Set(
+      pesajes
+        .map((item) => item.material_id)
+        .concat(expedientes.map((item) => item.material_id))
+        .filter(Boolean)
+    ).size;
 
     const critical = (expedientesActivos > 0 && kilosHoy <= 0) || expedientesSinPesaje >= 2;
     const warning = !critical && (expedientesSinPesaje > 0 || pendientePago > 0 || pagadoPendiente > 0);
@@ -166,6 +173,7 @@
       agendaCount,
       terrenoCount,
       sucursalCount,
+      materialCount,
       plantaCount,
       finanzasCount,
       pendientePago,
@@ -317,13 +325,13 @@
     }
 
     if (summaryEl) {
-      summaryEl.textContent = `Agenda ${overview.agendaCount} · Terreno ${overview.terrenoCount} · Sucursal ${overview.sucursalCount} · Planta ${overview.plantaCount} · Finanzas ${overview.finanzasCount}`;
+      summaryEl.textContent = `Agenda ${overview.agendaCount} · Terreno ${overview.terrenoCount} · Sucursal ${overview.sucursalCount} · Material ${overview.materialCount} · Planta ${overview.plantaCount} · Finanzas ${overview.finanzasCount}`;
     }
     if (detailEl) {
-      detailEl.textContent = `Pulso visible ${formatKg(overview.kilosHoy)} hoy · ${overview.capturasHoy} capturas · ${overview.pendientePago} en cola de pago por ${money(overview.montoPendiente)}.`;
+      detailEl.textContent = `Pulso visible ${formatKg(overview.kilosHoy)} hoy · ${overview.capturasHoy} capturas · ${overview.materialCount} materiales activos · ${overview.pendientePago} en cola de pago por ${money(overview.montoPendiente)}.`;
     }
     if (totalEl) totalEl.textContent = String(overview.agendaCount);
-    if (queueEl) queueEl.textContent = String(overview.sucursalCount);
+    if (queueEl) queueEl.textContent = String(overview.materialCount);
     if (reconEl) reconEl.textContent = String(overview.plantaCount);
     if (versionEl) versionEl.textContent = version ? `${version.sha} · ${version.env}` : 'sin build';
     if (hubLink && mode === 'Demo activo') hubLink.href = '/primer-release?demo=1';

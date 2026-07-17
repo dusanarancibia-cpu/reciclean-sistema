@@ -203,6 +203,9 @@ function renderApp() {
   const financialAlerts = overview.financialAlerts || [];
   const plantPulse = overview.plantPulse || {};
   const bottleneck = plantPulse.cuelloPrincipal || null;
+  const materialPulse = overview.materialPulse || {};
+  const materialBottleneck = materialPulse.cuelloPrincipal || null;
+  const hotMaterial = materialPulse.materialCaliente || null;
 
   app.innerHTML = `
     <section class="shell">
@@ -252,7 +255,7 @@ function renderApp() {
         <article class="stat-card"><span>Promedio captura</span><strong>${formatKg(overview.kilosPromedioCaptura)}</strong></article>
         <article class="stat-card"><span>Expedientes activos</span><strong>${overview.expedientesActivos}</strong></article>
         <article class="stat-card"><span>Materiales activos</span><strong>${overview.materialesConCaptura}</strong></article>
-        <article class="stat-card"><span>Última captura</span><strong>${escapeHtml(relativeAge(overview.ultimaCapturaAt))}</strong></article>
+        <article class="stat-card"><span>Material caliente</span><strong>${escapeHtml(hotMaterial ? materialName(hotMaterial.material_id) : 'sin dato')}</strong></article>
       </section>
 
       <div class="layout lower">
@@ -299,29 +302,63 @@ function renderApp() {
         <section class="card">
           <div class="card-head">
             <div>
-              <h2>Servicios en planta</h2>
-              <p class="subtle">Qué tipo de trabajo está consumiendo la capacidad local de recepción y proceso.</p>
+              <h2>Cuellos por material</h2>
+              <p class="subtle">Qué material está frenando captura, cobertura o continuidad antes de que el problema escale a planta.</p>
             </div>
           </div>
+          ${materialBottleneck ? `
+            <div class="flash flash-error">
+              Material más sensible hoy: <strong>${escapeHtml(materialName(materialBottleneck.material_id))}</strong> · backlog ${materialBottleneck.backlogMaterial} · cobertura ${materialBottleneck.coberturaPesajePct}%.
+            </div>
+          ` : ''}
           <div class="stack-list">
-            ${overview.servicios.length ? overview.servicios.map((item) => `
+            ${overview.materiales.length ? overview.materiales.map((item) => `
               <article class="mini-card">
                 <div class="card-head">
-                  <strong>${escapeHtml(serviceLabel(item.servicio_clase))}</strong>
-                  <span class="badge">${item.expedientes} casos</span>
+                  <strong>${escapeHtml(materialName(item.material_id))}</strong>
+                  <button class="btn btn-small" type="button" data-action="filter-material" data-material-id="${escapeHtml(item.material_id)}">Filtrar</button>
                 </div>
-                <span>${formatKg(item.kilosHoy)} hoy · ${formatKg(item.kilosTotal)} visibles · ${item.capturas} capturas</span>
-                <small>${item.expedientes} expedientes ligados a esta carga operativa</small>
+                <span>${formatKg(item.kilosHoy)} hoy · ${formatKg(item.kilosTotal)} visibles · intensidad ${formatKg(item.intensidadCaptura)}</span>
+                <small>${item.expedientes} expedientes · ${item.expedientesSinPesaje} sin pesaje · ${item.staleActive} frenados · cobertura ${item.coberturaPesajePct}%</small>
               </article>
-            `).join('') : '<div class="empty">Todavía no hay servicios visibles para este tramo.</div>'}
+            `).join('') : '<div class="empty">Todavía no hay materiales visibles para este tramo.</div>'}
           </div>
         </section>
 
         <section class="card">
           <div class="card-head">
             <div>
+              <h2>Materiales calientes</h2>
+              <p class="subtle">Lectura rápida del material que más mueve kilos hoy y de la base visible por material.</p>
+            </div>
+          </div>
+          <div class="metric-grid">
+            <div class="metric"><span>Materiales activos</span><strong>${materialPulse.activos || 0}</strong></div>
+            <div class="metric"><span>Con captura</span><strong>${materialPulse.conCaptura || 0}</strong></div>
+            <div class="metric"><span>Backlog material</span><strong>${materialPulse.backlogVisible || 0}</strong></div>
+            <div class="metric"><span>Material líder</span><strong>${escapeHtml(hotMaterial ? materialName(hotMaterial.material_id) : '—')}</strong></div>
+          </div>
+          <div class="stack-list">
+            ${overview.materiales.length ? overview.materiales.map((item) => `
+              <article class="mini-card">
+                <div class="card-head">
+                  <strong>${escapeHtml(materialName(item.material_id))}</strong>
+                  <span class="badge">${item.expedientes} casos</span>
+                </div>
+                <span>${formatKg(item.kilosHoy)} hoy · ${item.capturas} capturas · ${item.sucursalesCount} sucursales activas</span>
+                <small>Backlog ${item.backlogMaterial} · cobertura ${item.coberturaPesajePct}%</small>
+              </article>
+            `).join('') : '<div class="empty">Todavía no hay materiales calientes visibles.</div>'}
+          </div>
+        </section>
+      </div>
+
+      <div class="layout lower">
+        <section class="card">
+          <div class="card-head">
+            <div>
               <h2>Señales financieras secundarias</h2>
-              <p class="subtle">El tramo financiero sigue visible, pero subordinado al pulso de compra y captura.</p>
+              <p class="subtle">El tramo financiero sigue visible, pero subordinado al pulso de compra, material y captura.</p>
             </div>
           </div>
           <div class="metric-grid">

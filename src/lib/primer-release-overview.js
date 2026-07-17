@@ -276,13 +276,19 @@ export function deriveReleaseOverview(snapshot) {
 
     const material = materialMap.get(materialId) || {
       material_id: materialId,
+      activos: 0,
       capturas: 0,
       expedientes: 0,
       kilosTotal: 0,
       kilosHoy: 0,
+      expedientesSinPesaje: 0,
+      staleActive: 0,
       sucursales: new Set()
     };
     material.expedientes += 1;
+    if (ACTIVE_STATES.has(expediente.estado)) {
+      material.activos += 1;
+    }
     if (pesaje) {
       material.capturas += 1;
       material.kilosTotal += kilos;
@@ -292,6 +298,12 @@ export function deriveReleaseOverview(snapshot) {
       if (expediente.sucursal_id) {
         material.sucursales.add(expediente.sucursal_id);
       }
+    }
+    if (!pesaje && ACTIVE_STATES.has(expediente.estado) && expediente.estado !== 'agendado') {
+      material.expedientesSinPesaje += 1;
+    }
+    if (ACTIVE_STATES.has(expediente.estado) && staleHours !== null && staleHours >= 48) {
+      material.staleActive += 1;
     }
     materialMap.set(materialId, material);
 
@@ -445,7 +457,10 @@ export function deriveReleaseOverview(snapshot) {
   const materiales = materialesRaw
     .map((item) => ({
       ...item,
-      sucursalesCount: item.sucursales.size
+      sucursalesCount: item.sucursales.size,
+      coberturaPesajePct: item.activos ? Math.round(((item.activos - item.expedientesSinPesaje) / item.activos) * 100) : 100,
+      backlogMaterial: item.expedientesSinPesaje + item.staleActive,
+      intensidadCaptura: item.capturas ? Math.round(item.kilosTotal / item.capturas) : 0
     }))
     .sort((a, b) => (b.kilosHoy - a.kilosHoy) || (b.kilosTotal - a.kilosTotal) || (b.capturas - a.capturas))
     .slice(0, 6);
@@ -461,6 +476,12 @@ export function deriveReleaseOverview(snapshot) {
   const bottleneckSucursal = sucursales
     .slice()
     .sort((a, b) => (b.backlogLocal - a.backlogLocal) || (a.coberturaPesajePct - b.coberturaPesajePct) || (b.activos - a.activos))[0] || null;
+  const bottleneckMaterial = materiales
+    .slice()
+    .sort((a, b) => (b.backlogMaterial - a.backlogMaterial) || (a.coberturaPesajePct - b.coberturaPesajePct) || (b.activos - a.activos))[0] || null;
+  const hotMaterial = materiales
+    .slice()
+    .sort((a, b) => (b.kilosHoy - a.kilosHoy) || (b.kilosTotal - a.kilosTotal) || (b.capturas - a.capturas))[0] || null;
 
   const plantPulse = {
     sucursalesActivas: sucursales.filter((item) => item.activos > 0).length,
@@ -477,6 +498,31 @@ export function deriveReleaseOverview(snapshot) {
       pagos.length > 0 ? 'cierre financiero secundario' : null
     ].filter(Boolean)
   };
+  const materialPulse = {
+    activos: materialesRaw.filter((item) => item.activos > 0).length,
+    conCaptura: materialesRaw.filter((item) => item.capturas > 0).length,
+    backlogVisible: materialesRaw.reduce((sum, item) => sum + item.expedientesSinPesaje + item.staleActive, 0),
+    cuelloPrincipal: bottleneckMaterial,
+    materialCaliente: hotMaterial
+  };
+
+  if (bottleneckMaterial && bottleneckMaterial.backlogMaterial > 0) {
+    operationalAlerts.push({
+      severity: bottleneckMaterial.backlogMaterial >= 2 ? 'critical' : 'warning',
+      title: `${bottleneckMaterial.material_id} concentra el principal cuello por material`,
+      detail: `${bottleneckMaterial.backlogMaterial} casos visibles en atraso o sin pesaje firme para este material.`,
+      state: ''
+    });
+  }
+
+  if (hotMaterial && hotMaterial.kilosHoy > 0) {
+    operationalAlerts.push({
+      severity: 'info',
+      title: `${hotMaterial.material_id} lidera los kilos visibles del día`,
+      detail: `${formatKg(hotMaterial.kilosHoy)} hoy en ${hotMaterial.capturas} capturas visibles.`,
+      state: ''
+    });
+  }
 
   const flowStages = [
     {
@@ -510,9 +556,19 @@ export function deriveReleaseOverview(snapshot) {
         : 'Romanero sigue siendo la puerta de entrada cuando aparezca carga operacional.'
     },
     {
+      key: 'material',
+      title: 'Material',
+      kicker: 'Etapa 4',
+      count: materialPulse.conCaptura || materialPulse.activos || materiales.length,
+      href: '/supervision',
+      detail: hotMaterial
+        ? `${hotMaterial.material_id} manda hoy con ${formatKg(hotMaterial.kilosHoy)} y ${bottleneckMaterial?.backlogMaterial || 0} casos críticos por material visibles.`
+        : 'Todavía no hay un material dominante visible en este corte.'
+    },
+    {
       key: 'planta',
       title: 'Planta',
-      kicker: 'Etapa 4',
+      kicker: 'Etapa 5',
       count: byState.recepcionado + byState.en_proceso + byState.pendiente_factura + byState.pendiente_pago + byState.pagado_pendiente_conciliacion,
       href: '/supervision',
       detail: `${plantPulse.backlogVisible} casos en backlog visible local · ${plantPulse.recepcionados || 0} recepcionados · ${plantPulse.enProceso || 0} en proceso.`
@@ -520,7 +576,7 @@ export function deriveReleaseOverview(snapshot) {
     {
       key: 'finanzas',
       title: 'Finanzas',
-      kicker: 'Etapa 5',
+      kicker: 'Etapa 6',
       count: byState.pendiente_factura + byState.pendiente_pago + byState.pagado_pendiente_conciliacion,
       href: '/pagos',
       detail: `${byState.pendiente_pago} en cola de pago · ${byState.pagado_pendiente_conciliacion} por conciliar.`
@@ -556,6 +612,7 @@ export function deriveReleaseOverview(snapshot) {
     materiales,
     servicios,
     plantPulse,
+    materialPulse,
     agendaPulse: {
       total: agenda.length,
       activos: agendaActiva,

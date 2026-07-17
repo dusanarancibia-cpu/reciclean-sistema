@@ -160,9 +160,19 @@ function buildFlowStages(snapshot, overview) {
         : 'Romanero sigue siendo la puerta de entrada operativa de sucursal.'
     },
     {
+      key: 'material',
+      title: 'Material',
+      kicker: 'Etapa 4',
+      count: overview?.materialPulse?.conCaptura || overview?.materialesConCaptura || 0,
+      href: '/supervision',
+      detail: overview?.materialPulse?.materialCaliente
+        ? `${overview.materialPulse.materialCaliente.material_id} lidera hoy la captura visible del release.`
+        : 'Material sigue visible como columna vertebral de precio, pesaje y continuidad.'
+    },
+    {
       key: 'planta',
       title: 'Planta',
-      kicker: 'Etapa 4',
+      kicker: 'Etapa 5',
       count: planta,
       href: '/supervision',
       detail: planta
@@ -172,7 +182,7 @@ function buildFlowStages(snapshot, overview) {
     {
       key: 'finanzas',
       title: 'Finanzas',
-      kicker: 'Etapa 5',
+      kicker: 'Etapa 6',
       count: finanzas,
       href: '/pagos',
       detail: finanzas
@@ -205,6 +215,13 @@ function buildChecklist(overview, flowStages) {
         ? `${overview.expedientesSinPesaje} expedientes siguen sin pesaje visible; conviene revisar captura local.`
         : 'Sucursal mantiene expediente y pesaje visibles sin doble captura.',
       href: '/romanero'
+    },
+    {
+      title: 'Material',
+      detail: flow.get('material')?.count
+        ? `${flow.get('material').count} señales visibles por material; conviene leer cuello y material caliente antes de pasar a planta.`
+        : 'Todavía no hay suficiente lectura por material para este corte.',
+      href: '/supervision'
     },
     {
       title: 'Planta / Supervisión',
@@ -467,7 +484,7 @@ function renderAuthenticated() {
           <div class="card-head">
             <div>
               <h2>Flujo ordenado</h2>
-              <p class="subtle">Lectura ejecutiva por etapa: Agenda, Terreno, Sucursal, Planta y Finanzas.</p>
+              <p class="subtle">Lectura ejecutiva por etapa: Agenda, Terreno, Sucursal, Material, Planta y Finanzas.</p>
             </div>
           </div>
           <div class="list">
@@ -525,15 +542,20 @@ function renderAuthenticated() {
           <div class="card-head">
             <div>
               <h2>Materiales calientes</h2>
-              <p class="subtle">Qué materiales concentran hoy más kilos visibles y más movimiento.</p>
+              <p class="subtle">Qué materiales mandan hoy el flujo y dónde aparece el principal cuello por material.</p>
             </div>
           </div>
+          ${overview.materialPulse?.cuelloPrincipal ? `
+            <div class="flash flash-error">
+              Cuello principal por material: <strong>${escapeHtml(materialName(overview.materialPulse.cuelloPrincipal.material_id))}</strong> · backlog ${overview.materialPulse.cuelloPrincipal.backlogMaterial} · cobertura ${overview.materialPulse.cuelloPrincipal.coberturaPesajePct}%.
+            </div>
+          ` : ''}
           <div class="list">
             ${overview.materiales.length ? overview.materiales.map((item) => `
               <article class="item">
                 <strong>${escapeHtml(materialName(item.material_id))}</strong>
                 <span>${formatKg(item.kilosHoy)} hoy · ${formatKg(item.kilosTotal)} visibles · ${item.capturas} capturas</span>
-                <small>${item.expedientes} expedientes · ${item.sucursalesCount} sucursales con actividad</small>
+                <small>${item.expedientes} expedientes · ${item.sucursalesCount} sucursales con actividad · backlog ${item.backlogMaterial}</small>
               </article>
             `).join('') : '<div class="empty">Todavía no hay materiales con captura visible.</div>'}
           </div>

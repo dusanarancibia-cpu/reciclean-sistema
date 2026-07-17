@@ -74,6 +74,7 @@ test.describe('Primer Release público smoke', () => {
     await expect(page.getByText('Marco del arranque')).toBeVisible();
     await expect(page.getByText(/Etapa 1 · Agenda/i)).toBeVisible();
     await expect(page.getByText(/Etapa 2 · Terreno/i)).toBeVisible();
+    await expect(page.getByText(/Etapa 4 · Material/i)).toBeVisible();
 
     const criticos = consoleErrors.filter((entry) =>
       /TypeError|ReferenceError|Failed to fetch|Unexpected token|Cannot read/i.test(entry),
@@ -133,7 +134,8 @@ test.describe('Primer Release público smoke', () => {
     await expect(demoPill).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Mando local de planta' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Cuellos por sucursal' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Servicios en planta' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Cuellos por material' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Materiales calientes' })).toBeVisible();
     await expect(page.locator('.list-item strong').first()).toContainText('EXP-DEMO-001');
 
     const criticos = consoleErrors.filter((entry) =>
@@ -156,8 +158,8 @@ test.describe('Primer Release público smoke', () => {
     await page.goto('/panel-rdo.html');
     await expect(page.locator('#primer-release-panel-badge')).toContainText(/Demo activo|Release estable|Vigilancia activa|Riesgo operativo/i);
     await expect(page.locator('#primer-release-panel-total')).not.toHaveText('—');
-    await expect(page.locator('#primer-release-panel-summary')).toContainText(/Agenda|Terreno|Sucursal|Planta|Finanzas/i);
-    await expect(page.locator('#primer-release-panel-detail')).toContainText(/Pulso visible|cola de pago|capturas/i);
+    await expect(page.locator('#primer-release-panel-summary')).toContainText(/Agenda|Terreno|Sucursal|Material|Planta|Finanzas/i);
+    await expect(page.locator('#primer-release-panel-detail')).toContainText(/Pulso visible|cola de pago|capturas|materiales activos/i);
 
     const criticos = consoleErrors.filter((entry) =>
       /TypeError|ReferenceError|Failed to fetch|Unexpected token|Cannot read/i.test(entry),
