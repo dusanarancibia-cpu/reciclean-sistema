@@ -3910,7 +3910,7 @@
               <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Ejecución</div>
               <h3 class="text-sm font-bold text-stone-700">Ejecución unificada</h3>
             </div>
-            <span class="text-xs px-2 py-1 rounded-full bg-violet-100 text-violet-700">fase 1</span>
+            <span class="text-xs px-2 py-1 rounded-full bg-violet-100 text-violet-700">fase 2</span>
           </div>
 
           <div class="space-y-2">
@@ -3943,8 +3943,8 @@
             </button>
             <button id="wsSafeResolveBtn" type="button" disabled
                     class="w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
-              <div class="font-semibold text-emerald-800">Resolver caso activo en Bandeja</div>
-              <div class="text-xs text-emerald-700 mt-1">Cierra este caso en el motor actual.</div>
+              <div class="font-semibold text-emerald-800">Resolver este caso aquí</div>
+              <div class="text-xs text-emerald-700 mt-1">Abre la resolución real inline y usa Bandeja por debajo.</div>
             </button>
             <button id="wsSafeReferenceBtn" type="button" disabled
                     class="w-full rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
@@ -3958,14 +3958,14 @@
             </button>
             <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
               <div class="font-semibold text-stone-800">Publicar / aprobar</div>
-              <div class="text-xs text-stone-500 mt-1">La decisión ya sale desde aquí; la ejecución real todavía corre abajo en Calculadora o Bandeja.</div>
+              <div class="text-xs text-stone-500 mt-1">La decisión ya sale desde aquí; si el caso está listo, la resolución real se abre en este mismo flujo y reutiliza los motores vivos.</div>
             </div>
           </div>
 
           <div class="mt-4 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600 space-y-2">
             <div class="text-[11px] uppercase tracking-wider text-stone-500">Notas de esta iteración</div>
             <div><strong class="text-stone-800">Responsive:</strong> desktop 3 columnas, tablet inbox y workspace arriba, salida abajo, mobile workspace primero.</div>
-            <div><strong class="text-stone-800">Página única:</strong> lectura, contraste y decisión ya viven aquí; la siguiente fase es absorber más ejecución sin romper el motor actual.</div>
+            <div><strong class="text-stone-800">Página única:</strong> lectura, contraste, decisión y resolución inline ya viven aquí; la siguiente fase es absorber más cierre final sin romper el motor actual.</div>
           </div>
         </aside>
       </div>
@@ -3990,7 +3990,7 @@
             </button>
             <button id="wsSafeMobileResolveBtn" type="button" disabled
                     class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-sm font-semibold text-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed">
-              Resolver en Bandeja
+              Resolver aquí
             </button>
             <button id="wsSafeMobileReferenceBtn" type="button" disabled
                     class="rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-sm font-semibold text-violet-800 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -4001,7 +4001,7 @@
       </div>
 
       <footer class="mt-4 text-xs text-stone-500">
-        Estado: iteración 1 aislada · no reemplaza tabs productivas · diseñada para endurecer la Opción B antes de integrarla.
+        Estado: iteración 2 de página única · reutiliza motores productivos vivos · diseñada para absorber más flujo sin romperlos.
       </footer>
     </section>
 
@@ -14451,6 +14451,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
   }
 
   async function bpCerrarDrawer() {
+    const inlineCtx = window.__mpWorkspaceInlineContext || null;
     // Liberar lock si soy yo el que lo tenía
     if (bpCurrentId && typeof sb !== 'undefined' && sb && currentUser) {
       try {
@@ -14461,6 +14462,17 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     }
     bpCurrentId = null;
     document.getElementById('bpDrawer').classList.add('hidden');
+    if (inlineCtx) {
+      window.__mpWorkspaceInlineContext = null;
+      try {
+        const options = {};
+        if (inlineCtx.focus) options.focus = inlineCtx.focus;
+        if (inlineCtx.chip) options.chip = inlineCtx.chip;
+        await tapCargar(options);
+      } catch (e) {
+        console.warn('workspace inline refresh:', e);
+      }
+    }
   }
 
   function bpMsg(text, ok) {
@@ -17395,8 +17407,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       guide.step = 'contrast';
       guide.lead = material + ' todavía no tiene alcance resuelto.';
       guide.support = 'La señal existe, pero antes de decidir conviene amarrarla a una sucursal real para no mover un número en el vacío.';
-      guide.actionTitle = 'Resolver este caso en Bandeja';
-      guide.actionText = 'Usa Bandeja para completar alcance y dejar lista la salida final sin perder trazabilidad.';
+      guide.actionTitle = 'Resolver este caso desde aquí';
+      guide.actionText = 'Abre la resolución real inline para completar alcance y dejar lista la salida final sin perder trazabilidad.';
       guide.actionTarget = 'resolve';
       return guide;
     }
@@ -17443,8 +17455,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       guide.step = 'resolve';
       guide.lead = material + ' en ' + alcance + ' pide una definición rápida.';
       guide.support = 'La señal ya está contrastada contra ' + publishedText + ' y conviene salir por el motor real para no dejar la excepción abierta.';
-      guide.actionTitle = 'Resolver ya en Bandeja';
-      guide.actionText = 'Bandeja sigue siendo la salida segura cuando el caso ya está listo para aprobar, rechazar o ajustar.';
+      guide.actionTitle = 'Resolver ya desde aquí';
+      guide.actionText = 'La resolución real se abre inline cuando el caso ya está listo para aprobar, rechazar o ajustar.';
       guide.actionTarget = 'resolve';
       return guide;
     }
@@ -17455,7 +17467,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     guide.lead = material + ' en ' + alcance + ' ya tiene contexto suficiente para decidir.';
     guide.support = 'Compara ' + publishedText + ' publicado versus ' + draftText + ' en evaluación, mira estrategia y luego sal por el motor que más te convenga.';
     guide.actionTitle = 'Calcular o cerrar como referencia';
-    guide.actionText = 'Si la señal te sirve, entra a Calculadora. Si es bluff o no amerita cambio, ciérrala como referencia desde Bandeja.';
+    guide.actionText = 'Si la señal te sirve, entra a Calculadora. Si es bluff o no amerita cambio, ciérrala como referencia inline sin salir del flujo.';
     guide.actionTarget = 'calc';
     return guide;
   }
@@ -17463,6 +17475,26 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
   function mpOpenTab(tab) {
     const btn = document.querySelector('[data-v4-tab="' + tab + '"]') || document.querySelector('button[data-tab="' + tab + '"]');
     if (btn) btn.click();
+  }
+
+  async function mpAbrirDrawerInline(id, mode) {
+    if (!id || typeof window.bpAbrirDrawer !== 'function') return;
+    window.__mpWorkspaceInlineContext = {
+      focus: mpState.focus ? Object.assign({}, mpState.focus) : null,
+      chip: mpState.chip || 'todos',
+    };
+    await window.bpAbrirDrawer(id);
+    const msg = document.getElementById('bpDrawerMsg');
+    if (!msg) return;
+    if (mode === 'reference') {
+      msg.textContent = 'Esta señal se abrió inline desde la página única. Si es bluff o solo referencia, usa Rechazar para cerrarla sin mover compra.';
+      msg.className = 'text-xs p-2 rounded bg-violet-100 text-violet-800';
+      msg.classList.remove('hidden');
+      return;
+    }
+    msg.textContent = 'Estás resolviendo este caso inline desde la página única. Aprueba, rechaza o ajusta y al cerrar se refrescará este mismo workspace.';
+    msg.className = 'text-xs p-2 rounded bg-emerald-100 text-emerald-800';
+    msg.classList.remove('hidden');
   }
 
   // Todo KPI numérico de la Mesa es navegación (1 clic): setea el chip
@@ -18045,10 +18077,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       });
     };
     const openResolve = function () {
-      window.mpResolverPropuesta && window.mpResolverPropuesta(row.id);
+      window.mpResolverInline && window.mpResolverInline(row.id);
     };
     const openReference = function () {
-      window.mpCerrarComoReferencia && window.mpCerrarComoReferencia(row.id);
+      window.mpCerrarComoReferenciaInline && window.mpCerrarComoReferenciaInline(row.id);
     };
     metaEl.innerHTML = '<div class="font-semibold text-stone-800">' + tapEscape(selected.material_nombre || 'Material') + '</div>'
       + '<div class="mt-1 text-[11px] text-stone-500">'
@@ -18064,19 +18096,19 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         ? 'px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 text-[11px]'
         : 'px-2 py-1 rounded-full bg-sky-100 text-sky-700 border border-sky-200 text-[11px]');
     actionRouteBadgeEl.textContent = guide?.actionTarget === 'resolve'
-      ? 'Ir a Bandeja'
+      ? 'Resolver aquí'
       : (guide?.actionTarget === 'mesa' ? 'Ir a Mesa' : 'Ir a Calculadora');
     exitModeEl.textContent = guide?.actionTarget === 'resolve'
-      ? 'Bandeja'
+      ? 'Inline'
       : (guide?.actionTarget === 'mesa' ? 'Mesa' : 'Calculadora');
     primaryBtn.disabled = false;
     if (guide?.actionTarget === 'resolve') {
       primaryBtn.className = 'w-full rounded-xl border border-emerald-200 bg-white px-4 py-3 text-left hover:border-emerald-300';
       primaryBtn.onclick = openResolve;
       primaryTitleEl.textContent = 'Resolver este caso desde aquí';
-      primaryTextEl.textContent = 'La página única ya dejó listo el contexto. Ahora abre Bandeja en el caso exacto para aprobar, rechazar o ajustar.';
+      primaryTextEl.textContent = 'La página única ya dejó listo el contexto. Ahora abre la resolución real inline para aprobar, rechazar o ajustar sin salir del flujo.';
       primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]';
-      primaryEngineEl.textContent = 'Motor: Bandeja';
+      primaryEngineEl.textContent = 'Motor: Inline + Bandeja';
     } else if (guide?.actionTarget === 'mesa') {
       primaryBtn.className = 'w-full rounded-xl border border-amber-200 bg-white px-4 py-3 text-left hover:border-amber-300';
       primaryBtn.onclick = openMesa;
@@ -18421,6 +18453,12 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         msg.classList.remove('hidden');
       }
     }
+  };
+  window.mpResolverInline = async function (id) {
+    await mpAbrirDrawerInline(id, 'resolve');
+  };
+  window.mpCerrarComoReferenciaInline = async function (id) {
+    await mpAbrirDrawerInline(id, 'reference');
   };
   window.wsIrDesdeCalculadora = async function (focus) {
     const payload = focus || window.bpFocusFromCalc || null;
