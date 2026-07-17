@@ -3909,7 +3909,7 @@
           <div class="flex items-center justify-between gap-3 mb-3">
             <div>
               <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Salida</div>
-              <h3 class="text-sm font-bold text-stone-700">Acciones terminales</h3>
+              <h3 class="text-sm font-bold text-stone-700">Salida segura</h3>
             </div>
             <span class="text-xs px-2 py-1 rounded-full bg-stone-100 text-stone-600">sin conexión</span>
           </div>
@@ -3919,52 +3919,43 @@
               Sin caso activo aún.
             </div>
             <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-              <div class="text-[11px] uppercase tracking-wider text-amber-700 mb-1">Siguiente paso recomendado</div>
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <div class="text-[11px] uppercase tracking-wider text-amber-700">Siguiente paso recomendado</div>
+                <span id="wsSafeActionRouteBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin salida</span>
+              </div>
               <div id="wsSafeActionTitle" class="font-semibold text-amber-900">Selecciona un caso primero.</div>
               <div id="wsSafeActionText" class="text-xs text-amber-800 mt-1">La recomendación cambia según ruta, alcance y si ya existe un valor publicado visible.</div>
             </div>
             <button id="wsSafeCalcBtn" type="button" disabled
                     class="w-full rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
               <div class="font-semibold text-sky-800">Abrir este caso en Calculadora</div>
-              <div class="text-xs text-sky-700 mt-1">Carga material y alcance actuales para ajustar sin buscar de nuevo.</div>
+              <div class="text-xs text-sky-700 mt-1">Entra con material y alcance ya cargados.</div>
             </button>
             <button id="wsSafeResolveBtn" type="button" disabled
                     class="w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
               <div class="font-semibold text-emerald-800">Resolver caso activo en Bandeja</div>
-              <div class="text-xs text-emerald-700 mt-1">Mantiene la resolución real en el motor actual.</div>
+              <div class="text-xs text-emerald-700 mt-1">Cierra este caso en el motor actual.</div>
             </button>
             <button id="wsSafeReferenceBtn" type="button" disabled
                     class="w-full rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
               <div class="font-semibold text-violet-800">Cerrar como referencia</div>
-              <div class="text-xs text-violet-700 mt-1">Si es bluff o no te interesa mover compra, abre Bandeja para cerrarlo sin cambiar el publicado.</div>
+              <div class="text-xs text-violet-700 mt-1">Saca la señal de tu carga sin mover compra.</div>
             </button>
             <button id="wsSafeMesaBtn" type="button"
                     class="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-left hover:border-stone-300">
               <div class="font-semibold text-stone-800">Abrir foco en Mesa</div>
-              <div class="text-xs text-stone-500 mt-1">Sirve para contrastar esta vista nueva con la mesa actual.</div>
+              <div class="text-xs text-stone-500 mt-1">Contrasta esta vista con la mesa actual.</div>
             </button>
             <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
               <div class="font-semibold text-stone-800">Publicar / aprobar</div>
-              <div class="text-xs text-stone-500 mt-1">Siguen gobernados por Calculadora y Bandeja hasta la migración final.</div>
+              <div class="text-xs text-stone-500 mt-1">Sigue viviendo en Calculadora y Bandeja.</div>
             </div>
           </div>
 
-          <div class="mt-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3">
-            <div class="text-[11px] uppercase tracking-wider text-sky-700 mb-1">Responsive previsto</div>
-            <ul class="text-xs text-sky-800 space-y-1.5">
-              <li>Desktop: 3 columnas vivas.</li>
-              <li>Tablet: inbox arriba, workspace dominante.</li>
-              <li>Mobile: workspace primero y barra fija inferior.</li>
-            </ul>
-          </div>
-
-          <div class="mt-4 rounded-xl border border-stone-200 bg-white px-4 py-3">
-            <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-2">Siguiente iteración segura</div>
-            <ol class="text-xs text-stone-600 space-y-1.5 list-decimal pl-4">
-              <li>Conectar esta vista a resolución asistida sin sacar a Bandeja.</li>
-              <li>Hacer más explícita la lectura por canal cuando exista fuente real.</li>
-              <li>Mantener Bandeja como motor final mientras migramos la resolución.</li>
-            </ol>
+          <div class="mt-4 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600 space-y-2">
+            <div class="text-[11px] uppercase tracking-wider text-stone-500">Notas de esta iteración</div>
+            <div><strong class="text-stone-800">Responsive:</strong> desktop 3 columnas, tablet inbox arriba, mobile workspace primero.</div>
+            <div><strong class="text-stone-800">Siguiente:</strong> conectar resolución asistida, explicitar mejor canales y mantener Bandeja como motor final.</div>
           </div>
         </aside>
       </div>
@@ -17984,6 +17975,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const mobileBadgeEl = document.getElementById('wsSafeMobileBadge');
     const actionTitleEl = document.getElementById('wsSafeActionTitle');
     const actionTextEl = document.getElementById('wsSafeActionText');
+    const actionRouteBadgeEl = document.getElementById('wsSafeActionRouteBadge');
     const exitModeEl = document.getElementById('wsSafeExitMode');
     if (mesaBtn && !mesaBtn.dataset.bound) {
       mesaBtn.addEventListener('click', () => {
@@ -17991,7 +17983,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       });
       mesaBtn.dataset.bound = '1';
     }
-    if (!metaEl || !resolveBtn || !calcBtn || !referenceBtn || !mesaBtn || !actionTitleEl || !actionTextEl || !mobileMesaBtn || !mobileCalcBtn || !mobileResolveBtn || !mobileReferenceBtn || !mobileHintEl || !mobileBadgeEl || !exitModeEl) return;
+    if (!metaEl || !resolveBtn || !calcBtn || !referenceBtn || !mesaBtn || !actionTitleEl || !actionTextEl || !actionRouteBadgeEl || !mobileMesaBtn || !mobileCalcBtn || !mobileResolveBtn || !mobileReferenceBtn || !mobileHintEl || !mobileBadgeEl || !exitModeEl) return;
     [calcBtn, resolveBtn, referenceBtn, mesaBtn, mobileMesaBtn, mobileCalcBtn, mobileResolveBtn, mobileReferenceBtn].forEach((btn) => {
       btn.classList.remove('ring-2', 'ring-sky-200', 'ring-emerald-200', 'ring-amber-200', 'ring-violet-200');
     });
@@ -17999,6 +17991,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       metaEl.textContent = 'Sin caso activo aún.';
       actionTitleEl.textContent = guide?.actionTitle || 'Selecciona un caso primero.';
       actionTextEl.textContent = guide?.actionText || 'La recomendación cambia según ruta, alcance y si ya existe un valor publicado visible.';
+      actionRouteBadgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
+      actionRouteBadgeEl.textContent = 'Sin salida';
       mobileMesaBtn.disabled = true;
       mobileMesaBtn.onclick = null;
       calcBtn.disabled = true;
@@ -18019,12 +18013,23 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       exitModeEl.textContent = '—';
       return;
     }
-    metaEl.innerHTML = '<strong class="text-stone-800">' + tapEscape(selected.material_nombre || 'Material') + '</strong>'
-      + ' · ' + tapEscape(mpGetSucursalNombre(row) || 'Sin alcance')
-      + ' · ruta ' + tapEscape(row.ruta || 'senal')
-      + ' · propuesta #' + tapEscape(row.id);
+    const routeMeta = mpGetRouteMeta(row.ruta);
+    metaEl.innerHTML = '<div class="font-semibold text-stone-800">' + tapEscape(selected.material_nombre || 'Material') + '</div>'
+      + '<div class="mt-1 text-[11px] text-stone-500">'
+      + tapEscape(mpGetSucursalNombre(row) || 'Sin alcance')
+      + ' · ' + tapEscape(routeMeta.label || row.ruta || 'senal')
+      + ' · propuesta #' + tapEscape(row.id)
+      + '</div>';
     actionTitleEl.textContent = guide?.actionTitle || 'Caso listo para revisar.';
     actionTextEl.textContent = guide?.actionText || 'Usa el motor actual que mejor calce con este caso.';
+    actionRouteBadgeEl.className = guide?.actionTarget === 'resolve'
+      ? 'px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px]'
+      : (guide?.actionTarget === 'mesa'
+        ? 'px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 text-[11px]'
+        : 'px-2 py-1 rounded-full bg-sky-100 text-sky-700 border border-sky-200 text-[11px]');
+    actionRouteBadgeEl.textContent = guide?.actionTarget === 'resolve'
+      ? 'Ir a Bandeja'
+      : (guide?.actionTarget === 'mesa' ? 'Ir a Mesa' : 'Ir a Calculadora');
     exitModeEl.textContent = guide?.actionTarget === 'resolve'
       ? 'Bandeja'
       : (guide?.actionTarget === 'mesa' ? 'Mesa' : 'Calculadora');
