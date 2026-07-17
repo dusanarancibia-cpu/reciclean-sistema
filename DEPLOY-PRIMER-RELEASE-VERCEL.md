@@ -44,6 +44,8 @@ No son obligatorias para que levante este release hoy, pero sí recomendadas par
 5. Abrir `/supervision`
 6. Revisar `/_version.json`
 
+`/supervision` ahora actúa como `Centro de Control`: resume salud operativa, alertas, radar por sucursal y actividad reciente del release.
+
 ## Revisión sin credenciales
 
 Las tres pantallas nuevas ya exponen un modo demo útil para revisar el release en Vercel sin claves reales:

@@ -536,6 +536,25 @@ export async function fetchPagosByExpedienteDemo(expedienteId) {
   return clone(state.pagos.filter((item) => item.expediente_id === expedienteId));
 }
 
+export async function fetchReleaseOverviewSnapshotDemo(sucursalId, limit = 180) {
+  const state = readState();
+  const expedientes = state.expedientes
+    .filter((item) => !sucursalId || item.sucursal_id === sucursalId)
+    .slice(0, limit);
+  const expedienteIds = new Set(expedientes.map((item) => item.expediente_id));
+  const facturas = state.facturas.filter((item) => expedienteIds.has(item.expediente_id));
+  const facturaIds = new Set(facturas.map((item) => String(item.factura_raw_id ?? item.id)));
+
+  return clone({
+    expedientes,
+    pesajes: state.pesajes.filter((item) => expedienteIds.has(item.expediente_id)),
+    facturas,
+    pagos: state.pagos.filter((item) => expedienteIds.has(item.expediente_id)),
+    eventos: state.eventos.filter((item) => expedienteIds.has(item.expediente_id)),
+    comprobantes: state.comprobantes.filter((item) => facturaIds.has(String(item.factura_raw_id)))
+  });
+}
+
 export async function createSignedStorageUrlDemo(bucket, path) {
   const message = encodeURIComponent(`Demo Primer Release\nbucket=${bucket}\npath=${path}`);
   return `data:text/plain;charset=utf-8,${message}`;

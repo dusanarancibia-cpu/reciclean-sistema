@@ -22,8 +22,8 @@ const PAGES: SmokePage[] = [
   },
   {
     path: '/supervision.html',
-    title: /Supervisi[oó]n MVP/i,
-    heading: /Supervisi[oó]n MVP/i,
+    title: /Centro de Control/i,
+    heading: /Centro de Control/i,
     eyebrow: /Primer Release/i,
   },
 ];

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Supervisión MVP · Primer Release</title>
+  <title>Centro de Control · Primer Release</title>
   <style>
     :root {
       color-scheme: light;
@@ -63,6 +63,14 @@
     .flash { margin-top:16px; padding:14px 16px; border-radius:16px; border:1px solid transparent; }
     .flash-ok { color:var(--ok); background:var(--ok-bg); border-color:rgba(25,86,58,.18); }
     .flash-error { color:var(--warn); background:var(--warn-bg); border-color:rgba(159,77,49,.18); }
+    .session-pill {
+      display:inline-flex; align-items:center; min-height:44px; padding:0 14px; border-radius:999px;
+      background:rgba(31,106,68,.08); color:var(--brand); border:1px solid rgba(31,106,68,.14); font-weight:700;
+    }
+    .hero { margin-top:18px; }
+    .hero-ok { border-color: rgba(25,86,58,.18); background: linear-gradient(180deg, rgba(25,86,58,.06), rgba(255,255,255,.92)); }
+    .hero-warning { border-color: rgba(159,77,49,.16); background: linear-gradient(180deg, rgba(159,77,49,.07), rgba(255,255,255,.92)); }
+    .hero-critical { border-color: rgba(191,65,65,.18); background: linear-gradient(180deg, rgba(191,65,65,.09), rgba(255,255,255,.92)); }
     .stats { display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:12px; margin:18px 0; }
     .stat-card { padding:16px; display:grid; gap:6px; }
     .stat-card span, .status, .badge, .list-main span, .timeline-date, .mini-card span, .mini-card small, .metric span { color:var(--muted); font-size:.86rem; }
@@ -80,6 +88,13 @@
     .metric, .mini-card, .timeline-item {
       padding:14px; border-radius:16px; background:rgba(23,32,24,.03); border:1px solid rgba(23,32,24,.06); display:grid; gap:6px;
     }
+    .stack-list { display:grid; gap:12px; margin-top:14px; }
+    .alert-card { gap:10px; }
+    .alert-critical { border-color: rgba(191,65,65,.18); background: rgba(191,65,65,.05); }
+    .alert-warning { border-color: rgba(159,77,49,.16); background: rgba(159,77,49,.05); }
+    .badge-critical { color:#9f1d1d; background:#fff1f1; border-color:rgba(159,29,29,.18); }
+    .badge-warning { color:#9f4d31; background:#fbefe9; border-color:rgba(159,77,49,.18); }
+    .btn-small { min-height:36px; padding:0 12px; font-size:.88rem; }
     .list { display:grid; gap:10px; margin-top:16px; max-height:720px; overflow:auto; padding-right:4px; }
     .list-item {
       display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; text-align:left;
@@ -92,6 +107,7 @@
     .empty { padding:18px; margin-top:14px; border-radius:16px; background:rgba(23,32,24,.04); color:var(--muted); }
     .subsection-title { font-size:.92rem; margin-bottom:10px; color:var(--ink); }
     .stack, .timeline { margin-top: 0; }
+    .timeline-button { width:100%; text-align:left; cursor:pointer; }
     @keyframes spin { to { transform: rotate(360deg); } }
     @media (max-width: 1180px) {
       .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
