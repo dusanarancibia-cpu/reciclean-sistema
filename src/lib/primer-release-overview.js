@@ -124,6 +124,7 @@ export function deriveReleaseOverview(snapshot) {
 
   const byState = {
     total: expedientes.length,
+    recepcionado: 0,
     en_proceso: 0,
     pendiente_factura: 0,
     pendiente_pago: 0,
@@ -148,6 +149,7 @@ export function deriveReleaseOverview(snapshot) {
   const financialAlerts = [];
   const sucursalMap = new Map();
   const materialMap = new Map();
+  const serviceClassMap = new Map();
 
   for (const pesaje of pesajes) {
     const kilos = asNumber(pesaje.peso_neto_kg);
@@ -172,6 +174,7 @@ export function deriveReleaseOverview(snapshot) {
     const kilos = asNumber(pesaje?.peso_neto_kg);
     const captureDay = dayKey(pesaje?.fecha_captura || pesaje?.created_at);
     const materialId = pesaje?.material_id || expediente.material_id || 'sin_material';
+    const serviceClass = expediente.servicio_clase || 'sin_servicio';
 
     montoPagado += pagoMonto;
     if (expediente.estado === 'pendiente_pago') {
@@ -223,6 +226,9 @@ export function deriveReleaseOverview(snapshot) {
       kilosTotal: 0,
       kilosHoy: 0,
       expedientesSinPesaje: 0,
+      staleActive: 0,
+      recepcionado: 0,
+      enProceso: 0,
       pendiente_pago: 0,
       pagado_pendiente_conciliacion: 0,
       montoPendiente: 0
@@ -241,12 +247,21 @@ export function deriveReleaseOverview(snapshot) {
     if (!pesaje && ACTIVE_STATES.has(expediente.estado) && expediente.estado !== 'agendado') {
       sucursal.expedientesSinPesaje += 1;
     }
+    if (expediente.estado === 'recepcionado') {
+      sucursal.recepcionado += 1;
+    }
+    if (expediente.estado === 'en_proceso') {
+      sucursal.enProceso += 1;
+    }
     if (expediente.estado === 'pendiente_pago') {
       sucursal.pendiente_pago += 1;
       sucursal.montoPendiente += Math.max(facturaMonto - pagoMonto, facturaMonto || 0);
     }
     if (expediente.estado === 'pagado_pendiente_conciliacion') {
       sucursal.pagado_pendiente_conciliacion += 1;
+    }
+    if (ACTIVE_STATES.has(expediente.estado) && staleHours !== null && staleHours >= 48) {
+      sucursal.staleActive += 1;
     }
     sucursalMap.set(sucursal.sucursal_id, sucursal);
 
@@ -270,6 +285,23 @@ export function deriveReleaseOverview(snapshot) {
       }
     }
     materialMap.set(materialId, material);
+
+    const service = serviceClassMap.get(serviceClass) || {
+      servicio_clase: serviceClass,
+      expedientes: 0,
+      capturas: 0,
+      kilosTotal: 0,
+      kilosHoy: 0
+    };
+    service.expedientes += 1;
+    if (pesaje) {
+      service.capturas += 1;
+      service.kilosTotal += kilos;
+      if (captureDay === today) {
+        service.kilosHoy += kilos;
+      }
+    }
+    serviceClassMap.set(serviceClass, service);
   }
 
   const coberturaPesajePct = expedientesActivos ? Math.round((expedientesConPesaje / expedientesActivos) * 100) : 100;
@@ -372,10 +404,19 @@ export function deriveReleaseOverview(snapshot) {
     }));
 
   const sucursales = Array.from(sucursalMap.values())
+    .map((item) => ({
+      ...item,
+      coberturaPesajePct: item.activos ? Math.round(((item.activos - item.expedientesSinPesaje) / item.activos) * 100) : 100,
+      backlogLocal: item.expedientesSinPesaje + item.staleActive,
+      intensidadRecepcion: item.capturas ? Math.round(item.kilosTotal / item.capturas) : 0
+    }))
     .sort((a, b) => (b.kilosHoy - a.kilosHoy) || (b.kilosTotal - a.kilosTotal) || (b.expedientesSinPesaje - a.expedientesSinPesaje))
     .slice(0, 6);
 
   const materialesRaw = Array.from(materialMap.values());
+  const servicios = Array.from(serviceClassMap.values())
+    .sort((a, b) => (b.kilosHoy - a.kilosHoy) || (b.kilosTotal - a.kilosTotal) || (b.expedientes - a.expedientes))
+    .slice(0, 6);
   const materiales = materialesRaw
     .map((item) => ({
       ...item,
@@ -390,6 +431,24 @@ export function deriveReleaseOverview(snapshot) {
   const alertCounts = {
     critical: alerts.filter((item) => item.severity === 'critical').length,
     warning: alerts.filter((item) => item.severity === 'warning').length
+  };
+
+  const bottleneckSucursal = sucursales
+    .slice()
+    .sort((a, b) => (b.backlogLocal - a.backlogLocal) || (a.coberturaPesajePct - b.coberturaPesajePct) || (b.activos - a.activos))[0] || null;
+
+  const plantPulse = {
+    sucursalesActivas: sucursales.filter((item) => item.activos > 0).length,
+    recepcionados: byState.recepcionado || 0,
+    enProceso: byState.en_proceso,
+    backlogVisible: expedientesSinPesaje + staleActive,
+    cuelloPrincipal: bottleneckSucursal,
+    telemetriaDisponible: [
+      kilosHoy > 0 ? 'kilos capturados' : null,
+      capturasHoy > 0 ? 'capturas del día' : null,
+      expedientes.length > 0 ? 'continuidad por expediente' : null,
+      pagos.length > 0 ? 'cierre financiero secundario' : null
+    ].filter(Boolean)
   };
 
   return {
@@ -418,6 +477,8 @@ export function deriveReleaseOverview(snapshot) {
     recentActivity,
     recentCaptures,
     sucursales,
-    materiales
+    materiales,
+    servicios,
+    plantPulse
   };
 }

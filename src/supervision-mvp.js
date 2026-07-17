@@ -91,6 +91,10 @@ function materialName(materialId) {
   return state.lookups.materiales.find((item) => item.material_id === materialId)?.nombre || materialId || 'sin material';
 }
 
+function serviceLabel(servicioClase) {
+  return String(servicioClase || 'sin_servicio').replaceAll('_', ' ');
+}
+
 function filteredExpedientes() {
   const needle = state.filters.texto.trim().toLowerCase();
   return state.expedientes.filter((item) => {
@@ -197,6 +201,8 @@ function renderApp() {
   const health = healthTone(overview);
   const operationalAlerts = overview.operationalAlerts || [];
   const financialAlerts = overview.financialAlerts || [];
+  const plantPulse = overview.plantPulse || {};
+  const bottleneck = plantPulse.cuelloPrincipal || null;
 
   app.innerHTML = `
     <section class="shell">
@@ -204,7 +210,7 @@ function renderApp() {
         <div>
           <div class="eyebrow">Primer Release · Supervisión</div>
           <h1>Centro de Control</h1>
-          <p class="subtle">Compra y captura primero: kilos, continuidad operativa y desvíos en origen. El tramo financiero queda visible, pero en segunda capa.</p>
+          <p class="subtle">Mando local de planta después de Terreno y Sucursal: rendimiento, continuidad, cuellos por sucursal y backlog visible. El tramo financiero queda visible, pero en segunda capa.</p>
         </div>
         <div class="topbar-actions">
           <a class="btn" href="/romanero.html" target="_blank" rel="noopener">Romanero</a>
@@ -224,25 +230,28 @@ function renderApp() {
       <section class="card hero hero-${health}">
         <div class="card-head">
           <div>
-            <h2>Pulso de compra y captura</h2>
-            <p class="subtle">${healthLabel(overview)} · ${overview.alertCounts.critical} alertas críticas, ${overview.alertCounts.warning} en observación. La prioridad es no perder kilos ni continuidad operativa.</p>
+            <h2>Mando local de planta</h2>
+            <p class="subtle">${healthLabel(overview)} · ${overview.alertCounts.critical} alertas críticas, ${overview.alertCounts.warning} en observación. La prioridad es sostener recepción, proceso y continuidad local sin perder kilos.</p>
           </div>
           <span class="status">${escapeHtml(state.session?.user?.email || 'sesion activa')}</span>
         </div>
         <div class="metric-grid">
           <div class="metric"><span>Kilos hoy</span><strong>${formatKg(overview.kilosHoy)}</strong></div>
-          <div class="metric"><span>Capturas hoy</span><strong>${overview.capturasHoy}</strong></div>
-          <div class="metric"><span>Expedientes sin pesaje</span><strong>${overview.expedientesSinPesaje}</strong></div>
-          <div class="metric"><span>Cobertura de pesaje</span><strong>${overview.coberturaPesajePct}%</strong></div>
+          <div class="metric"><span>Sucursales activas</span><strong>${plantPulse.sucursalesActivas || 0}</strong></div>
+          <div class="metric"><span>Recepcionados</span><strong>${plantPulse.recepcionados || 0}</strong></div>
+          <div class="metric"><span>En proceso</span><strong>${plantPulse.enProceso || 0}</strong></div>
+        </div>
+        <div class="flash flash-ok">
+          Telemetría disponible hoy: ${escapeHtml((plantPulse.telemetriaDisponible || ['sin telemetría suficiente']).join(' · '))}.
         </div>
       </section>
 
       <section class="stats">
-        <article class="stat-card"><span>Kilos visibles</span><strong>${formatKg(overview.kilosTotal)}</strong></article>
+        <article class="stat-card"><span>Backlog visible</span><strong>${plantPulse.backlogVisible || 0}</strong></article>
+        <article class="stat-card"><span>Cobertura de pesaje</span><strong>${overview.coberturaPesajePct}%</strong></article>
         <article class="stat-card"><span>Promedio captura</span><strong>${formatKg(overview.kilosPromedioCaptura)}</strong></article>
         <article class="stat-card"><span>Expedientes activos</span><strong>${overview.expedientesActivos}</strong></article>
-        <article class="stat-card"><span>Sucursales con captura</span><strong>${overview.sucursalesConCaptura}</strong></article>
-        <article class="stat-card"><span>Materiales con captura</span><strong>${overview.materialesConCaptura}</strong></article>
+        <article class="stat-card"><span>Materiales activos</span><strong>${overview.materialesConCaptura}</strong></article>
         <article class="stat-card"><span>Última captura</span><strong>${escapeHtml(relativeAge(overview.ultimaCapturaAt))}</strong></article>
       </section>
 
@@ -250,8 +259,8 @@ function renderApp() {
         <section class="card">
           <div class="card-head">
             <div>
-              <h2>Alertas de compra y captura</h2>
-              <p class="subtle">Señales tempranas donde realmente nacen los problemas: kilos, pesaje y continuidad operativa.</p>
+              <h2>Alertas de planta</h2>
+              <p class="subtle">Señales donde el supervisor local tiene que intervenir primero: continuidad, cobertura, cuello y atraso visible.</p>
             </div>
           </div>
           <div class="stack-list">
@@ -262,10 +271,15 @@ function renderApp() {
         <section class="card">
           <div class="card-head">
             <div>
-              <h2>Kilos por sucursal</h2>
-              <p class="subtle">Dónde se está moviendo material y dónde la captura quedó corta.</p>
+              <h2>Cuellos por sucursal</h2>
+              <p class="subtle">Lectura local de planta: recepción, proceso, cobertura y backlog por sucursal.</p>
             </div>
           </div>
+          ${bottleneck ? `
+            <div class="flash flash-error">
+              Cuello principal visible hoy: <strong>${escapeHtml(sucursalName(bottleneck.sucursal_id))}</strong> · backlog ${bottleneck.backlogLocal} · cobertura ${bottleneck.coberturaPesajePct}%.
+            </div>
+          ` : ''}
           <div class="stack-list">
             ${overview.sucursales.length ? overview.sucursales.map((item) => `
               <article class="mini-card">
@@ -273,8 +287,8 @@ function renderApp() {
                   <strong>${escapeHtml(sucursalName(item.sucursal_id))}</strong>
                   <button class="btn btn-small" type="button" data-action="filter-sucursal" data-sucursal-id="${escapeHtml(item.sucursal_id)}">Filtrar</button>
                 </div>
-                <span>${formatKg(item.kilosHoy)} hoy · ${formatKg(item.kilosTotal)} visibles · ${item.capturas} capturas</span>
-                <small>${item.expedientesSinPesaje} sin pesaje · ${item.activos} activos · ${item.pendiente_pago} en cola de pago</small>
+                <span>${formatKg(item.kilosHoy)} hoy · ${item.capturas} capturas · intensidad ${formatKg(item.intensidadRecepcion)}</span>
+                <small>${item.recepcionado} recepcionados · ${item.enProceso} en proceso · ${item.expedientesSinPesaje} sin pesaje · ${item.staleActive} frenados · cobertura ${item.coberturaPesajePct}%</small>
               </article>
             `).join('') : '<div class="empty">Todavía no hay sucursales con captura visible.</div>'}
           </div>
@@ -285,21 +299,21 @@ function renderApp() {
         <section class="card">
           <div class="card-head">
             <div>
-              <h2>Materiales calientes</h2>
-              <p class="subtle">Qué materiales concentran hoy más kilos y más movimiento.</p>
+              <h2>Servicios en planta</h2>
+              <p class="subtle">Qué tipo de trabajo está consumiendo la capacidad local de recepción y proceso.</p>
             </div>
           </div>
           <div class="stack-list">
-            ${overview.materiales.length ? overview.materiales.map((item) => `
+            ${overview.servicios.length ? overview.servicios.map((item) => `
               <article class="mini-card">
                 <div class="card-head">
-                  <strong>${escapeHtml(materialName(item.material_id))}</strong>
-                  <button class="btn btn-small" type="button" data-action="filter-material" data-material-id="${escapeHtml(item.material_id)}">Filtrar</button>
+                  <strong>${escapeHtml(serviceLabel(item.servicio_clase))}</strong>
+                  <span class="badge">${item.expedientes} casos</span>
                 </div>
                 <span>${formatKg(item.kilosHoy)} hoy · ${formatKg(item.kilosTotal)} visibles · ${item.capturas} capturas</span>
-                <small>${item.expedientes} expedientes · ${item.sucursalesCount} sucursales con actividad</small>
+                <small>${item.expedientes} expedientes ligados a esta carga operativa</small>
               </article>
-            `).join('') : '<div class="empty">Todavía no hay materiales con captura visible.</div>'}
+            `).join('') : '<div class="empty">Todavía no hay servicios visibles para este tramo.</div>'}
           </div>
         </section>
 
@@ -327,7 +341,7 @@ function renderApp() {
           <div class="card-head">
             <div>
               <h2>Expedientes</h2>
-              <p class="subtle">Filtro rápido para bajar del tablero al caso operativo sin perder foco en sucursal, material y captura.</p>
+              <p class="subtle">Filtro rápido para bajar del mando local al caso operativo sin perder foco en sucursal, material y continuidad.</p>
             </div>
             <span class="status">${items.length} visibles / ${state.expedientes.length}</span>
           </div>
@@ -388,14 +402,14 @@ function renderApp() {
           <section class="card">
             <div class="card-head">
               <div>
-                <h2>Detalle</h2>
+                <h2>Detalle local</h2>
                 <p class="subtle">${escapeHtml(selected?.expediente_codigo || 'Selecciona un expediente')}</p>
               </div>
             </div>
             ${selected ? `
               <div class="metric-grid">
                 <div class="metric"><span>Estado</span><strong>${escapeHtml(selected.estado || '—')}</strong></div>
-                <div class="metric"><span>Servicio</span><strong>${escapeHtml(selected.servicio_clase || '—')}</strong></div>
+                <div class="metric"><span>Servicio</span><strong>${escapeHtml(serviceLabel(selected.servicio_clase))}</strong></div>
                 <div class="metric"><span>Cliente</span><strong>${escapeHtml(selected.cliente_id || '—')}</strong></div>
                 <div class="metric"><span>Material</span><strong>${escapeHtml(materialName(selected.material_id))}</strong></div>
                 <div class="metric"><span>Sucursal</span><strong>${escapeHtml(sucursalName(selected.sucursal_id))}</strong></div>
@@ -407,17 +421,29 @@ function renderApp() {
           <section class="card">
             <div class="card-head">
               <div>
-                <h2>Captura y continuidad</h2>
-                <p class="subtle">Resumen del punto donde nacen los problemas: kilos, precio, trazabilidad y cierre del caso.</p>
+                <h2>Recepción y continuidad</h2>
+                <p class="subtle">Resumen local del caso en planta: recepción, kilos, trazabilidad y continuidad posterior.</p>
               </div>
             </div>
             <div class="metric-grid">
               <div class="metric"><span>Pesaje</span><strong>${state.pesaje ? formatKg(state.pesaje.peso_neto_kg) : '—'}</strong></div>
+              <div class="metric"><span>Estado local</span><strong>${escapeHtml(selected?.estado || '—')}</strong></div>
               <div class="metric"><span>Precio unitario</span><strong>${state.pesaje ? formatMoney(state.pesaje.precio_unitario) : '—'}</strong></div>
               <div class="metric"><span>Monto estimado</span><strong>${state.pesaje ? formatMoney(state.pesaje.monto_total) : '—'}</strong></div>
               <div class="metric"><span>Facturas</span><strong>${state.facturas.length}</strong></div>
               <div class="metric"><span>Pagos</span><strong>${state.pagos.length}</strong></div>
+            </div>
+            <div class="flash flash-ok">
+              Telemetría local disponible hoy: ${escapeHtml([
+                state.pesaje ? 'pesaje visible' : null,
+                state.eventos.length ? 'trazabilidad por evento' : null,
+                state.facturas.length ? 'salida a factura' : null,
+                state.pagos.length ? 'cierre financiero secundario' : null
+              ].filter(Boolean).join(' · ') || 'sin telemetría local suficiente')}.
+            </div>
+            <div class="metric-grid">
               <div class="metric"><span>Eventos</span><strong>${state.eventos.length}</strong></div>
+              <div class="metric"><span>Comprobantes</span><strong>${state.comprobantes.length}</strong></div>
             </div>
           </section>
         </aside>
@@ -428,7 +454,7 @@ function renderApp() {
           <div class="card-head">
             <div>
               <h2>Capturas recientes</h2>
-              <p class="subtle">Últimos kilos visibles del release para revisar ritmo y continuidad.</p>
+              <p class="subtle">Últimos kilos visibles del release para revisar ritmo de recepción y continuidad local.</p>
             </div>
           </div>
           ${overview.recentCaptures.length ? `
@@ -503,17 +529,17 @@ function renderApp() {
         <section class="card">
           <div class="card-head">
             <div>
-              <h2>Estado visible del flujo</h2>
-              <p class="subtle">Resumen del backlog vivo desde operación hasta cierre financiero.</p>
+              <h2>Backlog visible de planta</h2>
+              <p class="subtle">Resumen del atasco visible desde recepción y proceso, antes del cierre financiero.</p>
             </div>
           </div>
           <div class="metric-grid">
             <div class="metric"><span>Total expedientes</span><strong>${overview.byState.total}</strong></div>
+            <div class="metric"><span>Recepcionados</span><strong>${overview.byState.recepcionado}</strong></div>
             <div class="metric"><span>En proceso</span><strong>${overview.byState.en_proceso}</strong></div>
             <div class="metric"><span>Pendiente factura</span><strong>${overview.byState.pendiente_factura}</strong></div>
             <div class="metric"><span>Cola de pago</span><strong>${overview.byState.pendiente_pago}</strong></div>
             <div class="metric"><span>Por conciliar</span><strong>${overview.byState.pagado_pendiente_conciliacion}</strong></div>
-            <div class="metric"><span>Pagado</span><strong>${formatMoney(overview.montoPagado)}</strong></div>
           </div>
         </section>
       </div>

@@ -48,7 +48,7 @@ No son obligatorias para que levante este release hoy, pero sí recomendadas par
 6. Abrir `/supervision`
 7. Revisar `/_version.json`
 
-`/supervision` ahora actúa como `Centro de Control`: resume kilos capturados, cobertura de pesaje, alertas de compra/captura, materiales calientes, sucursales activas y luego el tramo financiero secundario.
+`/supervision` ahora actúa como `mando local de Planta`: resume kilos capturados, sucursales activas, recepción, proceso, cuellos por sucursal, tipos de servicio en planta y luego el tramo financiero secundario.
 
 `/primer-release` ahora actúa como `Hub Ejecutivo`: sirve de portada del release, muestra checklist, accesos rápidos, build, pulso `kilos-first` y permite encender el demo sin credenciales.
 
@@ -65,6 +65,8 @@ Las tres pantallas nuevas ya exponen un modo demo útil para revisar el release 
 - el estado demo se comparte entre pantallas en el mismo navegador
 - cada pantalla permite `Reiniciar demo` para volver a la semilla base
 - el orden recomendado de revisión es `Hub -> Supervisión -> Romanero -> Pagos -> panel`
+- en `/supervision`, revisar que el hero principal diga `Mando local de planta`
+- en `/supervision`, confirmar bloques `Cuellos por sucursal` y `Servicios en planta`
 - en `/romanero`, probar también los campos `Origen del caso`, `Servicio agendado ID`, `Oportunidad / handoff ID` y `Referencia legado`
 - al seleccionar un cliente en `/romanero`, revisar primero la tarjeta `Servicio agendado` y probar `Usar servicio agendado`
 - con el servicio tomado, revisar la tarjeta `Terreno` y confirmar que muestra `rutas_asignadas`, `viajes_terreno` y evidencias del día sin inventar un join por cliente
@@ -81,6 +83,7 @@ Quedó un smoke público que no requiere credenciales reales y valida:
 - carga mínima de `panel-rdo.html`
 - lectura compartida del demo entre hub y panel
 - foco operativo visible en hub/panel con métricas de kilos y captura
+- supervisión aterrizada como tramo de planta con cuellos, backlog y servicios locales
 - visibilidad del marco de arranque y de las reglas anti-duplicación en hub/romanero
 - convergencia visible entre agenda/despacho y expediente operacional desde Romanero
 - continuidad visible entre agenda/despacho y ejecución de terreno antes de sucursal

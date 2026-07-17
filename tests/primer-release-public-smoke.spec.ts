@@ -128,6 +128,9 @@ test.describe('Primer Release público smoke', () => {
 
     await page.goto('/supervision.html');
     await expect(demoPill).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mando local de planta' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Cuellos por sucursal' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Servicios en planta' })).toBeVisible();
     await expect(page.locator('.list-item strong').first()).toContainText('EXP-DEMO-001');
 
     const criticos = consoleErrors.filter((entry) =>
