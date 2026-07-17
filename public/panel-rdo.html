@@ -15058,6 +15058,17 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     bpSearchDebounce = setTimeout(loadBandejaPrecios, 250);
   }
 
+  function bpGetInlineDecisionState() {
+    return {
+      currentId: bpCurrentId,
+      currentPrecioPropuesto: bpCurrentPrecioPropuesto,
+      currentPrecioVigente: bpCurrentPrecioVigente,
+      currentMgPct: bpCurrentMgPct,
+      currentMgRequerido: bpCurrentMgRequerido,
+      puedeOverride: bpPuedeOverrideMargen(),
+    };
+  }
+
   function initBandejaPrecios() {
     loadBandejaPrecios();
     if (bpRefreshTimer) clearInterval(bpRefreshTimer);
@@ -15082,6 +15093,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
   window.bpBulkAprobar              = bpBulkAprobar;
   window.bpActualizarMargenAjuste   = bpActualizarMargenAjuste;
   window.bpActualizarOverrideUI     = bpActualizarOverrideUI;
+  window.bpGetInlineDecisionState   = bpGetInlineDecisionState;
 })();
 </script>
 
@@ -17735,14 +17747,21 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const btnRechazar = document.getElementById('bpBtnRechazar');
     const overrideChk = document.getElementById('bpOverrideCheck');
     const overrideMot = document.getElementById('bpOverrideMotivo');
-    const overrideVisible = !!(bpCurrentMgPct != null && bpCurrentMgRequerido != null && bpCurrentMgPct < bpCurrentMgRequerido);
-    const puedeOverride = typeof bpPuedeOverrideMargen === 'function' ? bpPuedeOverrideMargen() : false;
+    const drawerState = typeof window.bpGetInlineDecisionState === 'function'
+      ? (window.bpGetInlineDecisionState() || {})
+      : {};
+    const currentMgPct = Number.isFinite(Number(drawerState.currentMgPct)) ? Number(drawerState.currentMgPct) : null;
+    const currentMgRequerido = Number.isFinite(Number(drawerState.currentMgRequerido)) ? Number(drawerState.currentMgRequerido) : null;
+    const currentPrecioPropuesto = Number.isFinite(Number(drawerState.currentPrecioPropuesto)) ? Number(drawerState.currentPrecioPropuesto) : null;
+    const currentPrecioVigente = Number.isFinite(Number(drawerState.currentPrecioVigente)) ? Number(drawerState.currentPrecioVigente) : null;
+    const overrideVisible = !!(currentMgPct != null && currentMgRequerido != null && currentMgPct < currentMgRequerido);
+    const puedeOverride = !!drawerState.puedeOverride;
     const overrideMotivo = String(overrideMot?.value || '').trim();
     const overrideOk = !!overrideChk?.checked && overrideMotivo.length >= 6;
-    const candidato = Number((parseFloat(inputAjuste?.value || '') > 0 ? parseFloat(inputAjuste?.value || '') : bpCurrentPrecioPropuesto) || 0);
-    const vigenteTxt = bpCurrentPrecioVigente != null ? fmtCLP(bpCurrentPrecioVigente) : 'sin vigente visible';
+    const candidato = Number((parseFloat(inputAjuste?.value || '') > 0 ? parseFloat(inputAjuste?.value || '') : currentPrecioPropuesto) || 0);
+    const vigenteTxt = currentPrecioVigente != null ? fmtCLP(currentPrecioVigente) : 'sin vigente visible';
     const candidatoTxt = candidato > 0 ? fmtCLP(candidato) : 'sin ajuste visible';
-    const sameAsVigente = candidato > 0 && bpCurrentPrecioVigente != null && Number(candidato) === Number(bpCurrentPrecioVigente);
+    const sameAsVigente = candidato > 0 && currentPrecioVigente != null && Number(candidato) === Number(currentPrecioVigente);
     if (!active) {
       badgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
       badgeEl.textContent = 'Sin drawer';
@@ -17782,16 +17801,16 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         ? 'Override bloqueado.'
         : (overrideOk ? 'Override listo.' : 'Override pendiente.');
       overrideTextEl.textContent = !puedeOverride
-        ? ('El margen objetivo ' + bpCurrentMgPct.toFixed(1) + '% está bajo el mínimo ' + bpCurrentMgRequerido.toFixed(1) + '%. Este usuario no puede destrabar el override.')
+        ? ('El margen objetivo ' + currentMgPct.toFixed(1) + '% está bajo el mínimo ' + currentMgRequerido.toFixed(1) + '%. Este usuario no puede destrabar el override.')
         : (overrideOk
           ? ('Override confirmado con motivo cargado. El drawer ya puede aplicar usando ' + overrideMotivo + '.')
-          : ('Margen objetivo ' + bpCurrentMgPct.toFixed(1) + '% bajo mínimo ' + bpCurrentMgRequerido.toFixed(1) + '%. Falta confirmar override y motivo para destrabar aplicar.'));
+          : ('Margen objetivo ' + currentMgPct.toFixed(1) + '% bajo mínimo ' + currentMgRequerido.toFixed(1) + '%. Falta confirmar override y motivo para destrabar aplicar.'));
       approveTitleEl.textContent = puedeOverride
         ? (overrideOk ? 'Aplicar habilitado con override.' : 'Aplicar espera override.')
         : 'Aplicar bloqueado por margen.';
       approveTextEl.textContent = puedeOverride
-        ? ('Margen objetivo ' + bpCurrentMgPct.toFixed(1) + '% bajo mínimo ' + bpCurrentMgRequerido.toFixed(1) + '%. Confirma override y motivo para aplicar desde el drawer.')
-        : ('El margen objetivo ' + bpCurrentMgPct.toFixed(1) + '% está bajo el mínimo ' + bpCurrentMgRequerido.toFixed(1) + '%. Solo un usuario autorizado puede aplicar.');
+        ? ('Margen objetivo ' + currentMgPct.toFixed(1) + '% bajo mínimo ' + currentMgRequerido.toFixed(1) + '%. Confirma override y motivo para aplicar desde el drawer.')
+        : ('El margen objetivo ' + currentMgPct.toFixed(1) + '% está bajo el mínimo ' + currentMgRequerido.toFixed(1) + '%. Solo un usuario autorizado puede aplicar.');
     } else {
       overrideTitleEl.textContent = 'Override no requerido.';
       overrideTextEl.textContent = 'El margen actual no exige destrabe adicional. Puedes seguir con el cierre normal del drawer.';
