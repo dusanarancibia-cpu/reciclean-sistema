@@ -1,6 +1,33 @@
 import { supabase } from './supabase.js';
+import {
+  adjuntarComprobanteDemo,
+  consultarPrecioVigenteDemo,
+  createOrRecoverExpedienteDemo,
+  createSignedStorageUrlDemo,
+  disablePrimerReleaseDemo,
+  enablePrimerReleaseDemo,
+  fetchComprobantesByFacturaDemo,
+  fetchExpedienteDemo,
+  fetchExpedienteEventosDemo,
+  fetchFacturasByExpedienteDemo,
+  fetchPagosByExpedienteDemo,
+  fetchPagosByFacturaDemo,
+  fetchPesajeByExpedienteDemo,
+  getDemoSession,
+  isPrimerReleaseDemoEnabled,
+  listExpedientesReleaseDemo,
+  listarPendientesPagoDemo,
+  loadDemoLookups,
+  registrarPagoManualDemo,
+  registrarPesajeDemo,
+  resetPrimerReleaseDemo,
+  syncDemoModeFromQuery,
+  uploadComprobanteDemo
+} from './primer-release-demo.js';
 
 const CURATED = 'curated';
+
+syncDemoModeFromQuery();
 
 function normalizedMessage(error, fallback) {
   if (!error) return fallback;
@@ -19,6 +46,13 @@ async function rpc(name, args) {
   return data;
 }
 
+export {
+  enablePrimerReleaseDemo,
+  disablePrimerReleaseDemo,
+  isPrimerReleaseDemoEnabled,
+  resetPrimerReleaseDemo
+};
+
 export async function signInRomanero(email, password) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email: email.trim().toLowerCase(),
@@ -31,6 +65,10 @@ export async function signInRomanero(email, password) {
 }
 
 export async function signOutRomanero() {
+  if (isPrimerReleaseDemoEnabled()) {
+    disablePrimerReleaseDemo();
+    return;
+  }
   const { error } = await supabase.auth.signOut();
   if (error) {
     throw new Error(normalizedMessage(error, 'No se pudo cerrar sesion'));
@@ -38,6 +76,9 @@ export async function signOutRomanero() {
 }
 
 export async function getRomaneroSession() {
+  if (isPrimerReleaseDemoEnabled()) {
+    return getDemoSession();
+  }
   const { data, error } = await supabase.auth.getSession();
   if (error) {
     throw new Error(normalizedMessage(error, 'No se pudo leer la sesion'));
@@ -46,6 +87,9 @@ export async function getRomaneroSession() {
 }
 
 export async function loadRomaneroLookups() {
+  if (isPrimerReleaseDemoEnabled()) {
+    return loadDemoLookups();
+  }
   const [clientesRes, materialesRes, sucursalesRes] = await Promise.all([
     supabase.schema(CURATED)
       .from('clientes')
@@ -83,6 +127,9 @@ export async function loadRomaneroLookups() {
 }
 
 export async function consultarPrecioVigente(materialId, sucursalId) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return consultarPrecioVigenteDemo(materialId, sucursalId);
+  }
   return rpc('consultar_precio_vigente_release', {
     p_material_id: materialId,
     p_sucursal_id: sucursalId || null
@@ -90,14 +137,23 @@ export async function consultarPrecioVigente(materialId, sucursalId) {
 }
 
 export async function createOrRecoverExpediente(payload) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return createOrRecoverExpedienteDemo(payload);
+  }
   return rpc('create_or_recover_expediente_operacional', payload);
 }
 
 export async function registrarPesaje(payload) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return registrarPesajeDemo(payload);
+  }
   return rpc('registrar_pesaje_expediente', payload);
 }
 
 export async function listarPendientesPago(sucursalId, limit = 100) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return listarPendientesPagoDemo(sucursalId, limit);
+  }
   const data = await rpc('listar_pendientes_pago_release', {
     p_sucursal_id: sucursalId || null,
     p_limit: limit
@@ -106,14 +162,23 @@ export async function listarPendientesPago(sucursalId, limit = 100) {
 }
 
 export async function registrarPagoManual(payload) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return registrarPagoManualDemo(payload);
+  }
   return rpc('registrar_pago_manual_release', payload);
 }
 
 export async function adjuntarComprobante(payload) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return adjuntarComprobanteDemo(payload);
+  }
   return rpc('adjuntar_comprobante_pago_release', payload);
 }
 
 export async function fetchExpediente(expedienteId) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return fetchExpedienteDemo(expedienteId);
+  }
   const { data, error } = await supabase.schema(CURATED)
     .from('expedientes_operacionales')
     .select('*')
@@ -128,6 +193,9 @@ export async function fetchExpediente(expedienteId) {
 }
 
 export async function fetchExpedienteEventos(expedienteId) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return fetchExpedienteEventosDemo(expedienteId);
+  }
   const { data, error } = await supabase.schema(CURATED)
     .from('expediente_eventos')
     .select('evento_id, tipo_evento, actor, payload, created_at')
@@ -142,6 +210,9 @@ export async function fetchExpedienteEventos(expedienteId) {
 }
 
 export async function fetchPagosByFactura(facturaRawId) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return fetchPagosByFacturaDemo(facturaRawId);
+  }
   const { data, error } = await supabase.schema(CURATED)
     .from('pagos_operacionales')
     .select('*')
@@ -156,6 +227,9 @@ export async function fetchPagosByFactura(facturaRawId) {
 }
 
 export async function fetchComprobantesByFactura(facturaRawId) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return fetchComprobantesByFacturaDemo(facturaRawId);
+  }
   const { data, error } = await supabase.schema(CURATED)
     .from('comprobantes_pago')
     .select('*')
@@ -170,6 +244,9 @@ export async function fetchComprobantesByFactura(facturaRawId) {
 }
 
 export async function uploadComprobante(file, pagoId) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return uploadComprobanteDemo(file, pagoId);
+  }
   const safeName = String(file.name || 'comprobante')
     .normalize('NFKD')
     .replace(/[^\w.\-]+/g, '_');
@@ -190,6 +267,9 @@ export async function uploadComprobante(file, pagoId) {
 }
 
 export async function listExpedientesRelease(sucursalId, limit = 150) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return listExpedientesReleaseDemo(sucursalId, limit);
+  }
   let query = supabase.schema(CURATED)
     .from('expedientes_operacionales')
     .select('*')
@@ -209,6 +289,9 @@ export async function listExpedientesRelease(sucursalId, limit = 150) {
 }
 
 export async function fetchPesajeByExpediente(expedienteId) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return fetchPesajeByExpedienteDemo(expedienteId);
+  }
   const { data, error } = await supabase.schema(CURATED)
     .from('pesajes')
     .select('*')
@@ -225,6 +308,9 @@ export async function fetchPesajeByExpediente(expedienteId) {
 }
 
 export async function fetchFacturasByExpediente(expedienteId) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return fetchFacturasByExpedienteDemo(expedienteId);
+  }
   const { data, error } = await supabase.schema(CURATED)
     .from('facturacion_raw')
     .select('*')
@@ -240,6 +326,9 @@ export async function fetchFacturasByExpediente(expedienteId) {
 }
 
 export async function fetchPagosByExpediente(expedienteId) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return fetchPagosByExpedienteDemo(expedienteId);
+  }
   const { data, error } = await supabase.schema(CURATED)
     .from('pagos_operacionales')
     .select('*')
@@ -254,6 +343,9 @@ export async function fetchPagosByExpediente(expedienteId) {
 }
 
 export async function createSignedStorageUrl(bucket, path, expiresIn = 300) {
+  if (isPrimerReleaseDemoEnabled()) {
+    return createSignedStorageUrlDemo(bucket, path);
+  }
   const { data, error } = await supabase.storage
     .from(bucket)
     .createSignedUrl(path, expiresIn);

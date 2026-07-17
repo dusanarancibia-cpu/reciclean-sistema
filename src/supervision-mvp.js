@@ -7,7 +7,10 @@ import {
   fetchExpedienteEventos,
   fetchPesajeByExpediente,
   fetchFacturasByExpediente,
-  fetchPagosByExpediente
+  fetchPagosByExpediente,
+  enablePrimerReleaseDemo,
+  isPrimerReleaseDemoEnabled,
+  resetPrimerReleaseDemo
 } from './lib/primer-release-api.js';
 
 const app = document.querySelector('#app');
@@ -16,6 +19,7 @@ const state = {
   session: null,
   loading: true,
   busy: false,
+  demo: false,
   error: '',
   notice: '',
   lookups: { sucursales: [] },
@@ -108,7 +112,7 @@ function renderLogin() {
       <div class="card auth-card">
         <div class="eyebrow">Primer Release · Supervisión</div>
         <h1>Supervisión MVP</h1>
-        <p class="subtle">Ingreso con Supabase Auth para revisar el flujo vivo del release.</p>
+        <p class="subtle">Ingreso con Supabase Auth para revisar el flujo vivo del release. Si todavia no tienes acceso, puedes entrar en modo demo operativo.</p>
         <form id="login-form" class="stack">
           <label class="field">
             <span>Email</span>
@@ -120,6 +124,9 @@ function renderLogin() {
           </label>
           <button class="btn btn-primary" type="submit"${state.busy ? ' disabled' : ''}>
             ${state.busy ? 'Ingresando...' : 'Entrar'}
+          </button>
+          <button class="btn" type="button" data-action="demo"${state.busy ? ' disabled' : ''}>
+            Ver demo operativa
           </button>
         </form>
         ${state.error ? `<div class="flash flash-error">${escapeHtml(state.error)}</div>` : ''}
@@ -144,11 +151,14 @@ function renderApp() {
         <div class="topbar-actions">
           <a class="btn" href="/romanero.html" target="_blank" rel="noopener">Romanero</a>
           <a class="btn" href="/pagos.html" target="_blank" rel="noopener">Pagos</a>
+          ${state.demo ? '<div class="session-pill">Modo demo</div>' : ''}
           <button class="btn" data-action="refresh"${state.busy ? ' disabled' : ''}>Actualizar</button>
+          ${state.demo ? '<button class="btn" data-action="reset-demo">Reiniciar demo</button>' : ''}
           <button class="btn" data-action="logout"${state.busy ? ' disabled' : ''}>Salir</button>
         </div>
       </header>
 
+      ${state.demo ? '<div class="flash flash-ok">Modo demo activo. Aqui puedes revisar el flujo compartido con Romanero y Pagos sin necesitar credenciales reales.</div>' : ''}
       ${state.notice ? `<div class="flash flash-ok">${escapeHtml(state.notice)}</div>` : ''}
       ${state.error ? `<div class="flash flash-error">${escapeHtml(state.error)}</div>` : ''}
 
@@ -397,6 +407,7 @@ async function handleLogout() {
   try {
     await signOutRomanero();
     state.session = null;
+    state.demo = false;
     state.selected = null;
     state.expedientes = [];
     state.eventos = [];
@@ -404,6 +415,40 @@ async function handleLogout() {
     state.facturas = [];
     state.pagos = [];
     setNotice('Sesion cerrada');
+  } catch (error) {
+    setError(error.message);
+  } finally {
+    state.busy = false;
+    render();
+  }
+}
+
+async function handleDemoMode() {
+  state.busy = true;
+  clearFlash();
+  render();
+  try {
+    enablePrimerReleaseDemo();
+    await boot();
+    setNotice('Modo demo activado');
+  } catch (error) {
+    state.loading = false;
+    state.busy = false;
+    setError(error.message);
+  } finally {
+    state.busy = false;
+    render();
+  }
+}
+
+async function handleResetDemo() {
+  state.busy = true;
+  clearFlash();
+  render();
+  try {
+    resetPrimerReleaseDemo();
+    await boot();
+    setNotice('Demo reiniciada con datos base');
   } catch (error) {
     setError(error.message);
   } finally {
@@ -433,6 +478,7 @@ async function boot() {
   state.loading = true;
   render();
   try {
+    state.demo = isPrimerReleaseDemoEnabled();
     state.session = await getRomaneroSession();
     if (state.session) {
       const lookups = await loadRomaneroLookups();
@@ -481,6 +527,14 @@ app.addEventListener('click', async (event) => {
     return;
   }
   if (!action || state.busy) return;
+  if (action === 'demo') {
+    await handleDemoMode();
+    return;
+  }
+  if (action === 'reset-demo') {
+    await handleResetDemo();
+    return;
+  }
   if (action === 'logout') await handleLogout();
   if (action === 'refresh') await refreshAll();
 });

@@ -44,6 +44,15 @@ No son obligatorias para que levante este release hoy, pero sí recomendadas par
 5. Abrir `/supervision`
 6. Revisar `/_version.json`
 
+## Revisión sin credenciales
+
+Las tres pantallas nuevas ya exponen un modo demo útil para revisar el release en Vercel sin claves reales:
+
+- abrir `/romanero?demo=1` para activar demo
+- luego visitar `/pagos` y `/supervision`
+- el estado demo se comparte entre pantallas en el mismo navegador
+- cada pantalla permite `Reiniciar demo` para volver a la semilla base
+
 ## Smoke automático disponible
 
 Quedó un smoke público que no requiere credenciales reales y valida:

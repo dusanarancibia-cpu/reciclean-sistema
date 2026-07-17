@@ -7,7 +7,10 @@ import {
   createOrRecoverExpediente,
   registrarPesaje,
   fetchExpediente,
-  fetchExpedienteEventos
+  fetchExpedienteEventos,
+  enablePrimerReleaseDemo,
+  isPrimerReleaseDemoEnabled,
+  resetPrimerReleaseDemo
 } from './lib/primer-release-api.js';
 
 const app = document.querySelector('#app');
@@ -16,6 +19,7 @@ const state = {
   session: null,
   loading: true,
   busy: false,
+  demo: false,
   error: '',
   notice: '',
   lookups: {
@@ -120,7 +124,7 @@ function renderLogin() {
       <div class="card auth-card">
         <div class="eyebrow">Primer Release · TT-04</div>
         <h1>Romanero MVP</h1>
-        <p class="subtle">Ingreso con Supabase Auth para operar expediente, precio vigente y pesaje unico.</p>
+        <p class="subtle">Ingreso con Supabase Auth para operar expediente, precio vigente y pesaje unico. Si no tienes claves todavia, puedes abrir el flujo en modo demo.</p>
         <form id="login-form" class="stack">
           <label class="field">
             <span>Email</span>
@@ -132,6 +136,9 @@ function renderLogin() {
           </label>
           <button class="btn btn-primary" type="submit"${state.busy ? ' disabled' : ''}>
             ${state.busy ? 'Ingresando...' : 'Entrar'}
+          </button>
+          <button class="btn" type="button" data-action="demo"${state.busy ? ' disabled' : ''}>
+            Ver demo operativa
           </button>
         </form>
         ${state.error ? `<div class="flash flash-error">${escapeHtml(state.error)}</div>` : ''}
@@ -155,11 +162,14 @@ function renderApp() {
           <p class="subtle">Crea o recupera expediente, consulta precio canonico y registra el pesaje unico.</p>
         </div>
         <div class="topbar-actions">
+          ${state.demo ? '<div class="session-pill">Modo demo</div>' : ''}
           <div class="session-pill">${escapeHtml(state.session?.user?.email || 'sesion activa')}</div>
+          ${state.demo ? '<button class="btn" data-action="reset-demo">Reiniciar demo</button>' : ''}
           <button class="btn" data-action="logout"${state.busy ? ' disabled' : ''}>Salir</button>
         </div>
       </header>
 
+      ${state.demo ? '<div class="flash flash-ok">Modo demo activo. Este flujo usa datos locales persistidos en tu navegador para que puedas revisar Romanero, Pagos y Supervisión sin credenciales.</div>' : ''}
       ${state.notice ? `<div class="flash flash-ok">${escapeHtml(state.notice)}</div>` : ''}
       ${state.error ? `<div class="flash flash-error">${escapeHtml(state.error)}</div>` : ''}
 
@@ -500,6 +510,7 @@ async function handleLogout() {
   try {
     await signOutRomanero();
     state.session = null;
+    state.demo = false;
     state.expediente = null;
     state.eventos = [];
     state.lastPesaje = null;
@@ -512,10 +523,45 @@ async function handleLogout() {
   }
 }
 
+async function handleDemoMode() {
+  state.busy = true;
+  clearFlash();
+  render();
+  try {
+    enablePrimerReleaseDemo();
+    await boot();
+    setNotice('Modo demo activado');
+  } catch (error) {
+    state.loading = false;
+    state.busy = false;
+    setError(error.message);
+  } finally {
+    state.busy = false;
+    render();
+  }
+}
+
+async function handleResetDemo() {
+  state.busy = true;
+  clearFlash();
+  render();
+  try {
+    resetPrimerReleaseDemo();
+    await boot();
+    setNotice('Demo reiniciada con datos base');
+  } catch (error) {
+    setError(error.message);
+  } finally {
+    state.busy = false;
+    render();
+  }
+}
+
 async function boot() {
   state.loading = true;
   render();
   try {
+    state.demo = isPrimerReleaseDemoEnabled();
     state.session = await getRomaneroSession();
     if (state.session) {
       state.lookups = await loadRomaneroLookups();
@@ -582,6 +628,8 @@ app.addEventListener('click', async (event) => {
   if (!action || state.busy) return;
 
   try {
+    if (action === 'demo') await handleDemoMode();
+    if (action === 'reset-demo') await handleResetDemo();
     if (action === 'logout') await handleLogout();
     if (action === 'precio') await handleConsultarPrecio();
     if (action === 'expediente') await handleCreateOrRecover();

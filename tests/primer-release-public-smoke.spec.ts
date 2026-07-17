@@ -78,6 +78,29 @@ test.describe('Primer Release público smoke', () => {
     expect(criticos, `errores críticos en panel-rdo: ${JSON.stringify(criticos)}`).toEqual([]);
   });
 
+  test('modo demo comparte flujo entre Romanero, Pagos y Supervisión', async ({ page }) => {
+    const consoleErrors: string[] = [];
+    attachConsoleCollectors(page, consoleErrors);
+    const demoPill = page.locator('.session-pill').filter({ hasText: 'Modo demo' });
+
+    await page.goto('/romanero.html?demo=1');
+    await expect(demoPill).toBeVisible();
+    await expect(page.locator('select[name="cliente_id"]')).toBeVisible();
+
+    await page.goto('/pagos.html');
+    await expect(demoPill).toBeVisible();
+    await expect(page.locator('.list-item strong').first()).toContainText('Transportes Demo Ltda.');
+
+    await page.goto('/supervision.html');
+    await expect(demoPill).toBeVisible();
+    await expect(page.locator('.list-item strong').first()).toContainText('EXP-DEMO-001');
+
+    const criticos = consoleErrors.filter((entry) =>
+      /TypeError|ReferenceError|Failed to fetch|Unexpected token|Cannot read/i.test(entry),
+    );
+    expect(criticos, `errores críticos en modo demo: ${JSON.stringify(criticos)}`).toEqual([]);
+  });
+
   test('version pública expone metadata de build', async ({ request, baseURL }) => {
     const response = await request.get(`${baseURL}/_version.json`);
     expect(response.ok()).toBeTruthy();
