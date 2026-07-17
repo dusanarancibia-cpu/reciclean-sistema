@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Primer Release Hub · Reciclean</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #eff4ec;
+      --paper: #fffefb;
+      --ink: #152019;
+      --muted: #667266;
+      --line: #d7e0d5;
+      --brand: #1b6d45;
+      --brand-2: #0d4027;
+      --warn: #9f4d31;
+      --warn-bg: #fbefe9;
+      --ok: #175a3c;
+      --ok-bg: #edf8f1;
+      --critical: #b42318;
+      --critical-bg: #fff0ef;
+      --shadow: 0 18px 40px rgba(21, 32, 25, 0.08);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(27,109,69,.12), transparent 28%),
+        linear-gradient(180deg, #f8fbf7 0%, var(--bg) 100%);
+      color: var(--ink);
+    }
+    button, input, select { font: inherit; }
+    a { color: inherit; }
+    .shell { width: min(1280px, calc(100vw - 32px)); margin: 0 auto; padding: 24px 0 48px; }
+    .shell-center { min-height: 100vh; display: grid; place-items: center; }
+    .card, .stat-card {
+      background: color-mix(in srgb, var(--paper) 94%, white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .card { padding: 20px; }
+    .auth-card { width: min(520px, calc(100vw - 32px)); }
+    .hero {
+      padding: 24px;
+      background: linear-gradient(180deg, rgba(27,109,69,.07), rgba(255,255,255,.92));
+      border-color: rgba(27,109,69,.16);
+    }
+    .hero-critical {
+      background: linear-gradient(180deg, rgba(180,35,24,.08), rgba(255,255,255,.92));
+      border-color: rgba(180,35,24,.16);
+    }
+    .hero-warning {
+      background: linear-gradient(180deg, rgba(159,77,49,.08), rgba(255,255,255,.92));
+      border-color: rgba(159,77,49,.16);
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 6px 10px;
+      border: 1px solid rgba(27,109,69,.14); border-radius: 999px; background: rgba(27,109,69,.08);
+      color: var(--brand); font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+    }
+    .subtle { color: var(--muted); line-height: 1.5; }
+    .topbar, .topbar-actions, .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: clamp(2rem, 3vw, 3rem); }
+    h2 { font-size: 1rem; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px;
+      padding: 0 16px; border: 1px solid var(--line); border-radius: 999px; background: white;
+      color: var(--ink); cursor: pointer; text-decoration: none; transition: .16s ease;
+    }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); border-color: var(--brand); }
+    .btn-primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); border-color: transparent; color: white; }
+    .btn-ghost { background: rgba(255,255,255,.66); }
+    .btn:disabled { cursor: wait; opacity: .6; }
+    .flash { margin-top: 16px; padding: 14px 16px; border-radius: 16px; border: 1px solid transparent; }
+    .flash-ok { color: var(--ok); background: var(--ok-bg); border-color: rgba(23,90,60,.18); }
+    .flash-error { color: var(--warn); background: var(--warn-bg); border-color: rgba(159,77,49,.18); }
+    .session-pill {
+      display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px;
+      background: rgba(27,109,69,.08); color: var(--brand); border: 1px solid rgba(27,109,69,.14); font-weight: 700;
+    }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
+    .stack { display: grid; gap: 12px; }
+    .stat-card { padding: 16px; display: grid; gap: 6px; }
+    .stat-card span, .metric span, .item span, .item small, .badge { color: var(--muted); font-size: .86rem; }
+    .stat-card strong, .metric strong, .item strong { font-size: 1.1rem; }
+    .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+    .metric, .item {
+      padding: 14px; border-radius: 16px; background: rgba(21,32,25,.03); border: 1px solid rgba(21,32,25,.06); display: grid; gap: 6px;
+    }
+    .item-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .badge { padding: 8px 12px; border-radius: 999px; background: rgba(21,32,25,.05); border: 1px solid rgba(21,32,25,.08); }
+    .badge-critical { color: var(--critical); background: var(--critical-bg); border-color: rgba(180,35,24,.18); }
+    .badge-warning { color: var(--warn); background: var(--warn-bg); border-color: rgba(159,77,49,.18); }
+    .link-card {
+      display: block; padding: 18px; border-radius: 18px; border: 1px solid rgba(27,109,69,.14);
+      background: rgba(27,109,69,.06); text-decoration: none;
+    }
+    .link-card:hover { background: rgba(27,109,69,.1); }
+    .empty { padding: 18px; border-radius: 16px; background: rgba(21,32,25,.04); color: var(--muted); }
+    .kicker { font-size: .84rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+    .list { display: grid; gap: 12px; margin-top: 14px; }
+    .loading-card { display: grid; place-items: center; gap: 12px; padding: 40px 28px; min-width: min(360px, calc(100vw - 32px)); }
+    .loader { width: 40px; height: 40px; border-radius: 50%; border: 4px solid rgba(27,109,69,.12); border-top-color: var(--brand); animation: spin .9s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 1100px) {
+      .grid-4, .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 720px) {
+      .shell { width: min(100vw - 20px, 100%); padding-top: 16px; }
+      .grid-4, .metric-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/primer-release-hub.js"></script>
+</body>
+</html>

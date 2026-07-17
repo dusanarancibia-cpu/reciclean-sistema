@@ -4,6 +4,7 @@
 
 Este frontend ya quedó listo para desplegar en Vercel con estas entradas:
 
+- `/primer-release.html`
 - `/romanero.html`
 - `/pagos.html`
 - `/supervision.html`
@@ -11,18 +12,20 @@ Este frontend ya quedó listo para desplegar en Vercel con estas entradas:
 
 También quedaron aliases cortos:
 
+- `/primer-release`
 - `/romanero`
 - `/pagos`
 - `/supervision`
 
 ## Qué quedó preparado
 
-1. `vite.config.js` ya builda `romanero`, `pagos` y `supervision`.
+1. `vite.config.js` ya builda `primer-release`, `romanero`, `pagos` y `supervision`.
 2. `vercel.json` ya agrega aliases amigables y `no-store` para HTML y `_version.json`.
 3. `src/lib/supabase.js` ya tolera tres fuentes de configuración:
    - `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
    - `window.SUPABASE_URL` y `window.SUPABASE_ANON_KEY`
    - fallback al proyecto público hoy usado por el panel legacy
+4. `public/panel-rdo.html` ya incluye un widget vivo del release con enlace directo al Hub Ejecutivo.
 
 ## Qué se puede hacer sin claves nuevas
 
@@ -37,21 +40,24 @@ No son obligatorias para que levante este release hoy, pero sí recomendadas par
 
 ## Verificación mínima después del deploy
 
-1. Abrir `/panel-rdo.html`
-2. Confirmar bloque "Primer Release · operación viva"
-3. Abrir `/romanero`
-4. Abrir `/pagos`
-5. Abrir `/supervision`
-6. Revisar `/_version.json`
+1. Abrir `/primer-release` y confirmar portada ejecutiva, build visible y botón de demo
+2. Abrir `/panel-rdo.html`
+3. Confirmar bloque "Primer Release · operación viva"
+4. Abrir `/romanero`
+5. Abrir `/pagos`
+6. Abrir `/supervision`
+7. Revisar `/_version.json`
 
 `/supervision` ahora actúa como `Centro de Control`: resume salud operativa, alertas, radar por sucursal y actividad reciente del release.
+
+`/primer-release` ahora actúa como `Hub Ejecutivo`: sirve de portada del release, muestra checklist, accesos rápidos, build y permite encender el demo sin credenciales.
 
 ## Revisión sin credenciales
 
 Las tres pantallas nuevas ya exponen un modo demo útil para revisar el release en Vercel sin claves reales:
 
-- abrir `/romanero?demo=1` para activar demo
-- luego visitar `/pagos` y `/supervision`
+- abrir `/primer-release` o `/romanero?demo=1` para activar demo
+- luego visitar `/pagos`, `/supervision` o volver al panel
 - el estado demo se comparte entre pantallas en el mismo navegador
 - cada pantalla permite `Reiniciar demo` para volver a la semilla base
 
@@ -59,10 +65,12 @@ Las tres pantallas nuevas ya exponen un modo demo útil para revisar el release 
 
 Quedó un smoke público que no requiere credenciales reales y valida:
 
+- render base de `primer-release.html`
 - render base de `romanero.html`
 - render base de `pagos.html`
 - render base de `supervision.html`
 - carga mínima de `panel-rdo.html`
+- lectura compartida del demo entre hub y panel
 - presencia de `/_version.json`
 
 Ejecutar:

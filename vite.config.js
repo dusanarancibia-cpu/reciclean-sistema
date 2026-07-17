@@ -26,6 +26,7 @@ export default defineConfig({
         main: 'index.html',
         asistente: 'asistente.html',
         login: 'login.html',
+        primerRelease: 'primer-release.html',
         romanero: 'romanero.html',
         pagos: 'pagos.html',
         supervision: 'supervision.html'

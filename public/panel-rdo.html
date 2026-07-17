@@ -1333,15 +1333,40 @@
           </div>
         </div>
 
-        <div class="bg-white border border-emerald-200 rounded-2xl p-5">
+        <div id="primer-release-panel-card" class="bg-white border border-emerald-200 rounded-2xl p-5">
           <div class="flex items-start justify-between gap-3 flex-wrap mb-4">
             <div>
               <h3 class="text-sm font-semibold text-slate-800">Primer Release · operación viva</h3>
-              <p class="text-xs text-slate-500 mt-0.5">Entrá directo a Romanero y Pagos con la misma sesión del panel.</p>
+              <p id="primer-release-panel-summary" class="text-xs text-slate-500 mt-0.5">Cargando pulso operativo del release...</p>
             </div>
-            <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200">MVP operativo</span>
+            <span id="primer-release-panel-badge" class="badge bg-emerald-50 text-emerald-700 border border-emerald-200">Cargando</span>
           </div>
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Expedientes</div>
+              <div id="primer-release-panel-total" class="text-2xl font-bold text-slate-800 mt-1">—</div>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Cola pago</div>
+              <div id="primer-release-panel-queue" class="text-2xl font-bold text-slate-800 mt-1">—</div>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Por conciliar</div>
+              <div id="primer-release-panel-recon" class="text-2xl font-bold text-slate-800 mt-1">—</div>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Build</div>
+              <div id="primer-release-panel-version" class="text-sm font-semibold text-slate-800 mt-2">—</div>
+            </div>
+          </div>
+          <div id="primer-release-panel-detail" class="text-xs text-slate-500 mb-4">Preparando lectura viva del release desde el panel.</div>
+          <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
+            <a id="primer-release-panel-hub-link" href="/primer-release" target="_blank" rel="noopener"
+               class="card-hover bg-emerald-700 border border-emerald-700 rounded-2xl p-4 text-left block hover:bg-emerald-800 transition text-white">
+              <div class="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center text-xl mb-3">🛰️</div>
+              <div class="text-sm font-semibold">Hub Ejecutivo</div>
+              <div class="text-xs text-emerald-50 mt-0.5">Portada del release con rutas clave, build, alertas y checklist.</div>
+            </a>
             <a href="/romanero.html" target="_blank" rel="noopener"
                class="card-hover bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-left block hover:bg-emerald-100 transition">
               <div class="w-11 h-11 rounded-xl bg-white flex items-center justify-center text-xl mb-3">⚖️</div>
@@ -18343,5 +18368,6 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="./panel/auditoria-ingesta.js"></script>
 <script src="./panel/andrea-decisor-hual.js"></script>
 <script src="./panel/gestiones.js"></script>
+<script src="./primer-release-panel-widget.js"></script>
 </body>
 </html>

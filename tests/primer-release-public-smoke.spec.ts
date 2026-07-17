@@ -60,12 +60,31 @@ test.describe('Primer Release público smoke', () => {
     });
   }
 
+  test('hub ejecutivo renderiza en entrypoint y alias público', async ({ page }) => {
+    const consoleErrors: string[] = [];
+    attachConsoleCollectors(page, consoleErrors);
+
+    await page.goto('/primer-release.html');
+    await expect(page).toHaveTitle(/Primer Release Hub/i);
+    await expect(page.locator('h1')).toHaveText(/Primer Release Hub/i);
+    await expect(page.locator('.eyebrow')).toContainText(/Hub Ejecutivo/i);
+    await expect(page.getByRole('button', { name: /Abrir demo/i })).toBeVisible();
+    await expect(page.getByText('/romanero?demo=1')).toBeVisible();
+
+    const criticos = consoleErrors.filter((entry) =>
+      /TypeError|ReferenceError|Failed to fetch|Unexpected token|Cannot read/i.test(entry),
+    );
+    expect(criticos, `errores críticos en hub: ${JSON.stringify(criticos)}`).toEqual([]);
+  });
+
   test('panel-rdo publica acceso al release desde login/panel sin romper carga base', async ({ page }) => {
     const consoleErrors: string[] = [];
     attachConsoleCollectors(page, consoleErrors);
 
     await page.goto('/panel-rdo.html');
     await expect(page).toHaveTitle(/Panel RDO|Gesti[oó]n REP|Gestion REP/i);
+    await expect(page.locator('#primer-release-panel-card')).toHaveCount(1);
+    await expect(page.locator('#primer-release-panel-hub-link')).toHaveAttribute('href', '/primer-release');
 
     const tieneLogin = await page.locator('input[type="email"]').first().isVisible().catch(() => false);
     const tieneAccesosRelease = await page.getByText('Romanero MVP').first().isVisible().catch(() => false);
@@ -99,6 +118,27 @@ test.describe('Primer Release público smoke', () => {
       /TypeError|ReferenceError|Failed to fetch|Unexpected token|Cannot read/i.test(entry),
     );
     expect(criticos, `errores críticos en modo demo: ${JSON.stringify(criticos)}`).toEqual([]);
+  });
+
+  test('hub y panel leen el demo compartido del release', async ({ page }) => {
+    const consoleErrors: string[] = [];
+    attachConsoleCollectors(page, consoleErrors);
+
+    await page.goto('/primer-release.html');
+    await page.getByRole('button', { name: /Abrir demo/i }).click();
+    await expect(page.locator('.session-pill').filter({ hasText: 'Modo demo' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Reiniciar demo/i })).toBeVisible();
+    await expect(page.getByText('Alertas críticas')).toBeVisible();
+
+    await page.goto('/panel-rdo.html');
+    await expect(page.locator('#primer-release-panel-badge')).toContainText(/Demo activo|Release estable|Vigilancia activa|Riesgo operativo/i);
+    await expect(page.locator('#primer-release-panel-total')).not.toHaveText('—');
+    await expect(page.locator('#primer-release-panel-detail')).toContainText(/Monto pendiente|pagos sin respaldo/i);
+
+    const criticos = consoleErrors.filter((entry) =>
+      /TypeError|ReferenceError|Failed to fetch|Unexpected token|Cannot read/i.test(entry),
+    );
+    expect(criticos, `errores críticos en hub/panel demo: ${JSON.stringify(criticos)}`).toEqual([]);
   });
 
   test('version pública expone metadata de build', async ({ request, baseURL }) => {
