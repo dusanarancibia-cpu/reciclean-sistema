@@ -72,6 +72,8 @@ test.describe('Primer Release público smoke', () => {
     await expect(page.getByText(/Kilos y captura/i)).toBeVisible();
     await expect(page.getByText('/supervision?demo=1')).toBeVisible();
     await expect(page.getByText('Marco del arranque')).toBeVisible();
+    await expect(page.getByText(/Etapa 1 · Agenda/i)).toBeVisible();
+    await expect(page.getByText(/Etapa 2 · Terreno/i)).toBeVisible();
 
     const criticos = consoleErrors.filter((entry) =>
       /TypeError|ReferenceError|Failed to fetch|Unexpected token|Cannot read/i.test(entry),

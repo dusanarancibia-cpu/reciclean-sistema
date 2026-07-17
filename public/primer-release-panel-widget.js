@@ -44,14 +44,20 @@
     const facturas = snapshot.facturas || [];
     const pagos = snapshot.pagos || [];
     const comprobantes = snapshot.comprobantes || [];
-    const eventos = snapshot.eventos || [];
+    const agenda = snapshot.agenda || snapshot.despachos || [];
+    const terrenoEntries = Array.isArray(snapshot.terreno) ? snapshot.terreno : [];
+    const terrenoRutas = terrenoEntries.length
+      ? terrenoEntries.flatMap((entry) => entry.rutas || [])
+      : (snapshot.terreno?.rutas || []);
+    const terrenoViajes = terrenoEntries.length
+      ? terrenoEntries.flatMap((entry) => entry.viajes || [])
+      : (snapshot.terreno?.viajes || []);
     const today = dayKey(new Date().toISOString());
 
     const pesajeByExpediente = new Map();
     const facturasByExpediente = new Map();
     const pagosByExpediente = new Map();
     const comprobantesByFactura = new Map();
-    const createdEventByExpediente = new Map();
 
     pesajes.forEach((item) => {
       if (!pesajeByExpediente.has(item.expediente_id)) {
@@ -73,11 +79,6 @@
       const bucket = comprobantesByFactura.get(key) || [];
       bucket.push(item);
       comprobantesByFactura.set(key, bucket);
-    });
-    eventos.forEach((item) => {
-      if (item.tipo_evento === 'expediente_creado' && !createdEventByExpediente.has(item.expediente_id)) {
-        createdEventByExpediente.set(item.expediente_id, item);
-      }
     });
 
     let pendientePago = 0;
@@ -108,21 +109,10 @@
       const pesaje = pesajeByExpediente.get(expediente.expediente_id) || null;
       const expFacturas = facturasByExpediente.get(expediente.expediente_id) || [];
       const expPagos = pagosByExpediente.get(expediente.expediente_id) || [];
-      const createdPayload = createdEventByExpediente.get(expediente.expediente_id)?.payload || {};
-      const agendaServicio = createdPayload.agenda_servicio || null;
       const facturaMonto = expFacturas.reduce((sum, item) => sum + Number(item.monto_total || 0), 0);
       const pagoMonto = expPagos.reduce((sum, item) => sum + Number(item.monto_pagado || 0), 0);
       const comprobantesExp = expFacturas.flatMap((factura) =>
         comprobantesByFactura.get(String(factura.factura_raw_id ?? factura.id)) || []
-      );
-      const hasAgenda = Boolean(
-        expediente.estado === 'agendado' ||
-        agendaServicio?.agenda_servicio_id ||
-        createdPayload.oportunidad_id
-      );
-      const hasTerreno = Boolean(
-        agendaServicio?.agenda_servicio_id ||
-        createdPayload.origen_operacional === 'handoff_andrea'
       );
       const hasSucursal = Boolean(
         pesaje ||
@@ -152,12 +142,16 @@
       if (expPagos.length > 0 && comprobantesExp.length === 0) {
         pagosSinComprobante += 1;
       }
-      if (hasAgenda) agendaCount += 1;
-      if (hasTerreno) terrenoCount += 1;
       if (hasSucursal) sucursalCount += 1;
       if (hasPlanta) plantaCount += 1;
       if (hasFinanzas) finanzasCount += 1;
     });
+
+    agendaCount = agenda.filter((item) => !['cancelado', 'cerrado', 'completado'].includes(String(item.estado || '').toLowerCase())).length || agenda.length;
+    terrenoCount = terrenoViajes.filter((item) => !['cancelado', 'cerrado', 'finalizado'].includes(String(item.estado || '').toLowerCase())).length
+      || terrenoRutas.filter((item) => !['cancelada', 'cerrada', 'completada'].includes(String(item.estado || '').toLowerCase())).length
+      || terrenoViajes.filter((item) => dayKey(item.fecha || item.hora_salida || item.created_at) === today).length
+      || terrenoRutas.filter((item) => dayKey(item.fecha || item.created_at) === today).length;
 
     const critical = (expedientesActivos > 0 && kilosHoy <= 0) || expedientesSinPesaje >= 2;
     const warning = !critical && (expedientesSinPesaje > 0 || pendientePago > 0 || pagadoPendiente > 0);
@@ -231,7 +225,12 @@
   }
 
   async function fetchLiveSnapshot(sb) {
-    const [expedientesRes, pesajesRes, facturasRes, pagosRes, comprobantesRes] = await Promise.all([
+    const despachoRes = await sb.rpc('despacho_coord_listar', { p_solo_activos: false });
+    if (despachoRes.error) throw despachoRes.error;
+    const agenda = Array.isArray(despachoRes.data) ? despachoRes.data.slice(0, 180) : [];
+    const fechasTerreno = Array.from(new Set(agenda.map((item) => item.fecha_programada).filter(Boolean))).slice(0, 7);
+
+    const [expedientesRes, pesajesRes, facturasRes, pagosRes, comprobantesRes, rutasRes, viajesRes] = await Promise.all([
       sb.schema('curated')
         .from('expedientes_operacionales')
         .select('expediente_id, estado, updated_at, created_at')
@@ -258,7 +257,21 @@
         .from('comprobantes_pago')
         .select('comprobante_id, factura_raw_id')
         .order('created_at', { ascending: false })
-        .limit(220)
+        .limit(220),
+      fechasTerreno.length
+        ? sb.from('rutas_asignadas')
+          .select('id, ejecutivo_id, fecha, estado, created_at, completada_at, proveedores_json')
+          .in('fecha', fechasTerreno)
+          .order('created_at', { ascending: false })
+          .limit(Math.max(12, fechasTerreno.length * 6))
+        : Promise.resolve({ data: [], error: null }),
+      fechasTerreno.length
+        ? sb.from('viajes_terreno')
+          .select('id, ruta_asignada_id, usuario_id, fecha, hora_salida, hora_regreso, estado, foto_inicio_url, foto_fin_url, km_inicio, km_fin, km_total_gps, track_gps_json')
+          .in('fecha', fechasTerreno)
+          .order('hora_salida', { ascending: false, nullsFirst: false })
+          .limit(Math.max(12, fechasTerreno.length * 6))
+        : Promise.resolve({ data: [], error: null })
     ]);
 
     if (expedientesRes.error) throw expedientesRes.error;
@@ -266,13 +279,21 @@
     if (facturasRes.error) throw facturasRes.error;
     if (pagosRes.error) throw pagosRes.error;
     if (comprobantesRes.error) throw comprobantesRes.error;
+    if (rutasRes.error) throw rutasRes.error;
+    if (viajesRes.error) throw viajesRes.error;
 
     return {
       expedientes: expedientesRes.data || [],
       pesajes: pesajesRes.data || [],
       facturas: facturasRes.data || [],
       pagos: pagosRes.data || [],
-      comprobantes: comprobantesRes.data || []
+      comprobantes: comprobantesRes.data || [],
+      agenda,
+      terreno: {
+        fechas: fechasTerreno,
+        rutas: rutasRes.data || [],
+        viajes: viajesRes.data || []
+      }
     };
   }
 

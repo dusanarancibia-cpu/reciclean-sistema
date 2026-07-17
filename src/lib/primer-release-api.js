@@ -449,80 +449,128 @@ export async function fetchReleaseOverviewSnapshot(sucursalId = null, limit = 18
   }
 
   const expedientes = await listExpedientesRelease(sucursalId, limit);
+  const agendaRows = await rpc('despacho_coord_listar', { p_solo_activos: false });
+  const agenda = (Array.isArray(agendaRows) ? agendaRows : [])
+    .filter((item) => {
+      if (!sucursalId) return true;
+      return normalizeText(item.sucursal_codigo || item.sucursal_id) === normalizeText(sucursalId);
+    })
+    .sort((a, b) => String(b.fecha_programada || b.created_at || '').localeCompare(String(a.fecha_programada || a.created_at || '')))
+    .slice(0, limit);
+
   const expedienteIds = Array.from(new Set(expedientes.map((item) => item.expediente_id).filter(Boolean)));
-  if (!expedienteIds.length) {
-    return {
-      expedientes: [],
-      pesajes: [],
-      facturas: [],
-      pagos: [],
-      eventos: [],
-      comprobantes: []
-    };
-  }
+  const fechasTerreno = Array.from(new Set([
+    ...expedientes.map((item) => item.fecha_operacion).filter(Boolean),
+    ...agenda.map((item) => item.fecha_programada).filter(Boolean)
+  ])).slice(0, 7);
 
-  const [pesajesRes, facturasRes, pagosRes, eventosRes] = await Promise.all([
-    supabase.schema(CURATED)
-      .from('pesajes')
-      .select('*')
-      .in('expediente_id', expedienteIds)
-      .order('fecha_captura', { ascending: false }),
-    supabase.schema(CURATED)
-      .from('facturacion_raw')
-      .select('*')
-      .in('expediente_id', expedienteIds)
-      .order('updated_at', { ascending: false })
-      .order('id', { ascending: false }),
-    supabase.schema(CURATED)
-      .from('pagos_operacionales')
-      .select('*')
-      .in('expediente_id', expedienteIds)
-      .order('created_at', { ascending: false }),
-    supabase.schema(CURATED)
-      .from('expediente_eventos')
-      .select('evento_id, expediente_id, tipo_evento, actor, payload, created_at')
-      .in('expediente_id', expedienteIds)
-      .order('created_at', { ascending: false })
-      .limit(500)
-  ]);
+  const terreno = {
+    fechas: fechasTerreno,
+    rutas: [],
+    viajes: []
+  };
 
-  if (pesajesRes.error) {
-    throw new Error(normalizedMessage(pesajesRes.error, 'No se pudo leer el snapshot de pesajes'));
-  }
-  if (facturasRes.error) {
-    throw new Error(normalizedMessage(facturasRes.error, 'No se pudo leer el snapshot de facturas'));
-  }
-  if (pagosRes.error) {
-    throw new Error(normalizedMessage(pagosRes.error, 'No se pudo leer el snapshot de pagos'));
-  }
-  if (eventosRes.error) {
-    throw new Error(normalizedMessage(eventosRes.error, 'No se pudo leer el snapshot de eventos'));
-  }
+  if (fechasTerreno.length) {
+    const [rutasRes, viajesRes] = await Promise.all([
+      supabase
+        .from('rutas_asignadas')
+        .select('id, ejecutivo_id, fecha, estado, created_at, completada_at, proveedores_json')
+        .in('fecha', fechasTerreno)
+        .order('created_at', { ascending: false })
+        .limit(Math.max(12, fechasTerreno.length * 6)),
+      supabase
+        .from('viajes_terreno')
+        .select('id, ruta_asignada_id, usuario_id, fecha, hora_salida, hora_regreso, estado, foto_inicio_url, foto_fin_url, km_inicio, km_fin, km_total_gps, track_gps_json')
+        .in('fecha', fechasTerreno)
+        .order('hora_salida', { ascending: false, nullsFirst: false })
+        .limit(Math.max(12, fechasTerreno.length * 6))
+    ]);
 
-  const facturas = facturasRes.data || [];
-  const facturaIds = Array.from(new Set(facturas.map((item) => item.factura_raw_id ?? item.id).filter(Boolean)));
-  let comprobantes = [];
-
-  if (facturaIds.length) {
-    const comprobantesRes = await supabase.schema(CURATED)
-      .from('comprobantes_pago')
-      .select('*')
-      .in('factura_raw_id', facturaIds)
-      .order('created_at', { ascending: false });
-
-    if (comprobantesRes.error) {
-      throw new Error(normalizedMessage(comprobantesRes.error, 'No se pudo leer el snapshot de comprobantes'));
+    if (rutasRes.error) {
+      throw new Error(normalizedMessage(rutasRes.error, 'No se pudo leer el snapshot de rutas de terreno'));
+    }
+    if (viajesRes.error) {
+      throw new Error(normalizedMessage(viajesRes.error, 'No se pudo leer el snapshot de viajes de terreno'));
     }
 
-    comprobantes = comprobantesRes.data || [];
+    terreno.rutas = rutasRes.data || [];
+    terreno.viajes = viajesRes.data || [];
+  }
+
+  let pesajes = [];
+  let facturas = [];
+  let pagos = [];
+  let eventos = [];
+  let comprobantes = [];
+
+  if (expedienteIds.length) {
+    const [pesajesRes, facturasRes, pagosRes, eventosRes] = await Promise.all([
+      supabase.schema(CURATED)
+        .from('pesajes')
+        .select('*')
+        .in('expediente_id', expedienteIds)
+        .order('fecha_captura', { ascending: false }),
+      supabase.schema(CURATED)
+        .from('facturacion_raw')
+        .select('*')
+        .in('expediente_id', expedienteIds)
+        .order('updated_at', { ascending: false })
+        .order('id', { ascending: false }),
+      supabase.schema(CURATED)
+        .from('pagos_operacionales')
+        .select('*')
+        .in('expediente_id', expedienteIds)
+        .order('created_at', { ascending: false }),
+      supabase.schema(CURATED)
+        .from('expediente_eventos')
+        .select('evento_id, expediente_id, tipo_evento, actor, payload, created_at')
+        .in('expediente_id', expedienteIds)
+        .order('created_at', { ascending: false })
+        .limit(500)
+    ]);
+
+    if (pesajesRes.error) {
+      throw new Error(normalizedMessage(pesajesRes.error, 'No se pudo leer el snapshot de pesajes'));
+    }
+    if (facturasRes.error) {
+      throw new Error(normalizedMessage(facturasRes.error, 'No se pudo leer el snapshot de facturas'));
+    }
+    if (pagosRes.error) {
+      throw new Error(normalizedMessage(pagosRes.error, 'No se pudo leer el snapshot de pagos'));
+    }
+    if (eventosRes.error) {
+      throw new Error(normalizedMessage(eventosRes.error, 'No se pudo leer el snapshot de eventos'));
+    }
+
+    pesajes = pesajesRes.data || [];
+    facturas = facturasRes.data || [];
+    pagos = pagosRes.data || [];
+    eventos = eventosRes.data || [];
+
+    const facturaIds = Array.from(new Set(facturas.map((item) => item.factura_raw_id ?? item.id).filter(Boolean)));
+    if (facturaIds.length) {
+      const comprobantesRes = await supabase.schema(CURATED)
+        .from('comprobantes_pago')
+        .select('*')
+        .in('factura_raw_id', facturaIds)
+        .order('created_at', { ascending: false });
+
+      if (comprobantesRes.error) {
+        throw new Error(normalizedMessage(comprobantesRes.error, 'No se pudo leer el snapshot de comprobantes'));
+      }
+
+      comprobantes = comprobantesRes.data || [];
+    }
   }
 
   return {
     expedientes,
-    pesajes: pesajesRes.data || [],
+    pesajes,
     facturas,
-    pagos: pagosRes.data || [],
-    eventos: eventosRes.data || [],
-    comprobantes
+    pagos,
+    eventos,
+    comprobantes,
+    agenda,
+    terreno
   };
 }

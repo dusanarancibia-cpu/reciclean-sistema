@@ -80,6 +80,10 @@ function materialName(materialId) {
 }
 
 function buildFlowStages(snapshot, overview) {
+  if (overview?.flowStages?.length) {
+    return overview.flowStages;
+  }
+
   const createdEvents = new Map();
   for (const evento of snapshot.eventos || []) {
     if (evento.tipo_evento === 'expediente_creado' && !createdEvents.has(evento.expediente_id)) {
@@ -184,15 +188,15 @@ function buildChecklist(overview, flowStages) {
     {
       title: 'Agenda y despacho',
       detail: flow.get('agenda')?.count
-        ? `${flow.get('agenda').count} casos ya nacieron con señal de agenda u oportunidad.`
+        ? `${flow.get('agenda').count} señales visibles de agenda o despacho en el snapshot compartido.`
         : 'Confirmar si la jornada ya trae agenda visible o si todavía no entra al snapshot.',
       href: '/romanero'
     },
     {
       title: 'Terreno',
       detail: flow.get('terreno')?.count
-        ? `${flow.get('terreno').count} casos muestran paso previo por agenda/handoff.`
-        : 'La lectura de Terreno sigue parcial en el hub; Romanero conserva la evidencia sin inventar joins.',
+        ? `${flow.get('terreno').count} señales visibles de rutas o viajes para las fechas activas del release.`
+        : 'Todavía no entra telemetría visible de rutas o viajes para este corte.',
       href: '/romanero'
     },
     {

@@ -113,6 +113,10 @@ export function deriveReleaseOverview(snapshot) {
   const pagos = snapshot.pagos || [];
   const eventos = snapshot.eventos || [];
   const comprobantes = snapshot.comprobantes || [];
+  const agenda = snapshot.agenda || [];
+  const terreno = snapshot.terreno || {};
+  const terrenoRutas = terreno.rutas || [];
+  const terrenoViajes = terreno.viajes || [];
   const today = dayKey(new Date().toISOString());
 
   const pesajeByExpediente = buildIndex(pesajes, 'expediente_id');
@@ -144,6 +148,7 @@ export function deriveReleaseOverview(snapshot) {
   let capturasTotal = pesajes.length;
   let expedientesActivos = 0;
   let expedientesConPesaje = 0;
+  let agendaKgEstimado = 0;
 
   const operationalAlerts = [];
   const financialAlerts = [];
@@ -158,6 +163,10 @@ export function deriveReleaseOverview(snapshot) {
       kilosHoy += kilos;
       capturasHoy += 1;
     }
+  }
+
+  for (const servicio of agenda) {
+    agendaKgEstimado += asNumber(servicio.kg_estimado);
   }
 
   for (const expediente of expedientes) {
@@ -385,6 +394,22 @@ export function deriveReleaseOverview(snapshot) {
     });
   }
 
+  const agendaHoy = agenda.filter((item) => dayKey(item.fecha_programada || item.created_at) === today).length;
+  const agendaActiva = agenda.filter((item) => !['cancelado', 'cerrado', 'completado'].includes(String(item.estado || '').toLowerCase())).length;
+  const terrenoRutasHoy = terrenoRutas.filter((item) => dayKey(item.fecha || item.created_at) === today).length;
+  const terrenoViajesHoy = terrenoViajes.filter((item) => dayKey(item.fecha || item.hora_salida || item.created_at) === today).length;
+  const terrenoRutasActivas = terrenoRutas.filter((item) => !['cancelada', 'cerrada', 'completada'].includes(String(item.estado || '').toLowerCase())).length;
+  const terrenoViajesActivos = terrenoViajes.filter((item) => !['cancelado', 'cerrado', 'finalizado'].includes(String(item.estado || '').toLowerCase())).length;
+
+  if (agendaActiva > 0 && terrenoRutas.length + terrenoViajes.length === 0) {
+    operationalAlerts.push({
+      severity: 'warning',
+      title: 'Agenda visible sin telemetría de terreno',
+      detail: `${agendaActiva} servicios agendados sin rutas o viajes visibles en el snapshot compartido.`,
+      state: ''
+    });
+  }
+
   const recentActivity = eventos
     .slice()
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -444,12 +469,63 @@ export function deriveReleaseOverview(snapshot) {
     backlogVisible: expedientesSinPesaje + staleActive,
     cuelloPrincipal: bottleneckSucursal,
     telemetriaDisponible: [
+      agenda.length > 0 ? 'agenda y despacho' : null,
+      terrenoRutas.length + terrenoViajes.length > 0 ? 'rutas y viajes de terreno' : null,
       kilosHoy > 0 ? 'kilos capturados' : null,
       capturasHoy > 0 ? 'capturas del día' : null,
       expedientes.length > 0 ? 'continuidad por expediente' : null,
       pagos.length > 0 ? 'cierre financiero secundario' : null
     ].filter(Boolean)
   };
+
+  const flowStages = [
+    {
+      key: 'agenda',
+      title: 'Agenda',
+      kicker: 'Etapa 1',
+      count: agendaActiva || agenda.length,
+      href: '/romanero',
+      detail: agenda.length
+        ? `${agendaHoy} servicios del día · ${formatKg(agendaKgEstimado)} estimados en agenda visible.`
+        : 'Todavía no hay servicios agendados visibles en el snapshot.'
+    },
+    {
+      key: 'terreno',
+      title: 'Terreno',
+      kicker: 'Etapa 2',
+      count: terrenoViajesActivos || terrenoRutasActivas || terrenoViajesHoy || terrenoRutasHoy,
+      href: '/romanero',
+      detail: terrenoRutas.length + terrenoViajes.length
+        ? `${terrenoRutasHoy} rutas y ${terrenoViajesHoy} viajes visibles para las fechas activas del release.`
+        : 'Todavía no hay rutas ni viajes visibles para las fechas activas.'
+    },
+    {
+      key: 'sucursal',
+      title: 'Sucursal',
+      kicker: 'Etapa 3',
+      count: expedientesActivos || expedientes.length,
+      href: '/romanero',
+      detail: expedientes.length
+        ? `${expedientesConPesaje} expedientes con pesaje y ${expedientesSinPesaje} activos sin captura visible.`
+        : 'Romanero sigue siendo la puerta de entrada cuando aparezca carga operacional.'
+    },
+    {
+      key: 'planta',
+      title: 'Planta',
+      kicker: 'Etapa 4',
+      count: byState.recepcionado + byState.en_proceso + byState.pendiente_factura + byState.pendiente_pago + byState.pagado_pendiente_conciliacion,
+      href: '/supervision',
+      detail: `${plantPulse.backlogVisible} casos en backlog visible local · ${plantPulse.recepcionados || 0} recepcionados · ${plantPulse.enProceso || 0} en proceso.`
+    },
+    {
+      key: 'finanzas',
+      title: 'Finanzas',
+      kicker: 'Etapa 5',
+      count: byState.pendiente_factura + byState.pendiente_pago + byState.pagado_pendiente_conciliacion,
+      href: '/pagos',
+      detail: `${byState.pendiente_pago} en cola de pago · ${byState.pagado_pendiente_conciliacion} por conciliar.`
+    }
+  ];
 
   return {
     byState,
@@ -479,6 +555,21 @@ export function deriveReleaseOverview(snapshot) {
     sucursales,
     materiales,
     servicios,
-    plantPulse
+    plantPulse,
+    agendaPulse: {
+      total: agenda.length,
+      activos: agendaActiva,
+      hoy: agendaHoy,
+      kgEstimado: agendaKgEstimado
+    },
+    terrainPulse: {
+      rutas: terrenoRutas.length,
+      viajes: terrenoViajes.length,
+      rutasHoy: terrenoRutasHoy,
+      viajesHoy: terrenoViajesHoy,
+      rutasActivas: terrenoRutasActivas,
+      viajesActivos: terrenoViajesActivos
+    },
+    flowStages
   };
 }
