@@ -3957,6 +3957,11 @@
                   <div id="wsSafeAdjustStateText" class="text-xs text-stone-600 mt-1">Se mostrará aquí cuando abras una resolución inline.</div>
                 </div>
                 <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Override</div>
+                  <div id="wsSafeOverrideStateTitle" class="font-semibold text-stone-800">Sin evaluación.</div>
+                  <div id="wsSafeOverrideStateText" class="text-xs text-stone-600 mt-1">La página única mostrará aquí si el margen exige override y en qué estado está.</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
                   <div class="text-[11px] uppercase tracking-wider text-stone-400">Aprobar / aplicar</div>
                   <div id="wsSafeApproveStateTitle" class="font-semibold text-stone-800">Sin evaluación.</div>
                   <div id="wsSafeApproveStateText" class="text-xs text-stone-600 mt-1">La página única mostrará si aplicar ya está listo o si falta algo.</div>
@@ -17624,11 +17629,13 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const badgeEl = document.getElementById('wsSafeDecisionStateBadge');
     const adjustTitleEl = document.getElementById('wsSafeAdjustStateTitle');
     const adjustTextEl = document.getElementById('wsSafeAdjustStateText');
+    const overrideTitleEl = document.getElementById('wsSafeOverrideStateTitle');
+    const overrideTextEl = document.getElementById('wsSafeOverrideStateText');
     const approveTitleEl = document.getElementById('wsSafeApproveStateTitle');
     const approveTextEl = document.getElementById('wsSafeApproveStateText');
     const rejectTitleEl = document.getElementById('wsSafeRejectStateTitle');
     const rejectTextEl = document.getElementById('wsSafeRejectStateText');
-    if (!badgeEl || !adjustTitleEl || !adjustTextEl || !approveTitleEl || !approveTextEl || !rejectTitleEl || !rejectTextEl) return;
+    if (!badgeEl || !adjustTitleEl || !adjustTextEl || !overrideTitleEl || !overrideTextEl || !approveTitleEl || !approveTextEl || !rejectTitleEl || !rejectTextEl) return;
     const active = window.__mpWorkspaceInlineContext || null;
     const inputAjuste = document.getElementById('bpPrecioAjustado');
     const btnAprobar = document.getElementById('bpBtnAprobar');
@@ -17636,6 +17643,9 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const overrideChk = document.getElementById('bpOverrideCheck');
     const overrideMot = document.getElementById('bpOverrideMotivo');
     const overrideVisible = !!(bpCurrentMgPct != null && bpCurrentMgRequerido != null && bpCurrentMgPct < bpCurrentMgRequerido);
+    const puedeOverride = typeof bpPuedeOverrideMargen === 'function' ? bpPuedeOverrideMargen() : false;
+    const overrideMotivo = String(overrideMot?.value || '').trim();
+    const overrideOk = !!overrideChk?.checked && overrideMotivo.length >= 6;
     const candidato = Number((parseFloat(inputAjuste?.value || '') > 0 ? parseFloat(inputAjuste?.value || '') : bpCurrentPrecioPropuesto) || 0);
     const vigenteTxt = bpCurrentPrecioVigente != null ? fmtCLP(bpCurrentPrecioVigente) : 'sin vigente visible';
     const candidatoTxt = candidato > 0 ? fmtCLP(candidato) : 'sin ajuste visible';
@@ -17645,6 +17655,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       badgeEl.textContent = 'Sin drawer';
       adjustTitleEl.textContent = 'Aún no activo.';
       adjustTextEl.textContent = 'Se mostrará aquí cuando abras una resolución inline.';
+      overrideTitleEl.textContent = 'Sin evaluación.';
+      overrideTextEl.textContent = 'La página única mostrará aquí si el margen exige override y en qué estado está.';
       approveTitleEl.textContent = 'Sin evaluación.';
       approveTextEl.textContent = 'La página única mostrará si aplicar ya está listo o si falta algo.';
       rejectTitleEl.textContent = 'Sin evaluación.';
@@ -17658,6 +17670,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     if (active.mode === 'reference') {
       adjustTitleEl.textContent = 'Ajuste no aplica.';
       adjustTextEl.textContent = 'Este flujo se abrió para sacar la señal de tu carga sin mover compra.';
+      overrideTitleEl.textContent = 'Override no aplica.';
+      overrideTextEl.textContent = 'Cerrar como referencia no requiere override porque no intenta publicar un nuevo precio.';
       approveTitleEl.textContent = 'Aplicar no corresponde.';
       approveTextEl.textContent = 'En cierre como referencia no necesitas aprobar ni publicar un nuevo precio.';
       rejectTitleEl.textContent = btnRechazar && !btnRechazar.disabled ? 'Listo para cerrar referencia.' : 'Rechazo no disponible.';
@@ -17671,15 +17685,23 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       ? 'El valor candidato coincide con ' + vigenteTxt + '. Si quieres mover la propuesta, ajusta antes de aplicar.'
       : ('Candidato actual ' + candidatoTxt + '. El ajuste previo sigue corriendo en el drawer real, pero ya se acompaña desde esta página.');
     if (overrideVisible) {
-      const puede = typeof bpPuedeOverrideMargen === 'function' ? bpPuedeOverrideMargen() : false;
-      const overrideOk = !!overrideChk?.checked && String(overrideMot?.value || '').trim().length >= 6;
-      approveTitleEl.textContent = puede
+      overrideTitleEl.textContent = !puedeOverride
+        ? 'Override bloqueado.'
+        : (overrideOk ? 'Override listo.' : 'Override pendiente.');
+      overrideTextEl.textContent = !puedeOverride
+        ? ('El margen objetivo ' + bpCurrentMgPct.toFixed(1) + '% está bajo el mínimo ' + bpCurrentMgRequerido.toFixed(1) + '%. Este usuario no puede destrabar el override.')
+        : (overrideOk
+          ? ('Override confirmado con motivo cargado. El drawer ya puede aplicar usando ' + overrideMotivo + '.')
+          : ('Margen objetivo ' + bpCurrentMgPct.toFixed(1) + '% bajo mínimo ' + bpCurrentMgRequerido.toFixed(1) + '%. Falta confirmar override y motivo para destrabar aplicar.'));
+      approveTitleEl.textContent = puedeOverride
         ? (overrideOk ? 'Aplicar habilitado con override.' : 'Aplicar espera override.')
         : 'Aplicar bloqueado por margen.';
-      approveTextEl.textContent = puede
+      approveTextEl.textContent = puedeOverride
         ? ('Margen objetivo ' + bpCurrentMgPct.toFixed(1) + '% bajo mínimo ' + bpCurrentMgRequerido.toFixed(1) + '%. Confirma override y motivo para aplicar desde el drawer.')
         : ('El margen objetivo ' + bpCurrentMgPct.toFixed(1) + '% está bajo el mínimo ' + bpCurrentMgRequerido.toFixed(1) + '%. Solo un usuario autorizado puede aplicar.');
     } else {
+      overrideTitleEl.textContent = 'Override no requerido.';
+      overrideTextEl.textContent = 'El margen actual no exige destrabe adicional. Puedes seguir con el cierre normal del drawer.';
       approveTitleEl.textContent = btnAprobar && !btnAprobar.disabled ? 'Listo para aplicar.' : 'Aplicar no disponible.';
       approveTextEl.textContent = btnAprobar && !btnAprobar.disabled
         ? 'El cierre puede aplicar desde el drawer real usando el mismo contexto inline.'
