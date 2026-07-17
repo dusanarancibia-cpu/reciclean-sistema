@@ -3680,17 +3680,17 @@
             <strong>Mesa</strong>, <strong>Calculadora</strong> y <strong>Bandeja técnica</strong>.
           </p>
         </div>
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-2 w-full xl:w-auto">
           <button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab('tablero_precios')"
-                  class="bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
+                  class="w-full sm:w-auto bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
             🎯 Volver a Mesa
           </button>
           <button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab('bandeja_precios')"
-                  class="bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
+                  class="w-full sm:w-auto bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
             📨 Resolver en Bandeja
           </button>
           <button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab('calculadora_precios')"
-                  class="bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
+                  class="w-full sm:w-auto bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
             🧮 Abrir Calculadora
           </button>
         </div>
@@ -3704,7 +3704,7 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 xl:grid-cols-[0.82fr,1.18fr,0.78fr] gap-4">
+      <div class="grid grid-cols-1 lg:grid-cols-[0.88fr,1.12fr] xl:grid-cols-[0.82fr,1.18fr,0.78fr] gap-4">
         <aside class="bg-white border border-stone-300 rounded-xl p-4">
           <div class="flex items-center justify-between gap-3 mb-3">
             <div>
@@ -3757,7 +3757,7 @@
             </div>
           </div>
 
-          <div id="wsSafeStageFlow" class="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
+          <div id="wsSafeStageFlow" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 mb-3">
             <div id="wsSafeStepSignal" class="rounded-xl border border-stone-200 bg-stone-50 px-3 py-3">
               <div class="text-[11px] uppercase tracking-wider text-stone-500">Paso 1</div>
               <div class="mt-1 text-sm font-semibold text-stone-800">Leer señal</div>
@@ -3819,7 +3819,7 @@
                 <span id="wsSafeDeltaBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200">Sin diferencia</span>
               </div>
             </div>
-            <div class="grid grid-cols-1 xl:grid-cols-[1fr,1fr,0.78fr] gap-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1fr,1fr,0.78fr] gap-2">
               <div class="rounded-xl border border-emerald-200 bg-white px-3 py-3">
                 <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-1">Valor publicado actual</div>
                 <div id="wsSafePublishedValue" class="text-2xl xl:text-3xl font-bold text-stone-800">—</div>
@@ -3830,7 +3830,7 @@
                 <div id="wsSafeDraftValue" class="text-2xl xl:text-3xl font-bold text-emerald-700">—</div>
                 <div id="wsSafeDraftMeta" class="mt-1 text-xs text-stone-500">Es la señal activa que comparas.</div>
               </div>
-              <div class="rounded-xl border border-stone-200 bg-white px-3 py-3">
+              <div class="rounded-xl border border-stone-200 bg-white px-3 py-3 md:col-span-2 xl:col-span-1">
                 <div class="text-[11px] uppercase tracking-wider text-stone-500 mb-2">Lectura rápida</div>
                 <div class="space-y-1.5 text-xs">
                   <div class="flex items-center justify-between gap-2 rounded-lg bg-stone-50 px-3 py-2 border border-stone-200">
@@ -3850,7 +3850,7 @@
             </div>
           </div>
 
-          <div id="wsSafeChannels" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2 mb-3">
+          <div id="wsSafeChannels" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 mb-3">
             <div class="rounded-xl border border-stone-200 bg-white px-3 py-3 text-xs text-stone-500">
               Sin lectura de canales aún.
             </div>
@@ -3904,7 +3904,7 @@
           </div>
         </section>
 
-        <aside class="self-start bg-white border border-stone-300 rounded-xl p-4 xl:sticky xl:top-4">
+        <aside class="self-start bg-white border border-stone-300 rounded-xl p-4 lg:col-span-2 xl:col-span-1 xl:sticky xl:top-4">
           <div class="flex items-center justify-between gap-3 mb-3">
             <div>
               <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Salida</div>
@@ -3953,7 +3953,7 @@
 
           <div class="mt-4 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600 space-y-2">
             <div class="text-[11px] uppercase tracking-wider text-stone-500">Notas de esta iteración</div>
-            <div><strong class="text-stone-800">Responsive:</strong> desktop 3 columnas, tablet inbox arriba, mobile workspace primero.</div>
+            <div><strong class="text-stone-800">Responsive:</strong> desktop 3 columnas, tablet inbox y workspace arriba, salida abajo, mobile workspace primero.</div>
             <div><strong class="text-stone-800">Siguiente:</strong> conectar resolución asistida, explicitar mejor canales y mantener Bandeja como motor final.</div>
           </div>
         </aside>
