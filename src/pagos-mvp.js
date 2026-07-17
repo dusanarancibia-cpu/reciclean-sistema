@@ -109,6 +109,40 @@ function clearFlash() {
   state.notice = '';
 }
 
+function originLabel(value) {
+  if (value === 'handoff_andrea') return 'Handoff Andrea -> operación';
+  if (value === 'contingencia_pesaje') return 'Contingencia sobre pesaje existente';
+  if (value === 'romanero_directo') return 'Captura directa en sucursal';
+  return value || 'sin traza visible';
+}
+
+function extractOperationalContext() {
+  if (!state.expediente) return null;
+
+  const createdEvent = state.eventos.find((item) => item.tipo_evento === 'expediente_creado') || null;
+  const captureEvent = state.eventos.find((item) => item.tipo_evento === 'pesaje_registrado') || null;
+  const facturaEvent = state.eventos.find((item) => item.tipo_evento === 'factura_cola_pago' || item.tipo_evento === 'factura_asociada') || null;
+  const payload = createdEvent?.payload || {};
+  const agenda = payload.agenda_servicio || null;
+  const documentosEsperados = Array.isArray(agenda?.documentos_esperados)
+    ? agenda.documentos_esperados.filter(Boolean)
+    : [];
+
+  return {
+    origen: payload.origen_operacional || state.expediente.canal_origen || '',
+    agendaServicioId: agenda?.agenda_servicio_id || null,
+    agendaFecha: agenda?.fecha_programada || state.expediente.fecha_operacion || null,
+    agendaDestino: agenda?.destino || null,
+    transporteTipo: agenda?.transporte_tipo || null,
+    oportunidadId: payload.oportunidad_id || state.expediente.oportunidad_id || null,
+    referenciaLegado: payload.referencia_legado || state.expediente.referencia_legado || null,
+    retornoComercial: payload.retorno_comercial || null,
+    capturaAt: captureEvent?.created_at || null,
+    facturaAt: facturaEvent?.created_at || null,
+    documentosEsperados
+  };
+}
+
 function renderLogin() {
   app.innerHTML = `
     <section class="shell shell-center">
@@ -142,6 +176,7 @@ function renderApp() {
   const pendientes = filteredPendientes();
   const selected = state.selected;
   const fileSelected = document.querySelector('#comprobante_file')?.files?.[0];
+  const operationalContext = extractOperationalContext();
 
   app.innerHTML = `
     <section class="shell">
@@ -149,7 +184,7 @@ function renderApp() {
         <div>
           <div class="eyebrow">Primer Release · Pagos</div>
           <h1>Pagos MVP</h1>
-          <p class="subtle">Bandeja minima de pagos sobre la cola del release, con comprobante y trazabilidad.</p>
+          <p class="subtle">Finanzas entra despues de Agenda, Terreno, Sucursal y Planta. Aqui solo se cierra la consecuencia financiera del caso ya trazado.</p>
         </div>
         <div class="topbar-actions">
           ${state.demo ? '<div class="session-pill">Modo demo</div>' : ''}
@@ -229,8 +264,47 @@ function renderApp() {
           <section class="card">
             <div class="card-head">
               <div>
+                <h2>Contexto operacional previo</h2>
+                <p class="subtle">Finanzas recibe el caso despues de Agenda, Terreno, Sucursal y Planta. No inventamos joins: mostramos solo la traza disponible del expediente.</p>
+              </div>
+            </div>
+            ${operationalContext ? `
+              <div class="metric-grid">
+                <div class="metric"><span>Origen</span><strong>${escapeHtml(originLabel(operationalContext.origen))}</strong></div>
+                <div class="metric"><span>Agenda</span><strong>${escapeHtml(operationalContext.agendaServicioId || 'sin agenda')}</strong></div>
+                <div class="metric"><span>Captura visible</span><strong>${escapeHtml(dt(operationalContext.capturaAt))}</strong></div>
+                <div class="metric"><span>Estado planta</span><strong>${escapeHtml(state.expediente?.estado || '—')}</strong></div>
+              </div>
+              <div class="list">
+                <article class="item">
+                  <strong>Oportunidad / handoff</strong>
+                  <span>${escapeHtml(operationalContext.oportunidadId || 'Sin oportunidad visible')}</span>
+                </article>
+                <article class="item">
+                  <strong>Agenda y destino</strong>
+                  <span>${escapeHtml(operationalContext.agendaFecha || 'sin fecha')} · ${escapeHtml(operationalContext.agendaDestino || 'sin destino')} · ${escapeHtml(operationalContext.transporteTipo || 'sin transporte')}</span>
+                </article>
+                <article class="item">
+                  <strong>Referencia legado</strong>
+                  <span>${escapeHtml(operationalContext.referenciaLegado || 'Sin referencia legado visible')}</span>
+                </article>
+                <article class="item">
+                  <strong>Retorno comercial</strong>
+                  <span>${escapeHtml(operationalContext.retornoComercial || 'Sin retorno comercial visible')}</span>
+                </article>
+                <article class="item">
+                  <strong>Documentos esperados</strong>
+                  <span>${escapeHtml(operationalContext.documentosEsperados.length ? operationalContext.documentosEsperados.join(', ') : 'Sin documentos declarados')}</span>
+                </article>
+              </div>
+            ` : '<div class="empty">Selecciona un expediente con trazabilidad para ver el contexto previo al pago.</div>'}
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <div>
                 <h2>Registrar pago</h2>
-                <p class="subtle">TT-03-07 y TT-03-08 sobre la factura seleccionada.</p>
+                <p class="subtle">TT-03-07 y TT-03-08 sobre la factura seleccionada, manteniendo la traza del caso antes de pagar.</p>
               </div>
             </div>
             <div class="grid compact-grid">

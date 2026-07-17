@@ -71,32 +71,149 @@ function versionLabel() {
   return `${state.version.sha} · ${state.version.branch} · ${state.version.env}`;
 }
 
-function buildChecklist(overview) {
-  const items = [
+function sucursalName(sucursalId) {
+  return state.lookups.sucursales.find((item) => item.sucursal_id === sucursalId)?.nombre || sucursalId;
+}
+
+function materialName(materialId) {
+  return state.lookups.materiales.find((item) => item.material_id === materialId)?.nombre || materialId;
+}
+
+function buildFlowStages(snapshot, overview) {
+  const createdEvents = new Map();
+  for (const evento of snapshot.eventos || []) {
+    if (evento.tipo_evento === 'expediente_creado' && !createdEvents.has(evento.expediente_id)) {
+      createdEvents.set(evento.expediente_id, evento);
+    }
+  }
+
+  const pesajeIds = new Set((snapshot.pesajes || []).map((item) => item.expediente_id).filter(Boolean));
+  let agenda = 0;
+  let terreno = 0;
+  let sucursal = 0;
+  let planta = 0;
+  let finanzas = 0;
+
+  for (const expediente of snapshot.expedientes || []) {
+    const createdPayload = createdEvents.get(expediente.expediente_id)?.payload || {};
+    const agendaServicio = createdPayload.agenda_servicio || null;
+    const hasAgenda = Boolean(
+      expediente.estado === 'agendado' ||
+      agendaServicio?.agenda_servicio_id ||
+      createdPayload.oportunidad_id
+    );
+    const hasTerreno = Boolean(
+      agendaServicio?.agenda_servicio_id ||
+      createdPayload.origen_operacional === 'handoff_andrea'
+    );
+    const hasSucursal = Boolean(
+      pesajeIds.has(expediente.expediente_id) ||
+      ['recepcionado', 'en_proceso', 'pendiente_factura', 'pendiente_pago', 'pagado_pendiente_conciliacion', 'cerrado'].includes(expediente.estado)
+    );
+    const hasPlanta = Boolean(
+      ['recepcionado', 'en_proceso', 'pendiente_factura', 'pendiente_pago', 'pagado_pendiente_conciliacion', 'cerrado'].includes(expediente.estado)
+    );
+    const hasFinanzas = Boolean(
+      ['pendiente_factura', 'pendiente_pago', 'pagado_pendiente_conciliacion', 'cerrado'].includes(expediente.estado)
+    );
+
+    if (hasAgenda) agenda += 1;
+    if (hasTerreno) terreno += 1;
+    if (hasSucursal) sucursal += 1;
+    if (hasPlanta) planta += 1;
+    if (hasFinanzas) finanzas += 1;
+  }
+
+  return [
     {
-      title: 'Abrir Centro de Control',
-      detail: overview.kilosHoy > 0
-        ? `Ya hay ${formatKg(overview.kilosHoy)} visibles hoy; conviene revisar captura y continuidad.`
-        : 'Revisar de inmediato si la jornada quedó sin kilos visibles o con captura débil.',
-      href: '/supervision'
+      key: 'agenda',
+      title: 'Agenda',
+      kicker: 'Etapa 1',
+      count: agenda,
+      href: '/romanero',
+      detail: agenda
+        ? `${agenda} casos con oportunidad o servicio agendado visible.`
+        : 'Todavía no aparece agenda visible en este snapshot.'
     },
     {
-      title: 'Ver Romanero',
-      detail: overview.expedientesSinPesaje
-        ? `${overview.expedientesSinPesaje} expedientes siguen sin pesaje visible; el origen operativo merece revisión.`
-        : 'Mantener visible el origen operativo del expediente y su contingencia.',
+      key: 'terreno',
+      title: 'Terreno',
+      kicker: 'Etapa 2',
+      count: terreno,
+      href: '/romanero',
+      detail: terreno
+        ? `${terreno} casos con señal previa por agenda/handoff; el hub no hace join completo de rutas y viajes.`
+        : 'Telemetría parcial: el hub deja Terreno visible por señal de agenda/handoff.'
+    },
+    {
+      key: 'sucursal',
+      title: 'Sucursal',
+      kicker: 'Etapa 3',
+      count: sucursal,
+      href: '/romanero',
+      detail: sucursal
+        ? `${sucursal} casos ya tocaron expediente, pesaje o recepción local.`
+        : 'Romanero sigue siendo la puerta de entrada operativa de sucursal.'
+    },
+    {
+      key: 'planta',
+      title: 'Planta',
+      kicker: 'Etapa 4',
+      count: planta,
+      href: '/supervision',
+      detail: planta
+        ? `${overview.plantPulse?.backlogVisible || 0} casos siguen en backlog visible local.`
+        : 'Supervisión queda lista para leer continuidad local cuando aparezca carga.'
+    },
+    {
+      key: 'finanzas',
+      title: 'Finanzas',
+      kicker: 'Etapa 5',
+      count: finanzas,
+      href: '/pagos',
+      detail: finanzas
+        ? `${overview.byState.pendiente_pago} en cola de pago y ${overview.byState.pagado_pendiente_conciliacion} por conciliar.`
+        : 'Pagos queda como consecuencia del flujo, no como lectura primaria.'
+    }
+  ];
+}
+
+function buildChecklist(overview, flowStages) {
+  const flow = new Map((flowStages || []).map((item) => [item.key, item]));
+  const items = [
+    {
+      title: 'Agenda y despacho',
+      detail: flow.get('agenda')?.count
+        ? `${flow.get('agenda').count} casos ya nacieron con señal de agenda u oportunidad.`
+        : 'Confirmar si la jornada ya trae agenda visible o si todavía no entra al snapshot.',
       href: '/romanero'
     },
     {
-      title: 'Bajar al panel',
-      detail: 'Confirmar que el panel legacy ya esté leyendo el mismo pulso operativo del release.',
-      href: '/panel-rdo.html'
+      title: 'Terreno',
+      detail: flow.get('terreno')?.count
+        ? `${flow.get('terreno').count} casos muestran paso previo por agenda/handoff.`
+        : 'La lectura de Terreno sigue parcial en el hub; Romanero conserva la evidencia sin inventar joins.',
+      href: '/romanero'
     },
     {
-      title: 'Revisar Pagos',
+      title: 'Sucursal / Romanero',
+      detail: overview.expedientesSinPesaje
+        ? `${overview.expedientesSinPesaje} expedientes siguen sin pesaje visible; conviene revisar captura local.`
+        : 'Sucursal mantiene expediente y pesaje visibles sin doble captura.',
+      href: '/romanero'
+    },
+    {
+      title: 'Planta / Supervisión',
+      detail: (overview.plantPulse?.backlogVisible || 0) > 0
+        ? `${overview.plantPulse.backlogVisible} casos siguen en backlog visible de planta.`
+        : 'Planta queda estable y lista para vigilar continuidad local.',
+      href: '/supervision'
+    },
+    {
+      title: 'Finanzas / Pagos',
       detail: overview.byState.pendiente_pago
-        ? `${overview.byState.pendiente_pago} expedientes siguen en cola de pago, pero ya como segunda capa.`
-        : 'La cola de pago está sin pendientes visibles.',
+        ? `${overview.byState.pendiente_pago} expedientes siguen en cola de pago como etapa final.`
+        : 'No hay cola de pago visible en este momento.',
       href: '/pagos'
     }
   ];
@@ -115,15 +232,7 @@ function buildChecklist(overview) {
     });
   }
 
-  return items.slice(0, 4);
-}
-
-function sucursalName(sucursalId) {
-  return state.lookups.sucursales.find((item) => item.sucursal_id === sucursalId)?.nombre || sucursalId;
-}
-
-function materialName(materialId) {
-  return state.lookups.materiales.find((item) => item.material_id === materialId)?.nombre || materialId;
+  return items;
 }
 
 function renderOperatingRules() {
@@ -172,6 +281,13 @@ function renderLoading() {
 }
 
 function renderGuest() {
+  const emptyOverview = {
+    kilosHoy: 0,
+    expedientesSinPesaje: 0,
+    byState: { pendiente_pago: 0, pagado_pendiente_conciliacion: 0 },
+    plantPulse: { backlogVisible: 0 }
+  };
+  const flowStages = buildFlowStages(state.snapshot, emptyOverview);
   app.innerHTML = `
     <section class="shell">
       <section class="card hero">
@@ -220,13 +336,11 @@ function renderGuest() {
           <div class="card-head">
             <div>
               <h2>Qué revisar primero</h2>
-              <p class="subtle">Secuencia mínima para evaluar el release desde un preview sin perder el foco operativo.</p>
+              <p class="subtle">Secuencia mínima para evaluar el release por flujo: Agenda, Terreno, Sucursal, Planta y recién después Finanzas.</p>
             </div>
           </div>
           <div class="list">
-            ${buildChecklist({
-              byState: { pendiente_pago: 0 }
-            }).map((item) => `
+            ${buildChecklist(emptyOverview, flowStages).map((item) => `
               <article class="item">
                 <strong>${escapeHtml(item.title)}</strong>
                 <span>${escapeHtml(item.detail)}</span>
@@ -273,23 +387,17 @@ function renderGuest() {
         <article class="card">
           <div class="card-head">
             <div>
-              <h2>Frentes del release</h2>
-              <p class="subtle">El preview no reemplaza el plan documental; solo lo vuelve revisable.</p>
+              <h2>Flujo ordenado</h2>
+              <p class="subtle">El preview no reemplaza el plan documental; lo vuelve visible por etapas reales del caso.</p>
             </div>
           </div>
           <div class="list">
-            <article class="item">
-              <strong>Romanero y pesaje</strong>
-              <span>Captura única, precio canónico y contingencia controlada.</span>
-            </article>
-            <article class="item">
-              <strong>Andrea y handoff</strong>
-              <span>Traspaso mínimo y retorno a comercial con trazabilidad.</span>
-            </article>
-            <article class="item">
-              <strong>Pablo pagos</strong>
-              <span>Pago manual con comprobante asociado y conciliación posterior.</span>
-            </article>
+            ${flowStages.map((stage) => `
+              <article class="item">
+                <strong>${escapeHtml(stage.kicker)} · ${escapeHtml(stage.title)}</strong>
+                <span>${escapeHtml(stage.detail)}</span>
+              </article>
+            `).join('')}
           </div>
         </article>
       </section>
@@ -300,7 +408,8 @@ function renderGuest() {
 function renderAuthenticated() {
   const overview = state.overview;
   const tone = healthTone(overview);
-  const checklist = buildChecklist(overview);
+  const flowStages = buildFlowStages(state.snapshot, overview);
+  const checklist = buildChecklist(overview, flowStages);
   const topOperationalAlerts = overview.operationalAlerts?.slice(0, 4) || [];
   const topFinancialAlerts = overview.financialAlerts?.slice(0, 3) || [];
 
@@ -353,26 +462,18 @@ function renderAuthenticated() {
         <article class="card">
           <div class="card-head">
             <div>
-              <h2>Rutas clave</h2>
-              <p class="subtle">Puertas rápidas del release para operar o revisar.</p>
+              <h2>Flujo ordenado</h2>
+              <p class="subtle">Lectura ejecutiva por etapa: Agenda, Terreno, Sucursal, Planta y Finanzas.</p>
             </div>
           </div>
           <div class="list">
-            <a class="link-card" href="/supervision">
-              <div class="kicker">Gobierno</div>
-              <h3>Centro de Control</h3>
-              <p class="subtle">Alertas de compra, captura, sucursales calientes y continuidad operativa.</p>
-            </a>
-            <a class="link-card" href="/romanero">
-              <div class="kicker">Operación</div>
-              <h3>Romanero MVP</h3>
-              <p class="subtle">Origen operativo del expediente, pesaje y consulta canónica de precio.</p>
-            </a>
-            <a class="link-card" href="/pagos">
-              <div class="kicker">Cierre</div>
-              <h3>Pagos MVP</h3>
-              <p class="subtle">${overview.byState.pendiente_pago} expedientes en cola y ${overview.byState.pagado_pendiente_conciliacion} por conciliar como segunda capa.</p>
-            </a>
+            ${flowStages.map((stage) => `
+              <a class="link-card" href="${escapeHtml(stage.href)}">
+                <div class="kicker">${escapeHtml(stage.kicker)}</div>
+                <h3>${escapeHtml(stage.title)} <span class="badge">${stage.count}</span></h3>
+                <p class="subtle">${escapeHtml(stage.detail)}</p>
+              </a>
+            `).join('')}
           </div>
         </article>
 

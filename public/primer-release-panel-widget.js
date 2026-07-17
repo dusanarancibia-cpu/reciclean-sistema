@@ -44,12 +44,14 @@
     const facturas = snapshot.facturas || [];
     const pagos = snapshot.pagos || [];
     const comprobantes = snapshot.comprobantes || [];
+    const eventos = snapshot.eventos || [];
     const today = dayKey(new Date().toISOString());
 
     const pesajeByExpediente = new Map();
     const facturasByExpediente = new Map();
     const pagosByExpediente = new Map();
     const comprobantesByFactura = new Map();
+    const createdEventByExpediente = new Map();
 
     pesajes.forEach((item) => {
       if (!pesajeByExpediente.has(item.expediente_id)) {
@@ -72,6 +74,11 @@
       bucket.push(item);
       comprobantesByFactura.set(key, bucket);
     });
+    eventos.forEach((item) => {
+      if (item.tipo_evento === 'expediente_creado' && !createdEventByExpediente.has(item.expediente_id)) {
+        createdEventByExpediente.set(item.expediente_id, item);
+      }
+    });
 
     let pendientePago = 0;
     let pagadoPendiente = 0;
@@ -82,6 +89,11 @@
     let capturasHoy = 0;
     let expedientesSinPesaje = 0;
     let expedientesActivos = 0;
+    let agendaCount = 0;
+    let terrenoCount = 0;
+    let sucursalCount = 0;
+    let plantaCount = 0;
+    let finanzasCount = 0;
 
     pesajes.forEach((item) => {
       const kilos = Number(item.peso_neto_kg || 0);
@@ -96,10 +108,31 @@
       const pesaje = pesajeByExpediente.get(expediente.expediente_id) || null;
       const expFacturas = facturasByExpediente.get(expediente.expediente_id) || [];
       const expPagos = pagosByExpediente.get(expediente.expediente_id) || [];
+      const createdPayload = createdEventByExpediente.get(expediente.expediente_id)?.payload || {};
+      const agendaServicio = createdPayload.agenda_servicio || null;
       const facturaMonto = expFacturas.reduce((sum, item) => sum + Number(item.monto_total || 0), 0);
       const pagoMonto = expPagos.reduce((sum, item) => sum + Number(item.monto_pagado || 0), 0);
       const comprobantesExp = expFacturas.flatMap((factura) =>
         comprobantesByFactura.get(String(factura.factura_raw_id ?? factura.id)) || []
+      );
+      const hasAgenda = Boolean(
+        expediente.estado === 'agendado' ||
+        agendaServicio?.agenda_servicio_id ||
+        createdPayload.oportunidad_id
+      );
+      const hasTerreno = Boolean(
+        agendaServicio?.agenda_servicio_id ||
+        createdPayload.origen_operacional === 'handoff_andrea'
+      );
+      const hasSucursal = Boolean(
+        pesaje ||
+        ['recepcionado', 'en_proceso', 'pendiente_factura', 'pendiente_pago', 'pagado_pendiente_conciliacion', 'cerrado'].includes(expediente.estado)
+      );
+      const hasPlanta = Boolean(
+        ['recepcionado', 'en_proceso', 'pendiente_factura', 'pendiente_pago', 'pagado_pendiente_conciliacion', 'cerrado'].includes(expediente.estado)
+      );
+      const hasFinanzas = Boolean(
+        ['pendiente_factura', 'pendiente_pago', 'pagado_pendiente_conciliacion', 'cerrado'].includes(expediente.estado)
       );
 
       if (ACTIVE_STATES.has(expediente.estado)) {
@@ -119,6 +152,11 @@
       if (expPagos.length > 0 && comprobantesExp.length === 0) {
         pagosSinComprobante += 1;
       }
+      if (hasAgenda) agendaCount += 1;
+      if (hasTerreno) terrenoCount += 1;
+      if (hasSucursal) sucursalCount += 1;
+      if (hasPlanta) plantaCount += 1;
+      if (hasFinanzas) finanzasCount += 1;
     });
 
     const critical = (expedientesActivos > 0 && kilosHoy <= 0) || expedientesSinPesaje >= 2;
@@ -131,6 +169,11 @@
       kilosHoy,
       kilosTotal,
       capturasHoy,
+      agendaCount,
+      terrenoCount,
+      sucursalCount,
+      plantaCount,
+      finanzasCount,
       pendientePago,
       pagadoPendiente,
       pagosSinComprobante,
@@ -253,14 +296,14 @@
     }
 
     if (summaryEl) {
-      summaryEl.textContent = `${formatKg(overview.kilosHoy)} hoy · ${overview.capturasHoy} capturas · ${overview.expedientesSinPesaje} sin pesaje visible`;
+      summaryEl.textContent = `Agenda ${overview.agendaCount} · Terreno ${overview.terrenoCount} · Sucursal ${overview.sucursalCount} · Planta ${overview.plantaCount} · Finanzas ${overview.finanzasCount}`;
     }
     if (detailEl) {
-      detailEl.textContent = `Pulso visible ${formatKg(overview.kilosTotal)} · activos ${overview.expedientesActivos} · cola pago ${overview.pendientePago} por ${money(overview.montoPendiente)}.`;
+      detailEl.textContent = `Pulso visible ${formatKg(overview.kilosHoy)} hoy · ${overview.capturasHoy} capturas · ${overview.pendientePago} en cola de pago por ${money(overview.montoPendiente)}.`;
     }
-    if (totalEl) totalEl.textContent = formatKg(overview.kilosHoy);
-    if (queueEl) queueEl.textContent = String(overview.capturasHoy);
-    if (reconEl) reconEl.textContent = String(overview.expedientesSinPesaje);
+    if (totalEl) totalEl.textContent = String(overview.agendaCount);
+    if (queueEl) queueEl.textContent = String(overview.sucursalCount);
+    if (reconEl) reconEl.textContent = String(overview.plantaCount);
     if (versionEl) versionEl.textContent = version ? `${version.sha} · ${version.env}` : 'sin build';
     if (hubLink && mode === 'Demo activo') hubLink.href = '/primer-release?demo=1';
   }

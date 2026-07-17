@@ -125,6 +125,7 @@ test.describe('Primer Release público smoke', () => {
     await page.goto('/pagos.html');
     await expect(demoPill).toBeVisible();
     await expect(page.locator('.list-item strong').first()).toContainText('Transportes Demo Ltda.');
+    await expect(page.getByRole('heading', { name: 'Contexto operacional previo' })).toBeVisible();
 
     await page.goto('/supervision.html');
     await expect(demoPill).toBeVisible();
@@ -153,8 +154,8 @@ test.describe('Primer Release público smoke', () => {
     await page.goto('/panel-rdo.html');
     await expect(page.locator('#primer-release-panel-badge')).toContainText(/Demo activo|Release estable|Vigilancia activa|Riesgo operativo/i);
     await expect(page.locator('#primer-release-panel-total')).not.toHaveText('—');
-    await expect(page.locator('#primer-release-panel-summary')).toContainText(/kg|capturas|sin pesaje/i);
-    await expect(page.locator('#primer-release-panel-detail')).toContainText(/Pulso visible|cola pago/i);
+    await expect(page.locator('#primer-release-panel-summary')).toContainText(/Agenda|Terreno|Sucursal|Planta|Finanzas/i);
+    await expect(page.locator('#primer-release-panel-detail')).toContainText(/Pulso visible|cola de pago|capturas/i);
 
     const criticos = consoleErrors.filter((entry) =>
       /TypeError|ReferenceError|Failed to fetch|Unexpected token|Cannot read/i.test(entry),
