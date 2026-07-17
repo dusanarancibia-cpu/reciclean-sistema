@@ -3973,6 +3973,20 @@
                 </div>
               </div>
             </div>
+            <div id="wsSafePostCloseCard" class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <div class="text-[11px] uppercase tracking-wider text-stone-500">Continuidad</div>
+                <span id="wsSafePostCloseBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin cierre</span>
+              </div>
+              <div id="wsSafePostCloseTitle" class="font-semibold text-stone-800">El siguiente paso aparecerá aquí.</div>
+              <div id="wsSafePostCloseText" class="text-xs text-stone-600 mt-1">Después de aprobar, rechazar o cerrar como referencia, la página única te dirá qué acaba de pasar y cuál es la siguiente salida sugerida.</div>
+              <div id="wsSafePostCloseMeta" class="text-[11px] text-stone-500 mt-2">Sin cierre reciente.</div>
+              <button id="wsSafePostCloseBtn" type="button" disabled
+                      class="mt-3 w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+                <div id="wsSafePostCloseBtnTitle" class="font-semibold text-stone-800">Sin acción sugerida.</div>
+                <div id="wsSafePostCloseBtnText" class="text-xs text-stone-600 mt-1">El siguiente caso sugerido aparecerá aquí cuando el workspace se refresque.</div>
+              </button>
+            </div>
             <button id="wsSafeCalcBtn" type="button" disabled
                     class="w-full rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
               <div class="font-semibold text-sky-800">Abrir este caso en Calculadora</div>
@@ -17713,6 +17727,97 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       : 'Este caso ya no permite rechazo desde el drawer actual.';
   }
 
+  function mpSyncPostCloseState(selected, row, guide, actions) {
+    const cardEl = document.getElementById('wsSafePostCloseCard');
+    const badgeEl = document.getElementById('wsSafePostCloseBadge');
+    const titleEl = document.getElementById('wsSafePostCloseTitle');
+    const textEl = document.getElementById('wsSafePostCloseText');
+    const metaEl = document.getElementById('wsSafePostCloseMeta');
+    const btnEl = document.getElementById('wsSafePostCloseBtn');
+    const btnTitleEl = document.getElementById('wsSafePostCloseBtnTitle');
+    const btnTextEl = document.getElementById('wsSafePostCloseBtnText');
+    if (!cardEl || !badgeEl || !titleEl || !textEl || !metaEl || !btnEl || !btnTitleEl || !btnTextEl) return;
+    const last = window.__mpWorkspaceInlineLastState || null;
+    const hasQueue = Array.isArray(mpState.pendingRows) && mpState.pendingRows.length > 0;
+    cardEl.className = 'rounded-xl border border-stone-200 bg-stone-50 px-4 py-3';
+    badgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
+    titleEl.className = 'font-semibold text-stone-800';
+    textEl.className = 'text-xs text-stone-600 mt-1';
+    btnEl.className = 'mt-3 w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed';
+    btnEl.disabled = true;
+    btnEl.onclick = null;
+    if (!last) {
+      badgeEl.textContent = 'Sin cierre';
+      titleEl.textContent = 'El siguiente paso aparecerá aquí.';
+      textEl.textContent = 'Después de aprobar, rechazar o cerrar como referencia, la página única te dirá qué acaba de pasar y cuál es la siguiente salida sugerida.';
+      metaEl.textContent = 'Sin cierre reciente.';
+      btnTitleEl.textContent = 'Sin acción sugerida.';
+      btnTextEl.textContent = 'El siguiente caso sugerido aparecerá aquí cuando el workspace se refresque.';
+      return;
+    }
+    const isReference = last.mode === 'reference';
+    cardEl.className = isReference
+      ? 'rounded-xl border border-violet-200 bg-violet-50 px-4 py-3'
+      : 'rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3';
+    badgeEl.className = isReference
+      ? 'px-2 py-1 rounded-full bg-white text-violet-700 border border-violet-200 text-[11px]'
+      : 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]';
+    titleEl.className = isReference ? 'font-semibold text-violet-900' : 'font-semibold text-emerald-900';
+    textEl.className = isReference ? 'text-xs text-violet-800 mt-1' : 'text-xs text-emerald-800 mt-1';
+    badgeEl.textContent = hasQueue ? 'Siguiente paso' : 'Cierre resuelto';
+    metaEl.textContent = (last.materialName || 'Material')
+      + ' · ' + (last.alcance || 'Sin alcance')
+      + ' · propuesta #' + (last.proposalId || '—');
+    if (!hasQueue) {
+      titleEl.textContent = 'No quedan señales activas con este filtro.';
+      textEl.textContent = last.resultText || 'El último cierre inline ya refrescó el workspace y no quedan casos pendientes en esta vista.';
+      btnTitleEl.textContent = 'Sin siguiente caso sugerido.';
+      btnTextEl.textContent = 'Si cambias el filtro o entra una nueva señal, la página única retomará la continuidad desde aquí.';
+      return;
+    }
+    if (!selected || !row || !row.id) {
+      titleEl.textContent = 'El cierre ya refrescó la cola.';
+      textEl.textContent = last.resultText || 'El último cierre ya terminó. Selecciona un caso para seguir con el siguiente paso sugerido.';
+      btnTitleEl.textContent = 'Selecciona el siguiente caso.';
+      btnTextEl.textContent = 'La sugerencia se activará apenas el workspace tenga un foco activo.';
+      return;
+    }
+    const materialTxt = selected.material_nombre || mpGetMaterialNombre(row);
+    const alcanceTxt = mpGetSucursalNombre(row) || 'Sin alcance';
+    const nextAction = guide?.actionTarget === 'resolve'
+      ? {
+          title: 'Seguir resolviendo desde aquí',
+          text: 'Abre la resolución inline del siguiente caso sin rearmar contexto.',
+          tone: 'emerald',
+          handler: actions?.resolve || null,
+        }
+      : (guide?.actionTarget === 'mesa'
+        ? {
+            title: 'Ir al foco completo en Mesa',
+            text: 'Abre el siguiente caso en Mesa cuando todavía no conviene cerrarlo inline.',
+            tone: 'amber',
+            handler: actions?.mesa || null,
+          }
+        : {
+            title: 'Ir a Calculadora con el siguiente caso',
+            text: 'Ajusta el siguiente caso con material y alcance ya cargados.',
+            tone: 'sky',
+            handler: actions?.calc || null,
+          });
+    titleEl.textContent = 'Último cierre listo. Siguiente caso sugerido: ' + materialTxt + '.';
+    textEl.textContent = (last.resultText || 'El último cierre inline ya quedó resuelto.') + ' Ahora la página única te deja continuar con ' + materialTxt + ' en ' + alcanceTxt + '.';
+    btnEl.disabled = !nextAction.handler;
+    btnEl.onclick = nextAction.handler;
+    btnEl.className = 'mt-3 w-full rounded-xl border bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed '
+      + (nextAction.tone === 'emerald'
+        ? 'border-emerald-200 hover:border-emerald-300'
+        : (nextAction.tone === 'amber'
+          ? 'border-amber-200 hover:border-amber-300'
+          : 'border-sky-200 hover:border-sky-300'));
+    btnTitleEl.textContent = nextAction.title;
+    btnTextEl.textContent = nextAction.text;
+  }
+
   async function mpAbrirDrawerInline(id, mode, meta) {
     if (!id || typeof window.bpAbrirDrawer !== 'function') return;
     window.__mpWorkspaceInlineContext = {
@@ -18316,6 +18421,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       exitModeEl.textContent = '—';
       mpSyncInlineExecutionState();
       mpSyncInlineDecisionState();
+      mpSyncPostCloseState(null, null, guide, null);
       return;
     }
     const routeMeta = mpGetRouteMeta(row.ruta);
@@ -18338,6 +18444,12 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     };
     const openReference = function () {
       window.mpCerrarComoReferenciaInline && window.mpCerrarComoReferenciaInline(row.id, actionMeta);
+    };
+    const postCloseActions = {
+      mesa: openMesa,
+      calc: openCalc,
+      resolve: openResolve,
+      reference: openReference,
     };
     metaEl.innerHTML = '<div class="font-semibold text-stone-800">' + tapEscape(selected.material_nombre || 'Material') + '</div>'
       + '<div class="mt-1 text-[11px] text-stone-500">'
@@ -18413,6 +18525,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     if (guide?.actionTarget !== 'resolve' && row?.ruta !== 'manual_calc') referenceBtn.classList.add('ring-2', 'ring-violet-200');
     mpSyncInlineExecutionState();
     mpSyncInlineDecisionState();
+    mpSyncPostCloseState(selected, row, guide, postCloseActions);
   }
 
   function mpRenderWorkspaceSafe(groups, selected) {
