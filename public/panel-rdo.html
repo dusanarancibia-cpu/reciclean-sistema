@@ -3987,6 +3987,39 @@
                 <div id="wsSafePostCloseBtnText" class="text-xs text-stone-600 mt-1">El siguiente caso sugerido aparecerá aquí cuando el workspace se refresque.</div>
               </button>
             </div>
+            <div id="wsSafeCalcSupportCard" class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <div class="text-[11px] uppercase tracking-wider text-stone-500">Soporte de cálculo</div>
+                <span id="wsSafeCalcSupportBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin cálculo</span>
+              </div>
+              <div id="wsSafeCalcSupportTitle" class="font-semibold text-stone-800">La foto de Calculadora aparecerá aquí.</div>
+              <div id="wsSafeCalcSupportText" class="text-xs text-stone-600 mt-1">Esta estación traerá P.Lista, P.Ejec, P.Max y el semáforo MG del foco actual sin obligarte a salir del workspace.</div>
+              <div class="grid grid-cols-2 gap-2 mt-3">
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">P.Lista</div>
+                  <div id="wsSafeCalcPlista" class="font-semibold text-stone-800 mt-1">—</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">P.Ejec</div>
+                  <div id="wsSafeCalcPejec" class="font-semibold text-stone-800 mt-1">—</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">P.Max</div>
+                  <div id="wsSafeCalcPmax" class="font-semibold text-stone-800 mt-1">—</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Semáforo MG</div>
+                  <div id="wsSafeCalcSemaforo" class="font-semibold text-stone-800 mt-1">—</div>
+                </div>
+              </div>
+              <div id="wsSafeCalcMeta" class="text-[11px] text-stone-500 mt-3">Sin foco listo para cálculo.</div>
+              <div id="wsSafeCalcGate" class="text-xs text-stone-600 mt-2">La guía de margen y publicación aparecerá aquí cuando el foco tenga material y alcance.</div>
+              <button id="wsSafeCalcSupportBtn" type="button" disabled
+                      class="mt-3 w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+                <div id="wsSafeCalcSupportBtnTitle" class="font-semibold text-sky-800">Abrir Calculadora ya preparada</div>
+                <div id="wsSafeCalcSupportBtnText" class="text-xs text-sky-700 mt-1">El motor real quedará listo con este mismo foco si necesitas afinar sliders o publicar propuesta.</div>
+              </button>
+            </div>
             <button id="wsSafeCalcBtn" type="button" disabled
                     class="w-full rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
               <div class="font-semibold text-sky-800">Abrir este caso en Calculadora</div>
@@ -16766,6 +16799,49 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     await calcAutoFillPrecioCompra();
   }
 
+  async function calcGetWorkspaceSnapshot(focus) {
+    const payload = focus || {};
+    await initCalculadoraPrecios();
+    const matSel = document.getElementById('calcMaterial');
+    const sucSel = document.getElementById('calcSucursal');
+    if (!matSel) return null;
+    if (payload.materialId) matSel.value = payload.materialId;
+    if (sucSel) sucSel.value = payload.sucursalId || '';
+    await calcAutoFillPrecioCompra();
+    const materialNombre = matSel.selectedOptions?.[0]?.textContent?.trim() || payload.materialId || 'Material';
+    const sucursalNombre = sucSel?.selectedOptions?.[0]?.textContent?.trim() || 'Sin alcance';
+    const c = calcUltimoCalculo || null;
+    const semaforo = String(document.getElementById('calcSemaforo')?.textContent || '—').trim() || '—';
+    const semaforoDetalle = String(document.getElementById('calcSemaforoDetalle')?.textContent || '—').trim() || '—';
+    const margenGate = String(document.getElementById('calcPrevMargenGate')?.textContent || '—').trim() || '—';
+    const salida = String(document.getElementById('calcPrevSalida')?.textContent || '').trim();
+    const nota = String(document.getElementById('calcPrevNota')?.textContent || '').trim();
+    const delta = (c && calcPrecioVigenteActual != null && isFinite(calcPrecioVigenteActual))
+      ? (c.plista - calcPrecioVigenteActual)
+      : null;
+    const deltaPct = (delta != null && calcPrecioVigenteActual > 0)
+      ? ((delta / calcPrecioVigenteActual) * 100)
+      : null;
+    return {
+      materialId: payload.materialId || '',
+      sucursalId: payload.sucursalId || '',
+      materialNombre,
+      sucursalNombre,
+      vigenteActual: calcPrecioVigenteActual,
+      vigenteFuente: calcPrecioVigenteFuente,
+      plista: c?.plista ?? null,
+      pejec: c?.pejec ?? null,
+      pmax: c?.pmax ?? null,
+      semaforo,
+      semaforoDetalle,
+      margenGate,
+      salida,
+      nota,
+      delta,
+      deltaPct,
+    };
+  }
+
   window.calcIrDesdeWorkspace = async function (focus) {
     const payload = focus || {};
     window.bpFocusFromCalc = {
@@ -16785,6 +16861,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     if (sucSel) sucSel.value = payload.sucursalId || '';
     await calcAutoFillPrecioCompra();
   };
+  window.calcGetWorkspaceSnapshot = calcGetWorkspaceSnapshot;
   window.calcRecompute          = calcRecompute;
   window.initCalculadoraPrecios = initCalculadoraPrecios;
 })();
@@ -17120,6 +17197,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     materiales: new Map(),
     materialMeta: new Map(),
     selectedKey: null,
+    calcSupportCache: new Map(),
+    calcSupportRequestId: 0,
     catalogsLoaded: false,
     strategyBound: false,
   };
@@ -17818,6 +17897,150 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     btnTextEl.textContent = nextAction.text;
   }
 
+  function mpRenderCalcSupportState(state) {
+    const cardEl = document.getElementById('wsSafeCalcSupportCard');
+    const badgeEl = document.getElementById('wsSafeCalcSupportBadge');
+    const titleEl = document.getElementById('wsSafeCalcSupportTitle');
+    const textEl = document.getElementById('wsSafeCalcSupportText');
+    const plistaEl = document.getElementById('wsSafeCalcPlista');
+    const pejecEl = document.getElementById('wsSafeCalcPejec');
+    const pmaxEl = document.getElementById('wsSafeCalcPmax');
+    const semaforoEl = document.getElementById('wsSafeCalcSemaforo');
+    const metaEl = document.getElementById('wsSafeCalcMeta');
+    const gateEl = document.getElementById('wsSafeCalcGate');
+    const btnEl = document.getElementById('wsSafeCalcSupportBtn');
+    const btnTitleEl = document.getElementById('wsSafeCalcSupportBtnTitle');
+    const btnTextEl = document.getElementById('wsSafeCalcSupportBtnText');
+    if (!cardEl || !badgeEl || !titleEl || !textEl || !plistaEl || !pejecEl || !pmaxEl || !semaforoEl || !metaEl || !gateEl || !btnEl || !btnTitleEl || !btnTextEl) return;
+    const status = state?.status || 'idle';
+    cardEl.className = 'rounded-xl border border-stone-200 bg-stone-50 px-4 py-3';
+    badgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
+    titleEl.className = 'font-semibold text-stone-800';
+    textEl.className = 'text-xs text-stone-600 mt-1';
+    gateEl.className = 'text-xs text-stone-600 mt-2';
+    btnEl.className = 'mt-3 w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed';
+    plistaEl.textContent = state?.plista || '—';
+    pejecEl.textContent = state?.pejec || '—';
+    pmaxEl.textContent = state?.pmax || '—';
+    semaforoEl.textContent = state?.semaforo || '—';
+    metaEl.textContent = state?.meta || 'Sin foco listo para cálculo.';
+    gateEl.textContent = state?.gate || 'La guía de margen y publicación aparecerá aquí cuando el foco tenga material y alcance.';
+    btnEl.disabled = !state?.handler;
+    btnEl.onclick = state?.handler || null;
+    btnTitleEl.textContent = state?.buttonTitle || 'Abrir Calculadora ya preparada';
+    btnTextEl.textContent = state?.buttonText || 'El motor real quedará listo con este mismo foco si necesitas afinar sliders o publicar propuesta.';
+    if (status === 'loading') {
+      badgeEl.textContent = 'Cargando';
+      titleEl.textContent = 'Preparando soporte de cálculo.';
+      textEl.textContent = 'Estoy trayendo la foto real de Calculadora para este foco sin salir del workspace.';
+      return;
+    }
+    if (status === 'empty') {
+      badgeEl.textContent = 'Sin cálculo';
+      titleEl.textContent = 'La foto de Calculadora aparecerá aquí.';
+      textEl.textContent = 'Esta estación traerá P.Lista, P.Ejec, P.Max y el semáforo MG del foco actual sin obligarte a salir del workspace.';
+      return;
+    }
+    if (status === 'error') {
+      badgeEl.textContent = 'Sin lectura';
+      titleEl.textContent = 'No pude traer el soporte de cálculo.';
+      textEl.textContent = state?.text || 'El workspace mantiene el foco, pero la vista compacta de Calculadora no quedó disponible todavía.';
+      return;
+    }
+    badgeEl.textContent = state?.badge || 'Calculadora lista';
+    titleEl.textContent = state?.title || 'Soporte de cálculo listo.';
+    textEl.textContent = state?.text || 'Ya tienes una foto compacta de Calculadora para decidir sin salir de esta página.';
+    if (state?.tone === 'emerald') {
+      cardEl.className = 'rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3';
+      badgeEl.className = 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]';
+      titleEl.className = 'font-semibold text-emerald-900';
+      textEl.className = 'text-xs text-emerald-800 mt-1';
+      gateEl.className = 'text-xs text-emerald-800 mt-2';
+    } else if (state?.tone === 'rose') {
+      cardEl.className = 'rounded-xl border border-rose-200 bg-rose-50 px-4 py-3';
+      badgeEl.className = 'px-2 py-1 rounded-full bg-white text-rose-700 border border-rose-200 text-[11px]';
+      titleEl.className = 'font-semibold text-rose-900';
+      textEl.className = 'text-xs text-rose-800 mt-1';
+      gateEl.className = 'text-xs text-rose-800 mt-2';
+    }
+  }
+
+  async function mpSyncWorkspaceCalcSupport(selected, row, openCalc) {
+    if (!selected || !row || !selected.material_id) {
+      mpRenderCalcSupportState({ status: 'empty', handler: null });
+      return;
+    }
+    const materialId = selected.material_id;
+    const sucursalId = row.sucursal_id || '';
+    const cacheKey = String(materialId || '') + '|' + String(sucursalId || '');
+    if (mpState.calcSupportCache.has(cacheKey)) {
+      const cached = mpState.calcSupportCache.get(cacheKey);
+      mpRenderCalcSupportState({
+        status: 'ready',
+        tone: cached.delta != null && cached.delta > 0 ? 'rose' : 'emerald',
+        badge: 'Calculadora lista',
+        title: 'Foto compacta de Calculadora para ' + (cached.materialNombre || 'este caso') + '.',
+        text: cached.salida || 'La Calculadora ya dejó una lectura compacta para este foco.',
+        plista: cached.plista != null ? tapFmtClp(cached.plista) : '—',
+        pejec: cached.pejec != null ? tapFmtClp(cached.pejec) : '—',
+        pmax: cached.pmax != null ? tapFmtClp(cached.pmax) : '—',
+        semaforo: cached.semaforo || '—',
+        meta: (cached.materialNombre || 'Material') + ' · ' + (cached.sucursalNombre || 'Sin alcance') + ' · ' + (cached.vigenteFuente || 'Sin vigente visible'),
+        gate: cached.margenGate || cached.nota || 'La guía de margen aparecerá aquí.',
+        handler: openCalc || null,
+        buttonTitle: 'Abrir Calculadora ya preparada',
+        buttonText: 'Si necesitas mover sliders o publicar, la Calculadora abre con este mismo foco ya cargado.',
+      });
+      return;
+    }
+    mpRenderCalcSupportState({
+      status: 'loading',
+      handler: openCalc || null,
+      buttonTitle: 'Abrir Calculadora ya preparada',
+      buttonText: 'Si prefieres afinar ya, puedes abrir el motor real mientras termina de cargar esta foto compacta.',
+    });
+    const requestId = ++mpState.calcSupportRequestId;
+    try {
+      if (typeof window.calcGetWorkspaceSnapshot !== 'function') {
+        throw new Error('snapshot de calculadora no disponible');
+      }
+      const snapshot = await window.calcGetWorkspaceSnapshot({ materialId, sucursalId });
+      if (requestId !== mpState.calcSupportRequestId) return;
+      if (!snapshot) {
+        mpRenderCalcSupportState({
+          status: 'error',
+          text: 'No pude construir la foto compacta de Calculadora para este foco.',
+          handler: openCalc || null,
+        });
+        return;
+      }
+      mpState.calcSupportCache.set(cacheKey, snapshot);
+      mpRenderCalcSupportState({
+        status: 'ready',
+        tone: snapshot.delta != null && snapshot.delta > 0 ? 'rose' : 'emerald',
+        badge: 'Calculadora lista',
+        title: 'Foto compacta de Calculadora para ' + (snapshot.materialNombre || 'este caso') + '.',
+        text: snapshot.salida || 'La Calculadora ya dejó una lectura compacta para este foco.',
+        plista: snapshot.plista != null ? tapFmtClp(snapshot.plista) : '—',
+        pejec: snapshot.pejec != null ? tapFmtClp(snapshot.pejec) : '—',
+        pmax: snapshot.pmax != null ? tapFmtClp(snapshot.pmax) : '—',
+        semaforo: snapshot.semaforo || '—',
+        meta: (snapshot.materialNombre || 'Material') + ' · ' + (snapshot.sucursalNombre || 'Sin alcance') + ' · ' + (snapshot.vigenteFuente || 'Sin vigente visible'),
+        gate: snapshot.margenGate || snapshot.nota || 'La guía de margen aparecerá aquí.',
+        handler: openCalc || null,
+        buttonTitle: 'Abrir Calculadora ya preparada',
+        buttonText: 'Si necesitas mover sliders o publicar, la Calculadora abre con este mismo foco ya cargado.',
+      });
+    } catch (e) {
+      if (requestId !== mpState.calcSupportRequestId) return;
+      mpRenderCalcSupportState({
+        status: 'error',
+        text: 'El workspace conserva el foco, pero no pude traer la foto compacta de Calculadora: ' + String(e).slice(0, 120),
+        handler: openCalc || null,
+      });
+    }
+  }
+
   async function mpAbrirDrawerInline(id, mode, meta) {
     if (!id || typeof window.bpAbrirDrawer !== 'function') return;
     window.__mpWorkspaceInlineContext = {
@@ -18422,6 +18645,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       mpSyncInlineExecutionState();
       mpSyncInlineDecisionState();
       mpSyncPostCloseState(null, null, guide, null);
+      mpSyncWorkspaceCalcSupport(null, null, null);
       return;
     }
     const routeMeta = mpGetRouteMeta(row.ruta);
@@ -18526,6 +18750,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     mpSyncInlineExecutionState();
     mpSyncInlineDecisionState();
     mpSyncPostCloseState(selected, row, guide, postCloseActions);
+    mpSyncWorkspaceCalcSupport(selected, row, openCalc);
   }
 
   function mpRenderWorkspaceSafe(groups, selected) {
@@ -18694,6 +18919,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
   async function tapCargar(options) {
     if (options && options.focus) mpState.focus = options.focus;
     if (options && options.chip) mpState.chip = options.chip;
+    mpState.calcSupportCache.clear();
+    mpState.calcSupportRequestId += 1;
     if (typeof sb === 'undefined' || !sb) return;
     try {
       await mpEnsureCatalogsLoaded();
@@ -18834,6 +19061,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
   };
   window.wsIrDesdeCalculadora = async function (focus) {
     const payload = focus || window.bpFocusFromCalc || null;
+    mpState.calcSupportCache.clear();
+    mpState.calcSupportRequestId += 1;
     mpState.focus = payload;
     mpState.chip = 'decision_directa';
     mpOpenTab('workspace_precios');
