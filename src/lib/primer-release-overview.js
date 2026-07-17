@@ -7,6 +7,11 @@ const ACTIVE_STATES = new Set([
   'pagado_pendiente_conciliacion'
 ]);
 
+function asNumber(value) {
+  const parsed = Number(value || 0);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 export function formatMoney(value) {
   if (value === null || value === undefined || value === '') return '—';
   return new Intl.NumberFormat('es-CL', {
@@ -14,6 +19,14 @@ export function formatMoney(value) {
     currency: 'CLP',
     maximumFractionDigits: 0
   }).format(Number(value));
+}
+
+export function formatKg(value) {
+  if (value === null || value === undefined || value === '') return '—';
+  return `${new Intl.NumberFormat('es-CL', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(asNumber(value))} kg`;
 }
 
 export function hoursSince(value) {
@@ -86,6 +99,13 @@ function maxDate(...values) {
   return new Date(Math.max(...valid)).toISOString();
 }
 
+function dayKey(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
 export function deriveReleaseOverview(snapshot) {
   const expedientes = snapshot.expedientes || [];
   const pesajes = snapshot.pesajes || [];
@@ -93,6 +113,7 @@ export function deriveReleaseOverview(snapshot) {
   const pagos = snapshot.pagos || [];
   const eventos = snapshot.eventos || [];
   const comprobantes = snapshot.comprobantes || [];
+  const today = dayKey(new Date().toISOString());
 
   const pesajeByExpediente = buildIndex(pesajes, 'expediente_id');
   const facturasByExpediente = buildIndex(facturas, 'expediente_id', true);
@@ -116,9 +137,26 @@ export function deriveReleaseOverview(snapshot) {
   let expedientesSinPesaje = 0;
   let staleActive = 0;
   let oldestPendingHours = 0;
+  let kilosTotal = 0;
+  let kilosHoy = 0;
+  let capturasHoy = 0;
+  let capturasTotal = pesajes.length;
+  let expedientesActivos = 0;
+  let expedientesConPesaje = 0;
 
-  const alerts = [];
+  const operationalAlerts = [];
+  const financialAlerts = [];
   const sucursalMap = new Map();
+  const materialMap = new Map();
+
+  for (const pesaje of pesajes) {
+    const kilos = asNumber(pesaje.peso_neto_kg);
+    kilosTotal += kilos;
+    if (dayKey(pesaje.fecha_captura || pesaje.created_at) === today) {
+      kilosHoy += kilos;
+      capturasHoy += 1;
+    }
+  }
 
   for (const expediente of expedientes) {
     if (expediente.estado in byState) {
@@ -129,14 +167,24 @@ export function deriveReleaseOverview(snapshot) {
     const expFacturas = facturasByExpediente.get(expediente.expediente_id) || [];
     const expPagos = pagosByExpediente.get(expediente.expediente_id) || [];
     const expEventos = eventosByExpediente.get(expediente.expediente_id) || [];
-    const facturaMonto = expFacturas.reduce((sum, item) => sum + Number(item.monto_total || 0), 0);
-    const pagoMonto = expPagos.reduce((sum, item) => sum + Number(item.monto_pagado || 0), 0);
+    const facturaMonto = expFacturas.reduce((sum, item) => sum + asNumber(item.monto_total), 0);
+    const pagoMonto = expPagos.reduce((sum, item) => sum + asNumber(item.monto_pagado), 0);
+    const kilos = asNumber(pesaje?.peso_neto_kg);
+    const captureDay = dayKey(pesaje?.fecha_captura || pesaje?.created_at);
+    const materialId = pesaje?.material_id || expediente.material_id || 'sin_material';
 
     montoPagado += pagoMonto;
     if (expediente.estado === 'pendiente_pago') {
       montoPendiente += Math.max(facturaMonto - pagoMonto, facturaMonto || 0);
       const pendingAge = hoursSince(expediente.updated_at || expediente.created_at || expediente.fecha_operacion);
       oldestPendingHours = Math.max(oldestPendingHours, pendingAge || 0);
+    }
+
+    if (ACTIVE_STATES.has(expediente.estado)) {
+      expedientesActivos += 1;
+    }
+    if (pesaje) {
+      expedientesConPesaje += 1;
     }
 
     if (!pesaje && ACTIVE_STATES.has(expediente.estado) && expediente.estado !== 'agendado') {
@@ -170,11 +218,29 @@ export function deriveReleaseOverview(snapshot) {
     const sucursal = sucursalMap.get(expediente.sucursal_id || 'sin_sucursal') || {
       sucursal_id: expediente.sucursal_id || 'sin_sucursal',
       total: 0,
+      activos: 0,
+      capturas: 0,
+      kilosTotal: 0,
+      kilosHoy: 0,
+      expedientesSinPesaje: 0,
       pendiente_pago: 0,
       pagado_pendiente_conciliacion: 0,
       montoPendiente: 0
     };
     sucursal.total += 1;
+    if (ACTIVE_STATES.has(expediente.estado)) {
+      sucursal.activos += 1;
+    }
+    if (pesaje) {
+      sucursal.capturas += 1;
+      sucursal.kilosTotal += kilos;
+      if (captureDay === today) {
+        sucursal.kilosHoy += kilos;
+      }
+    }
+    if (!pesaje && ACTIVE_STATES.has(expediente.estado) && expediente.estado !== 'agendado') {
+      sucursal.expedientesSinPesaje += 1;
+    }
     if (expediente.estado === 'pendiente_pago') {
       sucursal.pendiente_pago += 1;
       sucursal.montoPendiente += Math.max(facturaMonto - pagoMonto, facturaMonto || 0);
@@ -183,10 +249,47 @@ export function deriveReleaseOverview(snapshot) {
       sucursal.pagado_pendiente_conciliacion += 1;
     }
     sucursalMap.set(sucursal.sucursal_id, sucursal);
+
+    const material = materialMap.get(materialId) || {
+      material_id: materialId,
+      capturas: 0,
+      expedientes: 0,
+      kilosTotal: 0,
+      kilosHoy: 0,
+      sucursales: new Set()
+    };
+    material.expedientes += 1;
+    if (pesaje) {
+      material.capturas += 1;
+      material.kilosTotal += kilos;
+      if (captureDay === today) {
+        material.kilosHoy += kilos;
+      }
+      if (expediente.sucursal_id) {
+        material.sucursales.add(expediente.sucursal_id);
+      }
+    }
+    materialMap.set(materialId, material);
+  }
+
+  const coberturaPesajePct = expedientesActivos ? Math.round((expedientesConPesaje / expedientesActivos) * 100) : 100;
+  const kilosPromedioCaptura = capturasTotal ? kilosTotal / capturasTotal : 0;
+  const ultimaCapturaAt = pesajes
+    .map((item) => item.fecha_captura || item.created_at)
+    .filter(Boolean)
+    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0] || null;
+
+  if (expedientesActivos > 0 && kilosHoy <= 0) {
+    operationalAlerts.push({
+      severity: 'critical',
+      title: 'Sin kilos capturados hoy',
+      detail: `${expedientesActivos} expedientes activos sin captura visible en la jornada.`,
+      state: ''
+    });
   }
 
   if (byState.pendiente_pago > 0) {
-    alerts.push({
+    financialAlerts.push({
       severity: oldestPendingHours >= 48 ? 'critical' : 'warning',
       title: `${byState.pendiente_pago} expedientes en cola de pago`,
       detail: `Monto expuesto ${formatMoney(montoPendiente)} · más antiguo ${pendingOldestLabel(oldestPendingHours)}`,
@@ -195,7 +298,7 @@ export function deriveReleaseOverview(snapshot) {
   }
 
   if (byState.pagado_pendiente_conciliacion > 0) {
-    alerts.push({
+    financialAlerts.push({
       severity: 'warning',
       title: `${byState.pagado_pendiente_conciliacion} pagos pendientes de conciliación`,
       detail: 'Conviene cerrar conciliación y validar documentación asociada.',
@@ -204,7 +307,7 @@ export function deriveReleaseOverview(snapshot) {
   }
 
   if (pagosSinComprobante > 0) {
-    alerts.push({
+    financialAlerts.push({
       severity: pagosSinComprobante >= 2 ? 'critical' : 'warning',
       title: `${pagosSinComprobante} expedientes con pago sin comprobante`,
       detail: 'Hay pagos registrados que todavía no tienen respaldo documental en el release.',
@@ -213,19 +316,39 @@ export function deriveReleaseOverview(snapshot) {
   }
 
   if (expedientesSinPesaje > 0) {
-    alerts.push({
-      severity: 'warning',
+    operationalAlerts.push({
+      severity: expedientesSinPesaje >= 2 ? 'critical' : 'warning',
       title: `${expedientesSinPesaje} expedientes activos sin pesaje visible`,
-      detail: 'Revisar consistencia entre captura operativa y expediente.',
+      detail: 'La compra quedó abierta sin captura firme de kilos en el flujo operativo.',
       state: ''
     });
   }
 
   if (staleActive > 0) {
-    alerts.push({
+    operationalAlerts.push({
       severity: staleActive >= 3 ? 'critical' : 'warning',
       title: `${staleActive} expedientes activos sin movimiento reciente`,
-      detail: 'No muestran actividad relevante en las últimas 48 horas.',
+      detail: 'No muestran continuidad operativa relevante en las últimas 48 horas.',
+      state: ''
+    });
+  }
+
+  if (coberturaPesajePct < 80 && expedientesActivos >= 3) {
+    operationalAlerts.push({
+      severity: coberturaPesajePct < 60 ? 'critical' : 'warning',
+      title: `Cobertura de pesaje en ${coberturaPesajePct}%`,
+      detail: 'La captura visible no acompaña el volumen de expedientes activos.',
+      state: ''
+    });
+  }
+
+  const sucursalMasFragil = Array.from(sucursalMap.values())
+    .sort((a, b) => (b.expedientesSinPesaje - a.expedientesSinPesaje) || (b.activos - a.activos))[0] || null;
+  if (sucursalMasFragil && sucursalMasFragil.expedientesSinPesaje > 0) {
+    operationalAlerts.push({
+      severity: sucursalMasFragil.expedientesSinPesaje >= 2 ? 'critical' : 'warning',
+      title: `${sucursalMasFragil.sucursal_id} concentra la mayor brecha de captura`,
+      detail: `${sucursalMasFragil.expedientesSinPesaje} expedientes sin pesaje visible y ${formatKg(sucursalMasFragil.kilosHoy)} capturados hoy.`,
       state: ''
     });
   }
@@ -239,9 +362,30 @@ export function deriveReleaseOverview(snapshot) {
       expediente_codigo: expedienteById.get(evento.expediente_id)?.expediente_codigo || evento.expediente_id
     }));
 
+  const recentCaptures = pesajes
+    .slice()
+    .sort((a, b) => new Date(b.fecha_captura || b.created_at).getTime() - new Date(a.fecha_captura || a.created_at).getTime())
+    .slice(0, 10)
+    .map((pesaje) => ({
+      ...pesaje,
+      expediente_codigo: expedienteById.get(pesaje.expediente_id)?.expediente_codigo || pesaje.expediente_id
+    }));
+
   const sucursales = Array.from(sucursalMap.values())
-    .sort((a, b) => (b.pendiente_pago - a.pendiente_pago) || (b.total - a.total))
+    .sort((a, b) => (b.kilosHoy - a.kilosHoy) || (b.kilosTotal - a.kilosTotal) || (b.expedientesSinPesaje - a.expedientesSinPesaje))
     .slice(0, 6);
+
+  const materialesRaw = Array.from(materialMap.values());
+  const materiales = materialesRaw
+    .map((item) => ({
+      ...item,
+      sucursalesCount: item.sucursales.size
+    }))
+    .sort((a, b) => (b.kilosHoy - a.kilosHoy) || (b.kilosTotal - a.kilosTotal) || (b.capturas - a.capturas))
+    .slice(0, 6);
+
+  const alerts = [...operationalAlerts, ...financialAlerts]
+    .sort((a, b) => severityRank(b.severity) - severityRank(a.severity));
 
   const alertCounts = {
     critical: alerts.filter((item) => item.severity === 'critical').length,
@@ -250,15 +394,30 @@ export function deriveReleaseOverview(snapshot) {
 
   return {
     byState,
+    kilosTotal,
+    kilosHoy,
+    capturasHoy,
+    capturasTotal,
+    kilosPromedioCaptura,
+    expedientesActivos,
+    expedientesConPesaje,
+    coberturaPesajePct,
+    ultimaCapturaAt,
+    sucursalesConCaptura: Array.from(sucursalMap.values()).filter((item) => item.capturas > 0).length,
+    materialesConCaptura: materialesRaw.filter((item) => item.capturas > 0).length,
     montoPendiente,
     montoPagado,
     pagosSinComprobante,
     expedientesSinPesaje,
     staleActive,
     oldestPendingHours,
-    alerts: alerts.sort((a, b) => severityRank(b.severity) - severityRank(a.severity)),
+    operationalAlerts: operationalAlerts.sort((a, b) => severityRank(b.severity) - severityRank(a.severity)),
+    financialAlerts: financialAlerts.sort((a, b) => severityRank(b.severity) - severityRank(a.severity)),
+    alerts,
     alertCounts,
     recentActivity,
-    sucursales
+    recentCaptures,
+    sucursales,
+    materiales
   };
 }

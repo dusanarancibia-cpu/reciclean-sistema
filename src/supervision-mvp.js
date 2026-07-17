@@ -8,16 +8,17 @@ import {
   isPrimerReleaseDemoEnabled,
   resetPrimerReleaseDemo
 } from './lib/primer-release-api.js';
+import {
+  deriveReleaseOverview,
+  formatKg,
+  formatMoney,
+  healthLabel,
+  healthTone,
+  relativeAge,
+  severityLabel
+} from './lib/primer-release-overview.js';
 
 const app = document.querySelector('#app');
-const ACTIVE_STATES = new Set([
-  'agendado',
-  'recepcionado',
-  'en_proceso',
-  'pendiente_factura',
-  'pendiente_pago',
-  'pagado_pendiente_conciliacion'
-]);
 
 const state = {
   session: null,
@@ -26,10 +27,14 @@ const state = {
   demo: false,
   error: '',
   notice: '',
-  lookups: { sucursales: [] },
+  lookups: {
+    sucursales: [],
+    materiales: []
+  },
   filters: {
     sucursal_id: '',
     estado: '',
+    material_id: '',
     texto: ''
   },
   snapshot: {
@@ -58,39 +63,9 @@ function escapeHtml(value) {
     .replaceAll('"', '&quot;');
 }
 
-function money(value) {
-  if (value === null || value === undefined || value === '') return '—';
-  return new Intl.NumberFormat('es-CL', {
-    style: 'currency',
-    currency: 'CLP',
-    maximumFractionDigits: 0
-  }).format(Number(value));
-}
-
 function dt(value) {
   if (!value) return '—';
   return new Date(value).toLocaleString('es-CL');
-}
-
-function hoursSince(value) {
-  if (!value) return null;
-  const diff = Date.now() - new Date(value).getTime();
-  if (Number.isNaN(diff)) return null;
-  return Math.max(0, diff / 36e5);
-}
-
-function relativeAge(value) {
-  const hours = hoursSince(value);
-  if (hours === null) return 'sin dato';
-  if (hours < 1) return '< 1 h';
-  if (hours < 24) return `${Math.round(hours)} h`;
-  return `${Math.round(hours / 24)} d`;
-}
-
-function pendingOldestLabel(hours) {
-  if (!hours) return 'sin cola';
-  if (hours < 24) return `${Math.round(hours)} h`;
-  return `${Math.round(hours / 24)} d`;
 }
 
 function clearFlash() {
@@ -108,50 +83,12 @@ function setError(message) {
   state.notice = '';
 }
 
-function buildIndex(items, key, multiple = false) {
-  const map = new Map();
-  for (const item of items || []) {
-    const mapKey = item?.[key];
-    if (!mapKey) continue;
-    if (multiple) {
-      const bucket = map.get(mapKey) || [];
-      bucket.push(item);
-      map.set(mapKey, bucket);
-    } else if (!map.has(mapKey)) {
-      map.set(mapKey, item);
-    }
-  }
-  return map;
+function sucursalName(sucursalId) {
+  return state.lookups.sucursales.find((item) => item.sucursal_id === sucursalId)?.nombre || sucursalId || 'sin sucursal';
 }
 
-function maxDate(...values) {
-  const valid = values.filter(Boolean).map((value) => new Date(value).getTime()).filter((value) => !Number.isNaN(value));
-  if (!valid.length) return null;
-  return new Date(Math.max(...valid)).toISOString();
-}
-
-function severityRank(severity) {
-  return severity === 'critical' ? 3 : severity === 'warning' ? 2 : 1;
-}
-
-function severityLabel(severity) {
-  if (severity === 'critical') return 'Crítica';
-  if (severity === 'warning') return 'Atención';
-  return 'Info';
-}
-
-function healthTone(overview) {
-  if (!overview) return 'ok';
-  if (overview.alertCounts.critical > 0) return 'critical';
-  if (overview.alertCounts.warning > 0) return 'warning';
-  return 'ok';
-}
-
-function healthLabel(overview) {
-  const tone = healthTone(overview);
-  if (tone === 'critical') return 'Riesgo operativo';
-  if (tone === 'warning') return 'Vigilancia activa';
-  return 'Release estable';
+function materialName(materialId) {
+  return state.lookups.materiales.find((item) => item.material_id === materialId)?.nombre || materialId || 'sin material';
 }
 
 function filteredExpedientes() {
@@ -159,185 +96,19 @@ function filteredExpedientes() {
   return state.expedientes.filter((item) => {
     if (state.filters.sucursal_id && item.sucursal_id !== state.filters.sucursal_id) return false;
     if (state.filters.estado && item.estado !== state.filters.estado) return false;
+    if (state.filters.material_id && item.material_id !== state.filters.material_id) return false;
     if (!needle) return true;
     return [
       item.expediente_codigo,
       item.cliente_id,
       item.sucursal_id,
+      sucursalName(item.sucursal_id),
       item.material_id,
+      materialName(item.material_id),
       item.servicio_clase,
       item.estado
     ].filter(Boolean).some((part) => String(part).toLowerCase().includes(needle));
   });
-}
-
-function deriveOverview(snapshot) {
-  const expedientes = snapshot.expedientes || [];
-  const pesajes = snapshot.pesajes || [];
-  const facturas = snapshot.facturas || [];
-  const pagos = snapshot.pagos || [];
-  const eventos = snapshot.eventos || [];
-  const comprobantes = snapshot.comprobantes || [];
-
-  const pesajeByExpediente = buildIndex(pesajes, 'expediente_id');
-  const facturasByExpediente = buildIndex(facturas, 'expediente_id', true);
-  const pagosByExpediente = buildIndex(pagos, 'expediente_id', true);
-  const eventosByExpediente = buildIndex(eventos, 'expediente_id', true);
-  const comprobantesByFactura = buildIndex(comprobantes, 'factura_raw_id', true);
-  const expedienteById = new Map(expedientes.map((item) => [item.expediente_id, item]));
-
-  const byState = {
-    total: expedientes.length,
-    en_proceso: 0,
-    pendiente_factura: 0,
-    pendiente_pago: 0,
-    pagado_pendiente_conciliacion: 0,
-    cerrado: 0
-  };
-
-  let montoPendiente = 0;
-  let montoPagado = 0;
-  let pagosSinComprobante = 0;
-  let expedientesSinPesaje = 0;
-  let staleActive = 0;
-  let oldestPendingHours = 0;
-
-  const alerts = [];
-  const sucursalMap = new Map();
-
-  for (const expediente of expedientes) {
-    if (expediente.estado in byState) {
-      byState[expediente.estado] += 1;
-    }
-
-    const pesaje = pesajeByExpediente.get(expediente.expediente_id) || null;
-    const expFacturas = facturasByExpediente.get(expediente.expediente_id) || [];
-    const expPagos = pagosByExpediente.get(expediente.expediente_id) || [];
-    const expEventos = eventosByExpediente.get(expediente.expediente_id) || [];
-    const facturaMonto = expFacturas.reduce((sum, item) => sum + Number(item.monto_total || 0), 0);
-    const pagoMonto = expPagos.reduce((sum, item) => sum + Number(item.monto_pagado || 0), 0);
-
-    montoPagado += pagoMonto;
-    if (expediente.estado === 'pendiente_pago') {
-      montoPendiente += Math.max(facturaMonto - pagoMonto, facturaMonto || 0);
-      const pendingAge = hoursSince(expediente.updated_at || expediente.created_at || expediente.fecha_operacion);
-      oldestPendingHours = Math.max(oldestPendingHours, pendingAge || 0);
-    }
-
-    if (!pesaje && ACTIVE_STATES.has(expediente.estado) && expediente.estado !== 'agendado') {
-      expedientesSinPesaje += 1;
-    }
-
-    const lastEventAt = expEventos[0]?.created_at || null;
-    const lastFacturaAt = expFacturas[0]?.updated_at || expFacturas[0]?.created_at || null;
-    const lastPagoAt = expPagos[0]?.created_at || null;
-    const lastActivityAt = maxDate(expediente.updated_at, expediente.created_at, lastEventAt, lastFacturaAt, lastPagoAt, pesaje?.fecha_captura, pesaje?.created_at);
-    const staleHours = hoursSince(lastActivityAt);
-    if (ACTIVE_STATES.has(expediente.estado) && staleHours !== null && staleHours >= 48) {
-      staleActive += 1;
-    }
-
-    const comprobantesExp = expFacturas.flatMap((factura) =>
-      comprobantesByFactura.get(factura.factura_raw_id ?? factura.id) || []
-    );
-    if (expPagos.length > 0 && comprobantesExp.length === 0) {
-      pagosSinComprobante += 1;
-    }
-
-    const sucursal = sucursalMap.get(expediente.sucursal_id || 'sin_sucursal') || {
-      sucursal_id: expediente.sucursal_id || 'sin_sucursal',
-      total: 0,
-      pendiente_pago: 0,
-      pagado_pendiente_conciliacion: 0,
-      montoPendiente: 0
-    };
-    sucursal.total += 1;
-    if (expediente.estado === 'pendiente_pago') {
-      sucursal.pendiente_pago += 1;
-      sucursal.montoPendiente += Math.max(facturaMonto - pagoMonto, facturaMonto || 0);
-    }
-    if (expediente.estado === 'pagado_pendiente_conciliacion') {
-      sucursal.pagado_pendiente_conciliacion += 1;
-    }
-    sucursalMap.set(sucursal.sucursal_id, sucursal);
-  }
-
-  if (byState.pendiente_pago > 0) {
-    alerts.push({
-      severity: oldestPendingHours >= 48 ? 'critical' : 'warning',
-      title: `${byState.pendiente_pago} expedientes en cola de pago`,
-      detail: `Monto expuesto ${money(montoPendiente)} · más antiguo ${pendingOldestLabel(oldestPendingHours)}`,
-      state: 'pendiente_pago'
-    });
-  }
-
-  if (byState.pagado_pendiente_conciliacion > 0) {
-    alerts.push({
-      severity: 'warning',
-      title: `${byState.pagado_pendiente_conciliacion} pagos pendientes de conciliación`,
-      detail: 'Conviene cerrar conciliación y validar documentación asociada.',
-      state: 'pagado_pendiente_conciliacion'
-    });
-  }
-
-  if (pagosSinComprobante > 0) {
-    alerts.push({
-      severity: pagosSinComprobante >= 2 ? 'critical' : 'warning',
-      title: `${pagosSinComprobante} expedientes con pago sin comprobante`,
-      detail: 'Hay pagos registrados que todavía no tienen respaldo documental en el release.',
-      state: ''
-    });
-  }
-
-  if (expedientesSinPesaje > 0) {
-    alerts.push({
-      severity: 'warning',
-      title: `${expedientesSinPesaje} expedientes activos sin pesaje visible`,
-      detail: 'Revisar consistencia entre captura operativa y expediente.',
-      state: ''
-    });
-  }
-
-  if (staleActive > 0) {
-    alerts.push({
-      severity: staleActive >= 3 ? 'critical' : 'warning',
-      title: `${staleActive} expedientes activos sin movimiento reciente`,
-      detail: 'No muestran actividad relevante en las últimas 48 horas.',
-      state: ''
-    });
-  }
-
-  const recentActivity = eventos
-    .slice()
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 10)
-    .map((evento) => ({
-      ...evento,
-      expediente_codigo: expedienteById.get(evento.expediente_id)?.expediente_codigo || evento.expediente_id
-    }));
-
-  const sucursales = Array.from(sucursalMap.values())
-    .sort((a, b) => (b.pendiente_pago - a.pendiente_pago) || (b.total - a.total))
-    .slice(0, 6);
-
-  const alertCounts = {
-    critical: alerts.filter((item) => item.severity === 'critical').length,
-    warning: alerts.filter((item) => item.severity === 'warning').length
-  };
-
-  return {
-    byState,
-    montoPendiente,
-    montoPagado,
-    pagosSinComprobante,
-    expedientesSinPesaje,
-    staleActive,
-    oldestPendingHours,
-    alerts: alerts.sort((a, b) => severityRank(b.severity) - severityRank(a.severity)),
-    alertCounts,
-    recentActivity,
-    sucursales
-  };
 }
 
 function syncSelectedFromSnapshot() {
@@ -371,7 +142,7 @@ function renderLogin() {
       <div class="card auth-card">
         <div class="eyebrow">Primer Release · Supervisión</div>
         <h1>Centro de Control</h1>
-        <p class="subtle">Ingreso con Supabase Auth para revisar el release completo. Si todavía no tienes acceso, puedes abrir un modo demo operativo.</p>
+        <p class="subtle">Ingreso para revisar compra, captura y continuidad del release. Si todavía no tienes acceso, puedes abrir un modo demo operativo.</p>
         <form id="login-form" class="stack">
           <label class="field">
             <span>Email</span>
@@ -407,12 +178,25 @@ function renderAlertItem(alert) {
   `;
 }
 
+function renderCaptureItem(capture) {
+  return `
+    <button class="timeline-item timeline-button" type="button" data-expediente-id="${escapeHtml(capture.expediente_id)}">
+      <div class="timeline-meta">
+        <strong>${escapeHtml(capture.expediente_codigo)}</strong>
+        <span>${escapeHtml(materialName(capture.material_id))} · ${escapeHtml(sucursalName(capture.sucursal_id))}</span>
+      </div>
+      <div class="timeline-date">${escapeHtml(formatKg(capture.peso_neto_kg))} · ${escapeHtml(dt(capture.fecha_captura || capture.created_at))}</div>
+    </button>
+  `;
+}
+
 function renderApp() {
   const items = filteredExpedientes();
-  const overview = state.overview || deriveOverview(state.snapshot);
+  const overview = state.overview || deriveReleaseOverview(state.snapshot);
   const selected = state.selected;
   const health = healthTone(overview);
-  const pendingOldestLabel = overview.oldestPendingHours ? `${Math.round(overview.oldestPendingHours)} h` : 'sin cola';
+  const operationalAlerts = overview.operationalAlerts || [];
+  const financialAlerts = overview.financialAlerts || [];
 
   app.innerHTML = `
     <section class="shell">
@@ -420,7 +204,7 @@ function renderApp() {
         <div>
           <div class="eyebrow">Primer Release · Supervisión</div>
           <h1>Centro de Control</h1>
-          <p class="subtle">Lectura ejecutiva del flujo vivo: expedientes, cola financiera, alertas y trazabilidad reciente.</p>
+          <p class="subtle">Compra y captura primero: kilos, continuidad operativa y desvíos en origen. El tramo financiero queda visible, pero en segunda capa.</p>
         </div>
         <div class="topbar-actions">
           <a class="btn" href="/romanero.html" target="_blank" rel="noopener">Romanero</a>
@@ -433,66 +217,107 @@ function renderApp() {
         </div>
       </header>
 
-      ${state.demo ? '<div class="flash flash-ok">Modo demo activo. Aquí puedes revisar el release completo con datos compartidos entre Romanero, Pagos y Supervisión sin credenciales reales.</div>' : ''}
+      ${state.demo ? '<div class="flash flash-ok">Modo demo activo. Aquí puedes revisar compra, kilos y continuidad del release con datos compartidos entre Romanero, Pagos y Supervisión.</div>' : ''}
       ${state.notice ? `<div class="flash flash-ok">${escapeHtml(state.notice)}</div>` : ''}
       ${state.error ? `<div class="flash flash-error">${escapeHtml(state.error)}</div>` : ''}
 
       <section class="card hero hero-${health}">
         <div class="card-head">
           <div>
-            <h2>Salud operativa del release</h2>
-            <p class="subtle">${healthLabel(overview)} · ${overview.alertCounts.critical} alertas críticas, ${overview.alertCounts.warning} en observación.</p>
+            <h2>Pulso de compra y captura</h2>
+            <p class="subtle">${healthLabel(overview)} · ${overview.alertCounts.critical} alertas críticas, ${overview.alertCounts.warning} en observación. La prioridad es no perder kilos ni continuidad operativa.</p>
           </div>
           <span class="status">${escapeHtml(state.session?.user?.email || 'sesion activa')}</span>
         </div>
         <div class="metric-grid">
-          <div class="metric"><span>Total expedientes</span><strong>${overview.byState.total}</strong></div>
-          <div class="metric"><span>Cola de pago</span><strong>${overview.byState.pendiente_pago}</strong></div>
-          <div class="metric"><span>Pagos por conciliar</span><strong>${overview.byState.pagado_pendiente_conciliacion}</strong></div>
-          <div class="metric"><span>Monto pendiente</span><strong>${money(overview.montoPendiente)}</strong></div>
+          <div class="metric"><span>Kilos hoy</span><strong>${formatKg(overview.kilosHoy)}</strong></div>
+          <div class="metric"><span>Capturas hoy</span><strong>${overview.capturasHoy}</strong></div>
+          <div class="metric"><span>Expedientes sin pesaje</span><strong>${overview.expedientesSinPesaje}</strong></div>
+          <div class="metric"><span>Cobertura de pesaje</span><strong>${overview.coberturaPesajePct}%</strong></div>
         </div>
       </section>
 
       <section class="stats">
-        <article class="stat-card"><span>Total</span><strong>${overview.byState.total}</strong></article>
-        <article class="stat-card"><span>En proceso</span><strong>${overview.byState.en_proceso}</strong></article>
-        <article class="stat-card"><span>Pendiente factura</span><strong>${overview.byState.pendiente_factura}</strong></article>
-        <article class="stat-card"><span>Cola pago</span><strong>${overview.byState.pendiente_pago}</strong></article>
-        <article class="stat-card"><span>Pago más antiguo</span><strong>${pendingOldestLabel}</strong></article>
-        <article class="stat-card"><span>Pagado</span><strong>${money(overview.montoPagado)}</strong></article>
+        <article class="stat-card"><span>Kilos visibles</span><strong>${formatKg(overview.kilosTotal)}</strong></article>
+        <article class="stat-card"><span>Promedio captura</span><strong>${formatKg(overview.kilosPromedioCaptura)}</strong></article>
+        <article class="stat-card"><span>Expedientes activos</span><strong>${overview.expedientesActivos}</strong></article>
+        <article class="stat-card"><span>Sucursales con captura</span><strong>${overview.sucursalesConCaptura}</strong></article>
+        <article class="stat-card"><span>Materiales con captura</span><strong>${overview.materialesConCaptura}</strong></article>
+        <article class="stat-card"><span>Última captura</span><strong>${escapeHtml(relativeAge(overview.ultimaCapturaAt))}</strong></article>
       </section>
 
       <div class="layout lower">
         <section class="card">
           <div class="card-head">
             <div>
-              <h2>Alertas y focos</h2>
-              <p class="subtle">Lectura accionable para no perder la cola operativa.</p>
+              <h2>Alertas de compra y captura</h2>
+              <p class="subtle">Señales tempranas donde realmente nacen los problemas: kilos, pesaje y continuidad operativa.</p>
             </div>
           </div>
           <div class="stack-list">
-            ${overview.alerts.length ? overview.alerts.map(renderAlertItem).join('') : '<div class="empty">No hay alertas activas en este momento.</div>'}
+            ${operationalAlerts.length ? operationalAlerts.map(renderAlertItem).join('') : '<div class="empty">No hay alertas de captura activas en este momento.</div>'}
           </div>
         </section>
 
         <section class="card">
           <div class="card-head">
             <div>
-              <h2>Radar por sucursal</h2>
-              <p class="subtle">Dónde está hoy la mayor presión operativa del release.</p>
+              <h2>Kilos por sucursal</h2>
+              <p class="subtle">Dónde se está moviendo material y dónde la captura quedó corta.</p>
             </div>
           </div>
           <div class="stack-list">
             ${overview.sucursales.length ? overview.sucursales.map((item) => `
               <article class="mini-card">
                 <div class="card-head">
-                  <strong>${escapeHtml(item.sucursal_id)}</strong>
+                  <strong>${escapeHtml(sucursalName(item.sucursal_id))}</strong>
                   <button class="btn btn-small" type="button" data-action="filter-sucursal" data-sucursal-id="${escapeHtml(item.sucursal_id)}">Filtrar</button>
                 </div>
-                <span>${item.total} expedientes · ${item.pendiente_pago} en cola · ${item.pagado_pendiente_conciliacion} por conciliar</span>
-                <small>Monto pendiente ${money(item.montoPendiente)}</small>
+                <span>${formatKg(item.kilosHoy)} hoy · ${formatKg(item.kilosTotal)} visibles · ${item.capturas} capturas</span>
+                <small>${item.expedientesSinPesaje} sin pesaje · ${item.activos} activos · ${item.pendiente_pago} en cola de pago</small>
               </article>
-            `).join('') : '<div class="empty">Todavía no hay sucursales con movimiento.</div>'}
+            `).join('') : '<div class="empty">Todavía no hay sucursales con captura visible.</div>'}
+          </div>
+        </section>
+      </div>
+
+      <div class="layout lower">
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <h2>Materiales calientes</h2>
+              <p class="subtle">Qué materiales concentran hoy más kilos y más movimiento.</p>
+            </div>
+          </div>
+          <div class="stack-list">
+            ${overview.materiales.length ? overview.materiales.map((item) => `
+              <article class="mini-card">
+                <div class="card-head">
+                  <strong>${escapeHtml(materialName(item.material_id))}</strong>
+                  <button class="btn btn-small" type="button" data-action="filter-material" data-material-id="${escapeHtml(item.material_id)}">Filtrar</button>
+                </div>
+                <span>${formatKg(item.kilosHoy)} hoy · ${formatKg(item.kilosTotal)} visibles · ${item.capturas} capturas</span>
+                <small>${item.expedientes} expedientes · ${item.sucursalesCount} sucursales con actividad</small>
+              </article>
+            `).join('') : '<div class="empty">Todavía no hay materiales con captura visible.</div>'}
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <h2>Señales financieras secundarias</h2>
+              <p class="subtle">El tramo financiero sigue visible, pero subordinado al pulso de compra y captura.</p>
+            </div>
+          </div>
+          <div class="metric-grid">
+            <div class="metric"><span>Cola de pago</span><strong>${overview.byState.pendiente_pago}</strong></div>
+            <div class="metric"><span>Por conciliar</span><strong>${overview.byState.pagado_pendiente_conciliacion}</strong></div>
+            <div class="metric"><span>Monto pendiente</span><strong>${formatMoney(overview.montoPendiente)}</strong></div>
+            <div class="metric"><span>Pagos sin respaldo</span><strong>${overview.pagosSinComprobante}</strong></div>
+          </div>
+          <div class="stack-list">
+            ${financialAlerts.length ? financialAlerts.map(renderAlertItem).join('') : '<div class="empty">No hay alertas financieras activas en este momento.</div>'}
           </div>
         </section>
       </div>
@@ -502,7 +327,7 @@ function renderApp() {
           <div class="card-head">
             <div>
               <h2>Expedientes</h2>
-              <p class="subtle">Filtro rápido para bajar del tablero al caso operativo.</p>
+              <p class="subtle">Filtro rápido para bajar del tablero al caso operativo sin perder foco en sucursal, material y captura.</p>
             </div>
             <span class="status">${items.length} visibles / ${state.expedientes.length}</span>
           </div>
@@ -528,8 +353,19 @@ function renderApp() {
               </select>
             </label>
             <label class="field">
+              <span>Material</span>
+              <select name="material_id">
+                <option value="">Todos</option>
+                ${state.lookups.materiales.map((item) => `
+                  <option value="${escapeHtml(item.material_id)}"${item.material_id === state.filters.material_id ? ' selected' : ''}>
+                    ${escapeHtml(item.nombre)}
+                  </option>
+                `).join('')}
+              </select>
+            </label>
+            <label class="field">
               <span>Buscar</span>
-              <input type="search" name="texto" value="${escapeHtml(state.filters.texto)}" placeholder="Codigo, cliente, material, sucursal" />
+              <input type="search" name="texto" value="${escapeHtml(state.filters.texto)}" placeholder="Codigo, cliente, material o sucursal" />
             </label>
           </div>
           <div class="list">
@@ -537,7 +373,7 @@ function renderApp() {
               <button class="list-item${selected?.expediente_id === item.expediente_id ? ' active' : ''}" type="button" data-expediente-id="${item.expediente_id}">
                 <div class="list-main">
                   <strong>${escapeHtml(item.expediente_codigo || item.expediente_id)}</strong>
-                  <span>${escapeHtml(item.cliente_id || 'sin cliente')} · ${escapeHtml(item.sucursal_id || 'sin sucursal')}</span>
+                  <span>${escapeHtml(item.cliente_id || 'sin cliente')} · ${escapeHtml(materialName(item.material_id))} · ${escapeHtml(sucursalName(item.sucursal_id))}</span>
                 </div>
                 <div class="list-side">
                   <span class="badge">${escapeHtml(item.estado || '—')}</span>
@@ -561,8 +397,8 @@ function renderApp() {
                 <div class="metric"><span>Estado</span><strong>${escapeHtml(selected.estado || '—')}</strong></div>
                 <div class="metric"><span>Servicio</span><strong>${escapeHtml(selected.servicio_clase || '—')}</strong></div>
                 <div class="metric"><span>Cliente</span><strong>${escapeHtml(selected.cliente_id || '—')}</strong></div>
-                <div class="metric"><span>Material</span><strong>${escapeHtml(selected.material_id || '—')}</strong></div>
-                <div class="metric"><span>Sucursal</span><strong>${escapeHtml(selected.sucursal_id || '—')}</strong></div>
+                <div class="metric"><span>Material</span><strong>${escapeHtml(materialName(selected.material_id))}</strong></div>
+                <div class="metric"><span>Sucursal</span><strong>${escapeHtml(sucursalName(selected.sucursal_id))}</strong></div>
                 <div class="metric"><span>Último movimiento</span><strong>${escapeHtml(relativeAge(state.eventos[0]?.created_at || selected.updated_at || selected.created_at))}</strong></div>
               </div>
             ` : '<div class="empty">Elige un expediente para revisar el flujo.</div>'}
@@ -571,16 +407,16 @@ function renderApp() {
           <section class="card">
             <div class="card-head">
               <div>
-                <h2>Puntos críticos</h2>
-                <p class="subtle">Resumen operacional y financiero del expediente seleccionado.</p>
+                <h2>Captura y continuidad</h2>
+                <p class="subtle">Resumen del punto donde nacen los problemas: kilos, precio, trazabilidad y cierre del caso.</p>
               </div>
             </div>
             <div class="metric-grid">
-              <div class="metric"><span>Pesaje</span><strong>${state.pesaje ? `${Number(state.pesaje.peso_neto_kg || 0).toFixed(2)} kg` : '—'}</strong></div>
-              <div class="metric"><span>Monto estimado</span><strong>${state.pesaje ? money(state.pesaje.monto_total) : '—'}</strong></div>
+              <div class="metric"><span>Pesaje</span><strong>${state.pesaje ? formatKg(state.pesaje.peso_neto_kg) : '—'}</strong></div>
+              <div class="metric"><span>Precio unitario</span><strong>${state.pesaje ? formatMoney(state.pesaje.precio_unitario) : '—'}</strong></div>
+              <div class="metric"><span>Monto estimado</span><strong>${state.pesaje ? formatMoney(state.pesaje.monto_total) : '—'}</strong></div>
               <div class="metric"><span>Facturas</span><strong>${state.facturas.length}</strong></div>
               <div class="metric"><span>Pagos</span><strong>${state.pagos.length}</strong></div>
-              <div class="metric"><span>Comprobantes</span><strong>${state.comprobantes.length}</strong></div>
               <div class="metric"><span>Eventos</span><strong>${state.eventos.length}</strong></div>
             </div>
           </section>
@@ -591,8 +427,22 @@ function renderApp() {
         <section class="card">
           <div class="card-head">
             <div>
-              <h2>Tramo financiero</h2>
-              <p class="subtle">Facturas, pagos y respaldos del expediente seleccionado.</p>
+              <h2>Capturas recientes</h2>
+              <p class="subtle">Últimos kilos visibles del release para revisar ritmo y continuidad.</p>
+            </div>
+          </div>
+          ${overview.recentCaptures.length ? `
+            <div class="timeline">
+              ${overview.recentCaptures.map(renderCaptureItem).join('')}
+            </div>
+          ` : '<div class="empty">Todavía no hay capturas recientes para mostrar.</div>'}
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <h2>Tramo financiero del expediente</h2>
+              <p class="subtle">Cierre secundario del caso seleccionado: facturas, pagos y respaldos.</p>
             </div>
           </div>
           <div class="subgrid">
@@ -602,7 +452,7 @@ function renderApp() {
                 <article class="mini-card">
                   <strong>${escapeHtml(factura.folio || `Factura ${factura.id}`)}</strong>
                   <span>${escapeHtml(factura.estado_pago_release || '—')}</span>
-                  <small>${money(factura.monto_total)} · ${escapeHtml(dt(factura.updated_at || factura.created_at))}</small>
+                  <small>${formatMoney(factura.monto_total)} · ${escapeHtml(dt(factura.updated_at || factura.created_at))}</small>
                 </article>
               `).join('') : '<div class="empty">Sin facturas ligadas al expediente.</div>'}
             </div>
@@ -610,7 +460,7 @@ function renderApp() {
               <h3 class="subsection-title">Pagos y comprobantes</h3>
               ${state.pagos.length ? state.pagos.map((pago) => `
                 <article class="mini-card">
-                  <strong>${money(pago.monto_pagado)}</strong>
+                  <strong>${formatMoney(pago.monto_pagado)}</strong>
                   <span>${escapeHtml(pago.medio_pago || '—')} · ${escapeHtml(pago.estado || '—')}</span>
                   <small>${escapeHtml(dt(pago.created_at))}</small>
                 </article>
@@ -625,12 +475,14 @@ function renderApp() {
             </div>
           </div>
         </section>
+      </div>
 
+      <div class="layout lower">
         <section class="card">
           <div class="card-head">
             <div>
               <h2>Actividad reciente</h2>
-              <p class="subtle">Eventos más nuevos del release para detectar deriva y bloqueos.</p>
+              <p class="subtle">Eventos más nuevos del release para detectar deriva, bloqueos o cortes de continuidad.</p>
             </div>
           </div>
           ${overview.recentActivity.length ? `
@@ -646,6 +498,23 @@ function renderApp() {
               `).join('')}
             </div>
           ` : '<div class="empty">Todavía no hay actividad para mostrar.</div>'}
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <h2>Estado visible del flujo</h2>
+              <p class="subtle">Resumen del backlog vivo desde operación hasta cierre financiero.</p>
+            </div>
+          </div>
+          <div class="metric-grid">
+            <div class="metric"><span>Total expedientes</span><strong>${overview.byState.total}</strong></div>
+            <div class="metric"><span>En proceso</span><strong>${overview.byState.en_proceso}</strong></div>
+            <div class="metric"><span>Pendiente factura</span><strong>${overview.byState.pendiente_factura}</strong></div>
+            <div class="metric"><span>Cola de pago</span><strong>${overview.byState.pendiente_pago}</strong></div>
+            <div class="metric"><span>Por conciliar</span><strong>${overview.byState.pagado_pendiente_conciliacion}</strong></div>
+            <div class="metric"><span>Pagado</span><strong>${formatMoney(overview.montoPagado)}</strong></div>
+          </div>
         </section>
       </div>
     </section>
@@ -674,7 +543,7 @@ function render() {
 async function loadOverview() {
   state.snapshot = await fetchReleaseOverviewSnapshot(null, 220);
   state.expedientes = state.snapshot.expedientes || [];
-  state.overview = deriveOverview(state.snapshot);
+  state.overview = deriveReleaseOverview(state.snapshot);
   syncSelectedFromSnapshot();
 }
 
@@ -805,6 +674,7 @@ async function boot() {
     if (state.session) {
       const lookups = await loadRomaneroLookups();
       state.lookups.sucursales = lookups.sucursales || [];
+      state.lookups.materiales = lookups.materiales || [];
       await loadOverview();
     }
     state.loading = false;
@@ -866,7 +736,7 @@ app.addEventListener('click', async (event) => {
     return;
   }
   if (action === 'clear-filters') {
-    applyFilters({ sucursal_id: '', estado: '', texto: '' });
+    applyFilters({ sucursal_id: '', estado: '', material_id: '', texto: '' });
     return;
   }
   if (action === 'filter-state') {
@@ -875,6 +745,10 @@ app.addEventListener('click', async (event) => {
   }
   if (action === 'filter-sucursal') {
     applyFilters({ sucursal_id: actionable.dataset.sucursalId || '' });
+    return;
+  }
+  if (action === 'filter-material') {
+    applyFilters({ material_id: actionable.dataset.materialId || '' });
   }
 });
 
