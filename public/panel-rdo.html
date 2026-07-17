@@ -3936,6 +3936,15 @@
                 <div id="wsSafePrimaryText" class="text-xs text-violet-700 mt-1">La página única te propondrá la salida correcta sin que tengas que rearmar el contexto.</div>
               </button>
             </div>
+            <div id="wsSafeInlineStateCard" class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <div class="text-[11px] uppercase tracking-wider text-stone-500">Estado del cierre</div>
+                <span id="wsSafeInlineStateBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin actividad</span>
+              </div>
+              <div id="wsSafeInlineStateTitle" class="font-semibold text-stone-800">Sin resolución inline activa.</div>
+              <div id="wsSafeInlineStateText" class="text-xs text-stone-600 mt-1">Cuando abras un caso desde aquí, este bloque mostrará el estado del cierre y mantendrá la continuidad del contexto.</div>
+              <div id="wsSafeInlineStateMeta" class="text-[11px] text-stone-500 mt-2">Sin caso en ejecución.</div>
+            </div>
             <button id="wsSafeCalcBtn" type="button" disabled
                     class="w-full rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
               <div class="font-semibold text-sky-800">Abrir este caso en Calculadora</div>
@@ -14452,6 +14461,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
 
   async function bpCerrarDrawer() {
     const inlineCtx = window.__mpWorkspaceInlineContext || null;
+    const drawerMsgText = String(document.getElementById('bpDrawerMsg')?.textContent || '').trim();
     // Liberar lock si soy yo el que lo tenía
     if (bpCurrentId && typeof sb !== 'undefined' && sb && currentUser) {
       try {
@@ -14463,7 +14473,15 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     bpCurrentId = null;
     document.getElementById('bpDrawer').classList.add('hidden');
     if (inlineCtx) {
+      window.__mpWorkspaceInlineLastState = {
+        mode: inlineCtx.mode || 'resolve',
+        proposalId: inlineCtx.proposalId || null,
+        materialName: inlineCtx.materialName || '',
+        alcance: inlineCtx.alcance || '',
+        resultText: drawerMsgText || 'El cierre inline terminó y el workspace ya quedó actualizado.',
+      };
       window.__mpWorkspaceInlineContext = null;
+      if (typeof mpSyncInlineExecutionState === 'function') mpSyncInlineExecutionState();
       try {
         const options = {};
         if (inlineCtx.focus) options.focus = inlineCtx.focus;
@@ -17477,14 +17495,115 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     if (btn) btn.click();
   }
 
-  async function mpAbrirDrawerInline(id, mode) {
+  function mpSyncInlineExecutionState() {
+    const cardEl = document.getElementById('wsSafeInlineStateCard');
+    const badgeEl = document.getElementById('wsSafeInlineStateBadge');
+    const titleEl = document.getElementById('wsSafeInlineStateTitle');
+    const textEl = document.getElementById('wsSafeInlineStateText');
+    const metaEl = document.getElementById('wsSafeInlineStateMeta');
+    const mobileHintEl = document.getElementById('wsSafeMobileHint');
+    const mobileBadgeEl = document.getElementById('wsSafeMobileBadge');
+    if (!cardEl || !badgeEl || !titleEl || !textEl || !metaEl) return;
+    const active = window.__mpWorkspaceInlineContext || null;
+    const last = window.__mpWorkspaceInlineLastState || null;
+    const tone = active
+      ? (active.mode === 'reference' ? 'violet' : 'emerald')
+      : (last && last.mode === 'reference' ? 'violet' : (last ? 'emerald' : 'stone'));
+    const tones = {
+      stone: {
+        card: 'rounded-xl border border-stone-200 bg-stone-50 px-4 py-3',
+        badge: 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]',
+        title: 'text-stone-800',
+        text: 'text-stone-600',
+        mobile: 'px-2 py-1 rounded-full bg-stone-100 text-stone-600 text-[11px]',
+      },
+      emerald: {
+        card: 'rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3',
+        badge: 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]',
+        title: 'text-emerald-900',
+        text: 'text-emerald-800',
+        mobile: 'px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[11px]',
+      },
+      violet: {
+        card: 'rounded-xl border border-violet-200 bg-violet-50 px-4 py-3',
+        badge: 'px-2 py-1 rounded-full bg-white text-violet-700 border border-violet-200 text-[11px]',
+        title: 'text-violet-900',
+        text: 'text-violet-800',
+        mobile: 'px-2 py-1 rounded-full bg-violet-100 text-violet-700 text-[11px]',
+      },
+    };
+    const palette = tones[tone] || tones.stone;
+    cardEl.className = palette.card;
+    badgeEl.className = palette.badge;
+    titleEl.className = 'font-semibold ' + palette.title;
+    textEl.className = 'text-xs mt-1 ' + palette.text;
+    if (active) {
+      const isOpening = active.status === 'opening';
+      badgeEl.textContent = isOpening ? 'Abriendo' : 'Activa';
+      titleEl.textContent = isOpening
+        ? 'Preparando resolución inline.'
+        : (active.mode === 'reference' ? 'Cierre como referencia activo.' : 'Resolución inline activa.');
+      textEl.textContent = active.mode === 'reference'
+        ? 'La señal se abrió desde la página única para cerrarla sin mover compra. Cuando cierres el drawer, este workspace se refrescará solo.'
+        : 'Este caso ya está abierto inline. Aquí sigues con el mismo contexto hasta aprobar, rechazar o ajustar y luego volverás a ver el workspace actualizado.';
+      metaEl.textContent = (active.materialName || 'Material')
+        + ' · ' + (active.alcance || 'Sin alcance')
+        + ' · propuesta #' + (active.proposalId || '—');
+      if (mobileHintEl) {
+        mobileHintEl.textContent = isOpening
+          ? 'Preparando la resolución inline del caso activo.'
+          : (active.mode === 'reference'
+            ? 'Tienes un cierre como referencia activo desde esta misma página.'
+            : 'Tienes una resolución inline activa desde esta misma página.');
+      }
+      if (mobileBadgeEl) {
+        mobileBadgeEl.className = palette.mobile;
+        mobileBadgeEl.textContent = active.mode === 'reference' ? 'Referencia activa' : 'Resolución activa';
+      }
+      return;
+    }
+    if (last) {
+      badgeEl.textContent = 'Último cierre';
+      titleEl.textContent = last.mode === 'reference'
+        ? 'Último cierre como referencia.'
+        : 'Última resolución inline cerrada.';
+      textEl.textContent = last.resultText || 'El cierre inline terminó y el workspace ya quedó refrescado con el contexto más reciente.';
+      metaEl.textContent = (last.materialName || 'Material')
+        + ' · ' + (last.alcance || 'Sin alcance')
+        + ' · propuesta #' + (last.proposalId || '—');
+      if (mobileHintEl) mobileHintEl.textContent = 'El último cierre inline ya refrescó el workspace.';
+      if (mobileBadgeEl) {
+        mobileBadgeEl.className = palette.mobile;
+        mobileBadgeEl.textContent = 'Cierre reciente';
+      }
+      return;
+    }
+    badgeEl.textContent = 'Sin actividad';
+    titleEl.textContent = 'Sin resolución inline activa.';
+    textEl.textContent = 'Cuando abras un caso desde aquí, este bloque mostrará el estado del cierre y mantendrá la continuidad del contexto.';
+    metaEl.textContent = 'Sin caso en ejecución.';
+  }
+
+  async function mpAbrirDrawerInline(id, mode, meta) {
     if (!id || typeof window.bpAbrirDrawer !== 'function') return;
     window.__mpWorkspaceInlineContext = {
       focus: mpState.focus ? Object.assign({}, mpState.focus) : null,
       chip: mpState.chip || 'todos',
+      proposalId: id,
+      mode: mode || 'resolve',
+      materialName: meta?.materialName || '',
+      alcance: meta?.alcance || '',
+      routeLabel: meta?.routeLabel || '',
+      status: 'opening',
     };
+    window.__mpWorkspaceInlineLastState = null;
+    mpSyncInlineExecutionState();
     await window.bpAbrirDrawer(id);
+    if (window.__mpWorkspaceInlineContext && window.__mpWorkspaceInlineContext.proposalId === id) {
+      window.__mpWorkspaceInlineContext.status = 'active';
+    }
     const msg = document.getElementById('bpDrawerMsg');
+    mpSyncInlineExecutionState();
     if (!msg) return;
     if (mode === 'reference') {
       msg.textContent = 'Esta señal se abrió inline desde la página única. Si es bluff o solo referencia, usa Rechazar para cerrarla sin mover compra.';
@@ -18064,6 +18183,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       mobileBadgeEl.className = 'px-2 py-1 rounded-full bg-stone-100 text-stone-600 text-[11px]';
       mobileBadgeEl.textContent = 'Sin foco';
       exitModeEl.textContent = '—';
+      mpSyncInlineExecutionState();
       return;
     }
     const routeMeta = mpGetRouteMeta(row.ruta);
@@ -18076,11 +18196,16 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         sucursalId: row.sucursal_id || '',
       });
     };
+    const actionMeta = {
+      materialName: selected.material_nombre || mpGetMaterialNombre(row),
+      alcance: mpGetSucursalNombre(row),
+      routeLabel: routeMeta.label || row.ruta || 'Señal',
+    };
     const openResolve = function () {
-      window.mpResolverInline && window.mpResolverInline(row.id);
+      window.mpResolverInline && window.mpResolverInline(row.id, actionMeta);
     };
     const openReference = function () {
-      window.mpCerrarComoReferenciaInline && window.mpCerrarComoReferenciaInline(row.id);
+      window.mpCerrarComoReferenciaInline && window.mpCerrarComoReferenciaInline(row.id, actionMeta);
     };
     metaEl.innerHTML = '<div class="font-semibold text-stone-800">' + tapEscape(selected.material_nombre || 'Material') + '</div>'
       + '<div class="mt-1 text-[11px] text-stone-500">'
@@ -18154,6 +18279,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     if (guide?.actionTarget === 'calc') mobileCalcBtn.classList.add('ring-2', 'ring-sky-200');
     if (guide?.actionTarget === 'resolve') mobileResolveBtn.classList.add('ring-2', 'ring-emerald-200');
     if (guide?.actionTarget !== 'resolve' && row?.ruta !== 'manual_calc') referenceBtn.classList.add('ring-2', 'ring-violet-200');
+    mpSyncInlineExecutionState();
   }
 
   function mpRenderWorkspaceSafe(groups, selected) {
@@ -18454,11 +18580,11 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       }
     }
   };
-  window.mpResolverInline = async function (id) {
-    await mpAbrirDrawerInline(id, 'resolve');
+  window.mpResolverInline = async function (id, meta) {
+    await mpAbrirDrawerInline(id, 'resolve', meta);
   };
-  window.mpCerrarComoReferenciaInline = async function (id) {
-    await mpAbrirDrawerInline(id, 'reference');
+  window.mpCerrarComoReferenciaInline = async function (id, meta) {
+    await mpAbrirDrawerInline(id, 'reference', meta);
   };
   window.wsIrDesdeCalculadora = async function (focus) {
     const payload = focus || window.bpFocusFromCalc || null;
