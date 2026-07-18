@@ -17721,8 +17721,8 @@ document.addEventListener('DOMContentLoaded', () => {
       guide.lead = material + ' todavía no tiene alcance resuelto.';
       guide.support = 'La señal existe, pero antes de decidir conviene aterrizarla en una sucursal de trabajo para no mover un número en el vacío.';
       guide.actionTitle = 'Elegir sucursal de trabajo';
-      guide.actionText = 'Fija una sucursal visible desde este mismo workspace; con eso ya puedes leer mejor el caso y abrir cálculo con foco aterrizado.';
-      guide.actionTarget = 'calc';
+      guide.actionText = 'Resuélvelo aquí mismo. Si hay una sola sucursal visible, se fija al tiro; si hay varias, te llevo al selector del workspace.';
+      guide.actionTarget = 'scope';
       return guide;
     }
 
@@ -17836,6 +17836,16 @@ document.addEventListener('DOMContentLoaded', () => {
         branchText: alcanceTxt,
         contextText: 'Caso #' + row.id + ' con publicado ' + publishedTxt + ' y señal ' + draftTxt + ', pero sin $ venta visible para cerrar con seguridad.',
         nextText: 'Abre el cierre inline y define si este caso sale como referencia o si todavía necesita cálculo de apoyo.',
+      };
+    }
+    if (guide?.actionTarget === 'scope') {
+      return {
+        badgeClass: 'px-2 py-1 rounded-full bg-sky-100 text-sky-700 border border-sky-200 text-[11px]',
+        badgeText: 'Falta sucursal',
+        materialText: materialTxt,
+        branchText: alcanceTxt,
+        contextText: 'Caso #' + row.id + ' desde ' + routeTxt + '. La señal existe, pero todavía falta fijar una sucursal real para aterrizar el trabajo desde este mismo workspace.',
+        nextText: 'Elige una sucursal visible aquí mismo; recién después conviene abrir cálculo o cerrar el caso.',
       };
     }
     if (guide?.actionTarget === 'resolve') {
@@ -18282,6 +18292,13 @@ document.addEventListener('DOMContentLoaded', () => {
           tone: 'emerald',
           handler: actions?.resolve || null,
         }
+      : (guide?.actionTarget === 'scope'
+        ? {
+            title: 'Aterrizar sucursal aqui',
+            text: 'Fija una sucursal visible antes de mandar el siguiente caso a cálculo.',
+            tone: 'sky',
+            handler: actions?.scope || null,
+          }
       : (guide?.actionTarget === 'mesa'
         ? {
             title: 'Ir al foco completo en Mesa',
@@ -18294,7 +18311,7 @@ document.addEventListener('DOMContentLoaded', () => {
             text: 'Usa cálculo solo si el siguiente caso todavía necesita ajuste fino.',
             tone: 'sky',
             handler: actions?.calc || null,
-          });
+          }));
     titleEl.textContent = 'Último cierre listo. Siguiente caso sugerido: ' + materialTxt + '.';
     textEl.textContent = (last.resultText || 'El último cierre inline ya quedó resuelto.') + ' Ahora la página única te deja continuar con ' + materialTxt + ' en ' + alcanceTxt + '.';
     btnEl.disabled = !nextAction.handler;
@@ -19212,6 +19229,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const openMesa = function () {
       window.mpAbrirTab && window.mpAbrirTab('tablero_precios');
     };
+    const openScope = function () {
+      const scopeChoices = mpGetWorkspaceBranchChoices(selected);
+      if (!scopeChoices.length) {
+        if (window.showToast) window.showToast('No encontré sucursales visibles para aterrizar este caso desde el workspace.', 'warning');
+        return;
+      }
+      if (scopeChoices.length === 1) {
+        window.mpSeleccionarSucursalWorkspace && window.mpSeleccionarSucursalWorkspace(scopeChoices[0].id || '');
+        if (window.showToast) window.showToast('Sucursal de trabajo fijada en ' + scopeChoices[0].nombre + '.', 'success');
+        return;
+      }
+      metaEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      metaEl.classList.add('ring-2', 'ring-sky-200');
+      window.setTimeout(() => {
+        metaEl.classList.remove('ring-2', 'ring-sky-200');
+      }, 1800);
+      const firstChoiceBtn = document.querySelector('#wsSafeScopeChoices button');
+      if (firstChoiceBtn && typeof firstChoiceBtn.focus === 'function') firstChoiceBtn.focus();
+      if (window.showToast) window.showToast('Elige una sucursal visible en el bloque de alcance para aterrizar este caso.', 'info');
+    };
     const openCalc = function () {
       window.calcIrDesdeWorkspace && window.calcIrDesdeWorkspace({
         materialId: selected.material_id,
@@ -19239,6 +19276,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const postCloseActions = {
       mesa: openMesa,
+      scope: openScope,
       calc: openCalc,
       resolve: openResolve,
       reference: openReference,
@@ -19259,18 +19297,20 @@ document.addEventListener('DOMContentLoaded', () => {
         ? 'px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px]'
         : (guide?.actionTarget === 'mesa'
           ? 'px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 text-[11px]'
-          : 'px-2 py-1 rounded-full bg-sky-100 text-sky-700 border border-sky-200 text-[11px]'),
+          : (guide?.actionTarget === 'scope'
+            ? 'px-2 py-1 rounded-full bg-sky-100 text-sky-800 border border-sky-200 text-[11px]'
+            : 'px-2 py-1 rounded-full bg-sky-100 text-sky-700 border border-sky-200 text-[11px]')),
       guide?.actionTarget === 'resolve'
         ? 'Modo inline'
         : (guide?.actionTarget === 'mesa'
           ? 'Apoyo mesa'
-          : (guide?.actionTarget === 'bridge' ? 'Salida real' : 'Apoyo calc'))
+          : (guide?.actionTarget === 'scope' ? 'Elegir sucursal' : (guide?.actionTarget === 'bridge' ? 'Salida real' : 'Apoyo calc')))
     );
     exitModeEl.textContent = guide?.actionTarget === 'resolve'
       ? 'Inline'
       : (guide?.actionTarget === 'mesa'
         ? 'Apoyo Mesa'
-        : (guide?.actionTarget === 'bridge' ? 'Puente Calculadora' : 'Apoyo cálculo'));
+        : (guide?.actionTarget === 'scope' ? 'Workspace' : (guide?.actionTarget === 'bridge' ? 'Puente Calculadora' : 'Apoyo cálculo')));
     primaryBtn.disabled = false;
     if (guide?.actionTarget === 'resolve') {
       primaryBtn.className = 'w-full rounded-xl border border-emerald-200 bg-white px-4 py-3 text-left hover:border-emerald-300';
@@ -19284,6 +19324,12 @@ document.addEventListener('DOMContentLoaded', () => {
       primaryTitleEl.textContent = 'Abrir Mesa para contexto';
       primaryTextEl.textContent = 'Abre Mesa solo cuando el publicado visible o el alcance todavía no te dejan cerrar con seguridad desde aquí.';
       setActionChip(primaryEngineEl, 'px-2 py-1 rounded-full bg-white text-amber-700 border border-amber-200 text-[11px]', 'Motor mesa');
+    } else if (guide?.actionTarget === 'scope') {
+      primaryBtn.className = 'w-full rounded-xl border border-sky-300 bg-white px-4 py-3 text-left hover:border-sky-400';
+      primaryBtn.onclick = openScope;
+      primaryTitleEl.textContent = 'Elegir sucursal aqui';
+      primaryTextEl.textContent = 'Fija la sucursal real desde este workspace antes de abrir calculo o cerrar el caso.';
+      setActionChip(primaryEngineEl, 'px-2 py-1 rounded-full bg-white text-sky-700 border border-sky-200 text-[11px]', 'Motor foco');
     } else if (guide?.actionTarget === 'bridge') {
       primaryBtn.className = 'w-full rounded-xl border border-sky-300 bg-white px-4 py-3 text-left hover:border-sky-400';
       primaryBtn.onclick = openCalc;
@@ -19321,7 +19367,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ? 'Salida: Inline'
       : (guide?.actionTarget === 'mesa'
         ? 'Apoyo: Mesa'
-        : (guide?.actionTarget === 'bridge' ? 'Puente real' : 'Apoyo: Cálculo'));
+        : (guide?.actionTarget === 'scope' ? 'Foco: Sucursal' : (guide?.actionTarget === 'bridge' ? 'Puente real' : 'Apoyo: Cálculo')));
     if (guide?.actionTarget === 'mesa') mobileMesaBtn.classList.add('ring-2', 'ring-amber-200');
     if (guide?.actionTarget === 'calc') calcBtn.classList.add('ring-2', 'ring-sky-200');
     if (guide?.actionTarget === 'bridge') calcBtn.classList.add('ring-2', 'ring-sky-200');
