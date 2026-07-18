@@ -27,5 +27,14 @@
 ## Riesgo de rollback
 <!-- bajo / medio / alto + cómo revertir si rompe -->
 
+## R-AUD-086 · Bloque de auditoría
+<!-- obligatorio en TODOS los PRs; este bloque debe vivir en el body del PR, no en comentarios -->
+- Qué voy a hacer: [1 línea concreta]
+- Archivos que toco: [lista de paths]
+- Reglas R-AUD que aplican: [lista]
+- Riesgos que veo: [lista corta]
+- Evidencia de que no rompo nada: [1 línea]
+- Checkbox DeepSeek: [ ] Auditado
+
 ## Bitácora paralela
 - [ ] Entrada agregada en `reciclean-manifiesto-diego/docs/BITACORA-PARALELO-MAYO-2026.md`
