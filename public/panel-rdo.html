@@ -3952,24 +3952,36 @@
                 <div class="text-[11px] uppercase tracking-wider text-stone-500">Cierre visible</div>
                 <span id="wsSafeDecisionStateBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin drawer</span>
               </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Paso actual</div>
+                  <div id="wsSafeDecisionFlowTitle" class="font-semibold text-stone-800">Recorrido aún no activo.</div>
+                  <div id="wsSafeDecisionFlowText" class="text-xs text-stone-600 mt-1">Cuando abras el drawer inline, este bloque te dirá exactamente en qué parte del cierre vas.</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Resultado inmediato</div>
+                  <div id="wsSafeDecisionOutcomeTitle" class="font-semibold text-stone-800">Sin resultado aún.</div>
+                  <div id="wsSafeDecisionOutcomeText" class="text-xs text-stone-600 mt-1">El motor real mostrará aquí su respuesta apenas el recorrido tenga una decisión o un bloqueo concreto.</div>
+                </div>
+              </div>
               <div class="space-y-2">
                 <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
-                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Ajuste previo</div>
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Paso 1 · Ajuste</div>
                   <div id="wsSafeAdjustStateTitle" class="font-semibold text-stone-800">Aún no activo.</div>
                   <div id="wsSafeAdjustStateText" class="text-xs text-stone-600 mt-1">Se mostrará aquí cuando abras una resolución inline.</div>
                 </div>
                 <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
-                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Override</div>
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Paso 2 · Override</div>
                   <div id="wsSafeOverrideStateTitle" class="font-semibold text-stone-800">Sin evaluación.</div>
                   <div id="wsSafeOverrideStateText" class="text-xs text-stone-600 mt-1">La página única mostrará aquí si el margen exige override y en qué estado está.</div>
                 </div>
                 <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
-                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Aprobar / aplicar</div>
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Paso 3 · Aplicar</div>
                   <div id="wsSafeApproveStateTitle" class="font-semibold text-stone-800">Sin evaluación.</div>
                   <div id="wsSafeApproveStateText" class="text-xs text-stone-600 mt-1">La página única mostrará si aplicar ya está listo o si falta algo.</div>
                 </div>
                 <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
-                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Rechazar</div>
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Salida alternativa · Rechazar / referencia</div>
                   <div id="wsSafeRejectStateTitle" class="font-semibold text-stone-800">Sin evaluación.</div>
                   <div id="wsSafeRejectStateText" class="text-xs text-stone-600 mt-1">Aquí verás si el cierre como referencia sigue disponible desde el mismo flujo.</div>
                 </div>
@@ -17734,6 +17746,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
 
   function mpSyncInlineDecisionState() {
     const badgeEl = document.getElementById('wsSafeDecisionStateBadge');
+    const flowTitleEl = document.getElementById('wsSafeDecisionFlowTitle');
+    const flowTextEl = document.getElementById('wsSafeDecisionFlowText');
+    const outcomeTitleEl = document.getElementById('wsSafeDecisionOutcomeTitle');
+    const outcomeTextEl = document.getElementById('wsSafeDecisionOutcomeText');
     const adjustTitleEl = document.getElementById('wsSafeAdjustStateTitle');
     const adjustTextEl = document.getElementById('wsSafeAdjustStateText');
     const overrideTitleEl = document.getElementById('wsSafeOverrideStateTitle');
@@ -17742,13 +17758,15 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const approveTextEl = document.getElementById('wsSafeApproveStateText');
     const rejectTitleEl = document.getElementById('wsSafeRejectStateTitle');
     const rejectTextEl = document.getElementById('wsSafeRejectStateText');
-    if (!badgeEl || !adjustTitleEl || !adjustTextEl || !overrideTitleEl || !overrideTextEl || !approveTitleEl || !approveTextEl || !rejectTitleEl || !rejectTextEl) return;
+    if (!badgeEl || !flowTitleEl || !flowTextEl || !outcomeTitleEl || !outcomeTextEl || !adjustTitleEl || !adjustTextEl || !overrideTitleEl || !overrideTextEl || !approveTitleEl || !approveTextEl || !rejectTitleEl || !rejectTextEl) return;
     const active = window.__mpWorkspaceInlineContext || null;
+    const last = window.__mpWorkspaceInlineLastState || null;
     const inputAjuste = document.getElementById('bpPrecioAjustado');
     const btnAprobar = document.getElementById('bpBtnAprobar');
     const btnRechazar = document.getElementById('bpBtnRechazar');
     const overrideChk = document.getElementById('bpOverrideCheck');
     const overrideMot = document.getElementById('bpOverrideMotivo');
+    const drawerMsgEl = document.getElementById('bpDrawerMsg');
     const drawerState = typeof window.bpGetInlineDecisionState === 'function'
       ? (window.bpGetInlineDecisionState() || {})
       : {};
@@ -17764,9 +17782,18 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const vigenteTxt = currentPrecioVigente != null ? fmtCLP(currentPrecioVigente) : 'sin vigente visible';
     const candidatoTxt = candidato > 0 ? fmtCLP(candidato) : 'sin ajuste visible';
     const sameAsVigente = candidato > 0 && currentPrecioVigente != null && Number(candidato) === Number(currentPrecioVigente);
-    if (!active) {
+    const drawerMsgText = String(drawerMsgEl?.textContent || '').trim();
+    const drawerMsgClass = String(drawerMsgEl?.className || '');
+    const setOutcome = function (title, text) {
+      outcomeTitleEl.textContent = title;
+      outcomeTextEl.textContent = text;
+    };
+    if (!active && !last) {
       badgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
       badgeEl.textContent = 'Sin drawer';
+      flowTitleEl.textContent = 'Recorrido aún no activo.';
+      flowTextEl.textContent = 'Cuando abras la resolución inline, aquí verás el paso exacto del cierre y la alternativa de salida.';
+      setOutcome('Sin resultado aún.', 'El motor real mostrará aquí su respuesta apenas el recorrido tenga una decisión o un bloqueo concreto.');
       adjustTitleEl.textContent = 'Aún no activo.';
       adjustTextEl.textContent = 'Se mostrará aquí cuando abras una resolución inline.';
       overrideTitleEl.textContent = 'Sin evaluación.';
@@ -17777,10 +17804,92 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       rejectTextEl.textContent = 'Aquí verás si el cierre como referencia sigue disponible desde el mismo flujo.';
       return;
     }
+    if (!active && last) {
+      const isReference = last.mode === 'reference';
+      badgeEl.className = isReference
+        ? 'px-2 py-1 rounded-full bg-white text-violet-700 border border-violet-200 text-[11px]'
+        : 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]';
+      badgeEl.textContent = 'Recorrido cerrado';
+      flowTitleEl.textContent = isReference ? 'Cierre como referencia terminado.' : 'Cierre inline terminado.';
+      flowTextEl.textContent = isReference
+        ? 'La señal ya salió de tu carga sin mover compra. El workspace quedó listo para tomar el siguiente caso.'
+        : 'El recorrido de ajuste, override y aplicar ya cerró. El workspace quedó listo para seguir sin rearmar contexto.';
+      setOutcome('Resultado inmediato registrado.', last.resultText || 'El último cierre inline ya quedó registrado en esta misma página.');
+      adjustTitleEl.textContent = isReference ? 'Ajuste no fue necesario.' : 'Ajuste revisado.';
+      adjustTextEl.textContent = isReference
+        ? 'Este cierre tomó la salida alternativa y no necesitó tocar el valor de compra.'
+        : 'El último ajuste ya quedó absorbido por el motor real antes de cerrar el caso.';
+      overrideTitleEl.textContent = isReference ? 'Override no aplicó.' : 'Override ya resuelto.';
+      overrideTextEl.textContent = isReference
+        ? 'El cierre como referencia no pasa por override de margen.'
+        : 'Si este caso necesitó override, ya quedó resuelto dentro del recorrido real del drawer.';
+      approveTitleEl.textContent = isReference ? 'Aplicar no correspondía.' : 'Aplicación ya resuelta.';
+      approveTextEl.textContent = isReference
+        ? 'La salida correcta fue cerrar la señal sin publicar un nuevo precio.'
+        : 'El motor real ya dejó resuelta la salida final del caso.';
+      rejectTitleEl.textContent = isReference ? 'Referencia ya cerrada.' : 'Salida alternativa disponible para el siguiente caso.';
+      rejectTextEl.textContent = isReference
+        ? 'El caso ya quedó cerrado como referencia dentro del mismo flujo.'
+        : 'Si el próximo caso no amerita cambio, todavía podrás sacarlo por referencia o rechazo desde aquí.';
+      return;
+    }
     badgeEl.className = active.mode === 'reference'
       ? 'px-2 py-1 rounded-full bg-white text-violet-700 border border-violet-200 text-[11px]'
       : 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]';
     badgeEl.textContent = active.mode === 'reference' ? 'Referencia inline' : 'Cierre inline';
+    if (active.status === 'opening') {
+      flowTitleEl.textContent = active.mode === 'reference' ? 'Preparando salida como referencia.' : 'Preparando recorrido de cierre.';
+      flowTextEl.textContent = active.mode === 'reference'
+        ? 'Estoy abriendo el drawer real para sacar esta señal de tu carga sin mover compra.'
+        : 'Estoy abriendo el drawer real para revisar ajuste, override y salida final con este mismo contexto.';
+      setOutcome('Sin resultado aún.', 'Todavía no hay respuesta del motor real porque el drawer se está preparando.');
+    } else if (active.mode === 'reference') {
+      flowTitleEl.textContent = btnRechazar && !btnRechazar.disabled
+        ? 'Paso único · Cerrar como referencia.'
+        : 'Referencia inline en revisión.';
+      flowTextEl.textContent = btnRechazar && !btnRechazar.disabled
+        ? 'La salida alternativa ya está disponible: usa Rechazar en el drawer para sacar la señal sin mover compra.'
+        : 'La referencia ya está abierta, pero el drawer todavía no deja cerrar este caso.';
+      setOutcome(
+        drawerMsgText ? 'Lectura del motor real.' : 'Esperando confirmación del drawer.',
+        drawerMsgText || 'Cuando el drawer confirme o bloquee el cierre como referencia, la respuesta aparecerá aquí.'
+      );
+    } else {
+      if (candidato <= 0 || sameAsVigente) {
+        flowTitleEl.textContent = 'Paso 1 · Revisar ajuste.';
+        flowTextEl.textContent = sameAsVigente
+          ? 'El valor candidato coincide con ' + vigenteTxt + '. Revisa el ajuste antes de intentar aplicar.'
+          : 'Todavía no hay un ajuste visible distinto del publicado. El recorrido parte afinando el valor candidato.';
+      } else if (overrideVisible && !overrideOk) {
+        flowTitleEl.textContent = 'Paso 2 · Confirmar override.';
+        flowTextEl.textContent = 'El ajuste ya quedó visible en ' + candidatoTxt + ', pero el margen exige destrabe antes de aplicar.';
+      } else if (btnAprobar && !btnAprobar.disabled) {
+        flowTitleEl.textContent = 'Paso 3 · Aplicar desde el drawer.';
+        flowTextEl.textContent = 'El ajuste ya pasó las validaciones visibles y el motor real quedó listo para cerrar el caso.';
+      } else if (btnRechazar && !btnRechazar.disabled) {
+        flowTitleEl.textContent = 'Salida alternativa · Rechazar el caso.';
+        flowTextEl.textContent = 'Si decides no mover compra, todavía puedes sacar esta señal por rechazo sin perder trazabilidad.';
+      } else {
+        flowTitleEl.textContent = 'Recorrido en revisión.';
+        flowTextEl.textContent = 'El caso ya está abierto inline, pero falta que el motor real destrabe el siguiente paso del cierre.';
+      }
+      if (drawerMsgText) {
+        const outcomeTitle = drawerMsgClass.includes('bg-green') || drawerMsgClass.includes('text-green')
+          ? 'Resultado del motor real.'
+          : 'Bloqueo o alerta del motor real.';
+        setOutcome(outcomeTitle, drawerMsgText);
+      } else if (overrideVisible && !puedeOverride) {
+        setOutcome('Bloqueado por permisos.', 'El margen quedó bajo el mínimo y este usuario no puede destrabar el override requerido.');
+      } else if (overrideVisible && !overrideOk) {
+        setOutcome('Esperando override.', 'El caso ya avanzó hasta el destrabe de margen. Falta marcar override y motivo para seguir.');
+      } else if (btnAprobar && !btnAprobar.disabled) {
+        setOutcome('Listo para aplicar.', 'El motor real ya puede cerrar este caso desde el drawer usando el mismo contexto inline.');
+      } else if (btnRechazar && !btnRechazar.disabled) {
+        setOutcome('Listo para salida alternativa.', 'Si decides no mover compra, el drawer ya puede cerrar este caso por rechazo o referencia.');
+      } else {
+        setOutcome('Esperando respuesta.', 'Cuando el drawer valide el siguiente paso o detecte un bloqueo, la respuesta aparecerá aquí.');
+      }
+    }
     if (active.mode === 'reference') {
       adjustTitleEl.textContent = 'Ajuste no aplica.';
       adjustTextEl.textContent = 'Este flujo se abrió para sacar la señal de tu carga sin mover compra.';
