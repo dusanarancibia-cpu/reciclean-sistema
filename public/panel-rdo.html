@@ -3397,7 +3397,7 @@
                   class="bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
             💰 Ver precios publicados
           </button>
-          <span class="text-xs text-stone-500 self-center">Mesa principal. Las tabs antiguas quedan como apoyo.</span>
+            <span class="text-xs text-stone-500 self-center">Mesa de Precios queda como apoyo cuando el workspace no alcance.</span>
         </div>
       </header>
 
@@ -3647,8 +3647,8 @@
           <ul id="tapP11Lista" class="text-sm text-stone-700 space-y-2">
             <li class="text-stone-500">1. Lo que viene desde Calculadora entra como decisión directa.</li>
             <li class="text-stone-500">2. Las señales externas entran como contexto, no como barrera.</li>
-            <li class="text-stone-500">3. La resolución completa sigue usando la Bandeja actual para no romper el motor.</li>
-            <li class="text-stone-500">4. El destino final sigue siendo Precios publicados.</li>
+            <li class="text-stone-500">3. El cierre final reutiliza motores vivos sin perder este foco.</li>
+            <li class="text-stone-500">4. Publicado y cierre se leen desde el mismo contexto visible.</li>
             <li class="text-stone-500" id="mpStrategyRule">5. La estrategia activa ordena que publicar, que defender y por cuanto tiempo.</li>
           </ul>
         </div>
@@ -3676,33 +3676,25 @@
           </h2>
           <p class="text-sm text-stone-500 mt-1 max-w-4xl">
             Esta página ya concentra lectura, contraste, cálculo y cierre del caso sin perder el foco.
-            <strong>Mesa</strong>, <strong>Calculadora</strong> y <strong>Bandeja técnica</strong>
-            siguen disponibles, pero como apoyo cuando realmente hacen falta.
+            <strong>Mesa de Precios</strong>, <strong>Calculadora soporte</strong> y <strong>Bandeja técnica</strong>
+            quedan disponibles solo como motores de apoyo cuando realmente hacen falta.
           </p>
         </div>
         <div class="flex flex-wrap gap-2 w-full xl:w-auto">
           <button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab('tablero_precios')"
                   class="w-full sm:w-auto bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
-            🎯 Mesa de apoyo
+            🎯 Abrir Mesa
           </button>
           <button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab('bandeja_precios')"
                   class="w-full sm:w-auto bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
-            📨 Bandeja de apoyo
+            📨 Abrir Bandeja técnica
           </button>
           <button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab('calculadora_precios')"
                   class="w-full sm:w-auto bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
-            🧮 Cálculo de apoyo
+            🧮 Abrir calculadora soporte
           </button>
         </div>
       </header>
-
-      <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 mb-4 text-sm text-amber-900">
-        <div class="font-semibold">Página única activa</div>
-        <div class="mt-1 text-amber-800">
-          Aquí ya puedes leer, contrastar, calcular y cerrar sin salir del carril principal. Los otros
-          módulos siguen disponibles como apoyo cuando hacen falta.
-        </div>
-      </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-[0.88fr,1.12fr] xl:grid-cols-[0.82fr,1.18fr,0.78fr] gap-4">
         <aside class="bg-white border border-stone-300 rounded-xl p-4">
@@ -3945,19 +3937,14 @@
                 </div>
               </div>
             </div>
-            <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-              <div class="flex items-center justify-between gap-2 mb-1">
-                <div class="text-[11px] uppercase tracking-wider text-amber-700">Siguiente paso recomendado</div>
-                <span id="wsSafeActionRouteBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin salida</span>
-              </div>
-              <div id="wsSafeActionTitle" class="font-semibold text-amber-900">Selecciona un caso primero.</div>
-              <div id="wsSafeActionText" class="text-xs text-amber-800 mt-1">La recomendación cambia según ruta, alcance y si ya existe un valor publicado visible.</div>
-            </div>
             <div class="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3">
               <div class="flex items-center justify-between gap-2 mb-2">
-                <div class="text-[11px] uppercase tracking-wider text-violet-700">Ejecutar desde esta página</div>
+                <div class="text-[11px] uppercase tracking-wider text-violet-700">Acción dominante</div>
+                <span id="wsSafeActionRouteBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin salida</span>
                 <span id="wsSafePrimaryEngine" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin motor</span>
               </div>
+              <div id="wsSafeActionTitle" class="font-semibold text-violet-900">Selecciona un caso primero.</div>
+              <div id="wsSafeActionText" class="text-xs text-violet-800 mt-1">La página ordena el siguiente paso y evita que tengas que rearmar el contexto.</div>
               <button id="wsSafePrimaryBtn" type="button" disabled
                       class="w-full rounded-xl border border-violet-200 bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
                 <div id="wsSafePrimaryTitle" class="font-semibold text-violet-800">Selecciona un caso primero.</div>
@@ -3966,7 +3953,7 @@
             </div>
             <div id="wsSafeInlineStateCard" class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
               <div class="flex items-center justify-between gap-2 mb-1">
-                <div class="text-[11px] uppercase tracking-wider text-stone-500">Estado del cierre</div>
+                <div class="text-[11px] uppercase tracking-wider text-stone-500">Actividad inline</div>
                 <span id="wsSafeInlineStateBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin actividad</span>
               </div>
               <div id="wsSafeInlineStateTitle" class="font-semibold text-stone-800">Sin resolución inline activa.</div>
@@ -3975,7 +3962,7 @@
             </div>
             <div id="wsSafeDecisionStateCard" class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
               <div class="flex items-center justify-between gap-2 mb-2">
-                <div class="text-[11px] uppercase tracking-wider text-stone-500">Cierre visible</div>
+                <div class="text-[11px] uppercase tracking-wider text-stone-500">Estado de ejecución</div>
                 <span id="wsSafeDecisionStateBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin drawer</span>
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
@@ -3990,7 +3977,7 @@
                   <div id="wsSafeDecisionOutcomeText" class="text-xs text-stone-600 mt-1">Aquí verás la salida inmediata del caso mientras ajustas, apruebas, rechazas o cierras como referencia.</div>
                 </div>
               </div>
-              <div class="space-y-2">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
                   <div class="text-[11px] uppercase tracking-wider text-stone-400">Ajuste previo</div>
                   <div id="wsSafeAdjustStateTitle" class="font-semibold text-stone-800">Aún no activo.</div>
@@ -4041,11 +4028,11 @@
             </div>
             <div id="wsSafeCalcSupportCard" class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
               <div class="flex items-center justify-between gap-2 mb-2">
-                <div class="text-[11px] uppercase tracking-wider text-stone-500">Soporte de cálculo</div>
+                <div class="text-[11px] uppercase tracking-wider text-stone-500">Lectura de cálculo</div>
                 <span id="wsSafeCalcSupportBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin cálculo</span>
               </div>
-              <div id="wsSafeCalcSupportTitle" class="font-semibold text-stone-800">La foto de Calculadora aparecerá aquí.</div>
-              <div id="wsSafeCalcSupportText" class="text-xs text-stone-600 mt-1">Esta estación traerá P.Lista, P.Ejec, P.Max y el semáforo MG del foco actual sin obligarte a salir del workspace.</div>
+              <div id="wsSafeCalcSupportTitle" class="hidden font-semibold text-stone-800">La lectura de cálculo aparecerá aquí.</div>
+              <div id="wsSafeCalcSupportText" class="hidden text-xs text-stone-600 mt-1">Aquí verás P.Lista, P.Ejec, P.Max y el semáforo MG del foco actual sin salir del workspace.</div>
               <div class="grid grid-cols-2 gap-2 mt-3">
                 <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
                   <div class="text-[11px] uppercase tracking-wider text-stone-400">P.Lista</div>
@@ -4064,36 +4051,36 @@
                   <div id="wsSafeCalcSemaforo" class="font-semibold text-stone-800 mt-1">—</div>
                 </div>
               </div>
-              <div id="wsSafeCalcMeta" class="text-[11px] text-stone-500 mt-3">Sin foco listo para cálculo.</div>
-              <div id="wsSafeCalcGate" class="text-xs text-stone-600 mt-2">La guía de margen y publicación aparecerá aquí cuando el foco tenga material y alcance.</div>
+              <div id="wsSafeCalcMeta" class="hidden text-[11px] text-stone-500 mt-3">Sin foco listo para cálculo.</div>
+              <div id="wsSafeCalcGate" class="hidden text-xs text-stone-600 mt-2">La guía de margen y publicación aparecerá aquí cuando el foco tenga material y alcance.</div>
               <button id="wsSafeCalcSupportBtn" type="button" disabled
-                      class="mt-3 w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
-                <div id="wsSafeCalcSupportBtnTitle" class="font-semibold text-sky-800">Abrir cálculo de apoyo</div>
-                <div id="wsSafeCalcSupportBtnText" class="text-xs text-sky-700 mt-1">Úsalo solo si necesitas afinar más el número sin perder este mismo foco.</div>
+                      class="hidden mt-3 w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+                <div id="wsSafeCalcSupportBtnTitle" class="font-semibold text-sky-800">Abrir calculadora soporte</div>
+                <div id="wsSafeCalcSupportBtnText" class="text-xs text-sky-700 mt-1">Úsala solo si necesitas afinar más el número sin perder este mismo foco.</div>
               </button>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
                 <button id="wsSafeApplyPejecBtn" type="button" disabled
-                        class="rounded-xl border border-emerald-200 bg-white px-3 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
-                  <div class="font-semibold text-emerald-800">Usar P.Ejec en el cierre</div>
-                  <div class="text-xs text-emerald-700 mt-1">Carga el número operativo directo al drawer inline.</div>
+                        class="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+                  <div class="font-semibold text-emerald-800">Cargar P.Ejec</div>
+                  <div class="text-xs text-emerald-700 mt-1">Lo lleva directo al cierre inline.</div>
                 </button>
                 <button id="wsSafeApplyPlistaBtn" type="button" disabled
-                        class="rounded-xl border border-sky-200 bg-white px-3 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
-                  <div class="font-semibold text-sky-800">Usar P.Lista en el cierre</div>
-                  <div class="text-xs text-sky-700 mt-1">Carga la salida pública sugerida directo al drawer inline.</div>
+                        class="rounded-xl border border-sky-200 bg-white px-3 py-2 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+                  <div class="font-semibold text-sky-800">Cargar P.Lista</div>
+                  <div class="text-xs text-sky-700 mt-1">Lo lleva directo al cierre inline.</div>
                 </button>
               </div>
-              <div id="wsSafeCalcInlineHint" class="text-xs text-stone-500 mt-2">El ajuste inline se habilita cuando el caso ya tiene sucursal real y lectura de cálculo.</div>
+              <div id="wsSafeCalcInlineHint" class="hidden text-xs text-stone-500 mt-2">El ajuste inline se habilita cuando el caso ya tiene sucursal real y lectura de cálculo.</div>
             </div>
             <button id="wsSafeCalcBtn" type="button" disabled
-                    class="w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
-              <div class="font-semibold text-sky-800">Usar cálculo de apoyo</div>
+                    class="hidden w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+              <div class="font-semibold text-sky-800">Abrir calculadora con este foco</div>
               <div class="text-xs text-sky-700 mt-1">Entra con material y alcance ya cargados solo si necesitas afinar más.</div>
             </button>
             <button id="wsSafeResolveBtn" type="button" disabled
                     class="w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
               <div class="font-semibold text-emerald-800">Resolver este caso aquí</div>
-              <div class="text-xs text-emerald-700 mt-1">Abre la resolución real inline y deja Bandeja solo como motor de fondo.</div>
+              <div class="text-xs text-emerald-700 mt-1">Abre la resolución inline con el caso ya enfocado.</div>
             </button>
             <button id="wsSafeReferenceBtn" type="button" disabled
                     class="w-full rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
@@ -4102,19 +4089,9 @@
             </button>
             <button id="wsSafeMesaBtn" type="button"
                     class="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-left hover:border-stone-300">
-              <div class="font-semibold text-stone-800">Usar Mesa de apoyo</div>
+              <div class="font-semibold text-stone-800">Abrir Mesa para contexto</div>
               <div class="text-xs text-stone-500 mt-1">Ábrela solo cuando todavía falte contexto para cerrar desde aquí.</div>
             </button>
-            <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
-              <div class="font-semibold text-stone-800">Publicar / aprobar</div>
-              <div class="text-xs text-stone-500 mt-1">La decisión ya sale desde aquí; si el caso está listo, la resolución real se abre en este mismo flujo y reutiliza los motores vivos.</div>
-            </div>
-          </div>
-
-          <div class="mt-4 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600 space-y-2">
-            <div class="text-[11px] uppercase tracking-wider text-stone-500">Notas de esta iteración</div>
-            <div><strong class="text-stone-800">Responsive:</strong> desktop 3 columnas, tablet inbox y workspace arriba, salida abajo, mobile workspace primero.</div>
-            <div><strong class="text-stone-800">Página única:</strong> lectura, contraste, decisión y resolución inline ya viven aquí; la siguiente fase es absorber más cierre final sin romper el motor actual.</div>
           </div>
         </aside>
       </div>
@@ -17992,10 +17969,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return;
     }
-    badgeEl.textContent = 'Sin actividad';
-    titleEl.textContent = 'Sin resolución inline activa.';
-    textEl.textContent = 'Cuando abras un caso desde aquí, este bloque mostrará el estado del cierre y mantendrá la continuidad del contexto.';
-    metaEl.textContent = 'Sin caso en ejecución.';
+      cardEl.className = 'hidden';
+      badgeEl.textContent = 'Sin actividad';
+      titleEl.textContent = 'Sin resolución inline activa.';
+      textEl.textContent = 'Cuando abras un caso desde aquí, este bloque mostrará el estado del cierre y mantendrá la continuidad del contexto.';
+      metaEl.textContent = 'Sin caso en ejecución.';
   }
 
   function mpSyncInlineDecisionState() {
@@ -18242,6 +18220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnEl.disabled = true;
     btnEl.onclick = null;
     if (!last) {
+      cardEl.className = 'hidden';
       badgeEl.textContent = 'Sin cierre';
       whatTitleEl.textContent = lastDescription.whatTitle;
       whatTextEl.textContent = lastDescription.whatText;
@@ -18348,7 +18327,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const usePlistaBtn = document.getElementById('wsSafeApplyPlistaBtn');
     const inlineHintEl = document.getElementById('wsSafeCalcInlineHint');
     if (!cardEl || !badgeEl || !titleEl || !textEl || !plistaEl || !pejecEl || !pmaxEl || !semaforoEl || !metaEl || !gateEl || !btnEl || !btnTitleEl || !btnTextEl || !usePejecBtn || !usePlistaBtn || !inlineHintEl) return;
-    const status = state?.status || 'idle';
+    const status = state?.status || 'empty';
     cardEl.className = 'rounded-xl border border-stone-200 bg-stone-50 px-4 py-3';
     badgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
     titleEl.className = 'font-semibold text-stone-800';
@@ -18363,8 +18342,8 @@ document.addEventListener('DOMContentLoaded', () => {
     gateEl.textContent = state?.gate || 'La guía de margen y publicación aparecerá aquí cuando el foco tenga material y alcance.';
     btnEl.disabled = !state?.handler;
     btnEl.onclick = state?.handler || null;
-    btnTitleEl.textContent = state?.buttonTitle || 'Abrir cálculo de apoyo';
-    btnTextEl.textContent = state?.buttonText || 'Úsalo solo si necesitas afinar más el número con este mismo foco.';
+    btnTitleEl.textContent = state?.buttonTitle || 'Abrir calculadora soporte';
+    btnTextEl.textContent = state?.buttonText || 'Úsala solo si necesitas afinar más el número con este mismo foco.';
     usePejecBtn.disabled = !state?.inlinePejecHandler;
     usePejecBtn.onclick = state?.inlinePejecHandler || null;
     usePlistaBtn.disabled = !state?.inlinePlistaHandler;
@@ -18377,9 +18356,10 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     if (status === 'empty') {
+      cardEl.className = 'hidden';
       badgeEl.textContent = 'Sin cálculo';
-      titleEl.textContent = 'La foto de Calculadora aparecerá aquí.';
-      textEl.textContent = 'Esta estación traerá P.Lista, P.Ejec, P.Max y el semáforo MG del foco actual sin obligarte a salir del workspace.';
+      titleEl.textContent = 'La lectura de cálculo aparecerá aquí.';
+      textEl.textContent = 'Aquí verás P.Lista, P.Ejec, P.Max y el semáforo MG del foco actual sin salir del workspace.';
       return;
     }
     if (status === 'error') {
@@ -18388,9 +18368,9 @@ document.addEventListener('DOMContentLoaded', () => {
       textEl.textContent = state?.text || 'El workspace mantiene el foco, pero la vista compacta de Calculadora no quedó disponible todavía.';
       return;
     }
-    badgeEl.textContent = state?.badge || 'Calculadora lista';
-    titleEl.textContent = state?.title || 'Soporte de cálculo listo.';
-    textEl.textContent = state?.text || 'Ya tienes una foto compacta de Calculadora para decidir sin salir de esta página.';
+    badgeEl.textContent = state?.badge || 'Lectura lista';
+    titleEl.textContent = state?.title || 'Lectura de cálculo lista.';
+    textEl.textContent = state?.text || 'Ya tienes una lectura compacta de cálculo para decidir sin salir de esta página.';
     if (state?.tone === 'emerald') {
       cardEl.className = 'rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3';
       badgeEl.className = 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]';
@@ -19191,13 +19171,13 @@ document.addEventListener('DOMContentLoaded', () => {
       scopeNextEl.textContent = 'La página te dirá cuál es el próximo paso dominante.';
       mpSyncWorkspaceScopeChoices(null, null);
       actionTitleEl.textContent = guide?.actionTitle || 'Selecciona un caso primero.';
-      actionTextEl.textContent = guide?.actionText || 'La recomendación cambia según ruta, alcance y si ya existe un valor publicado visible.';
+      actionTextEl.textContent = guide?.actionText || 'La página ordena el siguiente paso y evita que tengas que rearmar el contexto.';
       actionRouteBadgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
       actionRouteBadgeEl.textContent = 'Sin salida';
       primaryBtn.disabled = true;
       primaryBtn.onclick = null;
       primaryTitleEl.textContent = 'Selecciona un caso primero.';
-      primaryTextEl.textContent = 'La página única te propondrá la salida correcta sin que tengas que rearmar el contexto.';
+      primaryTextEl.textContent = 'La página te propondrá la salida correcta sin que tengas que rearmar el contexto.';
       primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
       primaryEngineEl.textContent = 'Sin motor';
       mobileMesaBtn.disabled = true;
@@ -19289,14 +19269,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (guide?.actionTarget === 'resolve') {
       primaryBtn.className = 'w-full rounded-xl border border-emerald-200 bg-white px-4 py-3 text-left hover:border-emerald-300';
       primaryBtn.onclick = openResolve;
-      primaryTitleEl.textContent = 'Resolver este caso desde aquí';
+      primaryTitleEl.textContent = 'Resolver este caso aquí';
       primaryTextEl.textContent = 'La página única ya dejó listo el contexto. Ahora abre la resolución real inline para aprobar, rechazar o ajustar sin salir del flujo.';
       primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]';
       primaryEngineEl.textContent = 'Motor: Inline + Bandeja';
     } else if (guide?.actionTarget === 'mesa') {
       primaryBtn.className = 'w-full rounded-xl border border-amber-200 bg-white px-4 py-3 text-left hover:border-amber-300';
       primaryBtn.onclick = openMesa;
-      primaryTitleEl.textContent = 'Pedir apoyo de Mesa para este caso';
+      primaryTitleEl.textContent = 'Abrir Mesa para contexto';
       primaryTextEl.textContent = 'Abre Mesa solo cuando el publicado visible o el alcance todavía no te dejan cerrar con seguridad desde aquí.';
       primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-amber-700 border border-amber-200 text-[11px]';
       primaryEngineEl.textContent = 'Apoyo: Mesa';
@@ -19310,10 +19290,10 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       primaryBtn.className = 'w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-left hover:border-sky-300';
       primaryBtn.onclick = openCalc;
-      primaryTitleEl.textContent = 'Pedir apoyo de cálculo para este caso';
-      primaryTextEl.textContent = 'La página conserva el foco y abre cálculo solo si todavía necesitas afinar el número antes del cierre.';
+      primaryTitleEl.textContent = 'Abrir calculadora soporte';
+      primaryTextEl.textContent = 'La página conserva el foco y abre calculadora solo si todavía necesitas afinar el número antes del cierre.';
       primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-sky-700 border border-sky-200 text-[11px]';
-      primaryEngineEl.textContent = 'Apoyo: Cálculo';
+      primaryEngineEl.textContent = 'Apoyo: Calculadora';
     }
     calcBtn.disabled = false;
     calcBtn.onclick = openCalc;
