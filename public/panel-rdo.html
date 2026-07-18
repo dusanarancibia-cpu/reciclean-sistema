@@ -8401,10 +8401,24 @@ window.loadPermissions = loadPermissions;
 async function loadSilos() {
   const selector = document.getElementById('siloSelector');
   const container = document.getElementById('siloSelectorContainer');
+  const setFallbackState = function (label, detail) {
+    if (!selector || !container) return;
+    selector.innerHTML = '';
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = label;
+    opt.disabled = true;
+    opt.selected = true;
+    selector.appendChild(opt);
+    selector.dataset.stateMode = 'fallback';
+    selector.dataset.stateLabel = label;
+    selector.dataset.stateDetail = detail || '';
+    container.classList.add('hidden');
+  };
 
   if (!window.PERMS || !window.PERMS.authorized) {
     console.warn('[Panel RDO] PERMS no disponible/no autorizado — sin selector de silos');
-    container.classList.add('hidden');
+    setFallbackState('Sin areas', 'No se pudieron cargar permisos o no tienes acceso a areas visibles.');
     return;
   }
 
@@ -8415,10 +8429,13 @@ async function loadSilos() {
 
   if (silosVisibles.length === 0) {
     console.warn('[Panel RDO] silosVisibles vacío — el selector no se mostrará');
-    container.classList.add('hidden');
+    setFallbackState('Sin areas', 'Tu sesion entro, pero no encontro areas visibles para este usuario.');
     return;
   }
 
+  delete selector.dataset.stateMode;
+  delete selector.dataset.stateLabel;
+  delete selector.dataset.stateDetail;
   container.classList.remove('hidden');
   selector.innerHTML = '';
 
@@ -8469,7 +8486,7 @@ async function loadSilos() {
     currentSilo = esBypass ? null : silosVisibles[0].codigo;
   }
 
-  selector.addEventListener('change', () => {
+  selector.onchange = () => {
     const v = selector.value;
     currentSilo = v === '__global__' ? null : v;
     localStorage.setItem(LS_KEY_SILO, v);
@@ -8483,7 +8500,7 @@ async function loadSilos() {
       const activeBtn = document.querySelector('.tab-btn.active');
       if (activeBtn) activeBtn.click();
     } catch (e) { console.warn('[silo-change refresh]', e); }
-  });
+  };
 }
 
 // ---------- ACCESO RÁPIDO al ecosistema externo ----------
@@ -10703,9 +10720,22 @@ document.getElementById('resetPassword2').addEventListener('keypress', e => {
 window.v4SyncSilos = function v4SyncSilos() {
   const cont = document.getElementById('v4-siloDropdownItems');
   const realSel = document.getElementById('siloSelector');
+  const lab = document.getElementById('v4-siloActual');
+  const dot = document.getElementById('v4-siloDot');
   if (!cont || !realSel) return;
+  if (realSel.dataset.stateMode === 'fallback') {
+    if (lab) lab.textContent = realSel.dataset.stateLabel || 'Sin areas';
+    if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-stone-400 flex-shrink-0';
+    cont.innerHTML = '<p class="text-xs text-slate-400 px-3 py-2">' + ((realSel.dataset.stateDetail || 'No hay areas visibles para mostrar ahora.').replace(/</g, '&lt;')) + '</p>';
+    return;
+  }
   const opts = Array.from(realSel.options || []);
-  if (!opts.length) return;
+  if (!opts.length) {
+    if (lab) lab.textContent = 'Sin areas';
+    if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-stone-400 flex-shrink-0';
+    cont.innerHTML = '<p class="text-xs text-slate-400 px-3 py-2">No hay areas visibles para mostrar ahora.</p>';
+    return;
+  }
   // Mapeo color por nombre conocido (fallback emerald)
   const colorMap = { 'gerencia':'bg-emerald-500','comercial':'bg-blue-500','operaciones':'bg-orange-500','planta':'bg-cyan-500','finanzas':'bg-yellow-500','rrhh':'bg-pink-500','logística':'bg-purple-500','logistica':'bg-purple-500','marketing':'bg-fuchsia-500','global':'bg-slate-400' };
   cont.innerHTML = opts.map(o => {
@@ -10727,8 +10757,8 @@ window.v4SyncSilos = function v4SyncSilos() {
   });
   // Refleja valor actual del select productivo en el botón del sidebar
   const cur = opts.find(o => o.value === realSel.value) || opts[0];
-  const lab = document.getElementById('v4-siloActual');
   if (lab && cur) lab.textContent = cur.textContent;
+  if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0';
 };
 
 // Sincroniza nombre/email/inicial en el footer del sidebar (llamado tras hydrate)
