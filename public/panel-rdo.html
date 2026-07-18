@@ -3940,8 +3940,8 @@
             <div class="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3">
               <div class="flex items-center justify-between gap-2 mb-2">
                 <div class="text-[11px] uppercase tracking-wider text-violet-700">Acción dominante</div>
-                <button id="wsSafeActionRouteBadge" type="button" disabled class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px] disabled:opacity-60 disabled:cursor-not-allowed">Sin salida</button>
-                <button id="wsSafePrimaryEngine" type="button" disabled class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px] disabled:opacity-60 disabled:cursor-not-allowed">Sin motor</button>
+                <span id="wsSafeActionRouteBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin salida</span>
+                <span id="wsSafePrimaryEngine" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin motor</span>
               </div>
               <div id="wsSafeActionTitle" class="font-semibold text-violet-900">Selecciona un caso primero.</div>
               <div id="wsSafeActionText" class="text-xs text-violet-800 mt-1">La página ordena el siguiente paso y evita que tengas que rearmar el contexto.</div>
@@ -19157,20 +19157,9 @@ document.addEventListener('DOMContentLoaded', () => {
       mesaBtn.dataset.bound = '1';
     }
     if (!metaEl || !scopeBadgeEl || !scopeMaterialEl || !scopeBranchEl || !scopeContextEl || !scopeNextEl || !resolveBtn || !calcBtn || !referenceBtn || !mesaBtn || !primaryBtn || !primaryTitleEl || !primaryTextEl || !primaryEngineEl || !actionTitleEl || !actionTextEl || !actionRouteBadgeEl || !mobileMesaBtn || !mobileCalcBtn || !mobileResolveBtn || !mobileReferenceBtn || !mobileHintEl || !mobileBadgeEl || !exitModeEl) return;
-    const disableActionChip = function (el, baseClass, text) {
-      el.disabled = true;
-      el.onclick = null;
-      el.className = baseClass + ' disabled:opacity-60 disabled:cursor-not-allowed';
-      el.textContent = text;
-    };
-    const enableActionChip = function (el, baseClass, text, handler) {
-      if (typeof handler !== 'function') {
-        disableActionChip(el, baseClass, text);
-        return;
-      }
-      el.disabled = false;
-      el.onclick = handler;
-      el.className = baseClass + ' cursor-pointer transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-sky-200';
+    const setActionChip = function (el, className, text) {
+      if (!el) return;
+      el.className = className;
       el.textContent = text;
     };
     [calcBtn, resolveBtn, referenceBtn, mesaBtn, mobileMesaBtn, mobileCalcBtn, mobileResolveBtn, mobileReferenceBtn].forEach((btn) => {
@@ -19188,12 +19177,12 @@ document.addEventListener('DOMContentLoaded', () => {
       mpSyncWorkspaceScopeChoices(null, null);
       actionTitleEl.textContent = guide?.actionTitle || 'Selecciona un caso primero.';
       actionTextEl.textContent = guide?.actionText || 'La página ordena el siguiente paso y evita que tengas que rearmar el contexto.';
-      disableActionChip(actionRouteBadgeEl, 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]', 'Sin salida');
+      setActionChip(actionRouteBadgeEl, 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]', 'Sin salida');
       primaryBtn.disabled = true;
       primaryBtn.onclick = null;
       primaryTitleEl.textContent = 'Selecciona un caso primero.';
       primaryTextEl.textContent = 'La página te propondrá la salida correcta sin que tengas que rearmar el contexto.';
-      disableActionChip(primaryEngineEl, 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]', 'Sin motor');
+      setActionChip(primaryEngineEl, 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]', 'Sin motor');
       mobileMesaBtn.disabled = true;
       mobileMesaBtn.onclick = null;
       calcBtn.disabled = true;
@@ -19264,16 +19253,19 @@ document.addEventListener('DOMContentLoaded', () => {
     mpSyncWorkspaceScopeChoices(selected, row);
     actionTitleEl.textContent = guide?.actionTitle || 'Caso listo para revisar.';
       actionTextEl.textContent = guide?.actionText || 'La página prioriza cerrar aquí y solo abre apoyo cuando realmente hace falta.';
-    actionRouteBadgeEl.className = guide?.actionTarget === 'resolve'
-      ? 'px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px]'
-      : (guide?.actionTarget === 'mesa'
-        ? 'px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 text-[11px]'
-        : 'px-2 py-1 rounded-full bg-sky-100 text-sky-700 border border-sky-200 text-[11px]');
-    actionRouteBadgeEl.textContent = guide?.actionTarget === 'resolve'
-      ? 'Resolver aquí'
-      : (guide?.actionTarget === 'mesa'
-        ? 'Apoyo: Mesa'
-        : (guide?.actionTarget === 'bridge' ? 'Puente a salida real' : 'Apoyo: Cálculo'));
+    setActionChip(
+      actionRouteBadgeEl,
+      guide?.actionTarget === 'resolve'
+        ? 'px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px]'
+        : (guide?.actionTarget === 'mesa'
+          ? 'px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 text-[11px]'
+          : 'px-2 py-1 rounded-full bg-sky-100 text-sky-700 border border-sky-200 text-[11px]'),
+      guide?.actionTarget === 'resolve'
+        ? 'Modo inline'
+        : (guide?.actionTarget === 'mesa'
+          ? 'Apoyo mesa'
+          : (guide?.actionTarget === 'bridge' ? 'Salida real' : 'Apoyo calc'))
+    );
     exitModeEl.textContent = guide?.actionTarget === 'resolve'
       ? 'Inline'
       : (guide?.actionTarget === 'mesa'
@@ -19285,32 +19277,26 @@ document.addEventListener('DOMContentLoaded', () => {
       primaryBtn.onclick = openResolve;
       primaryTitleEl.textContent = 'Resolver este caso aquí';
       primaryTextEl.textContent = 'La página única ya dejó listo el contexto. Ahora abre la resolución real inline para aprobar, rechazar o ajustar sin salir del flujo.';
-      primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]';
-      primaryEngineEl.textContent = 'Motor: Inline + Bandeja';
+      setActionChip(primaryEngineEl, 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]', 'Motor inline');
     } else if (guide?.actionTarget === 'mesa') {
       primaryBtn.className = 'w-full rounded-xl border border-amber-200 bg-white px-4 py-3 text-left hover:border-amber-300';
       primaryBtn.onclick = openMesa;
       primaryTitleEl.textContent = 'Abrir Mesa para contexto';
       primaryTextEl.textContent = 'Abre Mesa solo cuando el publicado visible o el alcance todavía no te dejan cerrar con seguridad desde aquí.';
-      primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-amber-700 border border-amber-200 text-[11px]';
-      primaryEngineEl.textContent = 'Apoyo: Mesa';
+      setActionChip(primaryEngineEl, 'px-2 py-1 rounded-full bg-white text-amber-700 border border-amber-200 text-[11px]', 'Motor mesa');
     } else if (guide?.actionTarget === 'bridge') {
       primaryBtn.className = 'w-full rounded-xl border border-sky-300 bg-white px-4 py-3 text-left hover:border-sky-400';
       primaryBtn.onclick = openCalc;
       primaryTitleEl.textContent = 'Abrir salida real precargada';
       primaryTextEl.textContent = 'Calculadora se abre con ' + (selected.material_nombre || mpGetMaterialNombre(row) || 'este material') + ' y ' + (focusBranch.nombre || 'la sucursal aterrizada') + ' ya cargados para publicar una propuesta válida sin reconstruir el caso.';
-      primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-sky-700 border border-sky-200 text-[11px]';
-      primaryEngineEl.textContent = 'Puente: Calculadora -> Bandeja';
+      setActionChip(primaryEngineEl, 'px-2 py-1 rounded-full bg-white text-sky-700 border border-sky-200 text-[11px]', 'Motor calc');
     } else {
       primaryBtn.className = 'w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-left hover:border-sky-300';
       primaryBtn.onclick = openCalc;
       primaryTitleEl.textContent = 'Abrir calculadora soporte';
       primaryTextEl.textContent = 'La página conserva el foco y abre calculadora solo si todavía necesitas afinar el número antes del cierre.';
-      primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-sky-700 border border-sky-200 text-[11px]';
-      primaryEngineEl.textContent = 'Apoyo: Calculadora';
+      setActionChip(primaryEngineEl, 'px-2 py-1 rounded-full bg-white text-sky-700 border border-sky-200 text-[11px]', 'Motor calc');
     }
-    enableActionChip(actionRouteBadgeEl, actionRouteBadgeEl.className, actionRouteBadgeEl.textContent, primaryBtn.onclick);
-    enableActionChip(primaryEngineEl, primaryEngineEl.className, primaryEngineEl.textContent, primaryBtn.onclick);
     calcBtn.disabled = false;
     calcBtn.onclick = openCalc;
     mobileMesaBtn.disabled = false;
