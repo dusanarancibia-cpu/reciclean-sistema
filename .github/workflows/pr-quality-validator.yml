@@ -13,7 +13,7 @@ name: PR Quality Validator · Protección Completa · Todos los PRs
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
 
 permissions:
   contents: read
@@ -39,6 +39,7 @@ jobs:
           else
             echo ""
             echo "❌ FALTA: Bloque auditoría R-AUD-086"
+            echo "⚠️  Ojo: este check solo lee el BODY del PR; un comentario no sirve."
             echo ""
             echo "Todo PR debe incluir:"
             echo "  📦 Propuesta técnica"
