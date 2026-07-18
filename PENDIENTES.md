@@ -17,6 +17,26 @@ Cerrar una tarea = mover a la seccion "Cerradas" al final con fecha.
 
 ## Abiertas
 
+### P0. Deuda historica separada — CodeQL XSS en `panel-rdo.html`
+- **Estado:** abierta (separada del cierre funcional de pagina unica)
+- **Origen:** PR `#691` de salida a web del carril de pagina unica
+- **Evidencia exacta:**
+  - Check `CodeQL` del PR `#691`, run `88014928329`
+  - 2 alertas `js/xss-through-dom` (`DOM text reinterpreted as HTML`)
+  - Archivo: `public/panel-rdo.html`
+  - Ubicaciones reportadas: linea `1037` y lineas `8876-8878` en el commit `8875c18`
+- **Diagnostico verificado:** deuda previa, no introducida por el carril de pagina unica
+  - Los bloques marcados son byte-identicos entre `main` previo (`fd16fa8`) y el head del PR (`8875c18`)
+  - Las alertas ya existian abiertas en `main` antes de `#691`
+  - El rojo de `CodeQL` aparecio como "nuevo" por deriva de lineas en un diff grande sobre el mismo archivo
+- **Que NO contamina este frente:** no bloquear ni reabrir el cierre funcional del workspace seguro por estas alertas historicas
+- **Carril aparte propuesto:** saneamiento de seguridad del panel, fuera del flujo de precios
+- **Proxima accion concreta:**
+  1. abrir frente especifico de seguridad sobre `public/panel-rdo.html`
+  2. reemplazar concatenaciones hacia `innerHTML` con texto del DOM por `textContent`, nodos creados por JS o escape explicito
+  3. rerun de `CodeQL` solo para validar saneamiento, sin mezclar UX del workspace
+- **Riesgo si se toca mal:** romper breadcrumbs, bloques renderizados o texto de panel por corregir XSS sin aislar el alcance
+
 ### P1. Mergear PR de URLs cortas a `main`
 - **Estado:** en revision (push hecho, falta merge)
 - **Branch:** `claude/continue-diego-mobile-U0cgA`
