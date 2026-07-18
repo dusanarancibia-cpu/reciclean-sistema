@@ -4006,6 +4006,18 @@
                 <div class="text-[11px] uppercase tracking-wider text-stone-500">Soporte de cálculo</div>
                 <span id="wsSafeCalcSupportBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin cálculo</span>
               </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Uso recomendado</div>
+                  <div id="wsSafeCalcModeTitle" class="font-semibold text-stone-800">Sin lectura todavía.</div>
+                  <div id="wsSafeCalcModeText" class="text-xs text-stone-600 mt-1">La página te dirá aquí si la foto compacta basta para decidir o si ya conviene abrir Calculadora.</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Puente con Workspace</div>
+                  <div id="wsSafeCalcBridgeTitle" class="font-semibold text-stone-800">Sin puente activo.</div>
+                  <div id="wsSafeCalcBridgeText" class="text-xs text-stone-600 mt-1">Cuando salgas a Calculadora, volverás a este mismo caso sin perder material, alcance ni continuidad.</div>
+                </div>
+              </div>
               <div id="wsSafeCalcSupportTitle" class="font-semibold text-stone-800">La foto de Calculadora aparecerá aquí.</div>
               <div id="wsSafeCalcSupportText" class="text-xs text-stone-600 mt-1">Esta estación traerá P.Lista, P.Ejec, P.Max y el semáforo MG del foco actual sin obligarte a salir del workspace.</div>
               <div class="grid grid-cols-2 gap-2 mt-3">
@@ -18030,6 +18042,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
   function mpRenderCalcSupportState(state) {
     const cardEl = document.getElementById('wsSafeCalcSupportCard');
     const badgeEl = document.getElementById('wsSafeCalcSupportBadge');
+    const modeTitleEl = document.getElementById('wsSafeCalcModeTitle');
+    const modeTextEl = document.getElementById('wsSafeCalcModeText');
+    const bridgeTitleEl = document.getElementById('wsSafeCalcBridgeTitle');
+    const bridgeTextEl = document.getElementById('wsSafeCalcBridgeText');
     const titleEl = document.getElementById('wsSafeCalcSupportTitle');
     const textEl = document.getElementById('wsSafeCalcSupportText');
     const plistaEl = document.getElementById('wsSafeCalcPlista');
@@ -18041,10 +18057,14 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const btnEl = document.getElementById('wsSafeCalcSupportBtn');
     const btnTitleEl = document.getElementById('wsSafeCalcSupportBtnTitle');
     const btnTextEl = document.getElementById('wsSafeCalcSupportBtnText');
-    if (!cardEl || !badgeEl || !titleEl || !textEl || !plistaEl || !pejecEl || !pmaxEl || !semaforoEl || !metaEl || !gateEl || !btnEl || !btnTitleEl || !btnTextEl) return;
+    if (!cardEl || !badgeEl || !modeTitleEl || !modeTextEl || !bridgeTitleEl || !bridgeTextEl || !titleEl || !textEl || !plistaEl || !pejecEl || !pmaxEl || !semaforoEl || !metaEl || !gateEl || !btnEl || !btnTitleEl || !btnTextEl) return;
     const status = state?.status || 'idle';
     cardEl.className = 'rounded-xl border border-stone-200 bg-stone-50 px-4 py-3';
     badgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
+    modeTitleEl.textContent = state?.modeTitle || 'Sin lectura todavía.';
+    modeTextEl.textContent = state?.modeText || 'La página te dirá aquí si la foto compacta basta para decidir o si ya conviene abrir Calculadora.';
+    bridgeTitleEl.textContent = state?.bridgeTitle || 'Sin puente activo.';
+    bridgeTextEl.textContent = state?.bridgeText || 'Cuando salgas a Calculadora, volverás a este mismo caso sin perder material, alcance ni continuidad.';
     titleEl.className = 'font-semibold text-stone-800';
     textEl.className = 'text-xs text-stone-600 mt-1';
     gateEl.className = 'text-xs text-stone-600 mt-2';
@@ -18061,18 +18081,30 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     btnTextEl.textContent = state?.buttonText || 'El motor real quedará listo con este mismo foco si necesitas afinar sliders o publicar propuesta.';
     if (status === 'loading') {
       badgeEl.textContent = 'Cargando';
+      modeTitleEl.textContent = 'Preparando criterio de salida.';
+      modeTextEl.textContent = 'Mientras llega la foto compacta, igual puedes abrir Calculadora con este mismo foco si ya sabes que necesitas afinar.';
+      bridgeTitleEl.textContent = 'Puente listo.';
+      bridgeTextEl.textContent = 'Si saltas ahora, la Calculadora abre con material y alcance ya precargados y luego puedes volver al mismo workspace.';
       titleEl.textContent = 'Preparando soporte de cálculo.';
       textEl.textContent = 'Estoy trayendo la foto real de Calculadora para este foco sin salir del workspace.';
       return;
     }
     if (status === 'empty') {
       badgeEl.textContent = 'Sin cálculo';
+      modeTitleEl.textContent = 'Todavía no basta para decidir.';
+      modeTextEl.textContent = 'Primero necesitas un material activo y, si aplica, un alcance concreto para que la foto compacta tenga sentido.';
+      bridgeTitleEl.textContent = 'Puente en espera.';
+      bridgeTextEl.textContent = 'Cuando el caso tenga foco listo, la salida a Calculadora respetará ese mismo contexto.';
       titleEl.textContent = 'La foto de Calculadora aparecerá aquí.';
       textEl.textContent = 'Esta estación traerá P.Lista, P.Ejec, P.Max y el semáforo MG del foco actual sin obligarte a salir del workspace.';
       return;
     }
     if (status === 'error') {
       badgeEl.textContent = 'Sin lectura';
+      modeTitleEl.textContent = 'Conviene abrir Calculadora.';
+      modeTextEl.textContent = 'La foto compacta no quedó disponible, así que la mejor salida es usar el motor completo sin seguir esperando esta estación.';
+      bridgeTitleEl.textContent = 'Puente disponible.';
+      bridgeTextEl.textContent = 'Aunque falle la foto compacta, la salida a Calculadora mantiene el mismo material y alcance del workspace.';
       titleEl.textContent = 'No pude traer el soporte de cálculo.';
       textEl.textContent = state?.text || 'El workspace mantiene el foco, pero la vista compacta de Calculadora no quedó disponible todavía.';
       return;
@@ -18105,10 +18137,25 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const cacheKey = String(materialId || '') + '|' + String(sucursalId || '');
     if (mpState.calcSupportCache.has(cacheKey)) {
       const cached = mpState.calcSupportCache.get(cacheKey);
+      const needsCalc = !row.sucursal_id || row.ruta === 'manual_calc' || !!(cached.delta != null && cached.delta > 0);
+      const modeTitle = !row.sucursal_id
+        ? 'Conviene abrir Calculadora.'
+        : (needsCalc ? 'Calculadora recomendada.' : 'La foto compacta ya basta.');
+      const modeText = !row.sucursal_id
+        ? 'Todavía falta elegir una sucursal concreta. Sin alcance real, la foto compacta solo orienta; el ajuste serio conviene hacerlo en Calculadora.'
+        : (row.ruta === 'manual_calc'
+          ? 'Este caso viene desde Calculadora y aquí lo coherente es volver al motor completo para afinar o publicar sin perder el hilo.'
+          : (cached.delta != null && cached.delta > 0
+            ? 'La foto compacta ya te muestra tensión contra el vigente. Conviene abrir Calculadora si quieres afinar antes de cerrar.'
+            : 'La foto compacta ya te da P.Lista, P.Ejec, P.Max y semáforo. Si no vas a mover sliders, puedes decidir desde el workspace.'));
       mpRenderCalcSupportState({
         status: 'ready',
         tone: cached.delta != null && cached.delta > 0 ? 'rose' : 'emerald',
         badge: 'Calculadora lista',
+        modeTitle,
+        modeText,
+        bridgeTitle: 'Puente activo con Workspace.',
+        bridgeText: 'Si abres Calculadora, entrarás con ' + (cached.materialNombre || 'este material') + ' y ' + (cached.sucursalNombre || 'este alcance') + '. Al volver, el workspace retoma el mismo foco.',
         title: 'Foto compacta de Calculadora para ' + (cached.materialNombre || 'este caso') + '.',
         text: cached.salida || 'La Calculadora ya dejó una lectura compacta para este foco.',
         plista: cached.plista != null ? tapFmtClp(cached.plista) : '—',
@@ -18126,6 +18173,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     mpRenderCalcSupportState({
       status: 'loading',
       handler: openCalc || null,
+      bridgeTitle: 'Puente activo con Workspace.',
+      bridgeText: 'Si sales ahora, la Calculadora abre con este mismo material y alcance mientras termina de cargar la foto compacta.',
       buttonTitle: 'Abrir Calculadora ya preparada',
       buttonText: 'Si prefieres afinar ya, puedes abrir el motor real mientras termina de cargar esta foto compacta.',
     });
@@ -18145,10 +18194,25 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         return;
       }
       mpState.calcSupportCache.set(cacheKey, snapshot);
+      const needsCalc = !row.sucursal_id || row.ruta === 'manual_calc' || !!(snapshot.delta != null && snapshot.delta > 0);
+      const modeTitle = !row.sucursal_id
+        ? 'Conviene abrir Calculadora.'
+        : (needsCalc ? 'Calculadora recomendada.' : 'La foto compacta ya basta.');
+      const modeText = !row.sucursal_id
+        ? 'Todavía falta elegir una sucursal concreta. Sin alcance real, la foto compacta solo orienta; el ajuste serio conviene hacerlo en Calculadora.'
+        : (row.ruta === 'manual_calc'
+          ? 'Este caso viene desde Calculadora y aquí lo coherente es volver al motor completo para afinar o publicar sin perder el hilo.'
+          : (snapshot.delta != null && snapshot.delta > 0
+            ? 'La foto compacta ya te muestra tensión contra el vigente. Conviene abrir Calculadora si quieres afinar antes de cerrar.'
+            : 'La foto compacta ya te da P.Lista, P.Ejec, P.Max y semáforo. Si no vas a mover sliders, puedes decidir desde el workspace.'));
       mpRenderCalcSupportState({
         status: 'ready',
         tone: snapshot.delta != null && snapshot.delta > 0 ? 'rose' : 'emerald',
         badge: 'Calculadora lista',
+        modeTitle,
+        modeText,
+        bridgeTitle: 'Puente activo con Workspace.',
+        bridgeText: 'Si abres Calculadora, entrarás con ' + (snapshot.materialNombre || 'este material') + ' y ' + (snapshot.sucursalNombre || 'este alcance') + '. Al volver, el workspace retoma el mismo foco.',
         title: 'Foto compacta de Calculadora para ' + (snapshot.materialNombre || 'este caso') + '.',
         text: snapshot.salida || 'La Calculadora ya dejó una lectura compacta para este foco.',
         plista: snapshot.plista != null ? tapFmtClp(snapshot.plista) : '—',
@@ -18842,8 +18906,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     } else {
       primaryBtn.className = 'w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-left hover:border-sky-300';
       primaryBtn.onclick = openCalc;
-      primaryTitleEl.textContent = 'Ajustar este caso desde aquí';
-      primaryTextEl.textContent = 'La página única te manda a Calculadora con material y alcance ya cargados para afinar sin volver a buscar.';
+      primaryTitleEl.textContent = 'Abrir Calculadora con este mismo foco';
+      primaryTextEl.textContent = row?.sucursal_id
+        ? 'Usa la foto compacta para orientarte y abre Calculadora solo si necesitas afinar sliders o publicación con este mismo material y alcance.'
+        : 'Aquí conviene abrir Calculadora: falta una sucursal concreta y el ajuste serio necesita ese alcance real sin perder el hilo del workspace.';
       primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-sky-700 border border-sky-200 text-[11px]';
       primaryEngineEl.textContent = 'Motor: Calculadora';
     }
