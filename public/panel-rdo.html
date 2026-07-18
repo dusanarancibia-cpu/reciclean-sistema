@@ -3940,8 +3940,8 @@
             <div class="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3">
               <div class="flex items-center justify-between gap-2 mb-2">
                 <div class="text-[11px] uppercase tracking-wider text-violet-700">Acción dominante</div>
-                <span id="wsSafeActionRouteBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin salida</span>
-                <span id="wsSafePrimaryEngine" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin motor</span>
+                <button id="wsSafeActionRouteBadge" type="button" disabled class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px] disabled:opacity-60 disabled:cursor-not-allowed">Sin salida</button>
+                <button id="wsSafePrimaryEngine" type="button" disabled class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px] disabled:opacity-60 disabled:cursor-not-allowed">Sin motor</button>
               </div>
               <div id="wsSafeActionTitle" class="font-semibold text-violet-900">Selecciona un caso primero.</div>
               <div id="wsSafeActionText" class="text-xs text-violet-800 mt-1">La página ordena el siguiente paso y evita que tengas que rearmar el contexto.</div>
@@ -19157,6 +19157,22 @@ document.addEventListener('DOMContentLoaded', () => {
       mesaBtn.dataset.bound = '1';
     }
     if (!metaEl || !scopeBadgeEl || !scopeMaterialEl || !scopeBranchEl || !scopeContextEl || !scopeNextEl || !resolveBtn || !calcBtn || !referenceBtn || !mesaBtn || !primaryBtn || !primaryTitleEl || !primaryTextEl || !primaryEngineEl || !actionTitleEl || !actionTextEl || !actionRouteBadgeEl || !mobileMesaBtn || !mobileCalcBtn || !mobileResolveBtn || !mobileReferenceBtn || !mobileHintEl || !mobileBadgeEl || !exitModeEl) return;
+    const disableActionChip = function (el, baseClass, text) {
+      el.disabled = true;
+      el.onclick = null;
+      el.className = baseClass + ' disabled:opacity-60 disabled:cursor-not-allowed';
+      el.textContent = text;
+    };
+    const enableActionChip = function (el, baseClass, text, handler) {
+      if (typeof handler !== 'function') {
+        disableActionChip(el, baseClass, text);
+        return;
+      }
+      el.disabled = false;
+      el.onclick = handler;
+      el.className = baseClass + ' cursor-pointer transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-sky-200';
+      el.textContent = text;
+    };
     [calcBtn, resolveBtn, referenceBtn, mesaBtn, mobileMesaBtn, mobileCalcBtn, mobileResolveBtn, mobileReferenceBtn].forEach((btn) => {
       btn.classList.remove('ring-2', 'ring-sky-200', 'ring-emerald-200', 'ring-amber-200', 'ring-violet-200');
     });
@@ -19172,14 +19188,12 @@ document.addEventListener('DOMContentLoaded', () => {
       mpSyncWorkspaceScopeChoices(null, null);
       actionTitleEl.textContent = guide?.actionTitle || 'Selecciona un caso primero.';
       actionTextEl.textContent = guide?.actionText || 'La página ordena el siguiente paso y evita que tengas que rearmar el contexto.';
-      actionRouteBadgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
-      actionRouteBadgeEl.textContent = 'Sin salida';
+      disableActionChip(actionRouteBadgeEl, 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]', 'Sin salida');
       primaryBtn.disabled = true;
       primaryBtn.onclick = null;
       primaryTitleEl.textContent = 'Selecciona un caso primero.';
       primaryTextEl.textContent = 'La página te propondrá la salida correcta sin que tengas que rearmar el contexto.';
-      primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
-      primaryEngineEl.textContent = 'Sin motor';
+      disableActionChip(primaryEngineEl, 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]', 'Sin motor');
       mobileMesaBtn.disabled = true;
       mobileMesaBtn.onclick = null;
       calcBtn.disabled = true;
@@ -19295,6 +19309,8 @@ document.addEventListener('DOMContentLoaded', () => {
       primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-sky-700 border border-sky-200 text-[11px]';
       primaryEngineEl.textContent = 'Apoyo: Calculadora';
     }
+    enableActionChip(actionRouteBadgeEl, actionRouteBadgeEl.className, actionRouteBadgeEl.textContent, primaryBtn.onclick);
+    enableActionChip(primaryEngineEl, primaryEngineEl.className, primaryEngineEl.textContent, primaryBtn.onclick);
     calcBtn.disabled = false;
     calcBtn.onclick = openCalc;
     mobileMesaBtn.disabled = false;
