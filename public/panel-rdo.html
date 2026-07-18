@@ -18198,8 +18198,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return {
           whatTitle: 'La señal salió como referencia.',
           whatText: text,
-          changeTitle: 'Compra sin cambios.',
-          changeText: 'El caso salió de tu carga sin publicar un nuevo precio ni mover compra.',
+          changeTitle: 'No tomó precio.',
+          changeText: 'El caso salió de tu carga sin publicar un nuevo precio ni mover compra. Ahora el workspace continúa con el siguiente análisis disponible.',
         };
       }
       if (/^\s*✓\s*Aplicado/i.test(text) || /precio vigente publicado/i.test(text)) {
@@ -18273,7 +18273,11 @@ document.addEventListener('DOMContentLoaded', () => {
     textEl.className = isDismissed
       ? 'text-xs text-amber-800 mt-1'
       : (isReference ? 'text-xs text-violet-800 mt-1' : 'text-xs text-emerald-800 mt-1');
-    badgeEl.textContent = isDismissed ? 'Caso sigue abierto' : (hasQueue ? 'Siguiente paso' : 'Cierre resuelto');
+    badgeEl.textContent = isDismissed
+      ? 'Caso sigue abierto'
+      : (isReference
+        ? (hasQueue ? 'Referencia cerrada' : 'Referencia cerrada')
+        : (hasQueue ? 'Siguiente paso' : 'Cierre resuelto'));
     whatTitleEl.textContent = lastDescription.whatTitle;
     whatTextEl.textContent = lastDescription.whatText;
     changeTitleEl.textContent = lastDescription.changeTitle;
@@ -18324,8 +18328,13 @@ document.addEventListener('DOMContentLoaded', () => {
             tone: 'sky',
             handler: actions?.calc || null,
           }));
-    titleEl.textContent = 'Último cierre listo. Siguiente caso sugerido: ' + materialTxt + '.';
-    textEl.textContent = (last.resultText || 'El último cierre inline ya quedó resuelto.') + ' Ahora la página única te deja continuar con ' + materialTxt + ' en ' + alcanceTxt + '.';
+    if (isReference) {
+      titleEl.textContent = 'Referencia cerrada. Siguiente análisis: ' + materialTxt + '.';
+      textEl.textContent = 'No se tomó precio en el caso anterior. Ahora la página única te deja continuar con ' + materialTxt + ' en ' + alcanceTxt + '.';
+    } else {
+      titleEl.textContent = 'Último cierre listo. Siguiente caso sugerido: ' + materialTxt + '.';
+      textEl.textContent = (last.resultText || 'El último cierre inline ya quedó resuelto.') + ' Ahora la página única te deja continuar con ' + materialTxt + ' en ' + alcanceTxt + '.';
+    }
     btnEl.disabled = !nextAction.handler;
     btnEl.onclick = nextAction.handler;
     btnEl.className = 'mt-3 w-full rounded-xl border bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed '
@@ -18334,8 +18343,10 @@ document.addEventListener('DOMContentLoaded', () => {
         : (nextAction.tone === 'amber'
           ? 'border-amber-200 hover:border-amber-300'
           : 'border-sky-200 hover:border-sky-300'));
-    btnTitleEl.textContent = nextAction.title;
-    btnTextEl.textContent = nextAction.text;
+    btnTitleEl.textContent = isReference ? ('Abrir siguiente analisis: ' + materialTxt) : nextAction.title;
+    btnTextEl.textContent = isReference
+      ? ('El caso anterior quedó como referencia y sin cambio de precio. Sigue ahora con ' + materialTxt + ' en ' + alcanceTxt + '.')
+      : nextAction.text;
   }
 
   function mpRenderCalcSupportState(state) {
