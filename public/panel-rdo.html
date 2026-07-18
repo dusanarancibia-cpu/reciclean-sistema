@@ -3675,32 +3675,32 @@
             <span>🧭</span><span>Workspace seguro de Precios</span>
           </h2>
           <p class="text-sm text-stone-500 mt-1 max-w-4xl">
-            Esta es la fase 1 de la página única de precios. Aquí ya lees, contrastas y decides el caso
-            completo sin salir de esta pantalla. La ejecución real sigue reutilizando por debajo
-            <strong>Mesa</strong>, <strong>Calculadora</strong> y <strong>Bandeja técnica</strong>.
+            Esta página ya concentra lectura, contraste, cálculo y cierre del caso sin perder el foco.
+            <strong>Mesa</strong>, <strong>Calculadora</strong> y <strong>Bandeja técnica</strong>
+            siguen disponibles, pero como apoyo cuando realmente hacen falta.
           </p>
         </div>
         <div class="flex flex-wrap gap-2 w-full xl:w-auto">
           <button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab('tablero_precios')"
                   class="w-full sm:w-auto bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
-            🎯 Volver a Mesa
+            🎯 Mesa de apoyo
           </button>
           <button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab('bandeja_precios')"
                   class="w-full sm:w-auto bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
-            📨 Resolver en Bandeja
+            📨 Bandeja de apoyo
           </button>
           <button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab('calculadora_precios')"
                   class="w-full sm:w-auto bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
-            🧮 Abrir Calculadora
+            🧮 Cálculo de apoyo
           </button>
         </div>
       </header>
 
       <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 mb-4 text-sm text-amber-900">
-        <div class="font-semibold">Carril seguro activo</div>
+        <div class="font-semibold">Página única activa</div>
         <div class="mt-1 text-amber-800">
-          Esta fase no cambia el motor actual ni reemplaza handlers productivos. Su objetivo es
-          absorber la operación en una sola página mientras la persistencia real sigue corriendo abajo.
+          Aquí ya puedes leer, contrastar, calcular y cerrar sin salir del carril principal. Los otros
+          módulos siguen disponibles como apoyo cuando hacen falta.
         </div>
       </div>
 
@@ -3740,7 +3740,7 @@
               <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Decisión</div>
               <h3 class="text-sm font-bold text-stone-700">Workspace central</h3>
             </div>
-            <span class="text-xs px-2 py-1 rounded-full bg-violet-100 text-violet-700">Opción B · carril aislado</span>
+            <span class="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">Carril principal</span>
           </div>
 
           <div class="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 mb-3">
@@ -3914,8 +3914,36 @@
           </div>
 
           <div class="space-y-2">
-            <div id="wsSafeSelectionMeta" class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-500 break-words">
-              Sin caso activo aún.
+            <div id="wsSafeSelectionMeta" class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 break-words">
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <div class="text-[11px] uppercase tracking-wider text-stone-500">Alcance real del caso</div>
+                <span id="wsSafeScopeBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin foco</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Material</div>
+                  <div id="wsSafeScopeMaterial" class="font-semibold text-stone-800 mt-1">Sin caso activo.</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Sucursal real</div>
+                  <div id="wsSafeScopeBranch" class="font-semibold text-stone-800 mt-1">Todavía no definida.</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2 sm:col-span-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Contexto operativo</div>
+                  <div id="wsSafeScopeContext" class="text-xs text-stone-600 mt-1">Selecciona un caso para ver por qué está en este estado y qué falta realmente.</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2 sm:col-span-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Siguiente acción única</div>
+                  <div id="wsSafeScopeNext" class="font-semibold text-stone-800 mt-1">La página te dirá cuál es el próximo paso dominante.</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2 sm:col-span-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Aterrizar sucursal desde aquí</div>
+                  <div id="wsSafeScopeChoices" class="flex flex-wrap gap-2 mt-2">
+                    <span class="text-xs text-stone-500">Cuando el material tenga sucursales visibles, aparecerán aquí para fijar el foco sin salir del workspace.</span>
+                  </div>
+                  <div id="wsSafeScopeChoicesNote" class="text-xs text-stone-500 mt-2">Sin foco todavía.</div>
+                </div>
+              </div>
             </div>
             <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
               <div class="flex items-center justify-between gap-2 mb-1">
@@ -3950,6 +3978,18 @@
                 <div class="text-[11px] uppercase tracking-wider text-stone-500">Cierre visible</div>
                 <span id="wsSafeDecisionStateBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin drawer</span>
               </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Paso actual</div>
+                  <div id="wsSafeDecisionFlowTitle" class="font-semibold text-stone-800">Recorrido aún no activo.</div>
+                  <div id="wsSafeDecisionFlowText" class="text-xs text-stone-600 mt-1">Cuando abras el drawer inline, este bloque te dirá exactamente en qué parte del cierre vas.</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Resultado inmediato</div>
+                  <div id="wsSafeDecisionOutcomeTitle" class="font-semibold text-stone-800">Sin resultado aún.</div>
+                  <div id="wsSafeDecisionOutcomeText" class="text-xs text-stone-600 mt-1">Aquí verás la salida inmediata del caso mientras ajustas, apruebas, rechazas o cierras como referencia.</div>
+                </div>
+              </div>
               <div class="space-y-2">
                 <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
                   <div class="text-[11px] uppercase tracking-wider text-stone-400">Ajuste previo</div>
@@ -3967,7 +4007,7 @@
                   <div id="wsSafeApproveStateText" class="text-xs text-stone-600 mt-1">La página única mostrará si aplicar ya está listo o si falta algo.</div>
                 </div>
                 <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
-                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Rechazar</div>
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Rechazar / referencia</div>
                   <div id="wsSafeRejectStateTitle" class="font-semibold text-stone-800">Sin evaluación.</div>
                   <div id="wsSafeRejectStateText" class="text-xs text-stone-600 mt-1">Aquí verás si el cierre como referencia sigue disponible desde el mismo flujo.</div>
                 </div>
@@ -3977,6 +4017,18 @@
               <div class="flex items-center justify-between gap-2 mb-2">
                 <div class="text-[11px] uppercase tracking-wider text-stone-500">Continuidad</div>
                 <span id="wsSafePostCloseBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin cierre</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Qué pasó</div>
+                  <div id="wsSafePostCloseWhatTitle" class="font-semibold text-stone-800">Sin cierre reciente.</div>
+                  <div id="wsSafePostCloseWhatText" class="text-xs text-stone-600 mt-1">Aquí aparecerá la última salida real del caso cuando cierres el drawer.</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Qué cambió</div>
+                  <div id="wsSafePostCloseChangeTitle" class="font-semibold text-stone-800">Sin cambio registrado.</div>
+                  <div id="wsSafePostCloseChangeText" class="text-xs text-stone-600 mt-1">La página única resumirá aquí si se movió precio, si quedó como referencia o si el caso solo refrescó contexto.</div>
+                </div>
               </div>
               <div id="wsSafePostCloseTitle" class="font-semibold text-stone-800">El siguiente paso aparecerá aquí.</div>
               <div id="wsSafePostCloseText" class="text-xs text-stone-600 mt-1">Después de aprobar, rechazar o cerrar como referencia, la página única te dirá qué acaba de pasar y cuál es la siguiente salida sugerida.</div>
@@ -4016,19 +4068,32 @@
               <div id="wsSafeCalcGate" class="text-xs text-stone-600 mt-2">La guía de margen y publicación aparecerá aquí cuando el foco tenga material y alcance.</div>
               <button id="wsSafeCalcSupportBtn" type="button" disabled
                       class="mt-3 w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
-                <div id="wsSafeCalcSupportBtnTitle" class="font-semibold text-sky-800">Abrir Calculadora ya preparada</div>
-                <div id="wsSafeCalcSupportBtnText" class="text-xs text-sky-700 mt-1">El motor real quedará listo con este mismo foco si necesitas afinar sliders o publicar propuesta.</div>
+                <div id="wsSafeCalcSupportBtnTitle" class="font-semibold text-sky-800">Abrir cálculo de apoyo</div>
+                <div id="wsSafeCalcSupportBtnText" class="text-xs text-sky-700 mt-1">Úsalo solo si necesitas afinar más el número sin perder este mismo foco.</div>
               </button>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                <button id="wsSafeApplyPejecBtn" type="button" disabled
+                        class="rounded-xl border border-emerald-200 bg-white px-3 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+                  <div class="font-semibold text-emerald-800">Usar P.Ejec en el cierre</div>
+                  <div class="text-xs text-emerald-700 mt-1">Carga el número operativo directo al drawer inline.</div>
+                </button>
+                <button id="wsSafeApplyPlistaBtn" type="button" disabled
+                        class="rounded-xl border border-sky-200 bg-white px-3 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+                  <div class="font-semibold text-sky-800">Usar P.Lista en el cierre</div>
+                  <div class="text-xs text-sky-700 mt-1">Carga la salida pública sugerida directo al drawer inline.</div>
+                </button>
+              </div>
+              <div id="wsSafeCalcInlineHint" class="text-xs text-stone-500 mt-2">El ajuste inline se habilita cuando el caso ya tiene sucursal real y lectura de cálculo.</div>
             </div>
             <button id="wsSafeCalcBtn" type="button" disabled
-                    class="w-full rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
-              <div class="font-semibold text-sky-800">Abrir este caso en Calculadora</div>
-              <div class="text-xs text-sky-700 mt-1">Entra con material y alcance ya cargados.</div>
+                    class="w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+              <div class="font-semibold text-sky-800">Usar cálculo de apoyo</div>
+              <div class="text-xs text-sky-700 mt-1">Entra con material y alcance ya cargados solo si necesitas afinar más.</div>
             </button>
             <button id="wsSafeResolveBtn" type="button" disabled
                     class="w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
               <div class="font-semibold text-emerald-800">Resolver este caso aquí</div>
-              <div class="text-xs text-emerald-700 mt-1">Abre la resolución real inline y usa Bandeja por debajo.</div>
+              <div class="text-xs text-emerald-700 mt-1">Abre la resolución real inline y deja Bandeja solo como motor de fondo.</div>
             </button>
             <button id="wsSafeReferenceBtn" type="button" disabled
                     class="w-full rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
@@ -4037,8 +4102,8 @@
             </button>
             <button id="wsSafeMesaBtn" type="button"
                     class="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-left hover:border-stone-300">
-              <div class="font-semibold text-stone-800">Abrir foco en Mesa</div>
-              <div class="text-xs text-stone-500 mt-1">Contrasta esta vista con la mesa actual.</div>
+              <div class="font-semibold text-stone-800">Usar Mesa de apoyo</div>
+              <div class="text-xs text-stone-500 mt-1">Ábrela solo cuando todavía falte contexto para cerrar desde aquí.</div>
             </button>
             <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
               <div class="font-semibold text-stone-800">Publicar / aprobar</div>
@@ -14465,11 +14530,18 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('No pude cargar la propuesta: ' + (error?.message ?? 'no existe'));
       return;
     }
+    const inlineCtx = window.__mpWorkspaceInlineContext || null;
+    const inlineFocus = inlineCtx && Number(inlineCtx.proposalId || 0) === Number(id || 0)
+      ? (inlineCtx.focus || null)
+      : null;
+    const inlineFocusBranchId = inlineFocus?.sucursalId || '';
+    const inlineFocusBranchName = inlineFocus?.sucursalNombre || inlineFocusBranchId || '';
     document.getElementById('bpDrawerSubtitle').textContent  = `#${r.id} · creada ${fmtEdad(r.created_at)} atrás`;
     document.getElementById('bpDw_cliente').textContent      = r.cliente_nombre ?? r.cliente_id ?? '—';
     document.getElementById('bpDw_material').textContent     = r.material_nombre ?? r.material_id ?? '—';
     document.getElementById('bpDw_fuente').textContent        = (r.fuente_nombre_ui ?? '— sin origen registrado') + (r.fuente_rol ? ' (' + r.fuente_rol + ')' : '');
-document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ?? r.sucursal_id ?? '— sin definir';
+    document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ?? r.sucursal_id
+      ?? (inlineFocusBranchName ? (inlineFocusBranchName + ' · foco de workspace') : '— sin definir');
     document.getElementById('bpDw_vigencia').textContent     = r.fecha_vigencia ?? 'desde hoy';
     document.getElementById('bpDw_propuesto').textContent    = fmtCLP(r.precio_clp_kg);
     document.getElementById('bpDw_vigente').textContent      = fmtCLP(r.precio_vigente);
@@ -14510,8 +14582,12 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     btnAprobar.classList.toggle('opacity-50', yaCerrada || faltanDatosAplicacion);
     btnRechazar.classList.toggle('opacity-50', yaCerrada);
     if (faltanDatosAplicacion) {
-      const origen = r.ruta === 'manual_calc' ? ' desde Calculadora' : '';
-      bpMsg(`Esta propuesta${origen} quedó sin sucursal. Volvé a Calculadora, elegí una sucursal concreta y publícala de nuevo.`, false);
+      if (inlineFocusBranchId) {
+        bpMsg(`Bloqueo final: la propuesta sigue sin sucursal real guardada. Ya aterrizaste ${inlineFocusBranchName || inlineFocusBranchId} desde el workspace, pero para aprobar o publicar debes abrir la salida real y generar una propuesta con esa sucursal.`, false);
+      } else {
+        const origen = r.ruta === 'manual_calc' ? ' desde Calculadora' : '';
+        bpMsg(`Bloqueo final: esta propuesta${origen} quedó sin sucursal real. Volvé a Calculadora, elegí una sucursal concreta y publícala de nuevo.`, false);
+      }
     }
 
     // Reset campo ajuste precio + cargar precio HUAL para preview margen
@@ -14540,6 +14616,14 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
   async function bpCerrarDrawer() {
     const inlineCtx = window.__mpWorkspaceInlineContext || null;
     const drawerMsgText = String(document.getElementById('bpDrawerMsg')?.textContent || '').trim();
+    const resultKind = inlineCtx?.resultKind || 'dismissed';
+    const fallbackResultText = resultKind === 'applied'
+      ? 'El cierre inline publicó un nuevo vigente y el workspace ya quedó actualizado.'
+      : (resultKind === 'reference'
+        ? 'La señal salió como referencia y el workspace ya quedó actualizado.'
+        : (resultKind === 'rejected'
+          ? 'La señal fue rechazada y el workspace ya quedó actualizado.'
+          : 'Cerraste el drawer sin aprobar, rechazar ni cerrar como referencia. El caso sigue pendiente.'));
     // Liberar lock si soy yo el que lo tenía
     if (bpCurrentId && typeof sb !== 'undefined' && sb && currentUser) {
       try {
@@ -14553,10 +14637,12 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     if (inlineCtx) {
       window.__mpWorkspaceInlineLastState = {
         mode: inlineCtx.mode || 'resolve',
+        resultKind,
         proposalId: inlineCtx.proposalId || null,
         materialName: inlineCtx.materialName || '',
         alcance: inlineCtx.alcance || '',
-        resultText: drawerMsgText || 'El cierre inline terminó y el workspace ya quedó actualizado.',
+        resultText: drawerMsgText || fallbackResultText,
+        closedAt: new Date().toISOString(),
       };
       window.__mpWorkspaceInlineContext = null;
       if (typeof mpSyncInlineExecutionState === 'function') mpSyncInlineExecutionState();
@@ -14830,6 +14916,9 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
             body: JSON.stringify({ modo: 'feed', propuesta_id: bpCurrentId }),
           }).catch((e) => console.warn('notif-precios feed:', e));
         } catch (_) { /* no bloquea */ }
+        if (window.__mpWorkspaceInlineContext && window.__mpWorkspaceInlineContext.proposalId === bpCurrentId) {
+          window.__mpWorkspaceInlineContext.resultKind = 'applied';
+        }
         setTimeout(() => { bpCerrarDrawer(); loadBandejaPrecios(); }, 1500);
       } else {
         const detalle = j?.detail?.message ?? j?.detail ?? j?.message ?? j?.error ?? window.__bpApplyDebug?.response?.raw ?? 'No se pudo aplicar';
@@ -14891,6 +14980,11 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         propuesta_id: bpCurrentId,
         actor_email: currentUser ?? null,
       });
+      if (window.__mpWorkspaceInlineContext && window.__mpWorkspaceInlineContext.proposalId === bpCurrentId) {
+        window.__mpWorkspaceInlineContext.resultKind = window.__mpWorkspaceInlineContext.mode === 'reference'
+          ? 'reference'
+          : 'rejected';
+      }
       bpMsg('✓ Rechazada.', true);
       setTimeout(() => { bpCerrarDrawer(); loadBandejaPrecios(); }, 1000);
     } catch (e) {
@@ -15059,6 +15153,9 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
   }
 
   function bpGetInlineDecisionState() {
+    const inlineCtx = window.__mpWorkspaceInlineContext || null;
+    const missingRealBranch = !!inlineCtx?.workspaceBranchIsContextOnly;
+    const workspaceBranchName = inlineCtx?.workspaceBranchName || '';
     return {
       currentId: bpCurrentId,
       currentPrecioPropuesto: bpCurrentPrecioPropuesto,
@@ -15066,6 +15163,12 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       currentMgPct: bpCurrentMgPct,
       currentMgRequerido: bpCurrentMgRequerido,
       puedeOverride: bpPuedeOverrideMargen(),
+      missingRealBranch,
+      workspaceBranchName,
+      finalBlockTitle: missingRealBranch ? 'Falta propuesta publicable.' : '',
+      finalBlockText: missingRealBranch
+        ? ('Ya aterrizaste ' + (workspaceBranchName || 'una sucursal de trabajo') + ' en el workspace, pero esta propuesta todavía no trae sucursal real guardada. Para destrabar aplicar, abre la salida real y publica una propuesta con esa sucursal.')
+        : '',
     };
   }
 
@@ -16858,12 +16961,15 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const payload = focus || {};
     window.bpFocusFromCalc = {
       materialId: payload.materialId || '',
+      materialNombre: payload.materialNombre || '',
       sucursalId: payload.sucursalId || '',
+      sucursalNombre: payload.sucursalNombre || '',
+      ruta: payload.ruta || 'workspace_bridge',
     };
     if (typeof window.v4AbrirTabFallback === 'function') {
       window.v4AbrirTabFallback('calculadora_precios');
     } else {
-      const tab = document.querySelector('[data-tab-target="calculadora_precios"]');
+      const tab = document.querySelector('[data-v4-tab="calculadora_precios"], button[data-tab="calculadora_precios"]');
       if (tab) tab.click();
     }
     await initCalculadoraPrecios();
@@ -17484,6 +17590,60 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     return row.sucursal_nombre || row.sucursal_id || 'Sucursal';
   }
 
+  function mpGetSucursalNombreById(sucursalId) {
+    if (!sucursalId) return 'Sucursal';
+    const hit = (mpState.sucursales || []).find((item) => String(item.id || '') === String(sucursalId || ''));
+    return hit?.nombre || sucursalId || 'Sucursal';
+  }
+
+  function mpGetWorkspaceFocusBranchInfo(row) {
+    const focusSucursalId = mpState.focus?.sucursalId || '';
+    if (row?.sucursal_id) {
+      return {
+        id: row.sucursal_id,
+        nombre: mpGetSucursalNombre(row),
+        isContextOnly: false,
+      };
+    }
+    if (focusSucursalId) {
+      return {
+        id: focusSucursalId,
+        nombre: mpGetSucursalNombreById(focusSucursalId),
+        isContextOnly: true,
+      };
+    }
+    return { id: '', nombre: 'Todavía no definida.', isContextOnly: false };
+  }
+
+  function mpGetWorkspaceBranchChoices(selected) {
+    if (!selected || !Array.isArray(selected.rows)) return [];
+    const choices = new Map();
+    selected.rows.forEach((row) => {
+      const sucursalId = row?.sucursal_id || '';
+      if (!sucursalId) return;
+      if (!choices.has(String(sucursalId))) {
+        choices.set(String(sucursalId), {
+          id: sucursalId,
+          nombre: mpGetSucursalNombre(row),
+          hasPending: true,
+        });
+      }
+    });
+    const publishedRows = (mpState.publishedRows || []).filter((published) =>
+      String(published.material_id || '') === String(selected.material_id || '')
+    );
+    publishedRows.forEach((row) => {
+      const sucursalId = row?.sucursal_id || '';
+      if (!sucursalId || choices.has(String(sucursalId))) return;
+      choices.set(String(sucursalId), {
+        id: sucursalId,
+        nombre: mpGetSucursalNombreById(sucursalId),
+        hasPending: false,
+      });
+    });
+    return Array.from(choices.values());
+  }
+
   function mpGetRouteMeta(ruta) {
     if (ruta === 'manual_calc') return { label: 'Decisión directa', cls: 'bg-emerald-100 text-emerald-700' };
     if (ruta === 'dusan') return { label: 'Excepción CEO', cls: 'bg-rose-100 text-rose-700' };
@@ -17542,6 +17702,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const routeMeta = mpGetRouteMeta(row?.ruta);
     const material = selected?.material_nombre || mpGetMaterialNombre(row || {}) || 'Material';
     const alcance = row?.sucursal_id ? mpGetSucursalNombre(row) : 'sin alcance definido';
+    const focusBranch = mpGetWorkspaceFocusBranchInfo(row);
     const draftText = draftValue > 0 ? tapFmtClp(draftValue) : 'sin nuevo valor visible';
     const publishedText = publishedValue > 0 ? tapFmtClp(publishedValue) : 'sin valor publicado visible';
     const guide = {
@@ -17566,14 +17727,25 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     );
 
     if (!row.sucursal_id) {
+      if (focusBranch.id) {
+        guide.priorityLabel = 'Aterrizado en workspace';
+        guide.priorityClass = 'px-2 py-1 rounded-full border bg-sky-50 text-sky-700 border-sky-200';
+        guide.step = 'decision';
+        guide.lead = material + ' ya quedó aterrizado en ' + focusBranch.nombre + ' para trabajar este caso.';
+        guide.support = 'La propuesta original sigue sin sucursal guardada, pero ya tienes un foco operativo real. El siguiente salto lógico es abrir la salida real con material y sucursal precargados para publicar una propuesta válida sin rearmar contexto.';
+        guide.actionTitle = 'Abrir salida real con este foco';
+        guide.actionText = 'Salta a Calculadora con material y sucursal ya aterrizados para publicar una propuesta real. Luego vuelves al workspace o a Bandeja sin reconstruir el caso.';
+        guide.actionTarget = 'bridge';
+        return guide;
+      }
       guide.priorityLabel = 'Completar alcance';
       guide.priorityClass = 'px-2 py-1 rounded-full border bg-rose-50 text-rose-700 border-rose-200';
       guide.step = 'contrast';
       guide.lead = material + ' todavía no tiene alcance resuelto.';
-      guide.support = 'La señal existe, pero antes de decidir conviene amarrarla a una sucursal real para no mover un número en el vacío.';
-      guide.actionTitle = 'Resolver este caso desde aquí';
-      guide.actionText = 'Abre la resolución real inline para completar alcance y dejar lista la salida final sin perder trazabilidad.';
-      guide.actionTarget = 'resolve';
+      guide.support = 'La señal existe, pero antes de decidir conviene aterrizarla en una sucursal de trabajo para no mover un número en el vacío.';
+      guide.actionTitle = 'Elegir sucursal de trabajo';
+      guide.actionText = 'Fija una sucursal visible desde este mismo workspace; con eso ya puedes leer mejor el caso y abrir cálculo con foco aterrizado.';
+      guide.actionTarget = 'calc';
       return guide;
     }
 
@@ -17583,8 +17755,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       guide.step = 'contrast';
       guide.lead = material + ' en ' + alcance + ' no muestra un valor publicado visible.';
       guide.support = 'Antes de cerrar la decisión conviene contrastar en Mesa qué vigente estamos viendo y si el caso está realmente listo para salir.';
-      guide.actionTitle = 'Abrir foco en Mesa';
-      guide.actionText = 'Mesa te sirve para confirmar contexto y evitar decidir con una foto incompleta.';
+      guide.actionTitle = 'Confirmar vigente antes de decidir';
+      guide.actionText = 'Mesa te sirve para confirmar el publicado real y evitar una salida con contexto incompleto.';
       guide.actionTarget = 'mesa';
       return guide;
     }
@@ -17595,9 +17767,9 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       guide.step = 'decision';
       guide.lead = material + ' en ' + alcance + ' no tiene $ venta visible.';
       guide.support = 'Puedes seguir afinando compra en modo conservador mientras consigues ese precio de venta. Si esta señal no te interesa, también puedes cerrarla como referencia sin mover compra.';
-      guide.actionTitle = 'Ajustar compra con cuidado o cerrar como referencia';
-      guide.actionText = 'Sin $ venta visible no bloqueas la operación: puedes recalcular conservador o sacar la señal de tu carga sin cambiar compra.';
-      guide.actionTarget = 'calc';
+      guide.actionTitle = 'Abrir cierre y decidir salida';
+      guide.actionText = 'La salida dominante sigue siendo inline: desde aquí puedes rechazar o cerrar referencia; usa cálculo solo si necesitas afinar más el número.';
+      guide.actionTarget = 'resolve';
       return guide;
     }
 
@@ -17607,9 +17779,9 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       guide.step = 'decision';
       guide.lead = material + ' en ' + alcance + ' ya viene como decisión directa.';
       guide.support = 'Tienes ' + draftText + ' en evaluación contra ' + publishedText + ' publicado. Aquí lo natural es recalcular y afinar antes de salir.';
-      guide.actionTitle = 'Abrir este caso en Calculadora';
-      guide.actionText = 'La Calculadora ya recibe material y alcance precargados para ajustar sin volver a buscar el caso.';
-      guide.actionTarget = 'calc';
+      guide.actionTitle = 'Cerrar este caso desde aquí';
+      guide.actionText = 'El número ya viene preparado. Resuelve inline y usa cálculo solo si quieres rehacer o afinar la propuesta antes de cerrarla.';
+      guide.actionTarget = 'resolve';
       return guide;
     }
 
@@ -17619,8 +17791,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       guide.step = 'resolve';
       guide.lead = material + ' en ' + alcance + ' pide una definición rápida.';
       guide.support = 'La señal ya está contrastada contra ' + publishedText + ' y conviene salir por el motor real para no dejar la excepción abierta.';
-      guide.actionTitle = 'Resolver ya desde aquí';
-      guide.actionText = 'La resolución real se abre inline cuando el caso ya está listo para aprobar, rechazar o ajustar.';
+      guide.actionTitle = 'Resolver ahora con alcance resuelto';
+      guide.actionText = 'La resolución real se abre inline porque el caso ya tiene material, sucursal y contraste suficientes para cerrar.';
       guide.actionTarget = 'resolve';
       return guide;
     }
@@ -17630,10 +17802,93 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     guide.step = 'decision';
     guide.lead = material + ' en ' + alcance + ' ya tiene contexto suficiente para decidir.';
     guide.support = 'Compara ' + publishedText + ' publicado versus ' + draftText + ' en evaluación, mira estrategia y luego sal por el motor que más te convenga.';
-    guide.actionTitle = 'Calcular o cerrar como referencia';
-    guide.actionText = 'Si la señal te sirve, entra a Calculadora. Si es bluff o no amerita cambio, ciérrala como referencia inline sin salir del flujo.';
-    guide.actionTarget = 'calc';
+    guide.actionTitle = 'Cerrar este caso desde aquí';
+    guide.actionText = 'El caso ya puede aprobarse, rechazarse o cerrarse como referencia desde esta página. Calculadora queda como apoyo si necesitas afinar más.';
+    guide.actionTarget = 'resolve';
     return guide;
+  }
+
+  function mpGetWorkspaceScopeState(selected, row, guide, publishedValue, draftValue, saleValue) {
+    const focusBranch = mpGetWorkspaceFocusBranchInfo(row);
+    const base = {
+      badgeClass: 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]',
+      badgeText: 'Sin foco',
+      materialText: 'Sin caso activo.',
+      branchText: 'Todavía no definida.',
+      contextText: 'Selecciona un caso para ver por qué está en este estado y qué falta realmente.',
+      nextText: 'La página te dirá cuál es el próximo paso dominante.',
+    };
+    if (!selected || !row || !row.id) return base;
+    const materialTxt = selected.material_nombre || mpGetMaterialNombre(row) || 'Material';
+    const alcanceTxt = mpGetSucursalNombre(row) || 'Sin sucursal definida';
+    const routeMeta = mpGetRouteMeta(row.ruta);
+    const publishedTxt = publishedValue > 0 ? tapFmtClp(publishedValue) : 'sin publicado visible';
+    const draftTxt = draftValue > 0 ? tapFmtClp(draftValue) : 'sin señal clara';
+    const routeTxt = routeMeta.label || row.ruta || 'Señal';
+    if (!row.sucursal_id) {
+      return {
+        badgeClass: 'px-2 py-1 rounded-full bg-rose-100 text-rose-700 border border-rose-200 text-[11px]',
+        badgeText: 'Alcance pendiente',
+        materialText: materialTxt,
+        branchText: focusBranch.id
+          ? (focusBranch.nombre + ' · sucursal de trabajo elegida en el workspace.')
+          : 'Falta elegir sucursal de trabajo.',
+        contextText: focusBranch.id
+          ? ('Caso #' + row.id + ' desde ' + routeTxt + '. La propuesta original sigue sin sucursal guardada, pero ya aterrizaste el análisis en ' + focusBranch.nombre + '.')
+          : ('Caso #' + row.id + ' desde ' + routeTxt + '. Todavía no hay sucursal amarrada, así que el número existe pero no tiene aterrizaje operativo válido.'),
+        nextText: focusBranch.id
+          ? ('El bloqueo final sigue siendo la misma propuesta: abre la salida real con ' + focusBranch.nombre + ' y publícala con sucursal concreta para destrabar la aprobación.')
+          : 'Elige una sucursal visible desde este mismo workspace para aterrizar el caso antes de afinarlo.',
+      };
+    }
+    if (!publishedValue) {
+      return {
+        badgeClass: 'px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 text-[11px]',
+        badgeText: 'Contraste pendiente',
+        materialText: materialTxt,
+        branchText: alcanceTxt,
+        contextText: 'Caso #' + row.id + ' desde ' + routeTxt + '. Ya hay sucursal real, pero falta confirmar qué vigente publicado estás contrastando.',
+        nextText: 'Abre Mesa para validar el publicado real antes de cerrar la decisión.',
+      };
+    }
+    if (!saleValue) {
+      return {
+        badgeClass: 'px-2 py-1 rounded-full bg-violet-100 text-violet-700 border border-violet-200 text-[11px]',
+        badgeText: 'Venta pendiente',
+        materialText: materialTxt,
+        branchText: alcanceTxt,
+        contextText: 'Caso #' + row.id + ' con publicado ' + publishedTxt + ' y señal ' + draftTxt + ', pero sin $ venta visible para cerrar con seguridad.',
+        nextText: 'Abre el cierre inline y define si este caso sale como referencia o si todavía necesita cálculo de apoyo.',
+      };
+    }
+    if (guide?.actionTarget === 'resolve') {
+      return {
+        badgeClass: 'px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px]',
+        badgeText: 'Listo para cerrar',
+        materialText: materialTxt,
+        branchText: alcanceTxt,
+        contextText: 'Caso #' + row.id + ' desde ' + routeTxt + '. Material, sucursal y contraste ya están visibles; el cierre real puede ocurrir desde esta misma página.',
+        nextText: 'Abre la resolución inline y cierra el caso sin salir del carril principal.',
+      };
+    }
+    if (guide?.actionTarget === 'mesa') {
+      return {
+        badgeClass: 'px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 text-[11px]',
+        badgeText: 'Revisión en Mesa',
+        materialText: materialTxt,
+        branchText: alcanceTxt,
+        contextText: 'Caso #' + row.id + ' con sucursal resuelta, pero con contraste todavía incompleto para cerrar desde aquí.',
+        nextText: 'Usa Mesa para despejar el contexto y volver con la foto correcta.',
+      };
+    }
+    return {
+      badgeClass: 'px-2 py-1 rounded-full bg-sky-100 text-sky-700 border border-sky-200 text-[11px]',
+      badgeText: 'Caso encauzado',
+      materialText: materialTxt,
+      branchText: alcanceTxt,
+      contextText: 'Caso #' + row.id + ' desde ' + routeTxt + ' con publicado ' + publishedTxt + ' y señal ' + draftTxt + '. El foco ya está resuelto y solo falta elegir la salida final.',
+      nextText: 'Cierra el caso desde esta página y usa cálculo solo si el número todavía necesita ajuste fino.',
+    };
   }
 
   function mpOpenTab(tab) {
@@ -17654,7 +17909,9 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const last = window.__mpWorkspaceInlineLastState || null;
     const tone = active
       ? (active.mode === 'reference' ? 'violet' : 'emerald')
-      : (last && last.mode === 'reference' ? 'violet' : (last ? 'emerald' : 'stone'));
+      : (last && last.resultKind === 'dismissed'
+        ? 'amber'
+        : (last && last.mode === 'reference' ? 'violet' : (last ? 'emerald' : 'stone')));
     const tones = {
       stone: {
         card: 'rounded-xl border border-stone-200 bg-stone-50 px-4 py-3',
@@ -17662,6 +17919,13 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         title: 'text-stone-800',
         text: 'text-stone-600',
         mobile: 'px-2 py-1 rounded-full bg-stone-100 text-stone-600 text-[11px]',
+      },
+      amber: {
+        card: 'rounded-xl border border-amber-200 bg-amber-50 px-4 py-3',
+        badge: 'px-2 py-1 rounded-full bg-white text-amber-700 border border-amber-200 text-[11px]',
+        title: 'text-amber-900',
+        text: 'text-amber-800',
+        mobile: 'px-2 py-1 rounded-full bg-amber-100 text-amber-700 text-[11px]',
       },
       emerald: {
         card: 'rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3',
@@ -17709,18 +17973,22 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       return;
     }
     if (last) {
-      badgeEl.textContent = 'Último cierre';
-      titleEl.textContent = last.mode === 'reference'
-        ? 'Último cierre como referencia.'
-        : 'Última resolución inline cerrada.';
+      badgeEl.textContent = last.resultKind === 'dismissed' ? 'Sin salida terminal' : 'Último cierre';
+      titleEl.textContent = last.resultKind === 'dismissed'
+        ? 'Último drawer cerrado sin salida.'
+        : (last.mode === 'reference'
+          ? 'Último cierre como referencia.'
+          : 'Última resolución inline cerrada.');
       textEl.textContent = last.resultText || 'El cierre inline terminó y el workspace ya quedó refrescado con el contexto más reciente.';
       metaEl.textContent = (last.materialName || 'Material')
         + ' · ' + (last.alcance || 'Sin alcance')
         + ' · propuesta #' + (last.proposalId || '—');
-      if (mobileHintEl) mobileHintEl.textContent = 'El último cierre inline ya refrescó el workspace.';
+      if (mobileHintEl) mobileHintEl.textContent = last.resultKind === 'dismissed'
+        ? 'Cerraste el drawer sin una acción terminal; el caso sigue pendiente.'
+        : 'El último cierre inline ya refrescó el workspace.';
       if (mobileBadgeEl) {
         mobileBadgeEl.className = palette.mobile;
-        mobileBadgeEl.textContent = 'Cierre reciente';
+        mobileBadgeEl.textContent = last.resultKind === 'dismissed' ? 'Sin salida' : 'Cierre reciente';
       }
       return;
     }
@@ -17732,6 +18000,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
 
   function mpSyncInlineDecisionState() {
     const badgeEl = document.getElementById('wsSafeDecisionStateBadge');
+    const flowTitleEl = document.getElementById('wsSafeDecisionFlowTitle');
+    const flowTextEl = document.getElementById('wsSafeDecisionFlowText');
+    const outcomeTitleEl = document.getElementById('wsSafeDecisionOutcomeTitle');
+    const outcomeTextEl = document.getElementById('wsSafeDecisionOutcomeText');
     const adjustTitleEl = document.getElementById('wsSafeAdjustStateTitle');
     const adjustTextEl = document.getElementById('wsSafeAdjustStateText');
     const overrideTitleEl = document.getElementById('wsSafeOverrideStateTitle');
@@ -17740,7 +18012,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const approveTextEl = document.getElementById('wsSafeApproveStateText');
     const rejectTitleEl = document.getElementById('wsSafeRejectStateTitle');
     const rejectTextEl = document.getElementById('wsSafeRejectStateText');
-    if (!badgeEl || !adjustTitleEl || !adjustTextEl || !overrideTitleEl || !overrideTextEl || !approveTitleEl || !approveTextEl || !rejectTitleEl || !rejectTextEl) return;
+    if (!badgeEl || !flowTitleEl || !flowTextEl || !outcomeTitleEl || !outcomeTextEl || !adjustTitleEl || !adjustTextEl || !overrideTitleEl || !overrideTextEl || !approveTitleEl || !approveTextEl || !rejectTitleEl || !rejectTextEl) return;
     const active = window.__mpWorkspaceInlineContext || null;
     const inputAjuste = document.getElementById('bpPrecioAjustado');
     const btnAprobar = document.getElementById('bpBtnAprobar');
@@ -17756,15 +18028,27 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const currentPrecioVigente = Number.isFinite(Number(drawerState.currentPrecioVigente)) ? Number(drawerState.currentPrecioVigente) : null;
     const overrideVisible = !!(currentMgPct != null && currentMgRequerido != null && currentMgPct < currentMgRequerido);
     const puedeOverride = !!drawerState.puedeOverride;
+    const missingRealBranch = !!drawerState.missingRealBranch;
+    const finalBlockText = String(drawerState.finalBlockText || '').trim();
     const overrideMotivo = String(overrideMot?.value || '').trim();
     const overrideOk = !!overrideChk?.checked && overrideMotivo.length >= 6;
     const candidato = Number((parseFloat(inputAjuste?.value || '') > 0 ? parseFloat(inputAjuste?.value || '') : currentPrecioPropuesto) || 0);
     const vigenteTxt = currentPrecioVigente != null ? fmtCLP(currentPrecioVigente) : 'sin vigente visible';
     const candidatoTxt = candidato > 0 ? fmtCLP(candidato) : 'sin ajuste visible';
     const sameAsVigente = candidato > 0 && currentPrecioVigente != null && Number(candidato) === Number(currentPrecioVigente);
+    const setFlow = function (title, text) {
+      flowTitleEl.textContent = title;
+      flowTextEl.textContent = text;
+    };
+    const setOutcome = function (title, text) {
+      outcomeTitleEl.textContent = title;
+      outcomeTextEl.textContent = text;
+    };
     if (!active) {
       badgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
       badgeEl.textContent = 'Sin drawer';
+      setFlow('Recorrido aún no activo.', 'Cuando abras el drawer inline, este bloque te dirá exactamente en qué parte del cierre vas.');
+      setOutcome('Sin resultado aún.', 'Aquí verás la salida inmediata del caso mientras ajustas, apruebas, rechazas o cierras como referencia.');
       adjustTitleEl.textContent = 'Aún no activo.';
       adjustTextEl.textContent = 'Se mostrará aquí cuando abras una resolución inline.';
       overrideTitleEl.textContent = 'Sin evaluación.';
@@ -17780,6 +18064,13 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       : 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]';
     badgeEl.textContent = active.mode === 'reference' ? 'Referencia inline' : 'Cierre inline';
     if (active.mode === 'reference') {
+      setFlow('Salida alternativa · Referencia en curso.', 'Este cierre ya entró por el carril de referencia para sacar la señal sin mover compra.');
+      setOutcome(
+        btnRechazar && !btnRechazar.disabled ? 'Listo para cerrar referencia.' : 'Referencia en preparación.',
+        btnRechazar && !btnRechazar.disabled
+          ? 'El caso ya puede salir como referencia desde el drawer inline y la continuidad quedará registrada al cerrar.'
+          : 'El drawer todavía no habilita el cierre final como referencia.'
+      );
       adjustTitleEl.textContent = 'Ajuste no aplica.';
       adjustTextEl.textContent = 'Este flujo se abrió para sacar la señal de tu carga sin mover compra.';
       overrideTitleEl.textContent = 'Override no aplica.';
@@ -17792,10 +18083,26 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         : 'Este caso ya no permite rechazo desde el drawer actual.';
       return;
     }
+    if (candidato > 0) {
+      setFlow(
+        missingRealBranch
+          ? 'Paso 2 · Falta propuesta publicable.'
+          : (overrideVisible ? 'Paso 2 · Validar override antes de aplicar.' : 'Paso 1 · Ajuste visible y listo para validar.'),
+        missingRealBranch
+          ? 'El ajuste ya existe, pero el cierre no puede aplicar mientras la propuesta siga sin sucursal real guardada.'
+          : (overrideVisible
+          ? 'El ajuste ya existe, pero el cierre solo avanza si resuelves el destrabe de margen.'
+          : 'El ajuste ya quedó visible en el drawer real y ahora puedes decidir si aplicas o descartas.')
+      );
+    } else {
+      setFlow('Paso 1 · Ajuste pendiente.', 'Todavía falta un valor candidato visible antes de que el cierre pueda leerse como recorrido completo.');
+    }
     adjustTitleEl.textContent = candidato > 0 ? 'Ajuste listo para evaluar.' : 'Sin ajuste visible.';
-    adjustTextEl.textContent = sameAsVigente
+    adjustTextEl.textContent = missingRealBranch && candidato > 0
+      ? ('Candidato actual ' + candidatoTxt + '. El número ya está visible, pero todavía falta convertir este foco en una propuesta publicable con sucursal real.')
+      : (sameAsVigente
       ? 'El valor candidato coincide con ' + vigenteTxt + '. Si quieres mover la propuesta, ajusta antes de aplicar.'
-      : ('Candidato actual ' + candidatoTxt + '. El ajuste previo sigue corriendo en el drawer real, pero ya se acompaña desde esta página.');
+      : ('Candidato actual ' + candidatoTxt + '. El ajuste previo sigue corriendo en el drawer real, pero ya se acompaña desde esta página.'));
     if (overrideVisible) {
       overrideTitleEl.textContent = !puedeOverride
         ? 'Override bloqueado.'
@@ -17811,6 +18118,16 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       approveTextEl.textContent = puedeOverride
         ? ('Margen objetivo ' + currentMgPct.toFixed(1) + '% bajo mínimo ' + currentMgRequerido.toFixed(1) + '%. Confirma override y motivo para aplicar desde el drawer.')
         : ('El margen objetivo ' + currentMgPct.toFixed(1) + '% está bajo el mínimo ' + currentMgRequerido.toFixed(1) + '%. Solo un usuario autorizado puede aplicar.');
+      setOutcome(
+        !puedeOverride
+          ? 'Cierre frenado por margen.'
+          : (overrideOk ? 'Override listo. Falta aplicar.' : 'Falta destrabar el cierre.'),
+        !puedeOverride
+          ? 'El caso no puede publicar todavía porque el margen quedó bajo el mínimo y este usuario no puede overridear.'
+          : (overrideOk
+            ? 'El override ya quedó listo; el siguiente movimiento real es aplicar o descartar desde el drawer.'
+            : 'El margen exige override y motivo antes de que el cierre pueda pasar a aplicar.')
+      );
     } else {
       overrideTitleEl.textContent = 'Override no requerido.';
       overrideTextEl.textContent = 'El margen actual no exige destrabe adicional. Puedes seguir con el cierre normal del drawer.';
@@ -17818,25 +18135,105 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       approveTextEl.textContent = btnAprobar && !btnAprobar.disabled
         ? 'El cierre puede aplicar desde el drawer real usando el mismo contexto inline.'
         : 'Falta completar alguna condición del drawer antes de aplicar.';
+      setOutcome(
+        btnAprobar && !btnAprobar.disabled ? 'Listo para aplicar.' : 'Todavía falta completar el cierre.',
+        btnAprobar && !btnAprobar.disabled
+          ? 'El caso ya está listo para aprobar o cerrar desde el drawer con este mismo contexto.'
+          : 'La resolución sigue abierta, pero todavía no queda lista la salida final del caso.'
+      );
+    }
+    if (missingRealBranch) {
+      approveTitleEl.textContent = 'Aplicar bloqueado por sucursal real.';
+      approveTextEl.textContent = finalBlockText || 'La propuesta todavía no trae sucursal real guardada. Abre la salida real y publícala con la sucursal aterrizada para destrabar aplicar.';
+      setOutcome(
+        'Bloqueo final explícito.',
+        finalBlockText || 'El caso ya tiene foco operativo, pero todavía no existe una propuesta publicable con sucursal real.'
+      );
     }
     rejectTitleEl.textContent = btnRechazar && !btnRechazar.disabled ? 'Rechazo disponible.' : 'Rechazo no disponible.';
     rejectTextEl.textContent = btnRechazar && !btnRechazar.disabled
       ? 'Si el caso no amerita cambio, puedes rechazarlo desde el drawer inline sin perder trazabilidad.'
       : 'Este caso ya no permite rechazo desde el drawer actual.';
+    if (btnRechazar && !btnRechazar.disabled && !(btnAprobar && !btnAprobar.disabled) && !overrideVisible) {
+      setOutcome('Salida alternativa disponible.', 'Si el caso no amerita aplicar, todavía puedes rechazarlo o cerrarlo sin perder continuidad.');
+    }
   }
 
   function mpSyncPostCloseState(selected, row, guide, actions) {
     const cardEl = document.getElementById('wsSafePostCloseCard');
     const badgeEl = document.getElementById('wsSafePostCloseBadge');
+    const whatTitleEl = document.getElementById('wsSafePostCloseWhatTitle');
+    const whatTextEl = document.getElementById('wsSafePostCloseWhatText');
+    const changeTitleEl = document.getElementById('wsSafePostCloseChangeTitle');
+    const changeTextEl = document.getElementById('wsSafePostCloseChangeText');
     const titleEl = document.getElementById('wsSafePostCloseTitle');
     const textEl = document.getElementById('wsSafePostCloseText');
     const metaEl = document.getElementById('wsSafePostCloseMeta');
     const btnEl = document.getElementById('wsSafePostCloseBtn');
     const btnTitleEl = document.getElementById('wsSafePostCloseBtnTitle');
     const btnTextEl = document.getElementById('wsSafePostCloseBtnText');
-    if (!cardEl || !badgeEl || !titleEl || !textEl || !metaEl || !btnEl || !btnTitleEl || !btnTextEl) return;
+    if (!cardEl || !badgeEl || !whatTitleEl || !whatTextEl || !changeTitleEl || !changeTextEl || !titleEl || !textEl || !metaEl || !btnEl || !btnTitleEl || !btnTextEl) return;
     const last = window.__mpWorkspaceInlineLastState || null;
     const hasQueue = Array.isArray(mpState.pendingRows) && mpState.pendingRows.length > 0;
+    const describeLast = function (entry) {
+      if (!entry) {
+        return {
+          whatTitle: 'Sin cierre reciente.',
+          whatText: 'Aquí aparecerá la última salida real del caso cuando cierres el drawer.',
+          changeTitle: 'Sin cambio registrado.',
+          changeText: 'La página única resumirá aquí si se movió precio, si quedó como referencia o si el caso solo refrescó contexto.',
+        };
+      }
+      const raw = String(entry.resultText || '').trim();
+      const text = raw || 'El cierre inline terminó y el workspace ya quedó actualizado.';
+      if (entry.resultKind === 'dismissed') {
+        return {
+          whatTitle: 'El drawer se cerró sin salida terminal.',
+          whatText: text,
+          changeTitle: 'Caso todavía pendiente.',
+          changeText: 'No se aprobó, rechazó ni cerró como referencia. El caso sigue en la cola y requiere una acción terminal real.',
+        };
+      }
+      if (entry.mode === 'reference') {
+        return {
+          whatTitle: 'La señal salió como referencia.',
+          whatText: text,
+          changeTitle: 'Compra sin cambios.',
+          changeText: 'El caso salió de tu carga sin publicar un nuevo precio ni mover compra.',
+        };
+      }
+      if (/^\s*✓\s*Aplicado/i.test(text) || /precio vigente publicado/i.test(text)) {
+        return {
+          whatTitle: 'Se publicó un nuevo vigente.',
+          whatText: text,
+          changeTitle: 'Precio movido.',
+          changeText: 'Este cierre sí cambió el vigente publicado y el workspace ya retomó el contexto después de aplicar.',
+        };
+      }
+      if (/rechazad/i.test(text)) {
+        return {
+          whatTitle: 'La señal fue rechazada.',
+          whatText: text,
+          changeTitle: 'Caso cerrado sin publicar.',
+          changeText: 'El caso salió de la carga operativa sin mover el vigente actual.',
+        };
+      }
+      if (/error|http|fall|bloquead|no se pudo|falta/i.test(text)) {
+        return {
+          whatTitle: 'El cierre dejó una alerta.',
+          whatText: text,
+          changeTitle: 'Sin cambio definitivo todavía.',
+          changeText: 'El cierre devolvió un bloqueo o una alerta, así que el caso puede requerir otra acción antes de cerrarse.',
+        };
+      }
+      return {
+        whatTitle: 'El cierre terminó y refrescó contexto.',
+        whatText: text,
+        changeTitle: 'Contexto actualizado.',
+        changeText: 'La página quedó sincronizada con el resultado más reciente y lista para seguir con el siguiente paso.',
+      };
+    };
+    const lastDescription = describeLast(last);
     cardEl.className = 'rounded-xl border border-stone-200 bg-stone-50 px-4 py-3';
     badgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
     titleEl.className = 'font-semibold text-stone-800';
@@ -17846,6 +18243,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     btnEl.onclick = null;
     if (!last) {
       badgeEl.textContent = 'Sin cierre';
+      whatTitleEl.textContent = lastDescription.whatTitle;
+      whatTextEl.textContent = lastDescription.whatText;
+      changeTitleEl.textContent = lastDescription.changeTitle;
+      changeTextEl.textContent = lastDescription.changeText;
       titleEl.textContent = 'El siguiente paso aparecerá aquí.';
       textEl.textContent = 'Después de aprobar, rechazar o cerrar como referencia, la página única te dirá qué acaba de pasar y cuál es la siguiente salida sugerida.';
       metaEl.textContent = 'Sin cierre reciente.';
@@ -17853,16 +18254,29 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       btnTextEl.textContent = 'El siguiente caso sugerido aparecerá aquí cuando el workspace se refresque.';
       return;
     }
+    const isDismissed = last.resultKind === 'dismissed';
     const isReference = last.mode === 'reference';
-    cardEl.className = isReference
+    cardEl.className = isDismissed
+      ? 'rounded-xl border border-amber-200 bg-amber-50 px-4 py-3'
+      : (isReference
       ? 'rounded-xl border border-violet-200 bg-violet-50 px-4 py-3'
-      : 'rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3';
-    badgeEl.className = isReference
+      : 'rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3');
+    badgeEl.className = isDismissed
+      ? 'px-2 py-1 rounded-full bg-white text-amber-700 border border-amber-200 text-[11px]'
+      : (isReference
       ? 'px-2 py-1 rounded-full bg-white text-violet-700 border border-violet-200 text-[11px]'
-      : 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]';
-    titleEl.className = isReference ? 'font-semibold text-violet-900' : 'font-semibold text-emerald-900';
-    textEl.className = isReference ? 'text-xs text-violet-800 mt-1' : 'text-xs text-emerald-800 mt-1';
-    badgeEl.textContent = hasQueue ? 'Siguiente paso' : 'Cierre resuelto';
+      : 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]');
+    titleEl.className = isDismissed
+      ? 'font-semibold text-amber-900'
+      : (isReference ? 'font-semibold text-violet-900' : 'font-semibold text-emerald-900');
+    textEl.className = isDismissed
+      ? 'text-xs text-amber-800 mt-1'
+      : (isReference ? 'text-xs text-violet-800 mt-1' : 'text-xs text-emerald-800 mt-1');
+    badgeEl.textContent = isDismissed ? 'Caso sigue abierto' : (hasQueue ? 'Siguiente paso' : 'Cierre resuelto');
+    whatTitleEl.textContent = lastDescription.whatTitle;
+    whatTextEl.textContent = lastDescription.whatText;
+    changeTitleEl.textContent = lastDescription.changeTitle;
+    changeTextEl.textContent = lastDescription.changeText;
     metaEl.textContent = (last.materialName || 'Material')
       + ' · ' + (last.alcance || 'Sin alcance')
       + ' · propuesta #' + (last.proposalId || '—');
@@ -17897,8 +18311,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
             handler: actions?.mesa || null,
           }
         : {
-            title: 'Ir a Calculadora con el siguiente caso',
-            text: 'Ajusta el siguiente caso con material y alcance ya cargados.',
+            title: 'Abrir cálculo de apoyo para el siguiente caso',
+            text: 'Usa cálculo solo si el siguiente caso todavía necesita ajuste fino.',
             tone: 'sky',
             handler: actions?.calc || null,
           });
@@ -17930,7 +18344,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const btnEl = document.getElementById('wsSafeCalcSupportBtn');
     const btnTitleEl = document.getElementById('wsSafeCalcSupportBtnTitle');
     const btnTextEl = document.getElementById('wsSafeCalcSupportBtnText');
-    if (!cardEl || !badgeEl || !titleEl || !textEl || !plistaEl || !pejecEl || !pmaxEl || !semaforoEl || !metaEl || !gateEl || !btnEl || !btnTitleEl || !btnTextEl) return;
+    const usePejecBtn = document.getElementById('wsSafeApplyPejecBtn');
+    const usePlistaBtn = document.getElementById('wsSafeApplyPlistaBtn');
+    const inlineHintEl = document.getElementById('wsSafeCalcInlineHint');
+    if (!cardEl || !badgeEl || !titleEl || !textEl || !plistaEl || !pejecEl || !pmaxEl || !semaforoEl || !metaEl || !gateEl || !btnEl || !btnTitleEl || !btnTextEl || !usePejecBtn || !usePlistaBtn || !inlineHintEl) return;
     const status = state?.status || 'idle';
     cardEl.className = 'rounded-xl border border-stone-200 bg-stone-50 px-4 py-3';
     badgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
@@ -17946,8 +18363,13 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     gateEl.textContent = state?.gate || 'La guía de margen y publicación aparecerá aquí cuando el foco tenga material y alcance.';
     btnEl.disabled = !state?.handler;
     btnEl.onclick = state?.handler || null;
-    btnTitleEl.textContent = state?.buttonTitle || 'Abrir Calculadora ya preparada';
-    btnTextEl.textContent = state?.buttonText || 'El motor real quedará listo con este mismo foco si necesitas afinar sliders o publicar propuesta.';
+    btnTitleEl.textContent = state?.buttonTitle || 'Abrir cálculo de apoyo';
+    btnTextEl.textContent = state?.buttonText || 'Úsalo solo si necesitas afinar más el número con este mismo foco.';
+    usePejecBtn.disabled = !state?.inlinePejecHandler;
+    usePejecBtn.onclick = state?.inlinePejecHandler || null;
+    usePlistaBtn.disabled = !state?.inlinePlistaHandler;
+    usePlistaBtn.onclick = state?.inlinePlistaHandler || null;
+    inlineHintEl.textContent = state?.inlineHint || 'El ajuste inline se habilita cuando el caso ya tiene sucursal real y lectura de cálculo.';
     if (status === 'loading') {
       badgeEl.textContent = 'Cargando';
       titleEl.textContent = 'Preparando soporte de cálculo.';
@@ -17984,14 +18406,115 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     }
   }
 
+  function mpSyncWorkspaceScopeChoices(selected, row) {
+    const choicesEl = document.getElementById('wsSafeScopeChoices');
+    const noteEl = document.getElementById('wsSafeScopeChoicesNote');
+    if (!choicesEl || !noteEl) return;
+    if (!selected || !row || !row.id) {
+      choicesEl.innerHTML = '<span class="text-xs text-stone-500">Cuando el material tenga sucursales visibles, aparecerán aquí para fijar el foco sin salir del workspace.</span>';
+      noteEl.textContent = 'Sin foco todavía.';
+      return;
+    }
+    const choices = mpGetWorkspaceBranchChoices(selected);
+    const activeBranch = mpGetWorkspaceFocusBranchInfo(row);
+    if (!choices.length) {
+      choicesEl.innerHTML = '<span class="text-xs text-stone-500">No encontré sucursales visibles para este material en este acceso.</span>';
+      noteEl.textContent = 'Sin sucursales visibles para aterrizar el caso desde aquí.';
+      return;
+    }
+    choicesEl.innerHTML = choices.map((choice) => {
+      const active = String(choice.id || '') === String(activeBranch.id || '');
+      const cls = active
+        ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+        : (choice.hasPending
+          ? 'border-stone-200 bg-white text-stone-700 hover:border-stone-300'
+          : 'border-sky-200 bg-sky-50 text-sky-700 hover:border-sky-300');
+      return '<button type="button" class="px-3 py-2 rounded-full border text-xs font-medium ' + cls + '"'
+        + ' onclick="window.mpSeleccionarSucursalWorkspace && window.mpSeleccionarSucursalWorkspace(' + "'" + tapEscape(choice.id) + "'" + ')">'
+        + tapEscape(choice.nombre)
+        + (choice.hasPending ? '' : ' · apoyo')
+        + '</button>';
+    }).join('');
+    noteEl.textContent = activeBranch.id
+      ? (activeBranch.isContextOnly
+        ? ('La propuesta sigue sin sucursal guardada, pero ya aterrizaste el análisis en ' + activeBranch.nombre + ' desde este workspace.')
+        : ('Ya estás trabajando sobre ' + activeBranch.nombre + ' dentro del carril principal.'))
+      : 'Elige una sucursal visible para aterrizar el foco del caso sin salir del workspace.';
+  }
+
+  async function mpApplyWorkspaceInlineAdjust(selected, row, value, sourceLabel) {
+    if (!selected || !row || !row.id) {
+      if (window.showToast) window.showToast('Selecciona un caso antes de cargar un ajuste inline.', 'info');
+      return;
+    }
+    const focusBranch = mpGetWorkspaceFocusBranchInfo(row);
+    if (!focusBranch.id) {
+      if (window.showToast) window.showToast('Primero aterriza una sucursal de trabajo desde el workspace antes de usar ajuste inline.', 'warning');
+      return;
+    }
+    const amount = Number(value || 0);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      if (window.showToast) window.showToast('No encontré un número válido para cargar en el cierre inline.', 'warning');
+      return;
+    }
+    const active = window.__mpWorkspaceInlineContext || null;
+    const meta = {
+      materialName: selected.material_nombre || mpGetMaterialNombre(row),
+      alcance: focusBranch.nombre,
+      routeLabel: mpGetRouteMeta(row.ruta).label || row.ruta || 'Señal',
+      workspaceBranchId: focusBranch.id || '',
+      workspaceBranchName: focusBranch.nombre || '',
+      workspaceBranchIsContextOnly: !!focusBranch.isContextOnly,
+    };
+    if (!active || Number(active.proposalId || 0) !== Number(row.id || 0)) {
+      await mpAbrirDrawerInline(row.id, 'resolve', meta);
+    }
+    const input = document.getElementById('bpPrecioAjustado');
+    if (!input) {
+      if (window.showToast) window.showToast('No pude cargar el ajuste en el drawer actual.', 'error');
+      return;
+    }
+    input.value = String(Math.round(amount));
+    if (typeof bpActualizarMargenAjuste === 'function') bpActualizarMargenAjuste(input.value);
+    const msg = document.getElementById('bpDrawerMsg');
+    if (msg) {
+      msg.textContent = focusBranch.isContextOnly
+        ? ('Ajuste cargado desde ' + sourceLabel + ' con la sucursal de trabajo ' + focusBranch.nombre + '. Puedes validar margen desde aquí; la aprobación final sigue bloqueada hasta que la propuesta tenga sucursal real.')
+        : ('Ajuste cargado desde ' + sourceLabel + ' dentro del workspace. Revisa margen y luego aprueba o rechaza desde este mismo cierre.');
+      msg.className = 'text-xs p-2 rounded bg-emerald-100 text-emerald-800';
+      msg.classList.remove('hidden');
+    }
+    if (typeof mpSyncInlineDecisionState === 'function') mpSyncInlineDecisionState();
+    if (window.showToast) window.showToast(sourceLabel + ' cargado en el cierre inline', 'success');
+  }
+
   async function mpSyncWorkspaceCalcSupport(selected, row, openCalc) {
     if (!selected || !row || !selected.material_id) {
       mpRenderCalcSupportState({ status: 'empty', handler: null });
       return;
     }
     const materialId = selected.material_id;
-    const sucursalId = row.sucursal_id || '';
+    const focusBranch = mpGetWorkspaceFocusBranchInfo(row);
+    const sucursalId = focusBranch.id || '';
     const cacheKey = String(materialId || '') + '|' + String(sucursalId || '');
+    const inlineHint = row.sucursal_id
+      ? 'Puedes cargar P.Ejec o P.Lista directo al drawer inline sin salir del workspace.'
+      : (focusBranch.id
+        ? ('Ya aterrizaste ' + focusBranch.nombre + '. Puedes cargar P.Ejec o P.Lista al cierre inline con este foco; la aprobación seguirá bloqueada hasta que exista sucursal real en la propuesta.')
+        : 'Primero aterriza una sucursal de trabajo o usa cálculo de apoyo con un foco concreto.');
+    const buildInlineHandlers = function (snapshotLike) {
+      const canUseInlineAdjust = !!focusBranch.id;
+      const pejecValue = Number(snapshotLike?.pejec || 0);
+      const plistaValue = Number(snapshotLike?.plista || 0);
+      return {
+        inlinePejecHandler: canUseInlineAdjust && pejecValue > 0
+          ? () => mpApplyWorkspaceInlineAdjust(selected, row, pejecValue, 'P.Ejec')
+          : null,
+        inlinePlistaHandler: canUseInlineAdjust && plistaValue > 0
+          ? () => mpApplyWorkspaceInlineAdjust(selected, row, plistaValue, 'P.Lista')
+          : null,
+      };
+    };
     if (mpState.calcSupportCache.has(cacheKey)) {
       const cached = mpState.calcSupportCache.get(cacheKey);
       mpRenderCalcSupportState({
@@ -18007,16 +18530,19 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         meta: (cached.materialNombre || 'Material') + ' · ' + (cached.sucursalNombre || 'Sin alcance') + ' · ' + (cached.vigenteFuente || 'Sin vigente visible'),
         gate: cached.margenGate || cached.nota || 'La guía de margen aparecerá aquí.',
         handler: openCalc || null,
-        buttonTitle: 'Abrir Calculadora ya preparada',
-        buttonText: 'Si necesitas mover sliders o publicar, la Calculadora abre con este mismo foco ya cargado.',
+        buttonTitle: 'Abrir cálculo de apoyo',
+        buttonText: 'Úsalo solo si este caso todavía necesita ajuste fino antes del cierre.',
+        inlineHint,
+        ...buildInlineHandlers(cached),
       });
       return;
     }
     mpRenderCalcSupportState({
       status: 'loading',
       handler: openCalc || null,
-      buttonTitle: 'Abrir Calculadora ya preparada',
+      buttonTitle: 'Abrir cálculo de apoyo',
       buttonText: 'Si prefieres afinar ya, puedes abrir el motor real mientras termina de cargar esta foto compacta.',
+      inlineHint,
     });
     const requestId = ++mpState.calcSupportRequestId;
     try {
@@ -18047,8 +18573,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         meta: (snapshot.materialNombre || 'Material') + ' · ' + (snapshot.sucursalNombre || 'Sin alcance') + ' · ' + (snapshot.vigenteFuente || 'Sin vigente visible'),
         gate: snapshot.margenGate || snapshot.nota || 'La guía de margen aparecerá aquí.',
         handler: openCalc || null,
-        buttonTitle: 'Abrir Calculadora ya preparada',
-        buttonText: 'Si necesitas mover sliders o publicar, la Calculadora abre con este mismo foco ya cargado.',
+        buttonTitle: 'Abrir cálculo de apoyo',
+        buttonText: 'Úsalo solo si este caso todavía necesita ajuste fino antes del cierre.',
+        inlineHint,
+        ...buildInlineHandlers(snapshot),
       });
     } catch (e) {
       if (requestId !== mpState.calcSupportRequestId) return;
@@ -18056,6 +18584,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         status: 'error',
         text: 'El workspace conserva el foco, pero no pude traer la foto compacta de Calculadora: ' + String(e).slice(0, 120),
         handler: openCalc || null,
+        inlineHint,
       });
     }
   }
@@ -18070,6 +18599,9 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       materialName: meta?.materialName || '',
       alcance: meta?.alcance || '',
       routeLabel: meta?.routeLabel || '',
+      workspaceBranchId: meta?.workspaceBranchId || '',
+      workspaceBranchName: meta?.workspaceBranchName || '',
+      workspaceBranchIsContextOnly: !!meta?.workspaceBranchIsContextOnly,
       status: 'opening',
     };
     window.__mpWorkspaceInlineLastState = null;
@@ -18089,7 +18621,9 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       msg.classList.remove('hidden');
       return;
     }
-    msg.textContent = 'Estás resolviendo este caso inline desde la página única. Aprueba, rechaza o ajusta y al cerrar se refrescará este mismo workspace.';
+    msg.textContent = window.__mpWorkspaceInlineContext?.workspaceBranchIsContextOnly
+      ? ('Estás resolviendo este caso inline con la sucursal de trabajo ' + (window.__mpWorkspaceInlineContext?.workspaceBranchName || 'seleccionada en el workspace') + '. Puedes ajustar y validar margen aquí; para aprobar o publicar todavía necesitas que la propuesta tenga sucursal real.')
+      : 'Estás resolviendo este caso inline desde la página única. Aprueba, rechaza o ajusta y al cerrar se refrescará este mismo workspace.';
     msg.className = 'text-xs p-2 rounded bg-emerald-100 text-emerald-800';
     msg.classList.remove('hidden');
   }
@@ -18180,9 +18714,21 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     });
   }
 
+  function mpFindInlineActiveGroup(groups) {
+    const active = window.__mpWorkspaceInlineContext || null;
+    const proposalId = Number(active?.proposalId || 0);
+    if (!proposalId || !Array.isArray(groups) || !groups.length) return null;
+    return groups.find((group) => Array.isArray(group?.rows) && group.rows.some((row) => Number(row?.id || 0) === proposalId)) || null;
+  }
+
   function mpApplyFocus(groups) {
     if (!groups.length) {
       mpState.selectedKey = null;
+      return;
+    }
+    const inlineGroup = mpFindInlineActiveGroup(groups);
+    if (inlineGroup) {
+      mpState.selectedKey = inlineGroup.key;
       return;
     }
     if (mpState.focus) {
@@ -18193,7 +18739,6 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       );
       if (match) {
         mpState.selectedKey = match.key;
-        mpState.focus = null;
         return;
       }
     }
@@ -18602,6 +19147,11 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
 
   function mpRenderWorkspaceActions(selected, row, guide) {
     const metaEl = document.getElementById('wsSafeSelectionMeta');
+    const scopeBadgeEl = document.getElementById('wsSafeScopeBadge');
+    const scopeMaterialEl = document.getElementById('wsSafeScopeMaterial');
+    const scopeBranchEl = document.getElementById('wsSafeScopeBranch');
+    const scopeContextEl = document.getElementById('wsSafeScopeContext');
+    const scopeNextEl = document.getElementById('wsSafeScopeNext');
     const calcBtn = document.getElementById('wsSafeCalcBtn');
     const resolveBtn = document.getElementById('wsSafeResolveBtn');
     const referenceBtn = document.getElementById('wsSafeReferenceBtn');
@@ -18626,13 +19176,20 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       });
       mesaBtn.dataset.bound = '1';
     }
-    if (!metaEl || !resolveBtn || !calcBtn || !referenceBtn || !mesaBtn || !primaryBtn || !primaryTitleEl || !primaryTextEl || !primaryEngineEl || !actionTitleEl || !actionTextEl || !actionRouteBadgeEl || !mobileMesaBtn || !mobileCalcBtn || !mobileResolveBtn || !mobileReferenceBtn || !mobileHintEl || !mobileBadgeEl || !exitModeEl) return;
+    if (!metaEl || !scopeBadgeEl || !scopeMaterialEl || !scopeBranchEl || !scopeContextEl || !scopeNextEl || !resolveBtn || !calcBtn || !referenceBtn || !mesaBtn || !primaryBtn || !primaryTitleEl || !primaryTextEl || !primaryEngineEl || !actionTitleEl || !actionTextEl || !actionRouteBadgeEl || !mobileMesaBtn || !mobileCalcBtn || !mobileResolveBtn || !mobileReferenceBtn || !mobileHintEl || !mobileBadgeEl || !exitModeEl) return;
     [calcBtn, resolveBtn, referenceBtn, mesaBtn, mobileMesaBtn, mobileCalcBtn, mobileResolveBtn, mobileReferenceBtn].forEach((btn) => {
       btn.classList.remove('ring-2', 'ring-sky-200', 'ring-emerald-200', 'ring-amber-200', 'ring-violet-200');
     });
     primaryBtn.className = 'w-full rounded-xl border border-violet-200 bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed';
     if (!selected || !row || !row.id) {
-      metaEl.textContent = 'Sin caso activo aún.';
+      metaEl.className = 'rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 break-words';
+      scopeBadgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
+      scopeBadgeEl.textContent = 'Sin foco';
+      scopeMaterialEl.textContent = 'Sin caso activo.';
+      scopeBranchEl.textContent = 'Todavía no definida.';
+      scopeContextEl.textContent = 'Selecciona un caso para ver por qué está en este estado y qué falta realmente.';
+      scopeNextEl.textContent = 'La página te dirá cuál es el próximo paso dominante.';
+      mpSyncWorkspaceScopeChoices(null, null);
       actionTitleEl.textContent = guide?.actionTitle || 'Selecciona un caso primero.';
       actionTextEl.textContent = guide?.actionText || 'La recomendación cambia según ruta, alcance y si ya existe un valor publicado visible.';
       actionRouteBadgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
@@ -18668,20 +19225,29 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       return;
     }
     const routeMeta = mpGetRouteMeta(row.ruta);
+    const focusBranch = mpGetWorkspaceFocusBranchInfo(row);
     const openMesa = function () {
       window.mpAbrirTab && window.mpAbrirTab('tablero_precios');
     };
     const openCalc = function () {
       window.calcIrDesdeWorkspace && window.calcIrDesdeWorkspace({
         materialId: selected.material_id,
-        sucursalId: row.sucursal_id || '',
+        materialNombre: selected.material_nombre || mpGetMaterialNombre(row),
+        sucursalId: focusBranch.id || '',
+        sucursalNombre: focusBranch.nombre || '',
+        ruta: 'workspace_bridge',
       });
     };
     const actionMeta = {
       materialName: selected.material_nombre || mpGetMaterialNombre(row),
-      alcance: mpGetSucursalNombre(row),
+      alcance: focusBranch.id ? focusBranch.nombre : mpGetSucursalNombre(row),
       routeLabel: routeMeta.label || row.ruta || 'Señal',
     };
+    const publishedRow = mpGetWorkspacePublished(selected, row);
+    const publishedValue = Number(row.precio_vigente || publishedRow?.precio_compra_clp || 0);
+    const draftValue = Number(row.precio_ejecutivo || row.precio_clp_kg || 0);
+    const saleValue = Number(publishedRow?.precio_venta_clp || 0);
+    const scopeState = mpGetWorkspaceScopeState(selected, row, guide, publishedValue, draftValue, saleValue);
     const openResolve = function () {
       window.mpResolverInline && window.mpResolverInline(row.id, actionMeta);
     };
@@ -18694,14 +19260,16 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       resolve: openResolve,
       reference: openReference,
     };
-    metaEl.innerHTML = '<div class="font-semibold text-stone-800">' + tapEscape(selected.material_nombre || 'Material') + '</div>'
-      + '<div class="mt-1 text-[11px] text-stone-500">'
-      + tapEscape(mpGetSucursalNombre(row) || 'Sin alcance')
-      + ' · ' + tapEscape(routeMeta.label || row.ruta || 'senal')
-      + ' · propuesta #' + tapEscape(row.id)
-      + '</div>';
+    metaEl.className = 'rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 break-words';
+    scopeBadgeEl.className = scopeState.badgeClass;
+    scopeBadgeEl.textContent = scopeState.badgeText;
+    scopeMaterialEl.textContent = scopeState.materialText;
+    scopeBranchEl.textContent = scopeState.branchText;
+    scopeContextEl.textContent = scopeState.contextText;
+    scopeNextEl.textContent = scopeState.nextText;
+    mpSyncWorkspaceScopeChoices(selected, row);
     actionTitleEl.textContent = guide?.actionTitle || 'Caso listo para revisar.';
-    actionTextEl.textContent = guide?.actionText || 'Usa el motor actual que mejor calce con este caso.';
+      actionTextEl.textContent = guide?.actionText || 'La página prioriza cerrar aquí y solo abre apoyo cuando realmente hace falta.';
     actionRouteBadgeEl.className = guide?.actionTarget === 'resolve'
       ? 'px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px]'
       : (guide?.actionTarget === 'mesa'
@@ -18709,10 +19277,14 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         : 'px-2 py-1 rounded-full bg-sky-100 text-sky-700 border border-sky-200 text-[11px]');
     actionRouteBadgeEl.textContent = guide?.actionTarget === 'resolve'
       ? 'Resolver aquí'
-      : (guide?.actionTarget === 'mesa' ? 'Ir a Mesa' : 'Ir a Calculadora');
+      : (guide?.actionTarget === 'mesa'
+        ? 'Apoyo: Mesa'
+        : (guide?.actionTarget === 'bridge' ? 'Puente a salida real' : 'Apoyo: Cálculo'));
     exitModeEl.textContent = guide?.actionTarget === 'resolve'
       ? 'Inline'
-      : (guide?.actionTarget === 'mesa' ? 'Mesa' : 'Calculadora');
+      : (guide?.actionTarget === 'mesa'
+        ? 'Apoyo Mesa'
+        : (guide?.actionTarget === 'bridge' ? 'Puente Calculadora' : 'Apoyo cálculo'));
     primaryBtn.disabled = false;
     if (guide?.actionTarget === 'resolve') {
       primaryBtn.className = 'w-full rounded-xl border border-emerald-200 bg-white px-4 py-3 text-left hover:border-emerald-300';
@@ -18724,17 +19296,24 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     } else if (guide?.actionTarget === 'mesa') {
       primaryBtn.className = 'w-full rounded-xl border border-amber-200 bg-white px-4 py-3 text-left hover:border-amber-300';
       primaryBtn.onclick = openMesa;
-      primaryTitleEl.textContent = 'Abrir contexto completo desde aquí';
-      primaryTextEl.textContent = 'Usa Mesa solo cuando el publicado visible o el alcance todavía no te dejan cerrar con seguridad.';
+      primaryTitleEl.textContent = 'Pedir apoyo de Mesa para este caso';
+      primaryTextEl.textContent = 'Abre Mesa solo cuando el publicado visible o el alcance todavía no te dejan cerrar con seguridad desde aquí.';
       primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-amber-700 border border-amber-200 text-[11px]';
-      primaryEngineEl.textContent = 'Motor: Mesa';
+      primaryEngineEl.textContent = 'Apoyo: Mesa';
+    } else if (guide?.actionTarget === 'bridge') {
+      primaryBtn.className = 'w-full rounded-xl border border-sky-300 bg-white px-4 py-3 text-left hover:border-sky-400';
+      primaryBtn.onclick = openCalc;
+      primaryTitleEl.textContent = 'Abrir salida real precargada';
+      primaryTextEl.textContent = 'Calculadora se abre con ' + (selected.material_nombre || mpGetMaterialNombre(row) || 'este material') + ' y ' + (focusBranch.nombre || 'la sucursal aterrizada') + ' ya cargados para publicar una propuesta válida sin reconstruir el caso.';
+      primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-sky-700 border border-sky-200 text-[11px]';
+      primaryEngineEl.textContent = 'Puente: Calculadora -> Bandeja';
     } else {
       primaryBtn.className = 'w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-left hover:border-sky-300';
       primaryBtn.onclick = openCalc;
-      primaryTitleEl.textContent = 'Ajustar este caso desde aquí';
-      primaryTextEl.textContent = 'La página única te manda a Calculadora con material y alcance ya cargados para afinar sin volver a buscar.';
+      primaryTitleEl.textContent = 'Pedir apoyo de cálculo para este caso';
+      primaryTextEl.textContent = 'La página conserva el foco y abre cálculo solo si todavía necesitas afinar el número antes del cierre.';
       primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-sky-700 border border-sky-200 text-[11px]';
-      primaryEngineEl.textContent = 'Motor: Calculadora';
+      primaryEngineEl.textContent = 'Apoyo: Cálculo';
     }
     calcBtn.disabled = false;
     calcBtn.onclick = openCalc;
@@ -18750,20 +19329,24 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     referenceBtn.onclick = openReference;
     mobileReferenceBtn.disabled = false;
     mobileReferenceBtn.onclick = referenceBtn.onclick;
-    mobileHintEl.textContent = guide?.actionText || 'Usa el motor actual que mejor calce con este caso.';
+    mobileHintEl.textContent = guide?.actionText || 'La página prioriza cerrar aquí y solo abre apoyo cuando realmente hace falta.';
     mobileBadgeEl.className = guide?.actionTarget === 'resolve'
       ? 'px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[11px]'
       : (guide?.actionTarget === 'mesa'
         ? 'px-2 py-1 rounded-full bg-amber-100 text-amber-700 text-[11px]'
         : 'px-2 py-1 rounded-full bg-sky-100 text-sky-700 text-[11px]');
     mobileBadgeEl.textContent = guide?.actionTarget === 'resolve'
-      ? 'Salida: Bandeja'
-      : (guide?.actionTarget === 'mesa' ? 'Salida: Mesa' : 'Salida: Calculadora');
+      ? 'Salida: Inline'
+      : (guide?.actionTarget === 'mesa'
+        ? 'Apoyo: Mesa'
+        : (guide?.actionTarget === 'bridge' ? 'Puente real' : 'Apoyo: Cálculo'));
     if (guide?.actionTarget === 'mesa') mobileMesaBtn.classList.add('ring-2', 'ring-amber-200');
     if (guide?.actionTarget === 'calc') calcBtn.classList.add('ring-2', 'ring-sky-200');
+    if (guide?.actionTarget === 'bridge') calcBtn.classList.add('ring-2', 'ring-sky-200');
     if (guide?.actionTarget === 'resolve') resolveBtn.classList.add('ring-2', 'ring-emerald-200');
     if (guide?.actionTarget === 'mesa') mesaBtn.classList.add('ring-2', 'ring-amber-200');
     if (guide?.actionTarget === 'calc') mobileCalcBtn.classList.add('ring-2', 'ring-sky-200');
+    if (guide?.actionTarget === 'bridge') mobileCalcBtn.classList.add('ring-2', 'ring-sky-200');
     if (guide?.actionTarget === 'resolve') mobileResolveBtn.classList.add('ring-2', 'ring-emerald-200');
     if (guide?.actionTarget !== 'resolve' && row?.ruta !== 'manual_calc') referenceBtn.classList.add('ring-2', 'ring-violet-200');
     mpSyncInlineExecutionState();
@@ -19050,7 +19633,38 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
 
   window.mpAbrirTab = mpOpenTab;
   window.mpOnKpiClick = mpOnKpiClick;
+  window.mpSeleccionarSucursalWorkspace = function (sucursalId) {
+    const inlineActive = window.__mpWorkspaceInlineContext || null;
+    if (inlineActive && inlineActive.proposalId) {
+      const msg = inlineActive.mode === 'reference'
+        ? 'Cierra primero la referencia inline antes de cambiar la sucursal de trabajo.'
+        : 'Cierra primero la resolución inline antes de cambiar la sucursal de trabajo.';
+      if (window.showToast) window.showToast(msg, 'info');
+      return;
+    }
+    const groups = mpFilterGroups(mpBuildGroups());
+    const selected = groups.find((group) => group.key === mpState.selectedKey) || null;
+    if (!selected) return;
+    mpState.focus = {
+      materialId: selected.material_id || null,
+      materialNombre: selected.material_nombre || '',
+      sucursalId: sucursalId || '',
+      sucursalNombre: mpGetSucursalNombreById(sucursalId || ''),
+    };
+    mpRender();
+  };
   window.mpSeleccionarGrupo = function (key) {
+    const inlineActive = window.__mpWorkspaceInlineContext || null;
+    if (inlineActive && inlineActive.proposalId) {
+      const msg = inlineActive.mode === 'reference'
+        ? 'Tienes un cierre como referencia activo. Termínalo o cierra el drawer antes de cambiar de caso.'
+        : 'Tienes una resolución inline activa. Termínala o cierra el drawer antes de cambiar de caso.';
+      if (window.showToast) window.showToast(msg, 'info');
+      else if (window.bpMsg) window.bpMsg(msg, false);
+      mpRender();
+      return;
+    }
+    if (key !== mpState.selectedKey) mpState.focus = null;
     mpState.selectedKey = key;
     mpRender();
   };
@@ -19080,19 +19694,21 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
   };
   window.wsIrDesdeCalculadora = async function (focus) {
     const payload = focus || window.bpFocusFromCalc || null;
+    const targetChip = payload?.ruta === 'workspace_bridge' ? 'todos' : 'decision_directa';
     mpState.calcSupportCache.clear();
     mpState.calcSupportRequestId += 1;
     mpState.focus = payload;
-    mpState.chip = 'decision_directa';
+    mpState.chip = targetChip;
     mpOpenTab('workspace_precios');
-    await tapCargar({ focus: payload, chip: 'decision_directa' });
+    await tapCargar({ focus: payload, chip: targetChip });
   };
   window.mpIrDesdeCalculadora = async function (focus) {
     const payload = focus || window.bpFocusFromCalc || null;
+    const targetChip = payload?.ruta === 'workspace_bridge' ? 'todos' : 'decision_directa';
     mpState.focus = payload;
-    mpState.chip = 'decision_directa';
+    mpState.chip = targetChip;
     mpOpenTab('tablero_precios');
-    await tapCargar({ focus: payload, chip: 'decision_directa' });
+    await tapCargar({ focus: payload, chip: targetChip });
   };
   window.bpIrDesdeCalculadora = window.mpIrDesdeCalculadora;
   window.tapCargar           = tapCargar;
