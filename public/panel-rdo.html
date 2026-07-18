@@ -3675,32 +3675,31 @@
             <span>🧭</span><span>Workspace seguro de Precios</span>
           </h2>
           <p class="text-sm text-stone-500 mt-1 max-w-4xl">
-            Esta es la fase 1 de la página única de precios. Aquí ya lees, contrastas y decides el caso
-            completo sin salir de esta pantalla. La ejecución real sigue reutilizando por debajo
-            <strong>Mesa</strong>, <strong>Calculadora</strong> y <strong>Bandeja técnica</strong>.
+            Esta página ya concentra lectura, contraste, cálculo y cierre del caso sin perder el
+            foco. Si necesitas más detalle, puedes apoyarte en Mesa, Calculadora o Bandeja.
           </p>
         </div>
         <div class="flex flex-wrap gap-2 w-full xl:w-auto">
           <button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab('tablero_precios')"
                   class="w-full sm:w-auto bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
-            🎯 Volver a Mesa
+            🎯 Abrir Mesa
           </button>
           <button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab('bandeja_precios')"
                   class="w-full sm:w-auto bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
-            📨 Resolver en Bandeja
+            📨 Abrir Bandeja
           </button>
           <button type="button" onclick="window.mpAbrirTab && window.mpAbrirTab('calculadora_precios')"
                   class="w-full sm:w-auto bg-white border border-stone-300 hover:border-stone-400 text-stone-700 px-3 py-1.5 rounded text-sm">
-            🧮 Abrir Calculadora
+            🧮 Ir a cálculo
           </button>
         </div>
       </header>
 
       <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 mb-4 text-sm text-amber-900">
-        <div class="font-semibold">Carril seguro activo</div>
+        <div class="font-semibold">Página única activa</div>
         <div class="mt-1 text-amber-800">
-          Esta fase no cambia el motor actual ni reemplaza handlers productivos. Su objetivo es
-          absorber la operación en una sola página mientras la persistencia real sigue corriendo abajo.
+          Aquí ya puedes leer, contrastar, calcular y cerrar sin salir del carril principal. Los otros
+          módulos siguen disponibles como apoyo cuando hacen falta.
         </div>
       </div>
 
@@ -3720,7 +3719,7 @@
 
           <div id="wsSafeInboxList" class="space-y-2">
             <div class="rounded-xl border border-stone-200 bg-white px-4 py-4 text-sm text-stone-500">
-              Cargando señales reales desde la Mesa...
+              Cargando señales...
             </div>
           </div>
 
@@ -3740,7 +3739,7 @@
               <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Decisión</div>
               <h3 class="text-sm font-bold text-stone-700">Workspace central</h3>
             </div>
-            <span class="text-xs px-2 py-1 rounded-full bg-violet-100 text-violet-700">Opción B · carril aislado</span>
+            <span class="text-xs px-2 py-1 rounded-full bg-violet-100 text-violet-700">Carril principal</span>
           </div>
 
           <div class="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 mb-3">
@@ -3899,8 +3898,8 @@
           </div>
 
           <div class="mt-3 rounded-xl border border-stone-200 bg-stone-50 px-3 py-3 text-xs text-stone-600">
-            <strong class="text-stone-800">Contrato de interacción de esta iteración:</strong>
-            click en la señal selecciona foco, click en una acción terminal recién persiste. Aquí no hay persistencia conectada todavía.
+            <strong class="text-stone-800">Regla del carril:</strong>
+            al elegir una señal tomas foco; el caso solo se cierra cuando sales por una acción final.
           </div>
         </section>
 
@@ -3910,7 +3909,7 @@
               <div class="text-[11px] uppercase tracking-wider text-stone-400 mb-1">Ejecución</div>
               <h3 class="text-sm font-bold text-stone-700">Ejecución unificada</h3>
             </div>
-            <span class="text-xs px-2 py-1 rounded-full bg-violet-100 text-violet-700">fase 2</span>
+            <span class="text-xs px-2 py-1 rounded-full bg-violet-100 text-violet-700">activo</span>
           </div>
 
           <div class="space-y-2">
@@ -3950,24 +3949,36 @@
                 <div class="text-[11px] uppercase tracking-wider text-stone-500">Cierre visible</div>
                 <span id="wsSafeDecisionStateBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin drawer</span>
               </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Paso actual</div>
+                  <div id="wsSafeDecisionFlowTitle" class="font-semibold text-stone-800">Recorrido aún no activo.</div>
+                  <div id="wsSafeDecisionFlowText" class="text-xs text-stone-600 mt-1">Cuando abras el drawer inline, este bloque te dirá exactamente en qué parte del cierre vas.</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Resultado inmediato</div>
+                  <div id="wsSafeDecisionOutcomeTitle" class="font-semibold text-stone-800">Sin resultado aún.</div>
+                  <div id="wsSafeDecisionOutcomeText" class="text-xs text-stone-600 mt-1">Aquí verás la respuesta del caso apenas el cierre confirme una decisión o detecte un bloqueo.</div>
+                </div>
+              </div>
               <div class="space-y-2">
                 <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
-                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Ajuste previo</div>
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Paso 1 · Ajuste</div>
                   <div id="wsSafeAdjustStateTitle" class="font-semibold text-stone-800">Aún no activo.</div>
                   <div id="wsSafeAdjustStateText" class="text-xs text-stone-600 mt-1">Se mostrará aquí cuando abras una resolución inline.</div>
                 </div>
                 <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
-                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Override</div>
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Paso 2 · Override</div>
                   <div id="wsSafeOverrideStateTitle" class="font-semibold text-stone-800">Sin evaluación.</div>
                   <div id="wsSafeOverrideStateText" class="text-xs text-stone-600 mt-1">La página única mostrará aquí si el margen exige override y en qué estado está.</div>
                 </div>
                 <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
-                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Aprobar / aplicar</div>
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Paso 3 · Aplicar</div>
                   <div id="wsSafeApproveStateTitle" class="font-semibold text-stone-800">Sin evaluación.</div>
                   <div id="wsSafeApproveStateText" class="text-xs text-stone-600 mt-1">La página única mostrará si aplicar ya está listo o si falta algo.</div>
                 </div>
                 <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
-                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Rechazar</div>
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Salida alternativa · Rechazar / referencia</div>
                   <div id="wsSafeRejectStateTitle" class="font-semibold text-stone-800">Sin evaluación.</div>
                   <div id="wsSafeRejectStateText" class="text-xs text-stone-600 mt-1">Aquí verás si el cierre como referencia sigue disponible desde el mismo flujo.</div>
                 </div>
@@ -3977,6 +3988,18 @@
               <div class="flex items-center justify-between gap-2 mb-2">
                 <div class="text-[11px] uppercase tracking-wider text-stone-500">Continuidad</div>
                 <span id="wsSafePostCloseBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin cierre</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Qué pasó</div>
+                  <div id="wsSafePostCloseWhatTitle" class="font-semibold text-stone-800">Sin cierre reciente.</div>
+                  <div id="wsSafePostCloseWhatText" class="text-xs text-stone-600 mt-1">Aquí aparecerá la última salida real del caso cuando cierres el drawer.</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Qué cambió</div>
+                  <div id="wsSafePostCloseChangeTitle" class="font-semibold text-stone-800">Sin cambio registrado.</div>
+                  <div id="wsSafePostCloseChangeText" class="text-xs text-stone-600 mt-1">La página única resumirá aquí si se movió precio, si quedó como referencia o si el caso solo refrescó contexto.</div>
+                </div>
               </div>
               <div id="wsSafePostCloseTitle" class="font-semibold text-stone-800">El siguiente paso aparecerá aquí.</div>
               <div id="wsSafePostCloseText" class="text-xs text-stone-600 mt-1">Después de aprobar, rechazar o cerrar como referencia, la página única te dirá qué acaba de pasar y cuál es la siguiente salida sugerida.</div>
@@ -3992,8 +4015,20 @@
                 <div class="text-[11px] uppercase tracking-wider text-stone-500">Soporte de cálculo</div>
                 <span id="wsSafeCalcSupportBadge" class="px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]">Sin cálculo</span>
               </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Uso recomendado</div>
+                  <div id="wsSafeCalcModeTitle" class="font-semibold text-stone-800">Sin lectura todavía.</div>
+                  <div id="wsSafeCalcModeText" class="text-xs text-stone-600 mt-1">La página te dirá aquí si con esta lectura basta o si conviene abrir el cálculo completo.</div>
+                </div>
+                <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                  <div class="text-[11px] uppercase tracking-wider text-stone-400">Puente con Workspace</div>
+                  <div id="wsSafeCalcBridgeTitle" class="font-semibold text-stone-800">Sin puente activo.</div>
+                  <div id="wsSafeCalcBridgeText" class="text-xs text-stone-600 mt-1">Si sales a cálculo, vuelves a este mismo caso sin perder material, alcance ni continuidad.</div>
+                </div>
+              </div>
               <div id="wsSafeCalcSupportTitle" class="font-semibold text-stone-800">La foto de Calculadora aparecerá aquí.</div>
-              <div id="wsSafeCalcSupportText" class="text-xs text-stone-600 mt-1">Esta estación traerá P.Lista, P.Ejec, P.Max y el semáforo MG del foco actual sin obligarte a salir del workspace.</div>
+              <div id="wsSafeCalcSupportText" class="text-xs text-stone-600 mt-1">Esta estación resume el cálculo del caso actual para ayudarte a decidir sin salir del workspace.</div>
               <div class="grid grid-cols-2 gap-2 mt-3">
                 <div class="rounded-lg border border-stone-200 bg-white px-3 py-2">
                   <div class="text-[11px] uppercase tracking-wider text-stone-400">P.Lista</div>
@@ -4016,19 +4051,19 @@
               <div id="wsSafeCalcGate" class="text-xs text-stone-600 mt-2">La guía de margen y publicación aparecerá aquí cuando el foco tenga material y alcance.</div>
               <button id="wsSafeCalcSupportBtn" type="button" disabled
                       class="mt-3 w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
-                <div id="wsSafeCalcSupportBtnTitle" class="font-semibold text-sky-800">Abrir Calculadora ya preparada</div>
-                <div id="wsSafeCalcSupportBtnText" class="text-xs text-sky-700 mt-1">El motor real quedará listo con este mismo foco si necesitas afinar sliders o publicar propuesta.</div>
+                <div id="wsSafeCalcSupportBtnTitle" class="font-semibold text-sky-800">Abrir cálculo completo</div>
+                <div id="wsSafeCalcSupportBtnText" class="text-xs text-sky-700 mt-1">Úsalo solo si necesitas afinar el número o revisar la publicación con más detalle.</div>
               </button>
             </div>
             <button id="wsSafeCalcBtn" type="button" disabled
                     class="w-full rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
-              <div class="font-semibold text-sky-800">Abrir este caso en Calculadora</div>
-              <div class="text-xs text-sky-700 mt-1">Entra con material y alcance ya cargados.</div>
+              <div class="font-semibold text-sky-800">Llevar caso a cálculo</div>
+              <div class="text-xs text-sky-700 mt-1">Entra con este mismo material y alcance ya cargados.</div>
             </button>
             <button id="wsSafeResolveBtn" type="button" disabled
                     class="w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
-              <div class="font-semibold text-emerald-800">Resolver este caso aquí</div>
-              <div class="text-xs text-emerald-700 mt-1">Abre la resolución real inline y usa Bandeja por debajo.</div>
+              <div class="font-semibold text-emerald-800">Resolver aquí</div>
+              <div class="text-xs text-emerald-700 mt-1">Cierra el caso desde esta misma página.</div>
             </button>
             <button id="wsSafeReferenceBtn" type="button" disabled
                     class="w-full rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed">
@@ -4037,19 +4072,19 @@
             </button>
             <button id="wsSafeMesaBtn" type="button"
                     class="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-left hover:border-stone-300">
-              <div class="font-semibold text-stone-800">Abrir foco en Mesa</div>
-              <div class="text-xs text-stone-500 mt-1">Contrasta esta vista con la mesa actual.</div>
+              <div class="font-semibold text-stone-800">Ver caso en Mesa</div>
+              <div class="text-xs text-stone-500 mt-1">Úsalo solo si aquí todavía te falta contexto.</div>
             </button>
             <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
               <div class="font-semibold text-stone-800">Publicar / aprobar</div>
-              <div class="text-xs text-stone-500 mt-1">La decisión ya sale desde aquí; si el caso está listo, la resolución real se abre en este mismo flujo y reutiliza los motores vivos.</div>
+              <div class="text-xs text-stone-500 mt-1">Si el caso ya está listo, ciérralo aquí. Si no, usa cálculo o mesa como apoyo.</div>
             </div>
           </div>
 
           <div class="mt-4 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600 space-y-2">
-            <div class="text-[11px] uppercase tracking-wider text-stone-500">Notas de esta iteración</div>
+            <div class="text-[11px] uppercase tracking-wider text-stone-500">Estado del carril</div>
             <div><strong class="text-stone-800">Responsive:</strong> desktop 3 columnas, tablet inbox y workspace arriba, salida abajo, mobile workspace primero.</div>
-            <div><strong class="text-stone-800">Página única:</strong> lectura, contraste, decisión y resolución inline ya viven aquí; la siguiente fase es absorber más cierre final sin romper el motor actual.</div>
+            <div><strong class="text-stone-800">Página única:</strong> lectura, contraste, cálculo y cierre ya conviven aquí en una sola vista.</div>
           </div>
         </aside>
       </div>
@@ -4070,7 +4105,7 @@
             </button>
             <button id="wsSafeMobileCalcBtn" type="button" disabled
                     class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3 text-sm font-semibold text-sky-800 disabled:opacity-50 disabled:cursor-not-allowed">
-              Abrir en Calculadora
+              Ir a cálculo
             </button>
             <button id="wsSafeMobileResolveBtn" type="button" disabled
                     class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-sm font-semibold text-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -4085,7 +4120,7 @@
       </div>
 
       <footer class="mt-4 text-xs text-stone-500">
-        Estado: iteración 2 de página única · reutiliza motores productivos vivos · diseñada para absorber más flujo sin romperlos.
+        Estado: carril operativo unificado · lectura, cálculo y cierre dentro de una misma página.
       </footer>
     </section>
 
@@ -14557,6 +14592,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         materialName: inlineCtx.materialName || '',
         alcance: inlineCtx.alcance || '',
         resultText: drawerMsgText || 'El cierre inline terminó y el workspace ya quedó actualizado.',
+        closedAt: new Date().toISOString(),
       };
       window.__mpWorkspaceInlineContext = null;
       if (typeof mpSyncInlineExecutionState === 'function') mpSyncInlineExecutionState();
@@ -17607,8 +17643,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       guide.step = 'decision';
       guide.lead = material + ' en ' + alcance + ' ya viene como decisión directa.';
       guide.support = 'Tienes ' + draftText + ' en evaluación contra ' + publishedText + ' publicado. Aquí lo natural es recalcular y afinar antes de salir.';
-      guide.actionTitle = 'Abrir este caso en Calculadora';
-      guide.actionText = 'La Calculadora ya recibe material y alcance precargados para ajustar sin volver a buscar el caso.';
+      guide.actionTitle = 'Llevar este caso a cálculo';
+      guide.actionText = 'Cálculo abre con material y alcance precargados para afinar sin volver a buscar el caso.';
       guide.actionTarget = 'calc';
       return guide;
     }
@@ -17618,7 +17654,7 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       guide.priorityClass = 'px-2 py-1 rounded-full border bg-rose-50 text-rose-700 border-rose-200';
       guide.step = 'resolve';
       guide.lead = material + ' en ' + alcance + ' pide una definición rápida.';
-      guide.support = 'La señal ya está contrastada contra ' + publishedText + ' y conviene salir por el motor real para no dejar la excepción abierta.';
+      guide.support = 'La señal ya está contrastada contra ' + publishedText + ' y conviene cerrarla aquí para no dejar la excepción abierta.';
       guide.actionTitle = 'Resolver ya desde aquí';
       guide.actionText = 'La resolución real se abre inline cuando el caso ya está listo para aprobar, rechazar o ajustar.';
       guide.actionTarget = 'resolve';
@@ -17732,6 +17768,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
 
   function mpSyncInlineDecisionState() {
     const badgeEl = document.getElementById('wsSafeDecisionStateBadge');
+    const flowTitleEl = document.getElementById('wsSafeDecisionFlowTitle');
+    const flowTextEl = document.getElementById('wsSafeDecisionFlowText');
+    const outcomeTitleEl = document.getElementById('wsSafeDecisionOutcomeTitle');
+    const outcomeTextEl = document.getElementById('wsSafeDecisionOutcomeText');
     const adjustTitleEl = document.getElementById('wsSafeAdjustStateTitle');
     const adjustTextEl = document.getElementById('wsSafeAdjustStateText');
     const overrideTitleEl = document.getElementById('wsSafeOverrideStateTitle');
@@ -17740,13 +17780,15 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const approveTextEl = document.getElementById('wsSafeApproveStateText');
     const rejectTitleEl = document.getElementById('wsSafeRejectStateTitle');
     const rejectTextEl = document.getElementById('wsSafeRejectStateText');
-    if (!badgeEl || !adjustTitleEl || !adjustTextEl || !overrideTitleEl || !overrideTextEl || !approveTitleEl || !approveTextEl || !rejectTitleEl || !rejectTextEl) return;
+    if (!badgeEl || !flowTitleEl || !flowTextEl || !outcomeTitleEl || !outcomeTextEl || !adjustTitleEl || !adjustTextEl || !overrideTitleEl || !overrideTextEl || !approveTitleEl || !approveTextEl || !rejectTitleEl || !rejectTextEl) return;
     const active = window.__mpWorkspaceInlineContext || null;
+    const last = window.__mpWorkspaceInlineLastState || null;
     const inputAjuste = document.getElementById('bpPrecioAjustado');
     const btnAprobar = document.getElementById('bpBtnAprobar');
     const btnRechazar = document.getElementById('bpBtnRechazar');
     const overrideChk = document.getElementById('bpOverrideCheck');
     const overrideMot = document.getElementById('bpOverrideMotivo');
+    const drawerMsgEl = document.getElementById('bpDrawerMsg');
     const drawerState = typeof window.bpGetInlineDecisionState === 'function'
       ? (window.bpGetInlineDecisionState() || {})
       : {};
@@ -17762,9 +17804,18 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const vigenteTxt = currentPrecioVigente != null ? fmtCLP(currentPrecioVigente) : 'sin vigente visible';
     const candidatoTxt = candidato > 0 ? fmtCLP(candidato) : 'sin ajuste visible';
     const sameAsVigente = candidato > 0 && currentPrecioVigente != null && Number(candidato) === Number(currentPrecioVigente);
-    if (!active) {
+    const drawerMsgText = String(drawerMsgEl?.textContent || '').trim();
+    const drawerMsgClass = String(drawerMsgEl?.className || '');
+    const setOutcome = function (title, text) {
+      outcomeTitleEl.textContent = title;
+      outcomeTextEl.textContent = text;
+    };
+    if (!active && !last) {
       badgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
       badgeEl.textContent = 'Sin drawer';
+      flowTitleEl.textContent = 'Recorrido aún no activo.';
+      flowTextEl.textContent = 'Cuando abras la resolución inline, aquí verás el paso exacto del cierre y la alternativa de salida.';
+      setOutcome('Sin resultado aún.', 'Aquí aparecerá la respuesta del caso apenas el cierre confirme una decisión o detecte un bloqueo.');
       adjustTitleEl.textContent = 'Aún no activo.';
       adjustTextEl.textContent = 'Se mostrará aquí cuando abras una resolución inline.';
       overrideTitleEl.textContent = 'Sin evaluación.';
@@ -17775,10 +17826,92 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
       rejectTextEl.textContent = 'Aquí verás si el cierre como referencia sigue disponible desde el mismo flujo.';
       return;
     }
+    if (!active && last) {
+      const isReference = last.mode === 'reference';
+      badgeEl.className = isReference
+        ? 'px-2 py-1 rounded-full bg-white text-violet-700 border border-violet-200 text-[11px]'
+        : 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]';
+      badgeEl.textContent = 'Recorrido cerrado';
+      flowTitleEl.textContent = isReference ? 'Cierre como referencia terminado.' : 'Cierre inline terminado.';
+      flowTextEl.textContent = isReference
+        ? 'La señal ya salió de tu carga sin mover compra. El workspace quedó listo para tomar el siguiente caso.'
+        : 'El recorrido de ajuste, override y aplicar ya cerró. El workspace quedó listo para seguir sin rearmar contexto.';
+      setOutcome('Resultado inmediato registrado.', last.resultText || 'El último cierre inline ya quedó registrado en esta misma página.');
+      adjustTitleEl.textContent = isReference ? 'Ajuste no fue necesario.' : 'Ajuste revisado.';
+      adjustTextEl.textContent = isReference
+        ? 'Este cierre tomó la salida alternativa y no necesitó tocar el valor de compra.'
+        : 'El último ajuste ya quedó incorporado antes de cerrar el caso.';
+      overrideTitleEl.textContent = isReference ? 'Override no aplicó.' : 'Override ya resuelto.';
+      overrideTextEl.textContent = isReference
+        ? 'El cierre como referencia no pasa por override de margen.'
+        : 'Si este caso necesitó override, ya quedó resuelto dentro del recorrido real del drawer.';
+      approveTitleEl.textContent = isReference ? 'Aplicar no correspondía.' : 'Aplicación ya resuelta.';
+      approveTextEl.textContent = isReference
+        ? 'La salida correcta fue cerrar la señal sin publicar un nuevo precio.'
+        : 'La salida final del caso ya quedó resuelta.';
+      rejectTitleEl.textContent = isReference ? 'Referencia ya cerrada.' : 'Salida alternativa disponible para el siguiente caso.';
+      rejectTextEl.textContent = isReference
+        ? 'El caso ya quedó cerrado como referencia dentro del mismo flujo.'
+        : 'Si el próximo caso no amerita cambio, todavía podrás sacarlo por referencia o rechazo desde aquí.';
+      return;
+    }
     badgeEl.className = active.mode === 'reference'
       ? 'px-2 py-1 rounded-full bg-white text-violet-700 border border-violet-200 text-[11px]'
       : 'px-2 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 text-[11px]';
     badgeEl.textContent = active.mode === 'reference' ? 'Referencia inline' : 'Cierre inline';
+    if (active.status === 'opening') {
+      flowTitleEl.textContent = active.mode === 'reference' ? 'Preparando salida como referencia.' : 'Preparando recorrido de cierre.';
+      flowTextEl.textContent = active.mode === 'reference'
+        ? 'Estoy abriendo el drawer real para sacar esta señal de tu carga sin mover compra.'
+        : 'Estoy abriendo el drawer real para revisar ajuste, override y salida final con este mismo contexto.';
+      setOutcome('Sin resultado aún.', 'Todavía no hay respuesta porque el cierre se está preparando.');
+    } else if (active.mode === 'reference') {
+      flowTitleEl.textContent = btnRechazar && !btnRechazar.disabled
+        ? 'Paso único · Cerrar como referencia.'
+        : 'Referencia inline en revisión.';
+      flowTextEl.textContent = btnRechazar && !btnRechazar.disabled
+        ? 'La salida alternativa ya está disponible: usa Rechazar en el drawer para sacar la señal sin mover compra.'
+        : 'La referencia ya está abierta, pero el drawer todavía no deja cerrar este caso.';
+      setOutcome(
+        drawerMsgText ? 'Lectura del cierre.' : 'Esperando confirmación del drawer.',
+        drawerMsgText || 'Cuando el drawer confirme o bloquee el cierre como referencia, la respuesta aparecerá aquí.'
+      );
+    } else {
+      if (candidato <= 0 || sameAsVigente) {
+        flowTitleEl.textContent = 'Paso 1 · Revisar ajuste.';
+        flowTextEl.textContent = sameAsVigente
+          ? 'El valor candidato coincide con ' + vigenteTxt + '. Revisa el ajuste antes de intentar aplicar.'
+          : 'Todavía no hay un ajuste visible distinto del publicado. El recorrido parte afinando el valor candidato.';
+      } else if (overrideVisible && !overrideOk) {
+        flowTitleEl.textContent = 'Paso 2 · Confirmar override.';
+        flowTextEl.textContent = 'El ajuste ya quedó visible en ' + candidatoTxt + ', pero el margen exige destrabe antes de aplicar.';
+      } else if (btnAprobar && !btnAprobar.disabled) {
+        flowTitleEl.textContent = 'Paso 3 · Aplicar desde el drawer.';
+        flowTextEl.textContent = 'El ajuste ya pasó las validaciones visibles y el caso quedó listo para cerrarse.';
+      } else if (btnRechazar && !btnRechazar.disabled) {
+        flowTitleEl.textContent = 'Salida alternativa · Rechazar el caso.';
+        flowTextEl.textContent = 'Si decides no mover compra, todavía puedes sacar esta señal por rechazo sin perder trazabilidad.';
+      } else {
+        flowTitleEl.textContent = 'Recorrido en revisión.';
+        flowTextEl.textContent = 'El caso ya está abierto inline, pero todavía falta destrabar el siguiente paso del cierre.';
+      }
+      if (drawerMsgText) {
+        const outcomeTitle = drawerMsgClass.includes('bg-green') || drawerMsgClass.includes('text-green')
+          ? 'Resultado del cierre.'
+          : 'Bloqueo o alerta del cierre.';
+        setOutcome(outcomeTitle, drawerMsgText);
+      } else if (overrideVisible && !puedeOverride) {
+        setOutcome('Bloqueado por permisos.', 'El margen quedó bajo el mínimo y este usuario no puede destrabar el override requerido.');
+      } else if (overrideVisible && !overrideOk) {
+        setOutcome('Esperando override.', 'El caso ya avanzó hasta el destrabe de margen. Falta marcar override y motivo para seguir.');
+      } else if (btnAprobar && !btnAprobar.disabled) {
+        setOutcome('Listo para aplicar.', 'El caso ya puede cerrarse desde el drawer usando este mismo contexto.');
+      } else if (btnRechazar && !btnRechazar.disabled) {
+        setOutcome('Listo para salida alternativa.', 'Si decides no mover compra, el drawer ya puede cerrar este caso por rechazo o referencia.');
+      } else {
+        setOutcome('Esperando respuesta.', 'Cuando el drawer valide el siguiente paso o detecte un bloqueo, la respuesta aparecerá aquí.');
+      }
+    }
     if (active.mode === 'reference') {
       adjustTitleEl.textContent = 'Ajuste no aplica.';
       adjustTextEl.textContent = 'Este flujo se abrió para sacar la señal de tu carga sin mover compra.';
@@ -17828,15 +17961,70 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
   function mpSyncPostCloseState(selected, row, guide, actions) {
     const cardEl = document.getElementById('wsSafePostCloseCard');
     const badgeEl = document.getElementById('wsSafePostCloseBadge');
+    const whatTitleEl = document.getElementById('wsSafePostCloseWhatTitle');
+    const whatTextEl = document.getElementById('wsSafePostCloseWhatText');
+    const changeTitleEl = document.getElementById('wsSafePostCloseChangeTitle');
+    const changeTextEl = document.getElementById('wsSafePostCloseChangeText');
     const titleEl = document.getElementById('wsSafePostCloseTitle');
     const textEl = document.getElementById('wsSafePostCloseText');
     const metaEl = document.getElementById('wsSafePostCloseMeta');
     const btnEl = document.getElementById('wsSafePostCloseBtn');
     const btnTitleEl = document.getElementById('wsSafePostCloseBtnTitle');
     const btnTextEl = document.getElementById('wsSafePostCloseBtnText');
-    if (!cardEl || !badgeEl || !titleEl || !textEl || !metaEl || !btnEl || !btnTitleEl || !btnTextEl) return;
+    if (!cardEl || !badgeEl || !whatTitleEl || !whatTextEl || !changeTitleEl || !changeTextEl || !titleEl || !textEl || !metaEl || !btnEl || !btnTitleEl || !btnTextEl) return;
     const last = window.__mpWorkspaceInlineLastState || null;
     const hasQueue = Array.isArray(mpState.pendingRows) && mpState.pendingRows.length > 0;
+    const describeLast = function (entry) {
+      if (!entry) {
+        return {
+          whatTitle: 'Sin cierre reciente.',
+          whatText: 'Aquí aparecerá la última salida real del caso cuando cierres el drawer.',
+          changeTitle: 'Sin cambio registrado.',
+          changeText: 'La página única resumirá aquí si se movió precio, si quedó como referencia o si el caso solo refrescó contexto.',
+        };
+      }
+      const raw = String(entry.resultText || '').trim();
+      const text = raw || 'El cierre inline terminó y el workspace ya quedó actualizado.';
+      if (entry.mode === 'reference') {
+        return {
+          whatTitle: 'La señal salió como referencia.',
+          whatText: text,
+          changeTitle: 'Compra sin cambios.',
+          changeText: 'El caso salió de tu carga sin publicar un nuevo precio ni mover compra.',
+        };
+      }
+      if (/^\s*✓\s*Aplicado/i.test(text) || /precio vigente publicado/i.test(text)) {
+        return {
+          whatTitle: 'Se publicó un nuevo vigente.',
+          whatText: text,
+          changeTitle: 'Precio movido.',
+          changeText: 'Este cierre sí cambió el vigente publicado y el workspace ya retomó el contexto después de aplicar.',
+        };
+      }
+      if (/rechazad/i.test(text)) {
+        return {
+          whatTitle: 'La señal fue rechazada.',
+          whatText: text,
+          changeTitle: 'Caso cerrado sin publicar.',
+          changeText: 'El caso salió de la carga operativa sin mover el vigente actual.',
+        };
+      }
+      if (/error|http|fall|bloquead|no se pudo|falta/i.test(text)) {
+        return {
+          whatTitle: 'El cierre dejó una alerta.',
+          whatText: text,
+          changeTitle: 'Sin cambio definitivo todavía.',
+          changeText: 'El cierre devolvió un bloqueo o una alerta, así que el caso puede requerir otra acción antes de cerrarse.',
+        };
+      }
+      return {
+        whatTitle: 'El cierre terminó y refrescó contexto.',
+        whatText: text,
+        changeTitle: 'Contexto actualizado.',
+        changeText: 'La página quedó sincronizada con el resultado más reciente y lista para seguir con el siguiente paso.',
+      };
+    };
+    const lastSummary = describeLast(last);
     cardEl.className = 'rounded-xl border border-stone-200 bg-stone-50 px-4 py-3';
     badgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
     titleEl.className = 'font-semibold text-stone-800';
@@ -17846,6 +18034,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     btnEl.onclick = null;
     if (!last) {
       badgeEl.textContent = 'Sin cierre';
+      whatTitleEl.textContent = lastSummary.whatTitle;
+      whatTextEl.textContent = lastSummary.whatText;
+      changeTitleEl.textContent = lastSummary.changeTitle;
+      changeTextEl.textContent = lastSummary.changeText;
       titleEl.textContent = 'El siguiente paso aparecerá aquí.';
       textEl.textContent = 'Después de aprobar, rechazar o cerrar como referencia, la página única te dirá qué acaba de pasar y cuál es la siguiente salida sugerida.';
       metaEl.textContent = 'Sin cierre reciente.';
@@ -17863,19 +18055,28 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     titleEl.className = isReference ? 'font-semibold text-violet-900' : 'font-semibold text-emerald-900';
     textEl.className = isReference ? 'text-xs text-violet-800 mt-1' : 'text-xs text-emerald-800 mt-1';
     badgeEl.textContent = hasQueue ? 'Siguiente paso' : 'Cierre resuelto';
+    whatTitleEl.textContent = lastSummary.whatTitle;
+    whatTextEl.textContent = lastSummary.whatText;
+    changeTitleEl.textContent = lastSummary.changeTitle;
+    changeTextEl.textContent = lastSummary.changeText;
     metaEl.textContent = (last.materialName || 'Material')
       + ' · ' + (last.alcance || 'Sin alcance')
       + ' · propuesta #' + (last.proposalId || '—');
+    if (last.closedAt) {
+      metaEl.textContent += ' · cerrado ' + fmtEdad(last.closedAt) + ' atrás';
+    }
     if (!hasQueue) {
       titleEl.textContent = 'No quedan señales activas con este filtro.';
-      textEl.textContent = last.resultText || 'El último cierre inline ya refrescó el workspace y no quedan casos pendientes en esta vista.';
+      textEl.textContent = isReference
+        ? 'La señal ya salió de tu carga y por ahora no quedan casos pendientes en esta vista.'
+        : 'El último cierre ya quedó resuelto y por ahora no quedan casos pendientes en esta vista.';
       btnTitleEl.textContent = 'Sin siguiente caso sugerido.';
       btnTextEl.textContent = 'Si cambias el filtro o entra una nueva señal, la página única retomará la continuidad desde aquí.';
       return;
     }
     if (!selected || !row || !row.id) {
       titleEl.textContent = 'El cierre ya refrescó la cola.';
-      textEl.textContent = last.resultText || 'El último cierre ya terminó. Selecciona un caso para seguir con el siguiente paso sugerido.';
+      textEl.textContent = 'El último caso ya quedó resuelto. Selecciona un caso para activar la siguiente salida sugerida.';
       btnTitleEl.textContent = 'Selecciona el siguiente caso.';
       btnTextEl.textContent = 'La sugerencia se activará apenas el workspace tenga un foco activo.';
       return;
@@ -17902,8 +18103,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
             tone: 'sky',
             handler: actions?.calc || null,
           });
-    titleEl.textContent = 'Último cierre listo. Siguiente caso sugerido: ' + materialTxt + '.';
-    textEl.textContent = (last.resultText || 'El último cierre inline ya quedó resuelto.') + ' Ahora la página única te deja continuar con ' + materialTxt + ' en ' + alcanceTxt + '.';
+    titleEl.textContent = 'Siguiente caso sugerido: ' + materialTxt + '.';
+    textEl.textContent = 'Lo último ya quedó resuelto. Ahora la página única te propone seguir con ' + materialTxt + ' en ' + alcanceTxt + ' por el carril más natural.';
     btnEl.disabled = !nextAction.handler;
     btnEl.onclick = nextAction.handler;
     btnEl.className = 'mt-3 w-full rounded-xl border bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed '
@@ -17919,6 +18120,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
   function mpRenderCalcSupportState(state) {
     const cardEl = document.getElementById('wsSafeCalcSupportCard');
     const badgeEl = document.getElementById('wsSafeCalcSupportBadge');
+    const modeTitleEl = document.getElementById('wsSafeCalcModeTitle');
+    const modeTextEl = document.getElementById('wsSafeCalcModeText');
+    const bridgeTitleEl = document.getElementById('wsSafeCalcBridgeTitle');
+    const bridgeTextEl = document.getElementById('wsSafeCalcBridgeText');
     const titleEl = document.getElementById('wsSafeCalcSupportTitle');
     const textEl = document.getElementById('wsSafeCalcSupportText');
     const plistaEl = document.getElementById('wsSafeCalcPlista');
@@ -17930,10 +18135,14 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const btnEl = document.getElementById('wsSafeCalcSupportBtn');
     const btnTitleEl = document.getElementById('wsSafeCalcSupportBtnTitle');
     const btnTextEl = document.getElementById('wsSafeCalcSupportBtnText');
-    if (!cardEl || !badgeEl || !titleEl || !textEl || !plistaEl || !pejecEl || !pmaxEl || !semaforoEl || !metaEl || !gateEl || !btnEl || !btnTitleEl || !btnTextEl) return;
+    if (!cardEl || !badgeEl || !modeTitleEl || !modeTextEl || !bridgeTitleEl || !bridgeTextEl || !titleEl || !textEl || !plistaEl || !pejecEl || !pmaxEl || !semaforoEl || !metaEl || !gateEl || !btnEl || !btnTitleEl || !btnTextEl) return;
     const status = state?.status || 'idle';
     cardEl.className = 'rounded-xl border border-stone-200 bg-stone-50 px-4 py-3';
     badgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
+    modeTitleEl.textContent = state?.modeTitle || 'Sin lectura todavía.';
+    modeTextEl.textContent = state?.modeText || 'La página te dirá aquí si esta lectura basta para decidir o si conviene abrir el cálculo completo.';
+    bridgeTitleEl.textContent = state?.bridgeTitle || 'Sin puente activo.';
+    bridgeTextEl.textContent = state?.bridgeText || 'Si sales a cálculo, volverás a este mismo caso sin perder material, alcance ni continuidad.';
     titleEl.className = 'font-semibold text-stone-800';
     textEl.className = 'text-xs text-stone-600 mt-1';
     gateEl.className = 'text-xs text-stone-600 mt-2';
@@ -17946,22 +18155,34 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     gateEl.textContent = state?.gate || 'La guía de margen y publicación aparecerá aquí cuando el foco tenga material y alcance.';
     btnEl.disabled = !state?.handler;
     btnEl.onclick = state?.handler || null;
-    btnTitleEl.textContent = state?.buttonTitle || 'Abrir Calculadora ya preparada';
-    btnTextEl.textContent = state?.buttonText || 'El motor real quedará listo con este mismo foco si necesitas afinar sliders o publicar propuesta.';
+    btnTitleEl.textContent = state?.buttonTitle || 'Abrir cálculo completo';
+    btnTextEl.textContent = state?.buttonText || 'Úsalo si necesitas afinar más el número con este mismo foco.';
     if (status === 'loading') {
       badgeEl.textContent = 'Cargando';
+      modeTitleEl.textContent = 'Preparando criterio de salida.';
+      modeTextEl.textContent = 'Mientras llega la foto compacta, igual puedes abrir el cálculo completo si ya sabes que necesitas afinar.';
+      bridgeTitleEl.textContent = 'Puente listo.';
+      bridgeTextEl.textContent = 'Si sales ahora, cálculo abre con este mismo material y alcance y luego puedes volver al workspace.';
       titleEl.textContent = 'Preparando soporte de cálculo.';
       textEl.textContent = 'Estoy trayendo la foto real de Calculadora para este foco sin salir del workspace.';
       return;
     }
     if (status === 'empty') {
       badgeEl.textContent = 'Sin cálculo';
+      modeTitleEl.textContent = 'Todavía no basta para decidir.';
+      modeTextEl.textContent = 'Primero necesitas un material activo y, si aplica, un alcance concreto para que la foto compacta tenga sentido.';
+      bridgeTitleEl.textContent = 'Puente en espera.';
+      bridgeTextEl.textContent = 'Cuando el caso tenga foco listo, la salida a Calculadora respetará ese mismo contexto.';
       titleEl.textContent = 'La foto de Calculadora aparecerá aquí.';
       textEl.textContent = 'Esta estación traerá P.Lista, P.Ejec, P.Max y el semáforo MG del foco actual sin obligarte a salir del workspace.';
       return;
     }
     if (status === 'error') {
       badgeEl.textContent = 'Sin lectura';
+      modeTitleEl.textContent = 'Conviene abrir cálculo completo.';
+      modeTextEl.textContent = 'La lectura compacta no quedó disponible, así que la mejor salida es usar el cálculo completo sin seguir esperando esta estación.';
+      bridgeTitleEl.textContent = 'Puente disponible.';
+      bridgeTextEl.textContent = 'Aunque falle la lectura compacta, la salida a cálculo mantiene el mismo material y alcance del workspace.';
       titleEl.textContent = 'No pude traer el soporte de cálculo.';
       textEl.textContent = state?.text || 'El workspace mantiene el foco, pero la vista compacta de Calculadora no quedó disponible todavía.';
       return;
@@ -17994,10 +18215,25 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     const cacheKey = String(materialId || '') + '|' + String(sucursalId || '');
     if (mpState.calcSupportCache.has(cacheKey)) {
       const cached = mpState.calcSupportCache.get(cacheKey);
+      const needsCalc = !row.sucursal_id || row.ruta === 'manual_calc' || !!(cached.delta != null && cached.delta > 0);
+      const modeTitle = !row.sucursal_id
+        ? 'Conviene abrir cálculo completo.'
+        : (needsCalc ? 'Cálculo recomendado.' : 'Esta lectura ya basta.');
+      const modeText = !row.sucursal_id
+        ? 'Todavía falta elegir una sucursal concreta. Sin alcance real, esta lectura solo orienta; el ajuste serio conviene hacerlo en cálculo.'
+        : (row.ruta === 'manual_calc'
+          ? 'Este caso viene desde cálculo y aquí lo coherente es volver al detalle completo para afinar o publicar sin perder el hilo.'
+          : (cached.delta != null && cached.delta > 0
+            ? 'Esta lectura ya muestra tensión contra el vigente. Conviene abrir cálculo si quieres afinar antes de cerrar.'
+            : 'Esta lectura ya te da una base suficiente. Si no vas a afinar más el número, puedes decidir desde el workspace.'));
       mpRenderCalcSupportState({
         status: 'ready',
         tone: cached.delta != null && cached.delta > 0 ? 'rose' : 'emerald',
         badge: 'Calculadora lista',
+        modeTitle,
+        modeText,
+        bridgeTitle: 'Puente activo con Workspace.',
+        bridgeText: 'Si abres Calculadora, entrarás con ' + (cached.materialNombre || 'este material') + ' y ' + (cached.sucursalNombre || 'este alcance') + '. Al volver, el workspace retoma el mismo foco.',
         title: 'Foto compacta de Calculadora para ' + (cached.materialNombre || 'este caso') + '.',
         text: cached.salida || 'La Calculadora ya dejó una lectura compacta para este foco.',
         plista: cached.plista != null ? tapFmtClp(cached.plista) : '—',
@@ -18007,16 +18243,18 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         meta: (cached.materialNombre || 'Material') + ' · ' + (cached.sucursalNombre || 'Sin alcance') + ' · ' + (cached.vigenteFuente || 'Sin vigente visible'),
         gate: cached.margenGate || cached.nota || 'La guía de margen aparecerá aquí.',
         handler: openCalc || null,
-        buttonTitle: 'Abrir Calculadora ya preparada',
-        buttonText: 'Si necesitas mover sliders o publicar, la Calculadora abre con este mismo foco ya cargado.',
+        buttonTitle: 'Abrir cálculo completo',
+        buttonText: 'Úsalo si necesitas afinar más el número o revisar la publicación con este mismo foco.',
       });
       return;
     }
     mpRenderCalcSupportState({
       status: 'loading',
       handler: openCalc || null,
-      buttonTitle: 'Abrir Calculadora ya preparada',
-      buttonText: 'Si prefieres afinar ya, puedes abrir el motor real mientras termina de cargar esta foto compacta.',
+      bridgeTitle: 'Puente activo con Workspace.',
+      bridgeText: 'Si sales ahora, la Calculadora abre con este mismo material y alcance mientras termina de cargar la foto compacta.',
+      buttonTitle: 'Abrir cálculo completo',
+      buttonText: 'Si prefieres afinar ya, puedes abrir el detalle completo mientras termina de cargar esta lectura.',
     });
     const requestId = ++mpState.calcSupportRequestId;
     try {
@@ -18034,10 +18272,25 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         return;
       }
       mpState.calcSupportCache.set(cacheKey, snapshot);
+      const needsCalc = !row.sucursal_id || row.ruta === 'manual_calc' || !!(snapshot.delta != null && snapshot.delta > 0);
+      const modeTitle = !row.sucursal_id
+        ? 'Conviene abrir cálculo completo.'
+        : (needsCalc ? 'Cálculo recomendado.' : 'Esta lectura ya basta.');
+      const modeText = !row.sucursal_id
+        ? 'Todavía falta elegir una sucursal concreta. Sin alcance real, esta lectura solo orienta; el ajuste serio conviene hacerlo en cálculo.'
+        : (row.ruta === 'manual_calc'
+          ? 'Este caso viene desde cálculo y aquí lo coherente es volver al detalle completo para afinar o publicar sin perder el hilo.'
+          : (snapshot.delta != null && snapshot.delta > 0
+            ? 'Esta lectura ya muestra tensión contra el vigente. Conviene abrir cálculo si quieres afinar antes de cerrar.'
+            : 'Esta lectura ya te da una base suficiente. Si no vas a afinar más el número, puedes decidir desde el workspace.'));
       mpRenderCalcSupportState({
         status: 'ready',
         tone: snapshot.delta != null && snapshot.delta > 0 ? 'rose' : 'emerald',
         badge: 'Calculadora lista',
+        modeTitle,
+        modeText,
+        bridgeTitle: 'Puente activo con Workspace.',
+        bridgeText: 'Si abres Calculadora, entrarás con ' + (snapshot.materialNombre || 'este material') + ' y ' + (snapshot.sucursalNombre || 'este alcance') + '. Al volver, el workspace retoma el mismo foco.',
         title: 'Foto compacta de Calculadora para ' + (snapshot.materialNombre || 'este caso') + '.',
         text: snapshot.salida || 'La Calculadora ya dejó una lectura compacta para este foco.',
         plista: snapshot.plista != null ? tapFmtClp(snapshot.plista) : '—',
@@ -18047,8 +18300,8 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
         meta: (snapshot.materialNombre || 'Material') + ' · ' + (snapshot.sucursalNombre || 'Sin alcance') + ' · ' + (snapshot.vigenteFuente || 'Sin vigente visible'),
         gate: snapshot.margenGate || snapshot.nota || 'La guía de margen aparecerá aquí.',
         handler: openCalc || null,
-        buttonTitle: 'Abrir Calculadora ya preparada',
-        buttonText: 'Si necesitas mover sliders o publicar, la Calculadora abre con este mismo foco ya cargado.',
+        buttonTitle: 'Abrir cálculo completo',
+        buttonText: 'Úsalo si necesitas afinar más el número o revisar la publicación con este mismo foco.',
       });
     } catch (e) {
       if (requestId !== mpState.calcSupportRequestId) return;
@@ -18731,8 +18984,10 @@ document.getElementById('bpDw_sucursal').textContent      = r.sucursal_nombre ??
     } else {
       primaryBtn.className = 'w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-left hover:border-sky-300';
       primaryBtn.onclick = openCalc;
-      primaryTitleEl.textContent = 'Ajustar este caso desde aquí';
-      primaryTextEl.textContent = 'La página única te manda a Calculadora con material y alcance ya cargados para afinar sin volver a buscar.';
+      primaryTitleEl.textContent = 'Ir a cálculo con este mismo foco';
+      primaryTextEl.textContent = row?.sucursal_id
+        ? 'Usa esta lectura para orientarte y abre cálculo solo si necesitas afinar más el número con este mismo material y alcance.'
+        : 'Aquí conviene abrir cálculo: falta una sucursal concreta y el ajuste serio necesita ese alcance real sin perder el hilo del workspace.';
       primaryEngineEl.className = 'px-2 py-1 rounded-full bg-white text-sky-700 border border-sky-200 text-[11px]';
       primaryEngineEl.textContent = 'Motor: Calculadora';
     }
