@@ -3,6 +3,63 @@
     return typeof esc === 'function' ? esc(value) : String(value || '');
   }
 
+  function sanitizeRichHtml(html, esc) {
+    if (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function') {
+      return window.DOMPurify.sanitize(String(html || ''), {
+        USE_PROFILES: { html: true },
+      });
+    }
+    return safeEsc(esc, html);
+  }
+
+  function renderRichContent(text, options) {
+    const cls = options?.cls || '';
+    const esc = options?.esc;
+    const raw = String(text || '');
+    if (!raw) return '';
+    if (cls !== 'diego') return safeEsc(esc, raw);
+    if (!window.marked || typeof window.marked.parse !== 'function') {
+      return safeEsc(esc, raw);
+    }
+    try {
+      const parsed = window.marked.parse(raw, { gfm: true, breaks: true });
+      return sanitizeRichHtml(parsed, esc);
+    } catch (_err) {
+      return safeEsc(esc, raw);
+    }
+  }
+
+  function getScrollTargets(pane) {
+    const targets = [pane, document.getElementById('diegoChatBody')].filter(Boolean);
+    return [...new Set(targets)];
+  }
+
+  function scrollToBottom(pane) {
+    getScrollTargets(pane).forEach(target => {
+      const maxTop = target.scrollHeight + 999999;
+      try {
+        target.scrollTo({ top: maxTop, behavior: 'auto' });
+      } catch (_err) {
+        target.scrollTop = target.scrollHeight;
+      }
+    });
+  }
+
+  function scheduleStickyAutoScroll(pane) {
+    if (!pane) return;
+    const previous = Array.isArray(window.__diegoAutoScrollTimers)
+      ? window.__diegoAutoScrollTimers
+      : [];
+    previous.forEach(id => window.clearTimeout(id));
+    const delays = [0, 16, 80, 160, 320, 640, 1000, 1500];
+    window.__diegoAutoScrollTimers = delays.map(delay =>
+      window.setTimeout(() => scrollToBottom(pane), delay)
+    );
+    if (typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(() => scrollToBottom(pane));
+    }
+  }
+
   function renderMessagesHtml(options) {
     const history = Array.isArray(options?.history) ? options.history : [];
     const esc = options?.esc;
@@ -17,7 +74,7 @@
       const actionsArr = (entry.actions || []).map(action => `<span class="chip">${safeEsc(esc, action.tool || action)}</span>`).join('');
       const actions = actionsArr ? `<div class="diego-actions">${actionsArr}</div>` : '';
       const thinkingHtml = 'Diego esta escribiendo<span class="diego-typing-dots"><span></span><span></span><span></span></span>';
-      const msgHtml = cls === 'thinking' ? thinkingHtml : safeEsc(esc, entry.mensaje);
+      const msgHtml = cls === 'thinking' ? thinkingHtml : renderRichContent(entry.mensaje, { cls, esc });
       // Voz de salida (paso 2 D-DIEGO-VOZ-COMPOSER-001) · solo respuestas de Diego,
       // nunca "mine"/"thinking". Se oculta con gracia si el navegador no soporta
       // speechSynthesis. Estado inicial del botón respeta si esta misma respuesta
@@ -136,7 +193,7 @@
       </div>
       <div class="diego-drag-overlay" id="diegoDragOverlay">📎 Soltá el archivo acá</div>`;
 
-    document.getElementById('diegoConversationPane')?.scrollTo({ top: 999999, behavior: 'auto' });
+    scheduleStickyAutoScroll(document.getElementById('diegoConversationPane'));
     if (typeof updateChatStatus === 'function') updateChatStatus();
     bindSuggestionButtons({ body, input, history });
     bindTtsButtons({ body, history });
@@ -147,5 +204,7 @@
 
   window.DIEGO_RENDER = {
     render,
+    renderRichContent,
+    scheduleStickyAutoScroll,
   };
 })();

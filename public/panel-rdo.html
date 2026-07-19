@@ -11661,7 +11661,8 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-case-actions button:hover{background:#ecfdf5;border-color:#86efac;color:#166534}
   .diego-case-empty{font-size:11px;color:#64748b;line-height:1.5}
   .diego-msg{font-size:14px;padding:10px 14px;border-radius:14px;max-width:80%;line-height:1.45;word-wrap:break-word;white-space:normal}
-  .diego-msg > div:first-child{white-space:pre-wrap}
+  .diego-msg.mine > div:first-child,.diego-msg.thinking > div:first-child{white-space:pre-wrap}
+  .diego-msg.diego > div:first-child{white-space:normal}
   .diego-msg.mine{align-self:flex-end;background:#059669;color:#fff;border-bottom-right-radius:4px}
   .diego-msg.theirs{align-self:flex-start;background:#f1f5f9;border:1px solid #e2e8f0;color:#0f172a;border-bottom-left-radius:4px}
   .diego-msg.diego{align-self:flex-start;background:#f1f5f9;border:1px solid #e2e8f0;color:#0f172a;border-bottom-left-radius:4px}
@@ -11679,7 +11680,18 @@ document.addEventListener('DOMContentLoaded', () => {
   .diego-msg-meta{font-size:10px;color:#94a3b8;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;line-height:1.2}
   .diego-msg.mine + .diego-msg-meta,.diego-msg-meta.mine-meta{align-self:flex-end}
   .diego-msg-attach{font-size:11px;background:#f1f5f9;padding:2px 8px;border-radius:6px;color:#475569;margin-top:4px;display:inline-block}
-  .diego-summary{white-space:pre-wrap}
+  .diego-summary{white-space:normal;overflow-x:auto}
+  .diego-summary > :first-child{margin-top:0}
+  .diego-summary > :last-child{margin-bottom:0}
+  .diego-summary p{margin:.35rem 0}
+  .diego-summary ul,.diego-summary ol{margin:.35rem 0 .35rem 1.2rem;padding:0}
+  .diego-summary li{margin:.15rem 0}
+  .diego-summary table{width:max-content;min-width:100%;border-collapse:collapse;margin:.45rem 0;background:#fff;border:1px solid #dbe3ee;border-radius:10px;overflow:hidden}
+  .diego-summary th,.diego-summary td{border:1px solid #dbe3ee;padding:6px 8px;text-align:left;vertical-align:top;white-space:nowrap}
+  .diego-summary th{background:#ecfdf5;color:#065f46;font-weight:700}
+  .diego-summary code{background:#e2e8f0;color:#0f172a;border-radius:4px;padding:1px 4px;font-size:.92em}
+  .diego-summary pre{background:#0f172a;color:#e2e8f0;padding:10px 12px;border-radius:10px;overflow-x:auto;margin:.45rem 0}
+  .diego-summary hr{border:0;border-top:1px solid #dbe3ee;margin:.6rem 0}
   .diego-contract{margin-top:8px;padding-top:8px;border-top:1px solid rgba(148,163,184,.18);display:grid;gap:6px}
   .diego-contract-badges{display:flex;flex-wrap:wrap;gap:6px}
   .diego-badge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
@@ -13304,7 +13316,11 @@ document.addEventListener('DOMContentLoaded', () => {
     fallbackHead.textContent = 'Diego en modo fallback seguro';
     pane?.appendChild(fallbackHead);
     history.forEach(h => pane?.appendChild(buildFallbackMessageNode(h)));
-    pane?.scrollTo({ top: 999999, behavior: 'auto' });
+    if (window.DIEGO_RENDER && typeof window.DIEGO_RENDER.scheduleStickyAutoScroll === 'function') {
+      window.DIEGO_RENDER.scheduleStickyAutoScroll(pane);
+    } else {
+      pane?.scrollTo({ top: 999999, behavior: 'auto' });
+    }
     updateChatStatus();
 
     bindContextPrompts();
@@ -20129,6 +20145,7 @@ document.addEventListener('DOMContentLoaded', () => {
      · Sub-tab Feedback (solo bypass_emails)
 ============================================================ -->
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js" defer></script>
 <!-- Tab Manual (D-MANUAL-EN-PANEL-001) — extraída a ./panel/manual.js (antifragilidad panel, bloque 12) -->
 
