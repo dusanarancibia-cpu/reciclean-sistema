@@ -13273,7 +13273,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const actions = (h.actions || []);
-      if (actions.length) {
+      const showActionTrace = (() => {
+        try {
+          return window.localStorage?.getItem('diego_debug_tools') === '1';
+        } catch (_err) {
+          return false;
+        }
+      })();
+      if (showActionTrace && actions.length) {
         const actionsBox = document.createElement('div');
         actionsBox.className = 'diego-actions';
         actions.forEach(a => {

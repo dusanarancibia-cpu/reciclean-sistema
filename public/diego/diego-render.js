@@ -29,6 +29,14 @@
     }
   }
 
+  function shouldShowActionTrace() {
+    try {
+      return window.localStorage?.getItem('diego_debug_tools') === '1';
+    } catch (_err) {
+      return false;
+    }
+  }
+
   function getScrollTargets(pane) {
     const targets = [pane, document.getElementById('diegoChatBody')].filter(Boolean);
     return [...new Set(targets)];
@@ -71,7 +79,9 @@
     return history.map(entry => {
       const cls = entry.role === 'user' ? 'mine' : (entry.role === 'thinking' ? 'thinking' : 'diego');
       const attach = entry.attach ? `<div class="diego-msg-attach">📎 ${safeEsc(esc, entry.attach)}</div>` : '';
-      const actionsArr = (entry.actions || []).map(action => `<span class="chip">${safeEsc(esc, action.tool || action)}</span>`).join('');
+      const actionsArr = shouldShowActionTrace()
+        ? (entry.actions || []).map(action => `<span class="chip">${safeEsc(esc, action.tool || action)}</span>`).join('')
+        : '';
       const actions = actionsArr ? `<div class="diego-actions">${actionsArr}</div>` : '';
       const thinkingHtml = 'Diego esta escribiendo<span class="diego-typing-dots"><span></span><span></span><span></span></span>';
       const msgHtml = cls === 'thinking' ? thinkingHtml : renderRichContent(entry.mensaje, { cls, esc });
