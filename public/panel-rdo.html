@@ -17020,6 +17020,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const sucSel = document.getElementById('calcSucursal');
     if (matSel && payload.materialId) matSel.value = payload.materialId;
     if (sucSel) sucSel.value = payload.sucursalId || '';
+    // Reintento (CEO 2026-07-20, caso Lata Chatarra/Maipú): verificado en navegador que
+    // initCalculadoraPrecios() a veces resuelve antes de que #calcMaterial ya tenga la
+    // opción del material real cargada (carrera de inicialización), así que la
+    // asignación de arriba no queda pegada y el autofill corre con el material vacío,
+    // dejando el precio heredado del contexto anterior en pantalla. Si el valor no
+    // quedó pegado, reintenta recargar materiales/sucursales antes de seguir.
+    if (matSel && payload.materialId && matSel.value !== payload.materialId) {
+      for (let intento = 0; intento < 5 && matSel.value !== payload.materialId; intento++) {
+        await new Promise((r) => setTimeout(r, 300));
+        await calcLoadMateriales();
+        if (sucSel) await calcLoadSucursales();
+        matSel.value = payload.materialId;
+        if (sucSel) sucSel.value = payload.sucursalId || '';
+      }
+    }
     await calcAutoFillPrecioCompra();
   };
   window.calcGetWorkspaceSnapshot = calcGetWorkspaceSnapshot;
