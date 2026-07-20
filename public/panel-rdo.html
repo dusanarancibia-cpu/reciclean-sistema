@@ -16886,6 +16886,37 @@ document.addEventListener('DOMContentLoaded', () => {
         calcRecompute();
         return;
       }
+      // Fuente 0-bis: referencia de cliente pendiente pero ya validada (CEO 2026-07-20,
+      // caso PECH). No es "cualquier pendiente": Diego solo llega a fuente_cliente_estado
+      // ='resuelto' si fuente_cliente_id existe y está activo en curated.clientes
+      // (precios_propuesta_insert la rechaza si no). No reemplaza aprobado/aplicado
+      // (arriba); solo llena el hueco cuando todavía no hay nada aprobado.
+      let q0r = sb.schema('staging').from('precios_propuestos')
+        .select('precio_clp_kg').eq('material_id', matId)
+        .eq('fuente_rol', 'referencia').eq('fuente_cliente_estado', 'resuelto')
+        .gt('precio_clp_kg', 0)
+        .order('updated_at', { ascending: false }).limit(1);
+      if (sucId) q0r = q0r.eq('sucursal_id', sucId);
+      const { data: d0r } = await q0r;
+      let precioReferencia = d0r && d0r.length ? Number(d0r[0].precio_clp_kg || 0) : 0;
+      if (!(precioReferencia > 0) && sucId) {
+        const { data: d0rb } = await sb.schema('staging').from('precios_propuestos')
+          .select('precio_clp_kg').eq('material_id', matId)
+          .eq('fuente_rol', 'referencia').eq('fuente_cliente_estado', 'resuelto')
+          .gt('precio_clp_kg', 0)
+          .order('updated_at', { ascending: false }).limit(1);
+        precioReferencia = d0rb && d0rb.length ? Number(d0rb[0].precio_clp_kg || 0) : 0;
+      }
+      if (precioReferencia > 0) {
+        calcRefPrecioVenta = precioReferencia;
+        const slider = document.getElementById('calcP');
+        if (slider) {
+          if (precioReferencia > Number(slider.max)) slider.max = precioReferencia + 2000;
+          slider.value = precioReferencia;
+        }
+        calcRecompute();
+        return;
+      }
       // Fuente 1: vw_calibracion_triple (materiales HUAL con real_30d o catálogo)
       let vals = [];
       let q1 = sb.schema('curated').from('vw_calibracion_triple')
