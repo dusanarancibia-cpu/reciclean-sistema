@@ -2998,6 +2998,10 @@
           <select id="calcMaterial" class="w-full border border-stone-300 rounded px-2 py-1.5 text-sm bg-white">
             <option value="">(cargando…)</option>
           </select>
+          <label class="flex items-center gap-1 text-xs text-stone-500 mt-1">
+            <input type="checkbox" id="calcFiltroEnAnalisis" checked onchange="calcAplicarFiltroMateriales()">
+            Mostrar solo materiales en análisis
+          </label>
         </div>
         <div>
           <label class="block text-xs text-stone-600 mb-1">Sucursal</label>
@@ -16502,6 +16506,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  let calcMaterialesCache = [];       // cache del catálogo activo ya cargado (con categoria)
+  let calcMaterialesEnAnalisis = null; // Set de material_id con estado='pendiente'; null = aún no cargado
+
   async function calcLoadMateriales() {
     if (typeof sb === 'undefined' || !sb) return;
     try {
@@ -16512,15 +16519,39 @@ document.addEventListener('DOMContentLoaded', () => {
         .order('nombre')
         .limit(500);
       if (error) throw error;
-      const sel = document.getElementById('calcMaterial');
-      if (!sel) return;
-      sel.innerHTML = '<option value="">(seleccionar)</option>' +
-        (data || []).map(m =>
-          '<option value="' + m.material_id + '" data-categoria="' + (m.categoria || '') + '">' + (m.nombre || m.material_id) + '</option>'
-        ).join('');
+      calcMaterialesCache = data || [];
+      await calcAplicarFiltroMateriales();
     } catch (e) {
       if (window.panelToastErr) panelToastErr('Calculadora materiales', e); else console.warn('[Calc] materiales:', e);
     }
+  }
+
+  // Filtro "Mostrar solo materiales en análisis" — no reemplaza calcLoadMateriales,
+  // solo decide qué subconjunto del cache ya cargado se pinta en el <select>.
+  async function calcAplicarFiltroMateriales() {
+    const sel = document.getElementById('calcMaterial');
+    if (!sel) return;
+    const checkbox = document.getElementById('calcFiltroEnAnalisis');
+    const soloEnAnalisis = checkbox ? checkbox.checked : false;
+    if (soloEnAnalisis && calcMaterialesEnAnalisis === null) {
+      try {
+        const { data, error } = await sb.schema('staging').from('precios_propuestos')
+          .select('material_id').eq('estado', 'pendiente');
+        if (error) throw error;
+        calcMaterialesEnAnalisis = new Set((data || []).map(r => r.material_id));
+      } catch (e) {
+        if (window.panelToastErr) panelToastErr('Calculadora en análisis', e); else console.warn('[Calc] en_analisis:', e);
+        if (checkbox) checkbox.checked = false;
+        calcMaterialesEnAnalisis = new Set();
+      }
+    }
+    const lista = (soloEnAnalisis && calcMaterialesEnAnalisis)
+      ? calcMaterialesCache.filter(m => calcMaterialesEnAnalisis.has(m.material_id))
+      : calcMaterialesCache;
+    sel.innerHTML = '<option value="">(seleccionar)</option>' +
+      lista.map(m =>
+        '<option value="' + m.material_id + '" data-categoria="' + (m.categoria || '') + '">' + (m.nombre || m.material_id) + '</option>'
+      ).join('');
   }
 
   async function calcLoadSucursales() {
