@@ -2060,6 +2060,26 @@
             <div id="bpMargenAjuste" class="text-xs text-stone-500 mt-1 hidden"></div>
           </div>
 
+          <!-- Costo transitorio: solo visible cuando material+sucursal NO tiene
+               precio_compra_clp vigente en curated.materiales_sucursal_precios.
+               La decisión real (piso 20%, aprobar/rechazar) la toma el backend
+               (staging.f_aplicar_propuesta) — este bloque solo captura el dato
+               y lo manda, no calcula ni decide nada acá. -->
+          <div id="bpCostoTransitorioBox" class="hidden bg-sky-50 border border-sky-200 rounded p-3 mb-3">
+            <div class="text-xs text-sky-800 font-medium mb-1.5">
+              ⚠ No hay costo real vigente. Esta aprobación usará costo transitorio y quedará auditada.
+            </div>
+            <div class="flex gap-2 items-center">
+              <input id="bpCostoTransitorio" type="number" step="1" min="1"
+                     placeholder="Ej: 188"
+                     class="flex-1 px-2 py-1 border border-sky-300 rounded text-sm focus:outline-none focus:border-sky-500">
+              <span class="text-xs text-stone-500">CLP/kg compra</span>
+            </div>
+            <div class="text-xs text-stone-500 mt-1">
+              El servidor valida margen transitorio ≥ 20% (venta nueva vs este costo) antes de aprobar. Si falta o no alcanza, rechaza — este panel no decide.
+            </div>
+          </div>
+
           <div id="bpOverrideBox" class="hidden bg-rose-50 border border-rose-200 rounded p-3 mb-3">
             <div id="bpOverrideMsg" class="text-xs text-rose-800 font-medium mb-2">—</div>
             <label class="flex items-center gap-2 text-xs text-stone-800">
@@ -14175,6 +14195,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let bpCurrentMgPct = null;
   let bpCurrentMgRequerido = null;
   let bpSearchDebounce = null;
+  // Costo transitorio (blindaje 2026-07-20): solo lectura para decidir si se
+  // muestra el input — la decisión real (piso 20%) la hace staging.f_aplicar_propuesta.
+  let bpCurrentCompraVigente = null;
 
   function bpGetNumber(v) {
     const n = Number(v);
@@ -14640,6 +14663,29 @@ document.addEventListener('DOMContentLoaded', () => {
         if (hp?.precio_clp_kg) bpCurrentHualPrice = Number(hp.precio_clp_kg);
       } catch (_) { /* no bloquea */ }
     }
+
+    // Costo transitorio (blindaje 2026-07-20): mismo criterio que usa
+    // staging.f_aplicar_propuesta para decidir si hay costo real vigente
+    // (vigencia_hasta IS NULL OR >= hoy). Solo determina si se MUESTRA el
+    // input — el backend vuelve a verificar esto de forma independiente y
+    // es quien de verdad decide; este chequeo del frontend no es autoritativo.
+    bpCurrentCompraVigente = null;
+    const costoBox = document.getElementById('bpCostoTransitorioBox');
+    const costoInput = document.getElementById('bpCostoTransitorio');
+    if (costoInput) costoInput.value = '';
+    if (r.material_id && r.sucursal_id && typeof sb !== 'undefined' && sb) {
+      try {
+        const hoyIso = new Date().toISOString().slice(0, 10);
+        const { data: cv } = await sb.schema('curated').from('materiales_sucursal_precios')
+          .select('precio_compra_clp, vigencia_hasta')
+          .eq('material_id', r.material_id).eq('sucursal_id', r.sucursal_id)
+          .or(`vigencia_hasta.is.null,vigencia_hasta.gte.${hoyIso}`)
+          .order('vigencia_desde', { ascending: false }).limit(1).maybeSingle();
+        if (cv?.precio_compra_clp != null) bpCurrentCompraVigente = Number(cv.precio_compra_clp);
+      } catch (_) { /* no bloquea — el backend decide igual */ }
+    }
+    if (costoBox) costoBox.classList.toggle('hidden', bpCurrentCompraVigente != null || !r.sucursal_id);
+
     bpActualizarMargenAjuste('');
     bpActualizarOverrideUI();
 
@@ -14709,6 +14755,17 @@ document.addEventListener('DOMContentLoaded', () => {
         .trim();
       const vigenteTxt = bpCurrentPrecioVigente != null ? fmtCLP(bpCurrentPrecioVigente) : 'el vigente actual';
       return `✗ Rechazado por piso de margen. ${limpio}. No se publicó: el canal sigue con ${vigenteTxt}.`;
+    }
+    const vigenteTxt = bpCurrentPrecioVigente != null ? fmtCLP(bpCurrentPrecioVigente) : 'el vigente actual';
+    if (detail.includes('SIN_COSTO_COMPRA')) {
+      return `✗ No hay costo real vigente y no se envió costo transitorio (o quedó vacío). Completa "Costo transitorio" e intenta de nuevo. No se publicó: el canal sigue con ${vigenteTxt}.`;
+    }
+    if (detail.includes('TRIAGE_COSTO_TRANSITORIO')) {
+      const limpio = detail
+        .replace(/^TRIAGE_COSTO_TRANSITORIO:\s*/i, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      return `✗ Rechazado por costo transitorio insuficiente. ${limpio}. Sube el precio o baja el costo transitorio. No se publicó: el canal sigue con ${vigenteTxt}.`;
     }
     return `✗ [HTTP ${httpStatus}] ${detail.slice(0, 220)}`;
   }
@@ -14833,6 +14890,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const precioAjustado = parseFloat(document.getElementById('bpPrecioAjustado')?.value ?? '');
 
+    // Costo transitorio: solo se manda si el bloque está visible (no hay costo
+    // real vigente) y el operador escribió un valor > 0. El frontend no valida
+    // el piso 20% ni decide nada — solo captura y envía; staging.f_aplicar_propuesta
+    // es quien acepta o rechaza.
+    const costoBoxEl = document.getElementById('bpCostoTransitorioBox');
+    const costoTransitorioRaw = document.getElementById('bpCostoTransitorio')?.value ?? '';
+    const costoTransitorioParsed = parseFloat(costoTransitorioRaw);
+    const precioCompraTransitorio = (costoBoxEl && !costoBoxEl.classList.contains('hidden')
+      && Number.isFinite(costoTransitorioParsed) && costoTransitorioParsed > 0)
+      ? costoTransitorioParsed
+      : null;
+
     try {
       const overrideNecesario = (bpCurrentMgPct != null && bpCurrentMgRequerido != null && bpCurrentMgPct < bpCurrentMgRequerido);
       let overridePayload = null;
@@ -14886,6 +14955,7 @@ document.addEventListener('DOMContentLoaded', () => {
           override_margen: overridePayload,
           p_precio_ajustado: (precioAjustado && precioAjustado > 0) ? precioAjustado : null,
           precio_ajustado: (precioAjustado && precioAjustado > 0) ? precioAjustado : null,
+          precio_compra_transitorio: precioCompraTransitorio,
         }),
       });
       const rawText = await resp.text();
