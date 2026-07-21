@@ -2982,6 +2982,20 @@
              aria-labelledby="tabCalculadoraPreciosLabel"
              class="tab-content hidden p-4 md:p-6 bg-stone-50">
 
+      <style>
+        /* T-42 (CEO 2026-07-20) — agarre más grande para los 6 sliders de la
+           Calculadora, sin tocar min/max/step ni la fórmula. Solo mejora UX. */
+        .calc-slider { -webkit-appearance: none; appearance: none; width: 100%;
+          height: 8px; border-radius: 999px; background: #e7e5e4; outline: none; }
+        .calc-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none;
+          width: 22px; height: 22px; border-radius: 50%; background: #059669;
+          border: 3px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.35); cursor: pointer; }
+        .calc-slider::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%;
+          background: #059669; border: 3px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.35);
+          cursor: pointer; }
+        .calc-slider::-moz-range-track { height: 8px; border-radius: 999px; background: #e7e5e4; }
+      </style>
+
       <header class="mb-4">
         <h2 class="text-2xl font-bold text-stone-800 flex items-center gap-2">
           <span>🧮</span><span>Calculadora soporte de decisión</span>
@@ -3022,27 +3036,30 @@
       <div class="grid md:grid-cols-2 gap-x-6 gap-y-3 bg-white border border-stone-300 rounded-lg p-4 mb-4">
         <label class="block">
           <span class="text-xs text-stone-600">T-42a · Precio venta <strong id="calcLblP">$6.000</strong>/kg</span>
-          <input type="range" id="calcP" min="50" max="12000" step="1" value="6000" class="w-full">
+          <input type="range" id="calcP" min="50" max="12000" step="1" value="6000" class="w-full calc-slider">
         </label>
         <label class="block">
           <span class="text-xs text-stone-600">T-42b · Margen objetivo <strong id="calcLblMg">30%</strong></span>
-          <input type="range" id="calcMg" min="20" max="60" step="1" value="30" class="w-full">
+          <input type="range" id="calcMg" min="20" max="60" step="1" value="30" class="w-full calc-slider">
         </label>
         <label class="block">
           <span class="text-xs text-stone-600">T-42c · Flete <strong id="calcLblFl">$150</strong>/kg</span>
-          <input type="range" id="calcFl" min="0" max="300" step="10" value="150" class="w-full">
+          <input type="range" id="calcFl" min="0" max="300" step="10" value="150" class="w-full calc-slider">
         </label>
         <label class="block">
           <span class="text-xs text-stone-600">T-42d · Spread Lista/Máx <strong id="calcLblB">20%</strong></span>
-          <input type="range" id="calcB" min="5" max="40" step="1" value="20" class="w-full">
+          <input type="range" id="calcB" min="5" max="40" step="1" value="20" class="w-full calc-slider">
         </label>
         <label class="block">
           <span class="text-xs text-stone-600">T-42e · Volumen mensual <strong id="calcLblVol">5.000</strong> kg</span>
-          <input type="range" id="calcVol" min="500" max="100000" step="500" value="5000" class="w-full">
+          <input type="range" id="calcVol" min="500" max="100000" step="500" value="5000" class="w-full calc-slider">
+          <input type="number" id="calcVolExacto" min="500" max="100000" step="500" value="5000"
+                 class="w-full border border-stone-300 rounded px-2 py-1 text-xs mt-1"
+                 aria-label="Volumen mensual exacto (kg)">
         </label>
         <label class="block">
           <span class="text-xs text-stone-600">T-42f · Retención IVA Farex <strong id="calcLblIva">0%</strong></span>
-          <input type="range" id="calcIva" min="0" max="19" step="1" value="0" class="w-full">
+          <input type="range" id="calcIva" min="0" max="19" step="1" value="0" class="w-full calc-slider">
         </label>
       </div>
 
@@ -16368,6 +16385,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const bP  = calcGetVal('calcB');
     const vol = calcGetVal('calcVol');
     const ivaP = calcGetVal('calcIva');
+    // Mantiene el input numérico complementario en espejo del slider, sin importar
+    // si el cambio vino del usuario, de calcAutoFillPrecioCompra o de metadata
+    // restaurada — no altera el valor usado en la fórmula (vol), solo lo refleja.
+    const volExactoEl = document.getElementById('calcVolExacto');
+    if (volExactoEl && document.activeElement !== volExactoEl) volExactoEl.value = vol;
 
     const mg  = mgP / 100;
     const b   = bP / 100;
@@ -16961,6 +16983,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const el = document.getElementById(id);
       if (el) el.addEventListener('input', calcRecompute);
     });
+    // T-42e (CEO 2026-07-20) — input numérico complementario para Volumen mensual,
+    // el slider más desproporcionado (rango 500-100.000 vs los demás). Sincroniza
+    // en ambos sentidos; no reemplaza el slider, solo da una vía de precisión exacta.
+    const volSlider = document.getElementById('calcVol');
+    const volExacto = document.getElementById('calcVolExacto');
+    if (volSlider && volExacto) {
+      volSlider.addEventListener('input', () => { volExacto.value = volSlider.value; });
+      volExacto.addEventListener('input', () => {
+        let v = Number(volExacto.value);
+        if (!isFinite(v)) return;
+        v = Math.min(Number(volSlider.max), Math.max(Number(volSlider.min), v));
+        volSlider.value = v;
+        calcRecompute();
+      });
+    }
     const catSel = document.getElementById('calcCategoria');
     if (catSel) catSel.addEventListener('change', calcRecompute);
     const matSel = document.getElementById('calcMaterial');
@@ -17067,6 +17104,19 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     await calcAutoFillPrecioCompra();
+    // Regla 1 (CEO 2026-07-20): en modo caso, el precio de entrada exacto manda el
+    // slider principal — pisa lo que haya decidido calcAutoFillPrecioCompra() sin
+    // tocar esa función. Vigente/contractual/referencia siguen calculados como
+    // contexto (calcPrecioVigenteActual, calcRefPrecioVenta, etc.), solo dejan de
+    // ser lo último que toca #calcP.
+    if (payload.precioEntrada > 0) {
+      const precioSlider = document.getElementById('calcP');
+      if (precioSlider) {
+        if (payload.precioEntrada > Number(precioSlider.max)) precioSlider.max = payload.precioEntrada + 2000;
+        precioSlider.value = payload.precioEntrada;
+        calcRecompute();
+      }
+    }
   };
   window.calcGetWorkspaceSnapshot = calcGetWorkspaceSnapshot;
   window.calcRecompute          = calcRecompute;
@@ -19379,6 +19429,10 @@ document.addEventListener('DOMContentLoaded', () => {
         sucursalId: focusBranch.id || '',
         sucursalNombre: focusBranch.nombre || '',
         ruta: 'workspace_bridge',
+        // Precio exacto del caso (CEO 2026-07-20) — el slider principal debe abrir
+        // en este número, no en lo que decida el cascada de fuentes (contractual/
+        // vigente/referencia), que sigue calculándose como contexto aparte.
+        precioEntrada: Number(row.precio_clp_kg || 0),
       });
     };
     const actionMeta = {
