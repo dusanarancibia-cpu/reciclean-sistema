@@ -17178,17 +17178,32 @@ document.addEventListener('DOMContentLoaded', () => {
     calcRecompute();
   }
 
+  // Reentrancia (CEO 2026-07-21, race confirmada): mpSyncWorkspaceCalcSupport()
+  // llama calcGetWorkspaceSnapshot() sin await en cada render de Workspace — si
+  // dos invocaciones se solapan (más probable con sesión real, donde la consulta
+  // contractual tarda un round-trip normal en vez de fallar 401 al instante), la
+  // contención por invocación (captura/restaura, ver calcCapturarEstadoControles)
+  // no alcanza: la segunda puede capturar el estado intermedio que dejó la
+  // primera a mitad de camino (contaminado) y restaurar sobre eso en vez del
+  // valor real original. Este token asegura que solo la invocación MÁS RECIENTE
+  // llega a mutar y a restaurar — cualquier invocación vieja se aborta apenas
+  // detecta que ya no es la vigente, sin tocar el DOM real desde ese punto.
+  let calcSnapshotToken = 0;
+
   async function calcGetWorkspaceSnapshot(focus) {
     const payload = focus || {};
+    const miToken = ++calcSnapshotToken;
     const snapshotAntes = calcCapturarEstadoControles();
     try {
       await initCalculadoraPrecios();
+      if (miToken !== calcSnapshotToken) return null;
       const matSel = document.getElementById('calcMaterial');
       const sucSel = document.getElementById('calcSucursal');
       if (!matSel) return null;
       if (payload.materialId) matSel.value = payload.materialId;
       if (sucSel) sucSel.value = payload.sucursalId || '';
       await calcAutoFillPrecioCompra();
+      if (miToken !== calcSnapshotToken) return null;
       const materialNombre = matSel.selectedOptions?.[0]?.textContent?.trim() || payload.materialId || 'Material';
       const sucursalNombre = sucSel?.selectedOptions?.[0]?.textContent?.trim() || 'Sin alcance';
       const c = calcUltimoCalculo || null;
@@ -17222,7 +17237,10 @@ document.addEventListener('DOMContentLoaded', () => {
         deltaPct,
       };
     } finally {
-      calcRestaurarEstadoControles(snapshotAntes);
+      // Solo la invocación vigente restaura. Si ya no lo soy, la invocación más
+      // nueva es la única que debe decidir el estado final — restaurar acá
+      // pisaría lo que ella ya dejó bien puesto (o lo que todavía está armando).
+      if (miToken === calcSnapshotToken) calcRestaurarEstadoControles(snapshotAntes);
     }
   }
 
