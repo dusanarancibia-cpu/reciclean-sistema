@@ -3037,6 +3037,7 @@
         <label class="block">
           <span class="text-xs text-stone-600">T-42a · Precio venta <strong id="calcLblP">$6.000</strong>/kg</span>
           <input type="range" id="calcP" min="50" max="12000" step="1" value="6000" class="w-full calc-slider">
+          <div id="calcSinFuenteMsg" class="text-xs text-amber-700 mt-1 hidden">⚠ Sin fuente de precio. Ingrésalo manualmente.</div>
         </label>
         <label class="block">
           <span class="text-xs text-stone-600">T-42b · Margen objetivo <strong id="calcLblMg">30%</strong></span>
@@ -16557,8 +16558,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const soloEnAnalisis = checkbox ? checkbox.checked : false;
     if (soloEnAnalisis && calcMaterialesEnAnalisis === null) {
       try {
+        // Criterio (CEO 2026-07-21): "en análisis" = casos reales de cliente, no
+        // ruido de competencia. fuente_rol solo se llena cuando hay fuente_cliente_id
+        // real detrás (constraint precios_propuestos_fuente_rol_requiere_cliente_check)
+        // — el scraper de competencia inserta con fuente_rol=NULL, así que este filtro
+        // ya los excluye sin necesitar tocar `ruta`.
         const { data, error } = await sb.schema('staging').from('precios_propuestos')
-          .select('material_id').eq('estado', 'pendiente');
+          .select('material_id').eq('estado', 'pendiente').eq('fuente_rol', 'referencia');
         if (error) throw error;
         calcMaterialesEnAnalisis = new Set((data || []).map(r => r.material_id));
       } catch (e) {
@@ -16833,6 +16839,11 @@ document.addEventListener('DOMContentLoaded', () => {
     calcRefVolumenKg = null;
     calcRefIvaPct = null;
     calcRefFecha = null;
+    // Regla anti-herencia (CEO 2026-07-21): si ninguna fuente resuelve un precio real
+    // para este material, el slider NO debe quedar con el valor del material anterior.
+    let precioEncontrado = false;
+    const sinFuenteMsgEl = document.getElementById('calcSinFuenteMsg');
+    if (sinFuenteMsgEl) sinFuenteMsgEl.classList.add('hidden');
     const restoreMeta = await calcRestoreSlidersDesdeMetadata(matId, sucId);
     const huboMetadataPrevia = !!restoreMeta?.found;
     if (!huboMetadataPrevia) calcAplicarMargenMetaCategoria(matId);
@@ -16877,6 +16888,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const precioContractual = dC && dC.length ? Number(dC[0].precio_clp_kg || 0) : 0;
       if (precioContractual > 0) {
         calcRefPrecioVenta = precioContractual;
+        precioEncontrado = true;
         const slider = document.getElementById('calcP');
         if (slider) {
           if (precioContractual > Number(slider.max)) slider.max = precioContractual + 2000;
@@ -16900,6 +16912,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (precioAprobado > 0) {
         calcRefPrecioVenta = precioAprobado;
+        precioEncontrado = true;
         const slider = document.getElementById('calcP');
         if (slider) {
           if (precioAprobado > Number(slider.max)) slider.max = precioAprobado + 2000;
@@ -16931,6 +16944,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (precioReferencia > 0) {
         calcRefPrecioVenta = precioReferencia;
+        precioEncontrado = true;
         const slider = document.getElementById('calcP');
         if (slider) {
           if (precioReferencia > Number(slider.max)) slider.max = precioReferencia + 2000;
@@ -16961,8 +16975,16 @@ document.addEventListener('DOMContentLoaded', () => {
           if (avg > Number(slider.max)) slider.max = avg + 2000;
           slider.value = avg;
         }
+        precioEncontrado = true;
       }
     } catch (e) { console.warn('[Calc] autoFill:', e); }
+    if (!precioEncontrado) {
+      // Ninguna fuente resolvió un precio real — no dejar el valor del material
+      // anterior como si fuera válido (incluye el caso de excepción atrapada arriba).
+      const slider = document.getElementById('calcP');
+      if (slider) slider.value = slider.min;
+      if (sinFuenteMsgEl) sinFuenteMsgEl.classList.remove('hidden');
+    }
     calcRecompute();
   }
 
@@ -17102,6 +17124,22 @@ document.addEventListener('DOMContentLoaded', () => {
         matSel.value = payload.materialId;
         if (sucSel) sucSel.value = payload.sucursalId || '';
       }
+    }
+    // Blindaje (CEO 2026-07-21): si el material del caso sigue sin pegar porque el
+    // filtro "en análisis" (fuente_rol='referencia') lo excluye del <select> — ej. un
+    // caso sin fuente_rol — se inyecta como <option> extra desde el cache completo
+    // (calcMaterialesCache, sin filtrar) para que Workspace siempre pueda abrir el
+    // caso real sin depender del filtro visual del combo.
+    if (matSel && payload.materialId && matSel.value !== payload.materialId) {
+      const enCache = calcMaterialesCache.find((m) => m.material_id === payload.materialId);
+      if (enCache && !matSel.querySelector('option[value="' + payload.materialId + '"]')) {
+        const opt = document.createElement('option');
+        opt.value = enCache.material_id;
+        opt.dataset.categoria = enCache.categoria || '';
+        opt.textContent = enCache.nombre || enCache.material_id;
+        matSel.appendChild(opt);
+      }
+      matSel.value = payload.materialId;
     }
     await calcAutoFillPrecioCompra();
     // Regla 1 (CEO 2026-07-20): en modo caso, el precio de entrada exacto manda el
