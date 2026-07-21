@@ -16781,11 +16781,18 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       msg.textContent = '✅ Propuesta publicada · ' + materialNombre + ' · ' + sucursalNombre + ' · precio nuevo ' + calcFmtClp(plista) + (c.ivaAmt > 0 ? ' (IVA Farex −' + calcFmtClp(c.ivaAmt) + ' ya restado)' : '');
       msg.className = 'text-xs text-emerald-700';
-      // Enlace adicional a Bandeja Precios (Dusan 2026-07-03) — se agrega al lado
-      // del mensaje existente, no lo reemplaza ni toca el botón "Publicar como
-      // propuesta". Reusa el mismo patrón data-tab + .click() que ya usa el resto
-      // del panel para cambiar de pestaña (ver cotizador línea ~9704) — un href con
-      // hash (#tabBandejaPrecios) no dispara el switch de tabs real de esta app.
+      // Enlace adicional a Bandeja técnica (Dusan 2026-07-03, corregido 2026-07-21):
+      // se agrega al lado del mensaje existente, no lo reemplaza ni toca el botón
+      // "Publicar como propuesta". Reusa el mismo patrón data-tab + .click() que ya
+      // usa el resto del panel para cambiar de pestaña — un href con hash
+      // (#tabBandejaPrecios) no dispara el switch de tabs real de esta app.
+      // CAZA 2026-07-21: antes llamaba wsIrDesdeCalculadora() (abría Workspace,
+      // que agrupa por material y muestra la fila más reciente como preview —
+      // tapaba visualmente casos reales más viejos, ej. Fierro Corto $235 PECH
+      // quedaba detrás de una propuesta manual_calc $100 más nueva). Ahora llama
+      // bpIrDesdeCalculadora(), que abre Bandeja técnica con Estado=pendiente +
+      // Ruta=manual_calc ya filtrado — el caso recién publicado y cualquier otro
+      // caso real (otra ruta) quedan como filas separadas, ninguna tapa a la otra.
       let linkBandeja = document.getElementById('calcVerBandejaLink');
       if (!linkBandeja) {
         linkBandeja = document.createElement('a');
@@ -16794,11 +16801,11 @@ document.addEventListener('DOMContentLoaded', () => {
         linkBandeja.className = 'text-xs text-sky-700 underline ml-2';
         linkBandeja.addEventListener('click', (ev) => {
           ev.preventDefault();
-          window.wsIrDesdeCalculadora && window.wsIrDesdeCalculadora();
+          window.bpIrDesdeCalculadora && window.bpIrDesdeCalculadora();
         });
         msg.insertAdjacentElement('afterend', linkBandeja);
       }
-      linkBandeja.textContent = '📍 Abrir Workspace seguro';
+      linkBandeja.textContent = '📨 Abrir Bandeja técnica';
       linkBandeja.classList.remove('hidden');
     } catch (e) {
       msg.textContent = '❌ Error: ' + (e.message || String(e)).slice(0, 100);
@@ -20107,7 +20114,11 @@ document.addEventListener('DOMContentLoaded', () => {
     mpOpenTab('tablero_precios');
     await tapCargar({ focus: payload, chip: targetChip });
   };
-  window.bpIrDesdeCalculadora = window.mpIrDesdeCalculadora;
+  // CAZA 2026-07-21: esta línea pisaba window.bpIrDesdeCalculadora (la función
+  // real que abre Bandeja técnica, definida en bpIrDesdeCalculadora() línea
+  // ~14491) con esta de Mesa — hacía que el link post-publicar de Calculadora
+  // terminara en Workspace/Mesa sin que nadie lo hubiera pedido así. Se quita
+  // para restaurar bpIrDesdeCalculadora() como la función real que ejecuta.
   window.tapCargar           = tapCargar;
   window.initWorkspacePrecios = initWorkspacePrecios;
   window.initTableroPrecios  = initTableroPrecios;
