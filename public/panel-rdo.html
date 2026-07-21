@@ -17117,47 +17117,113 @@ document.addEventListener('DOMContentLoaded', () => {
     await calcAutoFillPrecioCompra();
   }
 
+  // Contención de estado real de Calculadora (CEO 2026-07-21, caza Fierro Corto
+  // $220 vs $235): calcAutoFillPrecioCompra()/calcRecompute() escriben directo
+  // sobre los controles reales de la pestaña Calculadora (#calcMaterial,
+  // #calcSucursal, #calcP y el resto de sliders) — son los MISMOS elementos que
+  // calcGetWorkspaceSnapshot() usa para armar la tarjeta "Cálculo rápido" de
+  // Workspace en segundo plano. Sin esto, un snapshot para el material A deja el
+  // slider de venta en el precio contractual de A, y si el usuario entra después
+  // a la Calculadora por un camino que no sea calcIrDesdeWorkspace(), ve ese
+  // residuo. Esto NO aísla la cascada real (calcAutoFillPrecioCompra() sigue
+  // siendo la misma función, con las mismas consultas) — es contención: guarda
+  // lo mínimo necesario para que calcRecompute() reconstruya el resto (labels,
+  // colores) al restaurar, y lo hace incondicional vía try/finally.
+  function calcCapturarEstadoControles() {
+    const ids = ['calcMaterial', 'calcSucursal', 'calcP', 'calcMg', 'calcFl', 'calcB', 'calcVol', 'calcIva', 'calcCategoria'];
+    const valores = {};
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) valores[id] = { value: el.value, max: el.max };
+    });
+    const sinFuenteMsgEl = document.getElementById('calcSinFuenteMsg');
+    const historialInfoEl = document.getElementById('calcHistorialInfo');
+    return {
+      valores,
+      sinFuenteVisible: sinFuenteMsgEl ? !sinFuenteMsgEl.classList.contains('hidden') : false,
+      historialInfoTexto: historialInfoEl ? historialInfoEl.textContent : null,
+      calcRefPrecioVenta,
+      calcPrecioVigenteActual,
+      calcPrecioVigenteFuente,
+      calcRefMgPct,
+      calcRefFlete,
+      calcRefSpreadPct,
+      calcRefVolumenKg,
+      calcRefIvaPct,
+      calcRefFecha,
+    };
+  }
+
+  function calcRestaurarEstadoControles(snap) {
+    if (!snap) return;
+    Object.entries(snap.valores).forEach(([id, v]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (v.max !== undefined && v.max !== '') el.max = v.max;
+      el.value = v.value;
+    });
+    calcRefPrecioVenta = snap.calcRefPrecioVenta;
+    calcPrecioVigenteActual = snap.calcPrecioVigenteActual;
+    calcPrecioVigenteFuente = snap.calcPrecioVigenteFuente;
+    calcRefMgPct = snap.calcRefMgPct;
+    calcRefFlete = snap.calcRefFlete;
+    calcRefSpreadPct = snap.calcRefSpreadPct;
+    calcRefVolumenKg = snap.calcRefVolumenKg;
+    calcRefIvaPct = snap.calcRefIvaPct;
+    calcRefFecha = snap.calcRefFecha;
+    const sinFuenteMsgEl = document.getElementById('calcSinFuenteMsg');
+    if (sinFuenteMsgEl) sinFuenteMsgEl.classList.toggle('hidden', !snap.sinFuenteVisible);
+    const historialInfoEl = document.getElementById('calcHistorialInfo');
+    if (historialInfoEl && snap.historialInfoTexto != null) historialInfoEl.textContent = snap.historialInfoTexto;
+    calcRecompute();
+  }
+
   async function calcGetWorkspaceSnapshot(focus) {
     const payload = focus || {};
-    await initCalculadoraPrecios();
-    const matSel = document.getElementById('calcMaterial');
-    const sucSel = document.getElementById('calcSucursal');
-    if (!matSel) return null;
-    if (payload.materialId) matSel.value = payload.materialId;
-    if (sucSel) sucSel.value = payload.sucursalId || '';
-    await calcAutoFillPrecioCompra();
-    const materialNombre = matSel.selectedOptions?.[0]?.textContent?.trim() || payload.materialId || 'Material';
-    const sucursalNombre = sucSel?.selectedOptions?.[0]?.textContent?.trim() || 'Sin alcance';
-    const c = calcUltimoCalculo || null;
-    const semaforo = String(document.getElementById('calcSemaforo')?.textContent || '—').trim() || '—';
-    const semaforoDetalle = String(document.getElementById('calcSemaforoDetalle')?.textContent || '—').trim() || '—';
-    const margenGate = String(document.getElementById('calcPrevMargenGate')?.textContent || '—').trim() || '—';
-    const salida = String(document.getElementById('calcPrevSalida')?.textContent || '').trim();
-    const nota = String(document.getElementById('calcPrevNota')?.textContent || '').trim();
-    const delta = (c && calcPrecioVigenteActual != null && isFinite(calcPrecioVigenteActual))
-      ? (c.plista - calcPrecioVigenteActual)
-      : null;
-    const deltaPct = (delta != null && calcPrecioVigenteActual > 0)
-      ? ((delta / calcPrecioVigenteActual) * 100)
-      : null;
-    return {
-      materialId: payload.materialId || '',
-      sucursalId: payload.sucursalId || '',
-      materialNombre,
-      sucursalNombre,
-      vigenteActual: calcPrecioVigenteActual,
-      vigenteFuente: calcPrecioVigenteFuente,
-      plista: c?.plista ?? null,
-      pejec: c?.pejec ?? null,
-      pmax: c?.pmax ?? null,
-      semaforo,
-      semaforoDetalle,
-      margenGate,
-      salida,
-      nota,
-      delta,
-      deltaPct,
-    };
+    const snapshotAntes = calcCapturarEstadoControles();
+    try {
+      await initCalculadoraPrecios();
+      const matSel = document.getElementById('calcMaterial');
+      const sucSel = document.getElementById('calcSucursal');
+      if (!matSel) return null;
+      if (payload.materialId) matSel.value = payload.materialId;
+      if (sucSel) sucSel.value = payload.sucursalId || '';
+      await calcAutoFillPrecioCompra();
+      const materialNombre = matSel.selectedOptions?.[0]?.textContent?.trim() || payload.materialId || 'Material';
+      const sucursalNombre = sucSel?.selectedOptions?.[0]?.textContent?.trim() || 'Sin alcance';
+      const c = calcUltimoCalculo || null;
+      const semaforo = String(document.getElementById('calcSemaforo')?.textContent || '—').trim() || '—';
+      const semaforoDetalle = String(document.getElementById('calcSemaforoDetalle')?.textContent || '—').trim() || '—';
+      const margenGate = String(document.getElementById('calcPrevMargenGate')?.textContent || '—').trim() || '—';
+      const salida = String(document.getElementById('calcPrevSalida')?.textContent || '').trim();
+      const nota = String(document.getElementById('calcPrevNota')?.textContent || '').trim();
+      const delta = (c && calcPrecioVigenteActual != null && isFinite(calcPrecioVigenteActual))
+        ? (c.plista - calcPrecioVigenteActual)
+        : null;
+      const deltaPct = (delta != null && calcPrecioVigenteActual > 0)
+        ? ((delta / calcPrecioVigenteActual) * 100)
+        : null;
+      return {
+        materialId: payload.materialId || '',
+        sucursalId: payload.sucursalId || '',
+        materialNombre,
+        sucursalNombre,
+        vigenteActual: calcPrecioVigenteActual,
+        vigenteFuente: calcPrecioVigenteFuente,
+        plista: c?.plista ?? null,
+        pejec: c?.pejec ?? null,
+        pmax: c?.pmax ?? null,
+        semaforo,
+        semaforoDetalle,
+        margenGate,
+        salida,
+        nota,
+        delta,
+        deltaPct,
+      };
+    } finally {
+      calcRestaurarEstadoControles(snapshotAntes);
+    }
   }
 
   window.calcIrDesdeWorkspace = async function (focus) {
