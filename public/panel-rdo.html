@@ -3977,6 +3977,11 @@
                   </div>
                   <div id="wsSafeScopeChoicesNote" class="text-xs text-stone-500 mt-2">Sin foco todavía.</div>
                 </div>
+                <div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 sm:col-span-2">
+                  <div class="text-[11px] uppercase tracking-wider text-amber-700">Selecciona el caso exacto</div>
+                  <div id="wsSafeCaseChoicesNote" class="text-xs text-amber-800 mt-1">Sin ambigüedad activa.</div>
+                  <div id="wsSafeCaseChoices" class="flex flex-wrap gap-2 mt-2"></div>
+                </div>
               </div>
             </div>
             <div class="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3">
@@ -18810,11 +18815,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const choicesEl = document.getElementById('wsSafeScopeChoices');
     const noteEl = document.getElementById('wsSafeScopeChoicesNote');
     if (!choicesEl || !noteEl) return;
-    if (!selected || !row || !row.id) {
+    if (!selected) {
       choicesEl.innerHTML = '<span class="text-xs text-stone-500">Cuando el material tenga sucursales visibles, aparecerán aquí para fijar el foco sin salir del workspace.</span>';
       noteEl.textContent = 'Sin foco todavía.';
       return;
     }
+    // CEO 2026-07-21: row puede venir null cuando hay más de un caso posible
+    // para este foco (ambigüedad real, ver mpGetWorkspaceRow) — igual se
+    // muestran las sucursales visibles para que el usuario pueda seguir
+    // navegando/aterrizando el foco; mpGetWorkspaceFocusBranchInfo(null) ya
+    // cae de forma segura a mpState.focus.sucursalId.
     const choices = mpGetWorkspaceBranchChoices(selected);
     const activeBranch = mpGetWorkspaceFocusBranchInfo(row);
     if (!choices.length) {
@@ -18840,6 +18850,43 @@ document.addEventListener('DOMContentLoaded', () => {
         ? ('La propuesta sigue sin sucursal guardada, pero ya aterrizaste el análisis en ' + activeBranch.nombre + ' desde este workspace.')
         : ('Ya estás trabajando sobre ' + activeBranch.nombre + ' dentro del carril principal.'))
       : 'Elige una sucursal visible para aterrizar el foco del caso sin salir del workspace.';
+  }
+
+  // CEO 2026-07-21: selector de caso exacto. Aparece solo cuando hay más de un
+  // candidato real (mpGetWorkspaceRowCandidates) para el foco actual — es el
+  // mecanismo con el que el usuario fija mpState.focus.proposalId a mano en vez
+  // de que la página adivine "la fila más nueva del grupo".
+  function mpSyncWorkspaceCaseChoices(selected) {
+    const choicesEl = document.getElementById('wsSafeCaseChoices');
+    const noteEl = document.getElementById('wsSafeCaseChoicesNote');
+    if (!choicesEl || !noteEl) return;
+    if (!selected) {
+      choicesEl.innerHTML = '';
+      noteEl.textContent = 'Sin ambigüedad activa.';
+      return;
+    }
+    const candidates = mpGetWorkspaceRowCandidates(selected);
+    if (candidates.length <= 1) {
+      choicesEl.innerHTML = '';
+      noteEl.textContent = 'Sin ambigüedad activa — hay un solo caso en este foco.';
+      return;
+    }
+    const activeId = mpState.focus && mpState.focus.proposalId ? String(mpState.focus.proposalId) : '';
+    noteEl.textContent = 'Hay ' + candidates.length + ' casos posibles para este foco. Elige el exacto antes de abrir cálculo — la página no adivina.';
+    choicesEl.innerHTML = candidates.map((cand) => {
+      const active = activeId && String(cand.id) === activeId;
+      const routeMeta = mpGetRouteMeta(cand.ruta);
+      const cls = active
+        ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+        : 'border-amber-300 bg-white text-amber-800 hover:border-amber-400';
+      const priceTxt = tapFmtClp(Number(cand.precio_clp_kg || 0));
+      const sucursalTxt = mpGetSucursalNombre(cand) || 'Sin sucursal';
+      const label = '#' + cand.id + ' · ' + sucursalTxt + ' · ' + (routeMeta.label || cand.ruta || 'señal') + ' · ' + priceTxt;
+      return '<button type="button" class="px-3 py-2 rounded-full border text-xs font-medium ' + cls + '"'
+        + ' onclick="window.mpSeleccionarPropuestaWorkspace && window.mpSeleccionarPropuestaWorkspace(' + "'" + tapEscape(String(cand.id)) + "'" + ')">'
+        + tapEscape(label)
+        + '</button>';
+    }).join('');
   }
 
   async function mpApplyWorkspaceInlineAdjust(selected, row, value, sourceLabel) {
@@ -19384,11 +19431,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el) el.style.width = mpClampPct(pct, 0) + '%';
   }
 
+  // CEO 2026-07-21, auditoría profunda del caso Fierro Corto: candidatos reales
+  // para el foco actual (por sucursal si ya se fijó, o todo el material si no).
+  // Usado por mpGetWorkspaceRow() para detectar ambigüedad real (>1 candidato)
+  // en vez de adivinar "la fila más nueva" — y por el selector de caso exacto.
+  function mpGetWorkspaceRowCandidates(group) {
+    if (!group || !Array.isArray(group.rows)) return [];
+    if (mpState.focus && mpState.focus.sucursalId) {
+      return group.rows.filter((row) => String(row.sucursal_id || '') === String(mpState.focus.sucursalId || ''));
+    }
+    return group.rows;
+  }
+
   function mpGetWorkspaceRow(group) {
     if (!group || !group.rows || !group.rows.length) return null;
-    if (mpState.focus && mpState.focus.sucursalId) {
-      const focusRow = group.rows.find((row) => String(row.sucursal_id || '') === String(mpState.focus.sucursalId || ''));
-      if (focusRow) return focusRow;
+    // Identidad real del foco (CEO 2026-07-21): si el usuario ya fijó un caso
+    // exacto (clic en sucursal sin ambigüedad, o clic directo en el selector de
+    // caso), ese id manda siempre, sin volver a deducir por fecha/material.
+    if (mpState.focus && mpState.focus.proposalId) {
+      const pinnedRow = group.rows.find((row) => String(row.id) === String(mpState.focus.proposalId));
+      if (pinnedRow) return pinnedRow;
+    }
+    const candidates = mpGetWorkspaceRowCandidates(group);
+    if (candidates.length === 1) return candidates[0];
+    if (candidates.length > 1) {
+      // Ambigüedad real: más de un caso vivo para este foco (ej. una referencia
+      // de cliente y un cálculo directo posterior para el mismo material+sucursal,
+      // caso Fierro Corto Cerrillos id 1259 vs 1305). Antes esto se resolvía en
+      // silencio a la fila más nueva — ahora se devuelve null y la UI exige que
+      // el usuario elija el caso exacto en "Selecciona el caso exacto".
+      return null;
     }
     return group.preview || group.rows[0] || null;
   }
@@ -19587,20 +19659,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     primaryBtn.className = 'w-full rounded-xl border border-violet-200 bg-white px-4 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed';
     if (!selected || !row || !row.id) {
+      // CEO 2026-07-21: distinguir "no hay nada seleccionado" de "hay más de un
+      // caso posible y la página se niega a adivinar cuál" — mismo bloqueo de
+      // botones en ambos casos, pero el texto le dice al usuario qué hacer.
+      const ambiguousCandidates = selected ? mpGetWorkspaceRowCandidates(selected) : [];
+      const isAmbiguous = selected && ambiguousCandidates.length > 1;
+      const noCaseMsg = isAmbiguous
+        ? 'Selecciona el caso exacto antes de abrir cálculo.'
+        : 'Selecciona un caso primero.';
       metaEl.className = 'rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 break-words';
-      scopeBadgeEl.className = 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
-      scopeBadgeEl.textContent = 'Sin foco';
-      scopeMaterialEl.textContent = 'Sin caso activo.';
+      scopeBadgeEl.className = isAmbiguous
+        ? 'px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 text-[11px]'
+        : 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]';
+      scopeBadgeEl.textContent = isAmbiguous ? 'Caso ambiguo' : 'Sin foco';
+      scopeMaterialEl.textContent = isAmbiguous
+        ? ((selected.material_nombre || 'Este material') + ' tiene ' + ambiguousCandidates.length + ' casos posibles.')
+        : 'Sin caso activo.';
       scopeBranchEl.textContent = 'Todavía no definida.';
-      scopeContextEl.textContent = 'Selecciona un caso para ver por qué está en este estado y qué falta realmente.';
-      scopeNextEl.textContent = 'La página te dirá cuál es el próximo paso dominante.';
-      mpSyncWorkspaceScopeChoices(null, null);
-      actionTitleEl.textContent = guide?.actionTitle || 'Selecciona un caso primero.';
-      actionTextEl.textContent = guide?.actionText || 'La página ordena el siguiente paso y evita que tengas que rearmar el contexto.';
+      scopeContextEl.textContent = isAmbiguous
+        ? 'Hay más de un caso vivo para este foco (ej. una referencia de cliente y un cálculo directo posterior). La página no adivina cuál abrir.'
+        : 'Selecciona un caso para ver por qué está en este estado y qué falta realmente.';
+      scopeNextEl.textContent = isAmbiguous
+        ? 'Elige el caso exacto en "Selecciona el caso exacto" antes de continuar.'
+        : 'La página te dirá cuál es el próximo paso dominante.';
+      mpSyncWorkspaceScopeChoices(selected || null, null);
+      actionTitleEl.textContent = isAmbiguous ? noCaseMsg : (guide?.actionTitle || noCaseMsg);
+      actionTextEl.textContent = isAmbiguous
+        ? 'Cuando elijas el caso exacto, la página vuelve a mostrar la salida recomendada.'
+        : (guide?.actionText || 'La página ordena el siguiente paso y evita que tengas que rearmar el contexto.');
       setActionChip(actionRouteBadgeEl, 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]', 'Sin salida');
       primaryBtn.disabled = true;
       primaryBtn.onclick = null;
-      primaryTitleEl.textContent = 'Selecciona un caso primero.';
+      primaryTitleEl.textContent = noCaseMsg;
       primaryTextEl.textContent = 'La página te propondrá la salida correcta sin que tengas que rearmar el contexto.';
       setActionChip(primaryEngineEl, 'px-2 py-1 rounded-full bg-white text-stone-600 border border-stone-200 text-[11px]', 'Sin motor');
       mobileMesaBtn.disabled = true;
@@ -19617,9 +19707,11 @@ document.addEventListener('DOMContentLoaded', () => {
       referenceBtn.onclick = null;
       mobileReferenceBtn.disabled = true;
       mobileReferenceBtn.onclick = null;
-      mobileHintEl.textContent = 'Selecciona un caso para activar la salida recomendada.';
-      mobileBadgeEl.className = 'px-2 py-1 rounded-full bg-stone-100 text-stone-600 text-[11px]';
-      mobileBadgeEl.textContent = 'Sin foco';
+      mobileHintEl.textContent = isAmbiguous ? noCaseMsg : 'Selecciona un caso para activar la salida recomendada.';
+      mobileBadgeEl.className = isAmbiguous
+        ? 'px-2 py-1 rounded-full bg-amber-100 text-amber-700 text-[11px]'
+        : 'px-2 py-1 rounded-full bg-stone-100 text-stone-600 text-[11px]';
+      mobileBadgeEl.textContent = isAmbiguous ? 'Caso ambiguo' : 'Sin foco';
       exitModeEl.textContent = '—';
       mpSyncInlineExecutionState();
       mpSyncInlineDecisionState();
@@ -19860,9 +19952,11 @@ document.addEventListener('DOMContentLoaded', () => {
       mpSetWidth('wsSafeMarginBar', 0);
       mpSetWidth('wsSafeSpreadBar', 0);
       mpSetWidth('wsSafeCompetitionBar', 0);
+      mpSyncWorkspaceCaseChoices(null);
       mpRenderWorkspaceActions(null, null, mpGetWorkspaceGuide(null, null, null, 0, 0, 0));
       return;
     }
+    mpSyncWorkspaceCaseChoices(selected);
     const row = mpGetWorkspaceRow(selected) || {};
     const publishedRow = mpGetWorkspacePublished(selected, row);
     const publishedValue = Number(row.precio_vigente || publishedRow?.precio_compra_clp || 0);
@@ -20090,12 +20184,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const groups = mpFilterGroups(mpBuildGroups());
     const selected = groups.find((group) => group.key === mpState.selectedKey) || null;
     if (!selected) return;
+    const candidatesEnSucursal = selected.rows.filter((row) => String(row.sucursal_id || '') === String(sucursalId || ''));
     mpState.focus = {
       materialId: selected.material_id || null,
       materialNombre: selected.material_nombre || '',
       sucursalId: sucursalId || '',
       sucursalNombre: mpGetSucursalNombreById(sucursalId || ''),
+      // Identidad real del foco (CEO 2026-07-21): si esta sucursal tiene un
+      // solo caso vivo, se fija directo. Si tiene más de uno (ej. una
+      // referencia real y un cálculo directo posterior para el mismo
+      // material+sucursal), NO se adivina — queda null hasta que el usuario
+      // elija el caso exacto en "Selecciona el caso exacto".
+      proposalId: candidatesEnSucursal.length === 1 ? candidatesEnSucursal[0].id : null,
     };
+    if (candidatesEnSucursal.length > 1 && window.showToast) {
+      window.showToast('Esta sucursal tiene ' + candidatesEnSucursal.length + ' casos — elige el exacto en "Selecciona el caso exacto" antes de abrir cálculo.', 'info');
+    }
+    mpRender();
+  };
+
+  // CEO 2026-07-21: fija el proposalId real cuando el usuario elige el caso
+  // exacto en el selector de ambigüedad. openCalc() y mpGetWorkspaceRow() usan
+  // ese id directo — no vuelven a deducir la fila por material/fecha.
+  window.mpSeleccionarPropuestaWorkspace = function (proposalId) {
+    const inlineActive = window.__mpWorkspaceInlineContext || null;
+    if (inlineActive && inlineActive.proposalId) {
+      const msg = inlineActive.mode === 'reference'
+        ? 'Cierra primero la referencia inline antes de cambiar el caso de trabajo.'
+        : 'Cierra primero la resolución inline antes de cambiar el caso de trabajo.';
+      if (window.showToast) window.showToast(msg, 'info');
+      return;
+    }
+    const groups = mpFilterGroups(mpBuildGroups());
+    const selected = groups.find((group) => group.key === mpState.selectedKey) || null;
+    if (!selected) return;
+    const targetRow = selected.rows.find((row) => String(row.id) === String(proposalId));
+    if (!targetRow) return;
+    mpState.focus = {
+      materialId: selected.material_id || null,
+      materialNombre: selected.material_nombre || '',
+      sucursalId: targetRow.sucursal_id || '',
+      sucursalNombre: mpGetSucursalNombre(targetRow) || '',
+      proposalId: targetRow.id,
+    };
+    if (window.showToast) window.showToast('Caso fijado: #' + targetRow.id + '.', 'success');
     mpRender();
   };
   window.mpSeleccionarGrupo = function (key) {
