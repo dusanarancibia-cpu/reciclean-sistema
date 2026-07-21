@@ -17253,6 +17253,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.calcIrDesdeWorkspace = async function (focus) {
     const payload = focus || {};
+
+    // Identidad fuerte por proposalId (CEO 2026-07-21, fix mínimo de la
+    // auditoría profunda): si viene un id real de staging.precios_propuestos,
+    // esa fila manda — se re-consulta directo por id y se usan SU
+    // material_id/sucursal_id/precio_clp_kg, sin confiar en lo que el
+    // llamador haya resuelto por su cuenta (materialId/sucursalId/
+    // precioEntrada sueltos, que hoy pueden venir de mpGetWorkspaceRow()
+    // resolviendo "la fila más nueva del grupo" en vez de la fila que el
+    // usuario cree estar abriendo — ver auditoría Frente 3/4). Si no llega
+    // proposalId, o la consulta falla, cae al camino viejo (fallback
+    // explícito) sin cambiar el comportamiento existente en ese caso.
+    if (payload.proposalId) {
+      try {
+        const { data: filaExacta, error: filaExactaError } = await sb.schema('staging')
+          .from('precios_propuestos')
+          .select('id, material_id, sucursal_id, precio_clp_kg')
+          .eq('id', payload.proposalId)
+          .maybeSingle();
+        if (filaExactaError) throw filaExactaError;
+        if (filaExacta) {
+          payload.materialId = filaExacta.material_id || payload.materialId;
+          payload.sucursalId = filaExacta.sucursal_id || payload.sucursalId;
+          payload.precioEntrada = Number(filaExacta.precio_clp_kg || payload.precioEntrada || 0);
+        } else {
+          console.warn('[calcIrDesdeWorkspace] proposalId ' + payload.proposalId + ' no encontrado en staging.precios_propuestos — uso fallback viejo (materialId+sucursalId+precioEntrada)');
+        }
+      } catch (e) {
+        console.warn('[calcIrDesdeWorkspace] fallo consultando proposalId, uso fallback viejo (materialId+sucursalId+precioEntrada):', e);
+      }
+    }
+
     window.bpFocusFromCalc = {
       materialId: payload.materialId || '',
       materialNombre: payload.materialNombre || '',
@@ -19632,6 +19663,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // en este número, no en lo que decida el cascada de fuentes (contractual/
         // vigente/referencia), que sigue calculándose como contexto aparte.
         precioEntrada: Number(row.precio_clp_kg || 0),
+        // Identidad fuerte (CEO 2026-07-21, auditoría profunda): id real de la
+        // propuesta en staging.precios_propuestos. AVISO — row acá sigue viniendo
+        // de mpGetWorkspaceRow(selected), que hoy resuelve "la fila más nueva del
+        // grupo" (ver Frente 3/4 de la auditoría), no necesariamente la fila que
+        // el usuario cree estar viendo. Este proposalId hereda esa misma
+        // ambigüedad — no la resuelve por sí solo. Lo que sí resuelve es que
+        // calcIrDesdeWorkspace(), cuando reciba un proposalId correcto desde
+        // OTRO llamador (ej. un botón por-fila en Bandeja técnica), abra la fila
+        // exacta sin depender de material+sucursal+precio sueltos.
+        proposalId: row.id || null,
       });
     };
     const actionMeta = {
