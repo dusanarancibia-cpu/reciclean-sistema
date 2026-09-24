@@ -70,7 +70,7 @@ Sistema comercial web para gestion de precios de materiales reciclables con dos 
   - Vista principal: `v_precios_activos`
   - Tabla auth: `usuarios_autorizados`
   - Tabla sync: `asistente_snapshot` (Panel -> Asistente en tiempo real)
-- **Deploy**: GitHub -> Vercel (automatico en push a `main`)
+- **Deploy**: GitHub -> Vercel (merge a `main` = produccion; ramas feature = preview)
 - **Repo**: github.com/dusanarancibia-cpu/reciclean-sistema (publico — sin secretos en codigo)
 - **PWA**: Service Worker + manifest, instalable en celulares del equipo
 
@@ -85,7 +85,7 @@ reciclean-sistema/
   package.json        # @supabase/supabase-js + vite
   .env.local          # Credenciales Supabase (NO commitear)
   public/
-    js/               # 11 modulos JS (logica principal)
+    js/               # Modulos JS (logica principal; lista parcial abajo)
       config.js       # 65 materiales, 4 sucursales, categorias
       estado.js       # State management (82 KB, el mas grande)
       alias.js        # Aliases de materiales por fuente
@@ -160,28 +160,8 @@ reciclean-sistema/
 
 ## Versionado
 
-- **Version actual en produccion**: v90 (commit `2ac680f`, deploy 7 abril 2026)
-- **Proxima version**: v91 (responsive mobile)
-- Siempre hacer backup antes de modificar
+- La version en produccion se ve en el chip `v: <sha7>` del sidebar o en `/_version.json` (ver regla operativa 7).
 - Al modificar logica: editar `public/js/*.js`, solo tocar HTML para cambios de estructura
-
-## Directorio hermano: Claude Code/
-
-Existe un directorio `Claude Code/` al mismo nivel que este repo con:
-- Espejos de los archivos (`admin_panel_vXX.html` = `index.html` del repo)
-- `TAREAS.md` con estado de tareas detallado
-- `Respaldos/` con versiones v83-v90
-- `ChatBot/` con flujos y documentacion del chatbot
-- `Repositorio Template/` con 14 templates RRSS
-- `supabase_schema.sql` con esquema completo de BD
-
-**Antes de subir cambios al repo**: comparar contra `Claude Code/` para no perder features.
-
-## Fases del proyecto
-
-**Fase 2 (Mayo/Junio 2026)**: Dashboard KPIs, CRM Proveedores, App Terreno PWA mejorada, Google Workspace
-**Fase 3**: Rediseno reciclean.cl + farex.cl, precios en Google Maps (8 fichas GMB)
-**Fase 4 (EN CURSO)**: RRSS automaticas (Make.com + Claude haiku + Canva + Buffer), Chatbot WhatsApp IA
 
 ## Instrucciones para Claude
 
