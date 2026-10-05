@@ -46,7 +46,7 @@
 2. **Cotizador `f_evaluar_retiro v6`.** Con material + sucursal + volumen, te arma cotización.
 3. **Verificar márgenes.** Diego marca alerta si una venta queda fuera de tarifa.
 4. **Comparar sucursales.** Tabla Cerrillos vs Maipú vs Talca por material.
-5. **Pto Montt bloqueado.** Diego nunca cotiza para Pto Montt — está bloqueada por SEREMI.
+5. **Pto Montt operativa (patente provisoria).** Diego cotiza para Pto Montt solo con precios cargados y aprobados en el Panel; nunca inventa precios ni cita resoluciones.
 
 ---
 

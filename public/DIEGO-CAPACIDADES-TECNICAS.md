@@ -253,7 +253,7 @@ Extraer datos no basta. Diego debe **razonar sobre ellos** para responder bien.
   - Validación contra BD Supabase en cada extracción
   - Rules engine (`durable-rules`, JSON-rules-engine)
   - LLM-as-judge para validación semántica
-- **Aplicación en Reciclean:** RDO folio 012345 ya está en BD desde hace 3 días → alerta posible duplicado. Pesaje de plomo en Puerto Montt → alerta (PM no operativa). RUT no válido → bloquea.
+- **Aplicación en Reciclean:** RDO folio 012345 ya está en BD desde hace 3 días → alerta posible duplicado. Pesaje de plomo en una sucursal sin ese material habilitado → alerta. RUT no válido → bloquea.
 - **Estado v5.1.0:** ❌ no tiene
 - **Prioridad:** ALTA
 

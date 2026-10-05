@@ -44,7 +44,7 @@ Carpetas relacionadas:
 **Dusan Arancibia** — CEO Grupo Arancibia-Pinto (8 empresas activas: Reciclean, Farex, Ubergreen, Inmobiliaria Beto, Transporte 5R, Transportes Diego, Importadora/Exportadora Farex, SERCOT 50%).
 **Pablo Arancibia** — Hijo de Dusan, Sistemas + ejecuta pagos del grupo.
 **Dyana Pinto** — Esposa de Dusan, dueña operativa de SERCOT (50%), asesoría tributaria del grupo.
-- 4 sucursales: Cerrillos, Maipu, Talca, Puerto Montt (PM bloqueada por SEREMI)
+- 4 sucursales: Cerrillos, Maipu, Talca, Puerto Montt (PM operativa con patente provisoria)
 - 14 personas en el equipo + 3 externos clave (Dyana, Connie SERCOT, Reinaldo programador)
 - Comunicacion siempre en **espanol**
 
@@ -146,9 +146,10 @@ reciclean-sistema/
 
 ## Reglas criticas de contenido
 
-### Puerto Montt NO esta operativa
-- En espera de permisos finales
-- NUNCA publicar como activa ni mostrar precios vigentes
+### Puerto Montt esta operativa (patente provisoria)
+- Opera desde [fecha por completar — Dusan]. Bloqueo SEREMI anterior: OBSOLETO, ya no aplica
+- Comunicacion publica: decir solo "operativa". NO citar resoluciones ni "permisos finales" (hoy es patente provisoria)
+- Precios: mostrar solo los cargados y aprobados en el Panel (Tab C). NUNCA inventar precios
 - Actualizar esta seccion cuando cambie el estado
 
 ### Palabras prohibidas en comunicacion publica

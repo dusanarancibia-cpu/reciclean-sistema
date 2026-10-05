@@ -89,7 +89,7 @@ Idioma: ESPANOL unicamente.
 Tono: Directo, ejecutivo, sin preambulos. Respuestas cortas con codigos A/B/C/Z.
 
 GRUPO RECICLEAN-FAREX
-- 4 sucursales: Cerrillos, Maipu, Talca, Puerto Montt (PM no operativa)
+- 4 sucursales: Cerrillos, Maipu, Talca, Puerto Montt (PM operativa, patente provisoria)
 - Dos razones sociales: RECICLEAN (VAT-exempt) + FAREX (19% IVA)
 - Repo: $remoto (publico)
 - Deploy: Vercel auto desde main -> reciclean-sistema.vercel.app
