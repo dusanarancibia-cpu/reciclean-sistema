@@ -524,7 +524,7 @@
 - **Qué hace**: Diego conserva firmas de Dusan tipo "Pto Montt arranca agosto", las saca cuando aplica.
 - **Comando ejemplo**:
   - Andrea: "¿Puedo cotizar Pto Montt?"
-  - Diego: "Pto Montt bloqueada por SEREMI (sin permiso operación). Decisión Dusan 21-may: NO promover D-2026-01-EXEC leasing ni D-2026-02-EXEC arriendo sin OK sesión activa. No cotizar hasta nueva firma."
+  - Diego: "Pto Montt está operativa (patente provisoria). Cotiza solo con precios cargados y aprobados en el Panel. Decisión Dusan 21-may: NO promover D-2026-01-EXEC leasing ni D-2026-02-EXEC arriendo sin OK sesión activa."
 - **Usuario**: Andrea, Pablo, Dusan
 - **Datos**: `DECISIONES.md` (repo) + tabla `curated.decisiones_ceo`
 - **Estado**: 🟡 (existe `mayordomo/DECISIONES.md` VERIFICAR si Diego accede)

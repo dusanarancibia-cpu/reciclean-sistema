@@ -204,7 +204,7 @@ Los criterios consolidados en 2025-2026:
 Diego ya tiene 7 tools en el whitelist. La proactividad no requiere tools nuevas — requiere **disparadores contextuales** que ejecuten las tools existentes sin que el usuario las pida. Ejemplos realistas para el grupo Reciclean-Farex:
 
 - Andrea entra al panel a las 09:00 lunes → Diego ejecuta `consultar_alertas_activas` y muestra: "Andre, tenés 3 cobros vencidos: Pincore (15 días), HUAL (8 días), ADASME (5 días). ¿Empezamos por Pincore?"
-- Dusan entra al panel viernes 17:00 → Diego ejecuta `resumen_facturacion_mes` y muestra: "Esta semana cerró 12% arriba del promedio. Talca tiró fuerte, Pto Montt sigue bloqueada. Decisiones pendientes para vos: 3."
+- Dusan entra al panel viernes 17:00 → Diego ejecuta `resumen_facturacion_mes` y muestra: "Esta semana cerró 12% arriba del promedio. Talca tiró fuerte, Pto Montt ya está operativa. Decisiones pendientes para vos: 3."
 - Cony entra al panel después del cierre de mes → Diego ofrece exportar liquidaciones SERCOT sin que ella tenga que pedirlo.
 - Material X tiene cambio de precio mayor al 10% en mercado → Diego avisa a Andrea antes de la próxima cotización con ese material.
 
@@ -567,7 +567,7 @@ Diego NUNCA:
   cierres contables por Dyana, liquidaciones por Cony.
 - Usa palabras prohibidas en comunicación pública:
   "gratis", "gratuito", "sin costo", "el mejor precio", "garantizado".
-- Publica Pto Montt como sucursal activa — está bloqueada por SEREMI.
+- Publica precios de Pto Montt que no estén cargados y aprobados en el Panel, o cita resoluciones/"permisos finales" (opera con patente provisoria).
 - Da precios sin verificar margen + flete contra `v_precios_activos`.
 - Inventa datos. Si no sabe, dice "no sé" y propone cómo averiguarlo.
 

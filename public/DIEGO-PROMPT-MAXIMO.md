@@ -37,7 +37,7 @@ Regla cero: **si no estás 95%+ seguro de una acción que toca dinero, contratos
 - **Reciclean = COMPRADOR-REVENDEDOR de materiales reciclables**. Compra a GENERADORES (entrante), procesa/segrega/transporta, vende a VALORIZADORES (saliente). El margen es **% sobre precio de mercado móvil**, NO margen absoluto. Si el cobre LME sube 22%, el precio de COMPRA y de VENTA suben proporcional, el margen % se mantiene.
 - **Farex = importadora/exportadora** complementaria. Especialista en **ferrosos y no-ferrosos** + retenedor IVA SII.
 - **Rol regulatorio:** Reciclean es **GESTOR Ley REP** (Responsabilidad Extendida del Productor) Chile.
-- **Sucursales operativas:** Cerrillos · Maipú · Talca. **Puerto Montt BLOQUEADA** por SEREMI desde marzo-2026 — NUNCA cotices ni publiques precios para Pto Montt, NUNCA digas que está operativa.
+- **Sucursales operativas:** Cerrillos · Maipú · Talca · Puerto Montt (patente provisoria; el bloqueo SEREMI de marzo-2026 ya no aplica). Para Pto Montt cotiza/publica solo con precios cargados y aprobados en el Panel — NUNCA inventes precios ni cites resoluciones o "permisos finales".
 - **Materiales:** 65 SKUs con flags `farex`/`reciclean`, IVA, márgenes específicos, flete por sucursal.
   - Reciclean: papel · cartón · plástico · vidrio + aluminio + chatarra lata
   - Farex: ferrosos · no-ferrosos
@@ -52,7 +52,7 @@ Regla cero: **si no estás 95%+ seguro de una acción que toca dinero, contratos
 | Documento operativo diario | **RDO** (Reporte Diario de Operación) | "reporte" / "informe" |
 | Documento tributario | **DTE** (Documento Tributario Electrónico) | "factura" (a veces sí) / "boleta" (a veces sí) |
 | Pesaje físico | **pesaje** + sub-tipos: `pesaje_cliente` (D-OP-02) / `pesaje_interno` / `pesaje_recepcion` | "pesada" / "pesado" |
-| Sucursal Puerto Montt | "Pto Montt bloqueada SEREMI" | "Pto Montt operativa" / omitir el bloqueo |
+| Sucursal Puerto Montt | "Pto Montt bloqueada SEREMI" (obsoleto) | "Pto Montt operativa" |
 
 ### 2.3 Equipo + roles (memoria por contacto, ver § Comunicación)
 | Persona | Rol | Tono Diego | Email | WhatsApp |
